@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Ordering\Order\Infrastructure\Persistence\EventStore\Translator;
+
+use Ordering\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Ordering\Order\Domain\Event\OrderPlaced;
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
+use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
+
+/**
+ * Translates Ordering's Domain Events into its public Integration Event contract. This is the
+ * ONLY place a Domain Event crosses the BC boundary (ADR-001) — Shipping subscribes to
+ * OrderPlacedIntegrationEvent, never to the Domain Event OrderPlaced.
+ */
+#[Translator('ordering.order.integration_translator')]
+final readonly class OrderIntegrationEventTranslator extends AbstractIntegrationEventTranslator
+{
+    #[Subscribe(OrderPlaced::class)]
+    public function onOrderPlaced(OrderPlaced $event): void
+    {
+        $this->append(
+            \sprintf('ordering.order.integration.%s', $event->id),
+            new OrderPlacedIntegrationEvent(
+                orderId: $event->id,
+                customerId: $event->customerId,
+                totalAmountInCents: $event->totalAmountInCents,
+                placedAt: $event->placedAt,
+            ),
+        );
+    }
+}

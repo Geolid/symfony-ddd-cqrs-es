@@ -1,0 +1,54 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpat/phpat/extension.neon
+
+services:
+    -
+        class: Tools\PhpStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPat\ArchitectureSuite
+        tags:
+            - phpat.test
+
+parameters:
+    phpat:
+        # Without it every rule chokes on PHP built-ins (DateTimeImmutable, BackedEnum...).
+        ignore_built_in_classes: true
+        # Every rule reaches phpat through ArchitectureSuite — name the actual rule in violations.
+        show_rule_names: true
+
+    level: 9
+
+    treatPhpDocTypesAsCertain: false
+    exceptions:
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
+
+        checkedExceptionClasses:
+            - 'DomainException'
+            - 'Shared\Application\Exception\ApplicationExceptionInterface'
+
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        -
+            # Apply methods are called via reflection by Patchlevel Event Sourcing.
+            message: '#Method .+::apply[A-Z].+\(\) is unused\.#'
+            identifier: method.unused
+            paths:
+                - 'src/**/Domain/**'
+        -
+            # Ignore missing @throws in tests and test support (factories, traits, abstract cases).
+            message: '#throws checked exception .* but it''s missing from the PHPDoc @throws tag#'
+            paths:
+                - '*Test.php'
+                - 'tests/Support/**'
+                - 'tests/**/Support/**'
+
+    parallel:
+        maximumNumberOfProcesses: 8

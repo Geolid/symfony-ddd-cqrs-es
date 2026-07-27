@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      - name: Code style (php-cs-fixer)
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: PHPStan (includes the phpat architecture suite)
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Deptrac — Onion layering
+        run: vendor/bin/deptrac analyse --config-file=deptrac_layers.yaml --no-progress --fail-on-uncovered=false
+
+      - name: Deptrac — Bounded Context isolation
+        run: vendor/bin/deptrac analyse --config-file=deptrac_bc.yaml --no-progress --fail-on-uncovered=false
+
+      - name: Deptrac — Delivery Mechanism reach
+        run: vendor/bin/deptrac analyse --config-file=deptrac_dm.yaml --no-progress --fail-on-uncovered=false
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_USER: app
+          MARIADB_PASSWORD: app
+          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      APP_ENV: test
+      EVENT_STORE_URL: mysql://app:app@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
+      READ_MODEL_URL: mysql://app:app@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
+      MESSENGER_URL: mysql://app:app@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: pcov
+
+      - uses: ramsey/composer-install@v3
+
+      - name: Create the three logical schemas
+        run: |
+          mysql -h127.0.0.1 -uapp -papp -e "CREATE DATABASE IF NOT EXISTS app_event_store; CREATE DATABASE IF NOT EXISTS app_read_model; CREATE DATABASE IF NOT EXISTS app_messenger;"
+
+      - name: PHPUnit
+        run: vendor/bin/phpunit

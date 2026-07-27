@@ -1,0 +1,28 @@
+includes:
+    - phpstan.base.neon
+
+parameters:
+    tmpDir: var/phpstan/src
+
+    paths:
+        - bin/
+        - bootstrap/
+        - config/
+        - public/
+        - src/
+        - tests/
+        - tools/
+        - apps/api/src
+        - apps/api/tests
+        - apps/cli/src
+        - apps/cli/tests
+        - apps/web/src
+        - apps/web/tests
+        - apps/webhook/src
+        - apps/webhook/tests
+
+    excludePaths:
+        - tools/PHPStan/Tests/data/*
+
+    symfony:
+        containerXmlPath: var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml

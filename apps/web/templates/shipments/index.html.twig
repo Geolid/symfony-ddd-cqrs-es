@@ -1,0 +1,33 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Shipments{% endblock %}
+{% block heading %}Shipments{% endblock %}
+
+{% block body %}
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Order</th>
+            <th>Status</th>
+            <th>Created at</th>
+            <th>Dispatched at</th>
+            <th>Delivered at</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for shipment in shipments.items %}
+            <tr>
+                <td>{{ shipment.id }}</td>
+                <td>{{ shipment.orderId }}</td>
+                <td><span class="status">{{ shipment.status }}</span></td>
+                <td>{{ shipment.createdAt|date('Y-m-d H:i') }}</td>
+                <td>{{ shipment.dispatchedAt ? shipment.dispatchedAt|date('Y-m-d H:i') : '—' }}</td>
+                <td>{{ shipment.deliveredAt ? shipment.deliveredAt|date('Y-m-d H:i') : '—' }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6">No shipments yet — shipments are created automatically once an order is placed.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

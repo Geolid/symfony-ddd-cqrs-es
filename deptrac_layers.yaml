@@ -1,0 +1,42 @@
+deptrac:
+  paths: [ ./src ]
+  cache_file: var/.deptrac_layers.cache
+
+  layers:
+    # --- Domain (Inner Core) ---
+    - name: Domain
+      collectors:
+        - { type: directory, value: 'src/.*/Domain/.*' }
+
+    - name: Domain.Vendors
+      collectors:
+        - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(Aggregate|Attribute)\\.*#' }
+        - { type: classNameRegex, value: '#^Psr\\Clock\\.*#' }
+        - { type: classNameRegex, value: '#^Ramsey\\Uuid\\.*#' }
+        - { type: classNameRegex, value: '#^Webmozart\\Assert\\.*#' }
+
+    # --- Application (Use Cases) ---
+    - name: Application
+      collectors:
+        - { type: directory, value: 'src/.*/Application/.*' }
+
+    - name: Application.Vendors
+      collectors:
+        - { type: classNameRegex, value: '#^Psr\\(Log|Clock)\\.*#' }
+
+    # --- Infrastructure (Outer Ring) ---
+    - name: Infrastructure
+      collectors:
+        - { type: directory, value: 'src/.*/Infrastructure/.*' }
+
+    - name: Infrastructure.Vendors
+      collectors:
+        - { type: classNameRegex, value: '#^Doctrine\\DBAL\\.*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute).*#' }
+        - { type: classNameRegex, value: '#^Sentry\\.*#' }
+        - { type: classNameRegex, value: '#^Symfony\\.*#' }
+
+  ruleset:
+    Domain:         [ Domain.Vendors ]
+    Application:    [ Domain, Domain.Vendors, Application.Vendors ]
+    Infrastructure: [ Domain, Application, Domain.Vendors, Application.Vendors, Infrastructure.Vendors ]

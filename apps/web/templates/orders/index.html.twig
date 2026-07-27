@@ -1,0 +1,39 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Orders{% endblock %}
+{% block heading %}Orders{% endblock %}
+
+{% block body %}
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Placed at</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for order in orders.items %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.customerId }}</td>
+                <td>{{ (order.totalAmountInCents / 100)|number_format(2) }}</td>
+                <td><span class="status">{{ order.status }}</span></td>
+                <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
+                <td>
+                    {% if order.status == 'placed' %}
+                        <form class="inline" method="post" action="/orders/{{ order.id }}/cancel">
+                            <button type="submit">Cancel</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6">No orders yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

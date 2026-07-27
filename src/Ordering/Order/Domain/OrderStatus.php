@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Ordering\Order\Domain;
+
+enum OrderStatus: string
+{
+    case PLACED = 'placed';
+    case CANCELLED = 'cancelled';
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
+    }
+}

@@ -1,0 +1,35 @@
+imports:
+  - deptrac_bc.yaml
+
+deptrac:
+  paths: [ ./apps ]
+  exclude_files:
+    - '#.*/tests/.*#'
+  cache_file: var/.deptrac_dm.cache
+
+  layers:
+    # --- Delivery Mechanisms ---
+    - name: Web
+      collectors:
+        - { type: directory, value: 'apps/web/.*' }
+
+    - name: Api
+      collectors:
+        - { type: directory, value: 'apps/api/.*' }
+
+    - name: Cli
+      collectors:
+        - { type: directory, value: 'apps/cli/.*' }
+
+    - name: Webhook
+      collectors:
+        - { type: directory, value: 'apps/webhook/.*' }
+
+  # Which BC each DM may reach. What may be consumed *inside* a granted BC (only
+  # #[AsDrivingPort] ports, Command/Query messages) is enforced separately by the phpat rule
+  # Tools\PHPat\DeliveryMechanismTest — deptrac only draws the outer boundary.
+  ruleset:
+    Web:     [ Ordering.Order, Shipping.Shipment, Shared, Vendors ]
+    Api:     [ Ordering.Order, Shipping.Shipment, Shared, Vendors ]
+    Cli:     [ Ordering.Order, Shipping.Shipment, Shared, Vendors ]
+    Webhook: [ Shipping.Shipment, Shared, Vendors ]
