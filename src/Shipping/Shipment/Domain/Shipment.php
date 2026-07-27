@@ -22,11 +22,17 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private ShipmentId $id;
+    private string $orderId;
     private ShipmentStatus $status;
 
     public function id(): ShipmentId
     {
         return $this->id;
+    }
+
+    public function orderId(): string
+    {
+        return $this->orderId;
     }
 
     public static function create(ShipmentId $id, string $orderId, \DateTimeImmutable $createdAt): self
@@ -75,6 +81,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyShipmentCreated(ShipmentCreated $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
+        $this->orderId = $event->orderId;
         $this->status = ShipmentStatus::PENDING;
     }
 

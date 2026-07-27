@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipping\Tests\Shipment\Application\Processor;
 
+use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ordering\Order\Application\Event\OrderPlacedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -21,10 +22,14 @@ use Support\AbstractIntegrationTestCase;
 final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itOpensAShipmentForTheNewOrder(): void
+    public function itOpensAShipmentEnrichedWithTheOrderSummary(): void
     {
-        // Given
+        // Given — a real Order, so its Integration Event stream genuinely exists for the
+        // DbalShipmentProjector's OrderSummaryReducer to read from (see OrderSummaryReducerTest
+        // for the Reducer in isolation).
         $orderId = Uuid::uuid7()->toString();
+        $this->dispatch(new PlaceOrder($orderId, 'customer-1', 4_200));
+
         $event = new OrderPlacedIntegrationEvent(
             orderId: $orderId,
             customerId: 'customer-1',
@@ -39,6 +44,8 @@ final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
         self::assertCount(1, $results);
         self::assertSame($orderId, $results[0]->orderId);
+        self::assertSame('customer-1', $results[0]->customerId);
+        self::assertSame(4_200, $results[0]->orderTotalInCents);
         self::assertSame('pending', $results[0]->status);
     }
 }
