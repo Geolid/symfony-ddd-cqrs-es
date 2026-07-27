@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Api\Resource;
 
-use Api\State\Shipment\DispatchShipmentProcessor;
-use Api\State\Shipment\ShipmentCollectionProvider;
+use Api\State\Processor\DispatchShipmentProcessor;
+use Api\State\Provider\ShipmentCollectionProvider;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Api\State\Order;
+namespace Api\State\Provider;
 
 use Api\Resource\OrderResource;
 use ApiPlatform\Metadata\Operation;

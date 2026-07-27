@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Api\State\Order;
+namespace Api\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;

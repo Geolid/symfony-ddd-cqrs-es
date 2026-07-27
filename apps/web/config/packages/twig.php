@@ -9,10 +9,10 @@ return static function (ContainerConfigurator $container): void {
         'default_path' => '%kernel.project_dir%/apps/web/templates',
         'paths' => [
             '%kernel.project_dir%/apps/web/templates' => null,
-            // Shared across every Twig-using DM (today, just this one) — the base layout,
-            // pagination/flash macros, and the CSS inlined via source() in ui/templates/base.html.twig.
+            // Shared across every Twig-using DM (today, just this one) — the base layout and
+            // pagination/flash macros. CSS/JS themselves are served through AssetMapper
+            // (apps/web/config/packages/asset_mapper.php), not this Twig namespace.
             '%kernel.project_dir%/ui/templates' => 'ui',
-            '%kernel.project_dir%/ui/assets' => 'ui_assets',
         ],
     ]);
 };

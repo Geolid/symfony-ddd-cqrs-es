@@ -11,6 +11,8 @@ return static function (ContainerConfigurator $container): void {
         'php_errors' => ['log' => true],
         'http_method_override' => false,
         'trust_x_sendfile_type_header' => true,
+        'form' => false,
+        'asset_mapper' => false,
     ]);
 
     if ('test' === $container->env()) {

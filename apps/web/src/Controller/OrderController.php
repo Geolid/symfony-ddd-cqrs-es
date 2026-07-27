@@ -10,17 +10,21 @@ use Ordering\Order\Application\Query\ListOrders\ListOrders;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
+use Web\Form\FormData\PlaceOrderFormData;
+use Web\Form\PlaceOrderType;
 
 final readonly class OrderController
 {
     public function __construct(
         private CommandBusInterface $commandBus,
         private QueryBusInterface $queryBus,
+        private FormFactoryInterface $formFactory,
         private Environment $twig,
     ) {
     }
@@ -37,22 +41,24 @@ final readonly class OrderController
         return new Response($this->twig->render('orders/index.html.twig', ['orders' => $orders]));
     }
 
-    #[Route('/orders/new', methods: ['GET'])]
-    public function new(): Response
+    #[Route('/orders/new', name: 'orders_new', methods: ['GET', 'POST'])]
+    public function new(Request $request): Response
     {
-        return new Response($this->twig->render('orders/new.html.twig'));
-    }
+        $formData = new PlaceOrderFormData();
+        $form = $this->formFactory->create(PlaceOrderType::class, $formData);
+        $form->handleRequest($request);
 
-    #[Route('/orders', methods: ['POST'])]
-    public function create(Request $request): RedirectResponse
-    {
-        $this->commandBus->dispatch(new PlaceOrder(
-            id: Uuid::uuid7()->toString(),
-            customerId: (string) $request->request->get('customerId'),
-            totalAmountInCents: (int) $request->request->get('totalAmountInCents'),
-        ));
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->commandBus->dispatch(new PlaceOrder(
+                id: Uuid::uuid7()->toString(),
+                customerId: (string) $formData->customerId,
+                totalAmountInCents: (int) $formData->totalAmountInCents,
+            ));
 
-        return new RedirectResponse('/orders');
+            return new RedirectResponse('/orders');
+        }
+
+        return new Response($this->twig->render('orders/new.html.twig', ['form' => $form->createView()]));
     }
 
     #[Route('/orders/{id}/cancel', methods: ['POST'])]

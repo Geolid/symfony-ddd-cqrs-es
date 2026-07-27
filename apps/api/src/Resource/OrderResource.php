@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Api\Resource;
 
 use Api\Input\PlaceOrderInput;
-use Api\State\Order\CancelOrderProcessor;
-use Api\State\Order\OrderCollectionProvider;
-use Api\State\Order\OrderProvider;
-use Api\State\Order\PlaceOrderProcessor;
+use Api\State\Processor\CancelOrderProcessor;
+use Api\State\Processor\PlaceOrderProcessor;
+use Api\State\Provider\OrderCollectionProvider;
+use Api\State\Provider\OrderProvider;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;

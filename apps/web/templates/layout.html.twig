@@ -3,8 +3,8 @@
 
 {% block title %}{{ 'layout.title'|trans }}{% endblock %}
 
-{% block stylesheets %}
-    <style>{{ source('@ui_assets/styles/app.css') }}</style>
+{% block javascripts %}
+    {% block importmap %}{{ importmap(['shared']) }}{% endblock %}
 {% endblock %}
 
 {% block body %}

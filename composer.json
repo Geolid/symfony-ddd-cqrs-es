@@ -16,7 +16,9 @@
     "sentry/sentry-symfony": "^5.10",
     "symfony/console": "8.1.*",
     "symfony/doctrine-messenger": "8.1.*",
+    "symfony/asset-mapper": "8.1.*",
     "symfony/dotenv": "8.1.*",
+    "symfony/form": "8.1.*",
     "symfony/framework-bundle": "8.1.*",
     "symfony/http-client": "8.1.*",
     "symfony/mailer": "8.1.*",
@@ -25,6 +27,7 @@
     "symfony/runtime": "8.1.*",
     "symfony/translation": "8.1.*",
     "symfony/twig-bundle": "8.1.*",
+    "symfony/validator": "8.1.*",
     "symfony/yaml": "8.1.*",
     "webmozart/assert": "^1.11"
   },

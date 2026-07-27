@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Api\State\Shipment;
+namespace Api\State\Provider;
 
 use Api\Resource\ShipmentResource;
 use ApiPlatform\Metadata\Operation;
