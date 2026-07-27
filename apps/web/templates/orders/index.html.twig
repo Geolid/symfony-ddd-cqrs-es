@@ -1,18 +1,19 @@
 {% extends 'layout.html.twig' %}
+{% import '@ui/_macros.html.twig' as ui %}
 
-{% block title %}Orders{% endblock %}
-{% block heading %}Orders{% endblock %}
+{% block title %}{{ 'orders.index.title'|trans }}{% endblock %}
+{% block heading %}{{ 'orders.index.title'|trans }}{% endblock %}
 
-{% block body %}
+{% block content %}
     <table>
         <thead>
         <tr>
-            <th>ID</th>
-            <th>Customer</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Placed at</th>
-            <th></th>
+            <th>{{ 'orders.index.table.id'|trans }}</th>
+            <th>{{ 'orders.index.table.customer'|trans }}</th>
+            <th>{{ 'orders.index.table.total'|trans }}</th>
+            <th>{{ 'orders.index.table.status'|trans }}</th>
+            <th>{{ 'orders.index.table.placed_at'|trans }}</th>
+            <th>{{ 'orders.index.table.actions'|trans }}</th>
         </tr>
         </thead>
         <tbody>
@@ -21,19 +22,20 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.customerId }}</td>
                 <td>{{ (order.totalAmountInCents / 100)|number_format(2) }}</td>
-                <td><span class="status">{{ order.status }}</span></td>
+                <td><span class="status">{{ ('orders.status.' ~ order.status)|trans }}</span></td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
                     {% if order.status == 'placed' %}
                         <form class="inline" method="post" action="/orders/{{ order.id }}/cancel">
-                            <button type="submit">Cancel</button>
+                            <button type="submit">{{ 'orders.index.cancel_button'|trans }}</button>
                         </form>
                     {% endif %}
                 </td>
             </tr>
         {% else %}
-            <tr><td colspan="6">No orders yet.</td></tr>
+            <tr><td colspan="6">{{ 'orders.index.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>
+    {{ ui.pagination(orders.pagination, 'orders_index', {}) }}
 {% endblock %}

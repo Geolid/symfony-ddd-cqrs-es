@@ -1,0 +1,25 @@
+{% macro flashes(flashes) %}
+    {% if flashes %}
+        <div class="flash-container">
+            {% for label, messages in flashes %}
+                {% for message in messages %}
+                    <p class="flash flash-{{ label }}" data-testid="flash-{{ label }}">{{ message }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro pagination(pagination, route, query) %}
+    {% if pagination.lastPage|default(0) > 1 %}
+        <nav data-testid="pagination" aria-label="Pagination">
+            {% if pagination.currentPage > 1 %}
+                <a data-testid="pagination-previous" href="{{ path(route, query|merge({page: pagination.currentPage - 1})) }}">{{ 'pagination.previous'|trans }}</a>
+            {% endif %}
+            <span>{{ 'pagination.page_of'|trans({'%current%': pagination.currentPage, '%last%': pagination.lastPage}) }}</span>
+            {% if pagination.currentPage < pagination.lastPage %}
+                <a data-testid="pagination-next" href="{{ path(route, query|merge({page: pagination.currentPage + 1})) }}">{{ 'pagination.next'|trans }}</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endmacro %}

@@ -1,20 +1,20 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}Place an order{% endblock %}
-{% block heading %}Place an order{% endblock %}
+{% block title %}{{ 'orders.new.title'|trans }}{% endblock %}
+{% block heading %}{{ 'orders.new.title'|trans }}{% endblock %}
 
-{% block body %}
+{% block content %}
     <form method="post" action="/orders">
         <p>
-            <label>Customer ID<br>
+            <label>{{ 'orders.new.customer_label'|trans }}<br>
                 <input type="text" name="customerId" required>
             </label>
         </p>
         <p>
-            <label>Total amount (cents)<br>
+            <label>{{ 'orders.new.amount_label'|trans }}<br>
                 <input type="number" name="totalAmountInCents" min="0" required>
             </label>
         </p>
-        <button type="submit">Place order</button>
+        <button type="submit">{{ 'orders.new.submit_button'|trans }}</button>
     </form>
 {% endblock %}

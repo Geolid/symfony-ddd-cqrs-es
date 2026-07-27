@@ -25,11 +25,14 @@ final readonly class OrderController
     ) {
     }
 
-    #[Route('/', methods: ['GET'])]
-    #[Route('/orders', methods: ['GET'])]
-    public function index(): Response
+    #[Route('/', name: 'orders_home', methods: ['GET'])]
+    #[Route('/orders', name: 'orders_index', methods: ['GET'])]
+    public function index(Request $request): Response
     {
-        $orders = $this->queryBus->ask(new ListOrders(itemsPerPage: 50));
+        $orders = $this->queryBus->ask(new ListOrders(
+            page: $request->query->getInt('page', 1),
+            itemsPerPage: 10,
+        ));
 
         return new Response($this->twig->render('orders/index.html.twig', ['orders' => $orders]));
     }

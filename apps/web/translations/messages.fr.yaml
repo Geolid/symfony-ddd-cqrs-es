@@ -1,0 +1,46 @@
+layout:
+    title: Vitrine Commandes & Livraisons
+    nav:
+        orders: Commandes
+        shipments: Livraisons
+        new_order: Passer une commande
+
+orders:
+    index:
+        title: Commandes
+        table:
+            id: ID
+            customer: Client
+            total: Total
+            status: Statut
+            placed_at: Passée le
+            actions: Actions
+        empty: Aucune commande pour le moment.
+        cancel_button: Annuler
+    new:
+        title: Passer une commande
+        customer_label: ID client
+        amount_label: Montant total (centimes)
+        submit_button: Passer la commande
+    status:
+        placed: Passée
+        cancelled: Annulée
+
+shipments:
+    index:
+        title: Livraisons
+        table:
+            id: ID
+            order: Commande
+            customer: Client
+            total: Total commande
+            status: Statut
+            created_at: Créée le
+            dispatched_at: Expédiée le
+            delivered_at: Livrée le
+            order_cancelled_at: Commande annulée le
+        empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès qu'une commande est passée.
+    status:
+        pending: En attente
+        dispatched: Expédiée
+        delivered: Livrée

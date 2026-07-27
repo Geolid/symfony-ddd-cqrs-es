@@ -1,0 +1,46 @@
+layout:
+    title: Ordering & Shipping showcase
+    nav:
+        orders: Orders
+        shipments: Shipments
+        new_order: Place an order
+
+orders:
+    index:
+        title: Orders
+        table:
+            id: ID
+            customer: Customer
+            total: Total
+            status: Status
+            placed_at: Placed at
+            actions: Actions
+        empty: No orders yet.
+        cancel_button: Cancel
+    new:
+        title: Place an order
+        customer_label: Customer ID
+        amount_label: Total amount (cents)
+        submit_button: Place order
+    status:
+        placed: Placed
+        cancelled: Cancelled
+
+shipments:
+    index:
+        title: Shipments
+        table:
+            id: ID
+            order: Order
+            customer: Customer
+            total: Order total
+            status: Status
+            created_at: Created at
+            dispatched_at: Dispatched at
+            delivered_at: Delivered at
+            order_cancelled_at: Order cancelled at
+        empty: No shipments yet — shipments are created automatically once an order is placed.
+    status:
+        pending: Pending
+        dispatched: Dispatched
+        delivered: Delivered
