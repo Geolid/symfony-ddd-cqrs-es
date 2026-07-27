@@ -65,11 +65,19 @@ Everything this stack needs to run locally or in CI is free and self-hostable:
 - **Message transport** — Messenger's Doctrine transport by default (zero extra infra);
   `docker compose --profile broker up` starts a RabbitMQ broker instead, no code change needed
   beyond the DSN.
-- **Error tracking** — `sentry/sentry-symfony`'s wire protocol works against self-hosted Sentry
-  or [GlitchTip](https://glitchtip.com/) (a free, open-source reimplementation) just as well as
-  the hosted product — point `SENTRY_DSN` at either.
-- **Logging** — structured stdout in dev (`docker compose logs`); swap in a self-hosted
-  Grafana Loki/Promtail stack for aggregation if you need it, no paid log-shipping SaaS.
+- **Error tracking** — `sentry/sentry-symfony` (`config/packages/sentry.php`, prod only) is
+  already wired; it never has to be a paid Sentry account. Its wire protocol is also implemented
+  by [GlitchTip](https://glitchtip.com/), an open-source reimplementation with a free hosted
+  tier ([sign-up](https://app.glitchtip.com/), or self-host it) — create a project there, follow
+  their [Symfony SDK guide](https://glitchtip.com/sdkdocs/php-symfony), and put the DSN it gives
+  you in `SENTRY_DSN`. Nothing else changes.
+- **Logging** — structured stdout in dev (`docker compose logs`) needs nothing extra. For
+  aggregated prod logs, `config/packages/monolog.php` already ships an
+  [`itspire/monolog-loki`](https://github.com/itspire/monolog-loki) handler (wrapped in a
+  `whatfailuregroup` — a push failure never breaks a request); point it at
+  [Grafana Cloud](https://grafana.com/products/cloud/)'s free tier (includes Loki) or any
+  self-hosted Loki via `LOKI_URL`/`LOKI_BASIC_AUTH_USER`/`LOKI_BASIC_AUTH_PASSWORD`. Unset, it
+  silently no-ops.
 - **Local mail** — Mailpit catches outgoing mail in dev instead of a transactional-email SaaS.
 
 ## Getting started

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Itspire\MonologLoki\Handler\LokiHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Processor\TagProcessor;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
@@ -64,7 +65,34 @@ return static function (ContainerConfigurator $container): void {
                     'type' => 'service',
                     'id' => ExceptionToSentryIssueHandler::class,
                 ],
+                // Loki push failures never break a request — see README's "Open source over
+                // paid SaaS" for how to get a free LOKI_URL/basic-auth pair (Grafana Cloud's
+                // free tier, or a self-hosted Loki).
+                'loki_safe' => [
+                    'type' => 'whatfailuregroup',
+                    'members' => ['loki'],
+                    'level' => 'notice',
+                ],
+                'loki' => [
+                    'type' => 'service',
+                    'id' => LokiHandler::class,
+                ],
             ],
         ]);
+
+        $container->services()
+            ->set(LokiHandler::class)
+            ->arg('$apiConfig', [
+                'entrypoint' => '%env(LOKI_URL)%',
+                'context' => ['app' => '%kernel.app_id%'],
+                'labels' => ['env' => '%env(APP_ENV)%'],
+                'client_name' => '%kernel.app_id%',
+                'auth' => [
+                    'basic' => [
+                        'user' => '%env(LOKI_BASIC_AUTH_USER)%',
+                        'password' => '%env(LOKI_BASIC_AUTH_PASSWORD)%',
+                    ],
+                ],
+            ]);
     }
 };

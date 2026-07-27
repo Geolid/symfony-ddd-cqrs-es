@@ -11,6 +11,7 @@
     "ext-iconv": "*",
     "api-platform/core": "^4.3",
     "doctrine/doctrine-bundle": "^3.2",
+    "itspire/monolog-loki": "^2.1",
     "patchlevel/event-sourcing-bundle": "^3.17",
     "ramsey/uuid": "^4.9",
     "sentry/sentry-symfony": "^5.10",
