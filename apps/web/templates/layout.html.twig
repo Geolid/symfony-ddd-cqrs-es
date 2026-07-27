@@ -8,12 +8,20 @@
 {% endblock %}
 
 {% block body %}
-    <nav>
-        <a href="/orders">{{ 'layout.nav.orders'|trans }}</a>
-        <a href="/shipments">{{ 'layout.nav.shipments'|trans }}</a>
-        <a href="/orders/new">{{ 'layout.nav.new_order'|trans }}</a>
-    </nav>
-    {{ ui.flashes(app.flashes) }}
-    <h1>{% block heading %}{% endblock %}</h1>
-    {% block content %}{% endblock %}
+    <header class="container">
+        <nav>
+            <ul><li><strong>{{ 'layout.title'|trans }}</strong></li></ul>
+            <ul>
+                <li><a href="/orders">{{ 'layout.nav.orders'|trans }}</a></li>
+                <li><a href="/shipments">{{ 'layout.nav.shipments'|trans }}</a></li>
+                <li><a href="/orders/new" role="button">{{ 'layout.nav.new_order'|trans }}</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        {{ ui.flashes(app.flashes) }}
+        <h1>{% block heading %}{% endblock %}</h1>
+        {% block content %}{% endblock %}
+    </main>
 {% endblock %}

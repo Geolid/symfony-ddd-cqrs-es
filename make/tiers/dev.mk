@@ -9,7 +9,7 @@ GROUPID = $(shell id -g)
 EXEC    = $(if $(IN_CONTAINER),,$(FIG) exec -u $(USERID):$(GROUPID) app)
 
 start: ## Full project installation and startup
-start: compose.override.yaml up vendor db
+start: compose.override.yaml up vendor db assets
 .PHONY: start
 
 up: ## Build images and start containers

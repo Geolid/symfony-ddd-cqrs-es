@@ -26,9 +26,13 @@
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
                     {% if order.status == 'placed' %}
-                        <form class="inline" method="post" action="/orders/{{ order.id }}/cancel">
-                            <button type="submit">{{ 'orders.index.cancel_button'|trans }}</button>
-                        </form>
+                        {{ ui.confirm_modal(
+                            'cancel-order-' ~ order.id,
+                            '/orders/' ~ order.id ~ '/cancel',
+                            'orders.index.cancel_button'|trans,
+                            'orders.index.cancel_confirm_message'|trans,
+                            {cancel_label: 'orders.index.cancel_dismiss_button'|trans}
+                        ) }}
                     {% endif %}
                 </td>
             </tr>

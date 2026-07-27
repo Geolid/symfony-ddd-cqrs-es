@@ -14,7 +14,10 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
@@ -25,6 +28,7 @@ final readonly class OrderController
         private CommandBusInterface $commandBus,
         private QueryBusInterface $queryBus,
         private FormFactoryInterface $formFactory,
+        private CsrfTokenManagerInterface $csrfTokenManager,
         private Environment $twig,
     ) {
     }
@@ -62,8 +66,14 @@ final readonly class OrderController
     }
 
     #[Route('/orders/{id}/cancel', methods: ['POST'])]
-    public function cancel(string $id): RedirectResponse
+    public function cancel(Request $request, string $id): RedirectResponse
     {
+        $token = new CsrfToken('cancel-order-'.$id, (string) $request->request->get('_token'));
+
+        if (!$this->csrfTokenManager->isTokenValid($token)) {
+            throw new BadRequestHttpException('Invalid CSRF token.');
+        }
+
         $this->commandBus->dispatch(new CancelOrder($id));
 
         return new RedirectResponse('/orders');

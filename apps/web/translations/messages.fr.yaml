@@ -17,6 +17,8 @@ orders:
             actions: Actions
         empty: Aucune commande pour le moment.
         cancel_button: Annuler
+        cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
+        cancel_dismiss_button: Conserver la commande
     new:
         title: Passer une commande
         customer_label: ID client

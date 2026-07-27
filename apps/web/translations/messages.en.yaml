@@ -17,6 +17,8 @@ orders:
             actions: Actions
         empty: No orders yet.
         cancel_button: Cancel
+        cancel_confirm_message: Are you sure you want to cancel this order?
+        cancel_dismiss_button: Keep order
     new:
         title: Place an order
         customer_label: Customer ID

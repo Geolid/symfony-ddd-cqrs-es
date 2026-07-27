@@ -8,7 +8,7 @@ USERID  = $(shell id -u)
 GROUPID = $(shell id -g)
 EXEC    = $(if $(IN_CONTAINER),,$(FIG) exec -u $(USERID):$(GROUPID) app)
 
-ci.build: composer-validate vendor ## CI — validate and install dependencies
+ci.build: composer-validate vendor assets ## CI — validate and install dependencies
 .PHONY: ci.build
 
 ci.static: warmup security static ## CI — warmup then run static analysis

@@ -1,9 +1,61 @@
+{% macro confirm_modal(id, action_url, label, message, options) %}
+    {% set options = {
+        button_class: 'outline contrast',
+        cancel_label: 'Cancel',
+        confirm_button_class: '',
+    }|merge(options|default({})) %}
+
+    <div x-data="{ open: false }">
+        <button
+            type="button"
+            class="{{ options.button_class }}"
+            style="margin-bottom: 0"
+            @click="open = true">
+            {{ label }}
+        </button>
+
+        <template x-teleport="body">
+            <dialog
+                style="outline: none"
+                x-effect="open ? $el.showModal() : ($el.open && $el.close())"
+                @click="$event.target === $el && (open = false)"
+                @close="open = false">
+                <article>
+                    <h2>{{ label }}</h2>
+                    <p>{{ message }}</p>
+                    <footer>
+                        <button class="secondary" style="margin-bottom: 0" @click="open = false">{{ options.cancel_label }}</button>
+                        <form method="post" action="{{ action_url }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token(id) }}">
+                            <button class="{{ options.confirm_button_class }}" style="margin-bottom: 0">{{ label }}</button>
+                        </form>
+                    </footer>
+                </article>
+            </dialog>
+        </template>
+    </div>
+{% endmacro %}
+
 {% macro flashes(flashes) %}
+    {% set classes = {
+        success: 'pico-background-jade-500 pico-color-white',
+        warning: 'pico-background-amber-500 pico-color-black',
+        error: 'pico-background-red-600 pico-color-white',
+    } %}
     {% if flashes %}
         <div class="flash-container">
             {% for label, messages in flashes %}
                 {% for message in messages %}
-                    <p class="flash flash-{{ label }}" data-testid="flash-{{ label }}">{{ message }}</p>
+                    <article
+                        x-data="{ show: true }"
+                        x-show="show"
+                        x-transition.opacity.duration.300ms
+                        x-init="setTimeout(() => show = false, 4000)"
+                        data-testid="flash-{{ label }}"
+                        class="{{ classes[label]|default('') }}"
+                        @click="show = false">
+                        {{ message }}
+                    </article>
                 {% endfor %}
             {% endfor %}
         </div>
@@ -14,11 +66,11 @@
     {% if pagination.lastPage|default(0) > 1 %}
         <nav data-testid="pagination" aria-label="Pagination">
             {% if pagination.currentPage > 1 %}
-                <a data-testid="pagination-previous" href="{{ path(route, query|merge({page: pagination.currentPage - 1})) }}">{{ 'pagination.previous'|trans }}</a>
+                <a data-testid="pagination-previous" href="{{ path(route, query|merge({page: pagination.currentPage - 1})) }}" role="button" class="outline">{{ 'pagination.previous'|trans }}</a>
             {% endif %}
             <span>{{ 'pagination.page_of'|trans({'%current%': pagination.currentPage, '%last%': pagination.lastPage}) }}</span>
             {% if pagination.currentPage < pagination.lastPage %}
-                <a data-testid="pagination-next" href="{{ path(route, query|merge({page: pagination.currentPage + 1})) }}">{{ 'pagination.next'|trans }}</a>
+                <a data-testid="pagination-next" href="{{ path(route, query|merge({page: pagination.currentPage + 1})) }}" role="button" class="outline">{{ 'pagination.next'|trans }}</a>
             {% endif %}
         </nav>
     {% endif %}
