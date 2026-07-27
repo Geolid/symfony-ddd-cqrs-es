@@ -11,8 +11,8 @@ use Shared\Application\Event\IntegrationEventInterface;
 
 /**
  * Converts a BC's Domain Events into its one public Integration Event contract and appends
- * them to the store, keyed by the correlation id consumers subscribe against (ADR-001: domain
- * events are sealed, translation to an Integration Event is the only path out of a BC).
+ * them to the store, keyed by the correlation id consumers subscribe against. Domain Events are
+ * sealed to their BC — this translation is the only path out.
  */
 abstract readonly class AbstractIntegrationEventTranslator
 {

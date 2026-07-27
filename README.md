@@ -63,21 +63,19 @@ Everything this stack needs to run locally or in CI is free and self-hostable:
 ## Getting started
 
 ```bash
-cp .env .env.local   # then edit APP_SECRET / CARRIER_WEBHOOK_SECRET for anything beyond a laptop
+git clone <this-repo> && cd symfony-ddd-cqrs-es
 cp compose.override.yaml.dist compose.override.yaml
-make up
-make install
-make sh
-composer install
-bin/console event-sourcing:database:create
-bin/console doctrine:database:create --connection=read_model
-bin/console event-sourcing:schema:create
-bin/console event-sourcing:subscription:setup
-exit
+make start   # stack up, composer install, event store + read model set up, demo data seeded
 ```
 
-Then visit `http://localhost/web/` (backoffice) or call `http://localhost/api/orders`.
-Mailpit's UI is at `http://localhost:8025`.
+Then visit `http://localhost/web/` (backoffice, already showing the seeded orders) or call
+`http://localhost/api/orders`. Mailpit's UI is at `http://localhost:8025`.
+
+`make start` is `up wait-db install setup seed` — see `Makefile` for each step, or run them
+individually. Re-run `make seed` any time to add more demo orders (`demo/SeedCommand.php`,
+a worked example of writing fixtures for an event-sourced app: through the Command bus, never
+a direct insert into the read model). For anything beyond a laptop, copy `.env` to `.env.local`
+and set a real `APP_SECRET`/`CARRIER_WEBHOOK_SECRET` first.
 
 ## Quality gates
 

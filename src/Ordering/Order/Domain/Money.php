@@ -9,7 +9,7 @@ use Webmozart\Assert\Assert;
 /**
  * A minimal Money value object, in the smallest currency unit (cents), kept local to Ordering
  * rather than promoted to Shared — it isn't (yet) needed by another Bounded Context, and
- * DDD/CQRS/ES doesn't require a shared kernel to grow speculatively (see ADR-002).
+ * DDD/CQRS/ES doesn't require a shared kernel to grow speculatively.
  */
 final readonly class Money
 {

@@ -25,14 +25,15 @@ deptrac:
           must_not:
             - { type: directory, value: 'src/.*' }
             - { type: directory, value: 'apps/.*' }
+            - { type: directory, value: 'demo/.*' }
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
 
   # Shipping is allowed to depend on Ordering ONLY for its public Integration Event contract
   # (Ordering\Order\Application\Event\OrderPlacedIntegrationEvent) — see
-  # Shipping\Shipment\Application\Processor\CreateShipmentOnOrderPlaced and ADR-001. This is the
-  # one sanctioned cross-BC edge in this codebase, not a general license to reach into another
-  # BC's Domain or Application layer.
+  # Shipping\Shipment\Application\Processor\CreateShipmentOnOrderPlaced. This is the one
+  # sanctioned cross-BC edge in this codebase, not a general license to reach into another BC's
+  # Domain or Application layer.
   ruleset:
     Ordering.Order:   [ Shared, Vendors ]
     Shipping.Shipment: [ Ordering.Order, Shared, Vendors ]

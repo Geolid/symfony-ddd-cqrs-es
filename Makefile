@@ -8,6 +8,9 @@ help: ## Display this help message
 	@grep -hE '^[a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-24s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
+start: up wait-db install setup seed ## One-shot onboarding: stack up, deps installed, storage set up, demo data seeded
+.PHONY: start
+
 up: ## Start the stack (nginx, php-fpm, mariadb, mailpit)
 	$(COMPOSE) up -d
 .PHONY: up
@@ -20,9 +23,24 @@ sh: ## Shell into the app container
 	$(EXEC) sh
 .PHONY: sh
 
+wait-db: ## Block until MariaDB accepts connections
+	@until $(EXEC) sh -c 'mysqladmin ping -h db -u app -papp --silent' >/dev/null 2>&1; do sleep 1; done
+.PHONY: wait-db
+
 install: ## composer install
 	$(EXEC) composer install
 .PHONY: install
+
+setup: ## Create the event store + read model schemas, set up subscriptions
+	$(EXEC) bin/console event-sourcing:database:create --if-not-exists
+	$(EXEC) bin/console doctrine:database:create --connection=read_model --if-not-exists
+	$(EXEC) bin/console event-sourcing:schema:create
+	$(EXEC) bin/console event-sourcing:subscription:setup
+.PHONY: setup
+
+seed: ## Seed demo data (a handful of orders) through the real Command bus
+	$(EXEC) bin/console demo:seed
+.PHONY: seed
 
 cc: ## Cache clear + warmup, every Delivery Mechanism
 	@for dm in web api cli webhook; do $(EXEC) bin/console --appId=$$dm cache:clear; done

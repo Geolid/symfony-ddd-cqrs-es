@@ -12,7 +12,7 @@ use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
 /**
  * Translates Ordering's Domain Events into its public Integration Event contract. This is the
- * ONLY place a Domain Event crosses the BC boundary (ADR-001) — Shipping subscribes to
+ * ONLY place a Domain Event crosses the BC boundary — Shipping subscribes to
  * OrderPlacedIntegrationEvent, never to the Domain Event OrderPlaced.
  */
 #[Translator('ordering.order.integration_translator')]

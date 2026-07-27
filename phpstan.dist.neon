@@ -8,6 +8,7 @@ parameters:
         - bin/
         - bootstrap/
         - config/
+        - demo/
         - public/
         - src/
         - tests/

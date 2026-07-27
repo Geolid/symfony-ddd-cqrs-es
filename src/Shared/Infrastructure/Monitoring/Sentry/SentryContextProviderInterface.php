@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 /**
  * Lets a Bounded Context enrich error-tracking events with its own context (e.g. "which
  * aggregate was being handled") without Shared\Infrastructure depending on that BC — the
- * dependency is inverted via this tagged interface instead (see ADR-003).
+ * dependency is inverted via this tagged interface instead.
  */
 #[AutoconfigureTag]
 interface SentryContextProviderInterface

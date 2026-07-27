@@ -12,8 +12,10 @@ illustrating the pattern, not a product.
 
 ```bash
 make help                    # list all targets
+make start                   # onboarding: up + install + setup + seed demo data
 make up / down                # start/stop the stack
 make sh                       # shell into the app container
+make seed                     # re-seed demo data (demo/SeedCommand.php)
 make test [filter=<x>]        # PHPUnit
 make stan                     # PHPStan (includes the phpat architecture suite)
 make deptrac-bc / -layers / -dm  # architecture isolation checks
