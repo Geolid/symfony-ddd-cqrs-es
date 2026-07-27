@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Shipping\Shipment\Infrastructure\Persistence\Projection\Reducer;
 
 use Ordering\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Patchlevel\EventSourcing\Message\Message;
+use Patchlevel\EventSourcing\Message\Reducer;
 use Patchlevel\EventSourcing\Store\Criteria\Criteria;
 use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
@@ -28,14 +30,24 @@ final readonly class OrderSummaryReducer
             new StreamCriterion(\sprintf('ordering.order.integration.%s', $orderId)),
         ));
 
-        foreach ($stream as $message) {
-            $event = $message->event();
+        /** @var array{customerId: ?string, totalAmountInCents: ?int} $state */
+        $state = (new Reducer())
+            ->initState(['customerId' => null, 'totalAmountInCents' => null])
+            ->when(
+                OrderPlacedIntegrationEvent::class,
+                static function (Message $message, array $state): array {
+                    /** @var OrderPlacedIntegrationEvent $event */
+                    $event = $message->event();
 
-            if ($event instanceof OrderPlacedIntegrationEvent) {
-                return new OrderSummary($event->customerId, $event->totalAmountInCents);
-            }
+                    return ['customerId' => $event->customerId, 'totalAmountInCents' => $event->totalAmountInCents];
+                },
+            )
+            ->reduce($stream);
+
+        if (null === $state['customerId'] || null === $state['totalAmountInCents']) {
+            return null;
         }
 
-        return null;
+        return new OrderSummary($state['customerId'], $state['totalAmountInCents']);
     }
 }
