@@ -19,9 +19,9 @@ env:
   # (NotifyCustomerOnShipmentDelivered is exercised with a stub notifier), so there's no Mailpit
   # to talk to here.
   MAILER_DSN: null://null
-  EVENT_STORE_URL: mysql://app:app@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
-  READ_MODEL_URL: mysql://app:app@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
-  MESSENGER_URL: mysql://app:app@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
+  EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
+  READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
+  MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
 
 jobs:
   build:
@@ -80,9 +80,7 @@ jobs:
       mariadb:
         image: mariadb:11.8
         env:
-          MARIADB_USER: app
-          MARIADB_PASSWORD: app
-          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
         ports:
           - 3306:3306
         options: >-
@@ -104,10 +102,6 @@ jobs:
           name: vendor
           path: vendor
 
-      - name: Create the three logical schemas
-        run: |
-          mysql -h127.0.0.1 -uapp -papp -e "CREATE DATABASE IF NOT EXISTS app_event_store; CREATE DATABASE IF NOT EXISTS app_read_model; CREATE DATABASE IF NOT EXISTS app_messenger;"
-
       - name: make ci.test
         run: make ci.test
 
@@ -119,9 +113,7 @@ jobs:
       mariadb:
         image: mariadb:11.8
         env:
-          MARIADB_USER: app
-          MARIADB_PASSWORD: app
-          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
         ports:
           - 3306:3306
         options: >-
@@ -142,10 +134,6 @@ jobs:
         with:
           name: vendor
           path: vendor
-
-      - name: Create the three logical schemas
-        run: |
-          mysql -h127.0.0.1 -uapp -papp -e "CREATE DATABASE IF NOT EXISTS app_event_store; CREATE DATABASE IF NOT EXISTS app_read_model; CREATE DATABASE IF NOT EXISTS app_messenger;"
 
       - name: make mutation
         run: make mutation
