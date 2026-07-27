@@ -12,7 +12,7 @@ paths:
 - An event's persisted shape evolves via an upcaster — never retroactively (breaks replay of existing streams).
 - Aggregate: private constructor; creation is a named static factory that only does `new self()` + `recordThat()`; state is mutated exclusively inside `#[Apply]` methods.
 - `recordThat()` carries primitives only (a VO is serialized via `toString()`/`format('c')`); `#[Apply]` rebuilds each VO through its named constructor (`fromString()`, `::from()`...).
-- Autowiring only loads `Domain/Repository/` and `Domain/Service/` (see `Bootstrap\DependencyInjection\SubdomainServiceLoader`) — a concrete class anywhere else in `Domain/` is silently never registered as a service, by design (Domain has no framework wiring).
+- Autowiring only loads `Domain/Repository/` and `Domain/Service/` — a concrete class anywhere else in `Domain/` is silently never registered as a service.
 
 **NEVER**
 - Rename a `#[Event]`/`#[Aggregate]` string identifier without an upcaster in the same change — every existing stream becomes undeserializable on the next replay.
@@ -22,7 +22,7 @@ paths:
 - Naming a static constructor: it should read as a sentence at the throw site — a single nameable fact gets a specific class + `for*` (`forId`); a failure that depends on state gets a category class + `cannot<Verb>`.
 - A Value Object is `final readonly`; private constructor enforces invariants (`Webmozart\Assert`); a named constructor (`fromCents`, `fromString`...) validates the input shape. Expose `equals()`/`toString()` as needed.
 - `#[Aggregate('<subdomain>.<bc>.<aggregate>')]`, three segments even when the aggregate shares its BC's name (e.g. `ordering.order.order`); `#[Event('<subdomain>.<bc>.<past-tense verb>')]` — same two-segment prefix, the aggregate segment replaced by the verb (e.g. `ordering.order.placed`).
-- An aggregate root ID implements `AggregateRootId` via `Shared\Domain\UuidTrait`; an identity that only *references* another aggregate/BC never does (see the last rule below).
+- An aggregate root ID implements `AggregateRootId` via `Shared\Domain\UuidTrait`; an identity that only *references* another aggregate/BC never does.
 - An `#[Apply]` method name is `apply<EventClassName>` — the full event class name, never a short verb.
 - A reference to another Bounded Context's identity inside an aggregate is a plain `string`, never a local VO duplicating that BC's concept (it can't enforce that BC's invariants and would drift).
 
