@@ -13,6 +13,7 @@ use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
 use Shipping\Shipment\Domain\ShipmentStatus;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -25,6 +26,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
 final class DispatchPendingShipmentsCommand extends Command
 {
+    use LockableTrait;
+
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
@@ -36,15 +39,25 @@ final class DispatchPendingShipmentsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        /** @var ListResult<ShipmentResult> $pending */
-        $pending = $this->queryBus->ask(new ListShipments(status: ShipmentStatus::PENDING->value, itemsPerPage: 100));
+        if (!$this->lock()) {
+            $io->warning('The command is already running in another process.');
 
-        foreach ($pending->items as $shipment) {
-            $this->commandBus->dispatch(new DispatchShipment($shipment->id));
-            $io->writeln(\sprintf('Dispatched shipment %s (order %s)', $shipment->id, $shipment->orderId));
+            return Command::SUCCESS;
         }
 
-        $io->success(\sprintf('%d shipment(s) dispatched.', \count($pending->items)));
+        try {
+            /** @var ListResult<ShipmentResult> $pending */
+            $pending = $this->queryBus->ask(new ListShipments(status: ShipmentStatus::PENDING->value, itemsPerPage: 100));
+
+            foreach ($pending->items as $shipment) {
+                $this->commandBus->dispatch(new DispatchShipment($shipment->id));
+                $io->writeln(\sprintf('Dispatched shipment %s (order %s)', $shipment->id, $shipment->orderId));
+            }
+
+            $io->success(\sprintf('%d shipment(s) dispatched.', \count($pending->items)));
+        } finally {
+            $this->release();
+        }
 
         return Command::SUCCESS;
     }

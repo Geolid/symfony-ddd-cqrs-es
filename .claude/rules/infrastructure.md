@@ -16,7 +16,7 @@ paths:
 
 ### Conventions
 - Event Store repository: `Persistence/EventStore/Repository/<Agg>Repository`, `final readonly`, implements `<Agg>RepositoryInterface`; injects `#[Autowire(service: 'event_sourcing.<subdomain>.<bc>.<aggregate>.repository')] Repository<Agg> $repository` and delegates `load()`/`save()` almost as-is.
-- Projector: `#[Projector('<subdomain>.<bc>')] final readonly Dbal<X>Projector extends AbstractDbalProjector`, a `public const string TABLE`, one `#[Subscribe(<Event>::class)] on<Event>()` method per event, and `configureSchema()`.
+- Projector: `#[Projector('<subdomain>.<bc>.<name>')] final readonly Dbal<X>Projector extends AbstractDbalProjector` (e.g. `ordering.order.orders`), a `public const string TABLE`, one `#[Subscribe(<Event>::class)] on<Event>()` method per event, and `configureSchema()`.
 - One projection per materialization shape (one table, named after what it materializes); as many Finders as there are read axes over that table. A new Projector is warranted only when the access shape itself differs (key, granularity, denormalization) — never just for a new DTO.
 - Integration Event translator: `Persistence/EventStore/Translator/<Bc>IntegrationEventTranslator`, `final readonly` extends `AbstractIntegrationEventTranslator`, `#[Translator('<subdomain>.<bc>.integration_translator')]`; one `#[Subscribe(<DomainEvent>::class)] on<Event>()` method per event, calling `$this->append(<correlationId>, new <X>IntegrationEvent(...))`.
 - A DBAL Finder that filters/paginates is `final` (NOT readonly) and extends `AbstractDbalFinder<Result>` — implement `buildBaseQuery()` + `mapRow()`, and expose filters as `with*(): static` built on `$this->filter()`.

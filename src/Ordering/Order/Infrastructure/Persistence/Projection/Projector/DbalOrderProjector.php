@@ -15,7 +15,7 @@ use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
-#[Projector('ordering.order')]
+#[Projector('ordering.order.orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'ordering_order';

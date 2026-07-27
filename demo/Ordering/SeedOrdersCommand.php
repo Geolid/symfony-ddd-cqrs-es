@@ -6,25 +6,18 @@ namespace Demo\Ordering;
 
 use Demo\Ordering\Input\SeedOrdersInput;
 use Demo\Shared\WeightedPicker;
-use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
-use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ordering\Order\Domain\OrderStatus;
-use Ramsey\Uuid\Uuid;
-use Shared\Application\Command\CommandBusInterface;
+use Ordering\Order\Domain\Repository\OrderRepositoryInterface;
+use Ordering\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\MapInput;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/**
- * Fixtures dispatch through the real Command bus — see the CommandBusInterface docblock in
- * Support\Helpers\CqrsTrait's test equivalent (tests.md) for why: an event-sourced app has no
- * "just INSERT a row" shortcut, since the read model is a Projector's derived output.
- */
 #[AsCommand(name: 'demo:ordering:orders', description: 'Seed orders (and, by fan-out, their shipments)')]
 final readonly class SeedOrdersCommand
 {
-    public function __construct(private CommandBusInterface $commandBus)
+    public function __construct(private OrderRepositoryInterface $repository)
     {
     }
 
@@ -42,17 +35,20 @@ final readonly class SeedOrdersCommand
         $io->progressStart($input->count);
 
         for ($i = 1; $i <= $input->count; ++$i) {
-            $id = Uuid::uuid7()->toString();
             $customerId = \sprintf('%s-%d', $input->customer, random_int(1, max(1, (int) ($input->count / 4))));
-            $totalAmountInCents = random_int(500, 25_000);
 
-            $this->commandBus->dispatch(new PlaceOrder($id, $customerId, $totalAmountInCents));
+            $factory = OrderTestFactory::new()
+                ->withCustomerId($customerId)
+                ->withTotalAmountInCents(random_int(500, 25_000));
 
             $status = OrderStatus::from(WeightedPicker::pick($weights));
 
-            if (OrderStatus::CANCELLED === $status) {
-                $this->commandBus->dispatch(new CancelOrder($id));
-            }
+            $order = match ($status) {
+                OrderStatus::CANCELLED => $factory->cancelled()->create(),
+                default => $factory->create(),
+            };
+
+            $this->repository->save($order);
 
             ++$stats[$status->value];
             $io->progressAdvance();

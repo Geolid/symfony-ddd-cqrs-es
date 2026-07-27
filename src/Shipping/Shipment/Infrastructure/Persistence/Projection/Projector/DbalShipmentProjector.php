@@ -19,7 +19,7 @@ use Shipping\Shipment\Domain\Event\ShipmentDispatched;
 use Shipping\Shipment\Domain\ShipmentStatus;
 use Shipping\Shipment\Infrastructure\Persistence\Projection\Reducer\OrderSummaryReducer;
 
-#[Projector('shipping.shipment')]
+#[Projector('shipping.shipment.shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'shipping_shipment';

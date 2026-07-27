@@ -80,6 +80,7 @@
 
     <extensions>
         <bootstrap class="Support\PHPUnit\SetupDatabaseExtension"/>
+        <bootstrap class="Support\PHPUnit\ResetFactorySequencesExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
         <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
             <parameter name="clock-mock-namespaces" value="Shared"/>

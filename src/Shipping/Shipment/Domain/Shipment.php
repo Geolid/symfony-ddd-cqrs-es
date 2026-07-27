@@ -15,7 +15,7 @@ use Shipping\Shipment\Domain\Event\ShipmentDelivered;
 use Shipping\Shipment\Domain\Event\ShipmentDispatched;
 use Shipping\Shipment\Domain\Exception\InvalidShipmentTransitionException;
 
-#[Aggregate('shipping.shipment')]
+#[Aggregate('shipping.shipment.shipment')]
 final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
