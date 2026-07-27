@@ -17,18 +17,30 @@ Two Bounded Contexts:
 - **`Ordering.Order`** — places and cancels an `Order`.
 - **`Shipping.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
-`Shipping` never depends on `Ordering`'s Domain or Application internals. Ordering's
-`OrderPlaced` Domain Event never leaves its BC — an Infrastructure-layer Translator converts it
-into a public `OrderPlacedIntegrationEvent`, which a Processor in `Shipping` reacts to by
-opening a Shipment. That's the one sanctioned cross-BC edge (see `deptrac_bc.yaml` and
-`.claude/memory/adr/`).
+`Shipping` never depends on `Ordering`'s Domain or Application internals — the one sanctioned
+cross-BC edge (see `deptrac_bc.yaml`) is Ordering's public Integration Event contract. Neither
+of Ordering's Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
+Infrastructure-layer Translator (`OrderIntegrationEventTranslator`) converts each into its
+public counterpart (`OrderPlacedIntegrationEvent`, `OrderCancelledIntegrationEvent`) and appends
+it to the event store. `Shipping` reacts to both, but in two different shapes, side by side:
+
+- **Side effect (Processor)** — `CreateShipmentOnOrderPlaced` subscribes to
+  `OrderPlacedIntegrationEvent` and dispatches a Command (`CreateShipment`) in response.
+- **Read-side enrichment, two ways, in the same `DbalShipmentProjector`** —
+  - *Backfill*: `OrderPlaced` always happened *before* the Shipment existed, so there's nothing
+    to subscribe to yet — `OrderSummaryReducer` replays Ordering's Integration Event stream for
+    that order once, at `ShipmentCreated` time, to denormalize the customer/total onto the
+    Shipment row.
+  - *Fan-out*: `OrderCancelled` can happen *after* the Shipment already exists, so the
+    projection instead subscribes to `OrderCancelledIntegrationEvent` directly and updates the
+    existing row in place — no replay needed.
 
 Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 `bootstrap/Kernel.php`:
 
 | DM | Exposes |
 |---|---|
-| `apps/api` | JSON HTTP endpoints for orders and shipments |
+| `apps/api` | JSON HTTP (API Platform) for orders and shipments |
 | `apps/web` | A small Twig backoffice (list orders/shipments, place an order) |
 | `apps/cli` | Console commands (`order:place`, `shipment:dispatch-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
@@ -94,11 +106,14 @@ make qa                 # everything above
 apps/<dm>/          a Delivery Mechanism: config/{bundles.php,routes.php,packages/}, src/, tests/
 bootstrap/          the single Kernel + cross-BC DI wiring (compiler passes, subdomain loader)
 config/             global Symfony config + per-subdomain services
-docker/              Dockerfile, nginx vhost, MariaDB init
+demo/               demo/console (env "demo") + fixtures dispatched through the real Command bus
+docker/             Dockerfile, nginx vhost, MariaDB init
+make/               the modular Makefile (make/base/*.mk + make/tiers/{dev,ci,demo}.mk)
 src/<Subdomain>/<BC>/ a Bounded Context: Domain/, Application/, Infrastructure/
-tests/               mirrors src/
-tools/PHPat/         architecture rules run through PHPStan
-tools/PHPStan/       a custom PHPStan rule
+tests/              mirrors src/
+tools/PHPat/        architecture rules run through PHPStan
+tools/PHPStan/      a custom PHPStan rule
+ui/                 templates/assets/translations shared across every Twig-using DM
 ```
 
 `.claude/` documents the engineering conventions this codebase follows (`.claude/rules/`),
