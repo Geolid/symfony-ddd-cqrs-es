@@ -13,14 +13,6 @@ parameters:
         - src/
         - tests/
         - tools/
-        - apps/api/src
-        - apps/api/tests
-        - apps/cli/src
-        - apps/cli/tests
-        - apps/web/src
-        - apps/web/tests
-        - apps/webhook/src
-        - apps/webhook/tests
 
     excludePaths:
         - tools/PHPStan/Tests/data/*

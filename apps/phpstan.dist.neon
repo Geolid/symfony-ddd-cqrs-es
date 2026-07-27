@@ -1,0 +1,16 @@
+includes:
+    - ../phpstan.base.neon
+
+parameters:
+    # One tmpDir per DM — a shared resultCache.php would be discarded on every config switch.
+    tmpDir: '%currentWorkingDirectory%/var/phpstan/%env.APP_ID%'
+
+    paths:
+        - '%currentWorkingDirectory%/apps/%env.APP_ID%/config/'
+        - '%currentWorkingDirectory%/apps/%env.APP_ID%/src/'
+        - '%currentWorkingDirectory%/apps/%env.APP_ID%/tests/'
+        # phpat rules — custom extension: PHPStan needs them analysed for correct result cache.
+        - '%currentWorkingDirectory%/tools/PHPat/'
+
+    symfony:
+        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/%env.APP_ID%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml

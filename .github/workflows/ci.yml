@@ -1,13 +1,31 @@
 name: CI
 
+# Mirrors platform's .circleci/config.yml build -> static -> {tests, mutation} pipeline: every
+# stage runs through `make`, TIER=ci, never a raw vendor/bin/* call — the Makefile is the
+# single source of truth for what "passing CI" means, locally or here.
+
 on:
   push:
     branches: [ main ]
   pull_request:
 
+env:
+  TIER: ci
+  APP_ENV: test
+  # Present even in jobs with no MariaDB service (build/static) — Symfony resolves these env
+  # vars while warming up the container even though nothing connects yet, same as platform's
+  # CircleCI "static" executor (no database, same `make ci.static`).
+  # The "null" transport never opens a socket — nothing in the test suite sends a real email
+  # (NotifyCustomerOnShipmentDelivered is exercised with a stub notifier), so there's no Mailpit
+  # to talk to here.
+  MAILER_DSN: null://null
+  EVENT_STORE_URL: mysql://app:app@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
+  READ_MODEL_URL: mysql://app:app@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
+  MESSENGER_URL: mysql://app:app@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
+
 jobs:
-  static-analysis:
-    name: Static analysis
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,25 +36,45 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - uses: ramsey/composer-install@v3
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.json', 'composer.lock') }}
+          restore-keys: composer-
 
-      - name: Code style (php-cs-fixer)
-        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      - name: make ci.build
+        run: make ci.build
 
-      - name: PHPStan (includes the phpat architecture suite)
-        run: vendor/bin/phpstan analyse --no-progress
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vendor
+          path: vendor
+          retention-days: 1
 
-      - name: Deptrac — Onion layering
-        run: vendor/bin/deptrac analyse --config-file=deptrac_layers.yaml --no-progress --fail-on-uncovered=false
+  static:
+    name: Static analysis
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Deptrac — Bounded Context isolation
-        run: vendor/bin/deptrac analyse --config-file=deptrac_bc.yaml --no-progress --fail-on-uncovered=false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
 
-      - name: Deptrac — Delivery Mechanism reach
-        run: vendor/bin/deptrac analyse --config-file=deptrac_dm.yaml --no-progress --fail-on-uncovered=false
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor
+
+      - name: make ci.static
+        run: make ci.static
 
   tests:
     name: Tests
+    needs: static
     runs-on: ubuntu-latest
     services:
       mariadb:
@@ -52,11 +90,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-    env:
-      APP_ENV: test
-      EVENT_STORE_URL: mysql://app:app@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
-      READ_MODEL_URL: mysql://app:app@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
-      MESSENGER_URL: mysql://app:app@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
     steps:
       - uses: actions/checkout@v4
 
@@ -64,13 +97,55 @@ jobs:
         with:
           php-version: '8.3'
           tools: composer:v2
-          coverage: pcov
+          coverage: none
 
-      - uses: ramsey/composer-install@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor
 
       - name: Create the three logical schemas
         run: |
           mysql -h127.0.0.1 -uapp -papp -e "CREATE DATABASE IF NOT EXISTS app_event_store; CREATE DATABASE IF NOT EXISTS app_read_model; CREATE DATABASE IF NOT EXISTS app_messenger;"
 
-      - name: PHPUnit
-        run: vendor/bin/phpunit
+      - name: make ci.test
+        run: make ci.test
+
+  mutation:
+    name: Mutation testing
+    needs: static
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_USER: app
+          MARIADB_PASSWORD: app
+          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: xdebug
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor
+
+      - name: Create the three logical schemas
+        run: |
+          mysql -h127.0.0.1 -uapp -papp -e "CREATE DATABASE IF NOT EXISTS app_event_store; CREATE DATABASE IF NOT EXISTS app_read_model; CREATE DATABASE IF NOT EXISTS app_messenger;"
+
+      - name: make mutation
+        run: make mutation

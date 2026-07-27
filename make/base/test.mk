@@ -1,0 +1,19 @@
+## Tests
+##---------------------------------------------------------------------------
+
+test: ## Run test suite (optional: make test filter=name or suite=name)
+	@$(EXEC) vendor/bin/paratest --processes 8 --no-coverage \
+		$(if $(filter),--filter '$(filter)',) \
+		$(if $(suite),--testsuite $(suite),)
+.PHONY: test
+
+coverage: ## Run test suite with coverage
+	@$(EXEC) env XDEBUG_MODE=coverage vendor/bin/paratest --processes 8
+.PHONY: coverage
+
+mutation: ## Run mutation testing scoped to the diff
+	@$(EXEC) env XDEBUG_MODE=coverage vendor/bin/infection \
+		--threads=max \
+		--git-diff-lines \
+		--min-msi=100
+.PHONY: mutation

@@ -1,77 +1,17 @@
-COMPOSE ?= docker compose
-EXEC    ?= $(COMPOSE) exec app
+TIER     ?= dev
+APP_ENV  ?= dev
+APPS     := $(shell find apps -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
+
+-include make/tiers/$(TIER).mk
+
+include make/base/infra.mk
+include make/base/db.mk
+include make/base/es.mk
+include make/base/qa.mk
 
 .DEFAULT_GOAL := help
 
 help: ## Display this help message
-	@printf "\033[33mUsage:\033[0m\n  make [target]\n\n"
-	@grep -hE '^[a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-24s\033[0m %s\n", $$1, $$2}'
+	@printf "\033[33mUsage:\033[0m\n  make [target]\n"
+	@grep -hE '(^[a-zA-Z0-9_.%-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {if ($$2!="") printf "  \033[32m%-30s\033[0m %s\n", $$1, $$2; else if ($$1 != "") printf "\n\033[34m%s\033[0m\n", substr($$1, 3)}'
 .PHONY: help
-
-start: up wait-db install setup seed ## One-shot onboarding: stack up, deps installed, storage set up, demo data seeded
-.PHONY: start
-
-up: ## Start the stack (nginx, php-fpm, mariadb, mailpit)
-	$(COMPOSE) up -d
-.PHONY: up
-
-down: ## Stop the stack
-	$(COMPOSE) down
-.PHONY: down
-
-sh: ## Shell into the app container
-	$(EXEC) sh
-.PHONY: sh
-
-wait-db: ## Block until MariaDB accepts connections
-	@until $(EXEC) sh -c 'mysqladmin ping -h db -u app -papp --silent' >/dev/null 2>&1; do sleep 1; done
-.PHONY: wait-db
-
-install: ## composer install
-	$(EXEC) composer install
-.PHONY: install
-
-setup: ## Create the event store + read model schemas, set up subscriptions
-	$(EXEC) bin/console event-sourcing:database:create --if-not-exists
-	$(EXEC) bin/console doctrine:database:create --connection=read_model --if-not-exists
-	$(EXEC) bin/console event-sourcing:schema:create
-	$(EXEC) bin/console event-sourcing:subscription:setup
-.PHONY: setup
-
-seed: ## Seed demo data (a handful of orders) through the real Command bus
-	$(EXEC) bin/console demo:seed
-.PHONY: seed
-
-cc: ## Cache clear + warmup, every Delivery Mechanism
-	@for dm in web api cli webhook; do $(EXEC) bin/console --appId=$$dm cache:clear; done
-.PHONY: cc
-
-test: ## Run the test suite (filter=<x> to scope it)
-	$(EXEC) vendor/bin/phpunit $(if $(filter),--filter=$(filter))
-.PHONY: test
-
-stan: ## PHPStan (includes the phpat architecture suite)
-	$(EXEC) vendor/bin/phpstan analyse
-.PHONY: stan
-
-deptrac-layers: ## Onion layering: Domain / Application / Infrastructure
-	$(EXEC) vendor/bin/deptrac analyse --config-file=deptrac_layers.yaml
-.PHONY: deptrac-layers
-
-deptrac-bc: ## Bounded Context isolation
-	$(EXEC) vendor/bin/deptrac analyse --config-file=deptrac_bc.yaml
-.PHONY: deptrac-bc
-
-deptrac-dm: ## Delivery Mechanism -> Bounded Context reach
-	$(EXEC) vendor/bin/deptrac analyse --config-file=deptrac_dm.yaml
-.PHONY: deptrac-dm
-
-cs-fix: ## Auto-fix code style (file=<path> to scope it, repo-wide otherwise)
-	$(EXEC) vendor/bin/php-cs-fixer fix $(file)
-.PHONY: cs-fix
-
-static: cs-fix stan deptrac-layers deptrac-bc deptrac-dm ## Lint + CS + PHPStan/phpat + Deptrac
-.PHONY: static
-
-qa: static test ## Everything static + the test suite
-.PHONY: qa

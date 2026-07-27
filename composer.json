@@ -9,6 +9,7 @@
     "php": ">=8.3",
     "ext-ctype": "*",
     "ext-iconv": "*",
+    "api-platform/core": "^4.3",
     "doctrine/doctrine-bundle": "^3.2",
     "patchlevel/event-sourcing-bundle": "^3.17",
     "ramsey/uuid": "^4.9",
@@ -18,30 +19,36 @@
     "symfony/dotenv": "8.1.*",
     "symfony/framework-bundle": "8.1.*",
     "symfony/http-client": "8.1.*",
+    "symfony/mailer": "8.1.*",
     "symfony/messenger": "8.1.*",
     "symfony/monolog-bundle": "^4.0",
     "symfony/runtime": "8.1.*",
+    "symfony/translation": "8.1.*",
     "symfony/twig-bundle": "8.1.*",
     "symfony/yaml": "8.1.*",
     "webmozart/assert": "^1.11"
   },
   "require-dev": {
+    "brianium/paratest": "^7.23",
     "dama/doctrine-test-bundle": "^8.2",
     "deptrac/deptrac": "^4.6",
     "friendsofphp/php-cs-fixer": "^3.95",
+    "infection/infection": "^0.34",
     "patchlevel/event-sourcing-phpunit": "^1.7",
     "phpat/phpat": "^0.12",
     "phpstan/phpstan": "^2.2",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
-    "phpunit/phpunit": "^11.5",
+    "phpunit/phpunit": "^13.2",
     "symfony/browser-kit": "8.1.*",
     "symfony/css-selector": "8.1.*",
     "symfony/phpunit-bridge": "8.1.*",
-    "symfony/stopwatch": "8.1.*"
+    "symfony/stopwatch": "8.1.*",
+    "vincentlanglet/twig-cs-fixer": "^3.14"
   },
   "config": {
     "allow-plugins": {
+      "infection/extension-installer": true,
       "php-http/discovery": true,
       "symfony/runtime": true
     },
