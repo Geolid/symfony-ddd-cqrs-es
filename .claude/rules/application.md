@@ -22,7 +22,7 @@ paths:
 ### Conventions
 - An application failure is a `final` exception extending `\RuntimeException`, implementing `Shared\Application\Exception\ApplicationExceptionInterface`; named static factory (`forId`, `forIdentifier`...).
 - An Application port meant to be called directly by a Delivery Mechanism (bypassing the Command/Query bus) is marked `#[AsDrivingPort]` (`Shared\Application\Attribute`) — a pure marker read by phpat, zero DI effect.
-- An Integration Event lives in `Application/Event/`, is `final readonly`, implements `IntegrationEventInterface`; named `#[Event('<subdomain>.integration_event.<aggregate>_<verb>')]`; tagged `#[PersonalData]`/`#[DataSubjectId]` when it carries personal data.
+- An Integration Event lives in `Application/Event/`, suffixed `*IntegrationEvent`, is `final readonly`, implements `IntegrationEventInterface`; named `#[Event('<subdomain>.<bc>.integration.<verb>')]` — same prefix as its Domain Event, an `integration` segment before the verb keeps the two names distinct in the shared store. Tagged `#[PersonalData]`/`#[DataSubjectId]` when it carries personal data.
 - A side-effect reaction lives in `Application/Processor/<Action>On<Event>`, named `#[Processor('<subdomain>.<bc>.<action>_on_<event>')]`.
 - A Query's class documents its return contract: `@implements QueryInterface<TResult>` (otherwise `ask()` only returns `mixed`). Its return shape is one of: `ListResult<X>` (paginated), `StreamResult<X>` (streamed, for volume), `list<X>` (all), `?XResult` (one or none), `XResult` (exactly one).
 - A Service holds pure logic (zero I/O) or extracts steps of a use case: inject it as the concrete class plus bound scalars. An interface is reserved for an actual I/O boundary (substitution/stub in tests).
