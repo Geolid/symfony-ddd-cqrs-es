@@ -34,4 +34,4 @@ paths:
 
 #### Naming
 - Aggregate: success `it*`, failure `itCannot*`.
-- Value Object: success `it*`, failure `itRejects*` / `itProtectsInvariants` (the violated condition lives in the test name or a data set label).
+- Value Object: success `it*`, failure `itProtectsInvariants` (the violated condition lives in the test name or a data set label).

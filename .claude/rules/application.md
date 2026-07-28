@@ -33,5 +33,5 @@ paths:
 
 #### Naming
 - Command Handler: success `it*`, failure `itFailsWhen*`.
-- Query Handler: success `itGets*` / `itLists*` / `itPaginates*`, failure `itFailsWhen*`.
-- Side effect (`#[Processor]`): `it*On*` (no dedicated failure shape — it must not fail).
+- Query Handler: success `itGets*` / `itLists*` / `itLists*By*` / `itPaginates*`, failure `itFailsWhen*`.
+- Side effect (`#[Processor]`): `it*On*` (no dedicated failure shape).
