@@ -17,12 +17,13 @@ paths:
 
 **NEVER**
 - Translate or persist an Integration Event from Application — Domain-to-Integration translation and appending to the store is the Translator's job (Infrastructure). Application only defines the contract (`Application/Event/`) and reacts to it (`#[Processor]`).
+- Put a non-native-type field on an Integration Event — enforced by `Tools\PHPat\BoundaryMessageTest`.
 
 ### Conventions
 - An application failure is a `final` exception extending `\RuntimeException`, implementing `Shared\Application\Exception\ApplicationExceptionInterface`; named static factory (`forId`, `forIdentifier`...).
 - An Application port meant to be called directly by a Delivery Mechanism (bypassing the Command/Query bus) is marked `#[AsDrivingPort]` (`Shared\Application\Attribute`) — a pure marker read by phpat, zero DI effect.
-- An Integration Event lives in `Application/Event/`, is `final readonly`, implements `IntegrationEventInterface`; carries native types only (enforced by `Tools\PHPat\BoundaryMessageTest`).
-- A side-effect reaction lives in `Application/Processor/<Action>On<Event>`.
+- An Integration Event lives in `Application/Event/`, is `final readonly`, implements `IntegrationEventInterface`; named `#[Event('<subdomain>.integration_event.<aggregate>_<verb>')]`; tagged `#[PersonalData]`/`#[DataSubjectId]` when it carries personal data.
+- A side-effect reaction lives in `Application/Processor/<Action>On<Event>`, named `#[Processor('<subdomain>.<bc>.<action>_on_<event>')]`.
 - A Query's class documents its return contract: `@implements QueryInterface<TResult>` (otherwise `ask()` only returns `mixed`). Its return shape is one of: `ListResult<X>` (paginated), `StreamResult<X>` (streamed, for volume), `list<X>` (all), `?XResult` (one or none), `XResult` (exactly one).
 - A Service holds pure logic (zero I/O) or extracts steps of a use case: inject it as the concrete class plus bound scalars. An interface is reserved for an actual I/O boundary (substitution/stub in tests).
 
