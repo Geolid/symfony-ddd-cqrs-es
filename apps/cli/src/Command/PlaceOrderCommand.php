@@ -7,6 +7,7 @@ namespace Cli\Command;
 use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,6 +23,10 @@ final class PlaceOrderCommand
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function __invoke(
         SymfonyStyle $io,
         #[Argument(description: 'The customer placing the order')] string $customerId,

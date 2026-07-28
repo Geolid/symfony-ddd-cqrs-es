@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cli\Command;
 
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Shared\Application\Query\Result\ListResult;
 use Shipping\Shipment\Application\Command\DispatchShipment\DispatchShipment;
@@ -16,11 +17,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/**
- * A batch job run from an ops box or a scheduled container — the same Command bus a web
- * request would use, just triggered by cron instead of HTTP. One kernel, another Delivery
- * Mechanism.
- */
 #[AsCommand(name: 'shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
 final class DispatchPendingShipmentsCommand
 {
@@ -32,6 +28,10 @@ final class DispatchPendingShipmentsCommand
     ) {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function __invoke(SymfonyStyle $io): int
     {
         if (!$this->lock()) {
