@@ -2,11 +2,13 @@ name: CI
 
 # Mirrors platform's .circleci/config.yml build -> static -> {tests, mutation} pipeline: every
 # stage runs through `make`, TIER=ci, never a raw vendor/bin/* call — the Makefile is the
-# single source of truth for what "passing CI" means, locally or here.
+# single source of truth for what "passing CI" means, locally or here. The release job mirrors
+# dist-prod's `requires: [tests, mutation]` — a tag never publishes an artifact CI hasn't passed.
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
 
 env:
@@ -137,3 +139,29 @@ jobs:
 
       - name: make mutation
         run: make mutation
+
+  release:
+    name: Build and publish release artifact
+    needs: [ tests, mutation ]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: prod
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+
+      - name: make dist
+        run: make dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tar.gz
+          generate_release_notes: true
