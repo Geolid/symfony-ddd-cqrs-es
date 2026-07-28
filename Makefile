@@ -1,6 +1,7 @@
 TIER     ?= dev
 APP_ENV  ?= dev
 APPS     := $(shell find apps -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
+EXEC     ?=
 
 -include make/tiers/$(TIER).mk
 
