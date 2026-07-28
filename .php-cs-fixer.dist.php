@@ -7,10 +7,12 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__.'/apps',
         __DIR__.'/bootstrap',
         __DIR__.'/config',
+        __DIR__.'/demo',
         __DIR__.'/src',
         __DIR__.'/tests',
         __DIR__.'/tools',
     ])
+    ->notPath('reference.php')
     ->append([__FILE__]);
 
 return (new PhpCsFixer\Config())

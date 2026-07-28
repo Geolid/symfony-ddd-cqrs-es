@@ -33,9 +33,10 @@ final class DeliveryMechanismTest
                     Selector::classname('#Result$#', true),
                     Selector::withFilepath('#/Application/#', true),
                 ),
+                Selector::withFilepath('#/Infrastructure/Validation/#', true),
                 Selector::Not($this->projectCode()),
             )
-            ->because('A Delivery Mechanism depends only on a BC exposition surface: #[AsDrivingPort] ports and the Command/Query messages.');
+            ->because('A Delivery Mechanism depends only on a BC exposition surface: #[AsDrivingPort] ports, the Command/Query messages, and Validation compounds.');
     }
 
     #[TestRule]

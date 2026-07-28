@@ -8,7 +8,7 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 
 /**
- * The only phpat entry registered in phpstan.dist.neon — every *Test.php class in this
+ * The only phpat entry registered in phpstan.base.neon — every *Test.php class in this
  * directory is discovered and run through it, no per-class registration.
  */
 final class ArchitectureSuite

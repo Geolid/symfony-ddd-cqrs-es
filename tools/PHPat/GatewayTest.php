@@ -27,6 +27,6 @@ final class GatewayTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname('Symfony\Contracts\HttpClient\HttpClientInterface'))
-            ->because('A vendor is reached through its own scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface scatters both.');
+            ->because('A vendor is reached through its scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface scatters both.');
     }
 }

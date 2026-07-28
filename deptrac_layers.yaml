@@ -11,6 +11,7 @@ deptrac:
     - name: Domain.Vendors
       collectors:
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(Aggregate|Attribute)\\.*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\Attribute\\.*#' }
         - { type: classNameRegex, value: '#^Psr\\Clock\\.*#' }
         - { type: classNameRegex, value: '#^Ramsey\\Uuid\\.*#' }
         - { type: classNameRegex, value: '#^Webmozart\\Assert\\.*#' }
@@ -33,6 +34,7 @@ deptrac:
       collectors:
         - { type: classNameRegex, value: '#^Doctrine\\DBAL\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute).*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(Extension\\)?Cryptography\\.*#' }
         - { type: classNameRegex, value: '#^Sentry\\.*#' }
         - { type: classNameRegex, value: '#^Symfony\\.*#' }
 
