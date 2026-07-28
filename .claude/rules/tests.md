@@ -21,7 +21,7 @@ paths:
 
 ### Naming
 - Method names: `it{Verb}*` — a short, readable sentence, no implementation detail, no quantifier ("Both", "Every").
-- A test's name covers exactly what it asserts, nothing more — an assertion outside that scope belongs in a separate test.
+- A test's name covers exactly what it asserts, nothing more — an assertion outside that scope belongs in a separate test. The reverse also holds: one success case covers its full contract in a single test — never fragment it across near-duplicate tests replaying the same call.
 - Failure naming: when the failure is a business rule, name the rule/condition that wasn't met; when it's a technical/architectural constraint, the implementation detail is what explains the name (that's fine).
 - Data providers: `provide[Context]`, `#[DataProvider]` attribute, `yield` with a descriptive label.
 - A class/enum created for a single test: `Dummy` prefix, declared at the bottom of the test file.

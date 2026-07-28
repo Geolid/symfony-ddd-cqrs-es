@@ -14,6 +14,7 @@ paths:
 - Catching a BC exception locally in a DM is only for that DM's own presentation concern (e.g. flashing a message in `apps/web`) — the actual HTTP status mapping for exceptions is a framework-level concern, not something re-implemented per controller.
 - A web write goes through a Symfony Form: a `Form/<Name>Type extends AbstractType<XFormData>` bound to a plain `Form/FormData/<Name>FormData` (public typed properties, no logic) — never read straight off `$request->request`.
 - A CLI command uses `LockableTrait`: guard with `if (!$this->lock())` (return `SUCCESS`), do the work in `try`/`finally { $this->release(); }` — otherwise a concurrent run double-dispatches.
+- Every exposed API property carries a `description` + `example`. An externally-consumed DM additionally requires an exhaustive contract test (`assertSame` on the full property map) — the only place a silent drift is invisible to the consumer.
 - An externally-consumed API is versioned (`routePrefix: /v<n>/<subdomain>`) with a security scope per operation (`security: is_granted('<subdomain>:<action>')`); a scope exists only once the caller's identity provider grants it. A machine-to-machine caller restricted to a single known consumer is the one exception: gate it by network instead of by scope.
 
 **NEVER**

@@ -52,6 +52,8 @@ return (new PhpCsFixer\Config())
                 'method_private',
             ],
         ],
+        // rewrites assertEquals to assertSame regardless of semantics — breaks a Value Object
+        // compared by value, since freshly built instances are equal but never identical
         'php_unit_strict' => true,
         'phpdoc_line_span' => [
             'property' => 'single',

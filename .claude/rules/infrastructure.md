@@ -32,4 +32,4 @@ paths:
 #### Naming
 - Repository: success `it*`, failure `itThrowsOn*`.
 - Projector: `itProjects*On*` (no dedicated failure shape).
-- Finder: success `it*`, `itFilters*By*`, `itPaginates*`, failure `itThrowsOn*`.
+- Finder: an exact lookup that throws when absent is `itGets*`; a filtering/paginating read is `it*`/`itFilters*By*`/`itPaginates*` — never `itFinds*` (it wrongly implies a possibly-empty result), failure `itThrowsOn*`.
