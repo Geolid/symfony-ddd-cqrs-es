@@ -38,5 +38,6 @@ paths:
 
 ### CQRS / container (`Support\AbstractIntegrationTestCase`)
 - `dispatch()` sends a Command to the Command bus; `ask()` runs a Query and returns its result.
-- `service()` resolves a service from the container with a type assertion on the given class/interface.
+- `service()` resolves a service from the container with a type assertion on the given class/interface. `serviceAs()` resolves a service whose container ID differs from the PHP type it's expected to be (e.g. a Doctrine alias).
 - A Processor (a BC-to-BC reaction) is exercised directly — construct/fetch it and invoke it with the Integration Event it subscribes to — rather than relying on a running subscription worker in the test suite.
+- `store()` persists and triggers the `translator` then `projector` groups (never the `#[Processor]` side effects). `project()` notifies every Projector without touching the event store. `projectWith()` targets a single Projector.

@@ -12,6 +12,7 @@ paths:
 - An event's persisted shape evolves via an upcaster — never retroactively (breaks replay of existing streams).
 - Aggregate: private constructor; creation is a named static factory that only does `new self()` + `recordThat()`; state is mutated exclusively inside `#[Apply]` methods.
 - `recordThat()` carries primitives only (a VO is serialized via `toString()`/`format('c')`); `#[Apply]` rebuilds each VO through its named constructor (`fromString()`, `::from()`...).
+- An event field carrying personal data is tagged `#[PersonalData(fallback: ...)]`, plus one `#[DataSubjectId]` field on the same event — otherwise personal data sits in clear text in an immutable event store forever.
 - Autowiring only loads `Domain/Repository/` and `Domain/Service/` — a concrete class anywhere else in `Domain/` is silently never registered as a service.
 
 **NEVER**
@@ -25,6 +26,7 @@ paths:
 - An aggregate root ID implements `AggregateRootId` via `Shared\Domain\UuidTrait`; an identity that only *references* another aggregate/BC never does.
 - An `#[Apply]` method name is `apply<EventClassName>` — the full event class name, never a short verb.
 - A reference to another Bounded Context's identity inside an aggregate is a plain `string`, never a local VO duplicating that BC's concept (it can't enforce that BC's invariants and would drift).
+- Erasure of personal data is crypto-shredding: a Domain Event implementing the `DataSubjectErasureInterface` marker drops the subject's encryption key — this implicitly covers every past event for that subject, without rewriting the store. A projection that materializes personal data in clear text is not covered by the key drop — it must redact on erasure (a targeted update) or be rebuilt by replay.
 
 ## Tests
 

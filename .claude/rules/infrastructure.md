@@ -22,6 +22,8 @@ paths:
 - A DBAL Finder that filters/paginates is `final` (NOT readonly) and extends `AbstractDbalFinder<Result>` — implement `buildBaseQuery()` + `mapRow()`, and expose filters as `with*(): static` built on `$this->filter()`.
 - An external gateway lives at `Gateway/<Vendor>/<Vendor><X>Gateway implements <X>GatewayInterface` (the port is declared in Application); it injects a scoped HTTP client (host/auth configured on the service) and wraps transport errors in a typed exception. A raw `HttpClientInterface` is reserved for `Shared\Infrastructure\Gateway` (enforced by `Tools\PHPat\GatewayTest`).
 - A composite projection reads a foreign BC's Integration Event stream directly at fold time to denormalize onto its own table — `Persistence/Projection/Reducer/<X>Reducer`, reading via `Store::load(new Criteria(new StreamCriterion($streamId)))`, folded with `Patchlevel\EventSourcing\Message\Reducer` (`initState()`/`when()`/`reduce()`), converted to a small immutable DTO. A Processor mutates (dispatches a Command); a Reducer only reads.
+- A cross-BC provider contract is an interface tagged `#[AutoconfigureTag]`; the owning BC's Infrastructure supplies the implementation; the consumer injects `#[AutowireIterator(<X>Interface::class)] iterable` — never a direct dependency on the owning BC.
+- A business time threshold is a container parameter under `config/services/<subdomain>.php` (`<subdomain>.<x>_window_days` looking back, `<subdomain>.<x>_days_ahead` looking forward), injected via `#[Autowire(param:)]` into the service that computes the date — never a literal in code.
 
 ## Tests
 
