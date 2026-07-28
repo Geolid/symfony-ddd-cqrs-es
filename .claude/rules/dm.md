@@ -25,7 +25,7 @@ paths:
 - Break an externally-consumed endpoint without a deprecation path or a version bump.
 
 ### Conventions
-- Console command: `#[AsCommand('<subdomain>:<subject>:<verb>')] extends Command`.
+- Console command: `#[AsCommand('<subdomain>:<subject>:<verb>', description: '<phrase>')]` invokable (`__invoke()`) — never `extends Command`.
 - Every Delivery Mechanism shares the same `bootstrap/Kernel.php` — what differs is `apps/<dm>/config/{bundles.php,routes.php,packages/}` layered on top of the global `config/`. A new DM starts from an empty `apps/<name>/{config,src}`, adds only what it needs, and gets a ruleset row in `deptrac_dm.yaml`.
 - CSS/JS are served through AssetMapper (`apps/<dm>/config/packages/asset_mapper.php` + `apps/<dm>/importmap.php`), scoped to shared files under `ui/assets/`. `framework.form`/`asset_mapper` default to `false` globally (`config/packages/framework.php`) and are enabled only in the DM(s) that need them.
 - API Platform: a Provider only calls `ask()`, a Processor only calls `dispatch()`; a read Resource exposes `static fromResult(<X>Result): self`; a command operation is `status: 204, input: false, output: false, processor:`.

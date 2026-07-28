@@ -23,6 +23,11 @@ final readonly class ShipmentRepository implements ShipmentRepositoryInterface
     ) {
     }
 
+    public function has(ShipmentId $id): bool
+    {
+        return $this->repository->has($id);
+    }
+
     public function load(ShipmentId $id): Shipment
     {
         try {

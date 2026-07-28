@@ -23,6 +23,11 @@ final readonly class OrderRepository implements OrderRepositoryInterface
     ) {
     }
 
+    public function has(OrderId $id): bool
+    {
+        return $this->repository->has($id);
+    }
+
     public function load(OrderId $id): Order
     {
         try {

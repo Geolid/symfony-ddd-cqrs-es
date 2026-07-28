@@ -10,6 +10,8 @@ use Shipping\Shipment\Domain\ShipmentId;
 
 interface ShipmentRepositoryInterface
 {
+    public function has(ShipmentId $id): bool;
+
     /**
      * @throws ShipmentNotFoundException
      */

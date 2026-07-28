@@ -10,6 +10,8 @@ use Ordering\Order\Domain\OrderId;
 
 interface OrderRepositoryInterface
 {
+    public function has(OrderId $id): bool;
+
     /**
      * @throws OrderNotFoundException
      */
