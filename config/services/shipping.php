@@ -13,7 +13,6 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Shipping');
 
     if ('test' === $container->env()) {
-        // Lets tests exercise the Processor directly instead of running a subscription worker.
         $services->get(CreateShipmentOnOrderPlaced::class)->public();
     }
 };

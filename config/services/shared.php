@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Psr\Log\LogLevel;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
 use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
@@ -34,6 +35,6 @@ return static function (ContainerConfigurator $container): void {
             ->factory([service(SentryEventEnricher::class), 'beforeSend']);
 
         $services->set(ExceptionToSentryIssueHandler::class)
-            ->args([service(HubInterface::class), \Psr\Log\LogLevel::ERROR]);
+            ->args([service(HubInterface::class), LogLevel::ERROR]);
     }
 };
