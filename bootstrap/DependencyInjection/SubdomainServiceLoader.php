@@ -6,10 +6,6 @@ namespace Bootstrap\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 
-/**
- * Autowires every class under a subdomain that isn't a plain message (Command/Query/Event) or
- * an autoconfiguration attribute, following the one-class-per-file DDD/CQRS convention.
- */
 final class SubdomainServiceLoader
 {
     public static function load(ServicesConfigurator $services, string $subdomain): void

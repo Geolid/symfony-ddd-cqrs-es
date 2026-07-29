@@ -15,11 +15,6 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
-/**
- * A single Kernel is shared by every Delivery Mechanism under apps/. Each DM only differs by
- * its $appId, which namespaces its cache/log directories and lets it layer extra bundles,
- * config and routes on top of the ones declared here.
- */
 class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
