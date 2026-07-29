@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
+use Ordering\Order\Infrastructure\Validation\ValidMoney;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class PlaceOrderFormData
@@ -12,6 +13,6 @@ final class PlaceOrderFormData
     public ?string $customerId = null;
 
     #[Assert\NotNull]
-    #[Assert\PositiveOrZero]
+    #[ValidMoney]
     public ?int $totalAmountInCents = null;
 }

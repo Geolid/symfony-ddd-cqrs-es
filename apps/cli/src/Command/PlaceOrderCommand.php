@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Cli\Command;
 
+use Cli\Input\PlaceOrderInput;
 use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\MapInput;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -27,11 +28,8 @@ final class PlaceOrderCommand
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function __invoke(
-        SymfonyStyle $io,
-        #[Argument(description: 'The customer placing the order')] string $customerId,
-        #[Argument(description: 'Order total, in cents')] int $totalAmountInCents,
-    ): int {
+    public function __invoke(SymfonyStyle $io, #[MapInput] PlaceOrderInput $input): int
+    {
         if (!$this->lock()) {
             $io->warning('The command is already running in another process.');
 
@@ -43,8 +41,8 @@ final class PlaceOrderCommand
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
-                customerId: $customerId,
-                totalAmountInCents: $totalAmountInCents,
+                customerId: $input->customerId,
+                totalAmountInCents: $input->totalAmountInCents,
             ));
 
             $io->success(\sprintf('Order %s placed.', $id));
