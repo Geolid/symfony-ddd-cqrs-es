@@ -59,6 +59,8 @@ jobs:
           name: vendor
           path: vendor
 
+      - run: chmod -R +x vendor/bin
+
       - name: make ci.static
         run: make ci.static
 
@@ -92,6 +94,8 @@ jobs:
           name: vendor
           path: vendor
 
+      - run: chmod -R +x vendor/bin
+
       - name: make ci.test
         run: make ci.test
 
@@ -124,6 +128,8 @@ jobs:
         with:
           name: vendor
           path: vendor
+
+      - run: chmod -R +x vendor/bin
 
       - name: make mutation
         run: make mutation
