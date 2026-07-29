@@ -6,8 +6,17 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
+        'session' => ['handler_id' => null, 'cookie_secure' => 'auto', 'cookie_samesite' => 'lax'],
         'form' => true,
         'csrf_protection' => true,
         'asset_mapper' => true,
     ]);
+
+    if ('test' === $container->env()) {
+        $container->extension('framework', [
+            'session' => [
+                'storage_factory_id' => 'session.storage.factory.mock_file',
+            ],
+        ]);
+    }
 };

@@ -18,7 +18,7 @@ final readonly class ShipmentRepository implements ShipmentRepositoryInterface
      * @param Repository<Shipment> $repository
      */
     public function __construct(
-        #[Autowire(service: 'event_sourcing.shipping.shipment.repository')]
+        #[Autowire(service: 'event_sourcing.shipping.shipment.shipment.repository')]
         private Repository $repository,
     ) {
     }

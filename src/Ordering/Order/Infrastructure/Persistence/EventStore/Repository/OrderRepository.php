@@ -18,7 +18,7 @@ final readonly class OrderRepository implements OrderRepositoryInterface
      * @param Repository<Order> $repository
      */
     public function __construct(
-        #[Autowire(service: 'event_sourcing.ordering.order.repository')]
+        #[Autowire(service: 'event_sourcing.ordering.order.order.repository')]
         private Repository $repository,
     ) {
     }
