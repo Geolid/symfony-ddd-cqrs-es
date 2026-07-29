@@ -8,6 +8,7 @@ use Ordering\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shipping\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Shipping\Shipment\Domain\ShipmentId;
 
@@ -18,6 +19,10 @@ final readonly class CreateShipmentOnOrderPlaced
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     #[Subscribe(OrderPlacedIntegrationEvent::class)]
     public function __invoke(OrderPlacedIntegrationEvent $event): void
     {

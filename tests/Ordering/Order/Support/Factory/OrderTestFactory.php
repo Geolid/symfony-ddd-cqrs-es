@@ -27,7 +27,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 
     public function cancelled(): self
     {
-        return $this->withModifier(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('now', new \DateTimeZone('UTC'))));
+        return $this->withModifier(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('now +00:00')));
     }
 
     protected function defaults(): array
