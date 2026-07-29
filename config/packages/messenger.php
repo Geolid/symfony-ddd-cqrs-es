@@ -20,14 +20,10 @@ return static function (ContainerConfigurator $container): void {
             'failure_transport' => 'failed',
             'transports' => [
                 'failed' => '%env(resolve:MESSENGER_FAILURE_DSN)%',
-                // A free, self-hostable Doctrine-backed queue. Swap the DSN for
-                // redis://, amqp:// (RabbitMQ) or another Messenger transport for higher
-                // throughput — no code above the transport layer has to change.
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
                 'sync' => 'sync://',
             ],
             'routing' => [
-                // Reacting to an Integration Event should never block the publisher's request.
                 CreateShipment::class => 'async',
                 CommandInterface::class => 'sync',
                 QueryInterface::class => 'sync',

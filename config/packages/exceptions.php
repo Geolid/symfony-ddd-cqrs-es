@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Ordering\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Ordering\Order\Domain\Exception\OrderNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shipping\Shipment\Domain\Exception\InvalidShipmentTransitionException;
 use Shipping\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -22,6 +23,7 @@ return static function (ContainerConfigurator $container): void {
             InvalidShipmentTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
+            UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 
             // WARNING: Must be the last entries. (Order matters: first match wins)

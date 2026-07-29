@@ -9,7 +9,9 @@ return static function (ContainerConfigurator $container): void {
         'session' => ['handler_id' => null, 'cookie_secure' => 'auto', 'cookie_samesite' => 'lax'],
         'form' => true,
         'csrf_protection' => true,
+        'assets' => true,
         'asset_mapper' => true,
+        'property_access' => true,
     ]);
 
     if ('test' === $container->env()) {
