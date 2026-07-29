@@ -17,6 +17,7 @@
     "sentry/sentry-symfony": "^5.10",
     "symfony/console": "8.1.*",
     "symfony/doctrine-messenger": "8.1.*",
+    "symfony/asset": "8.1.*",
     "symfony/asset-mapper": "8.1.*",
     "symfony/dotenv": "8.1.*",
     "symfony/form": "8.1.*",
