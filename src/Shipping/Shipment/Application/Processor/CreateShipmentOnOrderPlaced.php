@@ -11,13 +11,6 @@ use Shared\Application\Command\CommandBusInterface;
 use Shipping\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Shipping\Shipment\Domain\ShipmentId;
 
-/**
- * Reacts to Ordering's public Integration Event to open a Shipment — the only coupling between
- * the two Bounded Contexts is this one Integration Event; neither BC references the other's
- * Domain layer (see deptrac_bc.yaml). Processors carry zero business logic and must stay
- * replay-safe: dispatch a Command, call an outbound port, or enrich via a Repository — never a
- * Finder.
- */
 #[Processor('shipping.shipment.on_order_placed')]
 final readonly class CreateShipmentOnOrderPlaced
 {
@@ -31,6 +24,7 @@ final readonly class CreateShipmentOnOrderPlaced
         $this->commandBus->dispatch(new CreateShipment(
             id: ShipmentId::generate()->toString(),
             orderId: $event->orderId,
+            customerId: $event->customerId,
         ));
     }
 }

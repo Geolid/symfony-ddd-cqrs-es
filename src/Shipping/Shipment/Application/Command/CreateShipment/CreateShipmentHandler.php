@@ -24,6 +24,7 @@ final readonly class CreateShipmentHandler
         $shipment = Shipment::create(
             ShipmentId::fromString($command->id),
             $command->orderId,
+            $command->customerId,
             $this->clock->now(),
         );
 

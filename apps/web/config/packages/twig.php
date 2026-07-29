@@ -6,13 +6,17 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('twig', [
+        'file_name_pattern' => '*.twig',
         'default_path' => '%kernel.project_dir%/apps/web/templates',
         'paths' => [
             '%kernel.project_dir%/apps/web/templates' => null,
-            // Shared across every Twig-using DM (today, just this one) — the base layout and
-            // pagination/flash macros. CSS/JS themselves are served through AssetMapper
-            // (apps/web/config/packages/asset_mapper.php), not this Twig namespace.
             '%kernel.project_dir%/ui/templates' => 'ui',
         ],
     ]);
+
+    if ('test' === $container->env()) {
+        $container->extension('twig', [
+            'strict_variables' => true,
+        ]);
+    }
 };

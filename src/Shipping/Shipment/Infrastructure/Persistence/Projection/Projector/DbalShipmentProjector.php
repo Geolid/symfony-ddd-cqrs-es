@@ -34,10 +34,6 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     #[Subscribe(ShipmentCreated::class)]
     public function onShipmentCreated(ShipmentCreated $event): void
     {
-        // Denormalized from Ordering's Integration Event stream at fold time — a composite
-        // read model, not a live cross-BC join (deptrac_bc.yaml still forbids Shipping from
-        // reaching Ordering's Domain/Repository layer; this only reads Ordering's public
-        // Integration Event contract, same as the CreateShipmentOnOrderPlaced Processor does).
         $order = $this->orderSummary->forOrder($event->orderId);
 
         $this->connection->insert(self::TABLE, [

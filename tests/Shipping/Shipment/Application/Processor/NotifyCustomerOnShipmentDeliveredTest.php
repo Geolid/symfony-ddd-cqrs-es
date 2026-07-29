@@ -16,7 +16,6 @@ use Shipping\Shipment\Application\Processor\CreateShipmentOnOrderPlaced;
 use Shipping\Shipment\Application\Processor\NotifyCustomerOnShipmentDelivered;
 use Shipping\Shipment\Domain\Event\ShipmentDelivered;
 use Shipping\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Shipping\Shipment\Infrastructure\Persistence\Projection\Reducer\OrderSummaryReducer;
 use Support\AbstractIntegrationTestCase;
 
 final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTestCase
@@ -54,7 +53,6 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
 
         $processor = new NotifyCustomerOnShipmentDelivered(
             $this->service(ShipmentRepositoryInterface::class),
-            $this->service(OrderSummaryReducer::class),
             $notifier,
         );
 

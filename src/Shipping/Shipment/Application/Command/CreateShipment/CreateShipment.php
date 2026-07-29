@@ -11,6 +11,7 @@ final readonly class CreateShipment implements CommandInterface
     public function __construct(
         public string $id,
         public string $orderId,
+        public string $customerId,
     ) {
     }
 }
