@@ -3,7 +3,29 @@ layout:
     nav:
         orders: Commandes
         shipments: Livraisons
+        customers: Clients
         new_order: Passer une commande
+        new_customer: Enregistrer un client
+
+customers:
+    index:
+        title: Clients
+        table:
+            id: ID
+            email: Email
+            registered_at: Enregistré le
+            erased_at: Effacé le
+            actions: Actions
+        empty: Aucun client pour le moment.
+        erase_button: Effacer
+        erase_confirm_message: L'effacement supprime la clé de chiffrement de ce client — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
+        erase_dismiss_button: Conserver le client
+        erase_confirmed: Client effacé.
+    new:
+        title: Enregistrer un client
+        email_label: Email
+        submit_button: Enregistrer le client
+        address_taken: Cette adresse est déjà enregistrée.
 
 orders:
     index:

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Fulfilment\Shipment\Domain\Exception\InvalidShipmentTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
+use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
@@ -17,6 +18,7 @@ return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
             // Sales
+            AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             CustomerAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

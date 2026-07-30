@@ -1,0 +1,15 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'customers.new.title'|trans }}{% endblock %}
+{% block heading %}{{ 'customers.new.title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    <p>
+        {{ form_label(form.email) }}<br>
+        {{ form_widget(form.email) }}
+        {{ form_errors(form.email) }}
+    </p>
+    <button type="submit">{{ 'customers.new.submit_button'|trans }}</button>
+    {{ form_end(form) }}
+{% endblock %}

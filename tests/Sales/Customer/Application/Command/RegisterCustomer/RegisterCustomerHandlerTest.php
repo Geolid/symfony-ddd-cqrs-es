@@ -6,9 +6,9 @@ namespace Sales\Tests\Customer\Application\Command\RegisterCustomer;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
+use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\CustomerId;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Support\AbstractIntegrationTestCase;
 
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -38,7 +38,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
 
         // Then
-        $this->expectException(UniqueValueAlreadyTakenException::class);
+        $this->expectException(AddressAlreadyRegisteredException::class);
 
         // When
         $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'BUYER@example.com'));
