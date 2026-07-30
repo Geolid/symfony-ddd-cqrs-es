@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Webmozart\Assert\Assert;
 
 /**
@@ -19,6 +20,10 @@ final readonly class CancelOrderProcessor implements ProcessorInterface
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         Assert::string($uriVariables['id']);

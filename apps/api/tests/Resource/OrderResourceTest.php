@@ -15,23 +15,20 @@ final class OrderResourceTest extends AbstractApiTestCase
         $client = self::jsonClient();
 
         // Given/When — place an order
-        $client->request('POST', '/v1/ordering/orders', [
+        $response = $client->request('POST', '/v1/ordering/orders', [
             'json' => ['customerId' => 'customer-1', 'totalAmountInCents' => 3_500],
         ]);
 
         // Then
-        self::assertSame(201, $client->getResponse()->getStatusCode());
-        /** @var array{id: string} $created */
-        $created = json_decode((string) $client->getResponse()->getContent(), associative: true, flags: \JSON_THROW_ON_ERROR);
-        $id = $created['id'];
+        self::assertResponseStatusCodeSame(201);
+        $id = $response->toArray()['id'];
 
         // When — read it back
-        $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
+        $response = $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
 
         // Then
-        self::assertSame(200, $client->getResponse()->getStatusCode());
-        /** @var array{customerId: string, totalAmountInCents: int, status: string} $fetched */
-        $fetched = json_decode((string) $client->getResponse()->getContent(), associative: true, flags: \JSON_THROW_ON_ERROR);
+        self::assertResponseStatusCodeSame(200);
+        $fetched = $response->toArray();
         self::assertSame('customer-1', $fetched['customerId']);
         self::assertSame(3_500, $fetched['totalAmountInCents']);
         self::assertSame('placed', $fetched['status']);
@@ -40,12 +37,10 @@ final class OrderResourceTest extends AbstractApiTestCase
         $client->request('POST', \sprintf('/v1/ordering/orders/%s/cancel', $id));
 
         // Then
-        self::assertSame(204, $client->getResponse()->getStatusCode());
+        self::assertResponseStatusCodeSame(204);
 
-        $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
-        /** @var array{status: string} $cancelled */
-        $cancelled = json_decode((string) $client->getResponse()->getContent(), associative: true, flags: \JSON_THROW_ON_ERROR);
-        self::assertSame('cancelled', $cancelled['status']);
+        $response = $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
+        self::assertSame('cancelled', $response->toArray()['status']);
     }
 
     #[Test]
@@ -55,6 +50,6 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         $client->request('GET', '/v1/ordering/orders/00000000-0000-0000-0000-000000000000');
 
-        self::assertSame(404, $client->getResponse()->getStatusCode());
+        self::assertResponseStatusCodeSame(404);
     }
 }

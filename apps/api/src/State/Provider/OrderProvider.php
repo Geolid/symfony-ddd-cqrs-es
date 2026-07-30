@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Ordering\Order\Application\Exception\OrderResultNotFoundException;
 use Ordering\Order\Application\Query\GetOrder\GetOrder;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Webmozart\Assert\Assert;
 
@@ -21,6 +22,9 @@ final readonly class OrderProvider implements ProviderInterface
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?OrderResource
     {
         Assert::string($uriVariables['id']);

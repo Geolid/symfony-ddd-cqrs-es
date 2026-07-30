@@ -10,6 +10,7 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use Ordering\Order\Application\Query\ListOrders\ListOrders;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 
 /**
@@ -25,6 +26,8 @@ final readonly class OrderCollectionProvider implements ProviderInterface
 
     /**
      * @return TraversablePaginator<OrderResource>
+     *
+     * @throws ApplicationExceptionInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {

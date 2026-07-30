@@ -12,6 +12,7 @@ use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ordering\Order\Application\Query\GetOrder\GetOrder;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Webmozart\Assert\Assert;
 
@@ -26,6 +27,10 @@ final readonly class PlaceOrderProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): OrderResource
     {
         Assert::isInstanceOf($data, PlaceOrderInput::class);

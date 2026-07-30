@@ -7,6 +7,7 @@ namespace Api\State\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shipping\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Webmozart\Assert\Assert;
 
@@ -19,6 +20,10 @@ final readonly class DispatchShipmentProcessor implements ProcessorInterface
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         Assert::string($uriVariables['id']);
