@@ -6,6 +6,7 @@ namespace Web\Tests\Controller;
 
 use Ordering\Order\Application\Finder\Order\OrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class OrderControllerTest extends AbstractWebTestCase
@@ -15,13 +16,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $crawler = $client->request('GET', '/orders/new');
 
         // When
-        $form = $crawler->filter('form')->form();
-        $form['customerId'] = 'customer-1';
-        $form['totalAmountInCents'] = '4200';
-        $client->submit($form);
+        $this->placeOrder($client, 'customer-1', 4_200);
 
         // Then
         self::assertResponseRedirects('/orders');
@@ -34,13 +31,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $crawler = $client->request('GET', '/orders/new');
-        $form = $crawler->filter('form')->form();
-        $form['customerId'] = 'customer-2';
-        $form['totalAmountInCents'] = '1000';
-        $client->submit($form);
-
-        $id = iterator_to_array($this->service(OrderFinderInterface::class)->withCustomer('customer-2'))[0]->id;
+        $id = $this->placeOrder($client, 'customer-2', 1_000);
 
         // When
         $client->request('POST', \sprintf('/orders/%s/cancel', $id), [
@@ -56,18 +47,28 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $crawler = $client->request('GET', '/orders/new');
-        $form = $crawler->filter('form')->form();
-        $form['customerId'] = 'customer-3';
-        $form['totalAmountInCents'] = '1000';
-        $client->submit($form);
-
-        $id = iterator_to_array($this->service(OrderFinderInterface::class)->withCustomer('customer-3'))[0]->id;
+        $id = $this->placeOrder($client, 'customer-3', 1_000);
 
         // When
         $client->request('POST', \sprintf('/orders/%s/cancel', $id), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
+    }
+
+    private function placeOrder(KernelBrowser $client, string $customerId, int $totalAmountInCents): string
+    {
+        $crawler = $client->request('GET', '/orders/new');
+        $form = $crawler->filter('form')->form();
+        $prefix = $form->getName();
+
+        $form->setValues([
+            \sprintf('%s[customerId]', $prefix) => $customerId,
+            \sprintf('%s[totalAmountInCents]', $prefix) => (string) $totalAmountInCents,
+        ]);
+
+        $client->submit($form);
+
+        return iterator_to_array($this->service(OrderFinderInterface::class)->withCustomer($customerId))[0]->id;
     }
 }
