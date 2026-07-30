@@ -12,28 +12,21 @@ use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Twig\Environment;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 
-final readonly class OrderController
+final class OrderController extends AbstractController
 {
     public function __construct(
-        private CommandBusInterface $commandBus,
-        private QueryBusInterface $queryBus,
-        private FormFactoryInterface $formFactory,
-        private CsrfTokenManagerInterface $csrfTokenManager,
-        private Environment $twig,
+        private readonly CommandBusInterface $commandBus,
+        private readonly QueryBusInterface $queryBus,
     ) {
     }
 
@@ -51,10 +44,10 @@ final readonly class OrderController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return new Response($this->twig->render('orders/index.html.twig', [
+        return $this->render('orders/index.html.twig', [
             'orders' => $orders,
             'cancellableStatus' => PublishedOrderStatus::PLACED->value,
-        ]));
+        ]);
     }
 
     /**
@@ -65,7 +58,7 @@ final readonly class OrderController
     public function new(Request $request): Response
     {
         $formData = new PlaceOrderFormData();
-        $form = $this->formFactory->create(PlaceOrderType::class, $formData);
+        $form = $this->createForm(PlaceOrderType::class, $formData);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -75,10 +68,10 @@ final readonly class OrderController
                 totalAmountInCents: (int) $formData->totalAmountInCents,
             ));
 
-            return new RedirectResponse('/orders');
+            return $this->redirectToRoute('orders_index');
         }
 
-        return new Response($this->twig->render('orders/new.html.twig', ['form' => $form->createView()]));
+        return $this->render('orders/new.html.twig', ['form' => $form]);
     }
 
     /**
@@ -86,16 +79,14 @@ final readonly class OrderController
      * @throws \DomainException
      */
     #[Route('/orders/{id}/cancel', methods: ['POST'])]
-    public function cancel(Request $request, string $id): RedirectResponse
+    public function cancel(Request $request, string $id): Response
     {
-        $token = new CsrfToken('cancel-order-'.$id, (string) $request->request->get('_token'));
-
-        if (!$this->csrfTokenManager->isTokenValid($token)) {
+        if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
         $this->commandBus->dispatch(new CancelOrder($id));
 
-        return new RedirectResponse('/orders');
+        return $this->redirectToRoute('orders_index');
     }
 }

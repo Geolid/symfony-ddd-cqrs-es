@@ -7,18 +7,16 @@ namespace Web\Controller;
 use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Twig\Environment;
 use Web\Controller\Criteria\ShipmentCriteria;
 
-final readonly class ShipmentController
+final class ShipmentController extends AbstractController
 {
-    public function __construct(
-        private QueryBusInterface $queryBus,
-        private Environment $twig,
-    ) {
+    public function __construct(private readonly QueryBusInterface $queryBus)
+    {
     }
 
     /**
@@ -35,6 +33,6 @@ final readonly class ShipmentController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return new Response($this->twig->render('shipments/index.html.twig', ['shipments' => $shipments]));
+        return $this->render('shipments/index.html.twig', ['shipments' => $shipments]);
     }
 }
