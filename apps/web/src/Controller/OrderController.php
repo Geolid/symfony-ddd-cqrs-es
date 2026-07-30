@@ -9,16 +9,19 @@ use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ordering\Order\Application\Query\ListOrders\ListOrders;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
+use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 
@@ -33,18 +36,25 @@ final readonly class OrderController
     ) {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     #[Route('/', name: 'orders_home', methods: ['GET'])]
     #[Route('/orders', name: 'orders_index', methods: ['GET'])]
-    public function index(Request $request): Response
+    public function index(#[MapQueryString] OrderCriteria $criteria = new OrderCriteria()): Response
     {
         $orders = $this->queryBus->ask(new ListOrders(
-            page: $request->query->getInt('page', 1),
-            itemsPerPage: 10,
+            page: $criteria->page,
+            itemsPerPage: $criteria->itemsPerPage,
         ));
 
         return new Response($this->twig->render('orders/index.html.twig', ['orders' => $orders]));
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     #[Route('/orders/new', name: 'orders_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
@@ -65,6 +75,10 @@ final readonly class OrderController
         return new Response($this->twig->render('orders/new.html.twig', ['form' => $form->createView()]));
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     #[Route('/orders/{id}/cancel', methods: ['POST'])]
     public function cancel(Request $request, string $id): RedirectResponse
     {

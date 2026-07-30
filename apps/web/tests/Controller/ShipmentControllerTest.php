@@ -22,4 +22,30 @@ final class ShipmentControllerTest extends AbstractWebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'No shipments yet');
     }
+
+    #[Test]
+    public function itShowsShipmentsFilteredByStatus(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', '/shipments?status=pending&page=1&itemsPerPage=5');
+
+        // Then
+        self::assertResponseIsSuccessful();
+    }
+
+    #[Test]
+    public function itRefusesAnUnknownStatus(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', '/shipments?status=teleported');
+
+        // Then
+        self::assertResponseStatusCodeSame(422);
+    }
 }

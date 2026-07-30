@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Webhook\Controller;
 
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shipping\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,11 @@ final readonly class CarrierWebhookController
     ) {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     * @throws \JsonException
+     */
     #[Route('/webhooks/carrier', methods: ['POST'])]
     public function handle(Request $request): Response
     {
