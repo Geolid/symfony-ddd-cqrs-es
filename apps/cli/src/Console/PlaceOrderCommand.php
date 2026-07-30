@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cli\Command;
+namespace Cli\Console;
 
-use Cli\Input\PlaceOrderInput;
+use Cli\Console\Input\PlaceOrderInput;
 use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;

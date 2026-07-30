@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cli\Input;
+namespace Cli\Console\Input;
 
 use Ordering\Order\Application\Validation\ValidMoney;
 use Symfony\Component\Console\Attribute\Argument;

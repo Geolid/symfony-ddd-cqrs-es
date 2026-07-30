@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cli\Tests\Command;
+namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use Ordering\Order\Application\Finder\Order\OrderFinderInterface;

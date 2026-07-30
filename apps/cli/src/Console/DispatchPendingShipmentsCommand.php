@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cli\Command;
+namespace Cli\Console;
 
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
