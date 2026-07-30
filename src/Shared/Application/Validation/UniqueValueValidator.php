@@ -38,5 +38,4 @@ final class UniqueValueValidator extends ConstraintValidator
                 ->addViolation();
         }
     }
-
 }
