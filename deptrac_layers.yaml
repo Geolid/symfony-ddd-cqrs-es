@@ -37,7 +37,7 @@ deptrac:
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute).*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(Extension\\)?Cryptography\\.*#' }
         - { type: classNameRegex, value: '#^Sentry\\.*#' }
-        - { type: classNameRegex, value: '#^Symfony\\.*#' }
+        - { type: classNameRegex, value: '#^Symfony\\(?!Component\\Validator\\).*#' }
 
   ruleset:
     Domain:         [ Domain.Vendors ]
