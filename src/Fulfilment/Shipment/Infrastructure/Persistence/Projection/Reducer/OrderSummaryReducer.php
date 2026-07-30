@@ -11,13 +11,6 @@ use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 
-/**
- * Reads Sales' public Integration Event stream directly (never its aggregate/Domain layer)
- * to enrich Fulfilment's own projection with a denormalized snapshot at fold time — the
- * alternative to a live cross-BC join, and a different reaction shape than a Processor: this
- * one is read-side enrichment, not a side effect (see DbalShipmentProjector::onShipmentCreated,
- * infrastructure.md).
- */
 final readonly class OrderSummaryReducer
 {
     public function __construct(private Store $store)

@@ -72,13 +72,6 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
     }
 
-    /**
-     * The live fan-out side of the pattern: unlike OrderPlaced (which always precedes this
-     * Shipment's own existence, so OrderSummaryReducer has to replay history for it), a
-     * cancellation can happen at any point after the Shipment already exists — so this
-     * projection subscribes to it directly instead of re-reducing the whole stream. A shipment
-     * not found for the order is a no-op: cancelling before any shipment was ever created.
-     */
     #[Subscribe(OrderCancelledIntegrationEvent::class)]
     public function onOrderCancelled(OrderCancelledIntegrationEvent $event): void
     {

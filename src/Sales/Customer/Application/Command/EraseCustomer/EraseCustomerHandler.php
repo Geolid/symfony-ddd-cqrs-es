@@ -25,8 +25,7 @@ final readonly class EraseCustomerHandler
     {
         $customer = $this->repository->load(CustomerId::fromString($command->id));
 
-        // Read before recording: once the cipher key is dropped the address decrypts to its
-        // fallback, and the reservation would never be found again.
+        // Read before recording — once the cipher key is dropped this fingerprint is unrecoverable.
         $fingerprint = $customer->email()->fingerprint();
 
         $customer->erase($this->clock->now());

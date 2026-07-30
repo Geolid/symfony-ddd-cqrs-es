@@ -29,10 +29,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
         ]);
     }
 
-    /**
-     * Dropping the cipher key covers the event store, not a projection holding the address in
-     * clear text — this row has to redact itself.
-     */
     #[Subscribe(CustomerErased::class)]
     public function onCustomerErased(CustomerErased $event): void
     {

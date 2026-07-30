@@ -18,10 +18,6 @@ final readonly class Email
         return new self(mb_strtolower(trim($value)));
     }
 
-    /**
-     * The uniqueness registry stores this instead of the address itself: a lookup row is not an
-     * event, so no cipher key covers it, and a readable address there would survive erasure.
-     */
     public function fingerprint(): string
     {
         return hash('sha256', $this->value);

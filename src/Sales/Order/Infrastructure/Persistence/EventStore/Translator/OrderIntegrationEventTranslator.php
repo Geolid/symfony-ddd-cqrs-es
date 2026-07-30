@@ -12,12 +12,6 @@ use Sales\Order\Domain\Event\OrderPlaced;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
-/**
- * Translates Sales' Domain Events into its public Integration Event contract. This is the
- * ONLY place a Domain Event crosses the BC boundary — Fulfilment subscribes to
- * OrderPlacedIntegrationEvent/OrderCancelledIntegrationEvent, never to the Domain Events
- * OrderPlaced/OrderCancelled.
- */
 #[Translator('sales.order.integration_translator')]
 final readonly class OrderIntegrationEventTranslator extends AbstractIntegrationEventTranslator
 {

@@ -8,12 +8,6 @@ use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
-/**
- * The showcase has no real customer directory to resolve an email address from, so the
- * recipient is derived from the customer ID (`<customerId>@example.com`) — good enough to show
- * the pattern, not meant to be a real address resolution strategy. The sender ("From") comes
- * from the default header set in config/packages/mailer.php.
- */
 final readonly class MailerShipmentDeliveredNotifier implements ShipmentDeliveredNotifierInterface
 {
     public function __construct(private MailerInterface $mailer)

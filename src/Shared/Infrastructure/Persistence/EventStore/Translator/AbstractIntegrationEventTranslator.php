@@ -10,9 +10,8 @@ use Patchlevel\EventSourcing\Store\Store;
 use Shared\Application\Event\IntegrationEventInterface;
 
 /**
- * Converts a BC's Domain Events into its one public Integration Event contract and appends
- * them to the store, keyed by the correlation id consumers subscribe against. Domain Events are
- * sealed to their BC — this translation is the only path out.
+ * Event Translator: converts a BC's Domain Events into Integration Events and
+ * appends them to the store, keyed by the correlation id consumers look them up under.
  */
 abstract readonly class AbstractIntegrationEventTranslator
 {

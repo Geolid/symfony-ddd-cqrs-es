@@ -8,14 +8,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Webmozart\Assert\Assert;
 
-/**
- * A custom env var processor, registered via
- * Bootstrap\DependencyInjection\CompilerPass\TagEnvVarProcessorsPass. In prod, resolves the
- * default router URI to a per-DM subdomain (`<appId>.<host>`) — the same default URI is shared
- * across every Delivery Mechanism, but each one needs its own generated links (redirects,
- * webhooks callbacks...) to point back at itself, not at whichever DM happened to be $appId
- * when the container was built.
- */
 final readonly class AppUrlEnvVarProcessor implements EnvVarProcessorInterface
 {
     public function __construct(
