@@ -45,10 +45,12 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 | `apps/cli` | Console commands (`order:place`, `shipment:dispatch-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
-A Delivery Mechanism only ever depends on `#[AsDrivingPort]` ports and Command/Query messages —
-never on a Repository, a Finder implementation, or a persistence vendor directly. This and the
-BC isolation above are enforced by `deptrac_*.yaml` and the `Tools\PHPat\*` rules run through
-PHPStan, not just documented.
+A Delivery Mechanism only ever depends on a BC's Open Host Service — its `#[AsDrivingPort]`
+behaviours and its published language (`PublishedLanguageInterface`: Commands, Queries, Results,
+Application exceptions, validation compounds, published vocabularies) — never on a Repository, a
+Finder implementation, or a persistence vendor directly. This and the BC isolation above are
+enforced by `deptrac_*.yaml` and the `Tools\PHPat\*` rules run through PHPStan, not just
+documented.
 
 ## Stack
 
