@@ -44,8 +44,7 @@ final readonly class OrderController
     public function index(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
-    ): Response
-    {
+    ): Response {
         $orders = $this->queryBus->ask(new ListOrders(
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,

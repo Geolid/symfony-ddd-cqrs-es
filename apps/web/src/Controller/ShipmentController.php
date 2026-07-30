@@ -28,8 +28,7 @@ final readonly class ShipmentController
     public function index(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         ShipmentCriteria $criteria = new ShipmentCriteria(),
-    ): Response
-    {
+    ): Response {
         $shipments = $this->queryBus->ask(new ListShipments(
             status: $criteria->status,
             page: $criteria->page,
