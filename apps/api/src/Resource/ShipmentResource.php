@@ -11,7 +11,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
 use Shipping\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Shipping\Shipment\Application\Language\ShipmentStatuses;
+use Shipping\Shipment\Application\Language\PublishedShipmentStatus;
 use Shipping\Shipment\Application\Validation\ValidShipmentStatus;
 
 #[ApiResource(
@@ -23,7 +23,11 @@ use Shipping\Shipment\Application\Validation\ValidShipmentStatus;
             parameters: [
                 'status' => new QueryParameter(
                     constraints: [new ValidShipmentStatus()],
-                    schema: ['type' => 'string', 'enum' => ShipmentStatuses::ALL],
+                    schema: ['type' => 'string', 'enum' => [
+                            PublishedShipmentStatus::PENDING->value,
+                            PublishedShipmentStatus::DISPATCHED->value,
+                            PublishedShipmentStatus::DELIVERED->value,
+                        ]],
                     description: 'Filter by shipment status.',
                 ),
             ],

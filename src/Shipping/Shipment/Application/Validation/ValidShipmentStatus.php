@@ -6,8 +6,7 @@ namespace Shipping\Shipment\Application\Validation;
 
 use Shared\Application\Language\PublishedLanguageInterface;
 use Shared\Application\Validation\ValidValueObject;
-use Shipping\Shipment\Application\Language\ShipmentStatuses;
-use Shipping\Shipment\Domain\ShipmentStatus;
+use Shipping\Shipment\Application\Language\PublishedShipmentStatus;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 
@@ -18,8 +17,8 @@ final class ValidShipmentStatus extends Compound implements PublishedLanguageInt
     {
         return [
             new Assert\Type('string'),
-            new Assert\Choice(choices: ShipmentStatuses::ALL),
-            new ValidValueObject(ShipmentStatus::class, method: 'from'),
+            new Assert\Choice(choices: array_column(PublishedShipmentStatus::cases(), 'value')),
+            new ValidValueObject(PublishedShipmentStatus::class, method: 'from'),
         ];
     }
 }

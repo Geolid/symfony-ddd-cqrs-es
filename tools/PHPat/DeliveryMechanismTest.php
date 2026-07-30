@@ -15,7 +15,7 @@ use Shared\Application\Port\AsDrivingPort;
 final class DeliveryMechanismTest
 {
     #[TestRule]
-    public function onlyDependsOnDrivingPorts(): Rule
+    public function onlyDependsOnTheOpenHostService(): Rule
     {
         return PHPat::rule()
             ->classes($this->deliveryMechanisms())
@@ -27,7 +27,7 @@ final class DeliveryMechanismTest
                 Selector::implements(PublishedLanguageInterface::class),
                 Selector::Not($this->projectCode()),
             )
-            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours, and its published language — Command/Query messages, Results, application failures, published vocabularies and accepted input shapes, all carrying PublishedLanguageInterface.');
+            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and its published language.');
     }
 
     #[TestRule]
