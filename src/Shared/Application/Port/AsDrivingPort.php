@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Attribute;
+namespace Shared\Application\Port;
 
 /**
  * Marks an Application port as callable directly by a Delivery Mechanism.

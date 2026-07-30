@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Application\Command;
 
-interface CommandInterface
+use Shared\Application\Language\PublishedLanguageInterface;
+
+interface CommandInterface extends PublishedLanguageInterface
 {
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cli\Input;
 
-use Ordering\Order\Infrastructure\Validation\ValidMoney;
+use Ordering\Order\Application\Validation\ValidMoney;
 use Symfony\Component\Console\Attribute\Argument;
 
 final class PlaceOrderInput

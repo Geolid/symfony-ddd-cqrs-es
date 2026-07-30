@@ -24,6 +24,7 @@ deptrac:
     - name: Application.Vendors
       collectors:
         - { type: classNameRegex, value: '#^Psr\\(Log|Clock)\\.*#' }
+        - { type: classNameRegex, value: '#^Symfony\\Component\\Validator\\.*#' }
 
     # --- Infrastructure (Outer Ring) ---
     - name: Infrastructure

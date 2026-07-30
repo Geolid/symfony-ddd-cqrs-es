@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Api\Input;
 
-use Ordering\Order\Infrastructure\Validation\ValidMoney;
+use Ordering\Order\Application\Validation\ValidMoney;
 
 final readonly class PlaceOrderInput
 {

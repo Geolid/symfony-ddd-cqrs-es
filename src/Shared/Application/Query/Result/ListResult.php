@@ -11,7 +11,7 @@ use Shared\Application\Query\Pagination\PaginationInfo;
  *
  * @implements \IteratorAggregate<int, TResult>
  */
-final readonly class ListResult implements \IteratorAggregate, \Countable
+final readonly class ListResult implements \IteratorAggregate, \Countable, ResultInterface
 {
     /**
      * @param list<TResult> $items

@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Validation;
+namespace Shared\Application\Validation;
 
+use Shared\Application\Language\PublishedLanguageInterface;
 use Symfony\Component\Validator\Constraint;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-final class ValidUniqueValue extends Constraint
+final class ValidUniqueValue extends Constraint implements PublishedLanguageInterface
 {
     public const string DOMAIN_UNIQUE_CONSTRAINT = 'd07b3b72-74c1-4b7b-b1a8-c89b27521c7a';
 
@@ -24,5 +25,10 @@ final class ValidUniqueValue extends Constraint
         mixed $payload = null,
     ) {
         parent::__construct($options, $groups, $payload);
+    }
+
+    public function validatedBy(): string
+    {
+        return UniqueValueValidator::class;
     }
 }

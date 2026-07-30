@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Validation;
+namespace Shared\Application\Validation;
 
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Symfony\Component\Validator\Constraint;
@@ -39,8 +39,4 @@ final class UniqueValueValidator extends ConstraintValidator
         }
     }
 
-    public function validatedBy(): string
-    {
-        return self::class;
-    }
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Shipping\Shipment\Application\Finder\Shipment;
 
-final readonly class ShipmentResult
+use Shared\Application\Query\Result\ResultInterface;
+
+final readonly class ShipmentResult implements ResultInterface
 {
     public function __construct(
         public string $id,

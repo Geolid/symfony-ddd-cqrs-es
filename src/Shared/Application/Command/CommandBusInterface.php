@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Application\Command;
 
-use Shared\Application\Attribute\AsDrivingPort;
+use Shared\Application\Port\AsDrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 #[AsDrivingPort]

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Ordering\Order\Infrastructure\Validation;
+namespace Ordering\Order\Application\Validation;
 
 use Ordering\Order\Domain\Money;
-use Shared\Infrastructure\Validation\ValidValueObject;
+use Shared\Application\Language\PublishedLanguageInterface;
+use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD)]
-final class ValidMoney extends Compound
+final class ValidMoney extends Compound implements PublishedLanguageInterface
 {
     protected function getConstraints(array $options): array
     {

@@ -10,7 +10,8 @@ use Shared\Application\Query\QueryBusInterface;
 use Shared\Application\Query\Result\ListResult;
 use Shipping\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Shipping\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Shipping\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
+use Shipping\Shipment\Application\Language\ShipmentStatuses;
+use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
@@ -41,7 +42,7 @@ final class DispatchPendingShipmentsCommand
 
         try {
             /** @var ListResult<ShipmentResult> $pending */
-            $pending = $this->queryBus->ask(new ListPendingShipments(itemsPerPage: 100));
+            $pending = $this->queryBus->ask(new ListShipments(status: ShipmentStatuses::PENDING, itemsPerPage: 100));
 
             foreach ($pending->items as $shipment) {
                 $this->commandBus->dispatch(new DispatchShipment($shipment->id));
