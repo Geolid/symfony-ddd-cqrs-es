@@ -4,6 +4,10 @@ deptrac:
 
   layers:
     # --- Bounded Contexts ---
+    - name: Sales.Customer
+      collectors:
+        - { type: directory, value: 'src/Sales/Customer/.*' }
+
     - name: Sales.Order
       collectors:
         - { type: directory, value: 'src/Sales/Order/.*' }
@@ -35,6 +39,7 @@ deptrac:
   # sanctioned cross-BC edge in this codebase, not a general license to reach into another BC's
   # Domain or Application layer.
   ruleset:
-    Sales.Order:   [ Shared, Vendors ]
+    Sales.Customer:      [ Shared, Vendors ]
+    Sales.Order:         [ Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
-    Shared:           [ Vendors ]
+    Shared:              [ Vendors ]
