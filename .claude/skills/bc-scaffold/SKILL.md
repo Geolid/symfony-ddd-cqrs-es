@@ -28,7 +28,7 @@ List `src/`; pick an existing one. A new Subdomain only if none fits:
 
 - A minimal root Aggregate (look at 2-3 existing Aggregates, extract the shared pattern) + its first Domain Event
 - `Domain/Repository/XxxRepositoryInterface` + implementation under `Infrastructure/Persistence/**/Repository/`
-- An `AggregateRootTestCase`-based test alongside the Aggregate, from the start (see `tests/Ordering/Order/Domain/OrderTest.php`)
+- An `AggregateRootTestCase`-based test alongside the Aggregate, from the start (see `tests/Sales/Order/Domain/OrderTest.php`)
 
 ### 5. Validate
 

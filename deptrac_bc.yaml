@@ -4,13 +4,13 @@ deptrac:
 
   layers:
     # --- Bounded Contexts ---
-    - name: Ordering.Order
+    - name: Sales.Order
       collectors:
-        - { type: directory, value: 'src/Ordering/Order/.*' }
+        - { type: directory, value: 'src/Sales/Order/.*' }
 
-    - name: Shipping.Shipment
+    - name: Fulfilment.Shipment
       collectors:
-        - { type: directory, value: 'src/Shipping/Shipment/.*' }
+        - { type: directory, value: 'src/Fulfilment/Shipment/.*' }
 
     # --- Global ---
     - name: Shared
@@ -29,12 +29,12 @@ deptrac:
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
 
-  # Shipping is allowed to depend on Ordering ONLY for its public Integration Event contract
-  # (Ordering\Order\Application\Event\OrderPlacedIntegrationEvent) — see
-  # Shipping\Shipment\Application\Processor\CreateShipmentOnOrderPlaced. This is the one
+  # Fulfilment is allowed to depend on Sales ONLY for its public Integration Event contract
+  # (Sales\Order\Application\Event\OrderPlacedIntegrationEvent) — see
+  # Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPlaced. This is the one
   # sanctioned cross-BC edge in this codebase, not a general license to reach into another BC's
   # Domain or Application layer.
   ruleset:
-    Ordering.Order:   [ Shared, Vendors ]
-    Shipping.Shipment: [ Ordering.Order, Shared, Vendors ]
+    Sales.Order:   [ Shared, Vendors ]
+    Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Shared:           [ Vendors ]

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Query\QueryInterface;
 use Shared\Infrastructure\Messaging\Middleware\DbalTransactionMiddleware;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
-use Shipping\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {

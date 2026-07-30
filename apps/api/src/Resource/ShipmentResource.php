@@ -10,13 +10,13 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
-use Shipping\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Shipping\Shipment\Application\Language\PublishedShipmentStatus;
-use Shipping\Shipment\Application\Validation\ValidShipmentStatus;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Application\Language\PublishedShipmentStatus;
+use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
 
 #[ApiResource(
     shortName: 'Shipment',
-    routePrefix: '/v1/shipping',
+    routePrefix: '/v1/fulfilment',
     operations: [
         new GetCollection(
             provider: ShipmentCollectionProvider::class,

@@ -14,21 +14,21 @@ pick it apart, rename it, replace it; the interesting part is the structure arou
 
 Two Bounded Contexts:
 
-- **`Ordering.Order`** — places and cancels an `Order`.
-- **`Shipping.Shipment`** — creates, dispatches and delivers a `Shipment`.
+- **`Sales.Order`** — places and cancels an `Order`.
+- **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
-`Shipping` never depends on `Ordering`'s Domain or Application internals — the one sanctioned
-cross-BC edge (see `deptrac_bc.yaml`) is Ordering's public Integration Event contract. Neither
-of Ordering's Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
+`Fulfilment` never depends on `Sales`'s Domain or Application internals — the one sanctioned
+cross-BC edge (see `deptrac_bc.yaml`) is Sales' public Integration Event contract. Neither
+of Sales' Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
 Infrastructure-layer Translator (`OrderIntegrationEventTranslator`) converts each into its
 public counterpart (`OrderPlacedIntegrationEvent`, `OrderCancelledIntegrationEvent`) and appends
-it to the event store. `Shipping` reacts to both, but in two different shapes, side by side:
+it to the event store. `Fulfilment` reacts to both, but in two different shapes, side by side:
 
 - **Side effect (Processor)** — `CreateShipmentOnOrderPlaced` subscribes to
   `OrderPlacedIntegrationEvent` and dispatches a Command (`CreateShipment`) in response.
 - **Read-side enrichment, two ways, in the same `DbalShipmentProjector`** —
   - *Backfill*: `OrderPlaced` always happened *before* the Shipment existed, so there's nothing
-    to subscribe to yet — `OrderSummaryReducer` replays Ordering's Integration Event stream for
+    to subscribe to yet — `OrderSummaryReducer` replays Sales' Integration Event stream for
     that order once, at `ShipmentCreated` time, to denormalize the customer/total onto the
     Shipment row.
   - *Fan-out*: `OrderCancelled` can happen *after* the Shipment already exists, so the
@@ -42,7 +42,7 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 |---|---|
 | `apps/api` | JSON HTTP (API Platform) for orders and shipments |
 | `apps/web` | A small Twig backoffice (list orders/shipments, place an order) |
-| `apps/cli` | Console commands (`order:place`, `shipment:dispatch-pending`) |
+| `apps/cli` | Console commands (`sales:order:place`, `fulfilment:shipment:dispatch-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
 A Delivery Mechanism only ever depends on a BC's Open Host Service — its `#[AsDrivingPort]`

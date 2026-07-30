@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-use Ordering\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Ordering\Order\Domain\Exception\OrderNotFoundException;
+use Fulfilment\Shipment\Domain\Exception\InvalidShipmentTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
+use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shipping\Shipment\Domain\Exception\InvalidShipmentTransitionException;
-use Shipping\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
-            // Ordering
+            // Sales
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
 
-            // Shipping
+            // Fulfilment
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             InvalidShipmentTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
 

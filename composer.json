@@ -71,8 +71,8 @@
       "Api\\": "apps/api/src/",
       "Cli\\": "apps/cli/src/",
       "Webhook\\": "apps/webhook/src/",
-      "Ordering\\": "src/Ordering/",
-      "Shipping\\": "src/Shipping/",
+      "Sales\\": "src/Sales/",
+      "Fulfilment\\": "src/Fulfilment/",
       "Shared\\": "src/Shared/"
     }
   },
@@ -82,8 +82,8 @@
       "Api\\Tests\\": "apps/api/tests/",
       "Cli\\Tests\\": "apps/cli/tests/",
       "Webhook\\Tests\\": "apps/webhook/tests/",
-      "Ordering\\Tests\\": "tests/Ordering/",
-      "Shipping\\Tests\\": "tests/Shipping/",
+      "Sales\\Tests\\": "tests/Sales/",
+      "Fulfilment\\Tests\\": "tests/Fulfilment/",
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",

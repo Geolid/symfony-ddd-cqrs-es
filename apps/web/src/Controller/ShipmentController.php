@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;

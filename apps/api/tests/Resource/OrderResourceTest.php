@@ -15,7 +15,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         $client = self::jsonClient();
 
         // Given/When — place an order
-        $response = $client->request('POST', '/v1/ordering/orders', [
+        $response = $client->request('POST', '/v1/sales/orders', [
             'json' => ['customerId' => 'customer-1', 'totalAmountInCents' => 3_500],
         ]);
 
@@ -24,7 +24,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         $id = $response->toArray()['id'];
 
         // When — read it back
-        $response = $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
+        $response = $client->request('GET', \sprintf('/v1/sales/orders/%s', $id));
 
         // Then
         self::assertResponseStatusCodeSame(200);
@@ -34,12 +34,12 @@ final class OrderResourceTest extends AbstractApiTestCase
         self::assertSame('placed', $fetched['status']);
 
         // When — cancel it
-        $client->request('POST', \sprintf('/v1/ordering/orders/%s/cancel', $id));
+        $client->request('POST', \sprintf('/v1/sales/orders/%s/cancel', $id));
 
         // Then
         self::assertResponseStatusCodeSame(204);
 
-        $response = $client->request('GET', \sprintf('/v1/ordering/orders/%s', $id));
+        $response = $client->request('GET', \sprintf('/v1/sales/orders/%s', $id));
         self::assertSame('cancelled', $response->toArray()['status']);
     }
 
@@ -48,7 +48,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         $client = self::jsonClient();
 
-        $client->request('GET', '/v1/ordering/orders/00000000-0000-0000-0000-000000000000');
+        $client->request('GET', '/v1/sales/orders/00000000-0000-0000-0000-000000000000');
 
         self::assertResponseStatusCodeSame(404);
     }

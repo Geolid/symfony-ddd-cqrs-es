@@ -6,9 +6,9 @@ namespace Api\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shipping\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Webmozart\Assert\Assert;
 
 /**

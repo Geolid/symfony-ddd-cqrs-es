@@ -13,11 +13,11 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use Ordering\Order\Application\Finder\Order\OrderResult;
+use Sales\Order\Application\Finder\Order\OrderResult;
 
 #[ApiResource(
     shortName: 'Order',
-    routePrefix: '/v1/ordering',
+    routePrefix: '/v1/sales',
     operations: [
         new GetCollection(provider: OrderCollectionProvider::class),
         new Get(uriTemplate: '/orders/{id}', provider: OrderProvider::class),

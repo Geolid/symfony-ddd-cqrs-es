@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Webhook\Consumer;
 
+use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shipping\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
 use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
 use Symfony\Component\RemoteEvent\Consumer\ConsumerInterface;
 use Symfony\Component\RemoteEvent\RemoteEvent;

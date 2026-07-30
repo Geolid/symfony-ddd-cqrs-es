@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
-use Ordering\Order\Application\Finder\Order\OrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 

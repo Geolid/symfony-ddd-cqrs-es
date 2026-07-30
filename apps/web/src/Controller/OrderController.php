@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
-use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
-use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Ordering\Order\Application\Language\PublishedOrderStatus;
-use Ordering\Order\Application\Query\ListOrders\ListOrders;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Command\CancelOrder\CancelOrder;
+use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Language\PublishedOrderStatus;
+use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;

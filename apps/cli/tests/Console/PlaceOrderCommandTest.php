@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
-use Ordering\Order\Application\Finder\Order\OrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Symfony\Component\Console\Command\Command;
 
 final class PlaceOrderCommandTest extends AbstractCliTestCase
@@ -15,7 +15,7 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
     public function itPlacesAnOrder(): void
     {
         // When
-        $tester = $this->tester('order:place');
+        $tester = $this->tester('sales:sales:order:place');
         $tester->execute(['customer-id' => 'customer-1', 'total-amount-in-cents' => '4200']);
 
         // Then

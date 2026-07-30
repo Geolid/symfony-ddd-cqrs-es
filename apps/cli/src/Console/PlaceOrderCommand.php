@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Cli\Console\Input\PlaceOrderInput;
-use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'order:place', description: 'Place an Order from the command line (demo/local seeding)')]
+#[AsCommand(name: 'sales:sales:order:place', description: 'Place an Order from the command line (demo/local seeding)')]
 final class PlaceOrderCommand
 {
     use LockableTrait;

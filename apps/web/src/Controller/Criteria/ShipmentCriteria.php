@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Controller\Criteria;
 
-use Shipping\Shipment\Application\Validation\ValidShipmentStatus;
+use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class ShipmentCriteria

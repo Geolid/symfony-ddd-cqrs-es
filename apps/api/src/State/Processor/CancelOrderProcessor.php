@@ -6,7 +6,7 @@ namespace Api\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
+use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Webmozart\Assert\Assert;

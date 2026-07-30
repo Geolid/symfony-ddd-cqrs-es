@@ -35,11 +35,11 @@
         </testsuite>
 
         <!-- ==================== BOUNDED CONTEXTS ==================== -->
-        <testsuite name="ordering">
-            <directory>tests/Ordering</directory>
+        <testsuite name="sales">
+            <directory>tests/Sales</directory>
         </testsuite>
-        <testsuite name="shipping">
-            <directory>tests/Shipping</directory>
+        <testsuite name="fulfilment">
+            <directory>tests/Fulfilment</directory>
         </testsuite>
 
         <!-- ==================== SHARED ==================== -->

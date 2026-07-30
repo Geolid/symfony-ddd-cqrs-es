@@ -6,8 +6,8 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('api_platform', [
-        'title' => 'Ordering & Shipping API',
-        'description' => 'Showcase JSON API for the Ordering and Shipping Bounded Contexts.',
+        'title' => 'Sales & Fulfilment API',
+        'description' => 'Showcase JSON API for the Sales and Fulfilment Bounded Contexts.',
         'version' => '1.0.0',
         'show_webby' => false,
         'mapping' => [

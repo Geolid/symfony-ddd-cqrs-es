@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Ordering\Order\Application\Validation\ValidMoney;
+use Sales\Order\Application\Validation\ValidMoney;
 
 final class PlaceOrderFormData
 {

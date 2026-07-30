@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
+use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Application\Language\PublishedShipmentStatus;
+use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Shared\Application\Query\Result\ListResult;
-use Shipping\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Shipping\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Shipping\Shipment\Application\Language\PublishedShipmentStatus;
-use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
+#[AsCommand(name: 'fulfilment:fulfilment:shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
 final class DispatchPendingShipmentsCommand
 {
     use LockableTrait;
