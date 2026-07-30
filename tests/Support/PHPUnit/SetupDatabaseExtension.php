@@ -17,11 +17,6 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 
-/**
- * Recreates the event store + read model schemas once per test run, so every test starts from
- * a known-empty database (DAMA\DoctrineTestBundle then wraps each individual test in a
- * transaction that's rolled back — see phpunit.dist.xml extensions).
- */
 final class SetupDatabaseExtension implements Extension, StartedSubscriber
 {
     private static bool $hasBeenReset = false;

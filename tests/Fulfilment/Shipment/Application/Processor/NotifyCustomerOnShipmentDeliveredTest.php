@@ -23,7 +23,6 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
     #[Test]
     public function itNotifiesTheCustomerOnceTheShipmentIsDelivered(): void
     {
-        // Given — an order all the way to a delivered shipment.
         $orderId = Uuid::uuid7()->toString();
         $this->dispatch(new PlaceOrder($orderId, 'customer-1', 1_500));
         ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(

@@ -10,13 +10,6 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Support\AbstractIntegrationTestCase;
 
-/**
- * Exercises the Reducer against a real Integration Event stream — placing an Order runs
- * Sales\Order\Infrastructure\Persistence\EventStore\Translator\OrderIntegrationEventTranslator
- * synchronously in the test environment (see run_after_aggregate_save in
- * config/packages/patchlevel_event_sourcing.php), so by the time this reads the stream back,
- * the Integration Event is really there — not a synthetic object constructed in-test.
- */
 final class OrderSummaryReducerTest extends AbstractIntegrationTestCase
 {
     #[Test]

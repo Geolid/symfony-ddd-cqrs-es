@@ -12,21 +12,11 @@ use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Support\AbstractIntegrationTestCase;
 
-/**
- * Exercises the Processor directly, feeding it the Integration Event it reacts to in
- * production — the same test shape used for any BC-to-BC reaction, without needing a running
- * event-sourcing subscription worker in the test suite (see run_after_aggregate_save in
- * config/packages/patchlevel_event_sourcing.php, which only replays Translators/Projectors
- * synchronously, not Processors).
- */
 final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itOpensAShipmentEnrichedWithTheOrderSummary(): void
     {
-        // Given — a real Order, so its Integration Event stream genuinely exists for the
-        // DbalShipmentProjector's OrderSummaryReducer to read from (see OrderSummaryReducerTest
-        // for the Reducer in isolation).
         $orderId = Uuid::uuid7()->toString();
         $this->dispatch(new PlaceOrder($orderId, 'customer-1', 4_200));
 

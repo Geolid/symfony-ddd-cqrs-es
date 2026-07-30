@@ -10,10 +10,6 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
-/**
- * Crypto-shredding: on a DataSubjectErasureInterface event, drops the subject's
- * cipher key so every #[PersonalData] field encrypted under it decrypts to its fallback.
- */
 #[Processor('shared.gdpr.data_subject_eraser')]
 final readonly class DataSubjectEraser
 {

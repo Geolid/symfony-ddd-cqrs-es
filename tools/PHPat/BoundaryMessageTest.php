@@ -33,7 +33,6 @@ final class BoundaryMessageTest
             ->classes(
                 Selector::classname(CommandInterface::class),
                 Selector::classname(QueryInterface::class),
-                // A Query documents its return contract: @implements QueryInterface<...Result>.
                 Selector::AllOf(
                     Selector::classname('#Result$#', true),
                     Selector::withFilepath('#/Application/#', true),
@@ -54,9 +53,6 @@ final class BoundaryMessageTest
             ->dependOn()
             ->classes(
                 Selector::classname(IntegrationEventInterface::class),
-                // Inert ES-metadata attributes, read only by reflection — no vendor
-                // runtime dependency: #[Event] gives the store its serialization
-                // identity, #[PersonalData]/#[DataSubjectId] drive crypto-shredding.
                 Selector::classname(Event::class),
                 Selector::classname(PersonalData::class),
                 Selector::classname(DataSubjectId::class),

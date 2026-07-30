@@ -26,8 +26,6 @@ final class BoundedContextTest
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
-                // Narrowly "src/": demo/ legitimately uses Console Commands, and apps/*/src/
-                // (a "/src/" filepath match too) is exactly where delivery vendors belong.
                 Selector::withFilepath('#/src/#', true),
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
                 Selector::Not(Selector::withFilepath('#/apps/#', true)),

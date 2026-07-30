@@ -25,10 +25,6 @@ final class DomainEventTest
     }
 
     /**
-     * One rule per BC (or top-level shared module) owning a Domain/Event/ directory — a new one
-     * is covered on creation, whether nested `src/<Subdomain>/<BC>/Domain/Event` (2 segments) or
-     * flat `src/<Module>/Domain/Event` (1 segment, e.g. `src/Shared`).
-     *
      * @return iterable<string, Rule>
      */
     #[TestRule]
