@@ -24,10 +24,10 @@ use Shipping\Shipment\Application\Validation\ValidShipmentStatus;
                 'status' => new QueryParameter(
                     constraints: [new ValidShipmentStatus()],
                     schema: ['type' => 'string', 'enum' => [
-                            PublishedShipmentStatus::PENDING->value,
-                            PublishedShipmentStatus::DISPATCHED->value,
-                            PublishedShipmentStatus::DELIVERED->value,
-                        ]],
+                        PublishedShipmentStatus::PENDING->value,
+                        PublishedShipmentStatus::DISPATCHED->value,
+                        PublishedShipmentStatus::DELIVERED->value,
+                    ]],
                     description: 'Filter by shipment status.',
                 ),
             ],
