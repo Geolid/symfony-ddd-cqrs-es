@@ -3,42 +3,38 @@
 **Date:** 2026-07-28
 **Status:** Accepted
 
+## Context
+
+Onion layering, isolation between Bounded Contexts, and how far a Delivery Mechanism may reach are
+three different questions. Left to convention, they hold only as long as everyone remembers them.
+
 ## Decision
 
-Two composable checks enforce BC/DM isolation. deptrac maps which BC each DM may reach
-(`deptrac_dm.yaml` imports `deptrac_bc.yaml`; `--fail-on-uncovered` forces every new module to
-be declared). phpat (a PHPStan extension under `tools/PHPat/`) enforces what a BC exposes inside
-the BCs deptrac grants.
+Two composable checks, each answering one question. The first maps which Bounded Context a Delivery
+Mechanism may reach at all; an undeclared module fails the build, so a new one has to be granted
+rather than silently allowed. The second restricts what may be touched inside a context it reached.
 
-A BC exposes exactly two things. Behaviour: an Application interface carrying `#[AsDrivingPort]`
-(`Shared\Application\Port`). Data and shapes: `PublishedLanguageInterface`
-(`Shared\Application\Language`), extended by `CommandInterface`, `QueryInterface`,
-`ResultInterface` and `ApplicationExceptionInterface`, carried explicitly by a validation compound
-(`Application/Validation/Valid<Name>`) and a published vocabulary
-(`Application/Language/Published<X>`).
+A Bounded Context offers a Delivery Mechanism exactly two things: behaviour it may invoke, and
+language it may speak. Behaviour is marked as a driving port, language as published; anything
+unmarked is internal, and that is the default. A vocabulary a Delivery Mechanism has to name is
+published as its own type derived from the Domain one, so extending the Domain does not extend the
+contract.
 
-A published vocabulary derives its values from the Domain enum
-(`case PENDING = ShipmentStatus::PENDING->value;`), so a new Domain case leaks nothing.
+A cross-cutting component may not depend on the context owning the data it needs. It declares a
+generic port instead, each owning context implements it, and the dependency turns around into a
+direction isolation already allows.
 
-When a cross-cutting `Shared` component needs data owned by a specific BC, it cannot depend on
-that BC directly (`deptrac_bc.yaml` forbids it). The fix is dependency inversion: `Shared`
-declares a generic, auto-tagged port; each owning BC implements it in its own Infrastructure;
-the `Shared` component iterates every tagged provider and merges the non-null results. The
-dependency then runs BC → Shared, already allowed.
+## Alternatives rejected
 
-## Trade-offs
+| Option | Why rejected |
+|---|---|
+| One check for both questions | reach and exposition need different granularity; either one drowns the other |
+| Convention plus review | silent by construction — nothing fails when it is forgotten |
+| Expose the Domain type directly | the Domain can then no longer change without breaking a consumer |
+| Relax isolation for the cross-cutting component | opens the same door to every other context |
 
-`deptrac-dm` re-analyzes the imported BC ruleset. Config closures under `apps/*/config/**.php`
-are outside both tools' reach. Nothing enforces that a published vocabulary still covers what the
-Domain offers, and status literals in Twig templates and translation catalogs escape both tools.
-Provider completeness depends on each BC remembering to implement the port — a convention, not an
-enforced contract.
+## Consequences
 
-## Rules created
-
-- ALWAYS: expose behaviour with `#[AsDrivingPort]` and data with `PublishedLanguageInterface`; put
-  a validation compound in `Application/Validation/`; implement a cross-cutting port in the owning
-  BC's Infrastructure.
-- NEVER: let a DM name a Domain enum — it names `Application/Language/Published<X>`; add an
-  explicit BC→Shared dependency to feed a cross-cutting component — discovery is by auto-tagging
-  only.
+The reach check re-analyzes the isolation ruleset it imports. Configuration written as PHP closures
+escapes both checks, as does a vocabulary spelled out in a template or a translation catalog.
+Nothing forces a context to implement a cross-cutting port it should.

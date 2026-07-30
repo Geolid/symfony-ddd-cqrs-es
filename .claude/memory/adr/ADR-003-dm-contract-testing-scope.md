@@ -3,13 +3,27 @@
 **Date:** 2026-07-28
 **Status:** Accepted
 
+## Context
+
+An exposed schema is a promise. Breaking it costs nothing at build time, and the cost lands on
+whoever consumes it.
+
 ## Decision
 
-Documentation (`description` + `example` on every exposed property) helps any consumer, so it
-applies to every DM. An exhaustive contract test (`assertSame` on the full property map) only
-pays for itself on a DM consumed externally — that's the only place a schema drift is invisible
-to the consumer; on an internal DM the same drift shows up in review.
+Every Delivery Mechanism documents the properties it exposes, because that helps any consumer.
+Only a Delivery Mechanism consumed from outside gets an exhaustive contract test asserting its full
+shape — that is the one place a drift reaches production unseen. Anywhere else the same drift is
+visible in the diff.
 
-## Trade-offs
+## Alternatives rejected
 
-Maintenance cost of the exhaustive test on every external schema change.
+| Option | Why rejected |
+|---|---|
+| Exhaustive test on every DM | an internal change pays a test edit that review already caught |
+| No contract test anywhere | the external consumer discovers the drift in production |
+| Snapshot the whole schema | the diff is unreadable, so it gets approved without being read |
+
+## Consequences
+
+Every external schema change costs a test edit. Whether a Delivery Mechanism is consumed from
+outside is a judgement made when it is created.

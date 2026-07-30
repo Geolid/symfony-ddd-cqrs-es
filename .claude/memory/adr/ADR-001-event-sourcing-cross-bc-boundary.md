@@ -3,47 +3,38 @@
 **Date:** 2026-07-28
 **Status:** Accepted
 
+## Context
+
+Two Bounded Contexts need each other's data, and event sourcing offers no natural boundary between
+them: any subscriber can read any stream.
+
 ## Decision
 
-A Domain Event is consumed only within its own Bounded Context (its own Projectors, its own
-Translator) — enforced by a generated phpat rule per BC. Any other consumer, in another BC or a
-side effect, reacts to the Integration Event instead.
+A Domain Event is the internal language of its own Bounded Context and is consumed only there. A
+Translator republishes what the outside is allowed to know as an Integration Event, and that is the
+only path across. Both kinds live in one store, so a cross-BC read is a projection folding the
+foreign stream — replayable, eventually consistent, with no synchronous call between contexts.
 
-Domain and Integration Events share a single event store. A Translator subscribes to the
-producer's Domain Events and appends the matching Integration Event under a correlation id. A
-composite Projector subscribes to its own Domain Events plus foreign Integration Events, folding
-the foreign stream at fold time (a snapshot bounded by the current message index) to materialize
-a column, with one fan-out handler per foreign attribute that can change over time.
+An aggregate or event name is the store's serialization key, not a label: it changes only together
+with an upcaster.
 
-`#[Aggregate]`/`#[Event]` names mirror the class path exactly (`<subdomain>.<bc>.<aggregate>`,
-three segments even when the aggregate shares its BC's name) — the name is the event store's
-serialization key, so renaming it without an upcaster in the same change makes every existing
-stream undeserializable on replay.
+A reaction that mutates state dispatches a Command; one that leaves the system calls its port.
+Enrichment reads the write model, never a projection, because a projection may not have caught up.
 
-A reaction inside a BC listens to its own Domain Event; a reaction crossing a BC listens to the
-Integration Event. Enrichment reads the Repository only, never a Finder — a projection is
-eventually consistent, the Repository replays the true state. A side effect dispatches a Command
-only when it mutates the write model; an outbound effect (notification, external call) calls its
-port directly.
+Erasure of personal data is itself a Domain Event: dropping the subject's key covers every past
+event at once. A projection holding clear text redacts on that event, or is rebuilt by replay.
 
-Erasure of personal data is a Domain Event implementing an erasure marker, carrying the subject
-id. Dropping the subject's encryption key covers every past event for that subject implicitly. A
-projection holding personal data in clear text redacts on erasure through its own fan-out, or is
-rebuilt by replay. An effect reading personal data and the erasure of that data never react to
-the same event — the reader records the erasure event itself once done, so causality guarantees
-erasure follows the read.
+## Alternatives rejected
 
-## Trade-offs
+| Option | Why rejected |
+|---|---|
+| One store per Bounded Context | a cross-BC read then spans two stores, so either a distributed transaction or an ETL |
+| Subscribe to a foreign Domain Event | the producer can no longer refactor its own language |
+| Query the other context synchronously | couples availability, and leaves no history to replay |
+| Delete personal data in place | an append-only store cannot forget; replay resurrects it |
 
-A foreign attribute that changes over time costs a nullable column plus one fan-out handler. The
-fold is a bounded snapshot — later changes arrive only through the fan-out. Longer event-store
-names, minor readability cost when debugging. Each projection holding personal data owns its own
-erasure obligation.
+## Consequences
 
-## Rules created
-
-- ALWAYS: translate and persist Domain→Integration through the Translator; enrich cross-BC by
-  folding the foreign stream; intra-BC reaction on Domain Event, cross-BC on Integration Event;
-  mutating effect → Command, outbound effect → port; erasure marker on the Domain Event.
-- NEVER: publish an Integration Event from Application; enrich from a Finder; a Command for a
-  non-mutating effect; erasure via Integration Event; orchestrate replay from the eraser.
+A foreign attribute that keeps changing costs a nullable column and a handler to keep it current.
+Renaming an aggregate or an event is a migration. Every projection holding personal data owns its
+own erasure obligation.
