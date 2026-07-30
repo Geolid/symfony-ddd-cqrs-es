@@ -17,7 +17,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'fulfilment:fulfilment:shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
+#[AsCommand(name: 'fulfilment:shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
 final class DispatchPendingShipmentsCommand
 {
     use LockableTrait;

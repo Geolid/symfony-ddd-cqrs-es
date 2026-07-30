@@ -15,7 +15,7 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
     public function itPlacesAnOrder(): void
     {
         // When
-        $tester = $this->tester('sales:sales:order:place');
+        $tester = $this->tester('sales:order:place');
         $tester->execute(['customer-id' => 'customer-1', 'total-amount-in-cents' => '4200']);
 
         // Then

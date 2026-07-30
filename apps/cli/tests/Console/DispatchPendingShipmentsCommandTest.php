@@ -14,7 +14,7 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
     public function itDisplaysNoPendingShipments(): void
     {
         // When
-        $tester = $this->tester('fulfilment:fulfilment:shipment:dispatch-pending');
+        $tester = $this->tester('fulfilment:shipment:dispatch-pending');
         $tester->execute([]);
 
         // Then

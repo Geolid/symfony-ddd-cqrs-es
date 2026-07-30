@@ -15,7 +15,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'sales:sales:order:place', description: 'Place an Order from the command line (demo/local seeding)')]
+#[AsCommand(name: 'sales:order:place', description: 'Place an Order from the command line (demo/local seeding)')]
 final class PlaceOrderCommand
 {
     use LockableTrait;
