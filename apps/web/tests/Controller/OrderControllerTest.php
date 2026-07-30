@@ -23,7 +23,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects('/orders');
         $client->followRedirect();
-        self::assertSelectorTextContains('body', 'customer-1');
+        self::assertSelectorTextContains('[data-testid="order-customer"]', 'customer-1');
     }
 
     #[Test]

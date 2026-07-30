@@ -20,7 +20,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('body', 'No shipments yet');
+        self::assertSelectorExists('[data-testid="shipments-empty"]');
     }
 
     #[Test]

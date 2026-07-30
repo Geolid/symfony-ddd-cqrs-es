@@ -20,7 +20,7 @@
         {% for order in orders.items %}
             <tr>
                 <td>{{ order.id }}</td>
-                <td>{{ order.customerId }}</td>
+                <td data-testid="order-customer">{{ order.customerId }}</td>
                 <td>{{ (order.totalAmountInCents / 100)|number_format(2) }}</td>
                 <td><span class="status">{{ ('orders.status.' ~ order.status)|trans }}</span></td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
@@ -37,7 +37,7 @@
                 </td>
             </tr>
         {% else %}
-            <tr><td colspan="6">{{ 'orders.index.empty'|trans }}</td></tr>
+            <tr data-testid="orders-empty"><td colspan="6">{{ 'orders.index.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>

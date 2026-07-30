@@ -33,7 +33,7 @@
                 <td>{{ shipment.orderCancelledAt ? shipment.orderCancelledAt|date('Y-m-d H:i') : '—' }}</td>
             </tr>
         {% else %}
-            <tr><td colspan="9">{{ 'shipments.index.empty'|trans }}</td></tr>
+            <tr data-testid="shipments-empty"><td colspan="9">{{ 'shipments.index.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>
