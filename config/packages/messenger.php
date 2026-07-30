@@ -30,4 +30,14 @@ return static function (ContainerConfigurator $container): void {
             ],
         ],
     ]);
+
+    if ('test' === $container->env()) {
+        $container->extension('framework', [
+            'messenger' => [
+                'transports' => [
+                    'async' => 'sync://',
+                ],
+            ],
+        ]);
+    }
 };
