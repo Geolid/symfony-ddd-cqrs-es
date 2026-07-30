@@ -25,7 +25,7 @@
                 <td><span class="status">{{ ('orders.status.' ~ order.status)|trans }}</span></td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
-                    {% if order.status == 'placed' %}
+                    {% if order.status == cancellableStatus %}
                         {{ ui.confirm_modal(
                             'cancel-order-' ~ order.id,
                             '/orders/' ~ order.id ~ '/cancel',

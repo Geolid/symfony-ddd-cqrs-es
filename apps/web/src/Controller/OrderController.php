@@ -6,6 +6,7 @@ namespace Web\Controller;
 
 use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
 use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Ordering\Order\Application\Language\PublishedOrderStatus;
 use Ordering\Order\Application\Query\ListOrders\ListOrders;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -50,7 +51,10 @@ final readonly class OrderController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return new Response($this->twig->render('orders/index.html.twig', ['orders' => $orders]));
+        return new Response($this->twig->render('orders/index.html.twig', [
+            'orders' => $orders,
+            'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+        ]));
     }
 
     /**

@@ -25,4 +25,20 @@ trait ServiceLocatorTrait
 
         return $service;
     }
+
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $type
+     *
+     * @return T
+     */
+    protected function serviceAs(string $serviceId, string $type): object
+    {
+        $service = static::getContainer()->get($serviceId);
+
+        \assert($service instanceof $type);
+
+        return $service;
+    }
 }
