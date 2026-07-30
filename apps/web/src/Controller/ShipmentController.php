@@ -25,7 +25,10 @@ final readonly class ShipmentController
      * @throws ApplicationExceptionInterface
      */
     #[Route('/shipments', name: 'shipments_index', methods: ['GET'])]
-    public function index(#[MapQueryString] ShipmentCriteria $criteria = new ShipmentCriteria()): Response
+    public function index(
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
+        ShipmentCriteria $criteria = new ShipmentCriteria(),
+    ): Response
     {
         $shipments = $this->queryBus->ask(new ListShipments(
             status: $criteria->status,

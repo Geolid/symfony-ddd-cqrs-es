@@ -9,9 +9,9 @@ env:
   TIER: ci
   APP_ENV: test
   MAILER_DSN: null://null
-  EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
-  READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
-  MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
+  EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=mariadb-11.8.0&charset=utf8mb4
+  READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=mariadb-11.8.0&charset=utf8mb4
+  MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=mariadb-11.8.0&charset=utf8mb4
 
 jobs:
   build:

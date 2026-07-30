@@ -16,7 +16,7 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
     {
         // When
         $tester = $this->tester('order:place');
-        $tester->execute(['customer-1', '4200']);
+        $tester->execute(['customer-id' => 'customer-1', 'total-amount-in-cents' => '4200']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

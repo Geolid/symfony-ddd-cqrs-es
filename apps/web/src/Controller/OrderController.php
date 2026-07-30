@@ -41,7 +41,10 @@ final readonly class OrderController
      */
     #[Route('/', name: 'orders_home', methods: ['GET'])]
     #[Route('/orders', name: 'orders_index', methods: ['GET'])]
-    public function index(#[MapQueryString] OrderCriteria $criteria = new OrderCriteria()): Response
+    public function index(
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
+        OrderCriteria $criteria = new OrderCriteria(),
+    ): Response
     {
         $orders = $this->queryBus->ask(new ListOrders(
             page: $criteria->page,
