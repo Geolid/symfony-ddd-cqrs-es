@@ -35,7 +35,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // When
         $client->request('POST', \sprintf('/orders/%s/cancel', $id), [
-            '_token' => $this->csrfToken('cancel-order-'.$id),
+            '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
         // Then

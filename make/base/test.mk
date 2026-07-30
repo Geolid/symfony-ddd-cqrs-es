@@ -11,9 +11,12 @@ coverage: ## Run test suite with coverage
 	@$(EXEC) env XDEBUG_MODE=coverage vendor/bin/paratest --processes 8
 .PHONY: coverage
 
-mutation: ## Run mutation testing scoped to the diff
+base ?= origin/main
+
+mutation: ## Run mutation testing scoped to the diff (optional: make mutation base=origin/<branch>)
 	@$(EXEC) env XDEBUG_MODE=coverage vendor/bin/infection \
 		--threads=max \
 		--git-diff-lines \
+		--git-diff-base=$(base) \
 		--min-msi=100
 .PHONY: mutation

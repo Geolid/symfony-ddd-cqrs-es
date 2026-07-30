@@ -119,6 +119,8 @@ jobs:
           --health-retries=5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -134,4 +136,4 @@ jobs:
       - run: chmod -R +x vendor/bin
 
       - name: make mutation
-        run: make mutation
+        run: make mutation base=origin/${{ github.base_ref || github.event.repository.default_branch }}

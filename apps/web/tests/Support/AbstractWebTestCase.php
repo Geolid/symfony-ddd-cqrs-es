@@ -9,7 +9,6 @@ use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 abstract class AbstractWebTestCase extends WebTestCase
 {
@@ -31,8 +30,19 @@ abstract class AbstractWebTestCase extends WebTestCase
         return $client;
     }
 
-    protected function csrfToken(string $tokenId): string
+    protected function csrfToken(KernelBrowser $client, string $tokenId): string
     {
-        return $this->service(CsrfTokenManagerInterface::class)->getToken($tokenId)->getValue();
+        $session = $client->getSession();
+
+        if (null === $session) {
+            throw new \LogicException('No session available in the test client. Check your "framework.test" config.');
+        }
+
+        $tokenValue = 'dummy-token';
+
+        $session->set('_csrf/'.$tokenId, $tokenValue);
+        $session->save();
+
+        return $tokenValue;
     }
 }
