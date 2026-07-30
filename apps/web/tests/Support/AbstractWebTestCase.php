@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
+use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractWebTestCase extends WebTestCase
 {
+    use EventSourcingTrait;
     use ServiceLocatorTrait;
 
     /**

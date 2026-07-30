@@ -23,6 +23,7 @@ use Web\Controller\Criteria\CustomerCriteria;
 use Web\Form\FormData\RegisterCustomerFormData;
 use Web\Form\RegisterCustomerType;
 
+#[Route('/sales/customers')]
 final class CustomerController extends AbstractController
 {
     public function __construct(
@@ -35,8 +36,8 @@ final class CustomerController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route('/customers', name: 'customers_index', methods: ['GET'])]
-    public function index(
+    #[Route(name: 'sales_customer_list', methods: ['GET'])]
+    public function list(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         CustomerCriteria $criteria = new CustomerCriteria(),
     ): Response {
@@ -45,15 +46,15 @@ final class CustomerController extends AbstractController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return $this->render('customers/index.html.twig', ['customers' => $customers]);
+        return $this->render('sales/customer/list.html.twig', ['customers' => $customers]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/customers/new', name: 'customers_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    #[Route('/register', name: 'sales_customer_register', methods: ['GET', 'POST'])]
+    public function register(Request $request): Response
     {
         $formData = new RegisterCustomerFormData();
         $form = $this->createForm(RegisterCustomerType::class, $formData);
@@ -66,20 +67,20 @@ final class CustomerController extends AbstractController
                     email: (string) $formData->email,
                 ));
 
-                return $this->redirectToRoute('customers_index');
+                return $this->redirectToRoute('sales_customer_list');
             } catch (AddressAlreadyRegisteredException) {
-                $this->addFlash('error', $this->translator->trans('customers.new.address_taken'));
+                $this->addFlash('error', $this->translator->trans('sales.customer.flash.address_taken'));
             }
         }
 
-        return $this->render('customers/new.html.twig', ['form' => $form]);
+        return $this->render('sales/customer/register.html.twig', ['form' => $form]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/customers/{id}/erase', methods: ['POST'])]
+    #[Route('/{id}/erase', name: 'sales_customer_erase', methods: ['POST'])]
     public function erase(Request $request, string $id): Response
     {
         if (!$this->isCsrfTokenValid('erase-customer-'.$id, (string) $request->request->get('_token'))) {
@@ -87,8 +88,8 @@ final class CustomerController extends AbstractController
         }
 
         $this->commandBus->dispatch(new EraseCustomer($id));
-        $this->addFlash('success', $this->translator->trans('customers.index.erase_confirmed'));
+        $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
-        return $this->redirectToRoute('customers_index');
+        return $this->redirectToRoute('sales_customer_list');
     }
 }

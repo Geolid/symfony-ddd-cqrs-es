@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Web\Controller\Criteria\ShipmentCriteria;
 
+#[Route('/fulfilment/shipments')]
 final class ShipmentController extends AbstractController
 {
     public function __construct(private readonly QueryBusInterface $queryBus)
@@ -22,8 +23,8 @@ final class ShipmentController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route('/shipments', name: 'shipments_index', methods: ['GET'])]
-    public function index(
+    #[Route(name: 'fulfilment_shipment_list', methods: ['GET'])]
+    public function list(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         ShipmentCriteria $criteria = new ShipmentCriteria(),
     ): Response {
@@ -33,6 +34,6 @@ final class ShipmentController extends AbstractController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return $this->render('shipments/index.html.twig', ['shipments' => $shipments]);
+        return $this->render('fulfilment/shipment/list.html.twig', ['shipments' => $shipments]);
     }
 }

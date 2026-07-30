@@ -21,7 +21,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->registerCustomer($client, 'buyer-1@example.com');
 
         // Then
-        self::assertResponseRedirects('/customers');
+        self::assertResponseRedirects('/sales/customers');
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="customer-email"]', 'buyer-1@example.com');
     }
@@ -34,7 +34,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->registerCustomer($client, 'buyer-2@example.com');
 
         // When
-        $crawler = $client->request('GET', '/customers/new');
+        $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('form')->form();
         $form->setValues([\sprintf('%s[email]', $form->getName()) => 'buyer-2@example.com']);
         $client->submit($form);
@@ -52,12 +52,12 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $id = $this->registerCustomer($client, 'buyer-3@example.com');
 
         // When
-        $client->request('POST', \sprintf('/customers/%s/erase', $id), [
+        $client->request('POST', \sprintf('/sales/customers/%s/erase', $id), [
             '_token' => $this->csrfToken($client, 'erase-customer-'.$id),
         ]);
 
         // Then
-        self::assertResponseRedirects('/customers');
+        self::assertResponseRedirects('/sales/customers');
         $client->followRedirect();
         self::assertSelectorTextNotContains('[data-testid="customer-email"]', 'buyer-3@example.com');
     }
@@ -70,7 +70,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $id = $this->registerCustomer($client, 'buyer-4@example.com');
 
         // When
-        $client->request('POST', \sprintf('/customers/%s/erase', $id), ['_token' => 'invalid']);
+        $client->request('POST', \sprintf('/sales/customers/%s/erase', $id), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
@@ -78,7 +78,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
     private function registerCustomer(KernelBrowser $client, string $email): string
     {
-        $crawler = $client->request('GET', '/customers/new');
+        $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('form')->form();
         $form->setValues([\sprintf('%s[email]', $form->getName()) => $email]);
         $client->submit($form);

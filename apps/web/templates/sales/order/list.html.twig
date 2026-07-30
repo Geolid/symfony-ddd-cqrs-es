@@ -1,0 +1,45 @@
+{% extends 'layout.html.twig' %}
+{% import '@ui/_macros.html.twig' as ui %}
+
+{% block title %}{{ 'sales.order.list.title'|trans }}{% endblock %}
+{% block heading %}{{ 'sales.order.list.title'|trans }}{% endblock %}
+
+{% block content %}
+    <table>
+        <thead>
+        <tr>
+            <th>{{ 'sales.order.list.table.id'|trans }}</th>
+            <th>{{ 'sales.order.list.table.customer'|trans }}</th>
+            <th>{{ 'sales.order.list.table.total'|trans }}</th>
+            <th>{{ 'sales.order.list.table.status'|trans }}</th>
+            <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
+            <th>{{ 'sales.order.list.table.actions'|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for order in orders.items %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td data-testid="order-customer">{{ order.customerId }}</td>
+                <td>{{ (order.totalAmountInCents / 100)|number_format(2) }}</td>
+                <td><span class="status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
+                <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
+                <td>
+                    {% if order.status == cancellableStatus %}
+                        {{ ui.confirm_modal(
+                            'cancel-order-' ~ order.id,
+                            path('sales_order_cancel', {id: order.id}),
+                            'sales.order.list.cancel_button'|trans,
+                            'sales.order.list.cancel_confirm_message'|trans,
+                            {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
+                        ) }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr data-testid="orders-empty"><td colspan="6">{{ 'sales.order.list.empty'|trans }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {{ ui.pagination(orders.pagination, 'sales_order_list', {}) }}
+{% endblock %}

@@ -22,6 +22,7 @@ use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 
+#[Route('/sales/orders')]
 final class OrderController extends AbstractController
 {
     public function __construct(
@@ -33,9 +34,8 @@ final class OrderController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route('/', name: 'orders_home', methods: ['GET'])]
-    #[Route('/orders', name: 'orders_index', methods: ['GET'])]
-    public function index(
+    #[Route(name: 'sales_order_list', methods: ['GET'])]
+    public function list(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
     ): Response {
@@ -44,7 +44,7 @@ final class OrderController extends AbstractController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return $this->render('orders/index.html.twig', [
+        return $this->render('sales/order/list.html.twig', [
             'orders' => $orders,
             'cancellableStatus' => PublishedOrderStatus::PLACED->value,
         ]);
@@ -54,8 +54,8 @@ final class OrderController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/orders/new', name: 'orders_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
+    public function place(Request $request): Response
     {
         $formData = new PlaceOrderFormData();
         $form = $this->createForm(PlaceOrderType::class, $formData);
@@ -68,17 +68,17 @@ final class OrderController extends AbstractController
                 totalAmountInCents: (int) $formData->totalAmountInCents,
             ));
 
-            return $this->redirectToRoute('orders_index');
+            return $this->redirectToRoute('sales_order_list');
         }
 
-        return $this->render('orders/new.html.twig', ['form' => $form]);
+        return $this->render('sales/order/place.html.twig', ['form' => $form]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/orders/{id}/cancel', methods: ['POST'])]
+    #[Route('/{id}/cancel', name: 'sales_order_cancel', methods: ['POST'])]
     public function cancel(Request $request, string $id): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
@@ -87,6 +87,6 @@ final class OrderController extends AbstractController
 
         $this->commandBus->dispatch(new CancelOrder($id));
 
-        return $this->redirectToRoute('orders_index');
+        return $this->redirectToRoute('sales_order_list');
     }
 }

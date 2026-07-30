@@ -21,7 +21,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->placeOrder($client, 'customer-1', 4_200);
 
         // Then
-        self::assertResponseRedirects('/orders');
+        self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="order-customer"]', 'customer-1');
     }
@@ -34,12 +34,12 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = $this->placeOrder($client, 'customer-2', 1_000);
 
         // When
-        $client->request('POST', \sprintf('/orders/%s/cancel', $id), [
+        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
         // Then
-        self::assertResponseRedirects('/orders');
+        self::assertResponseRedirects('/sales/orders');
     }
 
     #[Test]
@@ -50,7 +50,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = $this->placeOrder($client, 'customer-3', 1_000);
 
         // When
-        $client->request('POST', \sprintf('/orders/%s/cancel', $id), ['_token' => 'invalid']);
+        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
@@ -58,7 +58,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
     private function placeOrder(KernelBrowser $client, string $customerId, int $totalAmountInCents): string
     {
-        $crawler = $client->request('GET', '/orders/new');
+        $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('form')->form();
         $prefix = $form->getName();
 

@@ -12,8 +12,9 @@ pick it apart, rename it, replace it; the interesting part is the structure arou
 
 ## Architecture
 
-Two Bounded Contexts:
+Three Bounded Contexts:
 
+- **`Sales.Customer`** — registers and erases a `Customer`, the showcase's data subject.
 - **`Sales.Order`** — places and cancels an `Order`.
 - **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
@@ -41,7 +42,7 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 | DM | Exposes |
 |---|---|
 | `apps/api` | JSON HTTP (API Platform) for orders and shipments |
-| `apps/web` | A small Twig backoffice (list orders/shipments, place an order) |
+| `apps/web` | A small Twig backoffice (register a customer, place and cancel an order, list shipments, erase a customer) |
 | `apps/cli` | Console commands (`sales:order:place`, `fulfilment:shipment:dispatch-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
@@ -91,7 +92,7 @@ make start   # stack up, composer install, event store + read model set up, demo
 ```
 
 Then visit `http://localhost/web/` (backoffice, already showing the seeded orders) or call
-`http://localhost/api/orders`. Mailpit's UI is at `http://localhost:8025`.
+`http://localhost/api/v1/sales/orders`. Mailpit's UI is at `http://localhost:8025`.
 
 `make start` is `up wait-db install setup seed` — see `Makefile` for each step, or run them
 individually. Re-run `make seed` any time to add more demo orders (`demo/SeedCommand.php`,

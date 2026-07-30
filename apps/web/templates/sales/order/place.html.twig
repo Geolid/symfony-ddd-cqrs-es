@@ -1,7 +1,7 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}{{ 'orders.new.title'|trans }}{% endblock %}
-{% block heading %}{{ 'orders.new.title'|trans }}{% endblock %}
+{% block title %}{{ 'sales.order.place.title'|trans }}{% endblock %}
+{% block heading %}{{ 'sales.order.place.title'|trans }}{% endblock %}
 
 {% block content %}
     {{ form_start(form) }}
@@ -15,6 +15,6 @@
         {{ form_widget(form.totalAmountInCents) }}
         {{ form_errors(form.totalAmountInCents) }}
     </p>
-    <button type="submit">{{ 'orders.new.submit_button'|trans }}</button>
+    <button type="submit">{{ 'sales.order.place.submit_button'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

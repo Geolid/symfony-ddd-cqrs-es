@@ -16,7 +16,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $client->request('GET', '/shipments');
+        $client->request('GET', '/fulfilment/shipments');
 
         // Then
         self::assertResponseIsSuccessful();
@@ -30,7 +30,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $client->request('GET', '/shipments?status=pending&page=1&itemsPerPage=5');
+        $client->request('GET', '/fulfilment/shipments?status=pending&page=1&itemsPerPage=5');
 
         // Then
         self::assertResponseIsSuccessful();
@@ -43,7 +43,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $client->request('GET', '/shipments?status=teleported');
+        $client->request('GET', '/fulfilment/shipments?status=teleported');
 
         // Then
         self::assertResponseStatusCodeSame(422);

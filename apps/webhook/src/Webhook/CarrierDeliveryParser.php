@@ -76,7 +76,9 @@ final class CarrierDeliveryParser extends AbstractRequestParser
             throw new RejectWebhookException(Response::HTTP_UNAUTHORIZED, \sprintf('Missing "%s" header.', self::SIGNATURE_HEADER));
         }
 
-        if (!hash_equals(hash_hmac('sha256', $request->getContent(), $secret), $signature)) {
+        $expected = 'sha256='.hash_hmac('sha256', $request->getContent(), $secret);
+
+        if (!hash_equals($expected, $signature)) {
             throw new RejectWebhookException(Response::HTTP_UNAUTHORIZED, 'Invalid signature.');
         }
     }
