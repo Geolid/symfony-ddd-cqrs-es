@@ -5,5 +5,7 @@ declare(strict_types=1);
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return static function (RoutingConfigurator $routes): void {
-    $routes->import('../src/Controller/', 'attribute');
+    $routes->import('@FrameworkBundle/Resources/config/routing/webhook.php')
+        ->prefix('/webhooks')
+        ->defaults(['_format' => 'json']);
 };
