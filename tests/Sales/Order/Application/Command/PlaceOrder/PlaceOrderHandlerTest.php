@@ -57,7 +57,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderId::generate()->toString();
 
         // When
-        $this->dispatch(new PlaceOrder($id, 'customer-1', 1_999));
+        $this->dispatch(new PlaceOrder($id, CustomerId::generate()->toString(), 1_999));
 
         // Then
         self::assertNull($this->buyerAddressOf($id));

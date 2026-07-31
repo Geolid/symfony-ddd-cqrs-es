@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Webhook\Tests\Webhook;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 
 final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
@@ -14,7 +15,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body('4a4b1c7e-9a4f-7c1e-8b2d-2f6a9c0d1e3f');
+        $body = self::body(Uuid::uuid7()->toString());
 
         // When
         $client->request('POST', '/webhooks/carrier-delivery', server: self::jsonHeaders(), content: $body);
@@ -28,7 +29,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body('4a4b1c7e-9a4f-7c1e-8b2d-2f6a9c0d1e3f');
+        $body = self::body(Uuid::uuid7()->toString());
 
         // When
         $client->request('POST', '/webhooks/carrier-delivery', server: self::jsonHeaders(['HTTP_X_CARRIER_SIGNATURE' => 'invalid']), content: $body);
@@ -70,7 +71,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body('00000000-0000-0000-0000-000000000000');
+        $body = self::body(Uuid::uuid7()->toString());
 
         // When
         $client->request('POST', '/webhooks/carrier-delivery', server: self::jsonHeaders(['HTTP_X_CARRIER_SIGNATURE' => self::sign($body)]), content: $body);

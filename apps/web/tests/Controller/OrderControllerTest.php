@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -16,14 +17,15 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        $customerId = Uuid::uuid7()->toString();
 
         // When
-        $this->placeOrder($client, 'customer-1', 4_200);
+        $this->placeOrder($client, $customerId, 4_200);
 
         // Then
         self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
-        self::assertSelectorTextContains('[data-testid="order-customer"]', 'customer-1');
+        self::assertSelectorTextContains('[data-testid="order-customer"]', $customerId);
     }
 
     #[Test]
@@ -31,7 +33,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, 'customer-2', 1_000);
+        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 1_000);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -47,7 +49,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, 'customer-3', 1_000);
+        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 1_000);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);

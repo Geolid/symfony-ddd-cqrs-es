@@ -11,6 +11,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
+/**
+ * @phpstan-type Row array{customer_id: ?string, order_total_in_cents: int|string|null, status: string, order_cancelled_at: ?string}
+ */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -52,12 +55,16 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array<string, mixed>|false
+     * @return Row|false
      */
     private function fetchRow(string $id): array|false
     {
+        /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.default_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT * FROM %s WHERE id = :id', DbalShipmentProjector::TABLE),
+            \sprintf(
+                'SELECT customer_id, order_total_in_cents, status, order_cancelled_at FROM %s WHERE id = :id',
+                DbalShipmentProjector::TABLE,
+            ),
             ['id' => $id],
         );
     }

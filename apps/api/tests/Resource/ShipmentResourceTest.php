@@ -9,6 +9,7 @@ use Api\Tests\Support\AbstractApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ShipmentResourceTest extends AbstractApiTestCase
@@ -18,8 +19,9 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $orderId = $this->placeOrder($client, 3_500);
-        $this->createShipment($orderId);
+        $customerId = Uuid::uuid7()->toString();
+        $orderId = $this->placeOrder($client, $customerId, 3_500);
+        $this->createShipment($orderId, $customerId);
 
         // When
         $client->request('GET', '/v1/fulfilment/shipments');
@@ -33,7 +35,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
             'member' => [
                 [
                     'orderId' => $orderId,
-                    'customerId' => 'customer-1',
+                    'customerId' => $customerId,
                     'orderTotalInCents' => 3_500,
                     'status' => 'pending',
                 ],
@@ -46,8 +48,8 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $dispatched = $this->createShipment($this->placeOrder($client, 1_000));
-        $this->createShipment($this->placeOrder($client, 2_000));
+        $dispatched = $this->shipmentForNewOrder($client, 1_000);
+        $this->shipmentForNewOrder($client, 2_000);
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $dispatched));
 
         // When
@@ -80,7 +82,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->createShipment($this->placeOrder($client, 2_000));
+        $id = $this->shipmentForNewOrder($client, 2_000);
 
         // When
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
@@ -97,7 +99,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->createShipment($this->placeOrder($client, 2_000));
+        $id = $this->shipmentForNewOrder($client, 2_000);
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
 
         // When
@@ -114,26 +116,33 @@ final class ShipmentResourceTest extends AbstractApiTestCase
         $client = self::jsonClient();
 
         // When
-        $client->request('POST', '/v1/fulfilment/shipments/00000000-0000-0000-0000-000000000000/dispatch');
+        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', Uuid::uuid7()->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
-    private function placeOrder(Client $client, int $totalAmountInCents): string
+    private function shipmentForNewOrder(Client $client, int $totalAmountInCents): string
+    {
+        $customerId = Uuid::uuid7()->toString();
+
+        return $this->createShipment($this->placeOrder($client, $customerId, $totalAmountInCents), $customerId);
+    }
+
+    private function placeOrder(Client $client, string $customerId, int $totalAmountInCents): string
     {
         $response = $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => 'customer-1', 'totalAmountInCents' => $totalAmountInCents],
+            'json' => ['customerId' => $customerId, 'totalAmountInCents' => $totalAmountInCents],
         ]);
 
         return $response->toArray()['id'];
     }
 
-    private function createShipment(string $orderId): string
+    private function createShipment(string $orderId, string $customerId): string
     {
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($orderId)
-            ->withCustomerId('customer-1')
+            ->withCustomerId($customerId)
             ->create();
 
         $this->store($shipment);

@@ -6,6 +6,7 @@ namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Symfony\Component\Console\Command\Command;
 
@@ -16,7 +17,7 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
     {
         // When
         $tester = $this->tester('sales:order:place');
-        $tester->execute(['customer-id' => 'customer-1', 'total-amount-in-cents' => '4200']);
+        $tester->execute(['customer-id' => Uuid::uuid7()->toString(), 'total-amount-in-cents' => '4200']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

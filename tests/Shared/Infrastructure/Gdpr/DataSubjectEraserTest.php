@@ -8,6 +8,7 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 
@@ -32,13 +33,14 @@ final class DataSubjectEraserTest extends TestCase
     public function itDropsTheKeyOfAnErasedSubject(): void
     {
         // Given
-        $event = new DummyErasure('e2b1e8f6-4b3a-4a3e-9c1e-5f6a7b8c9d01');
+        $subjectId = Uuid::uuid7()->toString();
+        $event = new DummyErasure($subjectId);
 
         // When
         new DataSubjectEraser($this->cipherKeyStore)->onEvent(Message::create($event));
 
         // Then
-        self::assertSame(['e2b1e8f6-4b3a-4a3e-9c1e-5f6a7b8c9d01'], $this->dropped);
+        self::assertSame([$subjectId], $this->dropped);
     }
 
     #[Test]
