@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Customer\Domain;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sales\Customer\Domain\Email;
@@ -11,23 +12,47 @@ use Sales\Customer\Domain\Email;
 final class EmailTest extends TestCase
 {
     #[Test]
-    public function itNormalisesTheAddress(): void
+    public function itCreates(): void
     {
-        // Given
-        $value = '  Buyer@Example.COM ';
-
         // When
-        $email = Email::fromString($value);
+        $email = Email::fromString('buyer@example.com');
 
         // Then
         self::assertSame('buyer@example.com', $email->toString());
     }
 
     #[Test]
-    public function itFingerprintsTheNormalisedAddress(): void
+    public function itNormalizes(): void
+    {
+        // When
+        $email = Email::fromString('  Buyer@Example.COM  ');
+
+        // Then
+        self::assertSame('buyer@example.com', $email->toString());
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
     {
         // Given
-        $email = Email::fromString('  Buyer@Example.COM ');
+        $a = Email::fromString('buyer@example.com');
+        $b = Email::fromString('  Buyer@Example.COM  ');
+        $other = Email::fromString('other@example.com');
+
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
+    }
+
+    #[Test]
+    public function itFingerprintsTheNormalizedValue(): void
+    {
+        // Given
+        $email = Email::fromString('  Buyer@Example.COM  ');
 
         // When
         $fingerprint = $email->fingerprint();
@@ -37,12 +62,25 @@ final class EmailTest extends TestCase
     }
 
     #[Test]
-    public function itRefusesAMalformedAddress(): void
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        Email::fromString('buyer@');
+        Email::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
+        yield 'missing at sign' => ['not-an-address'];
+        yield 'missing domain' => ['buyer@'];
+        yield 'missing local part' => ['@example.com'];
     }
 }
