@@ -23,7 +23,7 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // When
         $response = $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => $customerId, 'totalAmountInCents' => 3_500],
+            'json' => ['customerId' => $customerId, 'lines' => self::lines()],
         ]);
 
         // Then
@@ -32,21 +32,23 @@ final class OrderResourceTest extends AbstractApiTestCase
         self::assertMatchesResourceItemJsonSchema(OrderResource::class);
         self::assertJsonContains([
             'customerId' => $customerId,
-            'totalAmountInCents' => 3_500,
+            'totalAmountInCents' => 1_999,
             'status' => 'placed',
         ]);
         self::assertNotEmpty($response->toArray()['id']);
     }
 
     #[Test]
-    public function itFailsToAcceptANegativeAmount(): void
+    public function itFailsToAcceptANegativeUnitAmount(): void
     {
         // Given
         $client = self::jsonClient();
 
         // When
         $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => $this->registeredCustomer(), 'totalAmountInCents' => -1],
+            'json' => ['customerId' => $this->registeredCustomer(), 'lines' => [
+                ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => -1],
+            ]],
         ]);
 
         // Then
@@ -61,7 +63,7 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => 'not-a-uuid', 'totalAmountInCents' => 3_500],
+            'json' => ['customerId' => 'not-a-uuid', 'lines' => self::lines()],
         ]);
 
         // Then
@@ -76,7 +78,7 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => Uuid::uuid7()->toString(), 'totalAmountInCents' => 3_500],
+            'json' => ['customerId' => Uuid::uuid7()->toString(), 'lines' => self::lines()],
         ]);
 
         // Then
@@ -89,7 +91,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Given
         $client = self::jsonClient();
         $customerId = $this->registeredCustomer();
-        $id = $this->placeOrder($client, $customerId, 3_500);
+        $id = $this->placeOrder($client, $customerId);
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', $id));
@@ -101,7 +103,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         self::assertJsonContains([
             'id' => $id,
             'customerId' => $customerId,
-            'totalAmountInCents' => 3_500,
+            'totalAmountInCents' => 1_999,
             'status' => 'placed',
         ]);
     }
@@ -126,8 +128,8 @@ final class OrderResourceTest extends AbstractApiTestCase
         $client = self::jsonClient();
         $first = $this->registeredCustomer();
         $second = $this->registeredCustomer();
-        $this->placeOrder($client, $first, 1_000);
-        $this->placeOrder($client, $second, 2_000);
+        $this->placeOrder($client, $first);
+        $this->placeOrder($client, $second);
 
         // When
         $client->request('GET', '/v1/sales/orders');
@@ -139,8 +141,8 @@ final class OrderResourceTest extends AbstractApiTestCase
         self::assertJsonContains([
             'totalItems' => 2,
             'member' => [
-                ['customerId' => $second, 'totalAmountInCents' => 2_000],
-                ['customerId' => $first, 'totalAmountInCents' => 1_000],
+                ['customerId' => $second, 'totalAmountInCents' => 1_999],
+                ['customerId' => $first, 'totalAmountInCents' => 1_999],
             ],
         ]);
     }
@@ -150,7 +152,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->placeOrder($client, $this->registeredCustomer(), 3_500);
+        $id = $this->placeOrder($client, $this->registeredCustomer());
 
         // When
         $client->request('POST', \sprintf('/v1/sales/orders/%s/cancel', $id));
@@ -167,7 +169,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->placeOrder($client, $this->registeredCustomer(), 3_500);
+        $id = $this->placeOrder($client, $this->registeredCustomer());
         $client->request('POST', \sprintf('/v1/sales/orders/%s/cancel', $id));
 
         // When
@@ -186,12 +188,23 @@ final class OrderResourceTest extends AbstractApiTestCase
         return $customer->id()->toString();
     }
 
-    private function placeOrder(Client $client, string $customerId, int $totalAmountInCents): string
+    private function placeOrder(Client $client, string $customerId): string
     {
         $response = $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => $customerId, 'totalAmountInCents' => $totalAmountInCents],
+            'json' => ['customerId' => $customerId, 'lines' => self::lines()],
         ]);
 
         return $response->toArray()['id'];
+    }
+
+    /**
+     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     */
+    private static function lines(): array
+    {
+        return [
+                ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+                ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+            ];
     }
 }

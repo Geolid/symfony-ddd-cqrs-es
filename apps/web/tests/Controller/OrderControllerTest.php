@@ -20,7 +20,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $customerId = $this->registeredCustomer();
 
         // When
-        $this->placeOrder($client, $customerId, 4_200);
+        $this->placeOrder($client, $customerId);
 
         // Then
         self::assertResponseRedirects('/sales/orders');
@@ -33,7 +33,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, $this->registeredCustomer(), 1_000);
+        $id = $this->placeOrder($client, $this->registeredCustomer());
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -49,7 +49,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, $this->registeredCustomer(), 1_000);
+        $id = $this->placeOrder($client, $this->registeredCustomer());
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
@@ -67,7 +67,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         return $customer->id()->toString();
     }
 
-    private function placeOrder(KernelBrowser $client, string $customerId, int $totalAmountInCents): string
+    private function placeOrder(KernelBrowser $client, string $customerId): string
     {
         $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('form')->form();
@@ -75,7 +75,9 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $form->setValues([
             \sprintf('%s[customerId]', $prefix) => $customerId,
-            \sprintf('%s[totalAmountInCents]', $prefix) => (string) $totalAmountInCents,
+            \sprintf('%s[lines][0][label]', $prefix) => 'Espresso cups, set of 6',
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+            \sprintf('%s[lines][0][unitAmountInCents]', $prefix) => '1750',
         ]);
 
         $client->submit($form);

@@ -21,7 +21,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
         // Given
         $client = self::jsonClient();
         $customerId = $this->registeredCustomer();
-        $orderId = $this->placeOrder($client, $customerId, 3_500);
+        $orderId = $this->placeOrder($client, $customerId);
         $this->createShipment($orderId, $customerId);
 
         // When
@@ -37,7 +37,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
                 [
                     'orderId' => $orderId,
                     'customerId' => $customerId,
-                    'orderTotalInCents' => 3_500,
+                    'orderTotalInCents' => 1_999,
                     'status' => 'pending',
                 ],
             ],
@@ -49,8 +49,8 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $dispatched = $this->shipmentForNewOrder($client, 1_000);
-        $this->shipmentForNewOrder($client, 2_000);
+        $dispatched = $this->shipmentForNewOrder($client);
+        $this->shipmentForNewOrder($client);
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $dispatched));
 
         // When
@@ -83,7 +83,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->shipmentForNewOrder($client, 2_000);
+        $id = $this->shipmentForNewOrder($client);
 
         // When
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
@@ -100,7 +100,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->shipmentForNewOrder($client, 2_000);
+        $id = $this->shipmentForNewOrder($client);
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
 
         // When
@@ -123,11 +123,11 @@ final class ShipmentResourceTest extends AbstractApiTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
-    private function shipmentForNewOrder(Client $client, int $totalAmountInCents): string
+    private function shipmentForNewOrder(Client $client): string
     {
         $customerId = $this->registeredCustomer();
 
-        return $this->createShipment($this->placeOrder($client, $customerId, $totalAmountInCents), $customerId);
+        return $this->createShipment($this->placeOrder($client, $customerId), $customerId);
     }
 
     private function registeredCustomer(): string
@@ -139,10 +139,13 @@ final class ShipmentResourceTest extends AbstractApiTestCase
         return $customer->id()->toString();
     }
 
-    private function placeOrder(Client $client, string $customerId, int $totalAmountInCents): string
+    private function placeOrder(Client $client, string $customerId): string
     {
         $response = $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => $customerId, 'totalAmountInCents' => $totalAmountInCents],
+            'json' => ['customerId' => $customerId, 'lines' => [
+                ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+                ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+            ]],
         ]);
 
         return $response->toArray()['id'];

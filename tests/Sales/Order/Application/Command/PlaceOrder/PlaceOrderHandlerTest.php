@@ -25,7 +25,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderId::generate()->toString();
 
         // When
-        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), 1_999));
+        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), self::lines()));
 
         // Then
         $results = array_values(iterator_to_array($this->service(OrderFinderInterface::class)));
@@ -47,7 +47,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, 1_999));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, self::lines()));
     }
 
     #[Test]
@@ -61,7 +61,18 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), 1_999));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), self::lines()));
+    }
+
+    /**
+     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     */
+    private static function lines(): array
+    {
+        return [
+            ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+            ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+        ];
     }
 
     private function registeredCustomer(string $email): Customer

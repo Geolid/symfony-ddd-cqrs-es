@@ -7,6 +7,8 @@ namespace Demo\Sales;
 use Demo\Sales\Input\SeedOrdersInput;
 use Demo\Shared\WeightedPicker;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
+use Sales\Order\Domain\Money;
+use Sales\Order\Domain\OrderLine;
 use Sales\Order\Domain\OrderStatus;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -51,7 +53,7 @@ final readonly class SeedOrdersCommand
             $factory = OrderTestFactory::new()
                 ->withCustomerId($customer->id)
                 ->withBuyerAddress($customer->email)
-                ->withTotalAmountInCents(random_int(500, 25_000));
+                ->withLines([OrderLine::of('Assorted goods', random_int(1, 5), Money::fromCents(random_int(500, 5_000)))]);
 
             $status = OrderStatus::from(WeightedPicker::pick($weights));
 

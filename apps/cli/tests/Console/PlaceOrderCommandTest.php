@@ -21,7 +21,10 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
 
         // When
         $tester = $this->tester('sales:order:place');
-        $tester->execute(['customer-id' => $customer->id()->toString(), 'total-amount-in-cents' => '4200']);
+        $tester->execute([
+            'customer-id' => $customer->id()->toString(),
+            '--line' => ['Espresso cups, set of 6:1:1750', 'Saucer:3:83'],
+        ]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

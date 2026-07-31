@@ -10,11 +10,21 @@
         {{ form_widget(form.customerId) }}
         {{ form_errors(form.customerId) }}
     </p>
-    <p>
-        {{ form_label(form.totalAmountInCents) }}<br>
-        {{ form_widget(form.totalAmountInCents) }}
-        {{ form_errors(form.totalAmountInCents) }}
-    </p>
+    <fieldset data-collection data-testid="order-lines" data-prototype="{{ form_widget(form.lines.vars.prototype)|e('html_attr') }}">
+        <legend>{{ form_label(form.lines) }}</legend>
+        {{ form_errors(form.lines) }}
+        <div data-collection-rows data-testid="order-lines-rows">
+            {% for line in form.lines %}
+                <p data-testid="order-line">
+                    {{ form_label(line.label) }} {{ form_widget(line.label) }}
+                    {{ form_label(line.quantity) }} {{ form_widget(line.quantity) }}
+                    {{ form_label(line.unitAmountInCents) }} {{ form_widget(line.unitAmountInCents) }}
+                    {{ form_errors(line) }}
+                </p>
+            {% endfor %}
+        </div>
+        <button type="button" data-collection-add data-testid="add-order-line">{{ 'sales.order.place.add_line_button'|trans }}</button>
+    </fieldset>
     <button type="submit">{{ 'sales.order.place.submit_button'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

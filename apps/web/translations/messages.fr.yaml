@@ -25,7 +25,11 @@ sales:
         place:
             title: Passer une commande
             customer_label: ID client
-            amount_label: Montant total (centimes)
+            lines_label: Lignes
+            line_label: Désignation
+            line_quantity_label: Quantité
+            line_unit_amount_label: Montant unitaire (centimes)
+            add_line_button: Ajouter une ligne
             submit_button: Passer la commande
         status:
             placed: Passée

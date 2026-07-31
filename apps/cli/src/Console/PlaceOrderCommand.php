@@ -42,7 +42,7 @@ final class PlaceOrderCommand
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
                 customerId: $input->customerId,
-                totalAmountInCents: $input->totalAmountInCents,
+                lines: self::toLines($input->line),
             ));
 
             $io->success(\sprintf('Order %s placed.', $id));
@@ -51,5 +51,31 @@ final class PlaceOrderCommand
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param list<string> $specifications
+     *
+     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     */
+    private static function toLines(array $specifications): array
+    {
+        return array_values(array_map(
+            static function (string $specification): array {
+                if (1 !== preg_match(PlaceOrderInput::LINE_PATTERN, $specification, $line)) {
+                    throw new \InvalidArgumentException(\sprintf(
+                        'An order line is formatted "<label>:<quantity>:<unit amount in cents>", "%s" given.',
+                        $specification,
+                    ));
+                }
+
+                return [
+                    'label' => $line['label'],
+                    'quantity' => (int) $line['quantity'],
+                    'unitAmountInCents' => (int) $line['unitAmountInCents'],
+                ];
+            },
+            $specifications,
+        ));
     }
 }

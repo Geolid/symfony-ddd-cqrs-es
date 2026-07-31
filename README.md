@@ -15,7 +15,8 @@ pick it apart, rename it, replace it; the interesting part is the structure arou
 Three Bounded Contexts:
 
 - **`Sales.Customer`** — registers and erases a `Customer`, the showcase's data subject.
-- **`Sales.Order`** — places and cancels an `Order`.
+- **`Sales.Order`** — places and cancels an `Order`, whose total the aggregate derives from
+  the lines it was placed with; no surface may dictate an amount.
 - **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
 `Fulfilment` never depends on `Sales`'s Domain or Application internals — the only sanctioned

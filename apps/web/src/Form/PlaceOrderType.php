@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Web\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 
 /**
@@ -23,9 +24,16 @@ final class PlaceOrderType extends AbstractType
                 'label' => 'sales.order.place.customer_label',
                 'translation_domain' => 'messages',
             ])
-            ->add('totalAmountInCents', IntegerType::class, [
-                'label' => 'sales.order.place.amount_label',
+            ->add('lines', CollectionType::class, [
+                'label' => 'sales.order.place.lines_label',
                 'translation_domain' => 'messages',
+                'entry_type' => OrderLineType::class,
+                'entry_options' => ['label' => false],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
+                'by_reference' => false,
+                'data' => [new OrderLineFormData()],
             ]);
     }
 

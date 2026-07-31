@@ -13,6 +13,7 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderWithoutLineException;
 
 #[Aggregate('sales.order.order')]
 final class Order implements AggregateRoot, AggregateRootMetadataAware
@@ -22,6 +23,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private OrderId $id;
     private ?string $buyerAddress;
+    private Money $totalAmount;
     private OrderStatus $status;
 
     public function id(): OrderId
@@ -34,19 +36,47 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->buyerAddress;
     }
 
+    public function totalAmount(): Money
+    {
+        return $this->totalAmount;
+    }
+
+    /**
+     * @param list<OrderLine> $lines
+     *
+     * @throws OrderWithoutLineException
+     */
     public static function place(
         OrderId $id,
         string $customerId,
         ?string $buyerAddress,
-        Money $totalAmount,
+        array $lines,
         \DateTimeImmutable $placedAt,
     ): self {
+        if ([] === $lines) {
+            throw OrderWithoutLineException::forId($id);
+        }
+
+        $total = array_reduce(
+            $lines,
+            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
+            Money::fromCents(0),
+        );
+
         $self = new self();
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
             customerId: $customerId,
             buyerAddress: $buyerAddress,
-            totalAmountInCents: $totalAmount->toCents(),
+            lines: array_values(array_map(
+                static fn (OrderLine $line): array => [
+                    'label' => $line->label,
+                    'quantity' => $line->quantity,
+                    'unitAmountInCents' => $line->unitAmount->toCents(),
+                ],
+                $lines,
+            )),
+            totalAmountInCents: $total->toCents(),
             placedAt: $placedAt->format('c'),
         ));
 
@@ -73,6 +103,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = OrderId::fromString($event->id);
         $this->buyerAddress = $event->buyerAddress;
+        $this->totalAmount = Money::fromCents($event->totalAmountInCents);
         $this->status = OrderStatus::PLACED;
     }
 

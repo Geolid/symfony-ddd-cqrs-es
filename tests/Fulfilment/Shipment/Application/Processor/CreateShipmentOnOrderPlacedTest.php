@@ -78,6 +78,7 @@ final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
             orderId: $order->id()->toString(),
             customerId: 'customer-1',
             buyerAddress: 'buyer@example.com',
+            lines: [['label' => 'Assorted goods', 'quantity' => 1, 'unitAmountInCents' => 4_200]],
             totalAmountInCents: 4_200,
             placedAt: '2026-01-01T00:00:00+00:00',
         );

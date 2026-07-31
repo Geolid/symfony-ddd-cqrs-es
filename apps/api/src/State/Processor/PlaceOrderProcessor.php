@@ -35,10 +35,9 @@ final readonly class PlaceOrderProcessor implements ProcessorInterface
     {
         Assert::isInstanceOf($data, PlaceOrderInput::class);
         Assert::stringNotEmpty($data->customerId);
-        Assert::natural($data->totalAmountInCents);
 
         $id = Uuid::uuid7()->toString();
-        $this->commandBus->dispatch(new PlaceOrder($id, $data->customerId, $data->totalAmountInCents));
+        $this->commandBus->dispatch(new PlaceOrder($id, $data->customerId, $data->lines));
 
         return OrderResource::fromResult($this->queryBus->ask(new GetOrder($id)));
     }

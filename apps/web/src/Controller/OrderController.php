@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Web\Controller\Criteria\OrderCriteria;
+use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 
@@ -66,7 +67,14 @@ final class OrderController extends AbstractController
             $this->commandBus->dispatch(new PlaceOrder(
                 id: Uuid::uuid7()->toString(),
                 customerId: (string) $formData->customerId,
-                totalAmountInCents: (int) $formData->totalAmountInCents,
+                lines: array_values(array_map(
+                    static fn (OrderLineFormData $line): array => [
+                        'label' => (string) $line->label,
+                        'quantity' => (int) $line->quantity,
+                        'unitAmountInCents' => (int) $line->unitAmountInCents,
+                    ],
+                    $formData->lines,
+                )),
             ));
 
             return $this->redirectToRoute('sales_order_list');

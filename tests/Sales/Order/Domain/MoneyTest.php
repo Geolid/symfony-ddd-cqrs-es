@@ -39,6 +39,26 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
+    public function itAddsAnotherAmount(): void
+    {
+        // When
+        $sum = Money::fromCents(1_750)->plus(Money::fromCents(249));
+
+        // Then
+        self::assertSame(1_999, $sum->toCents());
+    }
+
+    #[Test]
+    public function itMultipliesByAQuantity(): void
+    {
+        // When
+        $product = Money::fromCents(83)->times(3);
+
+        // Then
+        self::assertSame(249, $product->toCents());
+    }
+
+    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(int $value): void
     {

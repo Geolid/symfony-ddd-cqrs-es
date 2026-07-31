@@ -23,6 +23,16 @@ final readonly class Money
         return $this->amountInCents === $other->amountInCents;
     }
 
+    public function plus(self $other): self
+    {
+        return new self($this->amountInCents + $other->amountInCents);
+    }
+
+    public function times(int $multiplier): self
+    {
+        return new self($this->amountInCents * $multiplier);
+    }
+
     public function toCents(): int
     {
         return $this->amountInCents;

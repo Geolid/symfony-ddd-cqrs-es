@@ -24,6 +24,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
                 orderId: $event->id,
                 customerId: $event->customerId,
                 buyerAddress: $event->buyerAddress,
+                lines: $event->lines,
                 totalAmountInCents: $event->totalAmountInCents,
                 placedAt: $event->placedAt,
             ),

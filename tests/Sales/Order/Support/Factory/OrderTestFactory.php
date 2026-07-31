@@ -8,6 +8,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
+use Sales\Order\Domain\OrderLine;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -26,9 +27,17 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return static::new(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
     }
 
+    /**
+     * @param list<OrderLine> $lines
+     */
+    public function withLines(array $lines): self
+    {
+        return static::new(array_merge($this->attributes, ['lines' => $lines]));
+    }
+
     public function withTotalAmountInCents(int $totalAmountInCents): self
     {
-        return static::new(array_merge($this->attributes, ['totalAmountInCents' => $totalAmountInCents]));
+        return $this->withLines([OrderLine::of('Assorted goods', 1, Money::fromCents($totalAmountInCents))]);
     }
 
     public function cancelled(): self
@@ -42,7 +51,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             'id' => OrderId::generate()->toString(),
             'customerId' => Uuid::uuid7()->toString(),
             'buyerAddress' => self::faker()->safeEmail(),
-            'totalAmountInCents' => self::faker()->numberBetween(500, 25_000),
+            'lines' => [OrderLine::of(
+                self::faker()->sentence(3),
+                self::faker()->numberBetween(1, 5),
+                Money::fromCents(self::faker()->numberBetween(500, 5_000)),
+            )],
             'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }
@@ -52,14 +65,15 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
         Assert::nullOrStringNotEmpty($buyerAddress = $attributes['buyerAddress']);
-        Assert::natural($totalAmountInCents = $attributes['totalAmountInCents']);
+        Assert::isList($lines = $attributes['lines']);
+        Assert::allIsInstanceOf($lines, OrderLine::class);
         Assert::isInstanceOf($placedAt = $attributes['placedAt'], \DateTimeInterface::class);
 
         return Order::place(
             OrderId::fromString($id),
             $customerId,
             $buyerAddress,
-            Money::fromCents($totalAmountInCents),
+            $lines,
             \DateTimeImmutable::createFromInterface($placedAt),
         );
     }

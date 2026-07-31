@@ -9,22 +9,34 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
+use Sales\Order\Domain\OrderLine;
 
 final class OrderTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itPlacesAnOrder(): void
+    public function itPlacesAnOrderDerivingItsTotalFromItsLines(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', Money::fromCents(1_999), $placedAt))
-            ->then(new OrderPlaced($id->toString(), 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')));
+            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', self::lines(), $placedAt))
+            ->then(new OrderPlaced($id->toString(), 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')));
+    }
+
+    #[Test]
+    public function itCannotPlaceAnOrderWithoutALine(): void
+    {
+        $id = OrderId::generate();
+
+        $this->expectException(OrderWithoutLineException::class);
+
+        Order::place($id, 'customer-1', 'buyer@example.com', [], new \DateTimeImmutable('2026-01-01T00:00:00+00:00'));
     }
 
     #[Test]
@@ -35,7 +47,7 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')))
+            ->given(new OrderPlaced($id, 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
             ->when(static fn (Order $order) => $order->cancel($cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format('c')));
     }
@@ -49,7 +61,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPlaced($id, 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')),
+                new OrderPlaced($id, 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')),
                 new OrderCancelled($id, $cancelledAt->format('c')),
             )
             ->when(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -59,5 +71,27 @@ final class OrderTest extends AggregateRootTestCase
     protected function aggregateClass(): string
     {
         return Order::class;
+    }
+
+    /**
+     * @return list<OrderLine>
+     */
+    private static function lines(): array
+    {
+        return [
+            OrderLine::of('Espresso cups, set of 6', 1, Money::fromCents(1_750)),
+            OrderLine::of('Saucer', 3, Money::fromCents(83)),
+        ];
+    }
+
+    /**
+     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     */
+    private static function primitiveLines(): array
+    {
+        return [
+            ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+            ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+        ];
     }
 }
