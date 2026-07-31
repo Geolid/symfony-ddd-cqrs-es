@@ -11,4 +11,5 @@ use Shared\Application\Finder\PaginatedFinderInterface;
  */
 interface CustomerFinderInterface extends PaginatedFinderInterface
 {
+    public function withoutErased(): static;
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form;
 
-use Sales\Customer\Application\Query\ListCustomers\ListCustomers;
+use Sales\Customer\Application\Query\StreamRegisteredCustomers\StreamRegisteredCustomers;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -19,8 +19,6 @@ use Web\Form\FormData\PlaceOrderFormData;
  */
 final class PlaceOrderType extends AbstractType
 {
-    private const int BUYERS_OFFERED = 100;
-
     public function __construct(private readonly QueryBusInterface $queryBus)
     {
     }
@@ -59,10 +57,8 @@ final class PlaceOrderType extends AbstractType
     {
         $buyers = [];
 
-        foreach ($this->queryBus->ask(new ListCustomers(itemsPerPage: self::BUYERS_OFFERED))->items as $customer) {
-            if (null !== $customer->email) {
-                $buyers[$customer->email] = $customer->id;
-            }
+        foreach ($this->queryBus->ask(new StreamRegisteredCustomers()) as $customer) {
+            $buyers[(string) $customer->email] = $customer->id;
         }
 
         return $buyers;

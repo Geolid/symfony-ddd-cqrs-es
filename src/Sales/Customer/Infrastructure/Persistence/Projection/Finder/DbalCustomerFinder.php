@@ -17,6 +17,13 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
+    public function withoutErased(): static
+    {
+        return $this->filter(static function (QueryBuilder $qb): void {
+            $qb->andWhere('erased_at IS NULL');
+        });
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'email', 'registered_at', 'erased_at')
