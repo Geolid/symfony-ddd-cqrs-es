@@ -21,7 +21,8 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
     {
         $qb->select('id', 'email', 'registered_at', 'erased_at')
             ->from(DbalCustomerProjector::TABLE)
-            ->orderBy('registered_at', 'DESC');
+            ->orderBy('registered_at', 'DESC')
+            ->addOrderBy('id', 'DESC');
     }
 
     /**

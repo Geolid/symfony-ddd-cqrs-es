@@ -18,7 +18,7 @@ return static function (ContainerConfigurator $container): void {
         ],
         'areas' => [
             'default' => [
-                'path_patterns' => ['^/docs'],
+                'path_patterns' => ['^/webhooks'],
             ],
         ],
     ]);

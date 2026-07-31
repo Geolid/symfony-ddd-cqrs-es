@@ -60,7 +60,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     private function fetchRow(string $id): array|false
     {
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.default_connection', Connection::class)->fetchAssociative(
+        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
                 'SELECT customer_id, order_total_in_cents, status, order_cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
