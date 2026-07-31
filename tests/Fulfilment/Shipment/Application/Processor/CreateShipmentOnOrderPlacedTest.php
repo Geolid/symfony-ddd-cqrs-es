@@ -28,7 +28,7 @@ final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(CreateShipmentOnOrderPlaced::class))($event);
+        $this->service(CreateShipmentOnOrderPlaced::class)->onOrderPlaced($event);
 
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));

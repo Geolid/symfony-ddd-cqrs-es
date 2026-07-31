@@ -24,7 +24,7 @@ final readonly class CreateShipmentOnOrderPlaced
      * @throws \DomainException
      */
     #[Subscribe(OrderPlacedIntegrationEvent::class)]
-    public function __invoke(OrderPlacedIntegrationEvent $event): void
+    public function onOrderPlaced(OrderPlacedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new CreateShipment(
             id: ShipmentId::generate()->toString(),
