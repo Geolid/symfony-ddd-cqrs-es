@@ -23,6 +23,7 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
     #[Test]
     public function itNotifiesTheCustomerOnceTheShipmentIsDelivered(): void
     {
+        // Given
         $orderId = Uuid::uuid7()->toString();
         $this->dispatch(new PlaceOrder($orderId, 'customer-1', 1_500));
         ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(
@@ -37,18 +38,7 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         $this->dispatch(new DispatchShipment($shipmentId));
         $this->dispatch(new MarkShipmentDelivered($shipmentId));
 
-        $notifier = new class implements ShipmentDeliveredNotifierInterface {
-            public ?string $notifiedShipmentId = null;
-            public ?string $notifiedOrderId = null;
-            public ?string $notifiedCustomerId = null;
-
-            public function notify(string $shipmentId, string $orderId, string $customerId): void
-            {
-                $this->notifiedShipmentId = $shipmentId;
-                $this->notifiedOrderId = $orderId;
-                $this->notifiedCustomerId = $customerId;
-            }
-        };
+        $notifier = new DummyShipmentDeliveredNotifier();
 
         $processor = new NotifyCustomerOnShipmentDelivered(
             $this->service(ShipmentRepositoryInterface::class),
@@ -62,5 +52,19 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         self::assertSame($shipmentId, $notifier->notifiedShipmentId);
         self::assertSame($orderId, $notifier->notifiedOrderId);
         self::assertSame('customer-1', $notifier->notifiedCustomerId);
+    }
+}
+
+final class DummyShipmentDeliveredNotifier implements ShipmentDeliveredNotifierInterface
+{
+    public ?string $notifiedShipmentId = null;
+    public ?string $notifiedOrderId = null;
+    public ?string $notifiedCustomerId = null;
+
+    public function notify(string $shipmentId, string $orderId, string $customerId): void
+    {
+        $this->notifiedShipmentId = $shipmentId;
+        $this->notifiedOrderId = $orderId;
+        $this->notifiedCustomerId = $customerId;
     }
 }
