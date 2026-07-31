@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Sales\Order\Application\Validation\ValidBuyerId;
+use Sales\Customer\Application\Validation\ValidCustomerId;
 use Sales\Order\Application\Validation\ValidMoney;
 
 final class PlaceOrderFormData
 {
-    #[ValidBuyerId]
+    #[ValidCustomerId]
     public ?string $customerId = null;
 
     #[ValidMoney]

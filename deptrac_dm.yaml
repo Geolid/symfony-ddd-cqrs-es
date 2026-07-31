@@ -30,6 +30,6 @@ deptrac:
   # Tools\PHPat\DeliveryMechanismTest — deptrac only draws the outer boundary.
   ruleset:
     Web:     [ Sales.Customer, Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
-    Api:     [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
-    Cli:     [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
+    Api:     [ Sales.Customer, Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
+    Cli:     [ Sales.Customer, Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Webhook: [ Fulfilment.Shipment, Shared, Vendors ]
