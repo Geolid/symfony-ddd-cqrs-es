@@ -18,8 +18,8 @@ Three Bounded Contexts:
 - **`Sales.Order`** — places and cancels an `Order`.
 - **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
-`Fulfilment` never depends on `Sales`'s Domain or Application internals — the one sanctioned
-cross-BC edge (see `deptrac_bc.yaml`) is Sales' public Integration Event contract. Neither
+`Fulfilment` never depends on `Sales`'s Domain or Application internals — the only sanctioned
+cross-BC edges (see `deptrac_bc.yaml`) are Sales' public Integration Event contracts. Neither
 of Sales' Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
 Infrastructure-layer Translator (`OrderIntegrationEventTranslator`) converts each into its
 public counterpart (`OrderPlacedIntegrationEvent`, `OrderCancelledIntegrationEvent`) and appends
@@ -35,6 +35,12 @@ it to the event store. `Fulfilment` reacts to both, but in two different shapes,
   - *Fan-out*: `OrderCancelled` can happen *after* the Shipment already exists, so the
     projection instead subscribes to `OrderCancelledIntegrationEvent` directly and updates the
     existing row in place — no replay needed.
+- **Read-on-demand behind a port** — `NotifyCustomerOnShipmentDelivered` needs the buyer's
+  address, which belongs to `Sales.Customer`. Rather than storing a copy, Fulfilment declares
+  `CustomerAddressResolverInterface` in its Application layer and its Infrastructure folds
+  Sales' customer stream at notification time. Personal data therefore never lands in a
+  Fulfilment table: once the customer is erased, the fold yields no address and the
+  notification is skipped.
 
 Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 `bootstrap/Kernel.php`:

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Processor;
 
+use Fulfilment\Shipment\Application\Notifier\CustomerAddressResolverInterface;
+use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotification;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -17,6 +19,7 @@ final readonly class NotifyCustomerOnShipmentDelivered
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
+        private CustomerAddressResolverInterface $addressResolver,
         private ShipmentDeliveredNotifierInterface $notifier,
     ) {
     }
@@ -28,7 +31,19 @@ final readonly class NotifyCustomerOnShipmentDelivered
     public function __invoke(ShipmentDelivered $event): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
+        $customerId = $shipment->customerId();
 
-        $this->notifier->notify($event->id, $shipment->orderId(), $shipment->customerId());
+        $address = $this->addressResolver->resolveFor($customerId);
+
+        if (null === $address) {
+            return;
+        }
+
+        $this->notifier->notify(new ShipmentDeliveredNotification(
+            shipmentId: $event->id,
+            orderId: $shipment->orderId(),
+            customerId: $customerId,
+            customerAddress: $address,
+        ));
     }
 }

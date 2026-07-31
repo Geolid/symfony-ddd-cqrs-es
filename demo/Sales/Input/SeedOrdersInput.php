@@ -8,9 +8,6 @@ use Symfony\Component\Console\Attribute\Option;
 
 final class SeedOrdersInput
 {
-    #[Option(description: 'Default customer ID prefix')]
-    public string $customer = 'customer';
-
     #[Option(description: 'How many orders to seed')]
     public int $count = 20;
 

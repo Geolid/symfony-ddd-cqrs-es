@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Notification;
 
+use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotification;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -14,15 +15,15 @@ final readonly class MailerShipmentDeliveredNotifier implements ShipmentDelivere
     {
     }
 
-    public function notify(string $shipmentId, string $orderId, string $customerId): void
+    public function notify(ShipmentDeliveredNotification $notification): void
     {
         $email = (new Email())
-            ->to(\sprintf('%s@example.com', $customerId))
-            ->subject(\sprintf('Your order %s has been delivered', $orderId))
+            ->to($notification->customerAddress)
+            ->subject(\sprintf('Your order %s has been delivered', $notification->orderId))
             ->text(\sprintf(
                 "Good news — your order %s (shipment %s) has just been delivered.\n",
-                $orderId,
-                $shipmentId,
+                $notification->orderId,
+                $notification->shipmentId,
             ));
 
         $this->mailer->send($email);
