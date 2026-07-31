@@ -20,6 +20,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return static::new(array_merge($this->attributes, ['customerId' => $customerId]));
     }
 
+    public function withBuyerAddress(?string $buyerAddress): self
+    {
+        return static::new(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
+    }
+
     public function withTotalAmountInCents(int $totalAmountInCents): self
     {
         return static::new(array_merge($this->attributes, ['totalAmountInCents' => $totalAmountInCents]));
@@ -35,6 +40,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return [
             'id' => OrderId::generate()->toString(),
             'customerId' => 'customer-'.self::faker()->numerify('###'),
+            'buyerAddress' => self::faker()->safeEmail(),
             'totalAmountInCents' => self::faker()->numberBetween(500, 25_000),
             'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
@@ -44,12 +50,14 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
+        Assert::nullOrStringNotEmpty($buyerAddress = $attributes['buyerAddress']);
         Assert::natural($totalAmountInCents = $attributes['totalAmountInCents']);
         Assert::isInstanceOf($placedAt = $attributes['placedAt'], \DateTimeInterface::class);
 
         return Order::place(
             OrderId::fromString($id),
             $customerId,
+            $buyerAddress,
             Money::fromCents($totalAmountInCents),
             \DateTimeImmutable::createFromInterface($placedAt),
         );

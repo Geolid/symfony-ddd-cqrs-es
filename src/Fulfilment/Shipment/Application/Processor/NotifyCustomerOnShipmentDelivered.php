@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Processor;
 
-use Fulfilment\Shipment\Application\Notifier\CustomerAddressResolverInterface;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotification;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
@@ -19,7 +18,6 @@ final readonly class NotifyCustomerOnShipmentDelivered
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
-        private CustomerAddressResolverInterface $addressResolver,
         private ShipmentDeliveredNotifierInterface $notifier,
     ) {
     }
@@ -31,9 +29,7 @@ final readonly class NotifyCustomerOnShipmentDelivered
     public function __invoke(ShipmentDelivered $event): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
-        $customerId = $shipment->customerId();
-
-        $address = $this->addressResolver->resolveFor($customerId);
+        $address = $shipment->customerAddress();
 
         if (null === $address) {
             return;
@@ -42,7 +38,7 @@ final readonly class NotifyCustomerOnShipmentDelivered
         $this->notifier->notify(new ShipmentDeliveredNotification(
             shipmentId: $event->id,
             orderId: $shipment->orderId(),
-            customerId: $customerId,
+            customerId: $shipment->customerId(),
             customerAddress: $address,
         ));
     }

@@ -21,10 +21,17 @@ final readonly class CreateShipmentHandler
 
     public function __invoke(CreateShipment $command): void
     {
+        $id = ShipmentId::fromString($command->id);
+
+        if ($this->repository->has($id)) {
+            return;
+        }
+
         $shipment = Shipment::create(
-            ShipmentId::fromString($command->id),
+            $id,
             $command->orderId,
             $command->customerId,
+            $command->customerAddress,
             $this->clock->now(),
         );
 

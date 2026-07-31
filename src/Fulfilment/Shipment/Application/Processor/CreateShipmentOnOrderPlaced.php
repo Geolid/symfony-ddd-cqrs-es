@@ -27,9 +27,10 @@ final readonly class CreateShipmentOnOrderPlaced
     public function __invoke(OrderPlacedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new CreateShipment(
-            id: ShipmentId::generate()->toString(),
+            id: ShipmentId::forOrder($event->orderId)->toString(),
             orderId: $event->orderId,
             customerId: $event->customerId,
+            customerAddress: $event->buyerAddress,
         ));
     }
 }

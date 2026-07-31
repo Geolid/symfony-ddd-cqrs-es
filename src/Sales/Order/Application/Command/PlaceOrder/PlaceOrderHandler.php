@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\PlaceOrder;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Application\Buyer\BuyerResolverInterface;
 use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
@@ -16,6 +17,7 @@ final readonly class PlaceOrderHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
+        private BuyerResolverInterface $buyerResolver,
         private ClockInterface $clock,
     ) {
     }
@@ -25,6 +27,7 @@ final readonly class PlaceOrderHandler
         $order = Order::place(
             OrderId::fromString($command->id),
             $command->customerId,
+            $this->buyerResolver->resolveFor($command->customerId)?->address,
             Money::fromCents($command->totalAmountInCents),
             $this->clock->now(),
         );

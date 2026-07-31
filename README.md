@@ -35,12 +35,19 @@ it to the event store. `Fulfilment` reacts to both, but in two different shapes,
   - *Fan-out*: `OrderCancelled` can happen *after* the Shipment already exists, so the
     projection instead subscribes to `OrderCancelledIntegrationEvent` directly and updates the
     existing row in place — no replay needed.
-- **Read-on-demand behind a port** — `NotifyCustomerOnShipmentDelivered` needs the buyer's
-  address, which belongs to `Sales.Customer`. Rather than storing a copy, Fulfilment declares
-  `CustomerAddressResolverInterface` in its Application layer and its Infrastructure folds
-  Sales' customer stream at notification time. Personal data therefore never lands in a
-  Fulfilment table: once the customer is erased, the fold yields no address and the
-  notification is skipped.
+A third cross-BC shape sits one level up, inside `Sales`: placing an order needs the buyer
+behind it, so `Sales.Order` declares `BuyerResolverInterface` and its Infrastructure folds
+`Sales.Customer`'s Integration Event stream. The resolved address travels on `OrderPlaced`,
+then on `OrderPlacedIntegrationEvent`, and `CreateShipmentOnOrderPlaced` freezes it onto
+`ShipmentCreated`. `Fulfilment` therefore knows a single upstream contract — the order —
+and the delivery notification is a pure function of Fulfilment's own stream, identical on
+every replay. Every hop tags the address `#[PersonalData(fallback: null)]` next to a
+`#[DataSubjectId]` customer id, so one key drop turns it to `null` the whole way down and
+the notification is simply skipped; no projection ever materializes it.
+
+That Processor is also replay-safe by construction: `ShipmentId::forOrder()` derives the
+identity as a `uuid5` of the order id, so a replay resolves to the same aggregate and
+`CreateShipmentHandler` returns early instead of opening a second shipment.
 
 Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 `bootstrap/Kernel.php`:

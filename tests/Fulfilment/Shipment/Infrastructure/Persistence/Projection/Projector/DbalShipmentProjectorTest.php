@@ -23,6 +23,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(
             orderId: $orderId,
             customerId: 'customer-1',
+            buyerAddress: 'buyer@example.com',
             totalAmountInCents: 2_500,
             placedAt: (new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->format('c'),
         ));

@@ -35,12 +35,9 @@ final readonly class SeedOrdersCommand
         ];
         $stats = array_fill_keys(array_keys($weights), 0);
 
-        $customerIds = array_map(
-            static fn ($customer) => $customer->id,
-            array_values(iterator_to_array($this->customerFinder)),
-        );
+        $customers = array_values(iterator_to_array($this->customerFinder));
 
-        if ([] === $customerIds) {
+        if ([] === $customers) {
             $io->error('No customer registered — run "demo:sales:customers" first.');
 
             return Command::FAILURE;
@@ -49,8 +46,11 @@ final readonly class SeedOrdersCommand
         $io->progressStart($input->count);
 
         for ($i = 1; $i <= $input->count; ++$i) {
+            $customer = $customers[array_rand($customers)];
+
             $factory = OrderTestFactory::new()
-                ->withCustomerId($customerIds[array_rand($customerIds)])
+                ->withCustomerId($customer->id)
+                ->withBuyerAddress($customer->email)
                 ->withTotalAmountInCents(random_int(500, 25_000));
 
             $status = OrderStatus::from(WeightedPicker::pick($weights));

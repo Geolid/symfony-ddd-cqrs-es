@@ -21,6 +21,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private OrderId $id;
+    private ?string $buyerAddress;
     private OrderStatus $status;
 
     public function id(): OrderId
@@ -28,9 +29,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
+    public function buyerAddress(): ?string
+    {
+        return $this->buyerAddress;
+    }
+
     public static function place(
         OrderId $id,
         string $customerId,
+        ?string $buyerAddress,
         Money $totalAmount,
         \DateTimeImmutable $placedAt,
     ): self {
@@ -38,6 +45,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
             customerId: $customerId,
+            buyerAddress: $buyerAddress,
             totalAmountInCents: $totalAmount->toCents(),
             placedAt: $placedAt->format('c'),
         ));
@@ -64,6 +72,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyOrderPlaced(OrderPlaced $event): void
     {
         $this->id = OrderId::fromString($event->id);
+        $this->buyerAddress = $event->buyerAddress;
         $this->status = OrderStatus::PLACED;
     }
 

@@ -23,8 +23,8 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, 'customer-1', Money::fromCents(1_999), $placedAt))
-            ->then(new OrderPlaced($id->toString(), 'customer-1', 1_999, $placedAt->format('c')));
+            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', Money::fromCents(1_999), $placedAt))
+            ->then(new OrderPlaced($id->toString(), 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')));
     }
 
     #[Test]
@@ -35,7 +35,7 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, 'customer-1', 1_999, $placedAt->format('c')))
+            ->given(new OrderPlaced($id, 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')))
             ->when(static fn (Order $order) => $order->cancel($cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format('c')));
     }
@@ -49,7 +49,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPlaced($id, 'customer-1', 1_999, $placedAt->format('c')),
+                new OrderPlaced($id, 'customer-1', 'buyer@example.com', 1_999, $placedAt->format('c')),
                 new OrderCancelled($id, $cancelledAt->format('c')),
             )
             ->when(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Infrastructure\Persistence\EventStore\Reducer;
+namespace Sales\Order\Infrastructure\Persistence\EventStore\Reducer;
 
-use Fulfilment\Shipment\Application\Notifier\CustomerAddressResolverInterface;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Message\Reducer;
 use Patchlevel\EventSourcing\Store\Criteria\Criteria;
@@ -12,14 +11,16 @@ use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
+use Sales\Order\Application\Buyer\Buyer;
+use Sales\Order\Application\Buyer\BuyerResolverInterface;
 
-final readonly class CustomerAddressResolver implements CustomerAddressResolverInterface
+final readonly class BuyerResolver implements BuyerResolverInterface
 {
     public function __construct(private Store $store)
     {
     }
 
-    public function resolveFor(string $customerId): ?string
+    public function resolveFor(string $customerId): ?Buyer
     {
         $stream = $this->store->load(new Criteria(
             new StreamCriterion(\sprintf('sales.customer.integration.%s', $customerId)),
@@ -43,6 +44,10 @@ final readonly class CustomerAddressResolver implements CustomerAddressResolverI
             )
             ->reduce($stream);
 
-        return $state['address'];
+        if (null === $state['address']) {
+            return null;
+        }
+
+        return new Buyer($customerId, $state['address']);
     }
 }

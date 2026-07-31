@@ -23,8 +23,8 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Shipment::create($id, 'order-1', 'customer-1', $createdAt))
-            ->then(new ShipmentCreated($id->toString(), 'order-1', 'customer-1', $createdAt->format('c')));
+            ->when(static fn () => Shipment::create($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt))
+            ->then(new ShipmentCreated($id->toString(), 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')));
     }
 
     #[Test]
@@ -35,7 +35,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')))
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
             ->then(new ShipmentDispatched($id, $dispatchedAt->format('c')));
     }
@@ -47,7 +47,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')))
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
@@ -62,7 +62,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, 'order-1', 'customer-1', $createdAt->format('c')),
+                new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')),
                 new ShipmentDispatched($id, $dispatchedAt->format('c')),
             )
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered($deliveredAt))
