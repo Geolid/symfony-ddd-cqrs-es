@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Support\Factory;
 
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
@@ -39,7 +40,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'id' => OrderId::generate()->toString(),
-            'customerId' => 'customer-'.self::faker()->numerify('###'),
+            'customerId' => Uuid::uuid7()->toString(),
             'buyerAddress' => self::faker()->safeEmail(),
             'totalAmountInCents' => self::faker()->numberBetween(500, 25_000),
             'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),

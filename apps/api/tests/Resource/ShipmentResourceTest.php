@@ -10,6 +10,7 @@ use ApiPlatform\Symfony\Bundle\Test\Client;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ShipmentResourceTest extends AbstractApiTestCase
@@ -19,7 +20,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $customerId = Uuid::uuid7()->toString();
+        $customerId = $this->registeredCustomer();
         $orderId = $this->placeOrder($client, $customerId, 3_500);
         $this->createShipment($orderId, $customerId);
 
@@ -124,9 +125,18 @@ final class ShipmentResourceTest extends AbstractApiTestCase
 
     private function shipmentForNewOrder(Client $client, int $totalAmountInCents): string
     {
-        $customerId = Uuid::uuid7()->toString();
+        $customerId = $this->registeredCustomer();
 
         return $this->createShipment($this->placeOrder($client, $customerId, $totalAmountInCents), $customerId);
+    }
+
+    private function registeredCustomer(): string
+    {
+        $customer = CustomerTestFactory::new()->create();
+
+        $this->store($customer);
+
+        return $customer->id()->toString();
     }
 
     private function placeOrder(Client $client, string $customerId, int $totalAmountInCents): string

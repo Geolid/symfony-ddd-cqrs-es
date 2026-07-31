@@ -6,7 +6,9 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -36,31 +38,30 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itPlacesAnOrderWithoutAddressForAnErasedBuyer(): void
+    public function itFailsWhenTheBuyerIsNotRegistered(): void
+    {
+        // Given
+        $customerId = CustomerId::generate()->toString();
+
+        // Then
+        $this->expectException(BuyerNotRegisteredException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, 1_999));
+    }
+
+    #[Test]
+    public function itFailsWhenTheBuyerIsErased(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->create();
         $this->store($customer);
-        $id = OrderId::generate()->toString();
-
-        // When
-        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), 1_999));
 
         // Then
-        self::assertNull($this->buyerAddressOf($id));
-    }
-
-    #[Test]
-    public function itPlacesAnOrderWithoutAddressForAnUnknownBuyer(): void
-    {
-        // Given
-        $id = OrderId::generate()->toString();
+        $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder($id, CustomerId::generate()->toString(), 1_999));
-
-        // Then
-        self::assertNull($this->buyerAddressOf($id));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), 1_999));
     }
 
     private function registeredCustomer(string $email): Customer

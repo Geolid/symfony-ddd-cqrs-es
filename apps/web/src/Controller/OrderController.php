@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
@@ -78,7 +79,7 @@ final class OrderController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/{id}/cancel', name: 'sales_order_cancel', methods: ['POST'])]
+    #[Route('/{id}/cancel', name: 'sales_order_cancel', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
     public function cancel(Request $request, string $id): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {

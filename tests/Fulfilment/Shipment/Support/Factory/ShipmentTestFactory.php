@@ -46,7 +46,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'orderId' => Uuid::uuid7()->toString(),
-            'customerId' => 'customer-'.self::faker()->numerify('###'),
+            'customerId' => Uuid::uuid7()->toString(),
             'customerAddress' => self::faker()->safeEmail(),
             'createdAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];

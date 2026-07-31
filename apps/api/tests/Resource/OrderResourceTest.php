@@ -9,6 +9,7 @@ use Api\Tests\Support\AbstractApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 final class OrderResourceTest extends AbstractApiTestCase
@@ -18,7 +19,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $customerId = Uuid::uuid7()->toString();
+        $customerId = $this->registeredCustomer();
 
         // When
         $response = $client->request('POST', '/v1/sales/orders', [
@@ -45,7 +46,7 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => Uuid::uuid7()->toString(), 'totalAmountInCents' => -1],
+            'json' => ['customerId' => $this->registeredCustomer(), 'totalAmountInCents' => -1],
         ]);
 
         // Then
@@ -68,11 +69,26 @@ final class OrderResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
+    public function itFailsToAcceptAnUnregisteredBuyer(): void
+    {
+        // Given
+        $client = self::jsonClient();
+
+        // When
+        $client->request('POST', '/v1/sales/orders', [
+            'json' => ['customerId' => Uuid::uuid7()->toString(), 'totalAmountInCents' => 3_500],
+        ]);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    #[Test]
     public function itReturnsAnOrder(): void
     {
         // Given
         $client = self::jsonClient();
-        $customerId = Uuid::uuid7()->toString();
+        $customerId = $this->registeredCustomer();
         $id = $this->placeOrder($client, $customerId, 3_500);
 
         // When
@@ -108,8 +124,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $first = Uuid::uuid7()->toString();
-        $second = Uuid::uuid7()->toString();
+        $first = $this->registeredCustomer();
+        $second = $this->registeredCustomer();
         $this->placeOrder($client, $first, 1_000);
         $this->placeOrder($client, $second, 2_000);
 
@@ -134,7 +150,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 3_500);
+        $id = $this->placeOrder($client, $this->registeredCustomer(), 3_500);
 
         // When
         $client->request('POST', \sprintf('/v1/sales/orders/%s/cancel', $id));
@@ -151,7 +167,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 3_500);
+        $id = $this->placeOrder($client, $this->registeredCustomer(), 3_500);
         $client->request('POST', \sprintf('/v1/sales/orders/%s/cancel', $id));
 
         // When
@@ -159,6 +175,15 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+    }
+
+    private function registeredCustomer(): string
+    {
+        $customer = CustomerTestFactory::new()->create();
+
+        $this->store($customer);
+
+        return $customer->id()->toString();
     }
 
     private function placeOrder(Client $client, string $customerId, int $totalAmountInCents): string

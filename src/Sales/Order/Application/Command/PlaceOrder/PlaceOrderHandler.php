@@ -6,6 +6,7 @@ namespace Sales\Order\Application\Command\PlaceOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Buyer\BuyerResolverInterface;
+use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
@@ -22,12 +23,18 @@ final readonly class PlaceOrderHandler
     ) {
     }
 
+    /**
+     * @throws BuyerNotRegisteredException
+     */
     public function __invoke(PlaceOrder $command): void
     {
+        $buyer = $this->buyerResolver->resolveFor($command->customerId)
+            ?? throw BuyerNotRegisteredException::forId($command->customerId);
+
         $order = Order::place(
             OrderId::fromString($command->id),
-            $command->customerId,
-            $this->buyerResolver->resolveFor($command->customerId)?->address,
+            $buyer->id,
+            $buyer->address,
             Money::fromCents($command->totalAmountInCents),
             $this->clock->now(),
         );

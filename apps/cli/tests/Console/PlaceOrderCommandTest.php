@@ -6,8 +6,8 @@ namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Component\Console\Command\Command;
 
 final class PlaceOrderCommandTest extends AbstractCliTestCase
@@ -15,9 +15,13 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
     #[Test]
     public function itPlacesAnOrder(): void
     {
+        // Given
+        $customer = CustomerTestFactory::new()->create();
+        $this->store($customer);
+
         // When
         $tester = $this->tester('sales:order:place');
-        $tester->execute(['customer-id' => Uuid::uuid7()->toString(), 'total-amount-in-cents' => '4200']);
+        $tester->execute(['customer-id' => $customer->id()->toString(), 'total-amount-in-cents' => '4200']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -17,7 +17,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $customerId = Uuid::uuid7()->toString();
+        $customerId = $this->registeredCustomer();
 
         // When
         $this->placeOrder($client, $customerId, 4_200);
@@ -33,7 +33,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 1_000);
+        $id = $this->placeOrder($client, $this->registeredCustomer(), 1_000);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -49,13 +49,22 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, Uuid::uuid7()->toString(), 1_000);
+        $id = $this->placeOrder($client, $this->registeredCustomer(), 1_000);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
+    }
+
+    private function registeredCustomer(): string
+    {
+        $customer = CustomerTestFactory::new()->create();
+
+        $this->store($customer);
+
+        return $customer->id()->toString();
     }
 
     private function placeOrder(KernelBrowser $client, string $customerId, int $totalAmountInCents): string

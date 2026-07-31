@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\CustomerCriteria;
 use Web\Form\FormData\RegisterCustomerFormData;
@@ -80,7 +81,7 @@ final class CustomerController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/{id}/erase', name: 'sales_customer_erase', methods: ['POST'])]
+    #[Route('/{id}/erase', name: 'sales_customer_erase', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
     public function erase(Request $request, string $id): Response
     {
         if (!$this->isCsrfTokenValid('erase-customer-'.$id, (string) $request->request->get('_token'))) {
