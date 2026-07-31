@@ -7,8 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Processor;
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Mailing\ShipmentDeliveredNotification;
-use Fulfilment\Shipment\Application\Mailing\ShipmentMailerInterface;
+use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPlaced;
 use Fulfilment\Shipment\Application\Processor\NotifyCustomerOnShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
@@ -24,14 +23,13 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
     #[Test]
     public function itNotifiesTheCustomerOnceTheShipmentIsDelivered(): void
     {
-        // Given
         $orderId = Uuid::uuid7()->toString();
         $this->dispatch(new PlaceOrder($orderId, 'customer-1', 1_500));
-        $this->service(CreateShipmentOnOrderPlaced::class)->onOrderPlaced(new OrderPlacedIntegrationEvent(
+        ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(
             orderId: $orderId,
             customerId: 'customer-1',
             totalAmountInCents: 1_500,
-            placedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00')->format('c'),
+            placedAt: (new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->format('c'),
         ));
 
         $shipmentId = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)))[0]->id;
@@ -39,31 +37,30 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         $this->dispatch(new DispatchShipment($shipmentId));
         $this->dispatch(new MarkShipmentDelivered($shipmentId));
 
-        $mailer = new DummyShipmentMailer();
+        $notifier = new class implements ShipmentDeliveredNotifierInterface {
+            public ?string $notifiedShipmentId = null;
+            public ?string $notifiedOrderId = null;
+            public ?string $notifiedCustomerId = null;
+
+            public function notify(string $shipmentId, string $orderId, string $customerId): void
+            {
+                $this->notifiedShipmentId = $shipmentId;
+                $this->notifiedOrderId = $orderId;
+                $this->notifiedCustomerId = $customerId;
+            }
+        };
+
         $processor = new NotifyCustomerOnShipmentDelivered(
             $this->service(ShipmentRepositoryInterface::class),
-            $mailer,
+            $notifier,
         );
 
         // When
-        $processor->onShipmentDelivered(new ShipmentDelivered(
-            $shipmentId,
-            new \DateTimeImmutable('2026-01-02T00:00:00+00:00')->format('c'),
-        ));
+        $processor(new ShipmentDelivered($shipmentId, (new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))->format('c')));
 
         // Then
-        self::assertSame($shipmentId, $mailer->sent?->shipmentId);
-        self::assertSame($orderId, $mailer->sent?->orderId);
-        self::assertSame('customer-1', $mailer->sent?->customerId);
-    }
-}
-
-final class DummyShipmentMailer implements ShipmentMailerInterface
-{
-    public ?ShipmentDeliveredNotification $sent = null;
-
-    public function sendDelivered(ShipmentDeliveredNotification $notification): void
-    {
-        $this->sent = $notification;
+        self::assertSame($shipmentId, $notifier->notifiedShipmentId);
+        self::assertSame($orderId, $notifier->notifiedOrderId);
+        self::assertSame('customer-1', $notifier->notifiedCustomerId);
     }
 }

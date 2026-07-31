@@ -20,7 +20,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $this->dispatch(new PlaceOrder($orderId, 'customer-1', 2_500));
-        $this->service(CreateShipmentOnOrderPlaced::class)->onOrderPlaced(new OrderPlacedIntegrationEvent(
+        ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(
             orderId: $orderId,
             customerId: 'customer-1',
             totalAmountInCents: 2_500,

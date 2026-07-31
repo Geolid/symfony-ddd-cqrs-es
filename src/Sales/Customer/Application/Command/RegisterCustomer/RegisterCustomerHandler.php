@@ -25,9 +25,6 @@ final readonly class RegisterCustomerHandler
     ) {
     }
 
-    /**
-     * @throws AddressAlreadyRegisteredException
-     */
     public function __invoke(RegisterCustomer $command): void
     {
         $email = Email::fromString($command->email);
