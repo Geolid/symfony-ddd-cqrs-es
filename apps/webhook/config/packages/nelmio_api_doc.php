@@ -16,9 +16,11 @@ return static function (ContainerConfigurator $container): void {
                 ['url' => '/%kernel.app_id%'],
             ],
         ],
+        // Endpoints are described programmatically (see WebhookDescriber); route
+        // introspection is scoped to the doc route, which carries no OpenAPI metadata.
         'areas' => [
             'default' => [
-                'path_patterns' => ['^/webhooks'],
+                'path_patterns' => ['^/docs'],
             ],
         ],
     ]);
