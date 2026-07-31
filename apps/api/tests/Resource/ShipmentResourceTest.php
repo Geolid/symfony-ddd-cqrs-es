@@ -7,9 +7,8 @@ namespace Api\Tests\Resource;
 use Api\Resource\ShipmentResource;
 use Api\Tests\Support\AbstractApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
-use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ShipmentResourceTest extends AbstractApiTestCase
@@ -132,10 +131,13 @@ final class ShipmentResourceTest extends AbstractApiTestCase
 
     private function createShipment(string $orderId): string
     {
-        $id = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($orderId)
+            ->withCustomerId('customer-1')
+            ->create();
 
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1'));
+        $this->store($shipment);
 
-        return $id;
+        return $shipment->id()->toString();
     }
 }

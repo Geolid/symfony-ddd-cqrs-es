@@ -7,13 +7,13 @@ namespace Api\Tests\Support;
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
 use Bootstrap\Kernel;
-use Support\Helpers\CqrsTrait;
+use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractApiTestCase extends ApiTestCase
 {
-    use CqrsTrait;
+    use EventSourcingTrait;
     use ServiceLocatorTrait;
 
     protected static ?bool $alwaysBootKernel = false;

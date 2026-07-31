@@ -4,35 +4,61 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Projector;
 
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPlaced;
+use Doctrine\DBAL\Connection;
+use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Command\CancelOrder\CancelOrder;
-use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itFansOutALaterOrderCancellationOntoAnExistingShipment(): void
+    public function itProjectsTheOrderSummaryOnShipmentCreated(): void
     {
-        $orderId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceOrder($orderId, 'customer-1', 2_500));
-        ($this->service(CreateShipmentOnOrderPlaced::class))(new OrderPlacedIntegrationEvent(
-            orderId: $orderId,
-            customerId: 'customer-1',
-            buyerAddress: 'buyer@example.com',
-            totalAmountInCents: 2_500,
-            placedAt: (new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->format('c'),
-        ));
+        // Given
+        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(2_500)->create();
+        $this->store($order);
 
-        $this->dispatch(new CancelOrder($orderId));
+        // When
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->create();
+        $this->store($shipment);
 
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame($orderId, $results[0]->orderId);
-        self::assertNotNull($results[0]->orderCancelledAt);
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('customer-1', $row['customer_id']);
+        self::assertSame(2_500, (int) $row['order_total_in_cents']);
+        self::assertSame('pending', $row['status']);
+    }
+
+    #[Test]
+    public function itProjectsALaterCancellationOnOrderCancelled(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->create();
+        $this->store($shipment);
+
+        // When
+        $order->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $this->store($order);
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertNotNull($row['order_cancelled_at']);
+    }
+
+    /**
+     * @return array<string, mixed>|false
+     */
+    private function fetchRow(string $id): array|false
+    {
+        return $this->serviceAs('doctrine.dbal.default_connection', Connection::class)->fetchAssociative(
+            \sprintf('SELECT * FROM %s WHERE id = :id', DbalShipmentProjector::TABLE),
+            ['id' => $id],
+        );
     }
 }

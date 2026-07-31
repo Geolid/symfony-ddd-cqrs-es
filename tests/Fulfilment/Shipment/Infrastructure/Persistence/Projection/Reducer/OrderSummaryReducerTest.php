@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Reduce
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Reducer\OrderSummaryReducer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderSummaryReducerTest extends AbstractIntegrationTestCase
@@ -16,11 +16,11 @@ final class OrderSummaryReducerTest extends AbstractIntegrationTestCase
     public function itReadsTheOrderSummaryFromSalesIntegrationEventStream(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceOrder($orderId, 'customer-1', 3_500));
+        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(3_500)->create();
+        $this->store($order);
 
         // When
-        $summary = $this->service(OrderSummaryReducer::class)->forOrder($orderId);
+        $summary = $this->service(OrderSummaryReducer::class)->forOrder($order->id()->toString());
 
         // Then
         self::assertNotNull($summary);
