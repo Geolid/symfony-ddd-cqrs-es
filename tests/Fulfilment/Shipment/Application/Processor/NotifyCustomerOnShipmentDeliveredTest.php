@@ -47,15 +47,12 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         ($this->processor)(new ShipmentDelivered($shipment->id()->toString(), self::DELIVERED_AT));
 
         // Then
-        self::assertEquals(
-            new ShipmentDeliveredNotification(
-                $shipment->id()->toString(),
-                $shipment->orderId(),
-                'customer-1',
-                'buyer@example.com',
-            ),
-            $this->notifier->notification,
-        );
+        $notification = $this->notifier->notification;
+        self::assertInstanceOf(ShipmentDeliveredNotification::class, $notification);
+        self::assertSame($shipment->id()->toString(), $notification->shipmentId);
+        self::assertSame($shipment->orderId(), $notification->orderId);
+        self::assertSame('customer-1', $notification->customerId);
+        self::assertSame('buyer@example.com', $notification->customerAddress);
     }
 
     #[Test]
