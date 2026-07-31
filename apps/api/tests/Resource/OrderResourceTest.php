@@ -203,8 +203,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     private static function lines(): array
     {
         return [
-                ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
-                ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
-            ];
+            ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+            ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+        ];
     }
 }

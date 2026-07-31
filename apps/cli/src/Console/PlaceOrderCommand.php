@@ -63,10 +63,7 @@ final class PlaceOrderCommand
         return array_values(array_map(
             static function (string $specification): array {
                 if (1 !== preg_match(PlaceOrderInput::LINE_PATTERN, $specification, $line)) {
-                    throw new \InvalidArgumentException(\sprintf(
-                        'An order line is formatted "<label>:<quantity>:<unit amount in cents>", "%s" given.',
-                        $specification,
-                    ));
+                    throw new \InvalidArgumentException(\sprintf('An order line is formatted "<label>:<quantity>:<unit amount in cents>", "%s" given.', $specification));
                 }
 
                 return [
