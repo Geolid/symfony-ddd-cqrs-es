@@ -10,10 +10,13 @@
         {{ form_widget(form.customerId) }}
         {{ form_errors(form.customerId) }}
     </p>
-    <fieldset data-collection data-testid="order-lines" data-prototype="{{ form_widget(form.lines.vars.prototype)|e('html_attr') }}">
+    <fieldset data-testid="order-lines" x-data="{
+        rows: {{ form.lines|length }},
+        prototype: {{ form_widget(form.lines.vars.prototype)|json_encode|e('html_attr') }},
+    }">
         <legend>{{ form_label(form.lines) }}</legend>
         {{ form_errors(form.lines) }}
-        <div data-collection-rows data-testid="order-lines-rows">
+        <div x-ref="rows" data-testid="order-lines-rows">
             {% for line in form.lines %}
                 <p data-testid="order-line">
                     {{ form_label(line.label) }} {{ form_widget(line.label) }}
@@ -23,7 +26,11 @@
                 </p>
             {% endfor %}
         </div>
-        <button type="button" data-collection-add data-testid="add-order-line">{{ 'sales.order.place.add_line_button'|trans }}</button>
+        <button type="button"
+                data-testid="add-order-line"
+                @click="$refs.rows.insertAdjacentHTML('beforeend', prototype.replaceAll('__name__', rows++))">
+            {{ 'sales.order.place.add_line_button'|trans }}
+        </button>
     </fieldset>
     <button type="submit">{{ 'sales.order.place.submit_button'|trans }}</button>
     {{ form_end(form) }}

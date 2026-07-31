@@ -18,10 +18,6 @@ return [
         'path' => 'shared/shared.js',
         'entrypoint' => true,
     ],
-    'app' => [
-        'path' => 'web/app.js',
-        'entrypoint' => true,
-    ],
     '@picocss/pico' => [
         'version' => '2.1.1',
     ],
