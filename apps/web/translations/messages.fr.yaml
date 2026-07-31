@@ -24,7 +24,8 @@ sales:
             cancel_dismiss_button: Conserver la commande
         place:
             title: Passer une commande
-            customer_label: ID client
+            customer_label: Acheteur
+            customer_placeholder: Choisir un client inscrit
             lines_label: Lignes
             line_label: Désignation
             line_quantity_label: Quantité

@@ -24,7 +24,8 @@ sales:
             cancel_dismiss_button: Keep order
         place:
             title: Place an order
-            customer_label: Customer ID
+            customer_label: Buyer
+            customer_placeholder: Pick a registered customer
             lines_label: Lines
             line_label: Description
             line_quantity_label: Quantity
