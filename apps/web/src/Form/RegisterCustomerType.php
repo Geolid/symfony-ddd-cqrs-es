@@ -18,7 +18,7 @@ final class RegisterCustomerType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('email', EmailType::class, [
-            'label' => 'customers.new.email_label',
+            'label' => 'sales.customer.register.email_label',
             'translation_domain' => 'messages',
         ]);
     }

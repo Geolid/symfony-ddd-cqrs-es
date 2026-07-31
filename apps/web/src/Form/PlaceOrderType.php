@@ -20,11 +20,11 @@ final class PlaceOrderType extends AbstractType
     {
         $builder
             ->add('customerId', TextType::class, [
-                'label' => 'orders.new.customer_label',
+                'label' => 'sales.order.place.customer_label',
                 'translation_domain' => 'messages',
             ])
             ->add('totalAmountInCents', IntegerType::class, [
-                'label' => 'orders.new.amount_label',
+                'label' => 'sales.order.place.amount_label',
                 'translation_domain' => 'messages',
             ]);
     }
