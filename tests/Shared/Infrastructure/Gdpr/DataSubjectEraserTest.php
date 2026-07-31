@@ -13,9 +13,7 @@ use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 
 final class DataSubjectEraserTest extends TestCase
 {
-    /**
-     * @var list<string>
-     */
+    /** @var list<string> */
     private array $dropped = [];
 
     private CipherKeyStore $cipherKeyStore;
