@@ -12,7 +12,7 @@ use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-#[Processor('fulfilment.shipment.on_order_placed')]
+#[Processor('fulfilment.shipment.create_shipment_on_order_placed')]
 final readonly class CreateShipmentOnOrderPlaced
 {
     public function __construct(private CommandBusInterface $commandBus)

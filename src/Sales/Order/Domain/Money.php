@@ -18,6 +18,11 @@ final readonly class Money
         return new self($amountInCents);
     }
 
+    public function equals(self $other): bool
+    {
+        return $this->amountInCents === $other->amountInCents;
+    }
+
     public function toCents(): int
     {
         return $this->amountInCents;

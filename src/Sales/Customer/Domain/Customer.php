@@ -12,7 +12,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 
 #[Aggregate('sales.customer.customer')]
 final class Customer implements AggregateRoot, AggregateRootMetadataAware
@@ -51,13 +50,10 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    /**
-     * @throws CustomerAlreadyErasedException
-     */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
         if ($this->erased) {
-            throw CustomerAlreadyErasedException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new CustomerErased(

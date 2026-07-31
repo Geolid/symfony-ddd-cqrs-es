@@ -11,7 +11,6 @@ use Sales\Customer\Domain\CustomerId;
 use Sales\Customer\Domain\Email;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 
 final class CustomerTest extends AggregateRootTestCase
 {
@@ -41,7 +40,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotEraseAnAlreadyErasedCustomer(): void
+    public function itDoesNotEraseAnAlreadyErasedCustomer(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -53,7 +52,7 @@ final class CustomerTest extends AggregateRootTestCase
                 new CustomerErased($id, $erasedAt->format('c')),
             )
             ->when(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(CustomerAlreadyErasedException::class);
+            ->then();
     }
 
     protected function aggregateClass(): string

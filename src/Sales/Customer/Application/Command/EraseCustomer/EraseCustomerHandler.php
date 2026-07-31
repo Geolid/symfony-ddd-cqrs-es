@@ -7,7 +7,6 @@ namespace Sales\Customer\Application\Command\EraseCustomer;
 use Psr\Clock\ClockInterface;
 use Sales\Customer\Domain\CustomerId;
 use Sales\Customer\Domain\CustomerUniqueValue;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Shared\Application\Command\AsCommandHandler;
@@ -24,12 +23,15 @@ final readonly class EraseCustomerHandler
     }
 
     /**
-     * @throws CustomerAlreadyErasedException
      * @throws CustomerNotFoundException
      */
     public function __invoke(EraseCustomer $command): void
     {
         $customer = $this->repository->load(CustomerId::fromString($command->id));
+
+        if ($customer->isErased()) {
+            return;
+        }
 
         $fingerprint = $customer->email()->fingerprint();
 

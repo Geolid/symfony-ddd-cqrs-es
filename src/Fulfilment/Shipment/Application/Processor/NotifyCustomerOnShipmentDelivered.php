@@ -12,7 +12,7 @@ use Fulfilment\Shipment\Domain\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 
-#[Processor('fulfilment.shipment.notify_on_delivered')]
+#[Processor('fulfilment.shipment.notify_customer_on_shipment_delivered')]
 final readonly class NotifyCustomerOnShipmentDelivered
 {
     public function __construct(

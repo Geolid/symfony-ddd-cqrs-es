@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Domain;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
-use Fulfilment\Shipment\Domain\Exception\InvalidShipmentTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ShipmentId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -49,7 +49,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(new ShipmentCreated($id, 'order-1', 'customer-1', $createdAt->format('c')))
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
-            ->expectsException(InvalidShipmentTransitionException::class);
+            ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
     #[Test]

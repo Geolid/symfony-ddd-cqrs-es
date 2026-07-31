@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Domain;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
-use Fulfilment\Shipment\Domain\Exception\InvalidShipmentTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -55,12 +55,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws InvalidShipmentTransitionException
+     * @throws ShipmentInvalidTransitionException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (ShipmentStatus::PENDING !== $this->status) {
-            throw InvalidShipmentTransitionException::forId($this->id, $this->status, 'dispatch');
+        if (!$this->status->isPending()) {
+            throw ShipmentInvalidTransitionException::cannotDispatch($this->status);
         }
 
         $this->recordThat(new ShipmentDispatched(
@@ -70,12 +70,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws InvalidShipmentTransitionException
+     * @throws ShipmentInvalidTransitionException
      */
     public function markDelivered(\DateTimeImmutable $deliveredAt): void
     {
-        if (ShipmentStatus::DISPATCHED !== $this->status) {
-            throw InvalidShipmentTransitionException::forId($this->id, $this->status, 'markDelivered');
+        if (!$this->status->isDispatched()) {
+            throw ShipmentInvalidTransitionException::cannotMarkDelivered($this->status);
         }
 
         $this->recordThat(new ShipmentDelivered(
