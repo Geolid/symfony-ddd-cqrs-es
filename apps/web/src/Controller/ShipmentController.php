@@ -4,29 +4,36 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Twig\Environment;
+use Web\Controller\Criteria\ShipmentCriteria;
 
-final readonly class ShipmentController
+#[Route('/fulfilment/shipments')]
+final class ShipmentController extends AbstractController
 {
-    public function __construct(
-        private QueryBusInterface $queryBus,
-        private Environment $twig,
-    ) {
+    public function __construct(private readonly QueryBusInterface $queryBus)
+    {
     }
 
-    #[Route('/shipments', name: 'shipments_index', methods: ['GET'])]
-    public function index(Request $request): Response
-    {
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    #[Route(name: 'fulfilment_shipment_list', methods: ['GET'])]
+    public function list(
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
+        ShipmentCriteria $criteria = new ShipmentCriteria(),
+    ): Response {
         $shipments = $this->queryBus->ask(new ListShipments(
-            page: $request->query->getInt('page', 1),
-            itemsPerPage: 10,
+            status: $criteria->status,
+            page: $criteria->page,
+            itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return new Response($this->twig->render('shipments/index.html.twig', ['shipments' => $shipments]));
+        return $this->render('fulfilment/shipment/list.html.twig', ['shipments' => $shipments]);
     }
 }

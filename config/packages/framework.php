@@ -7,12 +7,15 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'secret' => '%env(APP_SECRET)%',
-        'handle_all_throwables' => true,
-        'php_errors' => ['log' => true],
-        'http_method_override' => false,
-        'trust_x_sendfile_type_header' => true,
+        'trusted_proxies' => 'REMOTE_ADDR',
+        'trusted_headers' => ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-prefix', 'x-forwarded-port'],
+        'session' => false,
         'form' => false,
+        'csrf_protection' => false,
+        'assets' => false,
         'asset_mapper' => false,
+        'property_access' => false,
+        'web_link' => false,
     ]);
 
     if ('test' === $container->env()) {

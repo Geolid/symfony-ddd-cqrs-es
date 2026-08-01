@@ -12,28 +12,43 @@ pick it apart, rename it, replace it; the interesting part is the structure arou
 
 ## Architecture
 
-Two Bounded Contexts:
+Three Bounded Contexts:
 
-- **`Ordering.Order`** — places and cancels an `Order`.
-- **`Shipping.Shipment`** — creates, dispatches and delivers a `Shipment`.
+- **`Sales.Customer`** — registers and erases a `Customer`, the showcase's data subject.
+- **`Sales.Order`** — places and cancels an `Order`, whose total the aggregate derives from
+  the lines it was placed with; no surface may dictate an amount.
+- **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
 
-`Shipping` never depends on `Ordering`'s Domain or Application internals — the one sanctioned
-cross-BC edge (see `deptrac_bc.yaml`) is Ordering's public Integration Event contract. Neither
-of Ordering's Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
+`Fulfilment` never depends on `Sales`'s Domain or Application internals — the only sanctioned
+cross-BC edges (see `deptrac_bc.yaml`) are Sales' public Integration Event contracts. Neither
+of Sales' Domain Events (`OrderPlaced`, `OrderCancelled`) ever leaves its BC; an
 Infrastructure-layer Translator (`OrderIntegrationEventTranslator`) converts each into its
 public counterpart (`OrderPlacedIntegrationEvent`, `OrderCancelledIntegrationEvent`) and appends
-it to the event store. `Shipping` reacts to both, but in two different shapes, side by side:
+it to the event store. `Fulfilment` reacts to both, but in two different shapes, side by side:
 
 - **Side effect (Processor)** — `CreateShipmentOnOrderPlaced` subscribes to
   `OrderPlacedIntegrationEvent` and dispatches a Command (`CreateShipment`) in response.
 - **Read-side enrichment, two ways, in the same `DbalShipmentProjector`** —
   - *Backfill*: `OrderPlaced` always happened *before* the Shipment existed, so there's nothing
-    to subscribe to yet — `OrderSummaryReducer` replays Ordering's Integration Event stream for
+    to subscribe to yet — `OrderSummaryReducer` replays Sales' Integration Event stream for
     that order once, at `ShipmentCreated` time, to denormalize the customer/total onto the
     Shipment row.
   - *Fan-out*: `OrderCancelled` can happen *after* the Shipment already exists, so the
     projection instead subscribes to `OrderCancelledIntegrationEvent` directly and updates the
     existing row in place — no replay needed.
+A third cross-BC shape sits one level up, inside `Sales`: placing an order needs the buyer
+behind it, so `Sales.Order` declares `BuyerResolverInterface` and its Infrastructure folds
+`Sales.Customer`'s Integration Event stream. The resolved address travels on `OrderPlaced`,
+then on `OrderPlacedIntegrationEvent`, and `CreateShipmentOnOrderPlaced` freezes it onto
+`ShipmentCreated`. `Fulfilment` therefore knows a single upstream contract — the order —
+and the delivery notification is a pure function of Fulfilment's own stream, identical on
+every replay. Every hop tags the address `#[PersonalData(fallback: null)]` next to a
+`#[DataSubjectId]` customer id, so one key drop turns it to `null` the whole way down and
+the notification is simply skipped; no projection ever materializes it.
+
+That Processor is also replay-safe by construction: `ShipmentId::forOrder()` derives the
+identity as a `uuid5` of the order id, so a replay resolves to the same aggregate and
+`CreateShipmentHandler` returns early instead of opening a second shipment.
 
 Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 `bootstrap/Kernel.php`:
@@ -41,14 +56,16 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 | DM | Exposes |
 |---|---|
 | `apps/api` | JSON HTTP (API Platform) for orders and shipments |
-| `apps/web` | A small Twig backoffice (list orders/shipments, place an order) |
-| `apps/cli` | Console commands (`order:place`, `shipment:dispatch-pending`) |
+| `apps/web` | A small Twig backoffice (register a customer, place and cancel an order, list shipments, erase a customer) |
+| `apps/cli` | Console commands (`sales:order:place`, `fulfilment:shipment:dispatch-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
-A Delivery Mechanism only ever depends on `#[AsDrivingPort]` ports and Command/Query messages —
-never on a Repository, a Finder implementation, or a persistence vendor directly. This and the
-BC isolation above are enforced by `deptrac_*.yaml` and the `Tools\PHPat\*` rules run through
-PHPStan, not just documented.
+A Delivery Mechanism only ever depends on a BC's Open Host Service — its `#[AsDrivingPort]`
+behaviours and its published language (`PublishedLanguageInterface`: Commands, Queries, Results,
+Application exceptions, validation compounds, published vocabularies) — never on a Repository, a
+Finder implementation, or a persistence vendor directly. This and the BC isolation above are
+enforced by `deptrac_*.yaml` and the `Tools\PHPat\*` rules run through PHPStan, not just
+documented.
 
 ## Stack
 
@@ -89,7 +106,7 @@ make start   # stack up, composer install, event store + read model set up, demo
 ```
 
 Then visit `http://localhost/web/` (backoffice, already showing the seeded orders) or call
-`http://localhost/api/orders`. Mailpit's UI is at `http://localhost:8025`.
+`http://localhost/api/v1/sales/orders`. Mailpit's UI is at `http://localhost:8025`.
 
 `make start` is `up wait-db install setup seed` — see `Makefile` for each step, or run them
 individually. Re-run `make seed` any time to add more demo orders (`demo/SeedCommand.php`,

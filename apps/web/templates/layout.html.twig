@@ -12,9 +12,11 @@
         <nav>
             <ul><li><strong>{{ 'layout.title'|trans }}</strong></li></ul>
             <ul>
-                <li><a href="/orders">{{ 'layout.nav.orders'|trans }}</a></li>
-                <li><a href="/shipments">{{ 'layout.nav.shipments'|trans }}</a></li>
-                <li><a href="/orders/new" role="button">{{ 'layout.nav.new_order'|trans }}</a></li>
+                <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
+                <li><a href="{{ path('fulfilment_shipment_list') }}">{{ 'layout.nav.shipments'|trans }}</a></li>
+                <li><a href="{{ path('sales_customer_list') }}">{{ 'layout.nav.customers'|trans }}</a></li>
+                <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
+                <li><a href="{{ path('sales_order_place') }}" role="button">{{ 'layout.nav.place_order'|trans }}</a></li>
             </ul>
         </nav>
     </header>

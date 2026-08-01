@@ -1,10 +1,5 @@
 name: Release
 
-# GitHub-native replacement for platform's tag-triggered CircleCI `dist-prod` job (which
-# uploaded a tarball to a private AWS S3 bucket via `tarreleaser` — see the SaaS substitutions
-# in the README): tag a commit `vX.Y.Z`, `make dist` builds the same production-optimized
-# artifact, and it's attached directly to a GitHub Release. No cloud storage account needed.
-
 on:
   push:
     tags:
@@ -21,11 +16,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer:v2
           coverage: none
 

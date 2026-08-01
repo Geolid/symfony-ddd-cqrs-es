@@ -3,46 +3,76 @@ layout:
     nav:
         orders: Commandes
         shipments: Livraisons
-        new_order: Passer une commande
+        customers: Clients
+        place_order: Passer une commande
+        register_customer: Enregistrer un client
 
-orders:
-    index:
-        title: Commandes
-        table:
-            id: ID
-            customer: Client
-            total: Total
-            status: Statut
-            placed_at: Passée le
-            actions: Actions
-        empty: Aucune commande pour le moment.
-        cancel_button: Annuler
-        cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
-        cancel_dismiss_button: Conserver la commande
-    new:
-        title: Passer une commande
-        customer_label: ID client
-        amount_label: Montant total (centimes)
-        submit_button: Passer la commande
-    status:
-        placed: Passée
-        cancelled: Annulée
+sales:
+    order:
+        list:
+            title: Commandes
+            table:
+                id: ID
+                customer: Client
+                total: Total
+                status: Statut
+                placed_at: Passée le
+                actions: Actions
+            empty: Aucune commande pour le moment.
+            cancel_button: Annuler
+            cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
+            cancel_dismiss_button: Conserver la commande
+        place:
+            title: Passer une commande
+            customer_label: Acheteur
+            customer_placeholder: Choisir un client inscrit
+            lines_label: Lignes
+            line_label: Désignation
+            line_quantity_label: Quantité
+            line_unit_amount_label: Montant unitaire
+            add_line_button: Ajouter une ligne
+            submit_button: Passer la commande
+        status:
+            placed: Passée
+            cancelled: Annulée
+    customer:
+        list:
+            title: Clients
+            table:
+                id: ID
+                email: Email
+                registered_at: Enregistré le
+                erased_at: Effacé le
+                actions: Actions
+            empty: Aucun client pour le moment.
+            erase_button: Effacer
+            erase_confirm_message: L'effacement supprime la clé de chiffrement de ce client — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
+            erase_dismiss_button: Conserver le client
+        register:
+            title: Enregistrer un client
+            email_label: Email
+            submit_button: Enregistrer le client
+        flash:
+            erased: Client effacé.
+            address_taken: Cette adresse est déjà enregistrée.
 
-shipments:
-    index:
-        title: Livraisons
-        table:
-            id: ID
-            order: Commande
-            customer: Client
-            total: Total commande
-            status: Statut
-            created_at: Créée le
-            dispatched_at: Expédiée le
-            delivered_at: Livrée le
-            order_cancelled_at: Commande annulée le
-        empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès qu'une commande est passée.
-    status:
-        pending: En attente
-        dispatched: Expédiée
-        delivered: Livrée
+fulfilment:
+    shipment:
+        list:
+            title: Livraisons
+            table:
+                id: ID
+                order: Commande
+                customer: Client
+                total: Total commande
+                status: Statut
+                tracking_reference: Numéro de suivi
+                created_at: Créée le
+                dispatched_at: Expédiée le
+                delivered_at: Livrée le
+                order_cancelled_at: Commande annulée le
+            empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès qu'une commande est passée.
+        status:
+            pending: En attente
+            dispatched: Expédiée
+            delivered: Livrée

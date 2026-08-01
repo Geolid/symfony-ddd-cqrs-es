@@ -1,9 +1,5 @@
 name: CI
 
-# Mirrors platform's .circleci/config.yml build -> static -> {tests, mutation} pipeline: every
-# stage runs through `make`, TIER=ci, never a raw vendor/bin/* call — the Makefile is the
-# single source of truth for what "passing CI" means, locally or here.
-
 on:
   push:
     branches: [ main ]
@@ -12,27 +8,21 @@ on:
 env:
   TIER: ci
   APP_ENV: test
-  # Present even in jobs with no MariaDB service (build/static) — Symfony resolves these env
-  # vars while warming up the container even though nothing connects yet, same as platform's
-  # CircleCI "static" executor (no database, same `make ci.static`).
-  # The "null" transport never opens a socket — nothing in the test suite sends a real email
-  # (NotifyCustomerOnShipmentDelivered is exercised with a stub notifier), so there's no Mailpit
-  # to talk to here.
   MAILER_DSN: null://null
-  EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=11.8-MariaDB&charset=utf8mb4
-  READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=11.8-MariaDB&charset=utf8mb4
-  MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=11.8-MariaDB&charset=utf8mb4
+  EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=mariadb-11.8.0&charset=utf8mb4
+  READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=mariadb-11.8.0&charset=utf8mb4
+  MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=mariadb-11.8.0&charset=utf8mb4
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer:v2
           coverage: none
 
@@ -48,7 +38,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: vendor
-          path: vendor
+          path: |
+            vendor
+            ui/assets/vendor
           retention-days: 1
 
   static:
@@ -56,18 +48,20 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer:v2
           coverage: none
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: vendor
-          path: vendor
+          path: .
+
+      - run: chmod -R +x vendor/bin
 
       - name: make ci.static
         run: make ci.static
@@ -89,18 +83,20 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer:v2
           coverage: none
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: vendor
-          path: vendor
+          path: .
+
+      - run: chmod -R +x vendor/bin
 
       - name: make ci.test
         run: make ci.test
@@ -122,18 +118,22 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer:v2
           coverage: xdebug
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: vendor
-          path: vendor
+          path: .
+
+      - run: chmod -R +x vendor/bin
 
       - name: make mutation
         run: make mutation

@@ -7,3 +7,4 @@ Friction encountered while working on this project — root cause, solution foun
 | # | Friction | Status | Date |
 |---|----------|--------|------|
 | — | — | — | — |
+

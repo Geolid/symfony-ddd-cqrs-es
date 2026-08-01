@@ -33,6 +33,10 @@ sh: ## Open shell in app container (optional: use cmd="..." to run a command)
 	@$(EXEC) /bin/bash $(if $(cmd),-c "$(cmd)")
 .PHONY: sh
 
+dump: ## Start Symfony VarDumper server
+	@$(SF) server:dump
+.PHONY: dump
+
 log.%: ## Display logs for a service (ex: make log.app, make log.db)
 	@$(FIG) logs -f $*
 .PHONY: log.%

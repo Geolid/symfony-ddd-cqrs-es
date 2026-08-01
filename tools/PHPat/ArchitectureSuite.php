@@ -7,10 +7,6 @@ namespace Tools\PHPat;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 
-/**
- * The only phpat entry registered in phpstan.dist.neon — every *Test.php class in this
- * directory is discovered and run through it, no per-class registration.
- */
 final class ArchitectureSuite
 {
     /**
@@ -33,7 +29,6 @@ final class ArchitectureSuite
                     foreach ($rules as $key => $rule) {
                         \assert($rule instanceof Rule);
 
-                        // The iteration key becomes the rule name shown on violations.
                         yield $shortName.'_'.$method->getName().(\is_string($key) ? '_'.$key : '') => $rule;
                     }
                 }

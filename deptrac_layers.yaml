@@ -11,6 +11,7 @@ deptrac:
     - name: Domain.Vendors
       collectors:
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(Aggregate|Attribute)\\.*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\Attribute\\.*#' }
         - { type: classNameRegex, value: '#^Psr\\Clock\\.*#' }
         - { type: classNameRegex, value: '#^Ramsey\\Uuid\\.*#' }
         - { type: classNameRegex, value: '#^Webmozart\\Assert\\.*#' }
@@ -23,6 +24,7 @@ deptrac:
     - name: Application.Vendors
       collectors:
         - { type: classNameRegex, value: '#^Psr\\(Log|Clock)\\.*#' }
+        - { type: classNameRegex, value: '#^Symfony\\Component\\Validator\\.*#' }
 
     # --- Infrastructure (Outer Ring) ---
     - name: Infrastructure
@@ -33,8 +35,9 @@ deptrac:
       collectors:
         - { type: classNameRegex, value: '#^Doctrine\\DBAL\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute).*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(Extension\\)?Cryptography\\.*#' }
         - { type: classNameRegex, value: '#^Sentry\\.*#' }
-        - { type: classNameRegex, value: '#^Symfony\\.*#' }
+        - { type: classNameRegex, value: '#^Symfony\\(?!Component\\Validator\\).*#' }
 
   ruleset:
     Domain:         [ Domain.Vendors ]

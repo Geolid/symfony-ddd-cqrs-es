@@ -1,0 +1,37 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'sales.order.place.title'|trans }}{% endblock %}
+{% block heading %}{{ 'sales.order.place.title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    <p>
+        {{ form_label(form.customerId) }}<br>
+        {{ form_widget(form.customerId) }}
+        {{ form_errors(form.customerId) }}
+    </p>
+    <fieldset data-testid="order-lines" x-data="{
+        rows: {{ form.lines|length }},
+        prototype: {{ form_widget(form.lines.vars.prototype)|json_encode|e('html_attr') }},
+    }">
+        <legend>{{ form_label(form.lines) }}</legend>
+        {{ form_errors(form.lines) }}
+        <div x-ref="rows" data-testid="order-lines-rows">
+            {% for line in form.lines %}
+                <p data-testid="order-line">
+                    {{ form_label(line.label) }} {{ form_widget(line.label) }}
+                    {{ form_label(line.quantity) }} {{ form_widget(line.quantity) }}
+                    {{ form_label(line.unitAmountInCents) }} {{ form_widget(line.unitAmountInCents) }}
+                    {{ form_errors(line) }}
+                </p>
+            {% endfor %}
+        </div>
+        <button type="button"
+                data-testid="add-order-line"
+                @click="$refs.rows.insertAdjacentHTML('beforeend', prototype.replaceAll('__name__', rows++))">
+            {{ 'sales.order.place.add_line_button'|trans }}
+        </button>
+    </fieldset>
+    <button type="submit">{{ 'sales.order.place.submit_button'|trans }}</button>
+    {{ form_end(form) }}
+{% endblock %}

@@ -36,7 +36,6 @@ final class IntegrationEventTest
     {
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Event/#', true),
-            // Shared/Application/Event/ holds the contract itself, not a business event.
             Selector::Not(Selector::withFilepath('#/src/Shared/Application/Event/#', true)),
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),

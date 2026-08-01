@@ -9,15 +9,13 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Shared\Application\Attribute\AsDrivingPort;
-use Shared\Application\Command\CommandInterface;
-use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Query\QueryInterface;
+use Shared\Application\Language\PublishedLanguageInterface;
+use Shared\Application\Port\AsDrivingPort;
 
 final class DeliveryMechanismTest
 {
     #[TestRule]
-    public function onlyDependsOnDrivingPorts(): Rule
+    public function onlyDependsOnTheOpenHostService(): Rule
     {
         return PHPat::rule()
             ->classes($this->deliveryMechanisms())
@@ -25,17 +23,11 @@ final class DeliveryMechanismTest
             ->dependOn()
             ->classes(
                 Selector::appliesAttribute(AsDrivingPort::class),
-                Selector::implements(CommandInterface::class),
-                Selector::implements(QueryInterface::class),
-                Selector::classname(ApplicationExceptionInterface::class),
-                Selector::implements(ApplicationExceptionInterface::class),
-                Selector::AllOf(
-                    Selector::classname('#Result$#', true),
-                    Selector::withFilepath('#/Application/#', true),
-                ),
+                Selector::classname(PublishedLanguageInterface::class),
+                Selector::implements(PublishedLanguageInterface::class),
                 Selector::Not($this->projectCode()),
             )
-            ->because('A Delivery Mechanism depends only on a BC exposition surface: #[AsDrivingPort] ports and the Command/Query messages.');
+            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and its published language.');
     }
 
     #[TestRule]

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tools\PHPat;
 
+use Patchlevel\EventSourcing\Attribute\Event;
+use Patchlevel\Hydrator\Attribute\DataSubjectId;
+use Patchlevel\Hydrator\Attribute\PersonalData;
 use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
@@ -30,7 +33,6 @@ final class BoundaryMessageTest
             ->classes(
                 Selector::classname(CommandInterface::class),
                 Selector::classname(QueryInterface::class),
-                // A Query documents its return contract: @implements QueryInterface<...Result>.
                 Selector::AllOf(
                     Selector::classname('#Result$#', true),
                     Selector::withFilepath('#/Application/#', true),
@@ -40,7 +42,7 @@ final class BoundaryMessageTest
     }
 
     #[TestRule]
-    public function integrationEventsCarryOnlyNativeTypes(): Rule
+    public function integrationEventsCarryOnlyNativeTypesOrEsMetadata(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
@@ -51,10 +53,10 @@ final class BoundaryMessageTest
             ->dependOn()
             ->classes(
                 Selector::classname(IntegrationEventInterface::class),
-                // Inert ES-metadata attribute, read only by reflection — no vendor runtime
-                // dependency: #[Event] gives the store its serialization identity.
-                Selector::classname('Patchlevel\EventSourcing\Attribute\Event'),
+                Selector::classname(Event::class),
+                Selector::classname(PersonalData::class),
+                Selector::classname(DataSubjectId::class),
             )
-            ->because('An Integration Event may additionally carry the patchlevel #[Event] ES-metadata attribute for its event-store serialization identity — no other vendor dependency is allowed.');
+            ->because('An Integration Event may additionally carry patchlevel ES-metadata attributes: #[Event] for its event-store serialization identity, #[PersonalData]/#[DataSubjectId] for crypto-shredding of its PII — no other vendor dependency is allowed.');
     }
 }

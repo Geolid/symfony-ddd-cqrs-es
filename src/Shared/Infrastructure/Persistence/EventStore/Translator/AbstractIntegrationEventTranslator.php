@@ -9,11 +9,6 @@ use Patchlevel\EventSourcing\Store\Header\StreamNameHeader;
 use Patchlevel\EventSourcing\Store\Store;
 use Shared\Application\Event\IntegrationEventInterface;
 
-/**
- * Converts a BC's Domain Events into its one public Integration Event contract and appends
- * them to the store, keyed by the correlation id consumers subscribe against. Domain Events are
- * sealed to their BC — this translation is the only path out.
- */
 abstract readonly class AbstractIntegrationEventTranslator
 {
     public function __construct(private Store $store)

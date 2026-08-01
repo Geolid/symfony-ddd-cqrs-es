@@ -11,7 +11,7 @@ use Shared\Application\Finder\FinderInterface;
  *
  * @implements \IteratorAggregate<int, TResult>
  */
-final readonly class StreamResult implements \IteratorAggregate, \Countable
+final readonly class StreamResult implements \IteratorAggregate, \Countable, ResultInterface
 {
     /**
      * @param FinderInterface<TResult> $finder

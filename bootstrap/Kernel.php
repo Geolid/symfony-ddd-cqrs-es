@@ -15,11 +15,6 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
-/**
- * A single Kernel is shared by every Delivery Mechanism under apps/. Each DM only differs by
- * its $appId, which namespaces its cache/log directories and lets it layer extra bundles,
- * config and routes on top of the ones declared here.
- */
 class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
@@ -74,9 +69,6 @@ class Kernel extends BaseKernel
 
     protected function build(ContainerBuilder $container): void
     {
-        // Priority > 100: must run before Symfony's own ResolveInstanceofConditionalsPass /
-        // AttributeAutoconfigurationPass (registered internally at priority 100), otherwise
-        // our autoconfiguration rules are registered too late to be applied.
         $container->addCompilerPass(new RegisterMessageBusHandlersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterDoctrineSchemaConfiguratorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new TagEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);

@@ -7,10 +7,12 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__.'/apps',
         __DIR__.'/bootstrap',
         __DIR__.'/config',
+        __DIR__.'/demo',
         __DIR__.'/src',
         __DIR__.'/tests',
         __DIR__.'/tools',
     ])
+    ->notPath('reference.php')
     ->append([__FILE__]);
 
 return (new PhpCsFixer\Config())
@@ -52,6 +54,8 @@ return (new PhpCsFixer\Config())
                 'method_private',
             ],
         ],
+        // rewrites assertEquals to assertSame regardless of semantics — breaks a Value Object
+        // compared by value, since freshly built instances are equal but never identical
         'php_unit_strict' => true,
         'phpdoc_line_span' => [
             'property' => 'single',

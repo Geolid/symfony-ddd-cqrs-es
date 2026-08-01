@@ -1,0 +1,43 @@
+{% extends 'layout.html.twig' %}
+{% import '@ui/_macros.html.twig' as ui %}
+
+{% block title %}{{ 'sales.customer.list.title'|trans }}{% endblock %}
+{% block heading %}{{ 'sales.customer.list.title'|trans }}{% endblock %}
+
+{% block content %}
+    <table>
+        <thead>
+        <tr>
+            <th>{{ 'sales.customer.list.table.id'|trans }}</th>
+            <th>{{ 'sales.customer.list.table.email'|trans }}</th>
+            <th>{{ 'sales.customer.list.table.registered_at'|trans }}</th>
+            <th>{{ 'sales.customer.list.table.erased_at'|trans }}</th>
+            <th>{{ 'sales.customer.list.table.actions'|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for customer in customers.items %}
+            <tr>
+                <td>{{ customer.id }}</td>
+                <td data-testid="customer-email">{{ customer.email ?? '—' }}</td>
+                <td>{{ customer.registeredAt|date('Y-m-d H:i') }}</td>
+                <td>{{ customer.erasedAt ? customer.erasedAt|date('Y-m-d H:i') : '—' }}</td>
+                <td>
+                    {% if customer.erasedAt is null %}
+                        {{ ui.confirm_modal(
+                            'erase-customer-' ~ customer.id,
+                            path('sales_customer_erase', {id: customer.id}),
+                            'sales.customer.list.erase_button'|trans,
+                            'sales.customer.list.erase_confirm_message'|trans,
+                            {cancel_label: 'sales.customer.list.erase_dismiss_button'|trans},
+                        ) }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr data-testid="customers-empty"><td colspan="5">{{ 'sales.customer.list.empty'|trans }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {{ ui.pagination(customers.pagination, 'sales_customer_list', {}) }}
+{% endblock %}

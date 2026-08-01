@@ -1,0 +1,10 @@
+{% extends '@!ApiPlatform/SwaggerUi/index.html.twig' %}
+
+{% block stylesheet %}
+    {{ parent() }}
+    {# header is emptied below, so the fixed 70px top bar never renders;
+       reclaim the space the default stylesheet reserves for it on <body>. #}
+    <style>body { margin-top: 0; }</style>
+{% endblock %}
+
+{% block header %}{% endblock %}

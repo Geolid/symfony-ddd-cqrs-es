@@ -9,11 +9,8 @@ return static function (ContainerConfigurator $container): void {
         'dbal' => [
             'default_connection' => 'read_model',
             'connections' => [
-                // Write side: the append-only event store (see patchlevel_event_sourcing.php).
                 'event_store' => ['url' => '%env(resolve:EVENT_STORE_URL)%'],
-                // Read side: the projection tables built by Projectors and served by Finders.
                 'read_model' => ['url' => '%env(resolve:READ_MODEL_URL)%'],
-                // Messenger's own doctrine transport (queued/failed async messages).
                 'messenger' => ['url' => '%env(resolve:MESSENGER_URL)%'],
             ],
         ],

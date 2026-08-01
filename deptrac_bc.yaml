@@ -4,13 +4,17 @@ deptrac:
 
   layers:
     # --- Bounded Contexts ---
-    - name: Ordering.Order
+    - name: Sales.Customer
       collectors:
-        - { type: directory, value: 'src/Ordering/Order/.*' }
+        - { type: directory, value: 'src/Sales/Customer/.*' }
 
-    - name: Shipping.Shipment
+    - name: Sales.Order
       collectors:
-        - { type: directory, value: 'src/Shipping/Shipment/.*' }
+        - { type: directory, value: 'src/Sales/Order/.*' }
+
+    - name: Fulfilment.Shipment
+      collectors:
+        - { type: directory, value: 'src/Fulfilment/Shipment/.*' }
 
     # --- Global ---
     - name: Shared
@@ -29,12 +33,14 @@ deptrac:
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
 
-  # Shipping is allowed to depend on Ordering ONLY for its public Integration Event contract
-  # (Ordering\Order\Application\Event\OrderPlacedIntegrationEvent) — see
-  # Shipping\Shipment\Application\Processor\CreateShipmentOnOrderPlaced. This is the one
-  # sanctioned cross-BC edge in this codebase, not a general license to reach into another BC's
-  # Domain or Application layer.
+  # Two sanctioned cross-BC edges, both on a public Integration Event contract only — never on
+  # another BC's Domain or Application internals:
+  #   Sales.Order -> Sales.Customer       resolving the buyer behind a placed order
+  #   Fulfilment.Shipment -> Sales.Order  the Processor reacting to a placed order and the Reducer
+  #                                       folding that order onto the Shipment row
+  # Fulfilment knows a single upstream contract, the order — everything it needs travels on it.
   ruleset:
-    Ordering.Order:   [ Shared, Vendors ]
-    Shipping.Shipment: [ Ordering.Order, Shared, Vendors ]
-    Shared:           [ Vendors ]
+    Sales.Customer:      [ Shared, Vendors ]
+    Sales.Order:         [ Sales.Customer, Shared, Vendors ]
+    Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
+    Shared:              [ Vendors ]

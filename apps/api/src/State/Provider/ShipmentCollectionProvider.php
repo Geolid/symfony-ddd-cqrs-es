@@ -9,8 +9,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shipping\Shipment\Application\Query\ListShipments\ListShipments;
 
 /**
  * @implements ProviderInterface<ShipmentResource>
@@ -25,6 +26,8 @@ final readonly class ShipmentCollectionProvider implements ProviderInterface
 
     /**
      * @return TraversablePaginator<ShipmentResource>
+     *
+     * @throws ApplicationExceptionInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {

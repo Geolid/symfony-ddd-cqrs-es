@@ -11,9 +11,10 @@ return static function (ContainerConfigurator $container): void {
         'connection' => ['service' => 'doctrine.dbal.event_store_connection'],
         'store' => ['type' => 'dbal_stream'],
         'subscription' => ['gap_detection' => null],
+        'hydrator' => ['cryptography' => true],
     ]);
 
-    if ('dev' === $container->env()) {
+    if (in_array($container->env(), ['dev', 'demo'], true)) {
         $container->extension('patchlevel_event_sourcing', [
             'subscription' => [
                 'catch_up' => true,

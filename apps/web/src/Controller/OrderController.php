@@ -4,78 +4,115 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
-use Ordering\Order\Application\Command\CancelOrder\CancelOrder;
-use Ordering\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Ordering\Order\Application\Query\ListOrders\ListOrders;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Query\StreamRegisteredCustomers\StreamRegisteredCustomers;
+use Sales\Order\Application\Command\CancelOrder\CancelOrder;
+use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Language\PublishedOrderStatus;
+use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Twig\Environment;
+use Symfony\Component\Routing\Requirement\Requirement;
+use Web\Controller\Criteria\OrderCriteria;
+use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 
-final readonly class OrderController
+#[Route('/sales/orders')]
+final class OrderController extends AbstractController
 {
     public function __construct(
-        private CommandBusInterface $commandBus,
-        private QueryBusInterface $queryBus,
-        private FormFactoryInterface $formFactory,
-        private CsrfTokenManagerInterface $csrfTokenManager,
-        private Environment $twig,
+        private readonly CommandBusInterface $commandBus,
+        private readonly QueryBusInterface $queryBus,
     ) {
     }
 
-    #[Route('/', name: 'orders_home', methods: ['GET'])]
-    #[Route('/orders', name: 'orders_index', methods: ['GET'])]
-    public function index(Request $request): Response
-    {
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    #[Route(name: 'sales_order_list', methods: ['GET'])]
+    public function list(
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
+        OrderCriteria $criteria = new OrderCriteria(),
+    ): Response {
         $orders = $this->queryBus->ask(new ListOrders(
-            page: $request->query->getInt('page', 1),
-            itemsPerPage: 10,
+            page: $criteria->page,
+            itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        return new Response($this->twig->render('orders/index.html.twig', ['orders' => $orders]));
+        return $this->render('sales/order/list.html.twig', [
+            'orders' => $orders,
+            'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+        ]);
     }
 
-    #[Route('/orders/new', name: 'orders_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
+    public function place(Request $request): Response
     {
         $formData = new PlaceOrderFormData();
-        $form = $this->formFactory->create(PlaceOrderType::class, $formData);
+        $form = $this->createForm(PlaceOrderType::class, $formData, ['buyers' => $this->buyers()]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->commandBus->dispatch(new PlaceOrder(
                 id: Uuid::uuid7()->toString(),
                 customerId: (string) $formData->customerId,
-                totalAmountInCents: (int) $formData->totalAmountInCents,
+                lines: array_values(array_map(
+                    static fn (OrderLineFormData $line): array => [
+                        'label' => (string) $line->label,
+                        'quantity' => (int) $line->quantity,
+                        'unitAmountInCents' => (int) $line->unitAmountInCents,
+                    ],
+                    $formData->lines,
+                )),
             ));
 
-            return new RedirectResponse('/orders');
+            return $this->redirectToRoute('sales_order_list');
         }
 
-        return new Response($this->twig->render('orders/new.html.twig', ['form' => $form->createView()]));
+        return $this->render('sales/order/place.html.twig', ['form' => $form]);
     }
 
-    #[Route('/orders/{id}/cancel', methods: ['POST'])]
-    public function cancel(Request $request, string $id): RedirectResponse
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route('/{id}/cancel', name: 'sales_order_cancel', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
+    public function cancel(Request $request, string $id): Response
     {
-        $token = new CsrfToken('cancel-order-'.$id, (string) $request->request->get('_token'));
-
-        if (!$this->csrfTokenManager->isTokenValid($token)) {
+        if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
         $this->commandBus->dispatch(new CancelOrder($id));
 
-        return new RedirectResponse('/orders');
+        return $this->redirectToRoute('sales_order_list');
+    }
+
+    /**
+     * @return array<string, string>
+     *
+     * @throws ApplicationExceptionInterface
+     */
+    private function buyers(): array
+    {
+        $buyers = [];
+
+        foreach ($this->queryBus->ask(new StreamRegisteredCustomers()) as $customer) {
+            $buyers[(string) $customer->email] = $customer->id;
+        }
+
+        return $buyers;
     }
 }
