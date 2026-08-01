@@ -88,12 +88,12 @@ final class OpenApiDocumentationTest extends AbstractWebhookTestCase
         $schema = self::toArray($schemas['CarrierDeliveryPayload']);
 
         self::assertSame([
-            'shipmentId' => [
-                'Identifier of the shipment the carrier has delivered.',
-                '0195f2c4-8f7a-7c3e-9b1d-2a4c6e8f0a12',
+            'trackingReference' => [
+                "The carrier's own tracking reference for the delivered parcel.",
+                'ACME-4Q7X2K9',
             ],
         ], self::describeProperties($schema));
-        self::assertContains('shipmentId', self::toArray($schema['required']));
+        self::assertContains('trackingReference', self::toArray($schema['required']));
     }
 
     #[Test]
