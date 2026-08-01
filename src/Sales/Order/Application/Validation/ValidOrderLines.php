@@ -18,9 +18,9 @@ final class ValidOrderLines extends Compound implements PublishedLanguageInterfa
             new Assert\Count(min: 1),
             new Assert\All([
                 new Assert\Collection([
-                    'label' => new Assert\Type('string'),
-                    'quantity' => new Assert\Type('int'),
-                    'unitAmountInCents' => new Assert\Type('int'),
+                    'label' => [new Assert\Type('string'), new Assert\NotBlank(normalizer: 'trim')],
+                    'quantity' => [new Assert\Type('int'), new Assert\Positive()],
+                    'unitAmountInCents' => new ValidMoney(),
                 ]),
             ]),
         ];
