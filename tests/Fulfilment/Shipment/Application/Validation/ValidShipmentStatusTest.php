@@ -7,18 +7,27 @@ namespace Fulfilment\Tests\Shipment\Application\Validation;
 use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validation;
+use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Compound;
+use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
-final class ValidShipmentStatusTest extends TestCase
+final class ValidShipmentStatusTest extends CompoundConstraintTestCase
 {
+    public function createCompound(): Compound
+    {
+        return new ValidShipmentStatus();
+    }
+
     #[Test]
     #[DataProvider('providePublishedStatuses')]
     public function itAcceptsAStatusOfTheVocabulary(string $status): void
     {
+        // When
+        $this->validateValue($status);
+
         // Then
-        self::assertCount(0, self::validate($status));
+        $this->assertNoViolation();
     }
 
     /**
@@ -33,23 +42,22 @@ final class ValidShipmentStatusTest extends TestCase
 
     #[Test]
     #[DataProvider('provideRefusedStatuses')]
-    public function itRefusesAStatus(mixed $status, int $violations): void
+    public function itRefusesAStatus(mixed $status, string $code): void
     {
+        // When
+        $this->validateValue($status);
+
         // Then
-        self::assertCount($violations, self::validate($status));
+        $this->assertViolationIsRaisedByCompound($code);
     }
 
     /**
-     * @return iterable<string, array{mixed, int}>
+     * @return iterable<string, array{mixed, string}>
      */
     public static function provideRefusedStatuses(): iterable
     {
-        yield 'a word outside the vocabulary' => ['teleported', 2];
-        yield 'a value that is not a string' => [42, 3];
-    }
-
-    private static function validate(mixed $value): ConstraintViolationListInterface
-    {
-        return Validation::createValidator()->validate($value, new ValidShipmentStatus());
+        yield 'outside the vocabulary' => ['teleported', Assert\Choice::NO_SUCH_CHOICE_ERROR];
+        yield 'refused by the value object' => ['teleported', ValidValueObject::DOMAIN_VALIDATION_ERROR];
+        yield 'not a string' => [42, Assert\Type::INVALID_TYPE_ERROR];
     }
 }

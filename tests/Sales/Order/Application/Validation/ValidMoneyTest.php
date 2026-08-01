@@ -6,40 +6,47 @@ namespace Sales\Tests\Order\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 use Sales\Order\Application\Validation\ValidMoney;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validation;
+use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Compound;
+use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
-final class ValidMoneyTest extends TestCase
+final class ValidMoneyTest extends CompoundConstraintTestCase
 {
+    public function createCompound(): Compound
+    {
+        return new ValidMoney();
+    }
+
     #[Test]
     public function itAcceptsAnAmountInCents(): void
     {
+        // When
+        $this->validateValue(2_500);
+
         // Then
-        self::assertCount(0, self::validate(2_500));
-        self::assertCount(0, self::validate(0));
+        $this->assertNoViolation();
     }
 
     #[Test]
     #[DataProvider('provideRefusedAmounts')]
-    public function itRefusesAnAmount(mixed $amount, int $violations): void
+    public function itRefusesAnAmount(mixed $amount, string $code): void
     {
+        // When
+        $this->validateValue($amount);
+
         // Then
-        self::assertCount($violations, self::validate($amount));
+        $this->assertViolationIsRaisedByCompound($code);
     }
 
     /**
-     * @return iterable<string, array{mixed, int}>
+     * @return iterable<string, array{mixed, string}>
      */
     public static function provideRefusedAmounts(): iterable
     {
-        yield 'a value that is not a whole number' => [19.99, 2];
-        yield 'a negative amount' => [-1, 2];
-    }
-
-    private static function validate(mixed $value): ConstraintViolationListInterface
-    {
-        return Validation::createValidator()->validate($value, new ValidMoney());
+        yield 'not a whole number' => [19.99, Assert\Type::INVALID_TYPE_ERROR];
+        yield 'negative' => [-1, Assert\PositiveOrZero::TOO_LOW_ERROR];
+        yield 'refused by the value object' => [-1, ValidValueObject::DOMAIN_VALIDATION_ERROR];
     }
 }

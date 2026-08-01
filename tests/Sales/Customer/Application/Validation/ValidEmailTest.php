@@ -6,40 +6,47 @@ namespace Sales\Tests\Customer\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 use Sales\Customer\Application\Validation\ValidEmail;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validation;
+use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Compound;
+use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
-final class ValidEmailTest extends TestCase
+final class ValidEmailTest extends CompoundConstraintTestCase
 {
+    public function createCompound(): Compound
+    {
+        return new ValidEmail();
+    }
+
     #[Test]
     public function itAcceptsAnAddress(): void
     {
+        // When
+        $this->validateValue('buyer@example.com');
+
         // Then
-        self::assertCount(0, self::validate('buyer@example.com'));
+        $this->assertNoViolation();
     }
 
     #[Test]
     #[DataProvider('provideRefusedAddresses')]
-    public function itRefusesAnAddress(mixed $address, int $violations): void
+    public function itRefusesAnAddress(mixed $address, string $code): void
     {
+        // When
+        $this->validateValue($address);
+
         // Then
-        self::assertCount($violations, self::validate($address));
+        $this->assertViolationIsRaisedByCompound($code);
     }
 
     /**
-     * @return iterable<string, array{mixed, int}>
+     * @return iterable<string, array{mixed, string}>
      */
     public static function provideRefusedAddresses(): iterable
     {
-        yield 'nothing' => ['', 1];
-        yield 'blanks only' => ['   ', 2];
-        yield 'a value out of the address format' => ['buyer-at-example.com', 1];
-    }
-
-    private static function validate(mixed $value): ConstraintViolationListInterface
-    {
-        return Validation::createValidator()->validate($value, new ValidEmail());
+        yield 'nothing' => ['', Assert\NotBlank::IS_BLANK_ERROR];
+        yield 'blanks only' => ['   ', Assert\NotBlank::IS_BLANK_ERROR];
+        yield 'out of the address format' => ['buyer-at-example.com', ValidValueObject::DOMAIN_VALIDATION_ERROR];
     }
 }
