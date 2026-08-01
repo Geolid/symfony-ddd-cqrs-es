@@ -18,7 +18,7 @@ final class ValidCustomerId extends Compound implements PublishedLanguageInterfa
         return [
             new Assert\NotBlank(normalizer: 'trim'),
             new Assert\Type('string'),
-            new Assert\Uuid(),
+            new Assert\Uuid(strict: false),
             new ValidValueObject(CustomerId::class),
         ];
     }
