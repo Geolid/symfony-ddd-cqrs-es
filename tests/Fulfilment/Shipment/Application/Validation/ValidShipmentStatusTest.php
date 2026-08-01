@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Validation;
 
+use Fulfilment\Shipment\Application\Language\PublishedShipmentStatus;
 use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
+/**
+ * @extends CompoundConstraintTestCase<ValidShipmentStatus>
+ */
 final class ValidShipmentStatusTest extends CompoundConstraintTestCase
 {
-    public function createCompound(): Compound
+    protected function createCompound(): ValidShipmentStatus
     {
         return new ValidShipmentStatus();
     }
@@ -40,24 +44,36 @@ final class ValidShipmentStatusTest extends CompoundConstraintTestCase
         yield 'delivered' => ['delivered'];
     }
 
+    /**
+     * @param list<Constraint> $rules
+     */
     #[Test]
     #[DataProvider('provideRefusedStatuses')]
-    public function itRefusesAStatus(mixed $status, string $code): void
+    public function itRefusesAStatus(mixed $status, array $rules): void
     {
         // When
         $this->validateValue($status);
 
         // Then
-        $this->assertViolationIsRaisedByCompound($code);
+        $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, string}>
+     * @return iterable<string, array{mixed, list<Constraint>}>
      */
     public static function provideRefusedStatuses(): iterable
     {
-        yield 'outside the vocabulary' => ['teleported', Assert\Choice::NO_SUCH_CHOICE_ERROR];
-        yield 'refused by the value object' => ['teleported', ValidValueObject::DOMAIN_VALIDATION_ERROR];
-        yield 'not a string' => [42, Assert\Type::INVALID_TYPE_ERROR];
+        yield 'outside the vocabulary' => ['teleported', [self::choice(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::choice(), self::valueObject()]];
+    }
+
+    private static function choice(): Assert\Choice
+    {
+        return new Assert\Choice(choices: array_column(PublishedShipmentStatus::cases(), 'value'));
+    }
+
+    private static function valueObject(): ValidValueObject
+    {
+        return new ValidValueObject(PublishedShipmentStatus::class, method: 'from');
     }
 }

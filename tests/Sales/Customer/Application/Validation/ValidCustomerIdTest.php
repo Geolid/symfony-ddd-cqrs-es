@@ -8,14 +8,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Validation\ValidCustomerId;
+use Sales\Customer\Domain\CustomerId;
 use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
+/**
+ * @extends CompoundConstraintTestCase<ValidCustomerId>
+ */
 final class ValidCustomerIdTest extends CompoundConstraintTestCase
 {
-    public function createCompound(): Compound
+    protected function createCompound(): ValidCustomerId
     {
         return new ValidCustomerId();
     }
@@ -30,25 +34,38 @@ final class ValidCustomerIdTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    /**
+     * @param list<Constraint> $rules
+     */
     #[Test]
     #[DataProvider('provideRefusedIdentifiers')]
-    public function itRefusesAnIdentifier(mixed $id, string $code): void
+    public function itRefusesAnIdentifier(mixed $id, array $rules): void
     {
         // When
         $this->validateValue($id);
 
         // Then
-        $this->assertViolationIsRaisedByCompound($code);
+        $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, string}>
+     * @return iterable<string, array{mixed, list<Constraint>}>
      */
     public static function provideRefusedIdentifiers(): iterable
     {
-        yield 'nothing' => ['', Assert\NotBlank::IS_BLANK_ERROR];
-        yield 'blanks only' => ['   ', Assert\NotBlank::IS_BLANK_ERROR];
-        yield 'not a string' => [42, Assert\Type::INVALID_TYPE_ERROR];
-        yield 'out of the identifier format' => ['not-a-uuid', ValidValueObject::DOMAIN_VALIDATION_ERROR];
+        yield 'nothing' => ['', [self::notBlank()]];
+        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
+        yield 'out of the identifier format' => ['not-a-uuid', [self::valueObject()]];
+    }
+
+    private static function notBlank(): Assert\NotBlank
+    {
+        return new Assert\NotBlank(normalizer: 'trim');
+    }
+
+    private static function valueObject(): ValidValueObject
+    {
+        return new ValidValueObject(CustomerId::class);
     }
 }

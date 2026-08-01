@@ -7,14 +7,18 @@ namespace Sales\Tests\Customer\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Validation\ValidEmail;
+use Sales\Customer\Domain\Email;
 use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
+/**
+ * @extends CompoundConstraintTestCase<ValidEmail>
+ */
 final class ValidEmailTest extends CompoundConstraintTestCase
 {
-    public function createCompound(): Compound
+    protected function createCompound(): ValidEmail
     {
         return new ValidEmail();
     }
@@ -29,24 +33,37 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    /**
+     * @param list<Constraint> $rules
+     */
     #[Test]
     #[DataProvider('provideRefusedAddresses')]
-    public function itRefusesAnAddress(mixed $address, string $code): void
+    public function itRefusesAnAddress(mixed $address, array $rules): void
     {
         // When
         $this->validateValue($address);
 
         // Then
-        $this->assertViolationIsRaisedByCompound($code);
+        $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, string}>
+     * @return iterable<string, array{mixed, list<Constraint>}>
      */
     public static function provideRefusedAddresses(): iterable
     {
-        yield 'nothing' => ['', Assert\NotBlank::IS_BLANK_ERROR];
-        yield 'blanks only' => ['   ', Assert\NotBlank::IS_BLANK_ERROR];
-        yield 'out of the address format' => ['buyer-at-example.com', ValidValueObject::DOMAIN_VALIDATION_ERROR];
+        yield 'nothing' => ['', [self::notBlank()]];
+        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'out of the address format' => ['buyer-at-example.com', [self::valueObject()]];
+    }
+
+    private static function notBlank(): Assert\NotBlank
+    {
+        return new Assert\NotBlank(normalizer: 'trim');
+    }
+
+    private static function valueObject(): ValidValueObject
+    {
+        return new ValidValueObject(Email::class, method: 'fromString');
     }
 }

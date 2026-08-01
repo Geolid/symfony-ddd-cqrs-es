@@ -7,13 +7,16 @@ namespace Sales\Tests\Order\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Validation\ValidOrderLines;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
+/**
+ * @extends CompoundConstraintTestCase<ValidOrderLines>
+ */
 final class ValidOrderLinesTest extends CompoundConstraintTestCase
 {
-    public function createCompound(): Compound
+    protected function createCompound(): ValidOrderLines
     {
         return new ValidOrderLines();
     }
@@ -28,28 +31,42 @@ final class ValidOrderLinesTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    /**
+     * @param list<Constraint> $rules
+     */
     #[Test]
     #[DataProvider('provideRefusedLines')]
-    public function itRefusesLines(mixed $lines, string $code): void
+    public function itRefusesLines(mixed $lines, array $rules): void
     {
         // When
         $this->validateValue($lines);
 
         // Then
-        $this->assertViolationIsRaisedByCompound($code);
+        $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, string}>
+     * @return iterable<string, array{mixed, list<Constraint>}>
      */
     public static function provideRefusedLines(): iterable
     {
-        yield 'no line at all' => [[], Assert\Count::TOO_FEW_ERROR];
-        yield 'a countable that is not an array' => [new \ArrayObject([self::line()]), Assert\Type::INVALID_TYPE_ERROR];
-        yield 'a label that is not a string' => [[[...self::line(), 'label' => 1]], Assert\Type::INVALID_TYPE_ERROR];
-        yield 'a quantity that is not a whole number' => [[[...self::line(), 'quantity' => '2']], Assert\Type::INVALID_TYPE_ERROR];
-        yield 'an amount that is not a whole number' => [[[...self::line(), 'unitAmountInCents' => 19.99]], Assert\Type::INVALID_TYPE_ERROR];
-        yield 'a field the line does not carry' => [[[...self::line(), 'discount' => 10]], Assert\Collection::NO_SUCH_FIELD_ERROR];
+        yield 'no line at all' => [[], [new Assert\Count(min: 1)]];
+        yield 'a countable that is not an array' => [new \ArrayObject([self::line()]), [new Assert\Type('array')]];
+        yield 'a label that is not a string' => [[[...self::line(), 'label' => 1]], [self::lineShape()]];
+        yield 'a quantity that is not a whole number' => [[[...self::line(), 'quantity' => '2']], [self::lineShape()]];
+        yield 'an amount that is not a whole number' => [[[...self::line(), 'unitAmountInCents' => 19.99]], [self::lineShape()]];
+        yield 'a field the line does not carry' => [[[...self::line(), 'discount' => 10]], [self::lineShape()]];
+    }
+
+    private static function lineShape(): Assert\All
+    {
+        return new Assert\All([
+            new Assert\Collection([
+                'label' => new Assert\Type('string'),
+                'quantity' => new Assert\Type('int'),
+                'unitAmountInCents' => new Assert\Type('int'),
+            ]),
+        ]);
     }
 
     /**

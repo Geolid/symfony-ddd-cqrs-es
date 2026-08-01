@@ -7,14 +7,18 @@ namespace Sales\Tests\Order\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Validation\ValidMoney;
+use Sales\Order\Domain\Money;
 use Shared\Application\Validation\ValidValueObject;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
+/**
+ * @extends CompoundConstraintTestCase<ValidMoney>
+ */
 final class ValidMoneyTest extends CompoundConstraintTestCase
 {
-    public function createCompound(): Compound
+    protected function createCompound(): ValidMoney
     {
         return new ValidMoney();
     }
@@ -29,24 +33,31 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    /**
+     * @param list<Constraint> $rules
+     */
     #[Test]
     #[DataProvider('provideRefusedAmounts')]
-    public function itRefusesAnAmount(mixed $amount, string $code): void
+    public function itRefusesAnAmount(mixed $amount, array $rules): void
     {
         // When
         $this->validateValue($amount);
 
         // Then
-        $this->assertViolationIsRaisedByCompound($code);
+        $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, string}>
+     * @return iterable<string, array{mixed, list<Constraint>}>
      */
     public static function provideRefusedAmounts(): iterable
     {
-        yield 'not a whole number' => [19.99, Assert\Type::INVALID_TYPE_ERROR];
-        yield 'negative' => [-1, Assert\PositiveOrZero::TOO_LOW_ERROR];
-        yield 'refused by the value object' => [-1, ValidValueObject::DOMAIN_VALIDATION_ERROR];
+        yield 'not a whole number' => [19.99, [new Assert\Type('int'), self::valueObject()]];
+        yield 'negative' => [-1, [new Assert\PositiveOrZero(), self::valueObject()]];
+    }
+
+    private static function valueObject(): ValidValueObject
+    {
+        return new ValidValueObject(Money::class, method: 'fromCents');
     }
 }
