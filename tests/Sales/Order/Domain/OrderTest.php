@@ -33,10 +33,12 @@ final class OrderTest extends AggregateRootTestCase
     public function itCannotPlaceAnOrderWithoutALine(): void
     {
         $id = OrderId::generate();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
-        $this->expectException(OrderWithoutLineException::class);
-
-        Order::place($id, 'customer-1', 'buyer@example.com', [], new \DateTimeImmutable('2026-01-01T00:00:00+00:00'));
+        $this
+            ->given()
+            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', [], $placedAt))
+            ->expectsException(OrderWithoutLineException::class);
     }
 
     #[Test]
