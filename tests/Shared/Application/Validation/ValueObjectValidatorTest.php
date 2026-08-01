@@ -12,6 +12,9 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
+/**
+ * @extends ConstraintValidatorTestCase<ValueObjectValidator>
+ */
 final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
 {
     #[Test]
