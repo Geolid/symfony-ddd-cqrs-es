@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Form;
 
 use Sales\Customer\Application\Query\StreamRegisteredCustomers\StreamRegisteredCustomers;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -23,6 +24,9 @@ final class PlaceOrderType extends AbstractType
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -52,6 +56,8 @@ final class PlaceOrderType extends AbstractType
 
     /**
      * @return array<string, string>
+     *
+     * @throws ApplicationExceptionInterface
      */
     private function buyers(): array
     {
