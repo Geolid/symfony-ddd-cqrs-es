@@ -12,7 +12,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: ?string, order_total_in_cents: int|string|null, status: string, order_cancelled_at: ?string}
+ * @phpstan-type Row array{customer_id: ?string, order_total_in_cents: int|string|null, status: string, tracking_reference: ?string, order_cancelled_at: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -33,6 +33,27 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame('customer-1', $row['customer_id']);
         self::assertSame(2_500, (int) $row['order_total_in_cents']);
         self::assertSame('pending', $row['status']);
+    }
+
+    #[Test]
+    public function itProjectsTheCarrierReferenceOnTrackingReferenceAssigned(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+
+        // When
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->tracked('ACME-4Q7X2K9')
+            ->create();
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('dispatched', $row['status']);
+        self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
     }
 
     #[Test]
@@ -62,7 +83,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, order_total_in_cents, status, order_cancelled_at FROM %s WHERE id = :id',
+                'SELECT customer_id, order_total_in_cents, status, tracking_reference, order_cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

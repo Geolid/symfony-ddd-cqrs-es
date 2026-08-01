@@ -17,4 +17,14 @@ final class ShipmentInvalidTransitionException extends \DomainException
     {
         return new self(\sprintf('Cannot mark shipment as delivered with status "%s".', $current->value));
     }
+
+    public static function cannotAssignTrackingReference(ShipmentStatus $current): self
+    {
+        return new self(\sprintf('Cannot assign a tracking reference to a shipment with status "%s".', $current->value));
+    }
+
+    public static function trackingReferenceAlreadyAssigned(string $current): self
+    {
+        return new self(\sprintf('Shipment already tracked under reference "%s".', $current));
+    }
 }

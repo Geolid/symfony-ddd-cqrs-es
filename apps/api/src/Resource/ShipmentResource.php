@@ -73,6 +73,8 @@ final class ShipmentResource
         public ?int $orderTotalInCents = null,
         #[ApiProperty(description: 'The current status of the shipment.', example: 'pending')]
         public ?string $status = null,
+        #[ApiProperty(description: "The carrier's own tracking reference, once the pickup has been booked.", example: 'ACME-4Q7X2K9')]
+        public ?string $trackingReference = null,
         #[ApiProperty(description: 'The date and time when the shipment was created.', example: '2026-01-14T09:35:00+00:00')]
         public ?\DateTimeImmutable $createdAt = null,
         #[ApiProperty(description: 'The date and time when the shipment was handed to the carrier, if it was.', example: '2026-01-15T08:05:00+00:00')]
@@ -92,6 +94,7 @@ final class ShipmentResource
             customerId: $result->customerId,
             orderTotalInCents: $result->orderTotalInCents,
             status: $result->status,
+            trackingReference: $result->trackingReference,
             createdAt: $result->createdAt,
             dispatchedAt: $result->dispatchedAt,
             deliveredAt: $result->deliveredAt,

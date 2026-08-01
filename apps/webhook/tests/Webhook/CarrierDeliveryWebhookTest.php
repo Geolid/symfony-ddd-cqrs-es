@@ -8,7 +8,6 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 
@@ -16,14 +15,16 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 {
     private const string PATH = '/webhooks/carrier-delivery';
 
+    private const string TRACKING_REFERENCE = 'ACME-4Q7X2K9';
+
     #[Test]
     public function itAcceptsACarrierDelivery(): void
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->dispatched()->create();
+        $shipment = ShipmentTestFactory::new()->tracked(self::TRACKING_REFERENCE)->create();
         $this->store($shipment);
-        $body = self::body($shipment->id()->toString());
+        $body = self::body(self::TRACKING_REFERENCE);
 
         // When
         $client->request('POST', self::PATH, server: self::headers(self::sign($body)), content: $body);
@@ -39,7 +40,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(Uuid::uuid7()->toString());
+        $body = self::body(self::TRACKING_REFERENCE);
 
         // When
         $client->request('POST', self::PATH, server: self::headers($signature), content: $body);
@@ -76,16 +77,17 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideBadPayloads(): iterable
     {
-        yield 'shipment out of format' => [self::body('not-a-uuid')];
-        yield 'shipment absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
+        yield 'reference blank' => [self::body('')];
+        yield 'reference longer than the carrier can issue' => [self::body(str_repeat('A', 65))];
+        yield 'reference absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
     }
 
     #[Test]
-    public function itFailsToAcceptAnUnknownShipment(): void
+    public function itFailsToAcceptAnUntrackedDelivery(): void
     {
         // Given
         $client = self::createClient();
-        $body = self::body(Uuid::uuid7()->toString());
+        $body = self::body('ACME-NEVER-ISSUED');
 
         // When
         $client->request('POST', self::PATH, server: self::headers(self::sign($body)), content: $body);
@@ -108,9 +110,9 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         return $headers;
     }
 
-    private static function body(string $shipmentId): string
+    private static function body(string $trackingReference): string
     {
-        return json_encode(['shipmentId' => $shipmentId], \JSON_THROW_ON_ERROR);
+        return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
     }
 
     private function statusOf(string $id): string

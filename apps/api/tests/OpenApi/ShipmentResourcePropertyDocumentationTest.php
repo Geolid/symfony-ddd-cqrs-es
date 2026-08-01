@@ -21,6 +21,7 @@ final class ShipmentResourcePropertyDocumentationTest extends AbstractResourcePr
             'customerId' => ['The identifier of the customer the shipment is addressed to.', '0193c5f4-7b10-7c42-9a6e-4d8f1b3c5e72'],
             'orderTotalInCents' => ['The total amount of the fulfilled order, in cents.', 3500],
             'status' => ['The current status of the shipment.', 'pending'],
+            'trackingReference' => ["The carrier's own tracking reference, once the pickup has been booked.", 'ACME-4Q7X2K9'],
             'createdAt' => ['The date and time when the shipment was created.', '2026-01-14T09:35:00+00:00'],
             'dispatchedAt' => ['The date and time when the shipment was handed to the carrier, if it was.', '2026-01-15T08:05:00+00:00'],
             'deliveredAt' => ['The date and time when the shipment was delivered, if it was.', '2026-01-17T11:40:00+00:00'],

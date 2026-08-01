@@ -13,6 +13,7 @@ paths:
 - A handler carries the project's own `#[AsCommandHandler]`/`#[AsQueryHandler]` attribute, never Symfony's `#[AsMessageHandler]`.
 - A Query reads through an `Application/Finder/<Aggregate>/<X>FinderInterface` (with its `<X>Result` co-located), never through a Repository. A Command writes through a Repository (Domain); it may also read through a Finder if it needs to. A Finder parameter is a `string`/enum, never an identity Value Object — a read stays primitives end-to-end.
 - A side effect reacting to an event (`#[Processor]`, whether the event is a Domain Event from the same BC or an Integration Event from another) carries zero business logic and must be replay-safe: it either dispatches a Command, calls an outbound port directly, or enriches by reading a Repository — never a Finder.
+- An outbound call belongs to a Processor reacting to a recorded fact, never to a Command handler: inside a transition the aggregate's invariant is checked after the call has already left, and the failure of a third party rolls back a decision that was ours to keep. What comes back is carried by a second Command.
 - A bulk operation is a `ForAll<X>` handler dispatching one `For<X>` Command per item — never an inline loop. Each item gets its own transaction.
 
 **NEVER**

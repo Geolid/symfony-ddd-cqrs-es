@@ -65,7 +65,7 @@ final class CarrierDeliveryParser extends AbstractRequestParser
             throw new RejectWebhookException(Response::HTTP_UNPROCESSABLE_ENTITY, (string) $violations->get(0)->getMessage());
         }
 
-        return new RemoteEvent(self::EVENT_TYPE, $payload->shipmentId, get_object_vars($payload));
+        return new RemoteEvent(self::EVENT_TYPE, $payload->trackingReference, get_object_vars($payload));
     }
 
     private function verifySignature(Request $request, #[\SensitiveParameter] string $secret): void

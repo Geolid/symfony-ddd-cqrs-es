@@ -12,4 +12,6 @@ use Shared\Application\Finder\PaginatedFinderInterface;
 interface ShipmentFinderInterface extends PaginatedFinderInterface
 {
     public function withStatus(string $status): static;
+
+    public function withTrackingReference(string $trackingReference): static;
 }

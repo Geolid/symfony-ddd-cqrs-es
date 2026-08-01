@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
@@ -26,6 +27,7 @@ return static function (ContainerConfigurator $container): void {
 
             // Fulfilment
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ShipmentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared

@@ -14,6 +14,7 @@ final readonly class ShipmentResult implements ResultInterface
         public ?string $customerId,
         public ?int $orderTotalInCents,
         public string $status,
+        public ?string $trackingReference,
         public \DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,

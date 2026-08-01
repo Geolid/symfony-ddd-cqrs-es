@@ -35,6 +35,13 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('now +00:00')));
     }
 
+    public function tracked(string $trackingReference): self
+    {
+        return $this->dispatched()->withModifier(
+            static fn (Shipment $shipment) => $shipment->assignTrackingReference($trackingReference),
+        );
+    }
+
     public function delivered(): self
     {
         return $this->dispatched()->withModifier(

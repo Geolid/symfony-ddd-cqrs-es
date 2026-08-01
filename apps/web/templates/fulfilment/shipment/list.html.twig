@@ -13,6 +13,7 @@
             <th>{{ 'fulfilment.shipment.list.table.customer'|trans }}</th>
             <th>{{ 'fulfilment.shipment.list.table.total'|trans }}</th>
             <th>{{ 'fulfilment.shipment.list.table.status'|trans }}</th>
+            <th>{{ 'fulfilment.shipment.list.table.tracking_reference'|trans }}</th>
             <th>{{ 'fulfilment.shipment.list.table.created_at'|trans }}</th>
             <th>{{ 'fulfilment.shipment.list.table.dispatched_at'|trans }}</th>
             <th>{{ 'fulfilment.shipment.list.table.delivered_at'|trans }}</th>
@@ -27,13 +28,14 @@
                 <td>{{ shipment.customerId ?? '—' }}</td>
                 <td>{{ shipment.orderTotalInCents|amount }}</td>
                 <td><span class="status">{{ ('fulfilment.shipment.status.' ~ shipment.status)|trans }}</span></td>
+                <td>{{ shipment.trackingReference ?? '—' }}</td>
                 <td>{{ shipment.createdAt|date('Y-m-d H:i') }}</td>
                 <td>{{ shipment.dispatchedAt ? shipment.dispatchedAt|date('Y-m-d H:i') : '—' }}</td>
                 <td>{{ shipment.deliveredAt ? shipment.deliveredAt|date('Y-m-d H:i') : '—' }}</td>
                 <td>{{ shipment.orderCancelledAt ? shipment.orderCancelledAt|date('Y-m-d H:i') : '—' }}</td>
             </tr>
         {% else %}
-            <tr data-testid="shipments-empty"><td colspan="9">{{ 'fulfilment.shipment.list.empty'|trans }}</td></tr>
+            <tr data-testid="shipments-empty"><td colspan="10">{{ 'fulfilment.shipment.list.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>

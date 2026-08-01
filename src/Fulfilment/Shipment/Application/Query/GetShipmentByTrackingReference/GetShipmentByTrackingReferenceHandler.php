@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference;
+
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Shared\Application\Query\AsQueryHandler;
+
+#[AsQueryHandler]
+final readonly class GetShipmentByTrackingReferenceHandler
+{
+    public function __construct(private ShipmentFinderInterface $shipmentFinder)
+    {
+    }
+
+    /**
+     * @throws ShipmentResultNotFoundException
+     */
+    public function __invoke(GetShipmentByTrackingReference $query): ShipmentResult
+    {
+        foreach ($this->shipmentFinder->withTrackingReference($query->trackingReference) as $shipment) {
+            return $shipment;
+        }
+
+        throw ShipmentResultNotFoundException::forTrackingReference($query->trackingReference);
+    }
+}

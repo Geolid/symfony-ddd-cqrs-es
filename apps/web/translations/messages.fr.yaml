@@ -66,6 +66,7 @@ fulfilment:
                 customer: Client
                 total: Total commande
                 status: Statut
+                tracking_reference: Numéro de suivi
                 created_at: Créée le
                 dispatched_at: Expédiée le
                 delivered_at: Livrée le

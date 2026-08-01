@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Reducer\OrderSummaryReducer;
 use Patchlevel\EventSourcing\Attribute\Projector;
@@ -59,6 +60,16 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(TrackingReferenceAssigned::class)]
+    public function onTrackingReferenceAssigned(TrackingReferenceAssigned $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['tracking_reference' => $event->trackingReference],
+            ['id' => $event->id],
+        );
+    }
+
     #[Subscribe(ShipmentDelivered::class)]
     public function onShipmentDelivered(ShipmentDelivered $event): void
     {
@@ -93,6 +104,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('customer_id', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('order_total_in_cents', Types::INTEGER, ['notnull' => false, 'default' => null]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('created_at', Types::DATETIME_MUTABLE);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
@@ -103,5 +115,6 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 ->create(),
         );
         $table->addIndex(['order_id'], 'fulfilment_shipment_order_id_idx');
+        $table->addIndex(['tracking_reference'], 'fulfilment_shipment_tracking_reference_idx');
     }
 }

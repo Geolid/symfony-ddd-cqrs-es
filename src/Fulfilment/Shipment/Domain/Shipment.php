@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Domain;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -25,6 +26,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private string $orderId;
     private string $customerId;
     private ?string $customerAddress;
+    private ?string $trackingReference;
     private ShipmentStatus $status;
 
     public function id(): ShipmentId
@@ -45,6 +47,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public function customerAddress(): ?string
     {
         return $this->customerAddress;
+    }
+
+    public function trackingReference(): ?string
+    {
+        return $this->trackingReference;
     }
 
     public static function create(
@@ -84,6 +91,25 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws ShipmentInvalidTransitionException
      */
+    public function assignTrackingReference(string $trackingReference): void
+    {
+        if (!$this->status->isDispatched()) {
+            throw ShipmentInvalidTransitionException::cannotAssignTrackingReference($this->status);
+        }
+
+        if (null !== $this->trackingReference) {
+            throw ShipmentInvalidTransitionException::trackingReferenceAlreadyAssigned($this->trackingReference);
+        }
+
+        $this->recordThat(new TrackingReferenceAssigned(
+            id: $this->id->toString(),
+            trackingReference: $trackingReference,
+        ));
+    }
+
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
     public function markDelivered(\DateTimeImmutable $deliveredAt): void
     {
         if (!$this->status->isDispatched()) {
@@ -103,6 +129,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->orderId = $event->orderId;
         $this->customerId = $event->customerId;
         $this->customerAddress = $event->customerAddress;
+        $this->trackingReference = null;
         $this->status = ShipmentStatus::PENDING;
     }
 
@@ -110,6 +137,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyShipmentDispatched(ShipmentDispatched $event): void
     {
         $this->status = ShipmentStatus::DISPATCHED;
+    }
+
+    #[Apply]
+    private function applyTrackingReferenceAssigned(TrackingReferenceAssigned $event): void
+    {
+        $this->trackingReference = $event->trackingReference;
     }
 
     #[Apply]

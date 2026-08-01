@@ -66,6 +66,7 @@ fulfilment:
                 customer: Customer
                 total: Order total
                 status: Status
+                tracking_reference: Tracking reference
                 created_at: Created at
                 dispatched_at: Dispatched at
                 delivered_at: Delivered at
