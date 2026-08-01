@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class ShipmentControllerTest extends AbstractWebTestCase
@@ -34,6 +36,40 @@ final class ShipmentControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
+    }
+
+    #[Test]
+    public function itShowsTheOrderTotalInUnitsAndTheCarrierReference(): void
+    {
+        // Given
+        $client = self::browser();
+        $order = OrderTestFactory::new()->withTotalAmountInCents(2_500)->create();
+        $this->store($order);
+        $this->store(
+            ShipmentTestFactory::new()->withOrderId($order->id()->toString())->tracked('ACME-4Q7X2K9')->create(),
+        );
+
+        // When
+        $client->request('GET', '/fulfilment/shipments');
+
+        // Then
+        self::assertSelectorTextSame('[data-testid="shipment-total"]', '25.00');
+        self::assertSelectorTextSame('[data-testid="shipment-tracking-reference"]', 'ACME-4Q7X2K9');
+    }
+
+    #[Test]
+    public function itShowsADashWhereAShipmentHasNothingToShow(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->store(ShipmentTestFactory::new()->create());
+
+        // When
+        $client->request('GET', '/fulfilment/shipments');
+
+        // Then
+        self::assertSelectorTextSame('[data-testid="shipment-total"]', '—');
+        self::assertSelectorTextSame('[data-testid="shipment-tracking-reference"]', '—');
     }
 
     #[Test]

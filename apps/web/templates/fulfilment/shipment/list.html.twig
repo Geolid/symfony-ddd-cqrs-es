@@ -26,9 +26,9 @@
                 <td>{{ shipment.id }}</td>
                 <td>{{ shipment.orderId }}</td>
                 <td>{{ shipment.customerId ?? '—' }}</td>
-                <td>{{ shipment.orderTotalInCents|amount }}</td>
+                <td data-testid="shipment-total">{{ shipment.orderTotalInCents|amount }}</td>
                 <td><span class="status">{{ ('fulfilment.shipment.status.' ~ shipment.status)|trans }}</span></td>
-                <td>{{ shipment.trackingReference ?? '—' }}</td>
+                <td data-testid="shipment-tracking-reference">{{ shipment.trackingReference ?? '—' }}</td>
                 <td>{{ shipment.createdAt|date('Y-m-d H:i') }}</td>
                 <td>{{ shipment.dispatchedAt ? shipment.dispatchedAt|date('Y-m-d H:i') : '—' }}</td>
                 <td>{{ shipment.deliveredAt ? shipment.deliveredAt|date('Y-m-d H:i') : '—' }}</td>

@@ -21,7 +21,7 @@
             <tr>
                 <td>{{ order.id }}</td>
                 <td data-testid="order-customer">{{ order.customerId }}</td>
-                <td>{{ order.totalAmountInCents|amount }}</td>
+                <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
                 <td><span class="status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
