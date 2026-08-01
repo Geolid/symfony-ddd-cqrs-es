@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Controller;
 
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Query\StreamRegisteredCustomers\StreamRegisteredCustomers;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Language\PublishedOrderStatus;
@@ -60,7 +61,7 @@ final class OrderController extends AbstractController
     public function place(Request $request): Response
     {
         $formData = new PlaceOrderFormData();
-        $form = $this->createForm(PlaceOrderType::class, $formData);
+        $form = $this->createForm(PlaceOrderType::class, $formData, ['buyers' => $this->buyers()]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -97,5 +98,21 @@ final class OrderController extends AbstractController
         $this->commandBus->dispatch(new CancelOrder($id));
 
         return $this->redirectToRoute('sales_order_list');
+    }
+
+    /**
+     * @return array<string, string>
+     *
+     * @throws ApplicationExceptionInterface
+     */
+    private function buyers(): array
+    {
+        $buyers = [];
+
+        foreach ($this->queryBus->ask(new StreamRegisteredCustomers()) as $customer) {
+            $buyers[(string) $customer->email] = $customer->id;
+        }
+
+        return $buyers;
     }
 }
