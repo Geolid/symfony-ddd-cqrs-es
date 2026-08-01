@@ -38,6 +38,7 @@ final class ValidOrderLinesTest extends CompoundConstraintTestCase
         $this->validateValue($lines);
 
         // Then
+        self::assertGreaterThan(0, \count($this->context->getViolations()));
         $this->assertViolationsRaisedByCompound($rules);
     }
 
