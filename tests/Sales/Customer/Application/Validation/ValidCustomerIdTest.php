@@ -54,9 +54,9 @@ final class ValidCustomerIdTest extends CompoundConstraintTestCase
     public static function provideRefusedIdentifiers(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
-        yield 'out of the identifier format' => ['not-a-uuid', [self::valueObject()]];
+        yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Uuid(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(), self::valueObject()]];
+        yield 'out of the identifier format' => ['not-a-uuid', [new Assert\Uuid(), self::valueObject()]];
     }
 
     private static function notBlank(): Assert\NotBlank

@@ -23,6 +23,7 @@ paths:
 ### Conventions
 - An application failure is a `final` exception extending `\RuntimeException`, implementing `Shared\Application\Exception\ApplicationExceptionInterface`; named static factory (`forId`, `forIdentifier`...).
 - An Application port meant to be called directly by a Delivery Mechanism (bypassing the Command/Query bus) is marked `#[AsDrivingPort]` (`Shared\Application\Port`) — a pure marker read by phpat, zero DI effect. It grants a *behaviour*; the data crossing the boundary is granted separately by `PublishedLanguageInterface` (`Shared\Application\Language`), which `CommandInterface`, `QueryInterface`, `ResultInterface` and `ApplicationExceptionInterface` already extend — a validation compound (`Application/Validation/Valid<Name>`) and a published vocabulary (`Application/Language/Published<X>`) carry it explicitly.
+- A validation compound (`Application/Validation/Valid<Name> extends Compound`) lists the Symfony `Assert` rules that carry the user-facing message, then closes on `ValidValueObject(<Vo>::class)` as a net. The Value Object keeps the last word; the asserts exist so the client reads *why* the field is refused rather than that the domain refused it.
 - An Integration Event lives in `Application/Event/`, suffixed `*IntegrationEvent`, is `final readonly`, implements `IntegrationEventInterface`; named `#[Event('<subdomain>.<bc>.integration.<verb>')]` — same prefix as its Domain Event, an `integration` segment before the verb keeps the two names distinct in the shared store. Tagged `#[PersonalData]`/`#[DataSubjectId]` when it carries personal data.
 - A side-effect reaction lives in `Application/Processor/<Action>On<Event>`, named `#[Processor('<subdomain>.<bc>.<action>_on_<event>')]` — snake_case of its own class name. It is invokable: `#[Subscribe(<Event>::class)]` sits on `__invoke()`, one reaction for one event, where a Projector or a Translator carries one `on<Event>()` per event.
 - A Processor that creates an aggregate derives the identity from the triggering event (`uuid5` on a bound namespace) and its handler returns early when that aggregate already exists — otherwise a replay opens a duplicate.
@@ -34,7 +35,7 @@ paths:
 ### Conventions
 
 #### Structure
-- A validation compound is exercised through `CompoundConstraintTestCase`, one data set per rule, each asserted by the violation code that rule raises — a count of violations, or the mere presence of one, cannot tell which rule fired, so a rule dropped from the list goes unnoticed.
+- A validation compound is exercised through `CompoundConstraintTestCase`, one data set per refused value, naming the rules it trips — the assertion compares the whole ordered list, so a rule dropped from the compound makes its data set fail. A value that trips the closing `ValidValueObject` alone is a missing `Assert`: the message the client gets is the Value Object's, not the field's.
 
 #### Naming
 - Command Handler: success `it*`, failure `itFailsWhen*`.

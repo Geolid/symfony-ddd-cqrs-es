@@ -53,8 +53,8 @@ final class ValidEmailTest extends CompoundConstraintTestCase
     public static function provideRefusedAddresses(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
-        yield 'out of the address format' => ['buyer-at-example.com', [self::valueObject()]];
+        yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Email(), self::valueObject()]];
+        yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email(), self::valueObject()]];
     }
 
     private static function notBlank(): Assert\NotBlank

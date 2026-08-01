@@ -17,6 +17,7 @@ final class ValidEmail extends Compound implements PublishedLanguageInterface
     {
         return [
             new Assert\NotBlank(normalizer: 'trim'),
+            new Assert\Email(),
             new ValidValueObject(Email::class, method: 'fromString'),
         ];
     }
