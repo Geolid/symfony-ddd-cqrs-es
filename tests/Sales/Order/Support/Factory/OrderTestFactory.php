@@ -40,6 +40,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withLines([OrderLine::of('Assorted goods', 1, Money::fromCents($totalAmountInCents))]);
     }
 
+    public function placedAt(\DateTimeImmutable $placedAt): self
+    {
+        return static::new(array_merge($this->attributes, ['placedAt' => $placedAt]));
+    }
+
     public function cancelled(): self
     {
         return $this->withModifier(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('now +00:00')));
