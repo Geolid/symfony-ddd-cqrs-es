@@ -33,6 +33,9 @@ paths:
 
 ### Conventions
 
+#### Structure
+- A validation compound is exercised through `CompoundConstraintTestCase`, one data set per rule, each asserted by the violation code that rule raises — a count of violations, or the mere presence of one, cannot tell which rule fired, so a rule dropped from the list goes unnoticed.
+
 #### Naming
 - Command Handler: success `it*`, failure `itFailsWhen*`.
 - Query Handler: success `itGets*` / `itLists*` / `itLists*By*` / `itPaginates*`, failure `itFailsWhen*`.
