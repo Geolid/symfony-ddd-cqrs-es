@@ -29,18 +29,18 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     {
         try {
             $this->connection->insert(self::TABLE, [
-                'key_type' => (string) $type->value,
+                'key_type' => $type->value,
                 'key_value' => $value,
             ]);
         } catch (UniqueConstraintViolationException) {
-            throw new UniqueValueAlreadyTakenException((string) $type->value, $value);
+            throw new UniqueValueAlreadyTakenException($type, $value);
         }
     }
 
     public function release(\BackedEnum $type, string $value): void
     {
         $this->connection->delete(self::TABLE, [
-            'key_type' => (string) $type->value,
+            'key_type' => $type->value,
             'key_value' => $value,
         ]);
     }
@@ -50,7 +50,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         $result = $this->connection->fetchOne(
             \sprintf('SELECT 1 FROM %s WHERE key_type = :type AND key_value = :value', self::TABLE),
             [
-                'type' => (string) $type->value,
+                'type' => $type->value,
                 'value' => $value,
             ],
         );

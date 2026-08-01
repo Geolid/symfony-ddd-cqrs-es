@@ -6,8 +6,8 @@ namespace Shared\Domain\Exception;
 
 final class UniqueValueAlreadyTakenException extends \DomainException
 {
-    public function __construct(string $type, string $value)
+    public function __construct(\BackedEnum $type, string $value)
     {
-        parent::__construct(\sprintf('Value "%s" is already in use for "%s".', $value, $type));
+        parent::__construct(\sprintf('Value "%s" is already in use for "%s".', $value, $type->value));
     }
 }
