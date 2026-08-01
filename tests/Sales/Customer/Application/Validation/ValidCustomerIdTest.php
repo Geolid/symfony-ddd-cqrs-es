@@ -19,11 +19,6 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
  */
 final class ValidCustomerIdTest extends CompoundConstraintTestCase
 {
-    protected function createCompound(): ValidCustomerId
-    {
-        return new ValidCustomerId();
-    }
-
     #[Test]
     public function itAcceptsAnIdentifier(): void
     {
@@ -57,6 +52,11 @@ final class ValidCustomerIdTest extends CompoundConstraintTestCase
         yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Uuid(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(), self::valueObject()]];
         yield 'out of the identifier format' => ['not-a-uuid', [new Assert\Uuid(), self::valueObject()]];
+    }
+
+    protected function createCompound(): ValidCustomerId
+    {
+        return new ValidCustomerId();
     }
 
     private static function notBlank(): Assert\NotBlank

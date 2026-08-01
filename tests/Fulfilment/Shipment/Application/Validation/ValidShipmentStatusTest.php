@@ -18,11 +18,6 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
  */
 final class ValidShipmentStatusTest extends CompoundConstraintTestCase
 {
-    protected function createCompound(): ValidShipmentStatus
-    {
-        return new ValidShipmentStatus();
-    }
-
     #[Test]
     #[DataProvider('providePublishedStatuses')]
     public function itAcceptsAStatusOfTheVocabulary(string $status): void
@@ -65,6 +60,11 @@ final class ValidShipmentStatusTest extends CompoundConstraintTestCase
     {
         yield 'outside the vocabulary' => ['teleported', [self::choice(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::choice(), self::valueObject()]];
+    }
+
+    protected function createCompound(): ValidShipmentStatus
+    {
+        return new ValidShipmentStatus();
     }
 
     private static function choice(): Assert\Choice

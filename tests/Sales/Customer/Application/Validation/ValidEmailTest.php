@@ -18,11 +18,6 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
  */
 final class ValidEmailTest extends CompoundConstraintTestCase
 {
-    protected function createCompound(): ValidEmail
-    {
-        return new ValidEmail();
-    }
-
     #[Test]
     public function itAcceptsAnAddress(): void
     {
@@ -55,6 +50,11 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Email(), self::valueObject()]];
         yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email(), self::valueObject()]];
+    }
+
+    protected function createCompound(): ValidEmail
+    {
+        return new ValidEmail();
     }
 
     private static function notBlank(): Assert\NotBlank

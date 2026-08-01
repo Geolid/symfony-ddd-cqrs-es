@@ -16,11 +16,6 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
  */
 final class ValidOrderLinesTest extends CompoundConstraintTestCase
 {
-    protected function createCompound(): ValidOrderLines
-    {
-        return new ValidOrderLines();
-    }
-
     #[Test]
     public function itAcceptsASingleWellShapedLine(): void
     {
@@ -56,6 +51,11 @@ final class ValidOrderLinesTest extends CompoundConstraintTestCase
         yield 'a quantity that is not a whole number' => [[[...self::line(), 'quantity' => '2']], [self::lineShape()]];
         yield 'an amount that is not a whole number' => [[[...self::line(), 'unitAmountInCents' => 19.99]], [self::lineShape()]];
         yield 'a field the line does not carry' => [[[...self::line(), 'discount' => 10]], [self::lineShape()]];
+    }
+
+    protected function createCompound(): ValidOrderLines
+    {
+        return new ValidOrderLines();
     }
 
     private static function lineShape(): Assert\All

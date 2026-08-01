@@ -18,11 +18,6 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
  */
 final class ValidMoneyTest extends CompoundConstraintTestCase
 {
-    protected function createCompound(): ValidMoney
-    {
-        return new ValidMoney();
-    }
-
     #[Test]
     public function itAcceptsAnAmountInCents(): void
     {
@@ -54,6 +49,11 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
     {
         yield 'not a whole number' => [19.99, [new Assert\Type('int'), self::valueObject()]];
         yield 'negative' => [-1, [new Assert\PositiveOrZero(), self::valueObject()]];
+    }
+
+    protected function createCompound(): ValidMoney
+    {
+        return new ValidMoney();
     }
 
     private static function valueObject(): ValidValueObject
