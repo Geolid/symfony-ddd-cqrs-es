@@ -77,7 +77,7 @@ final class OrderControllerTest extends AbstractWebTestCase
             \sprintf('%s[customerId]', $prefix) => $customerId,
             \sprintf('%s[lines][0][label]', $prefix) => 'Espresso cups, set of 6',
             \sprintf('%s[lines][0][quantity]', $prefix) => '1',
-            \sprintf('%s[lines][0][unitAmountInCents]', $prefix) => '1750',
+            \sprintf('%s[lines][0][unitAmountInCents]', $prefix) => '17.50',
         ]);
 
         $client->submit($form);

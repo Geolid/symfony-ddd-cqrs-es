@@ -6,6 +6,7 @@ namespace Web\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -27,9 +28,11 @@ final class OrderLineType extends AbstractType
                 'label' => 'sales.order.place.line_quantity_label',
                 'translation_domain' => 'messages',
             ])
-            ->add('unitAmountInCents', IntegerType::class, [
+            ->add('unitAmountInCents', MoneyType::class, [
                 'label' => 'sales.order.place.line_unit_amount_label',
                 'translation_domain' => 'messages',
+                'currency' => 'EUR',
+                'divisor' => 100,
             ]);
     }
 

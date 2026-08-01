@@ -23,7 +23,7 @@ final class PlaceOrderCommandTest extends AbstractCliTestCase
         $tester = $this->tester('sales:order:place');
         $tester->execute([
             'customer-id' => $customer->id()->toString(),
-            '--line' => ['Espresso cups, set of 6:1:1750', 'Saucer:3:83'],
+            '--line' => ['Espresso cups, set of 6:1:17.50', 'Saucer:3:0.83'],
         ]);
 
         // Then
