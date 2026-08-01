@@ -25,9 +25,9 @@ final class SentryEventEnricherTest extends TestCase
         $event = $enricher->beforeSend()(Event::createEvent());
 
         // Then
+        self::assertInstanceOf(Event::class, $event);
         self::assertSame(['app_id' => 'web'], $event->getTags());
-        self::assertSame(['plan' => 'free'], $event->getContext('billing'));
-        self::assertSame([], $event->getContext('silent'));
+        self::assertSame(['billing' => ['plan' => 'free']], $event->getContexts());
     }
 
     #[Test]
@@ -40,6 +40,7 @@ final class SentryEventEnricherTest extends TestCase
         $event = $enricher->beforeSend()(Event::createEvent());
 
         // Then
+        self::assertInstanceOf(Event::class, $event);
         self::assertSame([], $event->getTags());
     }
 }
