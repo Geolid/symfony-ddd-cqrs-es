@@ -73,6 +73,17 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
+    public function itCarriesTheGroupsAndPayloadItWasGiven(): void
+    {
+        // When
+        $constraint = new ValidValueObject(DummyValue::class, groups: ['registration'], payload: 'severity');
+
+        // Then
+        self::assertSame(['registration'], $constraint->groups);
+        self::assertSame('severity', $constraint->payload);
+    }
+
+    #[Test]
     public function itFailsOnAConstraintItDoesNotValidate(): void
     {
         // Then

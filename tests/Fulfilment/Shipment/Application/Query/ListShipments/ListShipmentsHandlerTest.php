@@ -25,6 +25,8 @@ final class ListShipmentsHandlerTest extends AbstractIntegrationTestCase
         self::assertCount(1, $result->items);
         self::assertSame($shipment->id()->toString(), $result->items[0]->id);
         self::assertSame(1, $result->pagination->totalItems);
+        self::assertSame(1, $result->pagination->currentPage);
+        self::assertSame(20, $result->pagination->itemsPerPage);
         self::assertSame(1, $result->pagination->lastPage);
     }
 

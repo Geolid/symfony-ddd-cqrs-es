@@ -38,14 +38,14 @@ final readonly class PlaceOrderHandler
             OrderId::fromString($command->id),
             $buyer->id,
             $buyer->address,
-            array_values(array_map(
+            array_map(
                 static fn (array $line): OrderLine => OrderLine::of(
                     $line['label'],
                     $line['quantity'],
                     Money::fromCents($line['unitAmountInCents']),
                 ),
                 $command->lines,
-            )),
+            ),
             $this->clock->now(),
         );
 

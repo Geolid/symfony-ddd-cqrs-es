@@ -24,6 +24,8 @@ final class ListCustomersHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(2, $result->items);
         self::assertSame(2, $result->pagination->totalItems);
+        self::assertSame(1, $result->pagination->currentPage);
+        self::assertSame(20, $result->pagination->itemsPerPage);
         self::assertSame(1, $result->pagination->lastPage);
     }
 

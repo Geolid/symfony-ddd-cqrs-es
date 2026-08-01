@@ -12,7 +12,7 @@ final readonly class Email
 
     private function __construct(string $value)
     {
-        $value = mb_strtolower(trim($value));
+        $value = strtolower(trim($value));
         Assert::notEmpty($value, 'An email address cannot be empty, %s given.');
         Assert::email($value, 'An email address is expected, %s given.');
 
