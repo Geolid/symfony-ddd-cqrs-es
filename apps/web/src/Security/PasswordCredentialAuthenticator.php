@@ -12,7 +12,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
@@ -24,7 +23,6 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private AuthenticatePasswordCredentialInterface $authenticator,
-        private IamUserProvider $userProvider,
         private UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -46,7 +44,7 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator
         }
 
         return new SelfValidatingPassport(
-            new UserBadge($identityId, fn (string $identifier): UserInterface => $this->userProvider->loadUserByIdentifier($identifier)),
+            new UserBadge($identityId),
             [new CsrfTokenBadge('authenticate', (string) $request->request->get('_csrf_token'))],
         );
     }
