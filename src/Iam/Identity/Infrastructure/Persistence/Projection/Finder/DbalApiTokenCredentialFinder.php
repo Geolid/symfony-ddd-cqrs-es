@@ -29,6 +29,7 @@ final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialF
             return null;
         }
 
+        /** @var Row $row */
         return $this->mapRow($row);
     }
 

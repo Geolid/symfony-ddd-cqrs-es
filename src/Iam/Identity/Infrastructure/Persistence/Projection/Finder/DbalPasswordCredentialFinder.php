@@ -29,6 +29,7 @@ final readonly class DbalPasswordCredentialFinder implements PasswordCredentialF
             return null;
         }
 
+        /** @var Row $row */
         return $this->mapRow($row);
     }
 

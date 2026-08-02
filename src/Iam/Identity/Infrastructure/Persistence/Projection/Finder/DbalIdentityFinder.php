@@ -29,6 +29,7 @@ final readonly class DbalIdentityFinder implements IdentityFinderInterface
             return null;
         }
 
+        /** @var Row $row */
         return $this->mapRow($row);
     }
 
