@@ -51,7 +51,7 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
-        return new RedirectResponse($this->urlGenerator->generate('web.home'));
+        return new RedirectResponse($this->urlGenerator->generate('sales_order_list'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response

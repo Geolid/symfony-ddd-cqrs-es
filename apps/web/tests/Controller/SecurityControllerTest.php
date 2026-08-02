@@ -31,7 +31,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/');
+        self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="nav-logout"]');
     }

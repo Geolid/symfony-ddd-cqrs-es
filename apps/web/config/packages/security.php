@@ -20,7 +20,7 @@ return static function (ContainerConfigurator $container): void {
                 'lazy' => true,
                 'provider' => 'iam_user_provider',
                 'custom_authenticators' => [PasswordCredentialAuthenticator::class],
-                'logout' => ['path' => 'security_logout'],
+                'logout' => ['path' => 'security_logout', 'target' => 'sales_order_list'],
             ],
         ],
     ]);
