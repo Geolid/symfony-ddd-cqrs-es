@@ -51,13 +51,40 @@ were surfaced later and have no original number.
   payload/signed route `CarrierDeliveryConsumer` expects, so the full order→ship→delivered
   story is observable end-to-end locally without a real Acme server.
 
-- **#24 — Authenticate DMs and add Access voters.** Web gets session-based login
-  (`PasswordCredential` via a Symfony Authenticator/UserProvider using
-  `GetPasswordCredentialByLogin`), API gets token-based auth (`ApiTokenCredential` via
-  `GetApiTokenCredentialByIdentifier`). A custom Voter checks `Iam.Access` Grants for
-  `<subdomain>:<action>` permissions. `Sales.Customer` gains an optional `identityId`
-  (nullable, pointing to Iam, never the reverse). CLI and Webhook stay out of scope
-  (trusted operator tool / transport-secret-verified respectively).
+- **#24 — Authenticate DMs and add Access voters.** Final scope after extensive back-and-forth
+  (see `SCENARIO.md`'s DM table for the reasoning) — Web is customer-only, API is admin-only,
+  CLI is bootstrap-only, Webhook is untouched. Concretely:
+  - `Catalog.Product` gaps found while scoping this out, needed first: **`ListProducts`** query
+    (browsing needs a list, not just `GetProduct` by id — same Finder for Web and API, gated
+    differently) and **`ProductDelisted`**/`DelistProduct` (removing a product doesn't exist yet).
+  - `Sales.Customer` gains `identityId` via a **new** event `CustomerIdentityLinked` (never
+    modify `CustomerRegistered`'s shape) + a reverse Finder (`Customer` by `identityId`, needed
+    to resolve "my orders" from the logged-in Identity).
+  - Web registration is a Controller-orchestrated sequence, not one mega-handler: `RegisterIdentity`
+    → `SetPasswordCredential` → `RegisterCustomer` → `LinkCustomerIdentity`. Identity first — it's
+    the root concept, a Customer optionally attaches to one, never the reverse.
+  - Web (session, `PasswordCredential` via `GetPasswordCredentialByLogin` + `UserProviderInterface`):
+    register, login/logout, browse products, place/cancel/view own orders, pay, GDPR self-erasure.
+  - API (token, `ApiTokenCredential` via `GetApiTokenCredentialByIdentifier`): view all orders +
+    status, view/reprice/delist/add products, validate the carrier hand-off (`dispatch-pending`
+    **moves here from CLI** — an admin action, not a scheduler or cron; this touches existing,
+    already-merged CLI code, done carefully). Existing customer-shaped API ops (`POST /orders`,
+    per-order cancel) are removed — a customer never calls the API directly in this model.
+  - CLI: new `iam:identity:register` (bootstrap the first admin Identity + Credential + Grants —
+    the one thing that must work without the API's own auth already existing). Existing
+    `sales:order:place`/demo seeding untouched, but demo seeders updated to also create and link
+    an Identity for seeded customers (nothing has ever actually been seeded yet, but `make seed`
+    must stay consistent once this lands).
+  - The `UserInterface`/`UserProviderInterface` Symfony adapter is shared code (same Identity
+    concept, two credential types) — lives in `src/Iam/Identity/Infrastructure/Security/`, not
+    duplicated per DM. Firewall config stays per-DM (`apps/web/config/packages/security.php`
+    session/form_login, `apps/api/config/packages/security.php` stateless + custom Authenticator).
+  - A single generic Voter (`src/Iam/Access/Infrastructure/Security/GrantVoter.php`) matches any
+    `<subdomain>:<action>` attribute against `Iam.Access` Grants for the current identityId —
+    not one Voter per permission.
+  - Explicitly rejected: two Grant-differentiated populations inside Web (no real staff action
+    left to justify it), a `Carrier` Iam Identity (redundant with the webhook), stock/inventory
+    management (a whole separate feature, deferred).
 
 - **Add suspend-cascades-to-token-revocation (`ForAll` bulk pattern).** *(blocked by #24)*
   When an Identity is suspended, cascade-revoke all its active `ApiTokenCredential`s via a

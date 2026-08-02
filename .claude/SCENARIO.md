@@ -40,29 +40,48 @@ Two corrections made along the way, kept here so they aren't relitigated:
 
 ## Delivery Mechanisms — each has a distinct reason to exist
 
-| DM | Who calls it | Auth | Distinct responsibility |
+The real dividing line turned out not to be "internal vs. external" but **interactive vs.
+batch/bootstrap**: Web is for anything a human does live (browsing, filling a form); CLI is
+only for what must work *before* the app's own API auth exists (bootstrapping the first admin)
+plus pure dev/demo tooling; API is for anything another authenticated actor (including our own
+admin, using the API as their tool) does over the network without a live UI.
+
+| DM | Who calls it | Auth | Scope |
 |---|---|---|---|
-| `web` | A human in a browser | Session, `PasswordCredential` | Two Identity populations, separated by **Grant**, not by DM: customer self-service (register, manage own orders) and staff/admin (assign grants, suspend identities). Proves Access/Grant models roles without needing a DM per role. |
-| `api` | An external system (partner ERP, mobile backend) | Token, `ApiTokenCredential` | Machine-to-machine integration surface. Its real purpose is to **prove** the Iam design claim that Identity is agnostic to credential type — without a second, differently-authenticated caller actually exercising the same use cases, that claim stays theoretical. |
-| `cli` | An internal, trusted operator (shell/server access) | None — trusted by construction, deliberately out of Iam's scope | Batch/ops jobs (`dispatch-pending`) and internal-agent scenarios (e.g. placing an order on behalf of a customer who called by phone) — never reachable by an external actor. |
-| `webhook` | The carrier, asynchronously | Shared secret (HMAC-style), not an Identity | The only *passive/inbound* channel — a tier we don't control notifies us on its own schedule. Fundamentally different shape from the other three (nobody here "logs in"). |
+| `web` | The customer, in a browser | Session, `PasswordCredential` | Self-service only: register, login/logout, browse `Catalog.Product`, place/cancel/pay for/view own orders, GDPR account deletion. No admin population here. |
+| `api` | The admin, scripted or via a dashboard | Token, `ApiTokenCredential` | Supervision + catalog + fulfilment admin: view all orders and their status, view/list/reprice/delist products, validate the carrier hand-off (the "truck comes once a day" trigger, moved here from CLI — an admin action, not a scheduler). Also proves Identity is credential-agnostic (same concept as Web, different credential). |
+| `cli` | An internal operator with shell access | None — trusted by construction | Bootstrap only: create the first admin Identity/Credential/Grant (chicken-and-egg — nothing else can, since the API itself requires an Identity to authenticate). Plus pre-existing dev/demo tooling (`sales:order:place` demo seeding), unrelated to Iam. |
+| `webhook` | The carrier, asynchronously | Shared secret (HMAC), not an Identity | Delivery status updates only. Deliberately NOT promoted to an Iam-authenticated caller — HMAC verifies message integrity from an external partner (like Stripe/GitHub webhooks), a different trust boundary than our own admin's Iam identity. No `Carrier` BC/Identity — redundant with what the webhook already proves. |
+
+Rejected alternatives, kept here so they aren't re-proposed:
+- Web hosting two Grant-differentiated populations (customer + staff) — dropped once the only
+  candidate staff action (an agent placing a phone order) turned out not to exist as a real
+  scenario; with no interactive staff action left, Web is customer-only.
+- `dispatch-pending` as a CLI cron / as an externally-triggered-by-a-scheduler API call — settled
+  on a plain admin API action instead (the admin validates the hand-off), simpler than either.
+- A `Carrier` Iam Identity so the carrier can call our API to confirm pickup — rejected, redundant
+  with the webhook already covering "carrier tells us about a status change."
 
 ## End-to-end journey (once everything below is built)
 
-1. A visitor registers → `Customer` (Sales) + `Identity`/`PasswordCredential` (Iam), linked via
-   `Customer.identityId`.
-2. They log in (Web, session) → browse `Catalog.Product` → `PlaceOrder(productId, quantity)` →
-   price/label frozen into `OrderPlaced` at that instant.
+1. A visitor registers (Web) → `RegisterIdentity` + `SetPasswordCredential` (Iam) →
+   `RegisterCustomer` (Sales) → `LinkCustomerIdentity` (Sales, new event `CustomerIdentityLinked`
+   — `CustomerRegistered` itself is never modified). Identity is created first: it's the root
+   concept (an Identity can exist without ever being a Customer — e.g. the admin), never the
+   reverse.
+2. They log in (Web, session) → browse `Catalog.Product` (`ListProducts`) →
+   `PlaceOrder(productId, quantity)` → price/label frozen into `OrderPlaced` at that instant.
 3. `OrderPayment` captures payment synchronously against the fake `PaymentGatewayInterface`.
-4. `Shipment` is created once payment is captured (not on bare `OrderPlaced`) → CLI's
-   `dispatch-pending` batch job hands it to `AcmeCarrierGateway` → the carrier's webhook later
-   confirms delivery (simulated locally via a demo CLI command, since there is no real Acme
-   server) → the customer is notified.
-5. An external partner performs the same order/query flow via the API, authenticated with an
-   `ApiTokenCredential` instead of a session.
-6. An admin (Web, elevated Grant) suspends a suspicious Identity → cascades to revoking all its
-   active API tokens via a `ForAll<RevokeApiTokenCredential>` bulk operation.
-7. The customer requests GDPR erasure → `CustomerErased` (already there) + `IdentityErased`
+4. `Shipment` is created once payment is captured (not on bare `OrderPlaced`). An admin (API)
+   validates the hand-off to the carrier for pending shipments → `AcmeCarrierGateway` → the
+   carrier's webhook later confirms delivery (simulated locally via a demo CLI command, since
+   there is no real Acme server) → the customer is notified.
+5. The bootstrap admin Identity (created once via CLI) manages the catalog and supervises all
+   orders through the API, authenticated with an `ApiTokenCredential` — proving the same Identity
+   concept works for both a human session (Web) and a token (API).
+6. An admin suspends a suspicious Identity → cascades to revoking all its active API tokens via a
+   `ForAll<RevokeApiTokenCredential>` bulk operation.
+7. The customer requests GDPR erasure (Web) → `CustomerErased` (already there) + `IdentityErased`
    cascading to their credentials.
 
 ## Architecture-pattern coverage this scenario is meant to close
