@@ -46,6 +46,10 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itProjectsTheIdentityIdOnCustomerIdentityLinked(): void
     {
+        // Given
+        $other = CustomerTestFactory::new()->create();
+        $this->store($other);
+
         // When
         $customer = CustomerTestFactory::new()->linkedToIdentity('identity-1')->create();
         $this->store($customer);
@@ -54,6 +58,10 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($customer->id()->toString());
         self::assertNotFalse($row);
         self::assertSame('identity-1', $row['identity_id']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['identity_id']);
     }
 
     /**
