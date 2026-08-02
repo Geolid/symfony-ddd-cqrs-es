@@ -74,6 +74,32 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itIsExpiredOnlyAfterTheExpiryInstant(): void
+    {
+        // Given
+        $id = ApiTokenCredentialId::generate()->toString();
+        $identityId = IdentityId::generate()->toString();
+        $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $expiresAt = new \DateTimeImmutable('2027-01-01T00:00:00+00:00');
+        $hasher = new DummyApiTokenSecretHasher();
+        $atExpiry = null;
+        $afterExpiry = null;
+
+        // When
+        $this
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->when(static function (ApiTokenCredential $credential) use ($expiresAt, &$atExpiry, &$afterExpiry): void {
+                $atExpiry = $credential->isExpired($expiresAt);
+                $afterExpiry = $credential->isExpired($expiresAt->modify('+1 second'));
+            })
+            ->then();
+
+        // Then
+        self::assertFalse($atExpiry);
+        self::assertTrue($afterExpiry);
+    }
+
+    #[Test]
     public function itVerifiesAnActiveUnexpiredToken(): void
     {
         // Given
