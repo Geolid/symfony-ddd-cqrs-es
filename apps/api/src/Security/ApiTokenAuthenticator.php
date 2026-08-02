@@ -18,18 +18,20 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 
 final class ApiTokenAuthenticator extends AbstractAuthenticator
 {
+    private const string PREFIX = 'Bearer ';
+
     public function __construct(private AuthenticateApiTokenCredentialInterface $authenticator)
     {
     }
 
     public function supports(Request $request): bool
     {
-        return str_starts_with((string) $request->headers->get('Authorization'), 'Bearer ');
+        return str_starts_with((string) $request->headers->get('Authorization'), self::PREFIX);
     }
 
     public function authenticate(Request $request): Passport
     {
-        $token = substr((string) $request->headers->get('Authorization'), 7);
+        $token = substr((string) $request->headers->get('Authorization'), \strlen(self::PREFIX));
 
         if (!str_contains($token, '.')) {
             throw new CustomUserMessageAuthenticationException('Malformed API token.');
