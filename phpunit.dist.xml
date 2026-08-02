@@ -41,6 +41,9 @@
         <testsuite name="fulfilment">
             <directory>tests/Fulfilment</directory>
         </testsuite>
+        <testsuite name="iam">
+            <directory>tests/Iam</directory>
+        </testsuite>
 
         <!-- ==================== SHARED ==================== -->
         <testsuite name="shared">

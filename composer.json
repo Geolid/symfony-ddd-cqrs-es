@@ -77,6 +77,7 @@
       "Webhook\\": "apps/webhook/src/",
       "Sales\\": "src/Sales/",
       "Fulfilment\\": "src/Fulfilment/",
+      "Iam\\": "src/Iam/",
       "Shared\\": "src/Shared/"
     }
   },
@@ -88,6 +89,7 @@
       "Webhook\\Tests\\": "apps/webhook/tests/",
       "Sales\\Tests\\": "tests/Sales/",
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
+      "Iam\\Tests\\": "tests/Iam/",
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",
