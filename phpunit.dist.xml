@@ -44,6 +44,9 @@
         <testsuite name="iam">
             <directory>tests/Iam</directory>
         </testsuite>
+        <testsuite name="catalog">
+            <directory>tests/Catalog</directory>
+        </testsuite>
 
         <!-- ==================== SHARED ==================== -->
         <testsuite name="shared">

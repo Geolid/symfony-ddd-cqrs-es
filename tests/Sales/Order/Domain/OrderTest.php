@@ -10,10 +10,10 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
-use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\OrderLine;
+use Shared\Domain\ValueObject\Money;
 
 final class OrderTest extends AggregateRootTestCase
 {

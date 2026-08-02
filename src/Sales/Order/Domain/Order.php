@@ -14,6 +14,7 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
+use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('sales.order.order')]
 final class Order implements AggregateRoot, AggregateRootMetadataAware

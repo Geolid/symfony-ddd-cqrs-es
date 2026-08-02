@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Validation;
+namespace Shared\Tests\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Validation\ValidMoney;
-use Sales\Order\Domain\Money;
+use Shared\Application\Validation\ValidMoney;
 use Shared\Application\Validation\ValidValueObject;
+use Shared\Domain\ValueObject\Money;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;

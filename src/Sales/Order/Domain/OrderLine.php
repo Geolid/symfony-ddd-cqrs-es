@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Domain;
 
+use Shared\Domain\ValueObject\Money;
 use Webmozart\Assert\Assert;
 
 final readonly class OrderLine

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Validation;
 
 use Shared\Application\Language\PublishedLanguageInterface;
+use Shared\Application\Validation\ValidMoney;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 

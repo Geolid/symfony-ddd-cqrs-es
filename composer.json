@@ -78,6 +78,7 @@
       "Sales\\": "src/Sales/",
       "Fulfilment\\": "src/Fulfilment/",
       "Iam\\": "src/Iam/",
+      "Catalog\\": "src/Catalog/",
       "Shared\\": "src/Shared/"
     }
   },
@@ -90,6 +91,7 @@
       "Sales\\Tests\\": "tests/Sales/",
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
       "Iam\\Tests\\": "tests/Iam/",
+      "Catalog\\Tests\\": "tests/Catalog/",
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",
