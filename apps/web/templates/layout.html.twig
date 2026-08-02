@@ -18,6 +18,13 @@
                 <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
                 <li><a href="{{ path('sales_order_place') }}" role="button">{{ 'layout.nav.place_order'|trans }}</a></li>
             </ul>
+            <ul>
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <li><a href="{{ path('security_logout') }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
+                {% else %}
+                    <li><a href="{{ path('security_login') }}" data-testid="nav-login">{{ 'layout.nav.login'|trans }}</a></li>
+                {% endif %}
+            </ul>
         </nav>
     </header>
 

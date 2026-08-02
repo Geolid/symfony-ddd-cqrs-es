@@ -54,34 +54,55 @@ were surfaced later and have no original number.
 - **#24 — Authenticate DMs and add Access voters.** Final scope after extensive back-and-forth
   (see `SCENARIO.md`'s DM table for the reasoning) — Web is customer-only, API is admin-only,
   CLI is bootstrap-only, Webhook is untouched. Concretely:
-  - `Catalog.Product` gaps found while scoping this out, needed first: **`ListProducts`** query
+  - ✅ `Catalog.Product` gaps found while scoping this out, needed first: **`ListProducts`** query
     (browsing needs a list, not just `GetProduct` by id — same Finder for Web and API, gated
     differently) and **`ProductDelisted`**/`DelistProduct` (removing a product doesn't exist yet).
-  - `Sales.Customer` gains `identityId` via a **new** event `CustomerIdentityLinked` (never
+  - ✅ `Sales.Customer` gains `identityId` via a **new** event `CustomerIdentityLinked` (never
     modify `CustomerRegistered`'s shape) + a reverse Finder (`Customer` by `identityId`, needed
     to resolve "my orders" from the logged-in Identity).
+  - ✅ **Security infrastructure landed** (login for Web, Bearer token for API, generic Voter) —
+    with one design correction versus the plan below: `Tools\PHPat\DeliveryMechanismTest` forbids
+    any DM class from depending on a BC's Repository/Domain classes directly (DM may only touch
+    `#[AsDrivingPort]` ports + published language). So credential verification is NOT done inline
+    in the DM's Authenticator; it's a new `#[AsDrivingPort]` port per credential type
+    (`Iam\Identity\Application\Port\AuthenticatePasswordCredentialInterface` /
+    `AuthenticateApiTokenCredentialInterface`, `authenticate(...): ?string` returning the
+    identityId or null), implemented in `Iam\Identity\Infrastructure\Security\*AuthenticationService`
+    (loads the real aggregate via Repository + `SecretHasherInterface`, same principle as before,
+    just relocated behind a port). Token format: `Authorization: Bearer <identifier>.<secret>`,
+    split on the first dot, as proposed.
+    Also: the `UserInterface` adapter (`IamUser`) is **not** shared — `Symfony\Component\Security\Core\User\UserInterface`
+    implementations that carry a `Request`-coupled Authenticator must live in `apps/<dm>/src/Security/`
+    (delivery vendor code can't live in `src/`), so it's a small, deliberately duplicated class per
+    DM (`apps/web/src/Security/IamUser.php`, `apps/api/src/Security/IamUser.php`) — same shape as
+    the DTO-per-DM convention already established for Input/Payload/Criteria. `getUserIdentifier()`
+    returns the **identityId** (not the login/API key identifier) so `GrantVoter` can read it off
+    `TokenInterface::getUserIdentifier()` directly, without ever depending on `Iam.Identity` —
+    keeps the `Iam.Access`/`Iam.Identity` isolation from `deptrac_bc.yaml` intact. A new
+    `GetIdentity` query + `PublishedIdentityStatus` were added so Web's session `UserProvider` can
+    re-check the identity is still active on every request refresh (closes the "suspended admin's
+    live session" gap for Web for free; API re-validates every request anyway since it's stateless).
+    `GrantVoter` (`src/Iam/Access/Infrastructure/Security/GrantVoter.php`) matches any
+    `<subdomain>:<action>` attribute against `Iam.Access` Grants for `token.getUserIdentifier()`.
+  - ⬜ **Not done yet, deliberately deferred to keep this chunk reviewable:** no existing route is
+    actually gated behind `is_granted(...)` yet (Web stays fully public, API stays fully public) —
+    that's the next chunk, alongside the items below.
   - Web registration is a Controller-orchestrated sequence, not one mega-handler: `RegisterIdentity`
     → `SetPasswordCredential` → `RegisterCustomer` → `LinkCustomerIdentity`. Identity first — it's
-    the root concept, a Customer optionally attaches to one, never the reverse.
-  - Web (session, `PasswordCredential` via `GetPasswordCredentialByLogin` + `UserProviderInterface`):
-    register, login/logout, browse products, place/cancel/view own orders, pay, GDPR self-erasure.
-  - API (token, `ApiTokenCredential` via `GetApiTokenCredentialByIdentifier`): view all orders +
-    status, view/reprice/delist/add products, validate the carrier hand-off (`dispatch-pending`
-    **moves here from CLI** — an admin action, not a scheduler or cron; this touches existing,
-    already-merged CLI code, done carefully). Existing customer-shaped API ops (`POST /orders`,
-    per-order cancel) are removed — a customer never calls the API directly in this model.
+    the root concept, a Customer optionally attaches to one, never the reverse. *(not done — login
+    only, so far; nothing to log into without the CLI bootstrap command below either)*
+  - Web (session, `PasswordCredential`): register, browse products, place/cancel/view own orders
+    gated behind login, pay, GDPR self-erasure. *(login/logout done; the rest is ungated still)*
+  - API (token, `ApiTokenCredential`): view all orders + status, view/reprice/delist/add products,
+    validate the carrier hand-off (`dispatch-pending` **moves here from CLI** — an admin action,
+    not a scheduler or cron; this touches existing, already-merged CLI code, done carefully).
+    Existing customer-shaped API ops (`POST /orders`, per-order cancel) are removed — a customer
+    never calls the API directly in this model. *(bearer auth wired; nothing gated yet)*
   - CLI: new `iam:identity:register` (bootstrap the first admin Identity + Credential + Grants —
     the one thing that must work without the API's own auth already existing). Existing
     `sales:order:place`/demo seeding untouched, but demo seeders updated to also create and link
     an Identity for seeded customers (nothing has ever actually been seeded yet, but `make seed`
-    must stay consistent once this lands).
-  - The `UserInterface`/`UserProviderInterface` Symfony adapter is shared code (same Identity
-    concept, two credential types) — lives in `src/Iam/Identity/Infrastructure/Security/`, not
-    duplicated per DM. Firewall config stays per-DM (`apps/web/config/packages/security.php`
-    session/form_login, `apps/api/config/packages/security.php` stateless + custom Authenticator).
-  - A single generic Voter (`src/Iam/Access/Infrastructure/Security/GrantVoter.php`) matches any
-    `<subdomain>:<action>` attribute against `Iam.Access` Grants for the current identityId —
-    not one Voter per permission.
+    must stay consistent once this lands). *(not started)*
   - Explicitly rejected: two Grant-differentiated populations inside Web (no real staff action
     left to justify it), a `Carrier` Iam Identity (redundant with the webhook), stock/inventory
     management (a whole separate feature, deferred).

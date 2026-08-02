@@ -1,0 +1,22 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'security.login.title'|trans }}{% endblock %}
+{% block heading %}{{ 'security.login.title'|trans }}{% endblock %}
+
+{% block content %}
+    {% if error %}
+        <p data-testid="login-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+    {% endif %}
+
+    <form method="post">
+        <label for="login">{{ 'security.login.login_label'|trans }}</label>
+        <input type="text" id="login" name="login" value="{{ last_username }}" required autofocus>
+
+        <label for="password">{{ 'security.login.password_label'|trans }}</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit" data-testid="login-submit">{{ 'security.login.submit_button'|trans }}</button>
+    </form>
+{% endblock %}
