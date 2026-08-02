@@ -5,49 +5,35 @@ declare(strict_types=1);
 namespace Iam\Tests\Access\Infrastructure\Security;
 
 use Iam\Access\Infrastructure\Security\GrantVoter;
-use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 
-final class GrantVoterTest extends AbstractIntegrationTestCase
+final class GrantVoterTest extends TestCase
 {
     #[Test]
-    public function itGrantsAccessWhenTheIdentityHoldsThePermission(): void
+    public function itGrantsAccessWhenTheRoleIsPresent(): void
     {
         // Given
-        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:supervise')->create());
+        $token = $this->tokenWithRoles(['ROLE_USER', 'sales:supervise']);
 
         // When
-        $vote = $this->service(GrantVoter::class)->vote($this->tokenFor('identity-1'), null, ['sales:supervise']);
+        $vote = (new GrantVoter())->vote($token, null, ['sales:supervise']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_GRANTED, $vote);
     }
 
     #[Test]
-    public function itDeniesAccessWhenTheIdentityDoesNotHoldThePermission(): void
+    public function itDeniesAccessWhenTheRoleIsAbsent(): void
     {
         // Given
-        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:supervise')->create());
+        $token = $this->tokenWithRoles(['ROLE_USER']);
 
         // When
-        $vote = $this->service(GrantVoter::class)->vote($this->tokenFor('identity-1'), null, ['catalog:manage']);
-
-        // Then
-        self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
-    }
-
-    #[Test]
-    public function itDeniesAccessWhenThePermissionWasRevoked(): void
-    {
-        // Given
-        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:supervise')->revoked()->create());
-
-        // When
-        $vote = $this->service(GrantVoter::class)->vote($this->tokenFor('identity-1'), null, ['sales:supervise']);
+        $vote = (new GrantVoter())->vote($token, null, ['sales:supervise']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
@@ -56,15 +42,21 @@ final class GrantVoterTest extends AbstractIntegrationTestCase
     #[Test]
     public function itAbstainsOnAnAttributeThatIsNotAPermission(): void
     {
+        // Given
+        $token = $this->tokenWithRoles(['ROLE_USER']);
+
         // When
-        $vote = $this->service(GrantVoter::class)->vote($this->tokenFor('identity-1'), null, ['ROLE_USER']);
+        $vote = (new GrantVoter())->vote($token, null, ['ROLE_USER']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_ABSTAIN, $vote);
     }
 
-    private function tokenFor(string $identityId): UsernamePasswordToken
+    /**
+     * @param list<string> $roles
+     */
+    private function tokenWithRoles(array $roles): UsernamePasswordToken
     {
-        return new UsernamePasswordToken(new InMemoryUser($identityId, null), 'main', ['ROLE_USER']);
+        return new UsernamePasswordToken(new InMemoryUser('identity-1', null, $roles), 'main', $roles);
     }
 }

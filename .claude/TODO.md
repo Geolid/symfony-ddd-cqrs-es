@@ -60,30 +60,57 @@ were surfaced later and have no original number.
   - ✅ `Sales.Customer` gains `identityId` via a **new** event `CustomerIdentityLinked` (never
     modify `CustomerRegistered`'s shape) + a reverse Finder (`Customer` by `identityId`, needed
     to resolve "my orders" from the logged-in Identity).
-  - ✅ **Security infrastructure landed** (login for Web, Bearer token for API, generic Voter) —
-    with one design correction versus the plan below: `Tools\PHPat\DeliveryMechanismTest` forbids
-    any DM class from depending on a BC's Repository/Domain classes directly (DM may only touch
-    `#[AsDrivingPort]` ports + published language). So credential verification is NOT done inline
-    in the DM's Authenticator; it's a new `#[AsDrivingPort]` port per credential type
-    (`Iam\Identity\Application\Port\AuthenticatePasswordCredentialInterface` /
-    `AuthenticateApiTokenCredentialInterface`, `authenticate(...): ?string` returning the
-    identityId or null), implemented in `Iam\Identity\Infrastructure\Security\*AuthenticationService`
-    (loads the real aggregate via Repository + `SecretHasherInterface`, same principle as before,
-    just relocated behind a port). Token format: `Authorization: Bearer <identifier>.<secret>`,
-    split on the first dot, as proposed.
-    Also: the `UserInterface` adapter (`IamUser`) is **not** shared — `Symfony\Component\Security\Core\User\UserInterface`
-    implementations that carry a `Request`-coupled Authenticator must live in `apps/<dm>/src/Security/`
-    (delivery vendor code can't live in `src/`), so it's a small, deliberately duplicated class per
-    DM (`apps/web/src/Security/IamUser.php`, `apps/api/src/Security/IamUser.php`) — same shape as
-    the DTO-per-DM convention already established for Input/Payload/Criteria. `getUserIdentifier()`
-    returns the **identityId** (not the login/API key identifier) so `GrantVoter` can read it off
-    `TokenInterface::getUserIdentifier()` directly, without ever depending on `Iam.Identity` —
-    keeps the `Iam.Access`/`Iam.Identity` isolation from `deptrac_bc.yaml` intact. A new
-    `GetIdentity` query + `PublishedIdentityStatus` were added so Web's session `UserProvider` can
-    re-check the identity is still active on every request refresh (closes the "suspended admin's
-    live session" gap for Web for free; API re-validates every request anyway since it's stateless).
-    `GrantVoter` (`src/Iam/Access/Infrastructure/Security/GrantVoter.php`) matches any
-    `<subdomain>:<action>` attribute against `Iam.Access` Grants for `token.getUserIdentifier()`.
+  - ✅ **Security infrastructure landed** (login for Web, API key for API, generic Voter) —
+    with design corrections versus the plan below, refined further after comparing against
+    `platform`'s actual `Iam.Network`/`ApiKey` implementation (same architecture, different
+    literal code — reviewed for divergences, not copied):
+    - `Tools\PHPat\DeliveryMechanismTest` forbids any DM class from depending on a BC's
+      Repository/Domain classes directly (DM may only touch `#[AsDrivingPort]` ports +
+      published language). So credential verification is NOT done inline in the DM's
+      Authenticator; it's a new `#[AsDrivingPort]` port per credential type
+      (`Iam\Identity\Application\Security\AuthenticatePasswordCredentialInterface` /
+      `AuthenticateApiTokenCredentialInterface` — named `Application/Security/`, not
+      `Application/Port/`, mirroring how `Application/Gateway/CarrierGatewayInterface` names
+      its folder after the role, not the architecture jargon), `authenticate(...): ?string`
+      returning the identityId or null, implemented in
+      `Iam\Identity\Infrastructure\Security\*AuthenticationService` (loads the real aggregate
+      via Repository + `SecretHasherInterface` — pure credential verification only; see below,
+      this used to also check identity status but that moved out).
+    - **API key format**: `<identifier>.<secret>` confirmed against `platform`'s own
+      `Iam.Network.ApiKey` (same format there). Header: switched from `Authorization: Bearer`
+      to `X-Api-Key` — a static, non-expiring, non-OAuth credential is conventionally a custom
+      header (`platform` uses `X-API-KEY`); `Authorization: Bearer` is for an OAuth2/ephemeral
+      access token, which this isn't.
+    - **Account-status gating moved to a `UserCheckerInterface`**
+      (`Iam\Identity\Infrastructure\Security\IdentityStatusUserChecker`, shared by both
+      firewalls) instead of living inside the two `*AuthenticationService` classes — Symfony's
+      dedicated extension point for "can this account authenticate at all", separate from "is
+      this secret correct". `UserCheckerInterface` only runs at authentication time though, not
+      on every request — so `Web\Security\IamUserProvider::loadUserByIdentifier()` (called by
+      `ContextListener::refreshUser()` on every request for a session) independently re-checks
+      via a new `GetIdentity` query + `PublishedIdentityStatus::isActive()` (Application/Language
+      enum, not the Domain one), closing a live Web session the moment the identity is
+      suspended — the stateless Api firewall re-authenticates via the UserChecker every request
+      anyway, so needs no separate check.
+    - **Verify via the aggregate vs. the read model** — deliberately kept as verify-via-aggregate
+      (`platform` verifies against the read-model's hash directly in a `CheckPassportEvent`
+      listener). Not "because it's a rule" — it's a genuine trade-off (zero staleness loading the
+      aggregate vs. a fast read-model hit), and for `PasswordCredential`/`ApiTokenCredential`
+      specifically (2-3 events each) the aggregate load is essentially free, so there's no reason
+      to accept even a small staleness window. `platform`'s choice is a legitimate, deliberate
+      trade-off at their scale/hot-path, not a mistake to avoid copying.
+    - **Permissions cached on the `UserInterface`, not re-queried per check** — `IamUser`
+      (`apps/web`, `apps/api`) carries `getRoles(): ['ROLE_USER', ...$grants]`, populated once
+      at authentication (`IamUserProvider`/`ApiTokenAuthenticator` each call
+      `ListGrantsForIdentity`). `GrantVoter` (`src/Iam/Access/Infrastructure/Security/GrantVoter.php`)
+      became a **zero-dependency** class: `\in_array($attribute, $token->getRoleNames(), true)` —
+      no QueryBus call per `is_granted()`, reusing Symfony's own native role mechanism instead of
+      inventing a parallel `grants()`/custom interface (mirrors `platform`'s `NetworkCaller`
+      caching scopes on the User at auth time, though they still use a bespoke `getScopes()`
+      rather than roles). `IamUser` is deliberately **not** shared between DMs regardless — a
+      `Request`-coupled `UserInterface` implementation can't live in `src/` (delivery vendor
+      code), so it's a small, duplicated class per DM, same shape as the DTO-per-DM convention
+      already established for Input/Payload/Criteria.
   - ⬜ **Not done yet, deliberately deferred to keep this chunk reviewable:** no existing route is
     actually gated behind `is_granted(...)` yet (Web stays fully public, API stays fully public) —
     that's the next chunk, alongside the items below.

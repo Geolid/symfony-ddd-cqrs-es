@@ -11,4 +11,9 @@ enum PublishedIdentityStatus: string implements PublishedLanguageInterface
 {
     case ACTIVE = IdentityStatus::ACTIVE->value;
     case SUSPENDED = IdentityStatus::SUSPENDED->value;
+
+    public function isActive(): bool
+    {
+        return self::ACTIVE === $this;
+    }
 }

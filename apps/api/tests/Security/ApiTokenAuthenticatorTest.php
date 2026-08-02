@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Api\Tests\Security;
 
 use Api\Tests\Support\AbstractApiTestCase;
+use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
 {
     #[Test]
-    public function itAcceptsARequestWithoutAnyAuthorizationHeader(): void
+    public function itAcceptsARequestWithoutAnyApiKeyHeader(): void
     {
         // Given
         $client = self::jsonClient();
@@ -26,7 +28,7 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itAcceptsARequestWithAValidBearerToken(): void
+    public function itAcceptsARequestWithAValidApiKey(): void
     {
         // Given
         $client = self::jsonClient();
@@ -39,27 +41,50 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
             ->create());
 
         // When
-        $client->request('GET', '/v1/sales/orders', ['headers' => ['Authorization' => 'Bearer key_abc123.super-secret']]);
+        $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
 
         // Then
         self::assertResponseIsSuccessful();
     }
 
     #[Test]
-    public function itRejectsAMalformedBearerToken(): void
+    public function itGrantsAccessToThePermissionsHeldByTheIdentity(): void
+    {
+        // Given
+        $client = self::jsonClient();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(ApiTokenCredentialTestFactory::new()
+            ->forIdentity($identity->id()->toString())
+            ->withIdentifier('key_abc123')
+            ->withSecret('super-secret')
+            ->create());
+        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:supervise')->create());
+
+        // When
+        $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
+
+        // Then
+        $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
+        self::assertTrue($authorizationChecker->isGranted('sales:supervise'));
+        self::assertFalse($authorizationChecker->isGranted('catalog:manage'));
+    }
+
+    #[Test]
+    public function itRejectsAMalformedApiKey(): void
     {
         // Given
         $client = self::jsonClient();
 
         // When
-        $client->request('GET', '/v1/sales/orders', ['headers' => ['Authorization' => 'Bearer no-dot-here']]);
+        $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'no-dot-here']]);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
     #[Test]
-    public function itRejectsAnInvalidBearerToken(): void
+    public function itRejectsAnInvalidApiKey(): void
     {
         // Given
         $client = self::jsonClient();
@@ -72,7 +97,7 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
             ->create());
 
         // When
-        $client->request('GET', '/v1/sales/orders', ['headers' => ['Authorization' => 'Bearer key_abc123.wrong-secret']]);
+        $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.wrong-secret']]);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);

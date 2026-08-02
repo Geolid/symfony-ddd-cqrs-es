@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Port;
+namespace Iam\Identity\Application\Security;
 
 use Shared\Application\Port\AsDrivingPort;
 

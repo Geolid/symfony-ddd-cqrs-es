@@ -6,7 +6,7 @@ namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
-use Iam\Identity\Application\Port\AuthenticateApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
 use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;

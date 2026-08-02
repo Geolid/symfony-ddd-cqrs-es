@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Port\AuthenticateApiTokenCredentialInterface;
+use Iam\Access\Application\Finder\Grant\GrantResult;
+use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
+use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
+use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,23 +21,25 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 
 final class ApiTokenAuthenticator extends AbstractAuthenticator
 {
-    private const string PREFIX = 'Bearer ';
+    private const string HEADER = 'X-Api-Key';
 
-    public function __construct(private AuthenticateApiTokenCredentialInterface $authenticator)
-    {
+    public function __construct(
+        private AuthenticateApiTokenCredentialInterface $authenticator,
+        private QueryBusInterface $queryBus,
+    ) {
     }
 
     public function supports(Request $request): bool
     {
-        return str_starts_with((string) $request->headers->get('Authorization'), self::PREFIX);
+        return $request->headers->has(self::HEADER);
     }
 
     public function authenticate(Request $request): Passport
     {
-        $token = substr((string) $request->headers->get('Authorization'), \strlen(self::PREFIX));
+        $token = (string) $request->headers->get(self::HEADER);
 
         if (!str_contains($token, '.')) {
-            throw new CustomUserMessageAuthenticationException('Malformed API token.');
+            throw new CustomUserMessageAuthenticationException('Malformed API key.');
         }
 
         [$identifier, $secret] = explode('.', $token, 2);
@@ -42,11 +47,13 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator
         $identityId = $this->authenticator->authenticate($identifier, $secret);
 
         if (null === $identityId) {
-            throw new CustomUserMessageAuthenticationException('Invalid API token.');
+            throw new CustomUserMessageAuthenticationException('Invalid API key.');
         }
 
+        $grants = $this->grantsFor($identityId);
+
         return new SelfValidatingPassport(
-            new UserBadge($identityId, static fn (string $identifier): IamUser => new IamUser($identifier)),
+            new UserBadge($identityId, static fn (string $identifier): IamUser => new IamUser($identifier, $grants)),
         );
     }
 
@@ -58,5 +65,20 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function grantsFor(string $identityId): array
+    {
+        $grants = [];
+
+        foreach ($this->queryBus->ask(new ListGrantsForIdentity($identityId)) as $grant) {
+            \assert($grant instanceof GrantResult);
+            $grants[] = $grant->permission;
+        }
+
+        return $grants;
     }
 }

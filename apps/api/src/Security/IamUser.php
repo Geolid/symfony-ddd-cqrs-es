@@ -8,13 +8,18 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final readonly class IamUser implements UserInterface
 {
-    public function __construct(private string $identityId)
-    {
+    /**
+     * @param list<string> $grants
+     */
+    public function __construct(
+        private string $identityId,
+        private array $grants = [],
+    ) {
     }
 
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        return ['ROLE_USER', ...$this->grants];
     }
 
     public function eraseCredentials(): void

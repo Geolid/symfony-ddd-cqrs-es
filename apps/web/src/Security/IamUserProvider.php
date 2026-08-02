@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
+use Iam\Access\Application\Finder\Grant\GrantResult;
+use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Language\PublishedIdentityStatus;
 use Iam\Identity\Application\Query\GetIdentity\GetIdentity;
@@ -34,11 +36,11 @@ final readonly class IamUserProvider implements UserProviderInterface
             throw new UserNotFoundException($e->getMessage(), 0, $e);
         }
 
-        if (PublishedIdentityStatus::ACTIVE !== PublishedIdentityStatus::from($identity->status)) {
+        if (!PublishedIdentityStatus::from($identity->status)->isActive()) {
             throw new UserNotFoundException(\sprintf('Identity "%s" is not active.', $identifier));
         }
 
-        return new IamUser($identifier);
+        return new IamUser($identifier, $this->grantsFor($identifier));
     }
 
     /**
@@ -56,5 +58,20 @@ final readonly class IamUserProvider implements UserProviderInterface
     public function supportsClass(string $class): bool
     {
         return IamUser::class === $class;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function grantsFor(string $identityId): array
+    {
+        $grants = [];
+
+        foreach ($this->queryBus->ask(new ListGrantsForIdentity($identityId)) as $grant) {
+            \assert($grant instanceof GrantResult);
+            $grants[] = $grant->permission;
+        }
+
+        return $grants;
     }
 }

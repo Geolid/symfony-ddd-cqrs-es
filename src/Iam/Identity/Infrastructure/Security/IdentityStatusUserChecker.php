@@ -31,7 +31,7 @@ final readonly class IdentityStatusUserChecker implements UserCheckerInterface
             throw new CustomUserMessageAccountStatusException('Invalid credentials.');
         }
 
-        if (PublishedIdentityStatus::ACTIVE !== PublishedIdentityStatus::from($identity->status)) {
+        if (!PublishedIdentityStatus::from($identity->status)->isActive()) {
             throw new CustomUserMessageAccountStatusException('This account is suspended.');
         }
     }
