@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
 use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
@@ -28,7 +27,7 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
      */
     public function authenticate(string $identifier, string $plainSecret): ?string
     {
-        $credentialResult = $this->findByIdentifier($identifier);
+        $credentialResult = $this->apiTokenCredentialFinder->getByIdentifier($identifier);
 
         if (null === $credentialResult) {
             return null;
@@ -41,16 +40,5 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
         }
 
         return $credentialResult->identityId;
-    }
-
-    private function findByIdentifier(string $identifier): ?ApiTokenCredentialResult
-    {
-        foreach ($this->apiTokenCredentialFinder as $candidate) {
-            if ($candidate->identifier === $identifier) {
-                return $candidate;
-            }
-        }
-
-        return null;
     }
 }

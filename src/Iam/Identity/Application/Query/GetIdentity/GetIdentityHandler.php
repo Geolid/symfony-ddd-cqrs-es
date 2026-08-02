@@ -21,12 +21,6 @@ final readonly class GetIdentityHandler
      */
     public function __invoke(GetIdentity $query): IdentityResult
     {
-        foreach ($this->identityFinder as $identity) {
-            if ($identity->id === $query->id) {
-                return $identity;
-            }
-        }
-
-        throw IdentityResultNotFoundException::forId($query->id);
+        return $this->identityFinder->getById($query->id) ?? throw IdentityResultNotFoundException::forId($query->id);
     }
 }
