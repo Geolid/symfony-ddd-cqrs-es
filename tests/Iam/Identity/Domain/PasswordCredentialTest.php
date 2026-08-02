@@ -60,7 +60,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         // When
         $this
             ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $hasher->hash('S3cr3t!'), $setAt->format('c')))
-            ->when(function (PasswordCredential $credential) use ($hasher, &$correctResult, &$wrongResult): void {
+            ->when(static function (PasswordCredential $credential) use ($hasher, &$correctResult, &$wrongResult): void {
                 $correctResult = $credential->verify('S3cr3t!', $hasher);
                 $wrongResult = $credential->verify('wrong', $hasher);
             })

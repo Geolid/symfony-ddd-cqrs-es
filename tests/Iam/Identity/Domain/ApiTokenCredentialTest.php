@@ -89,7 +89,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
         // When
         $this
             ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
-            ->when(function (ApiTokenCredential $credential) use ($hasher, $now, &$correctResult, &$wrongResult): void {
+            ->when(static function (ApiTokenCredential $credential) use ($hasher, $now, &$correctResult, &$wrongResult): void {
                 $correctResult = $credential->verify('S3cr3t!', $hasher, $now);
                 $wrongResult = $credential->verify('wrong', $hasher, $now);
             })
@@ -115,7 +115,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
         // When
         $this
             ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
-            ->when(function (ApiTokenCredential $credential) use ($hasher, $afterExpiry, &$result): void {
+            ->when(static function (ApiTokenCredential $credential) use ($hasher, $afterExpiry, &$result): void {
                 $result = $credential->verify('S3cr3t!', $hasher, $afterExpiry);
             })
             ->then();
@@ -143,7 +143,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
                 new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')),
                 new ApiTokenCredentialRevoked($id, $revokedAt->format('c')),
             )
-            ->when(function (ApiTokenCredential $credential) use ($hasher, $now, &$result): void {
+            ->when(static function (ApiTokenCredential $credential) use ($hasher, $now, &$result): void {
                 $result = $credential->verify('S3cr3t!', $hasher, $now);
             })
             ->then();
