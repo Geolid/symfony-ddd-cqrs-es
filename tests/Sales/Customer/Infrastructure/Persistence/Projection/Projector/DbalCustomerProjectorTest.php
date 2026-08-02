@@ -11,7 +11,7 @@ use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{email: ?string, erased_at: ?string}
+ * @phpstan-type Row array{email: ?string, erased_at: ?string, identity_id: ?string}
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -43,6 +43,19 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['erased_at']);
     }
 
+    #[Test]
+    public function itProjectsTheIdentityIdOnCustomerIdentityLinked(): void
+    {
+        // When
+        $customer = CustomerTestFactory::new()->linkedToIdentity('identity-1')->create();
+        $this->store($customer);
+
+        // Then
+        $row = $this->fetchRow($customer->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('identity-1', $row['identity_id']);
+    }
+
     /**
      * @return Row|false
      */
@@ -50,7 +63,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT email, erased_at FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
+            \sprintf('SELECT email, erased_at, identity_id FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
             ['id' => $id],
         );
     }
