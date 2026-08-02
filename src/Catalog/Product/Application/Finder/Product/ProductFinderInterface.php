@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Finder\Product;
 
-use Shared\Application\Finder\FinderInterface;
+use Shared\Application\Finder\PaginatedFinderInterface;
 
 /**
- * @extends FinderInterface<ProductResult>
+ * @extends PaginatedFinderInterface<ProductResult>
  */
-interface ProductFinderInterface extends FinderInterface
+interface ProductFinderInterface extends PaginatedFinderInterface
 {
+    public function withoutDelisted(): static;
 }

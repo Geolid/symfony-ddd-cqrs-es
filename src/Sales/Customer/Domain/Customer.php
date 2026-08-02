@@ -11,7 +11,9 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Customer\Domain\Event\CustomerErased;
+use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
+use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 
 #[Aggregate('sales.customer.customer')]
 final class Customer implements AggregateRoot, AggregateRootMetadataAware
@@ -22,6 +24,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     private CustomerId $id;
     private Email $email;
     private bool $erased;
+    private ?string $identityId;
 
     public function id(): CustomerId
     {
@@ -36,6 +39,11 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     public function isErased(): bool
     {
         return $this->erased;
+    }
+
+    public function identityId(): ?string
+    {
+        return $this->identityId;
     }
 
     public static function register(CustomerId $id, Email $email, \DateTimeImmutable $registeredAt): self
@@ -62,17 +70,39 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws CustomerAlreadyLinkedToIdentityException
+     */
+    public function linkIdentity(string $identityId): void
+    {
+        if (null !== $this->identityId) {
+            throw CustomerAlreadyLinkedToIdentityException::forId($this->id);
+        }
+
+        $this->recordThat(new CustomerIdentityLinked(
+            id: $this->id->toString(),
+            identityId: $identityId,
+        ));
+    }
+
     #[Apply]
     private function applyCustomerRegistered(CustomerRegistered $event): void
     {
         $this->id = CustomerId::fromString($event->id);
         $this->email = Email::fromString($event->email);
         $this->erased = false;
+        $this->identityId = null;
     }
 
     #[Apply]
     private function applyCustomerErased(CustomerErased $event): void
     {
         $this->erased = true;
+    }
+
+    #[Apply]
+    private function applyCustomerIdentityLinked(CustomerIdentityLinked $event): void
+    {
+        $this->identityId = $event->identityId;
     }
 }

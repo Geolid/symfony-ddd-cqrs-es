@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Infrastructure\Persistence\Projection\Projector;
 
+use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
@@ -26,6 +27,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
             'id' => $event->id,
             'label' => $event->label,
             'unit_amount_in_cents' => $event->unitAmountInCents,
+            'delisted' => 0,
         ]);
     }
 
@@ -39,6 +41,12 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(ProductDelisted::class)]
+    public function onProductDelisted(ProductDelisted $event): void
+    {
+        $this->connection->update(self::TABLE, ['delisted' => 1], ['id' => $event->id]);
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -48,6 +56,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('label', Types::STRING, ['length' => 255]);
         $table->addColumn('unit_amount_in_cents', Types::INTEGER);
+        $table->addColumn('delisted', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

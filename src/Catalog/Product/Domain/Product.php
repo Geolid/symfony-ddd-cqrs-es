@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Domain;
 
+use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
+use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -23,6 +25,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     private ProductId $id;
     private string $label;
     private Money $unitAmount;
+    private bool $delisted;
 
     public function id(): ProductId
     {
@@ -37,6 +40,11 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     public function unitAmount(): Money
     {
         return $this->unitAmount;
+    }
+
+    public function isDelisted(): bool
+    {
+        return $this->delisted;
     }
 
     public static function list(ProductId $id, string $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
@@ -61,17 +69,39 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws ProductAlreadyDelistedException
+     */
+    public function delist(\DateTimeImmutable $delistedAt): void
+    {
+        if ($this->delisted) {
+            throw ProductAlreadyDelistedException::forId($this->id);
+        }
+
+        $this->recordThat(new ProductDelisted(
+            id: $this->id->toString(),
+            delistedAt: $delistedAt->format('c'),
+        ));
+    }
+
     #[Apply]
     private function applyProductListed(ProductListed $event): void
     {
         $this->id = ProductId::fromString($event->id);
         $this->label = $event->label;
         $this->unitAmount = Money::fromCents($event->unitAmountInCents);
+        $this->delisted = false;
     }
 
     #[Apply]
     private function applyProductRepriced(ProductRepriced $event): void
     {
         $this->unitAmount = Money::fromCents($event->unitAmountInCents);
+    }
+
+    #[Apply]
+    private function applyProductDelisted(ProductDelisted $event): void
+    {
+        $this->delisted = true;
     }
 }

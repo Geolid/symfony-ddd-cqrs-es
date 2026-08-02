@@ -25,6 +25,11 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('now +00:00')));
     }
 
+    public function linkedToIdentity(string $identityId): self
+    {
+        return $this->withModifier(static fn (Customer $customer) => $customer->linkIdentity($identityId));
+    }
+
     protected function defaults(): array
     {
         return [
