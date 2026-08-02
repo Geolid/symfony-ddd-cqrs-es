@@ -18,7 +18,7 @@ final readonly class DbalPasswordCredentialFinder implements PasswordCredentialF
     {
     }
 
-    public function getByLogin(string $login): ?PasswordCredentialResult
+    public function ofLogin(string $login): ?PasswordCredentialResult
     {
         /** @var Row|false $row */
         $row = $this->connection->fetchAssociative(

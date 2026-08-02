@@ -6,5 +6,5 @@ namespace Iam\Identity\Application\Finder\ApiTokenCredential;
 
 interface ApiTokenCredentialFinderInterface
 {
-    public function getByIdentifier(string $identifier): ?ApiTokenCredentialResult;
+    public function ofIdentifier(string $identifier): ?ApiTokenCredentialResult;
 }

@@ -18,7 +18,7 @@ final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialF
     {
     }
 
-    public function getByIdentifier(string $identifier): ?ApiTokenCredentialResult
+    public function ofIdentifier(string $identifier): ?ApiTokenCredentialResult
     {
         /** @var Row|false $row */
         $row = $this->connection->fetchAssociative(

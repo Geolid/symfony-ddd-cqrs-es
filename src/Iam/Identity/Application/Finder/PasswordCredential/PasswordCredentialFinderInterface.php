@@ -6,5 +6,5 @@ namespace Iam\Identity\Application\Finder\PasswordCredential;
 
 interface PasswordCredentialFinderInterface
 {
-    public function getByLogin(string $login): ?PasswordCredentialResult;
+    public function ofLogin(string $login): ?PasswordCredentialResult;
 }

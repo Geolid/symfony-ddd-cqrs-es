@@ -17,7 +17,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
-    public function getByIdentityId(string $identityId): ?CustomerResult
+    public function ofIdentityId(string $identityId): ?CustomerResult
     {
         /** @var Row|false $row */
         $row = $this->query()

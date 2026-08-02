@@ -27,7 +27,7 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
      */
     public function authenticate(string $identifier, string $plainSecret): ?string
     {
-        $credentialResult = $this->apiTokenCredentialFinder->getByIdentifier($identifier);
+        $credentialResult = $this->apiTokenCredentialFinder->ofIdentifier($identifier);
 
         if (null === $credentialResult) {
             return null;

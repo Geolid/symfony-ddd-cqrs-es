@@ -17,7 +17,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalProductFinder extends AbstractDbalFinder implements ProductFinderInterface
 {
-    public function getById(string $id): ?ProductResult
+    public function ofId(string $id): ?ProductResult
     {
         /** @var Row|false $row */
         $row = $this->query()

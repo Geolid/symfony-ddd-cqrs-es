@@ -25,7 +25,7 @@ final readonly class PasswordCredentialAuthenticationService implements Authenti
      */
     public function authenticate(string $login, string $plainPassword): ?string
     {
-        $credentialResult = $this->passwordCredentialFinder->getByLogin($login);
+        $credentialResult = $this->passwordCredentialFinder->ofLogin($login);
 
         if (null === $credentialResult) {
             return null;

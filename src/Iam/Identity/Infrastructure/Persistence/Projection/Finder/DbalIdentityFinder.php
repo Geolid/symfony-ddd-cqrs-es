@@ -18,7 +18,7 @@ final readonly class DbalIdentityFinder implements IdentityFinderInterface
     {
     }
 
-    public function getById(string $id): ?IdentityResult
+    public function ofId(string $id): ?IdentityResult
     {
         /** @var Row|false $row */
         $row = $this->connection->fetchAssociative(

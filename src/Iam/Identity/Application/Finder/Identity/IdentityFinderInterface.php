@@ -6,5 +6,5 @@ namespace Iam\Identity\Application\Finder\Identity;
 
 interface IdentityFinderInterface
 {
-    public function getById(string $id): ?IdentityResult;
+    public function ofId(string $id): ?IdentityResult;
 }
