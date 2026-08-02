@@ -145,6 +145,13 @@ were surfaced later and have no original number.
   (`DataSubjectErasureInterface`) cascading key-drop to `PasswordCredential`/
   `ApiTokenCredential` for that identity.
 
+- **Naming collision: `Command\ListProduct` vs `Query\ListProducts`.** Flagged during review —
+  the write-side Command (`Product::list()`/`ProductListed`, i.e. "list this product for sale")
+  and the read-side Query (browse the catalog) differ only by a trailing `s`. No functional bug
+  (different namespaces/buses), but confusing to read/diff. User had no strong preference on the
+  rename when asked; not touched yet — candidates: `ListProductForSale` (keeps the verb, mirrors
+  `DelistProduct`) or a generic `RegisterProduct`/`CreateProduct`.
+
 - **#26 — Rewrite README.** Held off deliberately until Iam (and its DM wiring) is finished,
   since the README needs to describe the final architecture/scenario, not an intermediate
   state.
