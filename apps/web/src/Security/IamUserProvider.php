@@ -7,18 +7,25 @@ namespace Web\Security;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Language\PublishedIdentityStatus;
 use Iam\Identity\Application\Query\GetIdentity\GetIdentity;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/**
+ * @implements UserProviderInterface<IamUser>
+ */
 final readonly class IamUserProvider implements UserProviderInterface
 {
     public function __construct(private QueryBusInterface $queryBus)
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         try {
@@ -34,6 +41,9 @@ final readonly class IamUserProvider implements UserProviderInterface
         return new IamUser($identifier);
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof IamUser) {
