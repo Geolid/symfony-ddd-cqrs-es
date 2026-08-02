@@ -14,44 +14,61 @@ final class LoginTest extends TestCase
     #[Test]
     public function itCreates(): void
     {
+        // When
         $login = Login::fromString('operator');
 
+        // Then
         self::assertSame('operator', $login->toString());
     }
 
     #[Test]
     public function itTrims(): void
     {
+        // When
         $login = Login::fromString('  operator  ');
 
+        // Then
         self::assertSame('operator', $login->toString());
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
+        // Given
         $a = Login::fromString('operator');
         $b = Login::fromString('  operator  ');
         $other = Login::fromString('another-operator');
 
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals($other));
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
     }
 
     #[Test]
     public function itFingerprintsTheNormalizedValue(): void
     {
+        // Given
         $login = Login::fromString('  operator  ');
 
-        self::assertSame(hash('sha256', 'operator'), $login->fingerprint());
+        // When
+        $fingerprint = $login->fingerprint();
+
+        // Then
+        self::assertSame(hash('sha256', 'operator'), $fingerprint);
     }
 
     #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
+        // Then
         $this->expectException(\InvalidArgumentException::class);
 
+        // When
         Login::fromString($value);
     }
 

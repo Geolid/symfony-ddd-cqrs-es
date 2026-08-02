@@ -13,13 +13,13 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<IdentityResult>
  *
- * @phpstan-type Row array{id: string, login: string, registered_at: string}
+ * @phpstan-type Row array{id: string, status: string, registered_at: string}
  */
 final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
 {
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'login', 'registered_at')
+        $qb->select('id', 'status', 'registered_at')
             ->from(DbalIdentityProjector::TABLE)
             ->orderBy('registered_at', 'DESC')
             ->addOrderBy('id', 'DESC');
@@ -32,7 +32,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
     {
         return new IdentityResult(
             id: $row['id'],
-            login: $row['login'],
+            status: $row['status'],
             registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
         );
     }

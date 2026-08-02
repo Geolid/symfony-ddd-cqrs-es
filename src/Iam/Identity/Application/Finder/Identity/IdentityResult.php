@@ -10,7 +10,7 @@ final readonly class IdentityResult implements ResultInterface
 {
     public function __construct(
         public string $id,
-        public string $login,
+        public string $status,
         public \DateTimeImmutable $registeredAt,
     ) {
     }

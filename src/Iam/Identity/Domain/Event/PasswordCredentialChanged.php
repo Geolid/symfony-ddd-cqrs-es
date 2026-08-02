@@ -7,12 +7,13 @@ namespace Iam\Identity\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.identity.registered')]
-final readonly class IdentityRegistered implements DomainEventInterface
+#[Event('iam.identity.password_credential_changed')]
+final readonly class PasswordCredentialChanged implements DomainEventInterface
 {
     public function __construct(
         public string $id,
-        public string $registeredAt,
+        public string $hash,
+        public string $changedAt,
     ) {
     }
 }
