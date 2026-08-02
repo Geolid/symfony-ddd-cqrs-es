@@ -77,21 +77,23 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     public function itVerifiesAnActiveUnexpiredToken(): void
     {
         // Given
-        $hasher = new DummyApiTokenSecretHasher();
+        $id = ApiTokenCredentialId::generate()->toString();
+        $identityId = IdentityId::generate()->toString();
+        $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $expiresAt = new \DateTimeImmutable('2027-01-01T00:00:00+00:00');
         $now = new \DateTimeImmutable('2026-06-01T00:00:00+00:00');
-        $credential = ApiTokenCredential::issue(
-            ApiTokenCredentialId::generate(),
-            IdentityId::generate(),
-            'key_abc123',
-            'S3cr3t!',
-            $hasher,
-            new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
-            new \DateTimeImmutable('2027-01-01T00:00:00+00:00'),
-        );
+        $hasher = new DummyApiTokenSecretHasher();
+        $correctResult = null;
+        $wrongResult = null;
 
         // When
-        $correctResult = $credential->verify('S3cr3t!', $hasher, $now);
-        $wrongResult = $credential->verify('wrong', $hasher, $now);
+        $this
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->when(function (ApiTokenCredential $credential) use ($hasher, $now, &$correctResult, &$wrongResult): void {
+                $correctResult = $credential->verify('S3cr3t!', $hasher, $now);
+                $wrongResult = $credential->verify('wrong', $hasher, $now);
+            })
+            ->then();
 
         // Then
         self::assertTrue($correctResult);
@@ -102,20 +104,21 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     public function itRefusesAnExpiredToken(): void
     {
         // Given
-        $hasher = new DummyApiTokenSecretHasher();
+        $id = ApiTokenCredentialId::generate()->toString();
+        $identityId = IdentityId::generate()->toString();
+        $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $expiresAt = new \DateTimeImmutable('2027-01-01T00:00:00+00:00');
         $afterExpiry = new \DateTimeImmutable('2027-06-01T00:00:00+00:00');
-        $credential = ApiTokenCredential::issue(
-            ApiTokenCredentialId::generate(),
-            IdentityId::generate(),
-            'key_abc123',
-            'S3cr3t!',
-            $hasher,
-            new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
-            new \DateTimeImmutable('2027-01-01T00:00:00+00:00'),
-        );
+        $hasher = new DummyApiTokenSecretHasher();
+        $result = null;
 
         // When
-        $result = $credential->verify('S3cr3t!', $hasher, $afterExpiry);
+        $this
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->when(function (ApiTokenCredential $credential) use ($hasher, $afterExpiry, &$result): void {
+                $result = $credential->verify('S3cr3t!', $hasher, $afterExpiry);
+            })
+            ->then();
 
         // Then
         self::assertFalse($result);
@@ -125,21 +128,25 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     public function itRefusesARevokedToken(): void
     {
         // Given
-        $hasher = new DummyApiTokenSecretHasher();
+        $id = ApiTokenCredentialId::generate()->toString();
+        $identityId = IdentityId::generate()->toString();
+        $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $expiresAt = new \DateTimeImmutable('2027-01-01T00:00:00+00:00');
+        $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $now = new \DateTimeImmutable('2026-06-01T00:00:00+00:00');
-        $credential = ApiTokenCredential::issue(
-            ApiTokenCredentialId::generate(),
-            IdentityId::generate(),
-            'key_abc123',
-            'S3cr3t!',
-            $hasher,
-            new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
-            new \DateTimeImmutable('2027-01-01T00:00:00+00:00'),
-        );
-        $credential->revoke($now);
+        $hasher = new DummyApiTokenSecretHasher();
+        $result = null;
 
         // When
-        $result = $credential->verify('S3cr3t!', $hasher, $now);
+        $this
+            ->given(
+                new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')),
+                new ApiTokenCredentialRevoked($id, $revokedAt->format('c')),
+            )
+            ->when(function (ApiTokenCredential $credential) use ($hasher, $now, &$result): void {
+                $result = $credential->verify('S3cr3t!', $hasher, $now);
+            })
+            ->then();
 
         // Then
         self::assertFalse($result);

@@ -50,15 +50,21 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     public function itVerifiesTheCorrectPassword(): void
     {
         // Given
-        $id = PasswordCredentialId::generate();
-        $identityId = IdentityId::generate();
-        $login = Login::fromString('operator@example.com');
+        $id = PasswordCredentialId::generate()->toString();
+        $identityId = IdentityId::generate()->toString();
+        $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $hasher = new DummySecretHasher();
-        $credential = PasswordCredential::set($id, $identityId, $login, 'S3cr3t!', $hasher, new \DateTimeImmutable('2026-01-01T00:00:00+00:00'));
+        $correctResult = null;
+        $wrongResult = null;
 
         // When
-        $correctResult = $credential->verify('S3cr3t!', $hasher);
-        $wrongResult = $credential->verify('wrong', $hasher);
+        $this
+            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $hasher->hash('S3cr3t!'), $setAt->format('c')))
+            ->when(function (PasswordCredential $credential) use ($hasher, &$correctResult, &$wrongResult): void {
+                $correctResult = $credential->verify('S3cr3t!', $hasher);
+                $wrongResult = $credential->verify('wrong', $hasher);
+            })
+            ->then();
 
         // Then
         self::assertTrue($correctResult);
