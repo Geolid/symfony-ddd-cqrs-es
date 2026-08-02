@@ -8,10 +8,8 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
+use Webmozart\Assert\Assert;
 
-/**
- * @phpstan-type Row array{id: string, identity_id: string, login: string, hash: string}
- */
 final readonly class DbalPasswordCredentialFinder implements PasswordCredentialFinderInterface
 {
     public function __construct(private Connection $connection)
@@ -29,20 +27,24 @@ final readonly class DbalPasswordCredentialFinder implements PasswordCredentialF
             return null;
         }
 
-        /** @var Row $row */
         return $this->mapRow($row);
     }
 
     /**
-     * @param Row $row
+     * @param array<string, mixed> $row
      */
     private function mapRow(array $row): PasswordCredentialResult
     {
+        Assert::string($row['id']);
+        Assert::string($row['identity_id']);
+        Assert::string($row['login']);
+        Assert::string($row['hash']);
+
         return new PasswordCredentialResult(
-            id: $row['id'],
-            identityId: $row['identity_id'],
-            login: $row['login'],
-            hash: $row['hash'],
+            id: (string) $row['id'],
+            identityId: (string) $row['identity_id'],
+            login: (string) $row['login'],
+            hash: (string) $row['hash'],
         );
     }
 }
