@@ -8,8 +8,10 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
-use Webmozart\Assert\Assert;
 
+/**
+ * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: string|int, expires_at: string}
+ */
 final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialFinderInterface
 {
     public function __construct(private Connection $connection)
@@ -18,6 +20,7 @@ final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialF
 
     public function getByIdentifier(string $identifier): ?ApiTokenCredentialResult
     {
+        /** @var Row|false $row */
         $row = $this->connection->fetchAssociative(
             \sprintf('SELECT id, identity_id, identifier, hash, revoked, expires_at FROM %s WHERE identifier = :identifier', DbalApiTokenCredentialProjector::TABLE),
             ['identifier' => $identifier],
@@ -31,23 +34,17 @@ final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialF
     }
 
     /**
-     * @param array<string, mixed> $row
+     * @param Row $row
      */
     private function mapRow(array $row): ApiTokenCredentialResult
     {
-        Assert::string($row['id']);
-        Assert::string($row['identity_id']);
-        Assert::string($row['identifier']);
-        Assert::string($row['hash']);
-        Assert::string($row['expires_at']);
-
         return new ApiTokenCredentialResult(
-            id: (string) $row['id'],
-            identityId: (string) $row['identity_id'],
-            identifier: (string) $row['identifier'],
-            hash: (string) $row['hash'],
+            id: $row['id'],
+            identityId: $row['identity_id'],
+            identifier: $row['identifier'],
+            hash: $row['hash'],
             revoked: (bool) $row['revoked'],
-            expiresAt: new \DateTimeImmutable((string) $row['expires_at'], new \DateTimeZone('UTC')),
+            expiresAt: new \DateTimeImmutable($row['expires_at'], new \DateTimeZone('UTC')),
         );
     }
 }

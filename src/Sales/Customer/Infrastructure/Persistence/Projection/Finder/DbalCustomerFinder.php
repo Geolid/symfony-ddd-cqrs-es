@@ -17,6 +17,22 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
+    public function getByIdentityId(string $identityId): ?CustomerResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('identity_id = :identityId')
+            ->setParameter('identityId', $identityId)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
     public function withoutErased(): static
     {
         return $this->filter(static function (QueryBuilder $qb): void {

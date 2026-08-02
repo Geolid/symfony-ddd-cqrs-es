@@ -21,12 +21,6 @@ final readonly class GetProductHandler
      */
     public function __invoke(GetProduct $query): ProductResult
     {
-        foreach ($this->productFinder as $product) {
-            if ($product->id === $query->id) {
-                return $product;
-            }
-        }
-
-        throw ProductResultNotFoundException::forId($query->id);
+        return $this->productFinder->getById($query->id) ?? throw ProductResultNotFoundException::forId($query->id);
     }
 }

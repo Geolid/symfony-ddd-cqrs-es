@@ -11,5 +11,7 @@ use Shared\Application\Finder\PaginatedFinderInterface;
  */
 interface OrderFinderInterface extends PaginatedFinderInterface
 {
+    public function getById(string $id): ?OrderResult;
+
     public function withCustomer(string $customerId): static;
 }

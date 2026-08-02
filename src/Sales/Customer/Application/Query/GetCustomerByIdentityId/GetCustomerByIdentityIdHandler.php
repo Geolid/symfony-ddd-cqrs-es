@@ -17,12 +17,6 @@ final readonly class GetCustomerByIdentityIdHandler
 
     public function __invoke(GetCustomerByIdentityId $query): ?CustomerResult
     {
-        foreach ($this->customerFinder as $customer) {
-            if ($customer->identityId === $query->identityId) {
-                return $customer;
-            }
-        }
-
-        return null;
+        return $this->customerFinder->getByIdentityId($query->identityId);
     }
 }

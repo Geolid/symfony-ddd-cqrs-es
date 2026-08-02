@@ -17,6 +17,23 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalGrantFinder extends AbstractDbalFinder implements GrantFinderInterface
 {
+    public function forIdentity(string $identityId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($identityId) {
+                $qb->andWhere('identity_id = :identityId')
+                    ->setParameter('identityId', $identityId);
+            },
+        );
+    }
+
+    public function withoutRevoked(): static
+    {
+        return $this->filter(static function (QueryBuilder $qb): void {
+            $qb->andWhere('revoked = 0');
+        });
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'identity_id', 'permission', 'revoked')

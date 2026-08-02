@@ -17,6 +17,22 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalProductFinder extends AbstractDbalFinder implements ProductFinderInterface
 {
+    public function getById(string $id): ?ProductResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('id = :id')
+            ->setParameter('id', $id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
     public function withoutDelisted(): static
     {
         return $this->filter(static function (QueryBuilder $qb): void {

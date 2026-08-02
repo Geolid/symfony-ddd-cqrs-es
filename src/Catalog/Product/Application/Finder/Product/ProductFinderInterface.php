@@ -11,5 +11,7 @@ use Shared\Application\Finder\PaginatedFinderInterface;
  */
 interface ProductFinderInterface extends PaginatedFinderInterface
 {
+    public function getById(string $id): ?ProductResult;
+
     public function withoutDelisted(): static;
 }

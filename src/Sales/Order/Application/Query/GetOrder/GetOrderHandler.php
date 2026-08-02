@@ -21,12 +21,6 @@ final readonly class GetOrderHandler
      */
     public function __invoke(GetOrder $query): OrderResult
     {
-        foreach ($this->orderFinder as $order) {
-            if ($order->id === $query->id) {
-                return $order;
-            }
-        }
-
-        throw OrderResultNotFoundException::forId($query->id);
+        return $this->orderFinder->getById($query->id) ?? throw OrderResultNotFoundException::forId($query->id);
     }
 }

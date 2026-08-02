@@ -8,8 +8,10 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
-use Webmozart\Assert\Assert;
 
+/**
+ * @phpstan-type Row array{id: string, status: string, registered_at: string}
+ */
 final readonly class DbalIdentityFinder implements IdentityFinderInterface
 {
     public function __construct(private Connection $connection)
@@ -18,6 +20,7 @@ final readonly class DbalIdentityFinder implements IdentityFinderInterface
 
     public function getById(string $id): ?IdentityResult
     {
+        /** @var Row|false $row */
         $row = $this->connection->fetchAssociative(
             \sprintf('SELECT id, status, registered_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
@@ -31,18 +34,14 @@ final readonly class DbalIdentityFinder implements IdentityFinderInterface
     }
 
     /**
-     * @param array<string, mixed> $row
+     * @param Row $row
      */
     private function mapRow(array $row): IdentityResult
     {
-        Assert::string($row['id']);
-        Assert::string($row['status']);
-        Assert::string($row['registered_at']);
-
         return new IdentityResult(
-            id: (string) $row['id'],
-            status: (string) $row['status'],
-            registeredAt: new \DateTimeImmutable((string) $row['registered_at'], new \DateTimeZone('UTC')),
+            id: $row['id'],
+            status: $row['status'],
+            registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
         );
     }
 }

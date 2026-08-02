@@ -20,14 +20,10 @@ final readonly class ListGrantsForIdentityHandler
      */
     public function __invoke(ListGrantsForIdentity $query): array
     {
-        $grants = [];
-
-        foreach ($this->grantFinder as $grant) {
-            if ($grant->identityId === $query->identityId && !$grant->revoked) {
-                $grants[] = $grant;
-            }
-        }
-
-        return $grants;
+        /** @var list<GrantResult> */
+        return iterator_to_array(
+            $this->grantFinder->forIdentity($query->identityId)->withoutRevoked(),
+            false,
+        );
     }
 }
