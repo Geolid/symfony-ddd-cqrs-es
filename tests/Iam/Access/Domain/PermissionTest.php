@@ -39,6 +39,19 @@ final class PermissionTest extends TestCase
         Permission::fromString($value);
     }
 
+    #[Test]
+    public function itValidatesAWellFormattedValue(): void
+    {
+        self::assertTrue(Permission::isValid('sales:order_write'));
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidValues')]
+    public function itInvalidatesAMalformedValue(string $value): void
+    {
+        self::assertFalse(Permission::isValid($value));
+    }
+
     /**
      * @return iterable<string, array{string}>
      */
