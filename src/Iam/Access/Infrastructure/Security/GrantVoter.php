@@ -16,7 +16,13 @@ final class GrantVoter extends Voter
 {
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return Permission::isValid($attribute);
+        try {
+            Permission::fromString($attribute);
+
+            return true;
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool

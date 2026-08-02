@@ -24,11 +24,6 @@ final readonly class Permission
         return new self($value);
     }
 
-    public static function isValid(string $value): bool
-    {
-        return 1 === preg_match(self::PATTERN, $value);
-    }
-
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
