@@ -7,6 +7,7 @@ namespace Api\Security;
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
 use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +35,9 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator
         return $request->headers->has(self::HEADER);
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function authenticate(Request $request): Passport
     {
         $token = (string) $request->headers->get(self::HEADER);
@@ -69,6 +73,8 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator
 
     /**
      * @return list<string>
+     *
+     * @throws ApplicationExceptionInterface
      */
     private function grantsFor(string $identityId): array
     {

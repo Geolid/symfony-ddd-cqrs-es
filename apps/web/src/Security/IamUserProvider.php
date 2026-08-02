@@ -62,6 +62,8 @@ final readonly class IamUserProvider implements UserProviderInterface
 
     /**
      * @return list<string>
+     *
+     * @throws ApplicationExceptionInterface
      */
     private function grantsFor(string $identityId): array
     {
