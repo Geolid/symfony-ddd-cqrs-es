@@ -23,6 +23,10 @@ final readonly class IamUser implements UserInterface
 
     public function getUserIdentifier(): string
     {
+        if ('' === $this->identityId) {
+            throw new \LogicException('IamUser cannot carry an empty identity id.');
+        }
+
         return $this->identityId;
     }
 }
