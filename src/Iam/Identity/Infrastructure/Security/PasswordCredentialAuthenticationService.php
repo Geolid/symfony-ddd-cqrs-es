@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Identity\Application\Port\AuthenticatePasswordCredentialInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
@@ -31,15 +32,7 @@ final readonly class PasswordCredentialAuthenticationService implements Authenti
      */
     public function authenticate(string $login, string $plainPassword): ?string
     {
-        $credentialResult = null;
-
-        foreach ($this->passwordCredentialFinder as $candidate) {
-            if ($candidate->login === $login) {
-                $credentialResult = $candidate;
-
-                break;
-            }
-        }
+        $credentialResult = $this->findByLogin($login);
 
         if (null === $credentialResult) {
             return null;
@@ -58,5 +51,16 @@ final readonly class PasswordCredentialAuthenticationService implements Authenti
         }
 
         return $credentialResult->identityId;
+    }
+
+    private function findByLogin(string $login): ?PasswordCredentialResult
+    {
+        foreach ($this->passwordCredentialFinder as $candidate) {
+            if ($candidate->login === $login) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }
