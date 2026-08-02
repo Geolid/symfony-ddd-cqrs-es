@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Api\Security\ApiTokenAuthenticator;
+use Iam\Identity\Infrastructure\Security\IdentityStatusUserChecker;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -10,6 +11,7 @@ return static function (ContainerConfigurator $container): void {
         'firewalls' => [
             'api' => [
                 'stateless' => true,
+                'user_checker' => IdentityStatusUserChecker::class,
                 'custom_authenticators' => [ApiTokenAuthenticator::class],
             ],
         ],

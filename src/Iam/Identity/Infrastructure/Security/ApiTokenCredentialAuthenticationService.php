@@ -9,11 +9,7 @@ use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Application\Port\AuthenticateApiTokenCredentialInterface;
 use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\IdentityId;
-use Iam\Identity\Domain\IdentityStatus;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
-use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Psr\Clock\ClockInterface;
 
@@ -22,7 +18,6 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
     public function __construct(
         private ApiTokenCredentialFinderInterface $apiTokenCredentialFinder,
         private ApiTokenCredentialRepositoryInterface $apiTokenCredentialRepository,
-        private IdentityRepositoryInterface $identityRepository,
         private SecretHasherInterface $hasher,
         private ClockInterface $clock,
     ) {
@@ -30,7 +25,6 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
 
     /**
      * @throws ApiTokenCredentialNotFoundException
-     * @throws IdentityNotFoundException
      */
     public function authenticate(string $identifier, string $plainSecret): ?string
     {
@@ -43,12 +37,6 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
         $credential = $this->apiTokenCredentialRepository->load(ApiTokenCredentialId::fromString($credentialResult->id));
 
         if (!$credential->verify($plainSecret, $this->hasher, $this->clock->now())) {
-            return null;
-        }
-
-        $identity = $this->identityRepository->load(IdentityId::fromString($credentialResult->identityId));
-
-        if (IdentityStatus::ACTIVE !== $identity->status()) {
             return null;
         }
 

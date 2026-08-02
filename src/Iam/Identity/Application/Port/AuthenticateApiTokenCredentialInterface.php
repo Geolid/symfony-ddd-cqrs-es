@@ -10,7 +10,7 @@ use Shared\Application\Port\AsDrivingPort;
 interface AuthenticateApiTokenCredentialInterface
 {
     /**
-     * @return string|null the authenticated identity's id, or null when the identifier/secret pair or the identity's status refuses authentication
+     * @return string|null the authenticated identity's id, or null when the identifier/secret pair is refused
      */
     public function authenticate(string $identifier, string $plainSecret): ?string;
 }

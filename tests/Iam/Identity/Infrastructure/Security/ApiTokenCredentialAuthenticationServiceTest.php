@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Port\AuthenticateApiTokenCredentialInterface;
+use Iam\Identity\Domain\IdentityId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -16,10 +16,9 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     public function itAuthenticatesAValidIdentifierAndSecret(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identityId = IdentityId::generate()->toString();
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->forIdentity($identityId)
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
@@ -28,7 +27,7 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
         $result = $this->service(AuthenticateApiTokenCredentialInterface::class)->authenticate('key_abc123', 'super-secret');
 
         // Then
-        self::assertSame($identity->id()->toString(), $result);
+        self::assertSame($identityId, $result);
     }
 
     #[Test]
@@ -45,10 +44,8 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     public function itRefusesAnIncorrectSecret(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->forIdentity(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
@@ -64,10 +61,8 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     public function itRefusesARevokedToken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->forIdentity(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->revoked()
@@ -84,32 +79,11 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     public function itRefusesAnExpiredToken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->forIdentity(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->expired()
-            ->create());
-
-        // When
-        $result = $this->service(AuthenticateApiTokenCredentialInterface::class)->authenticate('key_abc123', 'super-secret');
-
-        // Then
-        self::assertNull($result);
-    }
-
-    #[Test]
-    public function itRefusesASuspendedIdentity(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
-        $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
-            ->withIdentifier('key_abc123')
-            ->withSecret('super-secret')
             ->create());
 
         // When
