@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Validation;
+namespace Shared\Application\Validation;
 
-use Sales\Order\Domain\Money;
 use Shared\Application\Language\PublishedLanguageInterface;
-use Shared\Application\Validation\ValidValueObject;
+use Shared\Domain\ValueObject\Money;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 

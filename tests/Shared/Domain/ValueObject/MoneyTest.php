@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain;
+namespace Shared\Tests\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\Money;
+use Shared\Domain\ValueObject\Money;
 
 final class MoneyTest extends TestCase
 {

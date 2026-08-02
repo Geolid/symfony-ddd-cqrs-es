@@ -6,8 +6,8 @@ namespace Sales\Tests\Order\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Validation\ValidMoney;
 use Sales\Order\Application\Validation\ValidOrderLines;
+use Shared\Application\Validation\ValidMoney;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;

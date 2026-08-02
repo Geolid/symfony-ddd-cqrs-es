@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Domain;
+namespace Shared\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 

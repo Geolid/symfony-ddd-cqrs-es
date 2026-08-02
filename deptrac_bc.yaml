@@ -24,6 +24,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Iam/Access/.*' }
 
+    - name: Catalog.Product
+      collectors:
+        - { type: directory, value: 'src/Catalog/Product/.*' }
+
     # --- Global ---
     - name: Shared
       collectors:
@@ -49,10 +53,14 @@ deptrac:
   # Fulfilment knows a single upstream contract, the order — everything it needs travels on it.
   # Iam.Access and Iam.Identity stay fully isolated from each other: a Grant only ever carries the
   # identity it applies to as a plain string, never resolves or verifies it.
+  # Catalog.Product stays isolated for now — nothing reads it yet. The Sales.Order -> Catalog.Product
+  # edge (snapshotting a product's label/price onto an OrderLine) is added only once PlaceOrder
+  # actually reads it, not speculatively.
   ruleset:
     Sales.Customer:      [ Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Access:          [ Shared, Vendors ]
+    Catalog.Product:     [ Shared, Vendors ]
     Shared:              [ Vendors ]

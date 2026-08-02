@@ -8,12 +8,12 @@ use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Buyer\BuyerResolverInterface;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
-use Sales\Order\Domain\Money;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\OrderLine;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\ValueObject\Money;
 
 #[AsCommandHandler]
 final readonly class PlaceOrderHandler
