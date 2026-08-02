@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
+
+use Doctrine\DBAL\Query\QueryBuilder;
+use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Application\Finder\Identity\IdentityResult;
+use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+
+/**
+ * @extends AbstractDbalFinder<IdentityResult>
+ *
+ * @phpstan-type Row array{id: string, login: string, registered_at: string}
+ */
+final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
+{
+    protected function buildBaseQuery(QueryBuilder $qb): void
+    {
+        $qb->select('id', 'login', 'registered_at')
+            ->from(DbalIdentityProjector::TABLE)
+            ->orderBy('registered_at', 'DESC')
+            ->addOrderBy('id', 'DESC');
+    }
+
+    /**
+     * @param Row $row
+     */
+    protected function mapRow(array $row): IdentityResult
+    {
+        return new IdentityResult(
+            id: $row['id'],
+            login: $row['login'],
+            registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
+        );
+    }
+}
