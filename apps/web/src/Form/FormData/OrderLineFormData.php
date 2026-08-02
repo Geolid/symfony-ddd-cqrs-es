@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Sales\Order\Application\Validation\ValidMoney;
+use Shared\Application\Validation\ValidMoney;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class OrderLineFormData
