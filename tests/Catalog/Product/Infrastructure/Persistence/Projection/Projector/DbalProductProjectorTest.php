@@ -32,6 +32,10 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itProjectsTheNewPriceOnProductRepriced(): void
     {
+        // Given
+        $other = ProductTestFactory::new()->withUnitAmountInCents(500)->create();
+        $this->store($other);
+
         // When
         $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(1_950)->create();
         $this->store($product);
@@ -40,6 +44,10 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($product->id()->toString());
         self::assertNotFalse($row);
         self::assertSame(1_950, (int) $row['unit_amount_in_cents']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(500, (int) $otherRow['unit_amount_in_cents']);
     }
 
     /**
