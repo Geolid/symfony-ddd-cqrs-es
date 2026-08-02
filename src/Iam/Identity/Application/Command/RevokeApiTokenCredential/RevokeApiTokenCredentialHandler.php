@@ -6,6 +6,7 @@ namespace Iam\Identity\Application\Command\RevokeApiTokenCredential;
 
 use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
+use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
@@ -20,6 +21,7 @@ final readonly class RevokeApiTokenCredentialHandler
     }
 
     /**
+     * @throws ApiTokenCredentialNotFoundException
      * @throws ApiTokenCredentialAlreadyRevokedException
      */
     public function __invoke(RevokeApiTokenCredential $command): void

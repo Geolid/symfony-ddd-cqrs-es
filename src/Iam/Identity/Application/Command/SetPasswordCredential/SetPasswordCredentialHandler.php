@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\SetPasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\Login;
 use Iam\Identity\Domain\PasswordCredential;
@@ -29,6 +30,7 @@ final readonly class SetPasswordCredentialHandler
     }
 
     /**
+     * @throws PasswordCredentialNotFoundException
      * @throws LoginAlreadyTakenException
      */
     public function __invoke(SetPasswordCredential $command): void

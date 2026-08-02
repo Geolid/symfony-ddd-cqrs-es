@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Command\RevokePermission;
 
+use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Access\Domain\GrantId;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
@@ -20,6 +21,7 @@ final readonly class RevokePermissionHandler
     }
 
     /**
+     * @throws GrantNotFoundException
      * @throws PermissionAlreadyRevokedException
      */
     public function __invoke(RevokePermission $command): void

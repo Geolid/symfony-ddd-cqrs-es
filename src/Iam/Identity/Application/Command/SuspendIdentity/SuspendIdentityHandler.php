@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Psr\Clock\ClockInterface;
@@ -20,6 +21,7 @@ final readonly class SuspendIdentityHandler
     }
 
     /**
+     * @throws IdentityNotFoundException
      * @throws IdentityAlreadySuspendedException
      */
     public function __invoke(SuspendIdentity $command): void
