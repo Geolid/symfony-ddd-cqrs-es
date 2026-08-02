@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{label: string, unit_amount_in_cents: int}
+ * @phpstan-type Row array{label: string, unit_amount_in_cents: int, delisted: int}
  */
 final class DbalProductProjectorTest extends AbstractIntegrationTestCase
 {
@@ -50,6 +50,19 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(500, (int) $otherRow['unit_amount_in_cents']);
     }
 
+    #[Test]
+    public function itMarksTheProductAsDelistedOnProductDelisted(): void
+    {
+        // When
+        $product = ProductTestFactory::new()->delisted()->create();
+        $this->store($product);
+
+        // Then
+        $row = $this->fetchRow($product->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(1, (int) $row['delisted']);
+    }
+
     /**
      * @return Row|false
      */
@@ -57,7 +70,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT label, unit_amount_in_cents FROM %s WHERE id = :id', DbalProductProjector::TABLE),
+            \sprintf('SELECT label, unit_amount_in_cents, delisted FROM %s WHERE id = :id', DbalProductProjector::TABLE),
             ['id' => $id],
         );
     }

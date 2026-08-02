@@ -13,14 +13,23 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<ProductResult>
  *
- * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string}
+ * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string, delisted: string|int}
  */
 final class DbalProductFinder extends AbstractDbalFinder implements ProductFinderInterface
 {
+    public function withoutDelisted(): static
+    {
+        return $this->filter(static function (QueryBuilder $qb): void {
+            $qb->andWhere('delisted = 0');
+        });
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'label', 'unit_amount_in_cents')
-            ->from(DbalProductProjector::TABLE);
+        $qb->select('id', 'label', 'unit_amount_in_cents', 'delisted')
+            ->from(DbalProductProjector::TABLE)
+            ->orderBy('label', 'ASC')
+            ->addOrderBy('id', 'ASC');
     }
 
     /**
@@ -32,6 +41,7 @@ final class DbalProductFinder extends AbstractDbalFinder implements ProductFinde
             id: $row['id'],
             label: $row['label'],
             unitAmountInCents: (int) $row['unit_amount_in_cents'],
+            delisted: (bool) $row['delisted'],
         );
     }
 }

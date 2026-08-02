@@ -33,6 +33,11 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
         ));
     }
 
+    public function delisted(): self
+    {
+        return $this->withModifier(static fn (Product $product) => $product->delist(new \DateTimeImmutable('now +00:00')));
+    }
+
     protected function defaults(): array
     {
         return [

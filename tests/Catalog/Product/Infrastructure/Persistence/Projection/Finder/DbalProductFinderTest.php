@@ -38,5 +38,25 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
+    }
+
+    #[Test]
+    public function itFiltersProductsByDelisting(): void
+    {
+        // Given
+        $listed = ProductTestFactory::new()->create();
+        $this->store($listed);
+        $this->store(ProductTestFactory::new()->delisted()->create());
+
+        // When
+        $results = iterator_to_array($this->finder->withoutDelisted());
+
+        // Then
+        self::assertSame(2, $this->finder->count());
+        self::assertSame([$listed->id()->toString()], array_map(
+            static fn (ProductResult $product): string => $product->id,
+            $results,
+        ));
     }
 }

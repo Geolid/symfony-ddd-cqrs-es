@@ -12,6 +12,7 @@ final readonly class ProductResult implements ResultInterface
         public string $id,
         public string $label,
         public int $unitAmountInCents,
+        public bool $delisted,
     ) {
     }
 }
