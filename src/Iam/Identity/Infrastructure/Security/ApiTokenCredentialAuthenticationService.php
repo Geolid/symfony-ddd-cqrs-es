@@ -7,6 +7,8 @@ namespace Iam\Identity\Infrastructure\Security;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Port\AuthenticateApiTokenCredentialInterface;
 use Iam\Identity\Domain\ApiTokenCredentialId;
+use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\IdentityStatus;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
@@ -25,6 +27,10 @@ final readonly class ApiTokenCredentialAuthenticationService implements Authenti
     ) {
     }
 
+    /**
+     * @throws ApiTokenCredentialNotFoundException
+     * @throws IdentityNotFoundException
+     */
     public function authenticate(string $identifier, string $plainSecret): ?string
     {
         $credentialResult = null;

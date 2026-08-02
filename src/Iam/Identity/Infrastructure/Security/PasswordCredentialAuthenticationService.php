@@ -6,6 +6,8 @@ namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Port\AuthenticatePasswordCredentialInterface;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\IdentityStatus;
 use Iam\Identity\Domain\PasswordCredentialId;
@@ -23,6 +25,10 @@ final readonly class PasswordCredentialAuthenticationService implements Authenti
     ) {
     }
 
+    /**
+     * @throws PasswordCredentialNotFoundException
+     * @throws IdentityNotFoundException
+     */
     public function authenticate(string $login, string $plainPassword): ?string
     {
         $credentialResult = null;

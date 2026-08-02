@@ -38,7 +38,7 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
 
     public function expired(): self
     {
-        return static::new(array_merge($this->attributes, ['expiresAt' => new \DateTimeImmutable('-1 day')]));
+        return static::new(array_merge($this->attributes, ['expiresAt' => new \DateTimeImmutable('-1 day +00:00')]));
     }
 
     protected function defaults(): array
@@ -49,7 +49,7 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
             'identifier' => 'key_'.self::faker()->unique()->uuid(),
             'secret' => self::faker()->uuid(),
             'issuedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
-            'expiresAt' => new \DateTimeImmutable('+1 year'),
+            'expiresAt' => new \DateTimeImmutable('+1 year +00:00'),
         ];
     }
 
