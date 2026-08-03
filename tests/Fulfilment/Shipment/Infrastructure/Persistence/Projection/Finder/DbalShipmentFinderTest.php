@@ -6,6 +6,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Finder
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Domain\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -52,7 +53,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()->dispatched()->create());
 
         // When
-        $results = iterator_to_array($this->finder->withStatus('pending'));
+        $results = iterator_to_array($this->finder->withStatus(ShipmentStatus::PENDING));
 
         // Then
         self::assertSame(2, $this->finder->count());

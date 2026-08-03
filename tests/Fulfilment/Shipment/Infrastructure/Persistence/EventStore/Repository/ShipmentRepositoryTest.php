@@ -34,7 +34,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $shipment->id();
         self::assertTrue($this->repository->has($id));
-        self::assertSame('ACME-4Q7X2K9', $this->repository->load($id)->trackingReference());
+        self::assertSame('ACME-4Q7X2K9', $this->repository->load($id)->trackingReference()?->toString());
     }
 
     #[Test]

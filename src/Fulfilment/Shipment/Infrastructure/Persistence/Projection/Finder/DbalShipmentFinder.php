@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Domain\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
@@ -17,12 +18,12 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFinderInterface
 {
-    public function withStatus(string $status): static
+    public function withStatus(ShipmentStatus $status): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($status) {
                 $qb->andWhere('status = :status')
-                    ->setParameter('status', $status);
+                    ->setParameter('status', $status->value);
             },
         );
     }

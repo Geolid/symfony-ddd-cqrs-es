@@ -53,7 +53,8 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
             DummyCarrierGateway::TRACKING_REFERENCE,
             $this->service(ShipmentRepositoryInterface::class)
                 ->load(ShipmentId::fromString($shipment->id()->toString()))
-                ->trackingReference(),
+                ->trackingReference()
+                ?->toString(),
         );
     }
 

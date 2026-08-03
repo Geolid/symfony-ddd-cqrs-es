@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
+use Fulfilment\Shipment\Domain\ShipmentStatus;
 use Shared\Application\Finder\PaginatedFinderInterface;
 
 /**
@@ -11,7 +12,7 @@ use Shared\Application\Finder\PaginatedFinderInterface;
  */
 interface ShipmentFinderInterface extends PaginatedFinderInterface
 {
-    public function withStatus(string $status): static;
+    public function withStatus(ShipmentStatus $status): static;
 
     public function withTrackingReference(string $trackingReference): static;
 }

@@ -26,7 +26,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private string $orderId;
     private string $customerId;
     private ?string $customerAddress;
-    private ?string $trackingReference;
+    private ?TrackingReference $trackingReference;
     private ShipmentStatus $status;
 
     public function id(): ShipmentId
@@ -49,7 +49,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $this->customerAddress;
     }
 
-    public function trackingReference(): ?string
+    public function trackingReference(): ?TrackingReference
     {
         return $this->trackingReference;
     }
@@ -98,12 +98,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (null !== $this->trackingReference) {
-            throw ShipmentInvalidTransitionException::trackingReferenceAlreadyAssigned($this->trackingReference);
+            throw ShipmentInvalidTransitionException::trackingReferenceAlreadyAssigned($this->trackingReference->toString());
         }
 
         $this->recordThat(new TrackingReferenceAssigned(
             id: $this->id->toString(),
-            trackingReference: $trackingReference,
+            trackingReference: TrackingReference::fromString($trackingReference)->toString(),
         ));
     }
 
@@ -142,7 +142,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyTrackingReferenceAssigned(TrackingReferenceAssigned $event): void
     {
-        $this->trackingReference = $event->trackingReference;
+        $this->trackingReference = TrackingReference::fromString($event->trackingReference);
     }
 
     #[Apply]
