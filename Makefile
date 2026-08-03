@@ -1,7 +1,12 @@
 TIER     ?= dev
 APP_ENV  ?= dev
 APPS     := $(shell find apps -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
-EXEC     ?=
+
+IN_CONTAINER := $(shell test -f /.dockerenv -o -n "$$CI" && echo yes)
+FIG          = docker compose
+USERID       = $(shell id -u)
+GROUPID      = $(shell id -g)
+EXEC         = $(if $(IN_CONTAINER),,$(FIG) exec -u $(USERID):$(GROUPID) app)
 
 -include make/tiers/$(TIER).mk
 

@@ -1,12 +1,5 @@
-IN_CONTAINER := $(shell test -f /.dockerenv -o -n "$$CI" && echo yes)
-
 ## Development & Lifecycle
 ##---------------------------------------------------------------------------
-
-FIG     = docker compose
-USERID  = $(shell id -u)
-GROUPID = $(shell id -g)
-EXEC    = $(if $(IN_CONTAINER),,$(FIG) exec -u $(USERID):$(GROUPID) app)
 
 start: ## Full project installation and startup
 start: compose.override.yaml up vendor db assets
