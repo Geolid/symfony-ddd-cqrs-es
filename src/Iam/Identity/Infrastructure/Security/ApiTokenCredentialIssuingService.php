@@ -12,9 +12,8 @@ use Shared\Application\Command\CommandBusInterface;
 
 final readonly class ApiTokenCredentialIssuingService implements IssueApiTokenCredentialInterface
 {
-    public function __construct(
-        private CommandBusInterface $commandBus,
-    ) {
+    public function __construct(private CommandBusInterface $commandBus)
+    {
     }
 
     public function issue(string $identityId, \DateTimeImmutable $expiresAt): IssuedApiKey
