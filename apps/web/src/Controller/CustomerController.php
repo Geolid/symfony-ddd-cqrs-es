@@ -12,6 +12,7 @@ use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
+use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -23,6 +24,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Web\Form\ChangePasswordType;
+use Web\Form\FormData\ChangePasswordFormData;
 use Web\Form\FormData\RegisterCustomerFormData;
 use Web\Form\RegisterCustomerType;
 use Web\Security\IamUser;
@@ -87,15 +90,9 @@ final class CustomerController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function erase(Request $request): Response
     {
-        $user = $this->getUser();
-        \assert($user instanceof IamUser);
-        $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
+        $customer = $this->resolveCustomer();
 
-        if (null === $customer) {
-            throw $this->createAccessDeniedException('No customer is linked to this identity.');
-        }
-
-        if (!$this->isCsrfTokenValid('erase-customer-'.$customer->id, (string) $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('erase-customer', (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
@@ -104,5 +101,46 @@ final class CustomerController extends AbstractController
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
         return $this->redirectToRoute('security_logout');
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route('/change-password', name: 'sales_customer_change_password', methods: ['GET', 'POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function changePassword(Request $request): Response
+    {
+        $customer = $this->resolveCustomer();
+
+        $formData = new ChangePasswordFormData();
+        $form = $this->createForm(ChangePasswordType::class, $formData);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->commandBus->dispatch(new SetPasswordCredential(
+                (string) $customer->identityId,
+                (string) $customer->email,
+                (string) $formData->password,
+            ));
+
+            $this->addFlash('success', $this->translator->trans('sales.customer.flash.password_changed'));
+
+            return $this->redirectToRoute('sales_order_list');
+        }
+
+        return $this->render('sales/customer/change_password.html.twig', ['form' => $form]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    private function resolveCustomer(): CustomerResult
+    {
+        $user = $this->getUser();
+        \assert($user instanceof IamUser);
+        $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
+
+        return $customer ?? throw $this->createAccessDeniedException('No customer is linked to this identity.');
     }
 }

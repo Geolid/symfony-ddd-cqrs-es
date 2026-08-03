@@ -55,11 +55,11 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $customerId = $this->loggedInCustomer($client, 'buyer-3@example.com');
+        $this->loggedInCustomer($client, 'buyer-3@example.com');
 
         // When
         $client->request('POST', '/sales/customers/erase', [
-            '_token' => $this->csrfToken($client, 'erase-customer-'.$customerId),
+            '_token' => $this->csrfToken($client, 'erase-customer'),
         ]);
 
         // Then
@@ -78,6 +78,30 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseStatusCodeSame(400);
+    }
+
+    #[Test]
+    public function itChangesTheLoggedInCustomersPassword(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client, 'buyer-5@example.com');
+
+        // When
+        $crawler = $client->request('GET', '/sales/customers/change-password');
+        $form = $crawler->filter('form')->form();
+        $prefix = $form->getName();
+        $form->setValues([\sprintf('%s[password]', $prefix) => 'a brand new password']);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects('/sales/orders');
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-success"]');
+
+        $client->request('GET', '/logout');
+        $this->logIn($client, 'buyer-5@example.com', 'a brand new password');
+        self::assertResponseRedirects('/sales/orders');
     }
 
     private function registerCustomer(KernelBrowser $client, string $email, string $password): void

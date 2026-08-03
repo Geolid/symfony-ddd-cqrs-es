@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Domain\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
@@ -79,5 +80,31 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             static fn (ShipmentResult $shipment): string => $shipment->id,
             $results,
         ));
+    }
+
+    #[Test]
+    public function itReadsAShipmentByItsOrder(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
+        $this->store($shipment);
+
+        // When
+        $result = $this->finder->ofOrder($shipment->orderId());
+
+        // Then
+        self::assertInstanceOf(ShipmentResult::class, $result);
+        self::assertSame($shipment->id()->toString(), $result->id);
+        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
+    }
+
+    #[Test]
+    public function itReadsNothingForAnOrderWithoutAShipment(): void
+    {
+        // When
+        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
+
+        // Then
+        self::assertNull($result);
     }
 }

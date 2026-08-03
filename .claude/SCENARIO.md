@@ -23,7 +23,7 @@ gap it closes.
 | `Sales.Customer` | ES | The buyer as a business record (register/erase). Carries an optional `identityId` pointing OUT to Iam — never the reverse. | — |
 | `Sales.Order` | ES | The order lifecycle (place/cancel), `OrderLine` snapshots product data at placement time, `OrderPayment` (planned) as a sibling micro-aggregate. | `Sales.Customer` (buyer), `Catalog.Product` (planned, price/label snapshot) |
 | `Catalog.Product` (planned) | ES | What exists to sell and at what price (`ProductListed`/`ProductRepriced`). A distinct business capability from Sales (merchandising vs. selling) — its own subdomain, not nested under `Sales`, mirroring how `Fulfilment` already sits beside `Sales` rather than inside it. | — |
-| `Fulfilment.Shipment` | ES | Shipment lifecycle, reacts to `Sales.Order` (planned: to `OrderPaymentCaptured` rather than `OrderPlaced`), drives the `AcmeCarrierGateway`, reacts to the carrier's delivery webhook. | `Sales.Order` |
+| `Fulfilment.Shipment` | ES | Shipment lifecycle, reacts to `Sales.Order` (created on `OrderPaymentCaptured`, not on bare `OrderPlaced`), drives the `AcmeCarrierGateway`, reacts to the carrier's delivery webhook. | `Sales.Order` |
 | `Iam.Identity` (planned wiring, BC done) | ES | Who (`Identity` + status) and how they prove it (`PasswordCredential`, `ApiTokenCredential`) — credential-type-agnostic by design. | — |
 | `Iam.Access` (planned wiring, BC done) | ES | What an Identity may do (`Grant`/`Permission`, `<subdomain>:<action>` strings). Fully isolated from `Iam.Identity` — a Grant only ever carries a plain `identityId` string. | — |
 
@@ -78,12 +78,19 @@ Rejected alternatives, kept here so they aren't re-proposed:
    concept (an Identity can exist without ever being a Customer — e.g. the admin), never the
    reverse.
 2. They log in (Web, session) → browse `Catalog.Product` (`ListProducts`) →
-   `PlaceOrder(productId, quantity)` → price/label frozen into `OrderPlaced` at that instant.
-3. `OrderPayment` captures payment synchronously against the fake `PaymentGatewayInterface`.
-4. `Shipment` is created once payment is captured (not on bare `OrderPlaced`). A nightly cron
-   (CLI, `fulfilment:shipment:dispatch-pending`) hands every pending shipment to the carrier →
-   `AcmeCarrierGateway` → the carrier's webhook later confirms delivery (simulated locally via a
-   demo CLI command, since there is no real Acme server) → the customer is notified.
+   `PlaceOrder(productId, quantity)` → price/label frozen into `OrderPlaced` at that instant. The
+   order starts unpaid — no payment is requested automatically.
+3. The customer clicks "Pay" on the order (Web) → `RequestOrderPaymentInterface` (driving port)
+   calls the fake `PaymentGatewayInterface` synchronously and records `OrderPaymentRequested` with
+   the provider's reference, shown on the order. Confirming the capture is a signed external
+   callback (`POST /webhooks/payment-captured`) — nothing calls it automatically; the human plays
+   the payment provider's role and triggers it themselves through the Webhook DM using the
+   reference shown on the order (`demo/` seeds aggregates only, it never simulates an external
+   actor calling one of our own DMs).
+4. `Shipment` is created once `OrderPaymentCaptured` lands (not on bare `OrderPlaced`). A nightly
+   cron (CLI, `fulfilment:shipment:dispatch-pending`) hands every pending shipment to the carrier
+   → `AcmeCarrierGateway` → the carrier's delivery webhook is, the same way, triggered by hand
+   through the Webhook DM (no demo simulation, no real Acme server) → the customer is notified.
 5. The bootstrap admin Identity (created once via CLI) manages the catalog and supervises all
    orders through the API, authenticated with an `ApiTokenCredential` — proving the same Identity
    concept works for both a human session (Web) and a token (API).

@@ -14,15 +14,30 @@
             <ul>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
-                    <li><a href="{{ path('fulfilment_shipment_list') }}">{{ 'layout.nav.shipments'|trans }}</a></li>
-                    <li><a href="{{ path('sales_order_place') }}" role="button">{{ 'layout.nav.place_order'|trans }}</a></li>
                 {% else %}
                     <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
                 {% endif %}
             </ul>
             <ul>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                    <li><a href="{{ path('security_logout') }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
+                    <li>
+                        <details class="dropdown">
+                            <summary data-testid="nav-account">{{ 'layout.nav.account'|trans }}</summary>
+                            <ul>
+                                <li><a href="{{ path('sales_customer_change_password') }}" data-testid="nav-change-password">{{ 'layout.nav.change_password'|trans }}</a></li>
+                                <li>
+                                    {{ ui.confirm_modal(
+                                        'erase-customer',
+                                        path('sales_customer_erase'),
+                                        'layout.nav.erase_account'|trans,
+                                        'layout.nav.erase_confirm_message'|trans,
+                                        {cancel_label: 'layout.nav.erase_dismiss_button'|trans, button_class: 'outline contrast'},
+                                    ) }}
+                                </li>
+                                <li><a href="{{ path('security_logout') }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
+                            </ul>
+                        </details>
+                    </li>
                 {% else %}
                     <li><a href="{{ path('security_login') }}" data-testid="nav-login">{{ 'layout.nav.login'|trans }}</a></li>
                 {% endif %}

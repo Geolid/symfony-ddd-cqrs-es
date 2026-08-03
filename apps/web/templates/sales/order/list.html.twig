@@ -2,7 +2,12 @@
 {% import '@ui/_macros.html.twig' as ui %}
 
 {% block title %}{{ 'sales.order.list.title'|trans }}{% endblock %}
-{% block heading %}{{ 'sales.order.list.title'|trans }}{% endblock %}
+
+{% block heading %}
+    {{ 'sales.order.list.title'|trans }}
+    <a href="{{ path('sales_order_place') }}" role="button" data-testid="place-order-button"
+       style="float: right">{{ 'sales.order.list.place_order_button'|trans }}</a>
+{% endblock %}
 
 {% block content %}
     <table>
@@ -26,26 +31,28 @@
                 <td data-testid="order-payment">
                     {% if payment is null %}
                         —
-                    {% elseif payment.status == capturedPaymentStatus %}
-                        <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
                     {% else %}
                         <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
-                        <br>
-                        <small data-testid="order-payment-reference">{{ 'sales.order.list.payment_reference'|trans({'%reference%': payment.reference}) }}</small>
-                        <br>
-                        <small>{{ 'sales.order.list.payment_hint'|trans }}</small>
                     {% endif %}
                 </td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
-                    {% if order.status == cancellableStatus %}
-                        {{ ui.confirm_modal(
-                            'cancel-order-' ~ order.id,
-                            path('sales_order_cancel', {id: order.id}),
-                            'sales.order.list.cancel_button'|trans,
-                            'sales.order.list.cancel_confirm_message'|trans,
-                            {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
-                        ) }}
+                    <a href="{{ path('sales_order_show', {id: order.id}) }}" role="button"
+                       class="outline">{{ 'sales.order.list.view_button'|trans }}</a>
+                    {% if payment is null %}
+                        {% if order.status == cancellableStatus %}
+                            {{ ui.confirm_modal(
+                                'cancel-order-' ~ order.id,
+                                path('sales_order_cancel', {id: order.id}),
+                                'sales.order.list.cancel_button'|trans,
+                                'sales.order.list.cancel_confirm_message'|trans,
+                                {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
+                            ) }}
+                        {% endif %}
+                        <form method="post" action="{{ path('sales_order_pay', {id: order.id}) }}" style="display: inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('pay-order-' ~ order.id) }}">
+                            <button type="submit" data-testid="pay-order-button">{{ 'sales.order.list.pay_button'|trans }}</button>
+                        </form>
                     {% endif %}
                 </td>
             </tr>
@@ -55,13 +62,4 @@
         </tbody>
     </table>
     {{ ui.pagination(orders.pagination, 'sales_order_list', {}) }}
-
-    <h2>{{ 'sales.order.list.my_account_title'|trans }}</h2>
-    {{ ui.confirm_modal(
-        'erase-customer-' ~ customerId,
-        path('sales_customer_erase'),
-        'sales.order.list.erase_button'|trans,
-        'sales.order.list.erase_confirm_message'|trans,
-        {cancel_label: 'sales.order.list.erase_dismiss_button'|trans, button_class: 'outline contrast'},
-    ) }}
 {% endblock %}

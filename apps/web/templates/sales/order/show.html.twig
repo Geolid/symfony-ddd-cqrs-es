@@ -1,0 +1,77 @@
+{% extends 'layout.html.twig' %}
+{% import '@ui/_macros.html.twig' as ui %}
+
+{% block title %}{{ 'sales.order.show.title'|trans }}{% endblock %}
+{% block heading %}{{ 'sales.order.show.title'|trans }}{% endblock %}
+
+{% block content %}
+    <table>
+        <tbody>
+        <tr>
+            <th>{{ 'sales.order.list.table.id'|trans }}</th>
+            <td data-testid="order-id">{{ order.id }}</td>
+        </tr>
+        <tr>
+            <th>{{ 'sales.order.list.table.total'|trans }}</th>
+            <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
+        </tr>
+        <tr>
+            <th>{{ 'sales.order.list.table.status'|trans }}</th>
+            <td><span class="status" data-testid="order-status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
+        </tr>
+        <tr>
+            <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
+            <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>{{ 'sales.order.show.payment_title'|trans }}</h2>
+    {% if payment is null %}
+        <p data-testid="order-payment">{{ 'sales.order.show.payment_none'|trans }}</p>
+    {% else %}
+        <p data-testid="order-payment">
+            <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
+            {% if payment.status != capturedPaymentStatus %}
+                <br>
+                <small data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans({'%reference%': payment.reference}) }}</small>
+                <br>
+                <small>{{ 'sales.order.show.payment_hint'|trans }}</small>
+            {% endif %}
+        </p>
+    {% endif %}
+
+    <h2>{{ 'sales.order.show.shipment_title'|trans }}</h2>
+    {% if shipment is null %}
+        <p data-testid="order-shipment">{{ 'sales.order.show.shipment_none'|trans }}</p>
+    {% else %}
+        <p data-testid="order-shipment">
+            <span class="status">{{ ('fulfilment.shipment.status.' ~ shipment.status)|trans }}</span>
+            {% if shipment.trackingReference %}
+                <br>
+                <small data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans({'%reference%': shipment.trackingReference}) }}</small>
+            {% endif %}
+        </p>
+    {% endif %}
+
+    <h2>{{ 'sales.order.list.table.actions'|trans }}</h2>
+    {% if payment is null %}
+        {% if order.status == cancellableStatus %}
+            {{ ui.confirm_modal(
+                'cancel-order-' ~ order.id,
+                path('sales_order_cancel', {id: order.id}),
+                'sales.order.list.cancel_button'|trans,
+                'sales.order.list.cancel_confirm_message'|trans,
+                {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
+            ) }}
+        {% endif %}
+        <form method="post" action="{{ path('sales_order_pay', {id: order.id}) }}" style="display: inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('pay-order-' ~ order.id) }}">
+            <button type="submit" data-testid="pay-order-button">{{ 'sales.order.list.pay_button'|trans }}</button>
+        </form>
+    {% else %}
+        <p>{{ 'sales.order.show.no_actions'|trans }}</p>
+    {% endif %}
+
+    <p><a href="{{ path('sales_order_list') }}">{{ 'sales.order.show.back_link'|trans }}</a></p>
+{% endblock %}

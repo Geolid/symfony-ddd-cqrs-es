@@ -6,16 +6,22 @@ namespace Web\Controller;
 
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
+use Fulfilment\Shipment\Application\Query\GetShipmentByOrder\GetShipmentByOrder;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Application\Language\PublishedOrderPaymentStatus;
 use Sales\Order\Application\Language\PublishedOrderStatus;
+use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
 use Sales\Order\Application\Query\GetOrderPaymentByOrder\GetOrderPaymentByOrder;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
+use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -28,6 +34,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
@@ -41,6 +48,8 @@ final class OrderController extends AbstractController
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
+        private readonly RequestOrderPaymentInterface $orderPaymentRequester,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -69,8 +78,29 @@ final class OrderController extends AbstractController
             'orders' => $orders,
             'payments' => $payments,
             'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+        ]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    #[Route('/{id}', name: 'sales_order_show', methods: ['GET'], requirements: ['id' => Requirement::UUID])]
+    public function show(string $id): Response
+    {
+        $customer = $this->resolveCustomer();
+
+        try {
+            $order = $this->resolveOwnedOrder($id, $customer);
+        } catch (OrderResultNotFoundException) {
+            throw $this->createNotFoundException('No order carries that identifier.');
+        }
+
+        return $this->render('sales/order/show.html.twig', [
+            'order' => $order,
+            'payment' => $this->queryBus->ask(new GetOrderPaymentByOrder($id)),
+            'shipment' => $this->queryBus->ask(new GetShipmentByOrder($id)),
+            'cancellableStatus' => PublishedOrderStatus::PLACED->value,
             'capturedPaymentStatus' => PublishedOrderPaymentStatus::CAPTURED->value,
-            'customerId' => $customer->id,
         ]);
     }
 
@@ -95,8 +125,10 @@ final class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $id = Uuid::uuid7()->toString();
+
             $this->commandBus->dispatch(new PlaceOrder(
-                id: Uuid::uuid7()->toString(),
+                id: $id,
                 customerId: $customer->id,
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
@@ -107,7 +139,9 @@ final class OrderController extends AbstractController
                 )),
             ));
 
-            return $this->redirectToRoute('sales_order_list');
+            $this->addFlash('success', $this->translator->trans('sales.order.flash.placed'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }
 
         return $this->render('sales/order/place.html.twig', ['form' => $form]);
@@ -125,15 +159,56 @@ final class OrderController extends AbstractController
         }
 
         $customer = $this->resolveCustomer();
-        $order = $this->queryBus->ask(new GetOrder($id));
+        $this->resolveOwnedOrder($id, $customer);
 
-        if ($order->customerId !== $customer->id) {
-            throw $this->createAccessDeniedException('This order does not belong to you.');
+        try {
+            $this->commandBus->dispatch(new CancelOrder($id));
+        } catch (OrderAlreadyCancelledException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.already_cancelled'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+        } catch (OrderPaymentAlreadyRequestedException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }
 
-        $this->commandBus->dispatch(new CancelOrder($id));
+        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
 
-        return $this->redirectToRoute('sales_order_list');
+        return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route('/{id}/pay', name: 'sales_order_pay', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
+    public function pay(Request $request, string $id): Response
+    {
+        if (!$this->isCsrfTokenValid('pay-order-'.$id, (string) $request->request->get('_token'))) {
+            throw new BadRequestHttpException('Invalid CSRF token.');
+        }
+
+        $customer = $this->resolveCustomer();
+        $this->resolveOwnedOrder($id, $customer);
+
+        try {
+            $this->orderPaymentRequester->requestFor($id);
+        } catch (OrderPaymentAlreadyRequestedException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.payment_already_requested'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+        } catch (OrderAlreadyCancelledException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_pay_cancelled'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+        } catch (OrderResultNotFoundException) {
+            throw $this->createNotFoundException('No order carries that identifier.');
+        }
+
+        $this->addFlash('success', $this->translator->trans('sales.order.flash.payment_requested'));
+
+        return $this->redirectToRoute('sales_order_show', ['id' => $id]);
     }
 
     /**
@@ -147,5 +222,19 @@ final class OrderController extends AbstractController
         $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
 
         return $customer ?? throw $this->createAccessDeniedException('No customer is linked to this identity.');
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    private function resolveOwnedOrder(string $id, CustomerResult $customer): OrderResult
+    {
+        $order = $this->queryBus->ask(new GetOrder($id));
+
+        if ($order->customerId !== $customer->id) {
+            throw $this->createAccessDeniedException('This order does not belong to you.');
+        }
+
+        return $order;
     }
 }

@@ -2,11 +2,14 @@ layout:
     title: Vitrine Commandes & Livraisons
     nav:
         orders: Mes commandes
-        shipments: Livraisons
-        place_order: Passer une commande
         register_customer: S'inscrire
         login: Se connecter
         logout: Se déconnecter
+        account: Mon compte
+        change_password: Changer de mot de passe
+        erase_account: Effacer mon compte
+        erase_confirm_message: L'effacement supprime votre clé de chiffrement — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
+        erase_dismiss_button: Conserver mon compte
 
 security:
     login:
@@ -19,6 +22,9 @@ sales:
     order:
         list:
             title: Mes commandes
+            place_order_button: Passer une commande
+            view_button: Voir
+            pay_button: Payer
             table:
                 id: ID
                 total: Total
@@ -27,15 +33,20 @@ sales:
                 placed_at: Passée le
                 actions: Actions
             empty: Aucune commande pour le moment.
-            payment_reference: 'Réf. paiement : %reference%'
-            payment_hint: À valider via le DM Webhook (/webhook/docs).
             cancel_button: Annuler
             cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
             cancel_dismiss_button: Conserver la commande
-            my_account_title: Mon compte
-            erase_button: Effacer mon compte
-            erase_confirm_message: L'effacement supprime votre clé de chiffrement — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
-            erase_dismiss_button: Conserver mon compte
+        show:
+            title: Détail de la commande
+            payment_title: Paiement
+            payment_none: Aucun paiement demandé pour le moment.
+            payment_reference: 'Réf. paiement : %reference%'
+            payment_hint: À valider via le DM Webhook (/webhook/docs).
+            shipment_title: Livraison
+            shipment_none: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement est confirmé.
+            shipment_tracking_reference: 'Numéro de suivi : %reference%'
+            no_actions: Aucune action possible — le paiement de cette commande a déjà été demandé.
+            back_link: Retour à mes commandes
         place:
             title: Passer une commande
             lines_label: Lignes
@@ -50,34 +61,33 @@ sales:
         payment_status:
             requested: Paiement en attente
             captured: Payée
+        flash:
+            placed: Commande passée.
+            cancelled: Commande annulée.
+            already_cancelled: Cette commande est déjà annulée.
+            cannot_cancel_paid: Le paiement de cette commande a déjà été demandé, elle ne peut plus être annulée.
+            cannot_pay_cancelled: Cette commande est annulée, son paiement ne peut plus être demandé.
+            payment_requested: Paiement demandé — validez-le via le DM Webhook.
+            payment_already_requested: Le paiement de cette commande a déjà été demandé.
     customer:
         register:
             title: S'inscrire
             email_label: Email
             password_label: Mot de passe
             submit_button: S'inscrire
+        change_password:
+            title: Changer de mot de passe
+            password_label: Nouveau mot de passe
+            submit_button: Changer le mot de passe
         flash:
             registered: Compte créé — merci de vous connecter.
             erased: Votre compte a été effacé.
             address_taken: Cette adresse est déjà enregistrée.
             login_taken: Cet email est déjà utilisé pour se connecter.
+            password_changed: Mot de passe changé.
 
 fulfilment:
     shipment:
-        list:
-            title: Livraisons
-            table:
-                id: ID
-                order: Commande
-                customer: Client
-                total: Total commande
-                status: Statut
-                tracking_reference: Numéro de suivi
-                created_at: Créée le
-                dispatched_at: Expédiée le
-                delivered_at: Livrée le
-                order_cancelled_at: Commande annulée le
-            empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement d'une commande est confirmé.
         status:
             pending: En attente
             dispatched: Expédiée

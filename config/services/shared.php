@@ -40,7 +40,7 @@ return static function (ContainerConfigurator $container): void {
             ->args([service(HubInterface::class), LogLevel::ERROR]);
     }
 
-    if (in_array($container->env(), ['dev', 'demo'], true)) {
+    if (in_array($container->env(), ['dev', 'demo', 'test'], true)) {
         $services->set('acme.client.fake_response_factory', FakeReferenceResponseFactory::class)
             ->args(['trackingNumber', 'ACME-LOCAL']);
         $services->set('acme.client', MockHttpClient::class)

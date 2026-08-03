@@ -38,6 +38,22 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
+    public function ofOrder(string $orderId): ?ShipmentResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('order_id = :orderId')
+            ->setParameter('orderId', $orderId)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'order_id', 'customer_id', 'order_total_in_cents', 'status', 'tracking_reference', 'created_at', 'dispatched_at', 'delivered_at', 'order_cancelled_at')

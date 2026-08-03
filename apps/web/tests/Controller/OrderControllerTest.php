@@ -7,6 +7,7 @@ namespace Web\Tests\Controller;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -14,35 +15,78 @@ use Web\Tests\Support\AbstractWebTestCase;
 final class OrderControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    public function itPlacesAnOrderAndShowsItInTheList(): void
+    public function itPlacesAnOrderAndShowsItsDetail(): void
     {
         // Given
         $client = self::browser();
         $this->loggedInCustomer($client);
 
         // When
-        $this->placeOrder($client);
+        $id = $this->placeOrder($client);
 
         // Then
-        self::assertResponseRedirects('/sales/orders');
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+        self::assertSelectorExists('[data-testid="flash-success"]');
     }
 
     #[Test]
-    public function itShowsThePaymentReferenceForAnOrderPendingCapture(): void
+    public function itShowsThePlacedOrderInTheList(): void
     {
         // Given
         $client = self::browser();
         $this->loggedInCustomer($client);
-        $id = $this->placeOrder($client);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->withReference('GLBX-9F3K2M1P')->create());
+        $this->placeOrder($client);
 
         // When
         $client->request('GET', '/sales/orders');
 
         // Then
-        self::assertSelectorTextContains('[data-testid="order-payment-reference"]', 'GLBX-9F3K2M1P');
+        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+    }
+
+    #[Test]
+    public function itPaysForAnOrder(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
+
+        // When
+        $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
+            '_token' => $this->csrfToken($client, 'pay-order-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorExists('[data-testid="order-payment-reference"]');
+
+        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
+        self::assertNotNull($payment);
+    }
+
+    #[Test]
+    public function itRefusesToPayTwice(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
+        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->create());
+
+        // When
+        $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
+            '_token' => $this->csrfToken($client, 'pay-order-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-error"]');
     }
 
     #[Test]
@@ -72,7 +116,31 @@ final class OrderControllerTest extends AbstractWebTestCase
         ]);
 
         // Then
-        self::assertResponseRedirects('/sales/orders');
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+    }
+
+    #[Test]
+    public function itRefusesToCancelAnOrderAlreadyPaidFor(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
+        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->create());
+
+        // When
+        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+            '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-error"]');
+
+        $order = $this->service(OrderFinderInterface::class)->ofId($id);
+        self::assertNotNull($order);
+        self::assertSame('placed', $order->status);
     }
 
     #[Test]
@@ -105,6 +173,24 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
+
+        // Then
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    #[Test]
+    public function itRefusesToShowAnotherCustomersOrder(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client, 'owner@example.com');
+        $id = $this->placeOrder($client);
+
+        $client->request('GET', '/logout');
+        $this->loggedInCustomer($client, 'intruder@example.com');
+
+        // When
+        $client->request('GET', \sprintf('/sales/orders/%s', $id));
 
         // Then
         self::assertResponseStatusCodeSame(403);
