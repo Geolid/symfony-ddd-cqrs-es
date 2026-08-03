@@ -16,6 +16,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        $this->loggedInCustomer($client);
 
         // When
         $client->request('GET', '/fulfilment/shipments');
@@ -26,10 +27,24 @@ final class ShipmentControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itRefusesAnonymousAccess(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', '/fulfilment/shipments');
+
+        // Then
+        self::assertResponseRedirects('/login');
+    }
+
+    #[Test]
     public function itShowsShipmentsFilteredByStatus(): void
     {
         // Given
         $client = self::browser();
+        $this->loggedInCustomer($client);
 
         // When
         $client->request('GET', '/fulfilment/shipments?status=pending&page=1&itemsPerPage=5');
@@ -43,6 +58,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        $this->loggedInCustomer($client);
         $order = OrderTestFactory::new()->withTotalAmountInCents(2_500)->create();
         $this->store($order);
         $this->store(
@@ -62,6 +78,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        $this->loggedInCustomer($client);
         $this->store(ShipmentTestFactory::new()->create());
 
         // When
@@ -77,6 +94,7 @@ final class ShipmentControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        $this->loggedInCustomer($client);
 
         // When
         $client->request('GET', '/fulfilment/shipments?status=teleported');

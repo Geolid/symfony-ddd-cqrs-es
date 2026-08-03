@@ -15,16 +15,16 @@ final class ListGrantsForIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itListsTheNonRevokedGrantsHeldByTheIdentity(): void
     {
         // Given
-        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:supervise')->create());
-        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('catalog:manage')->revoked()->create());
-        $this->store(GrantTestFactory::new()->forIdentity('identity-2')->withPermission('sales:supervise')->create());
+        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:read')->create());
+        $this->store(GrantTestFactory::new()->forIdentity('identity-1')->withPermission('catalog:write')->revoked()->create());
+        $this->store(GrantTestFactory::new()->forIdentity('identity-2')->withPermission('sales:read')->create());
 
         // When
         $result = $this->ask(new ListGrantsForIdentity('identity-1'));
 
         // Then
         self::assertCount(1, $result);
-        self::assertSame('sales:supervise', $result[0]->permission);
+        self::assertSame('sales:read', $result[0]->permission);
     }
 
     #[Test]

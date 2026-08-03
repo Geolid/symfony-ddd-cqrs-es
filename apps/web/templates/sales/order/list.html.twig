@@ -9,7 +9,6 @@
         <thead>
         <tr>
             <th>{{ 'sales.order.list.table.id'|trans }}</th>
-            <th>{{ 'sales.order.list.table.customer'|trans }}</th>
             <th>{{ 'sales.order.list.table.total'|trans }}</th>
             <th>{{ 'sales.order.list.table.status'|trans }}</th>
             <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
@@ -20,7 +19,6 @@
         {% for order in orders.items %}
             <tr>
                 <td>{{ order.id }}</td>
-                <td data-testid="order-customer">{{ order.customerId }}</td>
                 <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
                 <td><span class="status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
@@ -37,9 +35,18 @@
                 </td>
             </tr>
         {% else %}
-            <tr data-testid="orders-empty"><td colspan="6">{{ 'sales.order.list.empty'|trans }}</td></tr>
+            <tr data-testid="orders-empty"><td colspan="5">{{ 'sales.order.list.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>
     {{ ui.pagination(orders.pagination, 'sales_order_list', {}) }}
+
+    <h2>{{ 'sales.order.list.my_account_title'|trans }}</h2>
+    {{ ui.confirm_modal(
+        'erase-customer-' ~ customerId,
+        path('sales_customer_erase'),
+        'sales.order.list.erase_button'|trans,
+        'sales.order.list.erase_confirm_message'|trans,
+        {cancel_label: 'sales.order.list.erase_dismiss_button'|trans, button_class: 'outline contrast'},
+    ) }}
 {% endblock %}

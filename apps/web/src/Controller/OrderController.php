@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Web\Controller;
 
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Query\StreamRegisteredCustomers\StreamRegisteredCustomers;
+use Sales\Customer\Application\Finder\Customer\CustomerResult;
+use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Language\PublishedOrderStatus;
+use Sales\Order\Application\Query\GetOrder\GetOrder;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -20,12 +22,15 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
+use Web\Security\IamUser;
 
 #[Route('/sales/orders')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class OrderController extends AbstractController
 {
     public function __construct(
@@ -42,7 +47,10 @@ final class OrderController extends AbstractController
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
     ): Response {
+        $customer = $this->resolveCustomer();
+
         $orders = $this->queryBus->ask(new ListOrders(
+            customerId: $customer->id,
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
         ));
@@ -50,6 +58,7 @@ final class OrderController extends AbstractController
         return $this->render('sales/order/list.html.twig', [
             'orders' => $orders,
             'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+            'customerId' => $customer->id,
         ]);
     }
 
@@ -60,14 +69,16 @@ final class OrderController extends AbstractController
     #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
     public function place(Request $request): Response
     {
+        $customer = $this->resolveCustomer();
+
         $formData = new PlaceOrderFormData();
-        $form = $this->createForm(PlaceOrderType::class, $formData, ['buyers' => $this->buyers()]);
+        $form = $this->createForm(PlaceOrderType::class, $formData);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->commandBus->dispatch(new PlaceOrder(
                 id: Uuid::uuid7()->toString(),
-                customerId: (string) $formData->customerId,
+                customerId: $customer->id,
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
                         'label' => (string) $line->label,
@@ -95,24 +106,28 @@ final class OrderController extends AbstractController
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
+        $customer = $this->resolveCustomer();
+        $order = $this->queryBus->ask(new GetOrder($id));
+
+        if ($order->customerId !== $customer->id) {
+            throw $this->createAccessDeniedException('This order does not belong to you.');
+        }
+
         $this->commandBus->dispatch(new CancelOrder($id));
 
         return $this->redirectToRoute('sales_order_list');
     }
 
     /**
-     * @return array<string, string>
-     *
      * @throws ApplicationExceptionInterface
      */
-    private function buyers(): array
+    private function resolveCustomer(): CustomerResult
     {
-        $buyers = [];
+        $user = $this->getUser();
+        \assert($user instanceof IamUser);
 
-        foreach ($this->queryBus->ask(new StreamRegisteredCustomers()) as $customer) {
-            $buyers[(string) $customer->email] = $customer->id;
-        }
+        $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
 
-        return $buyers;
+        return $customer ?? throw $this->createAccessDeniedException('No customer is linked to this identity.');
     }
 }

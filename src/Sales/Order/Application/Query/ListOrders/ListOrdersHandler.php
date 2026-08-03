@@ -22,7 +22,8 @@ final readonly class ListOrdersHandler
      */
     public function __invoke(ListOrders $query): ListResult
     {
-        $paginator = $this->orderFinder->paginate($query->page, $query->itemsPerPage);
+        $finder = null !== $query->customerId ? $this->orderFinder->withCustomer($query->customerId) : $this->orderFinder;
+        $paginator = $finder->paginate($query->page, $query->itemsPerPage);
 
         /** @var list<OrderResult> $items */
         $items = iterator_to_array($paginator);

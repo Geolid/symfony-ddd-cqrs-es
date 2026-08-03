@@ -36,7 +36,7 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
         return [
             'id' => GrantId::generate()->toString(),
             'identityId' => Uuid::uuid7()->toString(),
-            'permission' => 'sales:supervise',
+            'permission' => 'sales:read',
             'grantedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }

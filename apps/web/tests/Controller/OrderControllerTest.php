@@ -6,7 +6,6 @@ namespace Web\Tests\Controller;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -17,15 +16,28 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $customerId = $this->registeredCustomer();
+        $this->loggedInCustomer($client);
 
         // When
-        $this->placeOrder($client, $customerId);
+        $this->placeOrder($client);
 
         // Then
         self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
-        self::assertSelectorTextContains('[data-testid="order-customer"]', $customerId);
+        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+    }
+
+    #[Test]
+    public function itRefusesAnonymousAccess(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', '/sales/orders');
+
+        // Then
+        self::assertResponseRedirects('/login');
     }
 
     #[Test]
@@ -33,7 +45,8 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, $this->registeredCustomer());
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -49,7 +62,8 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->placeOrder($client, $this->registeredCustomer());
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
@@ -58,23 +72,33 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseStatusCodeSame(400);
     }
 
-    private function registeredCustomer(): string
+    #[Test]
+    public function itRefusesToCancelAnotherCustomersOrder(): void
     {
-        $customer = CustomerTestFactory::new()->create();
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client, 'owner@example.com');
+        $id = $this->placeOrder($client);
 
-        $this->store($customer);
+        $client->request('GET', '/logout');
+        $this->loggedInCustomer($client, 'intruder@example.com');
 
-        return $customer->id()->toString();
+        // When
+        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+            '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseStatusCodeSame(403);
     }
 
-    private function placeOrder(KernelBrowser $client, string $customerId): string
+    private function placeOrder(KernelBrowser $client): string
     {
         $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('form')->form();
         $prefix = $form->getName();
 
         $form->setValues([
-            \sprintf('%s[customerId]', $prefix) => $customerId,
             \sprintf('%s[lines][0][label]', $prefix) => 'Espresso cups, set of 6',
             \sprintf('%s[lines][0][quantity]', $prefix) => '1',
             \sprintf('%s[lines][0][unitAmountInCents]', $prefix) => '17.50',
@@ -82,6 +106,8 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $client->submit($form);
 
-        return iterator_to_array($this->service(OrderFinderInterface::class)->withCustomer($customerId))[0]->id;
+        $orders = iterator_to_array($this->service(OrderFinderInterface::class)->paginate(1, 20));
+
+        return $orders[0]->id;
     }
 }

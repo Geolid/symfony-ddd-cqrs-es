@@ -6,11 +6,10 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\ShipmentResource;
 use Api\Tests\Support\AbstractApiTestCase;
-use ApiPlatform\Symfony\Bundle\Test\Client;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ShipmentResourceTest extends AbstractApiTestCase
@@ -19,10 +18,11 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itReturnsTheShipmentCreatedForAnOrder(): void
     {
         // Given
-        $client = self::jsonClient();
-        $customerId = $this->registeredCustomer();
-        $orderId = $this->placeOrder($client, $customerId);
-        $this->createShipment($orderId, $customerId);
+        $client = $this->authenticatedClient('fulfilment:read');
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
+        $this->store($order);
+        $this->store(ShipmentTestFactory::new()->withOrderId($order->id()->toString())->withCustomerId($customerId)->create());
 
         // When
         $client->request('GET', '/v1/fulfilment/shipments');
@@ -35,7 +35,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'orderId' => $orderId,
+                    'orderId' => $order->id()->toString(),
                     'customerId' => $customerId,
                     'orderTotalInCents' => 1_999,
                     'status' => 'pending',
@@ -48,10 +48,10 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itReturnsShipmentsFilteredByStatus(): void
     {
         // Given
-        $client = self::jsonClient();
-        $dispatched = $this->shipmentForNewOrder($client);
-        $this->shipmentForNewOrder($client);
-        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $dispatched));
+        $client = $this->authenticatedClient('fulfilment:read');
+        $dispatched = ShipmentTestFactory::new()->dispatched()->create();
+        $this->store($dispatched);
+        $this->store(ShipmentTestFactory::new()->create());
 
         // When
         $client->request('GET', '/v1/fulfilment/shipments?status=dispatched');
@@ -61,7 +61,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
         self::assertMatchesResourceCollectionJsonSchema(ShipmentResource::class);
         self::assertJsonContains([
             'totalItems' => 1,
-            'member' => [['id' => $dispatched, 'status' => 'dispatched']],
+            'member' => [['id' => $dispatched->id()->toString(), 'status' => 'dispatched']],
         ]);
     }
 
@@ -69,7 +69,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itFailsToReturnShipmentsForAnUnknownStatus(): void
     {
         // Given
-        $client = self::jsonClient();
+        $client = $this->authenticatedClient('fulfilment:read');
 
         // When
         $client->request('GET', '/v1/fulfilment/shipments?status=teleported');
@@ -79,32 +79,59 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itAcceptsADispatch(): void
+    public function itRejectsAnUnauthenticatedRequest(): void
     {
         // Given
         $client = self::jsonClient();
-        $id = $this->shipmentForNewOrder($client);
 
         // When
-        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
+        $client->request('GET', '/v1/fulfilment/shipments');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
+    public function itRejectsACallerWithoutTheReadGrant(): void
+    {
+        // Given
+        $client = $this->authenticatedClient();
+
+        // When
+        $client->request('GET', '/v1/fulfilment/shipments');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    #[Test]
+    public function itAcceptsADispatch(): void
+    {
+        // Given
+        $client = $this->authenticatedClient('fulfilment:write', 'fulfilment:read');
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($shipment);
+
+        // When
+        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $shipment->id()->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $client->request('GET', '/v1/fulfilment/shipments');
-        self::assertJsonContains(['member' => [['id' => $id, 'status' => 'dispatched']]]);
+        self::assertJsonContains(['member' => [['id' => $shipment->id()->toString(), 'status' => 'dispatched']]]);
     }
 
     #[Test]
     public function itRejectsADispatchOnAShipmentAlreadyDispatched(): void
     {
         // Given
-        $client = self::jsonClient();
-        $id = $this->shipmentForNewOrder($client);
-        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
+        $client = $this->authenticatedClient('fulfilment:write');
+        $shipment = ShipmentTestFactory::new()->dispatched()->create();
+        $this->store($shipment);
 
         // When
-        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $id));
+        $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', $shipment->id()->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
@@ -114,52 +141,12 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itFailsToDispatchAnUnknownShipment(): void
     {
         // Given
-        $client = self::jsonClient();
+        $client = $this->authenticatedClient('fulfilment:write');
 
         // When
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', Uuid::uuid7()->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-    }
-
-    private function shipmentForNewOrder(Client $client): string
-    {
-        $customerId = $this->registeredCustomer();
-
-        return $this->createShipment($this->placeOrder($client, $customerId), $customerId);
-    }
-
-    private function registeredCustomer(): string
-    {
-        $customer = CustomerTestFactory::new()->create();
-
-        $this->store($customer);
-
-        return $customer->id()->toString();
-    }
-
-    private function placeOrder(Client $client, string $customerId): string
-    {
-        $response = $client->request('POST', '/v1/sales/orders', [
-            'json' => ['customerId' => $customerId, 'lines' => [
-                ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
-                ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
-            ]],
-        ]);
-
-        return $response->toArray()['id'];
-    }
-
-    private function createShipment(string $orderId, string $customerId): string
-    {
-        $shipment = ShipmentTestFactory::new()
-            ->withOrderId($orderId)
-            ->withCustomerId($customerId)
-            ->create();
-
-        $this->store($shipment);
-
-        return $shipment->id()->toString();
     }
 }

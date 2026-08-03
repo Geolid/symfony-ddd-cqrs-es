@@ -10,6 +10,11 @@
         {{ form_widget(form.email) }}
         {{ form_errors(form.email) }}
     </p>
+    <p>
+        {{ form_label(form.password) }}<br>
+        {{ form_widget(form.password) }}
+        {{ form_errors(form.password) }}
+    </p>
     <button type="submit">{{ 'sales.customer.register.submit_button'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

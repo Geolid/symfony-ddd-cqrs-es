@@ -21,6 +21,7 @@
     "symfony/console": "8.1.*",
     "symfony/doctrine-messenger": "8.1.*",
     "symfony/dotenv": "8.1.*",
+    "symfony/expression-language": "8.1.*",
     "symfony/form": "8.1.*",
     "symfony/framework-bundle": "8.1.*",
     "symfony/http-client": "8.1.*",

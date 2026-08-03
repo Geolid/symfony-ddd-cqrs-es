@@ -17,9 +17,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
-final class PasswordCredentialAuthenticator extends AbstractAuthenticator
+final class PasswordCredentialAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public function __construct(
         private AuthenticatePasswordCredentialInterface $authenticator,
@@ -58,6 +59,11 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator
     {
         $request->getSession()->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
 
+        return new RedirectResponse($this->urlGenerator->generate('security_login'));
+    }
+
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    {
         return new RedirectResponse($this->urlGenerator->generate('security_login'));
     }
 }
