@@ -23,6 +23,9 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
         $apiKey = $this->service(IssueApiTokenCredentialInterface::class)->issue($identityId, $expiresAt);
 
         // Then
+        self::assertMatchesRegularExpression('/^key_[0-9a-f]{16}$/', $apiKey->identifier);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $apiKey->secret);
+
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($apiKey->identifier);
         self::assertNotNull($credential);
         self::assertSame($identityId, $credential->identityId);
