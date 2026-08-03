@@ -39,7 +39,7 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
-        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:supervise')->create());
+        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:read')->create());
 
         // When
         $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
@@ -60,14 +60,14 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
-        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:supervise')->create());
+        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:read')->create());
 
         // When
         $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
 
         // Then
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
-        self::assertTrue($authorizationChecker->isGranted('sales:supervise'));
+        self::assertTrue($authorizationChecker->isGranted('sales:read'));
         self::assertFalse($authorizationChecker->isGranted('catalog:manage'));
     }
 

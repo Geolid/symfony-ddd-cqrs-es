@@ -22,7 +22,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     public function itAcceptsAPermission(): void
     {
         // When
-        $this->validateValue('sales:supervise');
+        $this->validateValue('sales:read');
 
         // Then
         $this->assertNoViolation();

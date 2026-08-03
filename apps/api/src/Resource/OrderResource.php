@@ -19,7 +19,7 @@ use Sales\Order\Application\Finder\Order\OrderResult;
     routePrefix: '/v1/sales',
     operations: [
         new GetCollection(
-            security: "is_granted('sales:supervise')",
+            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: ['200' => new Response(description: 'A collection of orders.')],
                 summary: 'Retrieves a collection of orders.',
@@ -28,7 +28,7 @@ use Sales\Order\Application\Finder\Order\OrderResult;
         ),
         new Get(
             uriTemplate: '/orders/{id}',
-            security: "is_granted('sales:supervise')",
+            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: [
                     '200' => new Response(description: 'The order.'),

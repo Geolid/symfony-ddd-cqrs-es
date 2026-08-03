@@ -22,7 +22,7 @@ use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
     routePrefix: '/v1/fulfilment',
     operations: [
         new GetCollection(
-            security: "is_granted('fulfilment:supervise')",
+            security: "is_granted('fulfilment:read')",
             openapi: new Operation(
                 responses: [
                     '200' => new Response(description: 'A collection of shipments.'),
@@ -46,7 +46,7 @@ use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
         new Post(
             uriTemplate: '/shipments/{id}/dispatch',
             status: 204,
-            security: "is_granted('fulfilment:supervise')",
+            security: "is_granted('fulfilment:write')",
             openapi: new Operation(
                 responses: [
                     '204' => new Response(description: 'The shipment was handed to the carrier.'),

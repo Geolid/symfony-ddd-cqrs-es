@@ -17,7 +17,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsAnOrder(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:supervise');
+        $client = $this->authenticatedClient('sales:read');
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
         $this->store($order);
@@ -41,7 +41,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownOrder(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:supervise');
+        $client = $this->authenticatedClient('sales:read');
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', Uuid::uuid7()->toString()));
@@ -54,7 +54,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsTheOrders(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:supervise');
+        $client = $this->authenticatedClient('sales:read');
         $this->store(OrderTestFactory::new()->withTotalAmountInCents(1_999)->create());
 
         // When
@@ -81,7 +81,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsACallerWithoutTheSuperviseGrant(): void
+    public function itRejectsACallerWithoutTheReadGrant(): void
     {
         // Given
         $client = $this->authenticatedClient();

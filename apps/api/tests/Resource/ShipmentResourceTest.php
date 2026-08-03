@@ -18,7 +18,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itReturnsTheShipmentCreatedForAnOrder(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:read');
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
         $this->store($order);
@@ -48,7 +48,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itReturnsShipmentsFilteredByStatus(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:read');
         $dispatched = ShipmentTestFactory::new()->dispatched()->create();
         $this->store($dispatched);
         $this->store(ShipmentTestFactory::new()->create());
@@ -69,7 +69,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itFailsToReturnShipmentsForAnUnknownStatus(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:read');
 
         // When
         $client->request('GET', '/v1/fulfilment/shipments?status=teleported');
@@ -92,7 +92,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsACallerWithoutTheSuperviseGrant(): void
+    public function itRejectsACallerWithoutTheReadGrant(): void
     {
         // Given
         $client = $this->authenticatedClient();
@@ -108,7 +108,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itAcceptsADispatch(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:write');
         $shipment = ShipmentTestFactory::new()->create();
         $this->store($shipment);
 
@@ -126,7 +126,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itRejectsADispatchOnAShipmentAlreadyDispatched(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:write');
         $shipment = ShipmentTestFactory::new()->dispatched()->create();
         $this->store($shipment);
 
@@ -141,7 +141,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itFailsToDispatchAnUnknownShipment(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:supervise');
+        $client = $this->authenticatedClient('fulfilment:write');
 
         // When
         $client->request('POST', \sprintf('/v1/fulfilment/shipments/%s/dispatch', Uuid::uuid7()->toString()));

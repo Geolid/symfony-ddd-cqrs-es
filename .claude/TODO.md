@@ -127,8 +127,8 @@ were surfaced later and have no original number.
       shipments" — a judgment call, flagged to the user rather than assumed) but now requires
       `IS_AUTHENTICATED_FULLY` too.
     - API: `OrderResource`/`ShipmentResource`'s remaining operations carry
-      `security: "is_granted('sales:supervise')"` / `"is_granted('fulfilment:supervise')"` per
-      dm.md's convention. `ApiTokenAuthenticator` gained `AuthenticationEntryPointInterface::start()`
+      `security: "is_granted('sales:read')"` / `"is_granted('fulfilment:read')"` (`fulfilment:write`
+      for the dispatch mutation) per dm.md's convention. `ApiTokenAuthenticator` gained `AuthenticationEntryPointInterface::start()`
       (a clean 401 when the header is missing entirely) — without it, a fully anonymous request
       hitting a gated operation had no clear 401/403 split, since `supports()` returning false
       means the authenticator never engages and Symfony has no entry point to fall back to.

@@ -17,7 +17,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
     {
         // When
         $tester = $this->tester('iam:identity:register');
-        $tester->execute(['--permission' => ['sales:supervise', 'fulfilment:supervise']]);
+        $tester->execute(['--permission' => ['sales:read', 'fulfilment:write']]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

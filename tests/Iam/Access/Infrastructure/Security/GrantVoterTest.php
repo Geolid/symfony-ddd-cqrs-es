@@ -17,10 +17,10 @@ final class GrantVoterTest extends TestCase
     public function itGrantsAccessWhenTheRoleIsPresent(): void
     {
         // Given
-        $token = $this->tokenWithRoles(['ROLE_USER', 'sales:supervise']);
+        $token = $this->tokenWithRoles(['ROLE_USER', 'sales:read']);
 
         // When
-        $vote = (new GrantVoter())->vote($token, null, ['sales:supervise']);
+        $vote = (new GrantVoter())->vote($token, null, ['sales:read']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_GRANTED, $vote);
@@ -33,7 +33,7 @@ final class GrantVoterTest extends TestCase
         $token = $this->tokenWithRoles(['ROLE_USER']);
 
         // When
-        $vote = (new GrantVoter())->vote($token, null, ['sales:supervise']);
+        $vote = (new GrantVoter())->vote($token, null, ['sales:read']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_DENIED, $vote);

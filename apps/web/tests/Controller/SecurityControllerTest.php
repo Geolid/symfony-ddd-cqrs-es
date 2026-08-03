@@ -103,7 +103,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('admin@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
-        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:supervise')->create());
+        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:read')->create());
 
         // When
         $crawler = $client->request('GET', '/login');
@@ -113,7 +113,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // Then
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
-        self::assertTrue($authorizationChecker->isGranted('sales:supervise'));
+        self::assertTrue($authorizationChecker->isGranted('sales:read'));
         self::assertFalse($authorizationChecker->isGranted('catalog:manage'));
     }
 
