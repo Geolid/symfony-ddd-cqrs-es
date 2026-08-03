@@ -10,8 +10,9 @@
 *.json text eol=lf
 *.lock text eol=lf
 *.sh text eol=lf
-Makefile text eol=lf
 .env* text eol=lf
+console text eol=lf
+Makefile text eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary

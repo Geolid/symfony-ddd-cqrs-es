@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Api\State\Provider;
+
+use Api\Resource\ProductResource;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
+use Catalog\Product\Application\Query\GetProduct\GetProduct;
+use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Query\QueryBusInterface;
+use Webmozart\Assert\Assert;
+
+/**
+ * @implements ProviderInterface<ProductResource>
+ */
+final readonly class ProductProvider implements ProviderInterface
+{
+    public function __construct(private QueryBusInterface $queryBus)
+    {
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?ProductResource
+    {
+        Assert::string($uriVariables['id']);
+
+        try {
+            $result = $this->queryBus->ask(new GetProduct($uriVariables['id']));
+        } catch (ProductResultNotFoundException) {
+            return null;
+        }
+
+        return ProductResource::fromResult($result);
+    }
+}
