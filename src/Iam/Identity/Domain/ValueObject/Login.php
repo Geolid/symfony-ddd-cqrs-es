@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Domain;
+namespace Iam\Identity\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class PaymentReference
+final readonly class Login
 {
     private string $value;
 
     private function __construct(string $value)
     {
-        Assert::notEmpty($value, 'A payment reference cannot be empty, %s given.');
-        Assert::maxLength($value, 64, 'A payment reference cannot exceed %2$d characters, %s given.');
+        $value = trim($value);
+        Assert::notEmpty($value, 'A login cannot be empty, %s given.');
 
         $this->value = $value;
     }
@@ -26,6 +26,11 @@ final readonly class PaymentReference
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
+    }
+
+    public function fingerprint(): string
+    {
+        return hash('sha256', $this->value);
     }
 
     public function toString(): string

@@ -8,8 +8,8 @@ use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionRevoked;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Access\Domain\Grant;
-use Iam\Access\Domain\GrantId;
-use Iam\Access\Domain\Permission;
+use Iam\Access\Domain\ValueObject\GrantId;
+use Iam\Access\Domain\ValueObject\Permission;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 

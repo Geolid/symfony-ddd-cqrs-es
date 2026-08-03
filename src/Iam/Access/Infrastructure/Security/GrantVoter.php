@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Infrastructure\Security;
 
-use Iam\Access\Domain\Permission;
+use Iam\Access\Domain\ValueObject\Permission;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;

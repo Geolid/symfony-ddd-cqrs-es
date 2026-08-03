@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Domain;
+namespace Iam\Access\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class TrackingReference
+final readonly class Permission
 {
+    private const string PATTERN = '/^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
+
     private string $value;
 
     private function __construct(string $value)
     {
-        Assert::notEmpty($value, 'A tracking reference cannot be empty, %s given.');
-        Assert::maxLength($value, 64, 'A tracking reference cannot exceed %2$d characters, %s given.');
+        Assert::regex($value, self::PATTERN, 'A permission must be formatted "<subdomain>:<action>", %s given.');
 
         $this->value = $value;
     }

@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Application\Query\GetIdentity;
 
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Query\GetIdentity\GetIdentity;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

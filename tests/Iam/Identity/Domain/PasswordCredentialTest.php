@@ -6,11 +6,11 @@ namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
-use Iam\Identity\Domain\IdentityId;
-use Iam\Identity\Domain\Login;
 use Iam\Identity\Domain\PasswordCredential;
-use Iam\Identity\Domain\PasswordCredentialId;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 

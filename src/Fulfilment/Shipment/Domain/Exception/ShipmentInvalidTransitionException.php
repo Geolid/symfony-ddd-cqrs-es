@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain\Exception;
 
-use Fulfilment\Shipment\Domain\ShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 
 final class ShipmentInvalidTransitionException extends \DomainException
 {

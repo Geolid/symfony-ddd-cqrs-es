@@ -6,8 +6,8 @@ namespace Catalog\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
-use Catalog\Product\Domain\ProductId;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 

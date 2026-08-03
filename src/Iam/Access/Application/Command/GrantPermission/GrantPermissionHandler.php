@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Access\Application\Command\GrantPermission;
 
 use Iam\Access\Domain\Grant;
-use Iam\Access\Domain\GrantId;
-use Iam\Access\Domain\Permission;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
+use Iam\Access\Domain\ValueObject\GrantId;
+use Iam\Access\Domain\ValueObject\Permission;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 

@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Command\CreateShipment;
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipment\Domain\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;

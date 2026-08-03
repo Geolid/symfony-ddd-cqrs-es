@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\EventStore\Reposi
 
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipment\Domain\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Domain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\OrderId;
+use Sales\Order\Domain\ValueObject\OrderId;
 
 final class OrderIdTest extends TestCase
 {

@@ -6,7 +6,7 @@ namespace Catalog\Tests\Product\Application\Query\GetProduct;
 
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
-use Catalog\Product\Domain\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

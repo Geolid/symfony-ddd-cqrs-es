@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 
 final class OrderPaymentIdTest extends TestCase
 {

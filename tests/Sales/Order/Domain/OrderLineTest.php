@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Domain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\OrderLine;
+use Sales\Order\Domain\ValueObject\OrderLine;
 use Shared\Domain\ValueObject\Money;
 
 final class OrderLineTest extends TestCase

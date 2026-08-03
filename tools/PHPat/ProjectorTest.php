@@ -34,6 +34,15 @@ final class ProjectorTest
             ->because('Without #[Projector] patchlevel never subscribes the class — the projection dies silently.');
     }
 
+    #[TestRule]
+    public function isReadonly(): Rule
+    {
+        return PHPat::rule()
+            ->classes($this->projectors())
+            ->should()->beReadonly()
+            ->because('A projector holds no state — a mutable one is a latent concurrency bug.');
+    }
+
     private function projectors(): SelectorInterface
     {
         return Selector::AllOf(

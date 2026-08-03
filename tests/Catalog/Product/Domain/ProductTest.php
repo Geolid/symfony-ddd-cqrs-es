@@ -9,7 +9,7 @@ use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Product;
-use Catalog\Product\Domain\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Money;

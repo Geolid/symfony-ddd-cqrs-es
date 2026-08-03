@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain\Exception;
 
-use Fulfilment\Shipment\Domain\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 
 final class ShipmentNotFoundException extends \DomainException
 {

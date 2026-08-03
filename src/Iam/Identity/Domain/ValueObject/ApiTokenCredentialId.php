@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Access\Domain;
+namespace Iam\Identity\Domain\ValueObject;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootId;
 use Shared\Domain\UuidTrait;
 
-final readonly class GrantId implements AggregateRootId
+final readonly class ApiTokenCredentialId implements AggregateRootId
 {
     use UuidTrait;
 }

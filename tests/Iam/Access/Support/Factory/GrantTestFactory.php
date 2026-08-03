@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Access\Support\Factory;
 
 use Iam\Access\Domain\Grant;
-use Iam\Access\Domain\GrantId;
-use Iam\Access\Domain\Permission;
+use Iam\Access\Domain\ValueObject\GrantId;
+use Iam\Access\Domain\ValueObject\Permission;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;

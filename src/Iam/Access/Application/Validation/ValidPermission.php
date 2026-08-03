@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Validation;
 
-use Iam\Access\Domain\Permission;
+use Iam\Access\Domain\ValueObject\Permission;
 use Shared\Application\Language\PublishedLanguageInterface;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;

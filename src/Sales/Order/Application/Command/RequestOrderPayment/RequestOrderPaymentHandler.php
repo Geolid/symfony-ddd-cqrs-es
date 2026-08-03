@@ -6,8 +6,8 @@ namespace Sales\Order\Application\Command\RequestOrderPayment;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\OrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\ValueObject\Money;
 

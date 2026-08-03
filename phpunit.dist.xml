@@ -20,23 +20,23 @@
     </php>
 
     <testsuites>
-        <!-- ==================== DELIVERY MECHANISMS ==================== -->
-        <testsuite name="web">
-            <directory>apps/web/tests</directory>
-        </testsuite>
+        <!-- DELIVERY MECHANISMS -->
         <testsuite name="api">
             <directory>apps/api/tests</directory>
         </testsuite>
         <testsuite name="cli">
             <directory>apps/cli/tests</directory>
         </testsuite>
+        <testsuite name="web">
+            <directory>apps/web/tests</directory>
+        </testsuite>
         <testsuite name="webhook">
             <directory>apps/webhook/tests</directory>
         </testsuite>
 
-        <!-- ==================== BOUNDED CONTEXTS ==================== -->
-        <testsuite name="sales">
-            <directory>tests/Sales</directory>
+        <!-- SUBDOMAINS -->
+        <testsuite name="catalog">
+            <directory>tests/Catalog</directory>
         </testsuite>
         <testsuite name="fulfilment">
             <directory>tests/Fulfilment</directory>
@@ -44,16 +44,16 @@
         <testsuite name="iam">
             <directory>tests/Iam</directory>
         </testsuite>
-        <testsuite name="catalog">
-            <directory>tests/Catalog</directory>
+        <testsuite name="sales">
+            <directory>tests/Sales</directory>
         </testsuite>
 
-        <!-- ==================== SHARED ==================== -->
+        <!-- SHARED -->
         <testsuite name="shared">
             <directory>tests/Shared</directory>
         </testsuite>
 
-        <!-- ==================== TOOLS ==================== -->
+        <!-- TOOLS -->
         <testsuite name="tools">
             <directory>tools/PHPStan/Tests</directory>
         </testsuite>
@@ -88,8 +88,6 @@
         <bootstrap class="Support\PHPUnit\SetupDatabaseExtension"/>
         <bootstrap class="Support\PHPUnit\ResetFactorySequencesExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
-        <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
-            <parameter name="clock-mock-namespaces" value="Shared"/>
-        </bootstrap>
+        <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension"/>
     </extensions>
 </phpunit>

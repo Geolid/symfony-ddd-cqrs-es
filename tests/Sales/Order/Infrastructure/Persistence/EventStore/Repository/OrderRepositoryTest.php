@@ -6,8 +6,8 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

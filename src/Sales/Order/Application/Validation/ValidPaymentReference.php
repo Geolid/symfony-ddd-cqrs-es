@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Validation;
 
-use Sales\Order\Domain\PaymentReference;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Application\Language\PublishedLanguageInterface;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;

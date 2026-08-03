@@ -10,7 +10,7 @@ use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Identity;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 

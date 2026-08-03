@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Domain;
+namespace Sales\Order\Domain\ValueObject;
 
 enum OrderPaymentStatus: string
 {

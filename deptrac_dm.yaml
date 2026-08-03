@@ -8,7 +8,6 @@ deptrac:
   cache_file: var/.deptrac_dm.cache
 
   layers:
-    # --- Delivery Mechanisms ---
     - name: Web
       collectors:
         - { type: directory, value: 'apps/web/.*' }
@@ -29,8 +28,7 @@ deptrac:
       collectors:
         - { type: directory, value: 'apps/es-admin/.*' }
 
-  # Deptrac only draws DM-to-BC outer boundaries.
-  # Internal access (#[AsDrivingPort], PublishedLanguageInterface) is enforced by Tools\PHPat\DeliveryMechanismTest.
+  # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: Open Host Service only).
   ruleset:
     Web:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
     Api:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]

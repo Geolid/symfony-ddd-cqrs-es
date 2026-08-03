@@ -7,12 +7,12 @@ namespace Sales\Tests\Customer\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\CustomerId;
-use Sales\Customer\Domain\Email;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
+use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\Email;
 
 final class CustomerTest extends AggregateRootTestCase
 {

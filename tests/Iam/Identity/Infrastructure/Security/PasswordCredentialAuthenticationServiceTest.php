@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Security\AuthenticatePasswordCredentialInterface;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

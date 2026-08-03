@@ -7,6 +7,8 @@ namespace Iam\Access\Domain;
 use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionRevoked;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
+use Iam\Access\Domain\ValueObject\GrantId;
+use Iam\Access\Domain\ValueObject\Permission;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;

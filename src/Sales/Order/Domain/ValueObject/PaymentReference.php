@@ -2,19 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Iam\Access\Domain;
+namespace Sales\Order\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class Permission
+final readonly class PaymentReference
 {
-    private const string PATTERN = '/^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
-
     private string $value;
 
     private function __construct(string $value)
     {
-        Assert::regex($value, self::PATTERN, 'A permission must be formatted "<subdomain>:<action>", %s given.');
+        Assert::notEmpty($value, 'A payment reference cannot be empty, %s given.');
+        Assert::maxLength($value, 64, 'A payment reference cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

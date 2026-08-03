@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Domain;
 
-use Fulfilment\Shipment\Domain\TrackingReference;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

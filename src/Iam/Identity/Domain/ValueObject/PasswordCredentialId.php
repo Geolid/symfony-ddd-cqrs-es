@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Domain;
+namespace Iam\Identity\Domain\ValueObject;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootId;
 use Shared\Domain\UuidTrait;
 
-final readonly class OrderId implements AggregateRootId
+final readonly class PasswordCredentialId implements AggregateRootId
 {
     use UuidTrait;
 }

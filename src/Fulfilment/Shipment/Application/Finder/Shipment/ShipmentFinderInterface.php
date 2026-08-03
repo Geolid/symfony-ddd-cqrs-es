@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
-use Fulfilment\Shipment\Domain\ShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 use Shared\Application\Finder\PaginatedFinderInterface;
 
 /**

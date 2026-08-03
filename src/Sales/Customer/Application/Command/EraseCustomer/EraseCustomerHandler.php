@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Command\EraseCustomer;
 
 use Psr\Clock\ClockInterface;
-use Sales\Customer\Domain\CustomerId;
-use Sales\Customer\Domain\CustomerUniqueValue;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
+use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 

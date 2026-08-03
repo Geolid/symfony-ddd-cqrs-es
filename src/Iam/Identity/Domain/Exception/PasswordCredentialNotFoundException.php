@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\Exception;
 
-use Iam\Identity\Domain\PasswordCredentialId;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 
 final class PasswordCredentialNotFoundException extends \DomainException
 {

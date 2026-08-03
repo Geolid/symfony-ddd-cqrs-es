@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 

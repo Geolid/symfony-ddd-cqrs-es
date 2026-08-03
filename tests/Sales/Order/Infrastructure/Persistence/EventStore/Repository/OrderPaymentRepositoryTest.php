@@ -6,8 +6,8 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
-use Sales\Order\Domain\OrderPaymentId;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
 

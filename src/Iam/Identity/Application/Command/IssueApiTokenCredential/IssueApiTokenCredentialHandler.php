@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\IssueApiTokenCredential;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\ApiTokenCredentialId;
-use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 

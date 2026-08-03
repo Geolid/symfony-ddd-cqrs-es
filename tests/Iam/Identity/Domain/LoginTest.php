@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Domain;
 
-use Iam\Identity\Domain\Login;
+use Iam\Identity\Domain\ValueObject\Login;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

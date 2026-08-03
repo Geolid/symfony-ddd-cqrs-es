@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Domain;
+namespace Fulfilment\Shipment\Domain\ValueObject;
 
 enum ShipmentStatus: string
 {

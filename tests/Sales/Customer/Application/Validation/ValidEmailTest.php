@@ -7,7 +7,7 @@ namespace Sales\Tests\Customer\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Validation\ValidEmail;
-use Sales\Customer\Domain\Email;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;

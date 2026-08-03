@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Domain\CustomerId;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 

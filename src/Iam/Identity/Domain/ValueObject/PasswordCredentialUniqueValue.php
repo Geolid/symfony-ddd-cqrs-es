@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Domain;
+namespace Iam\Identity\Domain\ValueObject;
 
 enum PasswordCredentialUniqueValue: string
 {

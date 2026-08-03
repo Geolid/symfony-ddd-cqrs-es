@@ -13,9 +13,9 @@ use Sales\Order\Application\Gateway\PaymentGatewayInterface;
 use Sales\Order\Application\Language\PublishedOrderStatus;
 use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\OrderId;
-use Sales\Order\Domain\OrderPaymentId;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

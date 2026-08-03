@@ -8,13 +8,13 @@ use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 

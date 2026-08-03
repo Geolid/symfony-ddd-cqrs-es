@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Domain;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\PaymentReference;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 
 final class PaymentReferenceTest extends TestCase
 {

@@ -6,7 +6,7 @@ namespace Iam\Identity\Domain\Repository;
 
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\PasswordCredential;
-use Iam\Identity\Domain\PasswordCredentialId;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 
 interface PasswordCredentialRepositoryInterface
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Domain\Exception;
 
-use Sales\Order\Domain\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 
 final class OrderPaymentNotFoundException extends \DomainException
 {

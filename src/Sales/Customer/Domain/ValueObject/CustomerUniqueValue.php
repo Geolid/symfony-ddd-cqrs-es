@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Customer\Domain;
+namespace Sales\Customer\Domain\ValueObject;
 
 enum CustomerUniqueValue: string
 {

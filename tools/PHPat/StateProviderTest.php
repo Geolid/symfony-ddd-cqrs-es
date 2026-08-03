@@ -10,7 +10,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Command\CommandBusInterface;
 
-final class ApiTest
+final class StateProviderTest
 {
     #[TestRule]
     public function providersNeverWrite(): Rule
@@ -29,7 +29,7 @@ final class ApiTest
     }
 
     #[TestRule]
-    public function stateNeverTouchesTheWriteModelDirectly(): Rule
+    public function neverTouchesTheWriteModelDirectly(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
@@ -40,6 +40,6 @@ final class ApiTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname('#RepositoryInterface$#', true))
-            ->because('A Provider/Processor goes through Command/Query bus, never straight at the write-model Repository — a Processor may still ask a Query (e.g. rereading the just-written state to build its response).');
+            ->because('A Provider/Processor reaches the model only through the Command/Query bus, never the write Repository — a Processor may still issue a Query to reread its own state.');
     }
 }

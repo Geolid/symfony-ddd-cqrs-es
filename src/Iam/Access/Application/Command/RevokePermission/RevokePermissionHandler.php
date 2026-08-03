@@ -6,8 +6,8 @@ namespace Iam\Access\Application\Command\RevokePermission;
 
 use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
-use Iam\Access\Domain\GrantId;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
+use Iam\Access\Domain\ValueObject\GrantId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 

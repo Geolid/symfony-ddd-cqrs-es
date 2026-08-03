@@ -12,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
-use Sales\Order\Domain\OrderPaymentStatus;
+use Sales\Order\Domain\ValueObject\OrderPaymentStatus;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
 #[Projector('sales.order.order_payments')]

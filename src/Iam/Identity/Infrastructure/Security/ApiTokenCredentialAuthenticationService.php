@@ -6,10 +6,10 @@ namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
-use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Psr\Clock\ClockInterface;
 
 final readonly class ApiTokenCredentialAuthenticationService implements AuthenticateApiTokenCredentialInterface

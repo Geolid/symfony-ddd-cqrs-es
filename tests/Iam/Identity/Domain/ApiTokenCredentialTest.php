@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Event\ApiTokenCredentialIssued;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
-use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 

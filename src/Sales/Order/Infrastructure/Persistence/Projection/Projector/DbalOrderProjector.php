@@ -12,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\OrderStatus;
+use Sales\Order\Domain\ValueObject\OrderStatus;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
 #[Projector('sales.order.orders')]

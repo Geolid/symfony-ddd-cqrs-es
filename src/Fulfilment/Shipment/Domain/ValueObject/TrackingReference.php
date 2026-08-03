@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Domain;
+namespace Fulfilment\Shipment\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class Login
+final readonly class TrackingReference
 {
     private string $value;
 
     private function __construct(string $value)
     {
-        $value = trim($value);
-        Assert::notEmpty($value, 'A login cannot be empty, %s given.');
+        Assert::notEmpty($value, 'A tracking reference cannot be empty, %s given.');
+        Assert::maxLength($value, 64, 'A tracking reference cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }
@@ -26,11 +26,6 @@ final readonly class Login
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function fingerprint(): string
-    {
-        return hash('sha256', $this->value);
     }
 
     public function toString(): string

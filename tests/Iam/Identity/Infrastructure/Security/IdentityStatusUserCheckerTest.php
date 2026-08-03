@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Security\IdentityStatusUserChecker;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
