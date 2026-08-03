@@ -15,27 +15,19 @@ were surfaced later and have no original number.
 - Rework Iam per domain-service-in-aggregate feedback (IdentityStatus, ExpiresAt,
   PasswordCredential/ApiTokenCredential renaming, SecretHasherInterface domain service)
 - #27 (already done/merged per earlier session context)
+- **`Catalog.Product` landed as its own subdomain/BC** — new top-level subdomain `Catalog`, BC
+  `Catalog.Product` (`src/Catalog/Product/`), mirroring `Fulfilment.Shipment`'s existing
+  cross-subdomain dependency on `Sales.Order`. `Product{id, label, unitAmountInCents}`, ES events
+  `ProductListed`/`ProductRepriced`/`ProductDelisted`, commands `ListProductForSale`/
+  `RepriceProduct`/`DelistProduct`, queries `GetProduct`/`ListProducts`. `PlaceOrder` snapshots
+  label/price via `ProductResolver` (`Sales.Order -> Catalog.Product` Integration Events) at
+  placement time, mirroring `BuyerResolver`'s role for `Sales.Order -> Sales.Customer`.
 
 ## Pending
 
 - **#18** — Add a `SentryContextProviderInterface` implementation per BC (the
   `#[AutowireIterator]` mechanism exists in `Shared/Infrastructure/Monitoring/Sentry/` but has
   zero real implementers today).
-
-- **Add `Catalog.Product` as its own subdomain/BC.** Corrected twice during design: NOT a
-  sibling aggregate inside `Sales.Order` (that pattern is for splitting ONE concept, like
-  `Iam.Identity`, not two distinct business capabilities), NOT `Sales.Catalog` either (Catalog
-  is a distinct business capability from Sales, not owned by it — merchandising vs. selling).
-  Correct model: new top-level subdomain `Catalog`, BC `Catalog.Product`
-  (`src/Catalog/Product/`), mirroring `Fulfilment.Shipment`'s existing cross-subdomain
-  dependency on `Sales.Order`. `Sales.Order` gains a sanctioned `deptrac_bc.yaml` edge to
-  `Catalog.Product` (same mechanism as `Fulfilment.Shipment -> Sales.Order`).
-  Requires: new composer.json psr-4 entries (`Catalog\` -> `src/Catalog/`,
-  `Catalog\Tests\` -> `tests/Catalog/`), new phpunit testsuite entry, new deptrac layer + edge.
-  `Product{id, label, unitAmountInCents}`, ES events `ProductListed`/`ProductRepriced`.
-  `PlaceOrder` takes `{productId, quantity}`; `OrderLine` snapshots label/price via a
-  cross-subdomain Finder read at placement time (mirrors `BuyerResolver`'s role for
-  `Sales.Order -> Sales.Customer`). Use the `bc-scaffold` skill when implementing.
 
 - **#25 — Add `OrderPayment` as an ES micro-aggregate.** *(blocked by `Catalog.Product`: needs
   a real price to charge)* Sibling Aggregate Root in `Sales.Order` (second proof of the
@@ -156,6 +148,23 @@ were surfaced later and have no original number.
     - Existing customer-shaped API ops (`POST /orders`, per-order cancel) are **removed**
       (`PlaceOrderProcessor`, `CancelOrderProcessor`, `Api\Input\PlaceOrderInput`) — a customer
       never calls the API directly in this model.
+    - `ProductResource` gets its admin write side: `POST /products` (`catalog:write`,
+      `ListProductForSaleProcessor`, returns the created `ProductResource` — mirrors
+      `PlaceOrderProcessor`'s shape, id generated server-side via `Uuid::uuid7()`), `POST
+      /products/{id}/reprice` (`RepriceProductProcessor`, `input`/`output: false` split — a body
+      but no return, `204`) and `POST /products/{id}/delist` (`DelistProductProcessor`, no body
+      at all — mirrors the removed `DispatchShipmentProcessor` shape exactly: `input: false,
+      output: false`). `Api\Input\ListProductForSaleInput`/`RepriceProductInput` reuse
+      `Shared\Application\Validation\ValidMoney` for `unitAmountInCents` (paired with an explicit
+      `Assert\NotNull` — the compound alone treats a missing value as valid, by design, since it's
+      also meant for optional money fields). `config/packages/exceptions.php` gained a `// Catalog`
+      section (`ProductNotFoundException` → 404, `ProductAlreadyDelistedException` → 409) — it
+      was missing entirely, so both fell through to the generic 422 `DomainException` mapping.
+    - **`ApiKeySecurityOpenApiFactory`** (`apps/api/src/OpenApi/`) reviewed: a standard
+      `#[AsDecorator(decorates: 'api_platform.openapi.factory')]` on `api_platform.openapi.factory`
+      adding an `apiKey`/`X-API-KEY` `SecurityScheme` so Swagger UI's "Authorize" button works —
+      this is API Platform's own documented recipe for this need, not a divergent pattern; no
+      changes made.
   - ✅ **Web registration flow** — `CustomerController::register()` is now a Controller-orchestrated
     sequence, not one mega-handler. Actual dispatch order: `RegisterCustomer` (has the existing,
     tested `AddressAlreadyRegisteredException` handling) → `RegisterIdentity` → `SetPasswordCredential`

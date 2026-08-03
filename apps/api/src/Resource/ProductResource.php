@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Api\Resource;
 
+use Api\Input\ListProductForSaleInput;
+use Api\Input\RepriceProductInput;
+use Api\State\Processor\DelistProductProcessor;
+use Api\State\Processor\ListProductForSaleProcessor;
+use Api\State\Processor\RepriceProductProcessor;
 use Api\State\Provider\ProductCollectionProvider;
 use Api\State\Provider\ProductProvider;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
@@ -44,6 +50,53 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 summary: 'Retrieves a single product.',
             ),
             provider: ProductProvider::class,
+        ),
+        new Post(
+            uriTemplate: '/products',
+            status: 201,
+            security: "is_granted('catalog:write')",
+            openapi: new Operation(
+                responses: [
+                    '201' => new Response(description: 'The product that was listed for sale.'),
+                    '422' => new Response(description: 'The payload does not satisfy the product constraints.'),
+                ],
+                summary: 'Lists a new product for sale.',
+            ),
+            input: ListProductForSaleInput::class,
+            processor: ListProductForSaleProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/products/{id}/reprice',
+            status: 204,
+            security: "is_granted('catalog:write')",
+            openapi: new Operation(
+                responses: [
+                    '204' => new Response(description: 'The product was repriced.'),
+                    '404' => new Response(description: 'No product carries that identifier.'),
+                ],
+                summary: "Changes a product's unit price.",
+            ),
+            input: RepriceProductInput::class,
+            output: false,
+            name: 'reprice',
+            processor: RepriceProductProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/products/{id}/delist',
+            status: 204,
+            security: "is_granted('catalog:write')",
+            openapi: new Operation(
+                responses: [
+                    '204' => new Response(description: 'The product was delisted.'),
+                    '404' => new Response(description: 'No product carries that identifier.'),
+                    '409' => new Response(description: 'The product is already delisted.'),
+                ],
+                summary: 'Delists a product.',
+            ),
+            input: false,
+            output: false,
+            name: 'delist',
+            processor: DelistProductProcessor::class,
         ),
     ],
 )]
