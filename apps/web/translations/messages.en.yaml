@@ -2,11 +2,14 @@ layout:
     title: Sales & Fulfilment showcase
     nav:
         orders: My orders
-        shipments: Shipments
-        place_order: Place an order
         register_customer: Register
         login: Log in
         logout: Log out
+        account: My account
+        change_password: Change password
+        erase_account: Erase my account
+        erase_confirm_message: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
+        erase_dismiss_button: Keep my account
 
 security:
     login:
@@ -19,20 +22,32 @@ sales:
     order:
         list:
             title: My orders
+            place_order_button: Place an order
+            view_button: View
+            pay_button: Pay
             table:
                 id: ID
                 total: Total
                 status: Status
+                payment: Payment
                 placed_at: Placed at
                 actions: Actions
             empty: No orders yet.
             cancel_button: Cancel
             cancel_confirm_message: Are you sure you want to cancel this order?
             cancel_dismiss_button: Keep order
-            my_account_title: My account
-            erase_button: Erase my account
-            erase_confirm_message: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
-            erase_dismiss_button: Keep my account
+        show:
+            title: Order detail
+            payment_title: Payment
+            payment_none: No payment requested yet.
+            payment_reference: 'Payment ref.: %reference%'
+            payment_hint: To confirm via the Webhook DM (/webhook/docs).
+            shipment_title: Shipment
+            shipment_none: No shipment yet — a shipment is created automatically once the payment is confirmed.
+            shipment_tracking_reference: 'Tracking reference: %reference%'
+            no_actions: No action available — payment for this order has already been requested.
+            no_actions_cancelled: This order is cancelled.
+            back_link: Back to my orders
         place:
             title: Place an order
             lines_label: Lines
@@ -44,34 +59,34 @@ sales:
         status:
             placed: Placed
             cancelled: Cancelled
+        payment_status:
+            requested: Payment pending
+            captured: Paid
+        flash:
+            placed: Order placed.
+            cancelled: Order cancelled.
+            cannot_cancel_paid: Payment for this order has already been requested, it can no longer be cancelled.
+            payment_requested: Payment requested — confirm it via the Webhook DM.
+            payment_already_requested: Payment for this order has already been requested.
     customer:
         register:
             title: Register
             email_label: Email
             password_label: Password
             submit_button: Register
+        change_password:
+            title: Change password
+            password_label: New password
+            submit_button: Change password
         flash:
             registered: Account created — please log in.
             erased: Your account has been erased.
             address_taken: This address is already registered.
             login_taken: This email is already used to log in.
+            password_changed: Password changed.
 
 fulfilment:
     shipment:
-        list:
-            title: Shipments
-            table:
-                id: ID
-                order: Order
-                customer: Customer
-                total: Order total
-                status: Status
-                tracking_reference: Tracking reference
-                created_at: Created at
-                dispatched_at: Dispatched at
-                delivered_at: Delivered at
-                order_cancelled_at: Order cancelled at
-            empty: No shipments yet — shipments are created automatically once an order is placed.
         status:
             pending: Pending
             dispatched: Dispatched

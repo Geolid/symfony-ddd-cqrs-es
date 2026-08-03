@@ -25,6 +25,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'apps/webhook/.*' }
 
+    - name: EsAdmin
+      collectors:
+        - { type: directory, value: 'apps/es-admin/.*' }
+
   # Deptrac only draws DM-to-BC outer boundaries.
   # Internal access (#[AsDrivingPort], PublishedLanguageInterface) is enforced by Tools\PHPat\DeliveryMechanismTest.
   ruleset:
@@ -32,3 +36,4 @@ deptrac:
     Api:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
     Cli:     [ Sales.Customer, Sales.Order, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
     Webhook: [ Fulfilment.Shipment, Sales.Order, Shared, Vendors ]
+    EsAdmin: [ Shared, Vendors ]

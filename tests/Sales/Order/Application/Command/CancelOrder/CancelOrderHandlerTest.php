@@ -6,10 +6,12 @@ namespace Sales\Tests\Order\Application\Command\CancelOrder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
+use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\OrderId;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -54,5 +56,20 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new CancelOrder(OrderId::generate()->toString()));
+    }
+
+    #[Test]
+    public function itFailsWhenAPaymentHasAlreadyBeenRequested(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->create());
+
+        // Then
+        $this->expectException(OrderPaymentAlreadyRequestedException::class);
+
+        // When
+        $this->dispatch(new CancelOrder($order->id()->toString()));
     }
 }

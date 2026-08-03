@@ -30,7 +30,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
@@ -55,7 +55,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'wrong password']);
         $client->submit($form);
 
@@ -81,7 +81,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
@@ -107,7 +107,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => 'admin@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
@@ -130,7 +130,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withPassword('correct horse battery staple')
             ->create());
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 

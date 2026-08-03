@@ -23,6 +23,61 @@ were surfaced later and have no original number.
   label/price via `ProductResolver` (`Sales.Order -> Catalog.Product` Integration Events) at
   placement time, mirroring `BuyerResolver`'s role for `Sales.Order -> Sales.Customer`.
 
+- **Web: pay is now a customer-triggered action, not an automatic `OrderPlaced` reaction —
+  closes the checkout dead-end and reworks the Web UI around it.** `RequestOrderPaymentOnOrderPlaced`
+  (the `#[Processor]` calling the fake Globex gateway automatically on `OrderPlaced`) is removed
+  entirely: the customer now clicks "Payer" on their order. That call is an outbound I/O to a
+  vendor, which per `application.md` must never sit inside a Command Handler's transaction — so
+  it's a new `#[AsDrivingPort]`, `Sales\Order\Application\Payment\RequestOrderPaymentInterface`
+  (mirrors `IssueApiTokenCredentialInterface`'s shape: a DM-callable port whose Infrastructure
+  implementation, `OrderPaymentRequestingService`, reads the Order (Repository + Finder — the
+  Finder for `customerId`/amount, the Repository for `buyerAddress` specifically to avoid ever
+  projecting that PII), calls `PaymentGatewayInterface`, then dispatches the existing
+  `RequestOrderPayment` command). Guards added: refuses a second payment request for the same
+  order and refuses to request payment for a cancelled order (both via
+  `OrderPaymentFinderInterface::ofOrder()`/the Order's own status) — `OrderPaymentAlreadyRequestedException`
+  (new, 409) and the existing `OrderAlreadyCancelledException`. Symmetrically, `CancelOrderHandler`
+  now refuses to cancel an order once a payment has been requested (same exception) — a real gap
+  before this: nothing stopped cancelling an order that was already paid/shipped.
+  `OrderControllerTest::itPaysForAnOrder` is the first Web test to exercise the Globex call
+  synchronously inside a request (the `#[Processor]` group was already excluded from
+  `run_after_aggregate_save` in `test`, so this path was never reached from a Web test before) —
+  mirrors the codebase's own convention (`GlobexPaymentGatewayTest`, `OrderPaymentRequestingServiceTest`)
+  of mocking the HTTP response explicitly in the test's own `// Given` (`self::getContainer()->set('globex.client', new MockHttpClient(...))`,
+  `framework.test: true` makes this override just work) rather than widening
+  `config/services/shared.php`'s dev/demo-only fake-client swap to `test` globally — first pass
+  did that and got corrected during review, since a blanket env-level swap would silently cover
+  for any other test on this path too, not just the one that actually needs it.
+  Considered and rejected for confirming the payment: a `demo:*` command simulating the
+  `payment-captured` webhook call — `demo/` is for seeding aggregates only, not for playing the
+  role of an external actor calling our own DM; and Web calling the Webhook DM's endpoint
+  directly — a DM translates *its own* real external actor's input, it doesn't impersonate
+  another DM's caller. Instead: `Sales.Order` gains `GetOrderPaymentByOrder`
+  (`OrderPaymentFinderInterface::ofOrder()`, `PublishedOrderPaymentStatus`) and
+  `Fulfilment.Shipment` gains `GetShipmentByOrder` (`ShipmentFinderInterface::ofOrder()`) — a new
+  `GET /sales/orders/{id}` detail page composes both read sides onto the same page as the order
+  (a read-side rollup across aggregates, not a change to either aggregate's own domain status:
+  `Order` itself still only ever has `placed`/`cancelled`) showing the payment reference + a hint
+  pointing at `/webhook/docs`, and the shipment's status/tracking reference once one exists — the
+  human sees exactly what a real Globex/carrier webhook call needs and drives both webhooks
+  themselves through the Webhook DM, same as they would in a real integration.
+  UI reorganized in the same pass, per explicit feedback that the previous layout was
+  disorganized: `ShipmentController`/its route/template/nav entry are removed outright (shipment
+  info now lives on the order detail page, no separate "Livraisons" tab); the order list gets
+  Voir/Annuler/Payer actions per row and a "Passer une commande" button (moved out of the header
+  nav, which only listed it as a bare link before); the header's bare "Se déconnecter" link
+  becomes an account dropdown (`<details class="dropdown">`, no JS) holding "Changer de mot de
+  passe" (new — `SetPasswordCredentialHandler` already upserts, so the existing command sufficed,
+  no BC change needed), "Effacer mon compte" (moved out of the bottom of the order list — its
+  CSRF token id also dropped the `-{customerId}` suffix, since Symfony CSRF tokens are already
+  session-scoped and the shared header has no customer id in scope), and "Se déconnecter".
+  Both `fulfilment.shipment.list.*` translations are gone with the page; the stale
+  `fulfilment.shipment.list.empty` copy ("shipments are created automatically once an order is
+  placed") that a previous pass had only partially fixed is now gone entirely along with the page
+  it lived on. `SCENARIO.md`'s end-to-end journey and the `Fulfilment.Shipment` DM-table row
+  updated to match (both webhooks are human-triggered through the Webhook DM, not
+  demo-simulated; the `Fulfilment.Shipment` trigger is no longer marked "planned").
+
 ## Pending
 
 - **#18** — Add a `SentryContextProviderInterface` implementation per BC (the

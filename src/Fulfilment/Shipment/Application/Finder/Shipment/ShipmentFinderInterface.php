@@ -15,4 +15,6 @@ interface ShipmentFinderInterface extends PaginatedFinderInterface
     public function withStatus(ShipmentStatus $status): static;
 
     public function withTrackingReference(string $trackingReference): static;
+
+    public function ofOrder(string $orderId): ?ShipmentResult;
 }

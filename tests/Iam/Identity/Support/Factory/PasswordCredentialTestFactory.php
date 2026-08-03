@@ -35,7 +35,6 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => PasswordCredentialId::generate()->toString(),
             'identityId' => IdentityId::generate()->toString(),
             'login' => self::faker()->unique()->safeEmail(),
             'password' => 'correct horse battery staple',
@@ -45,14 +44,18 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 
     protected function build(array $attributes): PasswordCredential
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($identityId = $attributes['identityId']);
         Assert::stringNotEmpty($login = $attributes['login']);
         Assert::stringNotEmpty($password = $attributes['password']);
         Assert::isInstanceOf($setAt = $attributes['setAt'], \DateTimeInterface::class);
 
         return PasswordCredential::set(
-            PasswordCredentialId::fromString($id),
+            // SetPasswordCredentialHandler upserts by treating the PasswordCredentialId as the
+            // identityId itself (a real Identity has at most one PasswordCredential) — the id must
+            // match that invariant, or a later SetPasswordCredential dispatch (e.g. changing the
+            // password) takes the "create" branch instead of "change" and silently produces a
+            // second, disconnected credential for the same login.
+            PasswordCredentialId::fromString($identityId),
             IdentityId::fromString($identityId),
             Login::fromString($login),
             $password,
