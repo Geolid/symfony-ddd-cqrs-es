@@ -12,7 +12,8 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./:/srv/
     environment:
@@ -25,6 +26,11 @@ services:
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
     volumes:
       - db-data:/var/lib/mysql
+    healthcheck:
+      test: [ 'CMD', 'healthcheck.sh', '--connect', '--innodb_initialized' ]
+      interval: 2s
+      timeout: 1s
+      retries: 30
 
   mailer:
     image: axllent/mailpit:latest
