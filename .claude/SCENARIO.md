@@ -43,17 +43,16 @@ Two corrections made along the way, kept here so they aren't relitigated:
 The real dividing line turned out not to be "internal vs. external" but **interactive vs.
 batch/bootstrap**: Web is for anything a human does live (browsing, filling a form); CLI is
 for what must work *before* the app's own API auth exists (bootstrapping the first admin), pure
-dev/demo tooling, and any recurring ops job a scheduler invokes rather than a human
-(`dispatch-pending` — realistically a nightly cron, and `crontab`/a k8s `CronJob` calling a
-console command is the idiomatic way to run one, not a human clicking a dashboard button); API
-is for anything another authenticated actor (including our own admin, using the API as their
-tool) does interactively over the network without a live UI.
+dev/demo tooling, and any recurring ops job (`dispatch-pending` — realistically a nightly cron,
+not something a human confirms by clicking a dashboard button); API is for anything another
+authenticated actor (including our own admin, using the API as their tool) does interactively
+over the network without a live UI.
 
 | DM | Who calls it | Auth | Scope |
 |---|---|---|---|
 | `web` | The customer, in a browser | Session, `PasswordCredential` | Self-service only: register, login/logout, browse `Catalog.Product`, place/cancel/pay for/view own orders, GDPR account deletion. No admin population here. |
 | `api` | The admin, scripted or via a dashboard | Token, `ApiTokenCredential` | Supervision + catalog + fulfilment admin: view all orders and their status, view/list/reprice/delist products. Also proves Identity is credential-agnostic (same concept as Web, different credential). |
-| `cli` | An internal operator with shell access, or a scheduler invoking it unattended | None — trusted by construction | Bootstrap: create the first admin Identity/Credential/Grant (chicken-and-egg — nothing else can, since the API itself requires an Identity to authenticate). Plus pre-existing dev/demo tooling (`sales:order:place` demo seeding) and the recurring `fulfilment:shipment:dispatch-pending` batch job (the "truck comes once a day" carrier hand-off — a cron target, not something an admin manually confirms). |
+| `cli` | An internal operator with shell access, or `symfony/scheduler`'s internal worker invoking it unattended | None — trusted by construction | Bootstrap: create the first admin Identity/Credential/Grant (chicken-and-egg — nothing else can, since the API itself requires an Identity to authenticate). Plus the recurring `fulfilment:shipment:dispatch-pending` batch job (the "truck comes once a day" carrier hand-off). |
 | `webhook` | The carrier, asynchronously | Shared secret (HMAC), not an Identity | Delivery status updates only. Deliberately NOT promoted to an Iam-authenticated caller — HMAC verifies message integrity from an external partner (like Stripe/GitHub webhooks), a different trust boundary than our own admin's Iam identity. No `Carrier` BC/Identity — redundant with what the webhook already proves. |
 
 Rejected alternatives, kept here so they aren't re-proposed:
@@ -62,8 +61,12 @@ Rejected alternatives, kept here so they aren't re-proposed:
   scenario; with no interactive staff action left, Web is customer-only.
 - `dispatch-pending` as a plain admin API action ("the admin validates the hand-off") — tried,
   then reversed: no real ops team manually confirms a routine nightly batch job like that: it's
-  exactly the kind of thing you automate away. Realistically a `crontab`/k8s `CronJob` invoking
-  the existing CLI command, so it stayed there rather than moving to the API.
+  exactly the kind of thing you automate away.
+- `dispatch-pending` as an external `crontab`/k8s `CronJob` calling the CLI command — works, but
+  `symfony/scheduler`'s `#[AsCronTask]` internalizes the same cron inside the app itself (still
+  targets the *same* `fulfilment:shipment:dispatch-pending` console command via
+  `RunCommandMessage` — no separate class), one less piece of external infra to wire per
+  environment, and it's the idiomatic modern-Symfony way to do this.
 - A `Carrier` Iam Identity so the carrier can call our API to confirm pickup — rejected, redundant
   with the webhook already covering "carrier tells us about a status change."
 
@@ -84,9 +87,7 @@ Rejected alternatives, kept here so they aren't re-proposed:
 5. The bootstrap admin Identity (created once via CLI) manages the catalog and supervises all
    orders through the API, authenticated with an `ApiTokenCredential` — proving the same Identity
    concept works for both a human session (Web) and a token (API).
-6. An admin suspends a suspicious Identity → cascades to revoking all its active API tokens via a
-   `ForAll<RevokeApiTokenCredential>` bulk operation.
-7. The customer requests GDPR erasure (Web) → `CustomerErased` (already there) + `IdentityErased`
+6. The customer requests GDPR erasure (Web) → `CustomerErased` (already there) + `IdentityErased`
    cascading to their credentials.
 
 ## Architecture-pattern coverage this scenario is meant to close
@@ -94,9 +95,7 @@ Rejected alternatives, kept here so they aren't re-proposed:
 Patterns already demonstrated elsewhere in the codebase are not repeated here (see git history /
 prior session notes for the full inventory). Gaps this scenario specifically closes:
 
-- **`ForAll<X>` bulk pattern** — step 6 (suspend → cascade token revocation). No other example
-  exists yet.
-- **GDPR erasure outside `Sales.Customer`** — step 7 (`IdentityErased`). Today only
+- **GDPR erasure outside `Sales.Customer`** — step 6 (`IdentityErased`). Today only
   `Sales.Customer` demonstrates erasure.
 - **A second vendor Gateway** — `PaymentGatewayInterface`, alongside `AcmeCarrierGateway`.
 - **A second proof that micro-aggregates aren't a one-off** — `OrderPayment` beside

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'demo:sales:customers', description: 'Seed customers')]
 final readonly class SeedCustomersCommand
 {
-    private const DEMO_PASSWORD = 'password';
+    private const string DEMO_PASSWORD = 'password';
 
     public function __construct(private CommandBusInterface $commandBus)
     {

@@ -177,10 +177,19 @@ were surfaced later and have no original number.
     shell history).
   - ✅ **`dispatch-pending` reconsidered, then left in CLI.** Tried moving it to a gated API
     admin action; reversed after review — realistically the nightly carrier hand-off is a cron
-    job (`crontab`/k8s `CronJob` invoking `fulfilment:shipment:dispatch-pending`), not something
-    an admin manually confirms through a dashboard. See `SCENARIO.md`'s DM table/rejected
-    alternatives. The single-shipment `POST /shipments/{id}/dispatch` API operation stays gated
-    as-is; no bulk API equivalent added.
+    job, not something an admin manually confirms through a dashboard. See `SCENARIO.md`'s DM
+    table/rejected alternatives.
+  - ✅ **`POST /shipments/{id}/dispatch` (single-shipment API operation) removed entirely** — no
+    real admin action in this scenario ever needs to expedite one specific shipment (no VIP/urgent
+    case anywhere in the story); the only real trigger is the nightly batch. Kept without a
+    concrete reason, it was CRUD-completism the project's own anti-over-engineering stance argues
+    against. `DispatchShipmentProcessor` (Infrastructure) removed with it; `DispatchShipment`
+    Command/Handler (Application) stays — still the target of the CLI's per-shipment dispatch.
+  - ✅ **`sales:order:place` (CLI) removed entirely** — its own description already said "demo/local
+    seeding," yet it lived in `apps/cli` mixed into the real DM surface, contradicting the CLI
+    dividing line this session settled (bootstrap + recurring ops jobs only, no ad-hoc dev/demo
+    actions). Redundant with `demo:sales:orders` (the sanctioned seeder) for actually seeding data,
+    so removed rather than relocated to `demo/`.
   - ✅ **Demo seeders now create/link an Identity for seeded customers** — `demo:sales:customers`
     additionally dispatches `RegisterIdentity` + `SetPasswordCredential` + `LinkCustomerIdentity`
     per seeded customer, so `make seed` produces customers that can actually log in (fixed demo
@@ -189,10 +198,29 @@ were surfaced later and have no original number.
     left to justify it), a `Carrier` Iam Identity (redundant with the webhook), stock/inventory
     management (a whole separate feature, deferred).
 
-- **Add suspend-cascades-to-token-revocation (`ForAll` bulk pattern).** *(blocked by #24)*
-  When an Identity is suspended, cascade-revoke all its active `ApiTokenCredential`s via a
-  `ForAll<RevokeApiTokenCredential>` bulk handler — first concrete example of the "ForAll<X>"
-  bulk pattern documented in `application.md` but never yet demonstrated.
+- ✅ **`dispatch-pending` moved to `symfony/scheduler`, no new class needed.** Reconsidered again
+  after landing it in CLI (see the reversal noted above): a CLI command still needs *something*
+  external to trigger it on a schedule, and that's exactly what `symfony/scheduler` is for —
+  internalizing the cron inside the app instead of relying on an external crontab/k8s `CronJob`.
+  Landed as `#[AsCronTask('0 0 * * *')]` directly on the existing `DispatchPendingShipmentsCommand`
+  — `AddScheduleMessengerPass` detects a `console.command`-tagged service and schedules a
+  `RunCommandMessage` targeting it directly, so there's no separate Task/message class, no
+  duplicated logic: one implementation, invoked either by hand or by the scheduler's worker
+  (`messenger:consume scheduler_default`). `DispatchShipment` (dispatched once per pending
+  shipment inside that command's loop) is routed `async` in `messenger.php` (mirrors
+  `CreateShipment`) — without it, each dispatch was a *nested* Messenger call sharing the
+  outer/caller's DBAL transaction (no savepoints configured), so one bad shipment's rollback would
+  have silently poisoned every sibling already processed in the same loop.
+  Two false starts corrected along the way, kept here so they aren't retried: (1) a
+  `DispatchForAllShipments` "bulk Command" wrapping the loop — misapplied the `ForAll<X>` naming
+  from `application.md`, which was itself over-fitted from a single past example; a Command whose
+  entire body is dispatching other Commands is a smell (a Handler carries one business decision,
+  not a batch-scan trigger) — the rule is corrected in `application.md` to a general principle
+  (route each item's Command `async`, whoever the caller is) instead of a named pattern requiring
+  a demonstrated example; (2) a dedicated `Infrastructure/Scheduler/*Task` class calling a shared
+  driving port — unnecessary once `#[AsCronTask]` on the console command itself covers it.
+  The planned suspend-cascades-to-token-revocation feature stays dropped — not because of any
+  pattern-coverage argument (there was never a real one), just deprioritized.
 
 - **Add Identity erasure cascade (GDPR).** *(blocked by #24)* `Iam.Identity` currently tags
   `PasswordCredentialSet`'s login as PersonalData/DataSubjectId but has no erasure event,
@@ -221,6 +249,6 @@ were surfaced later and have no original number.
 
 1. `Catalog.Product` and `#24` have no dependency on each other — either can start first.
 2. `#25` (OrderPayment) needs `Catalog.Product` first (a real price to charge).
-3. The suspend-cascade and Identity-erasure-cascade items need `#24` first (auth wiring).
+3. The Identity-erasure-cascade item needs `#24` first (auth wiring).
 4. `#18`, README, and emptying the registers can happen anytime, but final audits wait on
    everything.
