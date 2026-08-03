@@ -17,7 +17,7 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
     {
         // Given
         $identityId = IdentityId::generate()->toString();
-        $expiresAt = new \DateTimeImmutable('+30 days');
+        $expiresAt = new \DateTimeImmutable('+30 days +00:00');
 
         // When
         $apiKey = $this->service(IssueApiTokenCredentialInterface::class)->issue($identityId, $expiresAt);
@@ -34,7 +34,7 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
     {
         // Given
         $identityId = IdentityId::generate()->toString();
-        $expiresAt = new \DateTimeImmutable('+30 days');
+        $expiresAt = new \DateTimeImmutable('+30 days +00:00');
         $issuer = $this->service(IssueApiTokenCredentialInterface::class);
 
         // When

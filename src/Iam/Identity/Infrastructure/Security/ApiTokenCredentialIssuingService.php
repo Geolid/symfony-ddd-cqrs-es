@@ -9,6 +9,7 @@ use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
 use Iam\Identity\Application\Security\IssuedApiKey;
 use Iam\Identity\Domain\ApiTokenCredentialId;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class ApiTokenCredentialIssuingService implements IssueApiTokenCredentialInterface
 {
@@ -16,6 +17,10 @@ final readonly class ApiTokenCredentialIssuingService implements IssueApiTokenCr
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function issue(string $identityId, \DateTimeImmutable $expiresAt): IssuedApiKey
     {
         $identifier = 'key_'.bin2hex(random_bytes(8));
