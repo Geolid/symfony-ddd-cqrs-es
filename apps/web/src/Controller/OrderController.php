@@ -21,7 +21,6 @@ use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
 use Sales\Order\Application\Query\GetOrderPaymentByOrder\GetOrderPaymentByOrder;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -163,10 +162,6 @@ final class OrderController extends AbstractController
 
         try {
             $this->commandBus->dispatch(new CancelOrder($id));
-        } catch (OrderAlreadyCancelledException) {
-            $this->addFlash('error', $this->translator->trans('sales.order.flash.already_cancelled'));
-
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         } catch (OrderPaymentAlreadyRequestedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
 
@@ -196,10 +191,6 @@ final class OrderController extends AbstractController
             $this->orderPaymentRequester->requestFor($id);
         } catch (OrderPaymentAlreadyRequestedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.payment_already_requested'));
-
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-        } catch (OrderAlreadyCancelledException) {
-            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_pay_cancelled'));
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         } catch (OrderResultNotFoundException) {

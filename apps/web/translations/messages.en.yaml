@@ -46,6 +46,7 @@ sales:
             shipment_none: No shipment yet — a shipment is created automatically once the payment is confirmed.
             shipment_tracking_reference: 'Tracking reference: %reference%'
             no_actions: No action available — payment for this order has already been requested.
+            no_actions_cancelled: This order is cancelled.
             back_link: Back to my orders
         place:
             title: Place an order
@@ -64,9 +65,7 @@ sales:
         flash:
             placed: Order placed.
             cancelled: Order cancelled.
-            already_cancelled: This order is already cancelled.
             cannot_cancel_paid: Payment for this order has already been requested, it can no longer be cancelled.
-            cannot_pay_cancelled: This order is cancelled, its payment can no longer be requested.
             payment_requested: Payment requested — confirm it via the Webhook DM.
             payment_already_requested: Payment for this order has already been requested.
     customer:

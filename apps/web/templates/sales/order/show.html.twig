@@ -55,20 +55,20 @@
     {% endif %}
 
     <h2>{{ 'sales.order.list.table.actions'|trans }}</h2>
-    {% if payment is null %}
-        {% if order.status == cancellableStatus %}
-            {{ ui.confirm_modal(
-                'cancel-order-' ~ order.id,
-                path('sales_order_cancel', {id: order.id}),
-                'sales.order.list.cancel_button'|trans,
-                'sales.order.list.cancel_confirm_message'|trans,
-                {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
-            ) }}
-        {% endif %}
+    {% if order.status == cancellableStatus and payment is null %}
+        {{ ui.confirm_modal(
+            'cancel-order-' ~ order.id,
+            path('sales_order_cancel', {id: order.id}),
+            'sales.order.list.cancel_button'|trans,
+            'sales.order.list.cancel_confirm_message'|trans,
+            {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
+        ) }}
         <form method="post" action="{{ path('sales_order_pay', {id: order.id}) }}" style="display: inline">
             <input type="hidden" name="_token" value="{{ csrf_token('pay-order-' ~ order.id) }}">
             <button type="submit" data-testid="pay-order-button">{{ 'sales.order.list.pay_button'|trans }}</button>
         </form>
+    {% elseif order.status != cancellableStatus %}
+        <p>{{ 'sales.order.show.no_actions_cancelled'|trans }}</p>
     {% else %}
         <p>{{ 'sales.order.show.no_actions'|trans }}</p>
     {% endif %}

@@ -46,6 +46,7 @@ sales:
             shipment_none: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement est confirmé.
             shipment_tracking_reference: 'Numéro de suivi : %reference%'
             no_actions: Aucune action possible — le paiement de cette commande a déjà été demandé.
+            no_actions_cancelled: Cette commande est annulée.
             back_link: Retour à mes commandes
         place:
             title: Passer une commande
@@ -64,9 +65,7 @@ sales:
         flash:
             placed: Commande passée.
             cancelled: Commande annulée.
-            already_cancelled: Cette commande est déjà annulée.
             cannot_cancel_paid: Le paiement de cette commande a déjà été demandé, elle ne peut plus être annulée.
-            cannot_pay_cancelled: Cette commande est annulée, son paiement ne peut plus être demandé.
             payment_requested: Paiement demandé — validez-le via le DM Webhook.
             payment_already_requested: Le paiement de cette commande a déjà été demandé.
     customer:
