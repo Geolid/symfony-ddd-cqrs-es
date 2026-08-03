@@ -10,6 +10,8 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class OrderControllerTest extends AbstractWebTestCase
@@ -53,6 +55,10 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $this->loggedInCustomer($client);
         $id = $this->placeOrder($client);
+        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
+            json_encode(['chargeReference' => 'GLBX-TEST-REF'], \JSON_THROW_ON_ERROR),
+            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
+        )));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
@@ -63,10 +69,11 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="flash-success"]');
-        self::assertSelectorExists('[data-testid="order-payment-reference"]');
+        self::assertSelectorTextContains('[data-testid="order-payment-reference"]', 'GLBX-TEST-REF');
 
         $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
         self::assertNotNull($payment);
+        self::assertSame('GLBX-TEST-REF', $payment->reference);
     }
 
     #[Test]

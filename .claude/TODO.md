@@ -39,10 +39,15 @@ were surfaced later and have no original number.
   (new, 409) and the existing `OrderAlreadyCancelledException`. Symmetrically, `CancelOrderHandler`
   now refuses to cancel an order once a payment has been requested (same exception) — a real gap
   before this: nothing stopped cancelling an order that was already paid/shipped.
-  `config/services/shared.php`'s dev/demo-only fake Globex/Acme `MockHttpClient` swap now also
-  applies to `test` — the Web `pay()` action is the first thing to exercise that path
-  synchronously inside a request in the test suite (the `#[Processor]` group was already excluded
-  from `run_after_aggregate_save` in `test`, so this was never exercised there before).
+  `OrderControllerTest::itPaysForAnOrder` is the first Web test to exercise the Globex call
+  synchronously inside a request (the `#[Processor]` group was already excluded from
+  `run_after_aggregate_save` in `test`, so this path was never reached from a Web test before) —
+  mirrors the codebase's own convention (`GlobexPaymentGatewayTest`, `OrderPaymentRequestingServiceTest`)
+  of mocking the HTTP response explicitly in the test's own `// Given` (`self::getContainer()->set('globex.client', new MockHttpClient(...))`,
+  `framework.test: true` makes this override just work) rather than widening
+  `config/services/shared.php`'s dev/demo-only fake-client swap to `test` globally — first pass
+  did that and got corrected during review, since a blanket env-level swap would silently cover
+  for any other test on this path too, not just the one that actually needs it.
   Considered and rejected for confirming the payment: a `demo:*` command simulating the
   `payment-captured` webhook call — `demo/` is for seeding aggregates only, not for playing the
   role of an external actor calling our own DM; and Web calling the Webhook DM's endpoint
