@@ -139,6 +139,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // Then
         $client->followRedirect();
+        $client->followRedirect();
         self::assertSelectorExists('[data-testid="nav-login"]');
     }
 }

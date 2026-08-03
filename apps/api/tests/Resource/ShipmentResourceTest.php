@@ -108,7 +108,7 @@ final class ShipmentResourceTest extends AbstractApiTestCase
     public function itAcceptsADispatch(): void
     {
         // Given
-        $client = $this->authenticatedClient('fulfilment:write');
+        $client = $this->authenticatedClient('fulfilment:write', 'fulfilment:read');
         $shipment = ShipmentTestFactory::new()->create();
         $this->store($shipment);
 
