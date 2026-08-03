@@ -6,8 +6,8 @@ namespace Cli\Console;
 
 use Cli\Console\Input\RegisterIdentityInput;
 use Iam\Access\Application\Command\GrantPermission\GrantPermission;
-use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
+use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -25,6 +25,7 @@ final class RegisterIdentityCommand
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
+        private readonly IssueApiTokenCredentialInterface $apiTokenCredentialIssuer,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -43,24 +44,17 @@ final class RegisterIdentityCommand
 
         try {
             $identityId = Uuid::uuid7()->toString();
-            $identifier = 'key_'.bin2hex(random_bytes(8));
-            $secret = bin2hex(random_bytes(32));
+            $expiresAt = $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays));
 
             $this->commandBus->dispatch(new RegisterIdentity($identityId));
-            $this->commandBus->dispatch(new IssueApiTokenCredential(
-                id: Uuid::uuid7()->toString(),
-                identityId: $identityId,
-                identifier: $identifier,
-                secret: $secret,
-                expiresAt: $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays))->format('c'),
-            ));
+            $apiKey = $this->apiTokenCredentialIssuer->issue($identityId, $expiresAt);
 
             foreach ($input->permission as $permission) {
                 $this->commandBus->dispatch(new GrantPermission(Uuid::uuid7()->toString(), $identityId, $permission));
             }
 
             $io->success(\sprintf('Identity %s registered.', $identityId));
-            $io->writeln(\sprintf('API key (shown once, store it securely): %s.%s', $identifier, $secret));
+            $io->writeln(\sprintf('API key (shown once, store it securely): %s.%s', $apiKey->identifier, $apiKey->secret));
         } finally {
             $this->release();
         }
