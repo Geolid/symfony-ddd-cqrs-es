@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
 {
     #[Test]
-    public function itAcceptsARequestWithoutAnyApiKeyHeader(): void
+    public function itRejectsARequestWithoutAnyApiKeyHeader(): void
     {
         // Given
         $client = self::jsonClient();
@@ -24,11 +24,11 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
         $client->request('GET', '/v1/sales/orders');
 
         // Then
-        self::assertResponseIsSuccessful();
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
     #[Test]
-    public function itAcceptsARequestWithAValidApiKey(): void
+    public function itAcceptsARequestWithAValidApiKeyAndGrant(): void
     {
         // Given
         $client = self::jsonClient();
@@ -39,6 +39,7 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
+        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:supervise')->create());
 
         // When
         $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
@@ -68,6 +69,26 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
         self::assertTrue($authorizationChecker->isGranted('sales:supervise'));
         self::assertFalse($authorizationChecker->isGranted('catalog:manage'));
+    }
+
+    #[Test]
+    public function itRejectsAValidApiKeyWithoutTheRequiredGrant(): void
+    {
+        // Given
+        $client = self::jsonClient();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(ApiTokenCredentialTestFactory::new()
+            ->forIdentity($identity->id()->toString())
+            ->withIdentifier('key_abc123')
+            ->withSecret('super-secret')
+            ->create());
+
+        // When
+        $client->request('GET', '/v1/sales/orders', ['headers' => ['X-Api-Key' => 'key_abc123.super-secret']]);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     #[Test]

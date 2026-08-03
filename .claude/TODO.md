@@ -111,25 +111,56 @@ were surfaced later and have no original number.
       `Request`-coupled `UserInterface` implementation can't live in `src/` (delivery vendor
       code), so it's a small, duplicated class per DM, same shape as the DTO-per-DM convention
       already established for Input/Payload/Criteria.
-  - ⬜ **Not done yet, deliberately deferred to keep this chunk reviewable:** no existing route is
-    actually gated behind `is_granted(...)` yet (Web stays fully public, API stays fully public) —
-    that's the next chunk, alongside the items below.
-  - Web registration is a Controller-orchestrated sequence, not one mega-handler: `RegisterIdentity`
-    → `SetPasswordCredential` → `RegisterCustomer` → `LinkCustomerIdentity`. Identity first — it's
-    the root concept, a Customer optionally attaches to one, never the reverse. *(not done — login
-    only, so far; nothing to log into without the CLI bootstrap command below either)*
-  - Web (session, `PasswordCredential`): register, browse products, place/cancel/view own orders
-    gated behind login, pay, GDPR self-erasure. *(login/logout done; the rest is ungated still)*
-  - API (token, `ApiTokenCredential`): view all orders + status, view/reprice/delist/add products,
-    validate the carrier hand-off (`dispatch-pending` **moves here from CLI** — an admin action,
-    not a scheduler or cron; this touches existing, already-merged CLI code, done carefully).
-    Existing customer-shaped API ops (`POST /orders`, per-order cancel) are removed — a customer
-    never calls the API directly in this model. *(bearer auth wired; nothing gated yet)*
-  - CLI: new `iam:identity:register` (bootstrap the first admin Identity + Credential + Grants —
-    the one thing that must work without the API's own auth already existing). Existing
-    `sales:order:place`/demo seeding untouched, but demo seeders updated to also create and link
-    an Identity for seeded customers (nothing has ever actually been seeded yet, but `make seed`
-    must stay consistent once this lands). *(not started)*
+  - ✅ **Routes gated behind `is_granted(...)`.**
+    - Web: `OrderController` requires `IS_AUTHENTICATED_FULLY` throughout; `list()`/`place()`
+      resolve the customer from the logged-in Identity (`GetCustomerByIdentityId` +
+      `ListOrders(customerId: ...)`, using the pre-existing `OrderFinderInterface::withCustomer()`
+      filter) instead of a buyer dropdown — a customer only ever sees/places/cancels their own
+      orders. `cancel()` additionally checks `$order->customerId === $customer->id` before
+      dispatching (an IDOR gap the old dropdown-based flow didn't have to worry about, since
+      identity wasn't wired yet). `CustomerController::list()` (view-all-customers, a staff
+      screen) is **removed** — `SCENARIO.md` settled Web as customer-only, no admin population,
+      so it has no home there anymore. `erase()` no longer takes an arbitrary `{id}`: it derives
+      "myself" from the logged-in Identity, so a customer can only erase their own account (the
+      old route let any authenticated caller erase any customer by guessing a UUID — same class
+      of gap as the order-cancel one). `ShipmentController::list()` is kept (not filtered to "my
+      shipments" — a judgment call, flagged to the user rather than assumed) but now requires
+      `IS_AUTHENTICATED_FULLY` too.
+    - API: `OrderResource`/`ShipmentResource`'s remaining operations carry
+      `security: "is_granted('sales:supervise')"` / `"is_granted('fulfilment:supervise')"` per
+      dm.md's convention. `ApiTokenAuthenticator` gained `AuthenticationEntryPointInterface::start()`
+      (a clean 401 when the header is missing entirely) — without it, a fully anonymous request
+      hitting a gated operation had no clear 401/403 split, since `supports()` returning false
+      means the authenticator never engages and Symfony has no entry point to fall back to.
+      `PasswordCredentialAuthenticator` (Web) got the equivalent for a redirect-to-login instead
+      of a raw 403 page.
+    - Existing customer-shaped API ops (`POST /orders`, per-order cancel) are **removed**
+      (`PlaceOrderProcessor`, `CancelOrderProcessor`, `Api\Input\PlaceOrderInput`) — a customer
+      never calls the API directly in this model.
+  - ✅ **Web registration flow** — `CustomerController::register()` is now a Controller-orchestrated
+    sequence, not one mega-handler. Actual dispatch order: `RegisterCustomer` (has the existing,
+    tested `AddressAlreadyRegisteredException` handling) → `RegisterIdentity` → `SetPasswordCredential`
+    → `LinkCustomerIdentity`. This deviates from the "Identity first, it's the root concept" framing
+    in `SCENARIO.md` — that's a statement about the *domain model* (a Customer's `identityId` is
+    optional, an Identity never references a Customer back), not a mandate on dispatch order in
+    this one Controller. Registering the Customer first means the most likely realistic failure
+    (duplicate email) is caught before any Identity/PasswordCredential exists, avoiding an orphaned,
+    login-blocking Identity if Customer registration fails after Identity creation already
+    succeeded. A `password` field was added to the registration form (`RegisterCustomerType`); the
+    customer's login is their email.
+  - ✅ **CLI bootstrap**: new `iam:identity:register` (`RegisterIdentity` + `IssueApiTokenCredential`
+    + `GrantPermission` per `--permission`). Issues an **`ApiTokenCredential`**, not a
+    `PasswordCredential` — `SCENARIO.md` is explicit that the bootstrap admin authenticates via API
+    token ("proving the same Identity concept works for both a human session and a token"), so a
+    CLI-created admin has no way to log into Web at all, which is the correct shape (Web is
+    customer-only). The identifier/secret pair is randomly generated and printed once (shown-once
+    UX, like a real API key issuance flow) rather than accepted as CLI arguments (would leak into
+    shell history).
+  - ⬜ **Still not done, out of this chunk's scope:** `dispatch-pending` moving from CLI to API as
+    an admin action (the *existing* single-shipment `POST /shipments/{id}/dispatch` API operation
+    is now gated, but the CLI's separate bulk `fulfilment:shipment:dispatch-pending` command is
+    untouched); demo seeders creating/linking an Identity for seeded customers (`make seed` still
+    produces Customers with no way to log in).
   - Explicitly rejected: two Grant-differentiated populations inside Web (no real staff action
     left to justify it), a `Carrier` Iam Identity (redundant with the webhook), stock/inventory
     management (a whole separate feature, deferred).
