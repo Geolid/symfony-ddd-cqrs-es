@@ -19,7 +19,6 @@ final class ApiTokenAuthenticatorTest extends AbstractApiTestCase
     {
         // Given
         $client = self::jsonClient();
-        $client->getKernelBrowser()->catchExceptions(false);
 
         // When
         $client->request('GET', '/v1/sales/orders');
