@@ -22,10 +22,11 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
 
-        preg_match('/API key \(shown once, store it securely\): (\S+)\.(\S+)/', $tester->getDisplay(), $matches);
-        [, $identifier] = $matches;
+        if (1 !== preg_match('/API key \(shown once, store it securely\): (\S+)\.(\S+)/', $tester->getDisplay(), $matches)) {
+            self::fail('No API key found in the command output.');
+        }
 
-        $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($identifier);
+        $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($matches[1]);
         self::assertNotNull($credential);
 
         $grants = iterator_to_array($this->service(GrantFinderInterface::class)->forIdentity($credential->identityId));
