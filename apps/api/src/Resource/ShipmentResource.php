@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Api\Resource;
 
-use Api\State\Processor\DispatchShipmentProcessor;
 use Api\State\Provider\ShipmentCollectionProvider;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
@@ -42,23 +40,6 @@ use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
                     description: 'Filter by shipment status.',
                 ),
             ],
-        ),
-        new Post(
-            uriTemplate: '/shipments/{id}/dispatch',
-            status: 204,
-            security: "is_granted('fulfilment:write')",
-            openapi: new Operation(
-                responses: [
-                    '204' => new Response(description: 'The shipment was handed to the carrier.'),
-                    '404' => new Response(description: 'No shipment carries that identifier.'),
-                    '409' => new Response(description: 'The shipment has already left the warehouse.'),
-                ],
-                summary: 'Hands a pending shipment to the carrier.',
-            ),
-            input: false,
-            output: false,
-            name: 'dispatch',
-            processor: DispatchShipmentProcessor::class,
         ),
     ],
 )]
