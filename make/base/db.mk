@@ -4,6 +4,7 @@
 db: ## Create database and run full setup
 	@$(SF) event-sourcing:database:create --if-not-exists --no-interaction
 	@$(SF) doctrine:database:create --connection=read_model --if-not-exists --no-interaction
+	@$(SF) doctrine:database:create --connection=messenger --if-not-exists --no-interaction
 	@$(MAKE) db-update
 .PHONY: db
 
@@ -21,5 +22,6 @@ db-reset: ## Drop database and run fresh setup
 	esac
 	@$(SF) event-sourcing:database:drop --force --if-exists --no-interaction
 	@$(SF) doctrine:database:drop --connection=read_model --force --if-exists --no-interaction
+	@$(SF) doctrine:database:drop --connection=messenger --force --if-exists --no-interaction
 	@$(MAKE) db
 .PHONY: db-reset

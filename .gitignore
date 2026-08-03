@@ -4,6 +4,8 @@
 /.env.local
 /.env.local.php
 /.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
 /var/
 /vendor/
 
@@ -11,7 +13,7 @@
 # 2. DEV TOOLS & QUALITY ASSURANCE (QA)
 # =============================================================================
 
-# Claude Code & MCP
+# Claude Code
 /.claude/settings.local.json
 
 # PHP-CS-Fixer
@@ -32,4 +34,6 @@ compose.override.yaml
 # =============================================================================
 # 4. FRONTEND (AssetMapper-vendored third-party packages)
 # =============================================================================
+/public/assets/
 /ui/assets/vendor/
+

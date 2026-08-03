@@ -19,7 +19,6 @@ services:
       PHP_DATE_TIMEZONE: UTC
     command: [ 'php-fpm' ]
 
-  # Free, self-hostable relational database — no managed/paid database service.
   db:
     image: mariadb:11.8
     environment:
@@ -27,7 +26,6 @@ services:
     volumes:
       - db-data:/var/lib/mysql
 
-  # Catches every outgoing e-mail locally — no third-party mail-sending SaaS needed for dev.
   mailer:
     image: axllent/mailpit:latest
 
