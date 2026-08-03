@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
+use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -22,6 +24,10 @@ use Webmozart\Assert\InvalidArgumentException;
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
+            // Catalog
+            ProductNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ProductAlreadyDelistedException::class => ['log_level' => 'info', 'status_code' => 409],
+
             // Sales
             AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
