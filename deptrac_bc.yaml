@@ -36,8 +36,9 @@ deptrac:
     - name: Vendors
       collectors:
         - type: bool
-          # Everything project-side is excluded: apps/ because this file is imported by
-          # deptrac_dm.yaml (its scope), the rest so a src/ leak stays uncovered, never "vendor".
+          # Defines Vendors as "any non-project code" to handle PHP native classes and external libs.
+          # Explicit exclusions (apps/, demo/...) prevent false positives when imported by other Deptrac scopes.
+          # WARNING: BC access to Vendors is heavily restricted by Tools\PHPat\BoundedContextTest (Delivery vendors are forbidden).
           must_not:
             - { type: directory, value: 'src/.*' }
             - { type: directory, value: 'apps/.*' }
@@ -45,15 +46,9 @@ deptrac:
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
 
-  # Sanctioned cross-BC edges, both on a public Integration Event contract only — never on
-  # another BC's Domain or Application internals:
-  #   Sales.Order -> Sales.Customer       resolving the buyer behind a placed order
-  #   Sales.Order -> Catalog.Product      snapshotting a product's label/price onto an OrderLine
-  #   Fulfilment.Shipment -> Sales.Order  the Processor reacting to a placed order and the Reducer
-  #                                       folding that order onto the Shipment row
-  # Fulfilment knows a single upstream contract, the order — everything it needs travels on it.
-  # Iam.Access and Iam.Identity stay fully isolated from each other: a Grant only ever carries the
-  # identity it applies to as a plain string, never resolves or verifies it.
+  # Deptrac broadly allows upstream BC access (e.g. Order -> Customer).
+  # Domain Events leaking across BCs is explicitly forbidden by Tools\PHPat\DomainEventTest
+  # (Integration Events must be used instead).
   ruleset:
     Sales.Customer:      [ Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Shared, Vendors ]

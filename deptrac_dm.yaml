@@ -25,9 +25,8 @@ deptrac:
       collectors:
         - { type: directory, value: 'apps/webhook/.*' }
 
-  # Which BC each DM may reach. What may be consumed *inside* a granted BC (only
-  # #[AsDrivingPort] ports, Command/Query messages) is enforced separately by the phpat rule
-  # Tools\PHPat\DeliveryMechanismTest — deptrac only draws the outer boundary.
+  # Deptrac only draws DM-to-BC outer boundaries.
+  # Internal access (#[AsDrivingPort], PublishedLanguageInterface) is enforced by Tools\PHPat\DeliveryMechanismTest.
   ruleset:
     Web:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
     Api:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]

@@ -29,6 +29,7 @@ final readonly class ListProductForSaleProcessor implements ProcessorInterface
 
     /**
      * @throws ApplicationExceptionInterface
+     * @throws \DomainException
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ProductResource
     {
