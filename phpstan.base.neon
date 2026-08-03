@@ -6,7 +6,7 @@ includes:
 
 services:
     -
-        class: Tools\PhpStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule
+        class: Tools\PHPStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule
         tags:
             - phpstan.rules.rule
     -

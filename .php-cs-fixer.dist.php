@@ -30,7 +30,6 @@ return (new PhpCsFixer\Config())
             'minimum_number_of_parameters' => 2,
             'keep_blank_lines' => true,
         ],
-
         'no_useless_else' => true,
         'no_useless_return' => true,
         'ordered_class_elements' => [
@@ -54,8 +53,6 @@ return (new PhpCsFixer\Config())
                 'method_private',
             ],
         ],
-        // rewrites assertEquals to assertSame regardless of semantics — breaks a Value Object
-        // compared by value, since freshly built instances are equal but never identical
         'php_unit_strict' => true,
         'phpdoc_line_span' => [
             'property' => 'single',

@@ -1,30 +1,32 @@
 # =============================================================================
 # 1. SYMFONY CORE & CONFIGURATION
 # =============================================================================
-/.env.local
-/.env.local.php
-/.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
 /vendor/
+.env.local
+.env.local.php
+.env.*.local
 
 # =============================================================================
-# 2. DEV TOOLS & QUALITY ASSURANCE (QA)
+# 2. DEV TOOLS & QUALITY ASSURANCE
 # =============================================================================
 
 # Claude Code
 /.claude/settings.local.json
 
 # PHP-CS-Fixer
-/.php-cs-fixer.cache
+.php-cs-fixer.php
 
-# PHPUnit
-/phpunit.xml
-/.phpunit.cache/
+# Twig-CS-Fixer
+.twig-cs-fixer.php
 
 # PHPStan
 phpstan.neon
+
+# PHPUnit
+phpunit.xml
 
 # =============================================================================
 # 3. INFRASTRUCTURE & DOCKER
@@ -32,8 +34,7 @@ phpstan.neon
 compose.override.yaml
 
 # =============================================================================
-# 4. FRONTEND (AssetMapper-vendored third-party packages)
+# 4. FRONTEND
 # =============================================================================
 /public/assets/
 /ui/assets/vendor/
-

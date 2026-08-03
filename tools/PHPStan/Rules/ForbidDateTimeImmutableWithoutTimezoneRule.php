@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tools\PhpStan\Rules;
+namespace Tools\PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;

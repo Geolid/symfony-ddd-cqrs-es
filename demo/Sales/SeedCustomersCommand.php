@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Demo\Sales;
 
 use Demo\Sales\Input\SeedCustomersInput;
+use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
+use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
+use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Domain\CustomerId;
 use Shared\Application\Command\CommandBusInterface;
@@ -16,6 +20,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'demo:sales:customers', description: 'Seed customers')]
 final readonly class SeedCustomersCommand
 {
+    private const DEMO_PASSWORD = 'password';
+
     public function __construct(private CommandBusInterface $commandBus)
     {
     }
@@ -28,16 +34,20 @@ final readonly class SeedCustomersCommand
         $io->progressStart($input->count);
 
         for ($i = 1; $i <= $input->count; ++$i) {
-            $this->commandBus->dispatch(new RegisterCustomer(
-                CustomerId::generate()->toString(),
-                \sprintf('buyer-%d@%s', $i, $input->domain),
-            ));
+            $customerId = CustomerId::generate()->toString();
+            $email = \sprintf('buyer-%d@%s', $i, $input->domain);
+            $identityId = Uuid::uuid7()->toString();
+
+            $this->commandBus->dispatch(new RegisterCustomer($customerId, $email));
+            $this->commandBus->dispatch(new RegisterIdentity($identityId));
+            $this->commandBus->dispatch(new SetPasswordCredential($identityId, $email, self::DEMO_PASSWORD));
+            $this->commandBus->dispatch(new LinkCustomerIdentity($customerId, $identityId));
 
             $io->progressAdvance();
         }
 
         $io->progressFinish();
-        $io->success(\sprintf('%d customer(s) seeded.', $input->count));
+        $io->success(\sprintf('%d customer(s) seeded. Log in with buyer-<n>@%s / %s.', $input->count, $input->domain, self::DEMO_PASSWORD));
 
         return Command::SUCCESS;
     }

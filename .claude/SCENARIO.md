@@ -42,23 +42,28 @@ Two corrections made along the way, kept here so they aren't relitigated:
 
 The real dividing line turned out not to be "internal vs. external" but **interactive vs.
 batch/bootstrap**: Web is for anything a human does live (browsing, filling a form); CLI is
-only for what must work *before* the app's own API auth exists (bootstrapping the first admin)
-plus pure dev/demo tooling; API is for anything another authenticated actor (including our own
-admin, using the API as their tool) does over the network without a live UI.
+for what must work *before* the app's own API auth exists (bootstrapping the first admin), pure
+dev/demo tooling, and any recurring ops job a scheduler invokes rather than a human
+(`dispatch-pending` — realistically a nightly cron, and `crontab`/a k8s `CronJob` calling a
+console command is the idiomatic way to run one, not a human clicking a dashboard button); API
+is for anything another authenticated actor (including our own admin, using the API as their
+tool) does interactively over the network without a live UI.
 
 | DM | Who calls it | Auth | Scope |
 |---|---|---|---|
 | `web` | The customer, in a browser | Session, `PasswordCredential` | Self-service only: register, login/logout, browse `Catalog.Product`, place/cancel/pay for/view own orders, GDPR account deletion. No admin population here. |
-| `api` | The admin, scripted or via a dashboard | Token, `ApiTokenCredential` | Supervision + catalog + fulfilment admin: view all orders and their status, view/list/reprice/delist products, validate the carrier hand-off (the "truck comes once a day" trigger, moved here from CLI — an admin action, not a scheduler). Also proves Identity is credential-agnostic (same concept as Web, different credential). |
-| `cli` | An internal operator with shell access | None — trusted by construction | Bootstrap only: create the first admin Identity/Credential/Grant (chicken-and-egg — nothing else can, since the API itself requires an Identity to authenticate). Plus pre-existing dev/demo tooling (`sales:order:place` demo seeding), unrelated to Iam. |
+| `api` | The admin, scripted or via a dashboard | Token, `ApiTokenCredential` | Supervision + catalog + fulfilment admin: view all orders and their status, view/list/reprice/delist products. Also proves Identity is credential-agnostic (same concept as Web, different credential). |
+| `cli` | An internal operator with shell access, or a scheduler invoking it unattended | None — trusted by construction | Bootstrap: create the first admin Identity/Credential/Grant (chicken-and-egg — nothing else can, since the API itself requires an Identity to authenticate). Plus pre-existing dev/demo tooling (`sales:order:place` demo seeding) and the recurring `fulfilment:shipment:dispatch-pending` batch job (the "truck comes once a day" carrier hand-off — a cron target, not something an admin manually confirms). |
 | `webhook` | The carrier, asynchronously | Shared secret (HMAC), not an Identity | Delivery status updates only. Deliberately NOT promoted to an Iam-authenticated caller — HMAC verifies message integrity from an external partner (like Stripe/GitHub webhooks), a different trust boundary than our own admin's Iam identity. No `Carrier` BC/Identity — redundant with what the webhook already proves. |
 
 Rejected alternatives, kept here so they aren't re-proposed:
 - Web hosting two Grant-differentiated populations (customer + staff) — dropped once the only
   candidate staff action (an agent placing a phone order) turned out not to exist as a real
   scenario; with no interactive staff action left, Web is customer-only.
-- `dispatch-pending` as a CLI cron / as an externally-triggered-by-a-scheduler API call — settled
-  on a plain admin API action instead (the admin validates the hand-off), simpler than either.
+- `dispatch-pending` as a plain admin API action ("the admin validates the hand-off") — tried,
+  then reversed: no real ops team manually confirms a routine nightly batch job like that: it's
+  exactly the kind of thing you automate away. Realistically a `crontab`/k8s `CronJob` invoking
+  the existing CLI command, so it stayed there rather than moving to the API.
 - A `Carrier` Iam Identity so the carrier can call our API to confirm pickup — rejected, redundant
   with the webhook already covering "carrier tells us about a status change."
 
@@ -72,10 +77,10 @@ Rejected alternatives, kept here so they aren't re-proposed:
 2. They log in (Web, session) → browse `Catalog.Product` (`ListProducts`) →
    `PlaceOrder(productId, quantity)` → price/label frozen into `OrderPlaced` at that instant.
 3. `OrderPayment` captures payment synchronously against the fake `PaymentGatewayInterface`.
-4. `Shipment` is created once payment is captured (not on bare `OrderPlaced`). An admin (API)
-   validates the hand-off to the carrier for pending shipments → `AcmeCarrierGateway` → the
-   carrier's webhook later confirms delivery (simulated locally via a demo CLI command, since
-   there is no real Acme server) → the customer is notified.
+4. `Shipment` is created once payment is captured (not on bare `OrderPlaced`). A nightly cron
+   (CLI, `fulfilment:shipment:dispatch-pending`) hands every pending shipment to the carrier →
+   `AcmeCarrierGateway` → the carrier's webhook later confirms delivery (simulated locally via a
+   demo CLI command, since there is no real Acme server) → the customer is notified.
 5. The bootstrap admin Identity (created once via CLI) manages the catalog and supervises all
    orders through the API, authenticated with an `ApiTokenCredential` — proving the same Identity
    concept works for both a human session (Web) and a token (API).

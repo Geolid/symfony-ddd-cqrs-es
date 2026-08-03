@@ -1,7 +1,6 @@
-# DDD / CQRS / Event Sourcing showcase
+# Project
 
-A Symfony showcase of a DDD/CQRS/Event Sourcing architecture — an order/shipment domain
-illustrating the pattern, not a product.
+A Symfony showcase of a DDD/CQRS/Event Sourcing architecture.
 
 ## Stack & Architecture
 
@@ -11,27 +10,28 @@ illustrating the pattern, not a product.
 ## Commands (Make = Docker proxy)
 
 ```bash
-make help                    # list all targets
-make start                   # onboarding: up + install + setup + seed demo data
-make up / stop                # start/stop the stack
-make sh                       # shell into the app container
-make seed                     # re-seed demo data (demo/SeedCommand.php)
-make test [filter=<x>]        # PHPUnit
-make stan                     # PHPStan (includes the phpat architecture suite)
-make deptrac-bc / -layers / -dm  # architecture isolation checks
-make cs-fix [file=<x>]        # code style auto-fix (whole repo if file omitted)
-make static                   # CS + PHPStan/phpat + Deptrac
-make qa                       # static + tests
+make help                               # list all targets
+make sh cmd="<cmd>"                     # shell into the app container
+make cc                                 # Cache clear + warmup
+make test [filter=<x>] [suite=<x>]      # PHPUnit
+make make stan.src / -<dm>              # PHPStan (Core ou DM targeted)
+make deptrac-bc / -layers / -dm         # architecture isolation checks
+make cs-php-fix / -twig-fix [file=<x>]  # Linter auto-fix (whole repo if file omitted)
+make static                             # Lint + CS + Deptrac + Stan
+make qa                                 # static + tests
+make assets                             # Install DM assets
 ```
 
 ## Structure (Monorepo)
 
-- `apps/<dm>/` — a DM booted through the single `bootstrap/Kernel.php` + `appId` (`web`, `api`, `cli`, `webhook`).
+- `apps/<dm>/` — a DM booted through the single `bootstrap/Kernel.php` + `appId`.
 - `src/<Subdomain>/<BC>/` — a BC's `Domain/` `Application/` `Infrastructure/`.
 - `bootstrap/` — cross-BC DI wiring.
 - `config/` — global config + per-subdomain services.
+- `demo/` — Seeders
 - `tests/` — mirrors `src/`.
-- `tools/` — custom QA rules (PHPat architecture tests, a PHPStan rule).
+- `tools/` — custom QA rules
+- `ui/` — Assets, Twig partagés, i18n
 
 ## Memory
 

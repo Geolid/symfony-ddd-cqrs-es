@@ -175,11 +175,16 @@ were surfaced later and have no original number.
     customer-only). The identifier/secret pair is randomly generated and printed once (shown-once
     UX, like a real API key issuance flow) rather than accepted as CLI arguments (would leak into
     shell history).
-  - ⬜ **Still not done, out of this chunk's scope:** `dispatch-pending` moving from CLI to API as
-    an admin action (the *existing* single-shipment `POST /shipments/{id}/dispatch` API operation
-    is now gated, but the CLI's separate bulk `fulfilment:shipment:dispatch-pending` command is
-    untouched); demo seeders creating/linking an Identity for seeded customers (`make seed` still
-    produces Customers with no way to log in).
+  - ✅ **`dispatch-pending` reconsidered, then left in CLI.** Tried moving it to a gated API
+    admin action; reversed after review — realistically the nightly carrier hand-off is a cron
+    job (`crontab`/k8s `CronJob` invoking `fulfilment:shipment:dispatch-pending`), not something
+    an admin manually confirms through a dashboard. See `SCENARIO.md`'s DM table/rejected
+    alternatives. The single-shipment `POST /shipments/{id}/dispatch` API operation stays gated
+    as-is; no bulk API equivalent added.
+  - ✅ **Demo seeders now create/link an Identity for seeded customers** — `demo:sales:customers`
+    additionally dispatches `RegisterIdentity` + `SetPasswordCredential` + `LinkCustomerIdentity`
+    per seeded customer, so `make seed` produces customers that can actually log in (fixed demo
+    password, printed once at the end of the command).
   - Explicitly rejected: two Grant-differentiated populations inside Web (no real staff action
     left to justify it), a `Carrier` Iam Identity (redundant with the webhook), stock/inventory
     management (a whole separate feature, deferred).

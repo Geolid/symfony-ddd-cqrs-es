@@ -96,8 +96,7 @@
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",
-      "Tools\\PHPat\\": "tools/PHPat/",
-      "Tools\\PhpStan\\": "tools/PHPStan/"
+      "Tools\\": "tools/"
     }
   },
   "replace": {

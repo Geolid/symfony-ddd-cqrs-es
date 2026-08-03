@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tools\PhpStan\Tests;
+namespace Tools\PHPStan\Tests;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use Tools\PhpStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule;
+use Tools\PHPStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule;
 
 /**
  * @extends RuleTestCase<ForbidDateTimeImmutableWithoutTimezoneRule>

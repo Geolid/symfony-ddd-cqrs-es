@@ -30,7 +30,7 @@ destroy: ## Remove containers, volumes, and networks
 ##---------------------------------------------------------------------------
 
 sh: ## Open shell in app container (optional: use cmd="..." to run a command)
-	@$(EXEC) /bin/bash $(if $(cmd),-c "$(cmd)")
+	@$(EXEC) /bin/sh $(if $(cmd),-c "$(cmd)")
 .PHONY: sh
 
 dump: ## Start Symfony VarDumper server
