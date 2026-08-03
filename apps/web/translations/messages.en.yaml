@@ -6,6 +6,15 @@ layout:
         customers: Customers
         place_order: Place an order
         register_customer: Register a customer
+        login: Log in
+        logout: Log out
+
+security:
+    login:
+        title: Log in
+        login_label: Login
+        password_label: Password
+        submit_button: Log in
 
 sales:
     order:

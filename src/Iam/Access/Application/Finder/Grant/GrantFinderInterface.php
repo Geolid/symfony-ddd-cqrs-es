@@ -11,4 +11,7 @@ use Shared\Application\Finder\FinderInterface;
  */
 interface GrantFinderInterface extends FinderInterface
 {
+    public function forIdentity(string $identityId): static;
+
+    public function withoutRevoked(): static;
 }

@@ -11,5 +11,7 @@ use Shared\Application\Finder\PaginatedFinderInterface;
  */
 interface CustomerFinderInterface extends PaginatedFinderInterface
 {
+    public function ofIdentityId(string $identityId): ?CustomerResult;
+
     public function withoutErased(): static;
 }

@@ -4,29 +4,39 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<PasswordCredentialResult>
- *
  * @phpstan-type Row array{id: string, identity_id: string, login: string, hash: string}
  */
-final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements PasswordCredentialFinderInterface
+final readonly class DbalPasswordCredentialFinder implements PasswordCredentialFinderInterface
 {
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    public function __construct(private Connection $connection)
     {
-        $qb->select('id', 'identity_id', 'login', 'hash')
-            ->from(DbalPasswordCredentialProjector::TABLE);
+    }
+
+    public function ofLogin(string $login): ?PasswordCredentialResult
+    {
+        /** @var Row|false $row */
+        $row = $this->connection->fetchAssociative(
+            \sprintf('SELECT id, identity_id, login, hash FROM %s WHERE login = :login', DbalPasswordCredentialProjector::TABLE),
+            ['login' => $login],
+        );
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
     }
 
     /**
      * @param Row $row
      */
-    protected function mapRow(array $row): PasswordCredentialResult
+    private function mapRow(array $row): PasswordCredentialResult
     {
         return new PasswordCredentialResult(
             id: $row['id'],

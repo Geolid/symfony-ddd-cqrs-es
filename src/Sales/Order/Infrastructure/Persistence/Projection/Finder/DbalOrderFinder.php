@@ -17,6 +17,22 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
 {
+    public function ofId(string $id): ?OrderResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('id = :id')
+            ->setParameter('id', $id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
     public function withCustomer(string $customerId): static
     {
         return $this->filter(

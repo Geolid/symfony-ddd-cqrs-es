@@ -6,6 +6,15 @@ layout:
         customers: Clients
         place_order: Passer une commande
         register_customer: Enregistrer un client
+        login: Se connecter
+        logout: Se déconnecter
+
+security:
+    login:
+        title: Connexion
+        login_label: Identifiant
+        password_label: Mot de passe
+        submit_button: Se connecter
 
 sales:
     order:

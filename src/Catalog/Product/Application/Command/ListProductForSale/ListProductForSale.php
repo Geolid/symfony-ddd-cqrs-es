@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Product\Application\Command\ListProduct;
+namespace Catalog\Product\Application\Command\ListProductForSale;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class ListProduct implements CommandInterface
+final readonly class ListProductForSale implements CommandInterface
 {
     public function __construct(
         public string $id,
