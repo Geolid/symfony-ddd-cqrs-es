@@ -8,6 +8,7 @@ use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -25,6 +26,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
+        $this->store(CustomerTestFactory::new()->linkedToIdentity($identity->id()->toString())->create());
 
         // When
         $crawler = $client->request('GET', '/login');

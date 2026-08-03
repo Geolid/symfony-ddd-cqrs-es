@@ -5,11 +5,6 @@
 
 {% block content %}
     {{ form_start(form) }}
-    <p>
-        {{ form_label(form.customerId) }}<br>
-        {{ form_widget(form.customerId) }}
-        {{ form_errors(form.customerId) }}
-    </p>
     <fieldset data-testid="order-lines" x-data="{
         rows: {{ form.lines|length }},
         prototype: {{ form_widget(form.lines.vars.prototype)|json_encode|e('html_attr') }},
