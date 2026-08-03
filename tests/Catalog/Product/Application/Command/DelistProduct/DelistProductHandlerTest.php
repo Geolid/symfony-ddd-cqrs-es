@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
-use Catalog\Product\Application\Command\ListProduct\ListProduct;
+use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
@@ -20,7 +20,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ProductId::generate()->toString();
-        $this->dispatch(new ListProduct($id, 'Espresso cups, set of 6', 1_750));
+        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_750));
 
         // When
         $this->dispatch(new DelistProduct($id));
@@ -46,7 +46,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ProductId::generate()->toString();
-        $this->dispatch(new ListProduct($id, 'Espresso cups, set of 6', 1_750));
+        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_750));
         $this->dispatch(new DelistProduct($id));
 
         // Then

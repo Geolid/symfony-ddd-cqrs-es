@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Product\Application\Command\ListProduct;
+namespace Catalog\Product\Application\Command\ListProductForSale;
 
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\ProductId;
@@ -12,7 +12,7 @@ use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\ValueObject\Money;
 
 #[AsCommandHandler]
-final readonly class ListProductHandler
+final readonly class ListProductForSaleHandler
 {
     public function __construct(
         private ProductRepositoryInterface $repository,
@@ -20,7 +20,7 @@ final readonly class ListProductHandler
     ) {
     }
 
-    public function __invoke(ListProduct $command): void
+    public function __invoke(ListProductForSale $command): void
     {
         $this->repository->save(Product::list(
             ProductId::fromString($command->id),
