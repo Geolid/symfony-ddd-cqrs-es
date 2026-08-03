@@ -97,11 +97,15 @@ prior session notes for the full inventory). Gaps this scenario specifically clo
 - **A second proof that micro-aggregates aren't a one-off** — `OrderPayment` beside
   `Sales.Order`, echoing Iam's `Identity`/`PasswordCredential`/`ApiTokenCredential` split.
 
-Deliberately **not** forced into existence for lack of a natural business reason: an Upcaster,
-a "pure logic" Application Service (concrete-injected, no I/O), and a genuine bypass-the-bus
-`#[AsDrivingPort]` example. Manufacturing a case for these would be the kind of
-over-engineering this project has repeatedly steered away from — if a real need for one shows
-up while building the above, use it there; otherwise leave the gap open and say so rather than
-inventing a contrived example.
+Deliberately **not** forced into existence for lack of a natural business reason: an Upcaster
+and a "pure logic" Application Service (concrete-injected, no I/O). Manufacturing a case for
+these would be the kind of over-engineering this project has repeatedly steered away from — if
+a real need for one shows up while building the above, use it there; otherwise leave the gap
+open and say so rather than inventing a contrived example.
+
+(`#[AsDrivingPort]` no longer belongs on this list — `#24` landed three real examples:
+`AuthenticatePasswordCredentialInterface`/`AuthenticateApiTokenCredentialInterface` for
+credential verification, and `IssueApiTokenCredentialInterface` for the CLI's API key
+generation — see `TODO.md`.)
 
 See `TODO.md` for the concrete, ordered task breakdown implementing this scenario.

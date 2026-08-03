@@ -111,6 +111,25 @@ were surfaced later and have no original number.
       `Request`-coupled `UserInterface` implementation can't live in `src/` (delivery vendor
       code), so it's a small, duplicated class per DM, same shape as the DTO-per-DM convention
       already established for Input/Payload/Criteria.
+  - ✅ **Design corrections from review, after the above landed:**
+    - **`sales:supervise`/`fulfilment:supervise` split into `read`/`write`** — a single
+      catch-all grant per subdomain was too coarse. `sales:read`/`fulfilment:read` gate the
+      read-only operations (`OrderResource`, `ShipmentResource`'s `GetCollection`);
+      `fulfilment:write` gates the one mutation (`ShipmentResource`'s `dispatch`). Every
+      fixture/example permission string in tests moved off `supervise` too.
+    - **API key identifier/secret generation moved out of the CLI** — `RegisterIdentityCommand`
+      (a DM) generated the random `bin2hex(random_bytes(...))` pair inline, which is business
+      logic a DM must never carry. Extracted to a third `#[AsDrivingPort]` example,
+      `Iam\Identity\Application\Security\IssueApiTokenCredentialInterface` (+ `IssuedApiKey`,
+      a `PublishedLanguageInterface` DTO), implemented by
+      `Iam\Identity\Infrastructure\Security\ApiTokenCredentialIssuingService` — the CLI now only
+      dispatches `RegisterIdentity`/`GrantPermission` and asks the port to issue the credential.
+    - **`ValidPermissions` compound replaces inline `Assert\All`** — `RegisterIdentityInput::$permission`
+      had `#[Assert\All([new ValidPermission()])]` directly on the DM's Input class, repeating a
+      validation shape a BC should own once. `Iam\Access\Application\Validation\ValidPermissions`
+      (`Type('array')` + `Count(min: 1)` + `All([...])`, mirroring `Sales.Order`'s
+      `ValidOrderLines`) now carries the whole shape, including the previously-missing
+      "at least one permission" check.
   - ✅ **Routes gated behind `is_granted(...)`.**
     - Web: `OrderController` requires `IS_AUTHENTICATED_FULLY` throughout; `list()`/`place()`
       resolve the customer from the logged-in Identity (`GetCustomerByIdentityId` +
