@@ -11,16 +11,31 @@
             <th>{{ 'sales.order.list.table.id'|trans }}</th>
             <th>{{ 'sales.order.list.table.total'|trans }}</th>
             <th>{{ 'sales.order.list.table.status'|trans }}</th>
+            <th>{{ 'sales.order.list.table.payment'|trans }}</th>
             <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
             <th>{{ 'sales.order.list.table.actions'|trans }}</th>
         </tr>
         </thead>
         <tbody>
         {% for order in orders.items %}
+            {% set payment = payments[order.id] %}
             <tr>
                 <td>{{ order.id }}</td>
                 <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
                 <td><span class="status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
+                <td data-testid="order-payment">
+                    {% if payment is null %}
+                        —
+                    {% elseif payment.status == capturedPaymentStatus %}
+                        <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
+                    {% else %}
+                        <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
+                        <br>
+                        <small data-testid="order-payment-reference">{{ 'sales.order.list.payment_reference'|trans({'%reference%': payment.reference}) }}</small>
+                        <br>
+                        <small>{{ 'sales.order.list.payment_hint'|trans }}</small>
+                    {% endif %}
+                </td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
                     {% if order.status == cancellableStatus %}
@@ -35,7 +50,7 @@
                 </td>
             </tr>
         {% else %}
-            <tr data-testid="orders-empty"><td colspan="5">{{ 'sales.order.list.empty'|trans }}</td></tr>
+            <tr data-testid="orders-empty"><td colspan="6">{{ 'sales.order.list.empty'|trans }}</td></tr>
         {% endfor %}
         </tbody>
     </table>

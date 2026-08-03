@@ -11,8 +11,10 @@ use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Language\PublishedOrderPaymentStatus;
 use Sales\Order\Application\Language\PublishedOrderStatus;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
+use Sales\Order\Application\Query\GetOrderPaymentByOrder\GetOrderPaymentByOrder;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -58,9 +60,16 @@ final class OrderController extends AbstractController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
+        $payments = [];
+        foreach ($orders->items as $order) {
+            $payments[$order->id] = $this->queryBus->ask(new GetOrderPaymentByOrder($order->id));
+        }
+
         return $this->render('sales/order/list.html.twig', [
             'orders' => $orders,
+            'payments' => $payments,
             'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+            'capturedPaymentStatus' => PublishedOrderPaymentStatus::CAPTURED->value,
             'customerId' => $customer->id,
         ]);
     }

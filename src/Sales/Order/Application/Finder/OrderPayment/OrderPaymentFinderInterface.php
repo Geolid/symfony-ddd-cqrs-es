@@ -7,4 +7,6 @@ namespace Sales\Order\Application\Finder\OrderPayment;
 interface OrderPaymentFinderInterface
 {
     public function ofReference(string $reference): ?OrderPaymentResult;
+
+    public function ofOrder(string $orderId): ?OrderPaymentResult;
 }

@@ -23,6 +23,24 @@ were surfaced later and have no original number.
   label/price via `ProductResolver` (`Sales.Order -> Catalog.Product` Integration Events) at
   placement time, mirroring `BuyerResolver`'s role for `Sales.Order -> Sales.Customer`.
 
+- **Web shows the `OrderPayment` reference/status — closes a real dead-end in the checkout
+  flow.** Since `OrderPayment` landed, `Fulfilment.Shipment`'s trigger moved from `OrderPlaced` to
+  `OrderPaymentCaptured` — but nothing surfaced the payment's existence anywhere, and nothing
+  captures it locally except a manually-crafted signed call to the `payment-captured` webhook.
+  Placing an order via Web looked like it silently did nothing past "placed": no shipment, no
+  CLI dispatch-pending target, no way to even find the `paymentReference` needed to call the
+  webhook by hand. Considered and rejected: a `demo:*` command simulating the webhook call —
+  `demo/` is for seeding aggregates only, not for playing the role of an external actor calling
+  our own DM; and Web calling the Webhook DM's endpoint directly — a DM translates *its own* real
+  external actor's input, it doesn't impersonate another DM's caller. Fix: `Sales.Order` gains
+  `GetOrderPaymentByOrder` (+ `OrderPaymentFinderInterface::ofOrder()`,
+  `PublishedOrderPaymentStatus`), and `sales/order/list.html.twig` shows, per order, "payment
+  pending" + the reference (with a hint pointing at `/webhook/docs`) or "paid" — the human now
+  sees exactly what a real Globex webhook call needs, and calls it themselves through the Webhook
+  DM, same as they would in a real integration. Also fixed: both `fulfilment.shipment.list.empty`
+  translations (fr/en) still said shipments are created "once an order is placed" — stale since
+  the `OrderPaymentCaptured` trigger change.
+
 ## Pending
 
 - **#18** — Add a `SentryContextProviderInterface` implementation per BC (the

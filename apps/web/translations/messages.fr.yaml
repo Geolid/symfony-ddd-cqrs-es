@@ -23,9 +23,12 @@ sales:
                 id: ID
                 total: Total
                 status: Statut
+                payment: Paiement
                 placed_at: Passée le
                 actions: Actions
             empty: Aucune commande pour le moment.
+            payment_reference: 'Réf. paiement : %reference%'
+            payment_hint: À valider via le DM Webhook (/webhook/docs).
             cancel_button: Annuler
             cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
             cancel_dismiss_button: Conserver la commande
@@ -44,6 +47,9 @@ sales:
         status:
             placed: Passée
             cancelled: Annulée
+        payment_status:
+            requested: Paiement en attente
+            captured: Payée
     customer:
         register:
             title: S'inscrire
@@ -71,7 +77,7 @@ fulfilment:
                 dispatched_at: Expédiée le
                 delivered_at: Livrée le
                 order_cancelled_at: Commande annulée le
-            empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès qu'une commande est passée.
+            empty: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement d'une commande est confirmé.
         status:
             pending: En attente
             dispatched: Expédiée

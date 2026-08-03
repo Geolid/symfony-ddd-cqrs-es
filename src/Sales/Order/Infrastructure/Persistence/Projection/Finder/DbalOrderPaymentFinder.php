@@ -33,6 +33,21 @@ final readonly class DbalOrderPaymentFinder implements OrderPaymentFinderInterfa
         return $this->mapRow($row);
     }
 
+    public function ofOrder(string $orderId): ?OrderPaymentResult
+    {
+        /** @var Row|false $row */
+        $row = $this->connection->fetchAssociative(
+            \sprintf('SELECT * FROM %s WHERE order_id = :orderId', DbalOrderPaymentProjector::TABLE),
+            ['orderId' => $orderId],
+        );
+
+        if (false === $row) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
     /**
      * @param Row $row
      */

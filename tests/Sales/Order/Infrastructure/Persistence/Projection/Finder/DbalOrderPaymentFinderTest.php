@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -45,6 +46,32 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // When
         $result = $this->finder->ofReference('GLBX-NEVER-ISSUED');
+
+        // Then
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function itReadsAnOrderPaymentByItsOrder(): void
+    {
+        // Given
+        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->create();
+        $this->store($orderPayment);
+
+        // When
+        $result = $this->finder->ofOrder($orderPayment->orderId());
+
+        // Then
+        self::assertInstanceOf(OrderPaymentResult::class, $result);
+        self::assertSame($orderPayment->id()->toString(), $result->id);
+        self::assertSame('GLBX-9F3K2M1P', $result->reference);
+    }
+
+    #[Test]
+    public function itReadsNothingForAnOrderWithoutAPayment(): void
+    {
+        // When
+        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);

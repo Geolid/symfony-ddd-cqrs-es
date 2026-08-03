@@ -7,6 +7,7 @@ namespace Web\Tests\Controller;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -26,6 +27,22 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+    }
+
+    #[Test]
+    public function itShowsThePaymentReferenceForAnOrderPendingCapture(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
+        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->withReference('GLBX-9F3K2M1P')->create());
+
+        // When
+        $client->request('GET', '/sales/orders');
+
+        // Then
+        self::assertSelectorTextContains('[data-testid="order-payment-reference"]', 'GLBX-9F3K2M1P');
     }
 
     #[Test]

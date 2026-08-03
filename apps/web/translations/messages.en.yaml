@@ -23,9 +23,12 @@ sales:
                 id: ID
                 total: Total
                 status: Status
+                payment: Payment
                 placed_at: Placed at
                 actions: Actions
             empty: No orders yet.
+            payment_reference: 'Payment ref.: %reference%'
+            payment_hint: To confirm via the Webhook DM (/webhook/docs).
             cancel_button: Cancel
             cancel_confirm_message: Are you sure you want to cancel this order?
             cancel_dismiss_button: Keep order
@@ -44,6 +47,9 @@ sales:
         status:
             placed: Placed
             cancelled: Cancelled
+        payment_status:
+            requested: Payment pending
+            captured: Paid
     customer:
         register:
             title: Register
@@ -71,7 +77,7 @@ fulfilment:
                 dispatched_at: Dispatched at
                 delivered_at: Delivered at
                 order_cancelled_at: Order cancelled at
-            empty: No shipments yet — shipments are created automatically once an order is placed.
+            empty: No shipments yet — shipments are created automatically once an order's payment is captured.
         status:
             pending: Pending
             dispatched: Dispatched
