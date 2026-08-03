@@ -38,7 +38,7 @@ abstract class AbstractWebTestCase extends WebTestCase
     protected function logIn(KernelBrowser $client, string $login, string $password): void
     {
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $form->setValues(['login' => $login, 'password' => $password]);
         $client->submit($form);
     }

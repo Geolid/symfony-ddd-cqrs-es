@@ -37,7 +37,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $prefix = $form->getName();
         $form->setValues([
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
@@ -89,7 +89,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/sales/customers/change-password');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $prefix = $form->getName();
         $form->setValues([\sprintf('%s[password]', $prefix) => 'a brand new password']);
         $client->submit($form);
@@ -107,7 +107,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     private function registerCustomer(KernelBrowser $client, string $email, string $password): void
     {
         $crawler = $client->request('GET', '/sales/customers/register');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $prefix = $form->getName();
         $form->setValues([
             \sprintf('%s[email]', $prefix) => $email,

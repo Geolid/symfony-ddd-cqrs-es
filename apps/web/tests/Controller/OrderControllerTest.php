@@ -209,7 +209,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->store($product);
 
         $crawler = $client->request('GET', '/sales/orders/place');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('main form')->form();
         $prefix = $form->getName();
 
         $form->setValues([
