@@ -53,12 +53,12 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
-        $id = $this->placeOrder($client);
         self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
             json_encode(['chargeReference' => 'GLBX-TEST-REF'], \JSON_THROW_ON_ERROR),
             ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
         )));
+        $this->loggedInCustomer($client);
+        $id = $this->placeOrder($client);
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
