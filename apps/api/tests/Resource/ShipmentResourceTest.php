@@ -6,7 +6,6 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\ShipmentResource;
 use Api\Tests\Support\AbstractApiTestCase;
-use ApiPlatform\Symfony\Bundle\Test\Client;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
