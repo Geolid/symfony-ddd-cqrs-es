@@ -69,6 +69,8 @@ class Kernel extends BaseKernel
 
     protected function build(ContainerBuilder $container): void
     {
+        // Priority > 100: Must run before Symfony's ResolveInstanceofConditionalsPass /
+        // AttributeAutoconfigurationPass (priority 100) to ensure our rules apply.
         $container->addCompilerPass(new RegisterMessageBusHandlersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterDoctrineSchemaConfiguratorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new TagEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
