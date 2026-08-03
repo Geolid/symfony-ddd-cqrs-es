@@ -5,25 +5,27 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class CustomerControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    public function itRegistersACustomerAndShowsItInTheList(): void
+    public function itRegistersACustomerAndLetsThemLogIn(): void
     {
         // Given
         $client = self::browser();
 
         // When
-        $this->registerCustomer($client, 'buyer-1@example.com');
+        $this->registerCustomer($client, 'buyer-1@example.com', 'correct horse battery staple');
 
         // Then
-        self::assertResponseRedirects('/sales/customers');
+        self::assertResponseRedirects('/login');
         $client->followRedirect();
-        self::assertSelectorTextContains('[data-testid="customer-email"]', 'buyer-1@example.com');
+        self::assertSelectorExists('[data-testid="flash-success"]');
+
+        $this->logIn($client, 'buyer-1@example.com', 'correct horse battery staple');
+        self::assertResponseRedirects('/sales/orders');
     }
 
     #[Test]
@@ -31,12 +33,16 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-2@example.com');
+        $this->registerCustomer($client, 'buyer-2@example.com', 'correct horse battery staple');
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('form')->form();
-        $form->setValues([\sprintf('%s[email]', $form->getName()) => 'buyer-2@example.com']);
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
+            \sprintf('%s[password]', $prefix) => 'another password entirely',
+        ]);
         $client->submit($form);
 
         // Then
@@ -45,21 +51,19 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itErasesACustomer(): void
+    public function itErasesTheLoggedInCustomer(): void
     {
         // Given
         $client = self::browser();
-        $id = $this->registerCustomer($client, 'buyer-3@example.com');
+        $customerId = $this->loggedInCustomer($client, 'buyer-3@example.com');
 
         // When
-        $client->request('POST', \sprintf('/sales/customers/%s/erase', $id), [
-            '_token' => $this->csrfToken($client, 'erase-customer-'.$id),
+        $client->request('POST', '/sales/customers/erase', [
+            '_token' => $this->csrfToken($client, 'erase-customer-'.$customerId),
         ]);
 
         // Then
-        self::assertResponseRedirects('/sales/customers');
-        $client->followRedirect();
-        self::assertSelectorTextNotContains('[data-testid="customer-email"]', 'buyer-3@example.com');
+        self::assertResponseRedirects('/logout');
     }
 
     #[Test]
@@ -67,28 +71,24 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $id = $this->registerCustomer($client, 'buyer-4@example.com');
+        $this->loggedInCustomer($client, 'buyer-4@example.com');
 
         // When
-        $client->request('POST', \sprintf('/sales/customers/%s/erase', $id), ['_token' => 'invalid']);
+        $client->request('POST', '/sales/customers/erase', ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
     }
 
-    private function registerCustomer(KernelBrowser $client, string $email): string
+    private function registerCustomer(KernelBrowser $client, string $email, string $password): void
     {
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('form')->form();
-        $form->setValues([\sprintf('%s[email]', $form->getName()) => $email]);
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[email]', $prefix) => $email,
+            \sprintf('%s[password]', $prefix) => $password,
+        ]);
         $client->submit($form);
-
-        foreach ($this->service(CustomerFinderInterface::class) as $customer) {
-            if ($email === $customer->email) {
-                return $customer->id;
-            }
-        }
-
-        self::fail(\sprintf('Customer "%s" was not registered.', $email));
     }
 }

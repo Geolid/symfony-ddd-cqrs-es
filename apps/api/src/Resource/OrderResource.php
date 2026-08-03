@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Api\Resource;
 
-use Api\Input\PlaceOrderInput;
-use Api\State\Processor\CancelOrderProcessor;
-use Api\State\Processor\PlaceOrderProcessor;
 use Api\State\Provider\OrderCollectionProvider;
 use Api\State\Provider\OrderProvider;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use Sales\Order\Application\Finder\Order\OrderResult;
@@ -23,6 +19,7 @@ use Sales\Order\Application\Finder\Order\OrderResult;
     routePrefix: '/v1/sales',
     operations: [
         new GetCollection(
+            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: ['200' => new Response(description: 'A collection of orders.')],
                 summary: 'Retrieves a collection of orders.',
@@ -31,6 +28,7 @@ use Sales\Order\Application\Finder\Order\OrderResult;
         ),
         new Get(
             uriTemplate: '/orders/{id}',
+            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: [
                     '200' => new Response(description: 'The order.'),
@@ -39,35 +37,6 @@ use Sales\Order\Application\Finder\Order\OrderResult;
                 summary: 'Retrieves a single order.',
             ),
             provider: OrderProvider::class,
-        ),
-        new Post(
-            uriTemplate: '/orders',
-            status: 201,
-            openapi: new Operation(
-                responses: [
-                    '201' => new Response(description: 'The order that was placed.'),
-                    '422' => new Response(description: 'The payload does not satisfy the order constraints.'),
-                ],
-                summary: 'Places an order.',
-            ),
-            input: PlaceOrderInput::class,
-            processor: PlaceOrderProcessor::class,
-        ),
-        new Post(
-            uriTemplate: '/orders/{id}/cancel',
-            status: 204,
-            openapi: new Operation(
-                responses: [
-                    '204' => new Response(description: 'The order was cancelled.'),
-                    '404' => new Response(description: 'No order carries that identifier.'),
-                    '409' => new Response(description: 'The order is already cancelled.'),
-                ],
-                summary: 'Cancels an order.',
-            ),
-            input: false,
-            output: false,
-            name: 'cancel',
-            processor: CancelOrderProcessor::class,
         ),
     ],
 )]

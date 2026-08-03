@@ -12,11 +12,13 @@
         <nav>
             <ul><li><strong>{{ 'layout.title'|trans }}</strong></li></ul>
             <ul>
-                <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
-                <li><a href="{{ path('fulfilment_shipment_list') }}">{{ 'layout.nav.shipments'|trans }}</a></li>
-                <li><a href="{{ path('sales_customer_list') }}">{{ 'layout.nav.customers'|trans }}</a></li>
-                <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
-                <li><a href="{{ path('sales_order_place') }}" role="button">{{ 'layout.nav.place_order'|trans }}</a></li>
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
+                    <li><a href="{{ path('fulfilment_shipment_list') }}">{{ 'layout.nav.shipments'|trans }}</a></li>
+                    <li><a href="{{ path('sales_order_place') }}" role="button">{{ 'layout.nav.place_order'|trans }}</a></li>
+                {% else %}
+                    <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
+                {% endif %}
             </ul>
             <ul>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}

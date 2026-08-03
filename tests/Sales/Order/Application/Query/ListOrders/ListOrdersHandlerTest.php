@@ -31,6 +31,22 @@ final class ListOrdersHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itListsOrdersByCustomer(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->withCustomerId('customer-1')->create();
+        $this->store($order);
+        $this->store(OrderTestFactory::new()->withCustomerId('customer-2')->create());
+
+        // When
+        $result = $this->ask(new ListOrders(customerId: 'customer-1'));
+
+        // Then
+        self::assertCount(1, $result->items);
+        self::assertSame($order->id()->toString(), $result->items[0]->id);
+    }
+
+    #[Test]
     public function itPaginatesOrders(): void
     {
         // Given

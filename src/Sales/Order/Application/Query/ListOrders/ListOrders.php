@@ -14,6 +14,7 @@ use Shared\Application\Query\Result\ListResult;
 final readonly class ListOrders implements QueryInterface
 {
     public function __construct(
+        public ?string $customerId = null,
         public int $page = 1,
         public int $itemsPerPage = 20,
     ) {

@@ -1,11 +1,10 @@
 layout:
     title: Sales & Fulfilment showcase
     nav:
-        orders: Orders
+        orders: My orders
         shipments: Shipments
-        customers: Customers
         place_order: Place an order
-        register_customer: Register a customer
+        register_customer: Register
         login: Log in
         logout: Log out
 
@@ -19,10 +18,9 @@ security:
 sales:
     order:
         list:
-            title: Orders
+            title: My orders
             table:
                 id: ID
-                customer: Customer
                 total: Total
                 status: Status
                 placed_at: Placed at
@@ -31,10 +29,12 @@ sales:
             cancel_button: Cancel
             cancel_confirm_message: Are you sure you want to cancel this order?
             cancel_dismiss_button: Keep order
+            my_account_title: My account
+            erase_button: Erase my account
+            erase_confirm_message: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
+            erase_dismiss_button: Keep my account
         place:
             title: Place an order
-            customer_label: Buyer
-            customer_placeholder: Pick a registered customer
             lines_label: Lines
             line_label: Description
             line_quantity_label: Quantity
@@ -45,25 +45,16 @@ sales:
             placed: Placed
             cancelled: Cancelled
     customer:
-        list:
-            title: Customers
-            table:
-                id: ID
-                email: Email
-                registered_at: Registered at
-                erased_at: Erased at
-                actions: Actions
-            empty: No customers yet.
-            erase_button: Erase
-            erase_confirm_message: Erasing drops this customer's encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
-            erase_dismiss_button: Keep customer
         register:
-            title: Register a customer
+            title: Register
             email_label: Email
-            submit_button: Register customer
+            password_label: Password
+            submit_button: Register
         flash:
-            erased: Customer erased.
+            registered: Account created — please log in.
+            erased: Your account has been erased.
             address_taken: This address is already registered.
+            login_taken: This email is already used to log in.
 
 fulfilment:
     shipment:

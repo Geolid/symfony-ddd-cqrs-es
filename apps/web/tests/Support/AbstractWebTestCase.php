@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -30,6 +33,34 @@ abstract class AbstractWebTestCase extends WebTestCase
         $client->disableReboot();
 
         return $client;
+    }
+
+    protected function logIn(KernelBrowser $client, string $login, string $password): void
+    {
+        $crawler = $client->request('GET', '/login');
+        $form = $crawler->filter('form')->form();
+        $form->setValues(['login' => $login, 'password' => $password]);
+        $client->submit($form);
+    }
+
+    /**
+     * Registers an Identity + PasswordCredential + linked Customer, and logs in as them.
+     */
+    protected function loggedInCustomer(KernelBrowser $client, string $login = 'buyer@example.com'): string
+    {
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(PasswordCredentialTestFactory::new()
+            ->forIdentity($identity->id()->toString())
+            ->withLogin($login)
+            ->withPassword('correct horse battery staple')
+            ->create());
+        $customer = CustomerTestFactory::new()->linkedToIdentity($identity->id()->toString())->create();
+        $this->store($customer);
+
+        $this->logIn($client, $login, 'correct horse battery staple');
+
+        return $customer->id()->toString();
     }
 
     protected function csrfToken(KernelBrowser $client, string $tokenId): string
