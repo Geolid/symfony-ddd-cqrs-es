@@ -1,7 +1,7 @@
 ## Tests
 ##---------------------------------------------------------------------------
 
-test: ## Run test suite (optional: make test filter=name or suite=name)
+test: ## Run test suite (optional: make test filter=<name> or suite=<name>)
 	@$(EXEC) vendor/bin/paratest --processes 8 --no-coverage \
 		$(if $(filter),--filter '$(filter)',) \
 		$(if $(suite),--testsuite $(suite),)

@@ -22,7 +22,7 @@ destroy: ## Remove containers, volumes, and networks
 ## Daily Use
 ##---------------------------------------------------------------------------
 
-sh: ## Open shell in app container (optional: use cmd="..." to run a command)
+sh: ## Open shell in app container (optional: make sh cmd=<command>)
 	@$(EXEC) /bin/sh $(if $(cmd),-c "$(cmd)")
 .PHONY: sh
 
