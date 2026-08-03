@@ -9,7 +9,7 @@ parameters:
         - '%currentWorkingDirectory%/apps/%env.APP_ID%/config/'
         - '%currentWorkingDirectory%/apps/%env.APP_ID%/src/'
         - '%currentWorkingDirectory%/apps/%env.APP_ID%/tests/'
-        # phpat rules — custom extension: PHPStan needs them analysed for correct result cache.
+        # PHPat rule files must be analysed too — otherwise editing one doesn't invalidate the result cache.
         - '%currentWorkingDirectory%/tools/PHPat/'
 
     symfony:

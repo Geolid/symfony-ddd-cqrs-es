@@ -14,6 +14,9 @@ parameters:
         - tests/
         - tools/
 
+    # Deliberately-invalid fixtures for custom rule tests — tools/ is analysed too, so
+    # without this exclusion a rule (global via services tag) would flag its own fixture
+    # for real, on top of the isolated RuleTestCase run.
     excludePaths:
         - tools/PHPStan/Tests/data/*
 
