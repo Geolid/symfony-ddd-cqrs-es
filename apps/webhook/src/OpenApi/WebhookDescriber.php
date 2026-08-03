@@ -11,24 +11,32 @@ use Nelmio\ApiDocBundle\Model\Model;
 use Nelmio\ApiDocBundle\OpenApiPhp\Util;
 use OpenApi\Annotations as OA;
 use Symfony\Component\TypeInfo\Type;
+use Webhook\Webhook\CarrierDeliveryParser;
 use Webhook\Webhook\CarrierDeliveryPayload;
+use Webhook\Webhook\PaymentCapturedParser;
+use Webhook\Webhook\PaymentCapturedPayload;
 
 final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareInterface
 {
     use ModelRegistryAwareTrait;
 
-    private const string SIGNATURE_HEADER = 'X-Carrier-Signature';
-
     private const string SIGNATURE_DESCRIPTION = 'Signature of the request, format `sha256=<hmac>` where <hmac> '
         .'is the HMAC-SHA256 of the exact raw JSON body computed with the shared webhook secret. Recompute it for '
         .'every payload (the value changes with the body) and send it in this header on Try it out.';
 
-    /** @var array<string, array{summary: string, payload: class-string, responses: array<int, string>}> */
+    /** @var array<string, array{summary: string, payload: class-string, signatureHeader: string, responses: array<int, string>}> */
     private const array ENDPOINTS = [
-        '/webhooks/carrier-delivery' => [
+        '/webhooks/'.CarrierDeliveryParser::EVENT_TYPE => [
             'summary' => 'Report a shipment as delivered.',
             'payload' => CarrierDeliveryPayload::class,
+            'signatureHeader' => CarrierDeliveryParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No shipment matches the given shipmentId.'],
+        ],
+        '/webhooks/'.PaymentCapturedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment as captured.',
+            'payload' => PaymentCapturedPayload::class,
+            'signatureHeader' => PaymentCapturedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No payment matches the given reference.'],
         ],
     ];
 
@@ -36,7 +44,7 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
     private const array RESPONSES = [
         202 => 'Webhook accepted and queued for processing.',
         400 => 'Malformed JSON payload.',
-        401 => 'Missing or invalid X-Carrier-Signature header.',
+        401 => 'Missing or invalid signature header.',
         422 => 'Payload failed validation.',
     ];
 
@@ -49,7 +57,7 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
             $operation->tags = ['Webhook'];
             $operation->summary = $endpoint['summary'];
 
-            $signature = Util::getOperationParameter($operation, self::SIGNATURE_HEADER, 'header');
+            $signature = Util::getOperationParameter($operation, $endpoint['signatureHeader'], 'header');
             $signature->required = true;
             $signature->description = self::SIGNATURE_DESCRIPTION;
             Util::getChild($signature, OA\Schema::class, ['type' => 'string']);

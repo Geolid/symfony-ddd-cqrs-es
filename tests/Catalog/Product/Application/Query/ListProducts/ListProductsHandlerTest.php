@@ -31,6 +31,36 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itExcludesDelistedProductsByDefault(): void
+    {
+        // Given
+        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
+        $this->store($listed);
+        $this->store(ProductTestFactory::new()->withLabel('Saucer')->delisted()->create());
+
+        // When
+        $result = $this->ask(new ListProducts());
+
+        // Then
+        self::assertCount(1, $result->items);
+        self::assertSame($listed->id()->toString(), $result->items[0]->id);
+    }
+
+    #[Test]
+    public function itIncludesDelistedProductsWhenAsked(): void
+    {
+        // Given
+        $this->store(ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create());
+        $this->store(ProductTestFactory::new()->withLabel('Saucer')->delisted()->create());
+
+        // When
+        $result = $this->ask(new ListProducts(includeDelisted: true));
+
+        // Then
+        self::assertCount(2, $result->items);
+    }
+
+    #[Test]
     public function itPaginatesProducts(): void
     {
         // Given

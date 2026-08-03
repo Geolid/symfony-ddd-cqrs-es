@@ -22,7 +22,7 @@ final class PlaceOrderType extends AbstractType
             'label' => 'sales.order.place.lines_label',
             'translation_domain' => 'messages',
             'entry_type' => OrderLineType::class,
-            'entry_options' => ['label' => false],
+            'entry_options' => ['label' => false, 'products' => $options['products']],
             'allow_add' => true,
             'allow_delete' => true,
             'prototype' => true,
@@ -34,5 +34,7 @@ final class PlaceOrderType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => PlaceOrderFormData::class]);
+        $resolver->setRequired('products');
+        $resolver->setAllowedTypes('products', 'array');
     }
 }

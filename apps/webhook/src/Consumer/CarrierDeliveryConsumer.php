@@ -30,7 +30,6 @@ final readonly class CarrierDeliveryConsumer implements ConsumerInterface
     public function consume(RemoteEvent $event): void
     {
         $payload = $event->getPayload();
-        \assert(\is_string($payload['trackingReference']));
 
         $shipment = $this->queryBus->ask(new GetShipmentByTrackingReference($payload['trackingReference']));
 

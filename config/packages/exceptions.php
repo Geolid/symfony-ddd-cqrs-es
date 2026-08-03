@@ -8,8 +8,12 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
+use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
+use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -22,8 +26,12 @@ return static function (ContainerConfigurator $container): void {
             AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            ProductNotAvailableException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Fulfilment
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

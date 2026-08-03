@@ -27,7 +27,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         $body = self::body(self::TRACKING_REFERENCE);
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body)), content: $body);
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
@@ -66,7 +66,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         $client = self::createClient();
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body)), content: $body);
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -90,7 +90,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         $body = self::body('ACME-NEVER-ISSUED');
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body)), content: $body);
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

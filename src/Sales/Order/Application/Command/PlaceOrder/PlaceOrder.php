@@ -9,7 +9,7 @@ use Shared\Application\Command\CommandInterface;
 final readonly class PlaceOrder implements CommandInterface
 {
     /**
-     * @param list<array{label: string, quantity: int, unitAmountInCents: int}> $lines
+     * @param list<array{productId: string, quantity: int}> $lines
      */
     public function __construct(
         public string $id,

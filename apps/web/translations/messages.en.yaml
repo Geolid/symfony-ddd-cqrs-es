@@ -36,9 +36,9 @@ sales:
         place:
             title: Place an order
             lines_label: Lines
-            line_label: Description
+            line_product_label: Product
+            line_product_placeholder: Choose a product
             line_quantity_label: Quantity
-            line_unit_amount_label: Unit amount
             add_line_button: Add a line
             submit_button: Place order
         status:

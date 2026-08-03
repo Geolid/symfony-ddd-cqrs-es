@@ -22,7 +22,8 @@ final readonly class ListProductsHandler
      */
     public function __invoke(ListProducts $query): ListResult
     {
-        $paginator = $this->productFinder->paginate($query->page, $query->itemsPerPage);
+        $finder = $query->includeDelisted ? $this->productFinder : $this->productFinder->withoutDelisted();
+        $paginator = $finder->paginate($query->page, $query->itemsPerPage);
 
         /** @var list<ProductResult> $items */
         $items = iterator_to_array($paginator);

@@ -8,12 +8,12 @@ use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Domain\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-#[Processor('fulfilment.shipment.create_shipment_on_order_placed')]
-final readonly class CreateShipmentOnOrderPlaced
+#[Processor('fulfilment.shipment.create_shipment_on_order_payment_captured')]
+final readonly class CreateShipmentOnOrderPaymentCaptured
 {
     public function __construct(private CommandBusInterface $commandBus)
     {
@@ -23,8 +23,8 @@ final readonly class CreateShipmentOnOrderPlaced
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(OrderPlacedIntegrationEvent::class)]
-    public function __invoke(OrderPlacedIntegrationEvent $event): void
+    #[Subscribe(OrderPaymentCapturedIntegrationEvent::class)]
+    public function __invoke(OrderPaymentCapturedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new CreateShipment(
             id: ShipmentId::forOrder($event->orderId)->toString(),

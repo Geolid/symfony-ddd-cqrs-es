@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Validation;
 
 use Shared\Application\Language\PublishedLanguageInterface;
-use Shared\Application\Validation\ValidMoney;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 
@@ -19,9 +18,8 @@ final class ValidOrderLines extends Compound implements PublishedLanguageInterfa
             new Assert\Count(min: 1),
             new Assert\All([
                 new Assert\Collection([
-                    'label' => [new Assert\Type('string'), new Assert\NotBlank(normalizer: 'trim')],
+                    'productId' => [new Assert\Type('string'), new Assert\NotBlank(normalizer: 'trim')],
                     'quantity' => [new Assert\Type('int'), new Assert\Positive()],
-                    'unitAmountInCents' => new ValidMoney(),
                 ]),
             ]),
         ];

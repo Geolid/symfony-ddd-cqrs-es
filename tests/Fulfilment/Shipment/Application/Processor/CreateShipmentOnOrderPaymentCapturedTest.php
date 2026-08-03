@@ -5,34 +5,34 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPlaced;
+use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ShipmentId;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Order;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
+final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegrationTestCase
 {
-    private CreateShipmentOnOrderPlaced $processor;
+    private CreateShipmentOnOrderPaymentCaptured $processor;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CreateShipmentOnOrderPlaced::class);
+        $this->processor = $this->service(CreateShipmentOnOrderPaymentCaptured::class);
     }
 
     #[Test]
-    public function itOpensAShipmentEnrichedWithTheOrderSummaryOnOrderPlaced(): void
+    public function itOpensAShipmentEnrichedWithTheOrderSummaryOnOrderPaymentCaptured(): void
     {
         // Given
         $order = $this->placedOrder();
 
         // When
-        ($this->processor)($this->orderPlaced($order));
+        ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
@@ -46,14 +46,14 @@ final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itOpensASingleShipmentWhenReplayedOnOrderPlaced(): void
+    public function itOpensASingleShipmentWhenReplayedOnOrderPaymentCaptured(): void
     {
         // Given
         $order = $this->placedOrder();
-        ($this->processor)($this->orderPlaced($order));
+        ($this->processor)($this->orderPaymentCaptured($order));
 
         // When
-        ($this->processor)($this->orderPlaced($order));
+        ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
         self::assertCount(1, iterator_to_array($this->service(ShipmentFinderInterface::class)));
@@ -72,15 +72,13 @@ final class CreateShipmentOnOrderPlacedTest extends AbstractIntegrationTestCase
         return $order;
     }
 
-    private function orderPlaced(Order $order): OrderPlacedIntegrationEvent
+    private function orderPaymentCaptured(Order $order): OrderPaymentCapturedIntegrationEvent
     {
-        return new OrderPlacedIntegrationEvent(
+        return new OrderPaymentCapturedIntegrationEvent(
             orderId: $order->id()->toString(),
             customerId: 'customer-1',
             buyerAddress: 'buyer@example.com',
-            lines: [['label' => 'Assorted goods', 'quantity' => 1, 'unitAmountInCents' => 4_200]],
-            totalAmountInCents: 4_200,
-            placedAt: '2026-01-01T00:00:00+00:00',
+            capturedAt: '2026-01-01T00:00:00+00:00',
         );
     }
 

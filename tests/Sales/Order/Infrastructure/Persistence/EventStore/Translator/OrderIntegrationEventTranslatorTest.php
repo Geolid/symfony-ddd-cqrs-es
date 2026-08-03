@@ -9,7 +9,9 @@ use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -50,6 +52,28 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $event = $published[1];
         self::assertInstanceOf(OrderCancelledIntegrationEvent::class, $event);
         self::assertSame($order->id()->toString(), $event->orderId);
+    }
+
+    #[Test]
+    public function itPublishesTheCaptureOnOrderPaymentCaptured(): void
+    {
+        // When
+        $orderPayment = OrderPaymentTestFactory::new()
+            ->withOrderId('order-1')
+            ->withCustomerId('customer-1')
+            ->withBuyerAddress('buyer@example.com')
+            ->captured()
+            ->create();
+        $this->store($orderPayment);
+
+        // Then
+        $published = $this->publishedTo('sales.order.integration.order-1');
+        self::assertCount(1, $published);
+        $event = $published[0];
+        self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $event);
+        self::assertSame('order-1', $event->orderId);
+        self::assertSame('customer-1', $event->customerId);
+        self::assertSame('buyer@example.com', $event->buyerAddress);
     }
 
     /**

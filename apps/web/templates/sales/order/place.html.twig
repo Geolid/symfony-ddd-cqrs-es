@@ -14,9 +14,8 @@
         <div x-ref="rows" data-testid="order-lines-rows">
             {% for line in form.lines %}
                 <p data-testid="order-line">
-                    {{ form_label(line.label) }} {{ form_widget(line.label) }}
+                    {{ form_label(line.productId) }} {{ form_widget(line.productId) }}
                     {{ form_label(line.quantity) }} {{ form_widget(line.quantity) }}
-                    {{ form_label(line.unitAmountInCents) }} {{ form_widget(line.unitAmountInCents) }}
                     {{ form_errors(line) }}
                 </p>
             {% endfor %}

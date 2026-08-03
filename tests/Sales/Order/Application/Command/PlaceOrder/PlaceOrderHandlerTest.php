@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
+use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\OrderId;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -25,7 +28,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderId::generate()->toString();
 
         // When
-        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), self::lines()));
+        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), $this->lines()));
 
         // Then
         $results = array_values(iterator_to_array($this->service(OrderFinderInterface::class)));
@@ -47,7 +50,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, self::lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, $this->lines()));
     }
 
     #[Test]
@@ -61,17 +64,39 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), self::lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+    }
+
+    #[Test]
+    public function itFailsWhenAProductIsNotAvailable(): void
+    {
+        // Given
+        $customer = $this->registeredCustomer('buyer@example.com');
+
+        // Then
+        $this->expectException(ProductNotAvailableException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(
+            OrderId::generate()->toString(),
+            $customer->id()->toString(),
+            [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1]],
+        ));
     }
 
     /**
-     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     * @return list<array{productId: string, quantity: int}>
      */
-    private static function lines(): array
+    private function lines(): array
     {
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($cups);
+        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
+        $this->store($saucer);
+
         return [
-            ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
-            ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+            ['productId' => $cups->id()->toString(), 'quantity' => 1],
+            ['productId' => $saucer->id()->toString(), 'quantity' => 3],
         ];
     }
 

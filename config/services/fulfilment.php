@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPlaced;
+use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -13,6 +13,6 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Fulfilment');
 
     if ('test' === $container->env()) {
-        $services->get(CreateShipmentOnOrderPlaced::class)->public();
+        $services->get(CreateShipmentOnOrderPaymentCaptured::class)->public();
     }
 };

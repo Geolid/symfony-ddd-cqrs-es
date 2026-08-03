@@ -6,8 +6,10 @@ namespace Sales\Order\Infrastructure\Persistence\EventStore\Translator;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderCancelled;
+use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
@@ -39,6 +41,20 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
             new OrderCancelledIntegrationEvent(
                 orderId: $event->id,
                 cancelledAt: $event->cancelledAt,
+            ),
+        );
+    }
+
+    #[Subscribe(OrderPaymentCaptured::class)]
+    public function onOrderPaymentCaptured(OrderPaymentCaptured $event): void
+    {
+        $this->append(
+            \sprintf('sales.order.integration.%s', $event->orderId),
+            new OrderPaymentCapturedIntegrationEvent(
+                orderId: $event->orderId,
+                customerId: $event->customerId,
+                buyerAddress: $event->buyerAddress,
+                capturedAt: $event->capturedAt,
             ),
         );
     }

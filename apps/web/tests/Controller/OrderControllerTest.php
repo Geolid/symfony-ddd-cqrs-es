@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -94,14 +95,16 @@ final class OrderControllerTest extends AbstractWebTestCase
 
     private function placeOrder(KernelBrowser $client): string
     {
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($product);
+
         $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('form')->form();
         $prefix = $form->getName();
 
         $form->setValues([
-            \sprintf('%s[lines][0][label]', $prefix) => 'Espresso cups, set of 6',
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
             \sprintf('%s[lines][0][quantity]', $prefix) => '1',
-            \sprintf('%s[lines][0][unitAmountInCents]', $prefix) => '17.50',
         ]);
 
         $client->submit($form);

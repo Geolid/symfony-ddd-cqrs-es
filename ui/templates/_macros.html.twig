@@ -24,10 +24,12 @@
                     <h2>{{ label }}</h2>
                     <p>{{ message }}</p>
                     <footer>
-                        <button class="secondary" style="margin-bottom: 0" @click="open = false">{{ options.cancel_label }}</button>
+                        <button class="secondary" style="margin-bottom: 0"
+                                @click="open = false">{{ options.cancel_label }}</button>
                         <form method="post" action="{{ action_url }}">
                             <input type="hidden" name="_token" value="{{ csrf_token(id) }}">
-                            <button class="{{ options.confirm_button_class }}" style="margin-bottom: 0">{{ label }}</button>
+                            <button class="{{ options.confirm_button_class }}"
+                                    style="margin-bottom: 0">{{ label }}</button>
                         </form>
                     </footer>
                 </article>
@@ -63,15 +65,31 @@
 {% endmacro %}
 
 {% macro pagination(pagination, route, query) %}
-    {% if pagination.lastPage|default(0) > 1 %}
-        <nav data-testid="pagination" aria-label="Pagination">
-            {% if pagination.currentPage > 1 %}
-                <a data-testid="pagination-previous" href="{{ path(route, query|merge({page: pagination.currentPage - 1})) }}" role="button" class="outline">{{ 'pagination.previous'|trans }}</a>
-            {% endif %}
-            <span>{{ 'pagination.page_of'|trans({'%current%': pagination.currentPage, '%last%': pagination.lastPage}) }}</span>
-            {% if pagination.currentPage < pagination.lastPage %}
-                <a data-testid="pagination-next" href="{{ path(route, query|merge({page: pagination.currentPage + 1})) }}" role="button" class="outline">{{ 'pagination.next'|trans }}</a>
-            {% endif %}
-        </nav>
-    {% endif %}
+    <footer>
+        {% if pagination.lastPage|default(0) > 1 %}
+            <nav data-testid="pagination">
+                <ul aria-label="Pagination">
+                    <li>
+                        {% if pagination.currentPage > 1 %}
+                            <a data-testid="pagination-previous"
+                               href="{{ path(route, query|merge({page: pagination.currentPage - 1})) }}" role="button"
+                               class="outline">Previous</a>
+                        {% endif %}
+                    </li>
+                </ul>
+                <ul>
+                    <li>Page {{ pagination.currentPage }} of {{ pagination.lastPage }}</li>
+                </ul>
+                <ul>
+                    <li>
+                        {% if pagination.currentPage < pagination.lastPage %}
+                            <a data-testid="pagination-next"
+                               href="{{ path(route, query|merge({page: pagination.currentPage + 1})) }}" role="button"
+                               class="outline">Next</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    </footer>
 {% endmacro %}

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use Catalog\Product\Application\Finder\Product\ProductResult;
+use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
@@ -15,6 +17,7 @@ use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Shared\Application\Query\Result\ListResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,8 +74,15 @@ final class OrderController extends AbstractController
     {
         $customer = $this->resolveCustomer();
 
+        /** @var ListResult<ProductResult> $products */
+        $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
+        $productChoices = [];
+        foreach ($products->items as $product) {
+            $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitAmountInCents / 100, 2))] = $product->id;
+        }
+
         $formData = new PlaceOrderFormData();
-        $form = $this->createForm(PlaceOrderType::class, $formData);
+        $form = $this->createForm(PlaceOrderType::class, $formData, ['products' => $productChoices]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -81,9 +91,8 @@ final class OrderController extends AbstractController
                 customerId: $customer->id,
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
-                        'label' => (string) $line->label,
+                        'productId' => (string) $line->productId,
                         'quantity' => (int) $line->quantity,
-                        'unitAmountInCents' => (int) $line->unitAmountInCents,
                     ],
                     $formData->lines,
                 )),
