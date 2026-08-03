@@ -16,8 +16,10 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
 #[AsCommand(name: 'fulfilment:shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
+#[AsCronTask('0 0 * * *')]
 final class DispatchPendingShipmentsCommand
 {
     use LockableTrait;

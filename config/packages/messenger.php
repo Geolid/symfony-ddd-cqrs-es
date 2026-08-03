@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
+use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Query\QueryInterface;
 use Shared\Infrastructure\Messaging\Middleware\DbalTransactionMiddleware;
@@ -25,6 +26,7 @@ return static function (ContainerConfigurator $container): void {
             ],
             'routing' => [
                 CreateShipment::class => 'async',
+                DispatchShipment::class => 'async',
                 CommandInterface::class => 'sync',
                 QueryInterface::class => 'sync',
             ],
