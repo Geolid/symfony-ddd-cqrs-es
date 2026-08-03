@@ -67,8 +67,10 @@
     "allow-plugins": {
       "infection/extension-installer": true,
       "php-http/discovery": true,
+      "symfony/flex": false,
       "symfony/runtime": true
     },
+    "bump-after-update": true,
     "sort-packages": true
   },
   "autoload": {
@@ -111,6 +113,14 @@
     "symfony/polyfill-php81": "*",
     "symfony/polyfill-php82": "*",
     "symfony/polyfill-php83": "*"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "make assets warmup"
+    ],
+    "post-update-cmd": [
+      "make assets warmup"
+    ]
   },
   "conflict": {
     "symfony/symfony": "*"

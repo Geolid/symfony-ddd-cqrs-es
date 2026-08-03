@@ -35,14 +35,5 @@ services:
   mailer:
     image: axllent/mailpit:latest
 
-  # Optional: swap MESSENGER_TRANSPORT_DSN to amqp://guest:guest@rabbitmq:5672/%2f/messages and
-  # `docker compose --profile broker up` to run Messenger against a real broker instead of the
-  # default Doctrine transport — a free, self-hostable alternative to a managed message queue.
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    profiles: [ broker ]
-    ports:
-      - '15672:15672'
-
 volumes:
   db-data: ~

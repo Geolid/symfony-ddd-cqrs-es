@@ -2,6 +2,7 @@ services:
   nginx:
     ports:
       - '80:80'
+      - '443:443'
 
   app:
     environment:
@@ -13,8 +14,8 @@ services:
 
   db:
     ports:
-      - '3307:3306'
+      - '3306:3306'
 
   mailer:
     ports:
-      - '8025:8025' # web UI at http://localhost:8025
+      - '8025:8025'
