@@ -80,12 +80,12 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->loggedInCustomer($client, 'owner@example.com');
         $id = $this->placeOrder($client);
 
-        $intruder = self::browser();
-        $this->loggedInCustomer($intruder, 'intruder@example.com');
+        $client->request('GET', '/logout');
+        $this->loggedInCustomer($client, 'intruder@example.com');
 
         // When
-        $intruder->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
-            '_token' => $this->csrfToken($intruder, 'cancel-order-'.$id),
+        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+            '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
         // Then
