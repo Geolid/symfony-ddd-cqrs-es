@@ -21,9 +21,6 @@ return static function (ContainerConfigurator $container): void {
     if ('dev' === $container->env()) {
         $container->extension('monolog', [
             'handlers' => [
-                // Structured stdout logging is enough for a `docker compose logs` workflow —
-                // no log-shipping SaaS needed. Point Monolog at a self-hosted Loki/Promtail
-                // stack (or ELK) if you want log aggregation across services.
                 'docker' => [
                     'type' => 'stream',
                     'path' => 'php://stdout',
@@ -65,9 +62,7 @@ return static function (ContainerConfigurator $container): void {
                     'type' => 'service',
                     'id' => ExceptionToSentryIssueHandler::class,
                 ],
-                // Loki push failures never break a request — see README's "Open source over
-                // paid SaaS" for how to get a free LOKI_URL/basic-auth pair (Grafana Cloud's
-                // free tier, or a self-hosted Loki).
+                // Loki push failures never break a request (whatfailuregroup swallows them).
                 'loki_safe' => [
                     'type' => 'whatfailuregroup',
                     'members' => ['loki'],
@@ -79,20 +74,5 @@ return static function (ContainerConfigurator $container): void {
                 ],
             ],
         ]);
-
-        $container->services()
-            ->set(LokiHandler::class)
-            ->arg('$apiConfig', [
-                'entrypoint' => '%env(LOKI_URL)%',
-                'context' => ['app' => '%kernel.app_id%'],
-                'labels' => ['env' => '%env(APP_ENV)%'],
-                'client_name' => '%kernel.app_id%',
-                'auth' => [
-                    'basic' => [
-                        'user' => '%env(LOKI_BASIC_AUTH_USER)%',
-                        'password' => '%env(LOKI_BASIC_AUTH_PASSWORD)%',
-                    ],
-                ],
-            ]);
     }
 };
