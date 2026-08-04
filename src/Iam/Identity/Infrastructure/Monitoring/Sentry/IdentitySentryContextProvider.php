@@ -9,9 +9,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 final readonly class IdentitySentryContextProvider implements SentryContextProviderInterface
 {
-    public function __construct(
-        private ?TokenStorageInterface $tokenStorage = null,
-    ) {
+    public function __construct(private ?TokenStorageInterface $tokenStorage = null)
+    {
     }
 
     public function name(): string
