@@ -139,3 +139,65 @@ jobs:
 
       - name: make ci.mutation
         run: make ci.mutation
+
+  coverage:
+    name: Coverage
+    needs: static
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: xdebug
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: vendor
+          path: .
+
+      - run: chmod -R +x vendor/bin
+
+      - name: make ci.coverage
+        run: make ci.coverage
+
+      - name: Upload coverage artifact
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report-php
+          path: var/coverage/cobertura.xml
+
+  upload-coverage-php:
+    name: Upload Coverage (PHP)
+    needs: coverage
+    if: ${{ !cancelled() && needs.coverage.result == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-report-php
+
+      - uses: actions/upload-code-coverage@v1
+        with:
+          file: cobertura.xml
+          language: PHP
+          label: code-coverage-agent

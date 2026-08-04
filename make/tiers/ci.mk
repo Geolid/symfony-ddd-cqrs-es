@@ -10,6 +10,9 @@ ci.static: warmup security static ## CI — warmup then run static analysis
 ci.test: test ## CI — run test suite
 .PHONY: ci.test
 
+ci.coverage: coverage ## CI — run test suite with coverage
+.PHONY: ci.coverage
+
 ci.mutation: mutation ## CI — run mutation testing
 .PHONY: ci.mutation
 
