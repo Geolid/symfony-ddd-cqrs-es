@@ -2,49 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain;
+namespace Sales\Tests\Order\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderId;
 
-final class OrderPaymentIdTest extends TestCase
+final class OrderIdTest extends TestCase
 {
     #[Test]
     public function itGenerates(): void
     {
         // When
-        $id = OrderPaymentId::generate();
+        $id = OrderId::generate();
 
         // Then
         self::assertNotEmpty($id->toString());
     }
 
     #[Test]
-    public function itDerivesTheSameIdForTheSameOrder(): void
+    public function itComparesEquality(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $value = OrderId::generate()->toString();
 
         // When
-        $a = OrderPaymentId::forOrder($orderId);
-        $b = OrderPaymentId::forOrder($orderId);
+        $a = OrderId::fromString($value);
+        $b = OrderId::fromString($value);
 
         // Then
         self::assertTrue($a->equals($b));
-    }
-
-    #[Test]
-    public function itDerivesADifferentIdForADifferentOrder(): void
-    {
-        // When
-        $a = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
-        $b = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
-
-        // Then
-        self::assertFalse($a->equals($b));
+        self::assertFalse($a->equals(OrderId::generate()));
     }
 
     #[Test]
@@ -55,7 +44,7 @@ final class OrderPaymentIdTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        OrderPaymentId::fromString($value);
+        OrderId::fromString($value);
     }
 
     /**

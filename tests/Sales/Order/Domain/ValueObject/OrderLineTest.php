@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain;
+namespace Sales\Tests\Order\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

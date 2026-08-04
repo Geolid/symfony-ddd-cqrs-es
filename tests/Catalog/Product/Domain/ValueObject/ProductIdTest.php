@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Tests\Product\Domain;
+namespace Catalog\Tests\Product\Domain\ValueObject;
 
 use Catalog\Product\Domain\ValueObject\ProductId;
 use PHPUnit\Framework\Attributes\DataProvider;

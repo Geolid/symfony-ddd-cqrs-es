@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Access\Domain;
+namespace Iam\Tests\Access\Domain\ValueObject;
 
 use Iam\Access\Domain\ValueObject\Permission;
 use PHPUnit\Framework\Attributes\DataProvider;

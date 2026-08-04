@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain;
+namespace Fulfilment\Tests\Shipment\Domain\ValueObject;
 
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\ValueObject\PaymentReference;
 
-final class PaymentReferenceTest extends TestCase
+final class TrackingReferenceTest extends TestCase
 {
     #[Test]
     public function itCreates(): void
     {
         // When
-        $reference = PaymentReference::fromString('GLBX-9F3K2M1P');
+        $reference = TrackingReference::fromString('ACME-4Q7X2K9');
 
         // Then
-        self::assertSame('GLBX-9F3K2M1P', $reference->toString());
+        self::assertSame('ACME-4Q7X2K9', $reference->toString());
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
         // Given
-        $a = PaymentReference::fromString('GLBX-9F3K2M1P');
-        $b = PaymentReference::fromString('GLBX-9F3K2M1P');
-        $other = PaymentReference::fromString('GLBX-OTHER');
+        $a = TrackingReference::fromString('ACME-4Q7X2K9');
+        $b = TrackingReference::fromString('ACME-4Q7X2K9');
+        $other = TrackingReference::fromString('ACME-OTHER');
 
         // Then
         self::assertTrue($a->equals($b));
@@ -40,7 +40,7 @@ final class PaymentReferenceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        PaymentReference::fromString('');
+        TrackingReference::fromString('');
     }
 
     #[Test]
@@ -50,19 +50,19 @@ final class PaymentReferenceTest extends TestCase
         $value = str_repeat('A', 64);
 
         // When
-        $reference = PaymentReference::fromString($value);
+        $reference = TrackingReference::fromString($value);
 
         // Then
         self::assertSame($value, $reference->toString());
     }
 
     #[Test]
-    public function itRefusesAReferenceLongerThanTheProviderCanIssue(): void
+    public function itRefusesAReferenceLongerThanTheCarrierCanIssue(): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        PaymentReference::fromString(str_repeat('A', 65));
+        TrackingReference::fromString(str_repeat('A', 65));
     }
 }

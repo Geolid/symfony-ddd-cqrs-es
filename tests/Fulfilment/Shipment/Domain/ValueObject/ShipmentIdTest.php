@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Domain;
+namespace Fulfilment\Tests\Shipment\Domain\ValueObject;
 
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\DataProvider;

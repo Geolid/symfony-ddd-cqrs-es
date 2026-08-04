@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain;
+namespace Sales\Tests\Customer\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Domain\ValueObject\OrderId;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 
-final class OrderIdTest extends TestCase
+final class CustomerIdTest extends TestCase
 {
     #[Test]
     public function itGenerates(): void
     {
         // When
-        $id = OrderId::generate();
+        $id = CustomerId::generate();
 
         // Then
         self::assertNotEmpty($id->toString());
@@ -25,15 +25,15 @@ final class OrderIdTest extends TestCase
     public function itComparesEquality(): void
     {
         // Given
-        $value = OrderId::generate()->toString();
+        $value = CustomerId::generate()->toString();
 
         // When
-        $a = OrderId::fromString($value);
-        $b = OrderId::fromString($value);
+        $a = CustomerId::fromString($value);
+        $b = CustomerId::fromString($value);
 
         // Then
         self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(OrderId::generate()));
+        self::assertFalse($a->equals(CustomerId::generate()));
     }
 
     #[Test]
@@ -44,7 +44,7 @@ final class OrderIdTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        OrderId::fromString($value);
+        CustomerId::fromString($value);
     }
 
     /**

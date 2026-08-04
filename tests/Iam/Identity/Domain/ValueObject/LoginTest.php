@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Domain;
+namespace Iam\Tests\Identity\Domain\ValueObject;
 
 use Iam\Identity\Domain\ValueObject\Login;
 use PHPUnit\Framework\Attributes\DataProvider;
