@@ -15,7 +15,7 @@ make help                               # list all targets
 make sh cmd="<cmd>"                     # shell into the app container
 make cc                                 # Cache clear + warmup
 make test [filter=<x>] [suite=<x>]      # PHPUnit
-make stan.src / stan.<dm>               # PHPStan (Core or DM-targeted)
+make stan.src / stan.<dm>               # PHPStan
 make deptrac-bc / -layers / -dm         # architecture isolation checks
 make cs-php-fix / -twig-fix [file=<x>]  # Linter auto-fix (whole repo if file omitted)
 make static                             # Lint + CS + Deptrac + Stan
