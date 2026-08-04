@@ -2,8 +2,12 @@
 ##---------------------------------------------------------------------------
 
 start: ## Full project installation and startup
-start: compose.override.yaml up vendor db assets
+start: compose.override.yaml up vendor hooks db assets
 .PHONY: start
+
+hooks: vendor ## Install git hooks (CaptainHook)
+	@$(EXEC) vendor/bin/captainhook install -f -n
+.PHONY: hooks
 
 up: ## Build images and start containers
 	@$(FIG) pull
