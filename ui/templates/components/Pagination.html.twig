@@ -1,0 +1,25 @@
+<footer>
+    {% if this.hasMultiplePages %}
+        <nav data-testid="pagination">
+            <ul aria-label="Pagination">
+                <li>
+                    {% if this.hasPrevious %}
+                        <a data-testid="pagination-previous" href="{{ this.previousUrl }}" role="button"
+                           class="outline">{{ 'pagination.button_previous'|trans }}</a>
+                    {% endif %}
+                </li>
+            </ul>
+            <ul>
+                <li>{{ this.pageOfLabel }}</li>
+            </ul>
+            <ul>
+                <li>
+                    {% if this.hasNext %}
+                        <a data-testid="pagination-next" href="{{ this.nextUrl }}" role="button"
+                           class="outline">{{ 'pagination.button_next'|trans }}</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+</footer>

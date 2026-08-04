@@ -1,0 +1,8 @@
+<div data-controller="modal">
+    {% block trigger %}{% endblock %}
+    <dialog data-modal-target="dialog" style="outline: none" data-action="click->modal#closeOnBackdrop">
+        <article>
+            {% block content %}{% endblock %}
+        </article>
+    </dialog>
+</div>

@@ -12,6 +12,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Sales/Order/.*' }
 
+    - name: Sales.OrderTracking
+      collectors:
+        - { type: directory, value: 'src/Sales/OrderTracking/.*' }
+
     - name: Fulfilment.Shipment
       collectors:
         - { type: directory, value: 'src/Fulfilment/Shipment/.*' }
@@ -44,11 +48,13 @@ deptrac:
             - { type: directory, value: 'demo/.*' }
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
+            - { type: directory, value: 'ui/.*' }
 
   # Deptrac draws which BC pairs may see each other; PHPat seals how (DomainEventTest, BoundedContextTest.onlyReachesAnotherBcThroughIntegrationEvents).
   ruleset:
     Sales.Customer:      [ Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Shared, Vendors ]
+    Sales.OrderTracking: [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Access:          [ Shared, Vendors ]

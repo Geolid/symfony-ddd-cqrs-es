@@ -20,11 +20,11 @@ final class RegisterCustomerType extends AbstractType
     {
         $builder
             ->add('email', EmailType::class, [
-                'label' => 'sales.customer.register.email_label',
+                'label' => 'sales.customer.register.label_email',
                 'translation_domain' => 'messages',
             ])
             ->add('password', PasswordType::class, [
-                'label' => 'sales.customer.register.password_label',
+                'label' => 'sales.customer.register.label_password',
                 'translation_domain' => 'messages',
             ]);
     }

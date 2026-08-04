@@ -1,0 +1,57 @@
+.step-indicator {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step-indicator__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.step-indicator__step:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--pico-muted-border-color);
+  z-index: 0;
+}
+
+.step-indicator__step--done:not(:first-child)::before {
+  background: var(--pico-primary);
+}
+
+.step-indicator__marker {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--pico-background-color);
+  border: 2px solid var(--pico-muted-border-color);
+  z-index: 1;
+}
+
+.step-indicator__step--done .step-indicator__marker {
+  background: var(--pico-primary);
+  border-color: var(--pico-primary);
+}
+
+.step-indicator__step--current .step-indicator__marker {
+  border-color: var(--pico-primary);
+}
+
+.step-indicator__label {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.step-indicator__step--upcoming .step-indicator__label {
+  color: var(--pico-muted-color);
+}

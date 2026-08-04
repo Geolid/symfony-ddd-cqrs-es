@@ -1,4 +1,6 @@
 pagination:
-    previous: Précédent
-    next: Suivant
+    button_previous: Précédent
+    button_next: Suivant
     page_of: 'Page %current% sur %last%'
+confirm_modal:
+    button_cancel: Annuler

@@ -1,0 +1,10 @@
+{% props steps %}
+
+<ol class="step-indicator" {{ attributes }}>
+    {% for step in steps %}
+        <li class="step-indicator__step step-indicator__step--{{ step.state }}">
+            <span class="step-indicator__marker" aria-hidden="true"></span>
+            <span class="step-indicator__label">{{ step.label }}</span>
+        </li>
+    {% endfor %}
+</ol>

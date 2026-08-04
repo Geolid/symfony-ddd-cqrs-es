@@ -20,6 +20,6 @@ final class AmountExtension extends AbstractExtension
             return '—';
         }
 
-        return number_format($amountInCents / 100, 2);
+        return number_format($amountInCents / 100, 2).' €';
     }
 }

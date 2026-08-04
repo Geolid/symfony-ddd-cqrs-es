@@ -14,4 +14,5 @@
 .flash-container article {
   margin-bottom: 0;
   cursor: pointer;
+  transition: opacity 300ms;
 }

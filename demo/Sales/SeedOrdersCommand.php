@@ -53,7 +53,8 @@ final readonly class SeedOrdersCommand
             $factory = OrderTestFactory::new()
                 ->withCustomerId($customer->id)
                 ->withBuyerAddress($customer->email)
-                ->withLines([OrderLine::of('Assorted goods', random_int(1, 5), Money::fromCents(random_int(500, 5_000)))]);
+                ->withLines([OrderLine::of('Assorted goods', random_int(1, 5), Money::fromCents(random_int(500, 5_000)))])
+                ->withoutIncrementalIds();
 
             $status = OrderStatus::from(WeightedPicker::pick($weights));
 

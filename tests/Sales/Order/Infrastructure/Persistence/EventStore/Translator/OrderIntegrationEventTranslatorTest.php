@@ -10,6 +10,7 @@ use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
+use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -55,6 +56,23 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
+    public function itPublishesTheRequestOnOrderPaymentRequested(): void
+    {
+        // When
+        $orderPayment = OrderPaymentTestFactory::new()
+            ->withOrderId('order-1')
+            ->create();
+        $this->store($orderPayment);
+
+        // Then
+        $published = $this->publishedTo('sales.order.integration.order-1');
+        self::assertCount(1, $published);
+        $event = $published[0];
+        self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $event);
+        self::assertSame('order-1', $event->orderId);
+    }
+
+    #[Test]
     public function itPublishesTheCaptureOnOrderPaymentCaptured(): void
     {
         // When
@@ -68,8 +86,9 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
 
         // Then
         $published = $this->publishedTo('sales.order.integration.order-1');
-        self::assertCount(1, $published);
-        $event = $published[0];
+        self::assertCount(2, $published);
+        self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $published[0]);
+        $event = $published[1];
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $event);
         self::assertSame('order-1', $event->orderId);
         self::assertSame('customer-1', $event->customerId);
