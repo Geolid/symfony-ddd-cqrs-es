@@ -43,6 +43,7 @@
   },
   "require-dev": {
     "brianium/paratest": "^7.23",
+    "captainhook/captainhook": "^5.29",
     "dama/doctrine-test-bundle": "^8.2",
     "deptrac/deptrac": "^4.6",
     "fakerphp/faker": "^1.24.1",
