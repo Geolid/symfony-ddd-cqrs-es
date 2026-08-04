@@ -12,12 +12,16 @@ pick it apart, rename it, replace it; the interesting part is the structure arou
 
 ## Architecture
 
-Three Bounded Contexts:
+Six Bounded Contexts:
 
 - **`Sales.Customer`** — registers and erases a `Customer`, the showcase's data subject.
 - **`Sales.Order`** — places and cancels an `Order`, whose total the aggregate derives from
   the lines it was placed with; no surface may dictate an amount.
 - **`Fulfilment.Shipment`** — creates, dispatches and delivers a `Shipment`.
+- **`Catalog.Product`** — lists, reprices and delists a `Product`.
+- **`Iam.Identity`** — registers an `Identity` and manages its credentials (password, API
+  token), suspends and reactivates it.
+- **`Iam.Access`** — grants and revokes a `Grant`'s permissions.
 
 `Fulfilment` never depends on `Sales`'s Domain or Application internals — the only sanctioned
 cross-BC edges (see `deptrac_bc.yaml`) are Sales' public Integration Event contracts. Neither
