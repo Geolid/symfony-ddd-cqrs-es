@@ -6,6 +6,7 @@ services:
     volumes:
       - ./public:/srv/public:ro
       - ./docker/nginx/vhosts:/etc/nginx/conf.d:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
 
   app:
     build:
