@@ -10,6 +10,9 @@ ci.static: warmup security static ## CI — warmup then run static analysis
 ci.test: test ## CI — run test suite
 .PHONY: ci.test
 
+ci.mutation: mutation ## CI — run mutation testing
+.PHONY: ci.mutation
+
 # Explicit allowlist of what a running instance actually needs — never "everything except a
 # few excludes" (tests/, tools/, demo/, .claude/, .github/... have no reason to ship).
 DIST_PATHS = bin/console bootstrap config apps public src make ui vendor Makefile composer.json

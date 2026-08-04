@@ -6,7 +6,7 @@ IN_CONTAINER := $(shell test -f /.dockerenv -o -n "$$CI" && echo yes)
 FIG          = docker compose
 USERID       = $(shell id -u)
 GROUPID      = $(shell id -g)
-EXEC         = $(if $(IN_CONTAINER),,$(FIG) exec -u $(USERID):$(GROUPID) app)
+EXEC         = $(if $(IN_CONTAINER),,$(FIG) exec -e APP_ENV=$(APP_ENV) -u $(USERID):$(GROUPID) app)
 
 -include make/tiers/$(TIER).mk
 
