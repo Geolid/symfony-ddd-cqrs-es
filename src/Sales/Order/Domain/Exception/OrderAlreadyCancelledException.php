@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Domain\Exception;
 
-use Sales\Order\Domain\OrderId;
+use Sales\Order\Domain\ValueObject\OrderId;
 
 final class OrderAlreadyCancelledException extends \DomainException
 {

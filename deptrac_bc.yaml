@@ -3,7 +3,7 @@ deptrac:
   cache_file: var/.deptrac_bc.cache
 
   layers:
-    # --- Bounded Contexts ---
+    # Bounded Contexts
     - name: Sales.Customer
       collectors:
         - { type: directory, value: 'src/Sales/Customer/.*' }
@@ -28,7 +28,7 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Catalog/Product/.*' }
 
-    # --- Global ---
+    # Global
     - name: Shared
       collectors:
         - { type: directory, value: 'src/Shared/.*' }
@@ -36,9 +36,8 @@ deptrac:
     - name: Vendors
       collectors:
         - type: bool
-          # Defines Vendors as "any non-project code" to handle PHP native classes and external libs.
-          # Explicit exclusions (apps/, demo/...) prevent false positives when imported by other Deptrac scopes.
-          # WARNING: BC access to Vendors is heavily restricted by Tools\PHPat\BoundedContextTest (Delivery vendors are forbidden).
+          # Vendors: non-project code only. Exclusions below avoid mislabeling other layers as Vendors.
+          # WARNING: BC access to Vendors also restricted by Tools\PHPat\BoundedContextTest.
           must_not:
             - { type: directory, value: 'src/.*' }
             - { type: directory, value: 'apps/.*' }
@@ -46,9 +45,7 @@ deptrac:
             - { type: directory, value: 'tools/.*' }
             - { type: directory, value: 'bin/.*' }
 
-  # Deptrac broadly allows upstream BC access (e.g. Order -> Customer).
-  # Domain Events leaking across BCs is explicitly forbidden by Tools\PHPat\DomainEventTest
-  # (Integration Events must be used instead).
+  # Deptrac draws which BC pairs may see each other; PHPat seals how (DomainEventTest, BoundedContextTest.onlyReachesAnotherBcThroughIntegrationEvents).
   ruleset:
     Sales.Customer:      [ Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Shared, Vendors ]

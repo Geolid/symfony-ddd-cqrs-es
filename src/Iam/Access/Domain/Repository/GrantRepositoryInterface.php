@@ -6,7 +6,7 @@ namespace Iam\Access\Domain\Repository;
 
 use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Grant;
-use Iam\Access\Domain\GrantId;
+use Iam\Access\Domain\ValueObject\GrantId;
 
 interface GrantRepositoryInterface
 {

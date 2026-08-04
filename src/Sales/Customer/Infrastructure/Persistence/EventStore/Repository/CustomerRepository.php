@@ -7,9 +7,9 @@ namespace Sales\Customer\Infrastructure\Persistence\EventStore\Repository;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\CustomerId;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class CustomerRepository implements CustomerRepositoryInterface

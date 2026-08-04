@@ -1,5 +1,5 @@
 # =============================================================================
-# 1. SYMFONY CORE & CONFIGURATION
+# SYMFONY CORE & CONFIGURATION
 # =============================================================================
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
@@ -10,31 +10,22 @@
 .env.*.local
 
 # =============================================================================
-# 2. DEV TOOLS & QUALITY ASSURANCE
+# DEV TOOLS & QUALITY ASSURANCE
 # =============================================================================
-
-# Claude Code
 /.claude/settings.local.json
-
-# PHP-CS-Fixer
 .php-cs-fixer.php
-
-# Twig-CS-Fixer
 .twig-cs-fixer.php
-
-# PHPStan
 phpstan.neon
-
-# PHPUnit
 phpunit.xml
 
 # =============================================================================
-# 3. INFRASTRUCTURE & DOCKER
+# INFRASTRUCTURE & DOCKER
 # =============================================================================
+/docker/nginx/certs/
 compose.override.yaml
 
 # =============================================================================
-# 4. FRONTEND
+# FRONTEND
 # =============================================================================
 /public/assets/
 /ui/assets/vendor/

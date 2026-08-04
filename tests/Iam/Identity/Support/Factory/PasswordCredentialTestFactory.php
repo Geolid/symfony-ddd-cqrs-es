@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Support\Factory;
 
-use Iam\Identity\Domain\IdentityId;
-use Iam\Identity\Domain\Login;
 use Iam\Identity\Domain\PasswordCredential;
-use Iam\Identity\Domain\PasswordCredentialId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Infrastructure\Security\SecretHasher;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;

@@ -6,7 +6,7 @@ namespace Fulfilment\Shipment\Domain\Repository;
 
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Shipment;
-use Fulfilment\Shipment\Domain\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 
 interface ShipmentRepositoryInterface
 {

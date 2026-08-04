@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Application\Validation;
 
-use Sales\Customer\Domain\Email;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Application\Language\PublishedLanguageInterface;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;

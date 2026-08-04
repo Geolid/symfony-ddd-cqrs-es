@@ -26,7 +26,7 @@
                     <footer>
                         <button class="secondary" style="margin-bottom: 0"
                                 @click="open = false">{{ options.cancel_label }}</button>
-                        <form method="post" action="{{ action_url }}">
+                        <form method="post" action="{{ action_url }}" style="display: inline">
                             <input type="hidden" name="_token" value="{{ csrf_token(id) }}">
                             <button class="{{ options.confirm_button_class }}"
                                     style="margin-bottom: 0">{{ label }}</button>

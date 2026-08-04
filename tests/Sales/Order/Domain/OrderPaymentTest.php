@@ -10,7 +10,7 @@ use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\OrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Domain\ValueObject\Money;
 
 final class OrderPaymentTest extends AggregateRootTestCase

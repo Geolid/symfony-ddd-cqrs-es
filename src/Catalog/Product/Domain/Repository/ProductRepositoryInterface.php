@@ -6,7 +6,7 @@ namespace Catalog\Product\Domain\Repository;
 
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Product;
-use Catalog\Product\Domain\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductId;
 
 interface ProductRepositoryInterface
 {

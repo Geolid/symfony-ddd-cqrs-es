@@ -6,7 +6,7 @@ namespace Catalog\Tests\Product\Application\Command\ListProductForSale;
 
 use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Product\Domain\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 

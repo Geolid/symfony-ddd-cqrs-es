@@ -33,7 +33,7 @@ final class SubscriberTest
             ->classes($this->subscribers())
             ->shouldNot()->dependOn()
             ->classes(Selector::classname(OnFailed::class))
-            ->because('#[OnFailed] turns retry-exhaustion into skip-and-continue — a gap in the translator log or a lost effect; a failure must halt the subscription (Status::Failed), retry/monitoring being a transport concern.');
+            ->because('#[OnFailed] turns retry-exhaustion into skip-and-continue — a failure must halt the subscription (Status::Failed), not silently move on.');
     }
 
     #[TestRule]

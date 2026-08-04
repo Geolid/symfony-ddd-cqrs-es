@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\EventStore\Repository;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

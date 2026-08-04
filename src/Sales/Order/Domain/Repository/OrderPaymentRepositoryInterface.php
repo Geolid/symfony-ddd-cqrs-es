@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Repository;
 
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\OrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 
 interface OrderPaymentRepositoryInterface
 {

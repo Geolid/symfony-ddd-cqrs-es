@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Domain\Exception;
 
-use Iam\Access\Domain\GrantId;
+use Iam\Access\Domain\ValueObject\GrantId;
 
 final class GrantNotFoundException extends \DomainException
 {

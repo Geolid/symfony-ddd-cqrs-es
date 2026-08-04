@@ -6,8 +6,8 @@ namespace Catalog\Product\Infrastructure\Persistence\EventStore\Repository;
 
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Product;
-use Catalog\Product\Domain\ProductId;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

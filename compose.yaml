@@ -6,6 +6,7 @@ services:
     volumes:
       - ./public:/srv/public:ro
       - ./docker/nginx/vhosts:/etc/nginx/conf.d:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
 
   app:
     build:
@@ -16,8 +17,6 @@ services:
         condition: service_healthy
     volumes:
       - ./:/srv/
-    environment:
-      PHP_DATE_TIMEZONE: UTC
     command: [ 'php-fpm' ]
 
   db:
@@ -33,7 +32,7 @@ services:
       retries: 30
 
   mailer:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.29.3
 
 volumes:
   db-data: ~

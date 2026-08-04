@@ -6,7 +6,7 @@ namespace Iam\Identity\Domain\Repository;
 
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Identity;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 
 interface IdentityRepositoryInterface
 {

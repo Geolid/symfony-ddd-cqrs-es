@@ -7,8 +7,8 @@ namespace Sales\Tests\Order\Application\Command\RequestOrderPayment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase

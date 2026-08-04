@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Infrastructure\Persistence\EventStore\Repository;
 
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
-use Catalog\Product\Domain\ProductId;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

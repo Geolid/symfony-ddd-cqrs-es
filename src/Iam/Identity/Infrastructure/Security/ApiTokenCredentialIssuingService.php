@@ -7,7 +7,7 @@ namespace Iam\Identity\Infrastructure\Security;
 use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
 use Iam\Identity\Application\Security\IssuedApiKey;
-use Iam\Identity\Domain\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

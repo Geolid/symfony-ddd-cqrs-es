@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Domain\Exception;
 
-use Catalog\Product\Domain\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductId;
 
 final class ProductAlreadyDelistedException extends \DomainException
 {

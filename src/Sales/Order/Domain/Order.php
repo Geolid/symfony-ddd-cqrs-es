@@ -14,6 +14,9 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
+use Sales\Order\Domain\ValueObject\OrderId;
+use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\OrderStatus;
 use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('sales.order.order')]

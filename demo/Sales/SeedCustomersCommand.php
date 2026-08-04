@@ -10,7 +10,7 @@ use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
-use Sales\Customer\Domain\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\CommandBusInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\MapInput;

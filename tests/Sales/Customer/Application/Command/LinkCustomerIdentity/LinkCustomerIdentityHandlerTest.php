@@ -7,9 +7,9 @@ namespace Sales\Tests\Customer\Application\Command\LinkCustomerIdentity;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Domain\CustomerId;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 

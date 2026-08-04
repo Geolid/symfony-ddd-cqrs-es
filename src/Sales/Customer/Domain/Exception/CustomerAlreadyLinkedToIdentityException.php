@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Domain\Exception;
 
-use Sales\Customer\Domain\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 
 final class CustomerAlreadyLinkedToIdentityException extends \DomainException
 {

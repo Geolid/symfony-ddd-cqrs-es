@@ -7,9 +7,9 @@ namespace Iam\Identity\Infrastructure\Security;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Security\AuthenticatePasswordCredentialInterface;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
-use Iam\Identity\Domain\PasswordCredentialId;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 
 final readonly class PasswordCredentialAuthenticationService implements AuthenticatePasswordCredentialInterface
 {

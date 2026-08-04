@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Language;
 
-use Fulfilment\Shipment\Domain\ShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 use Shared\Application\Language\PublishedLanguageInterface;
 
 enum PublishedShipmentStatus: string implements PublishedLanguageInterface

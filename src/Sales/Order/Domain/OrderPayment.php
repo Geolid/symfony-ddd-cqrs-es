@@ -13,6 +13,9 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentStatus;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('sales.order.payment')]

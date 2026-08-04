@@ -17,16 +17,16 @@ final class ForbidDateTimeImmutableWithoutTimezoneRuleTest extends RuleTestCase
     {
         $this->analyse([__DIR__.'/data/forbid-date-time-immutable-without-timezone.php'], [
             [
-                'Forbidden: new \DateTimeImmutable() without arguments implicitly uses the system clock. Use $this->clock->now() instead.',
-                5,
+                'Forbidden: new \DateTime() without arguments implicitly uses the system clock. Use $this->clock->now() instead.',
+                9,
             ],
             [
-                'Forbidden: new \DateTime() without arguments implicitly uses the system clock. Use $this->clock->now() instead.',
-                6,
+                'Forbidden: new \DateTimeImmutable() without arguments implicitly uses the system clock. Use $this->clock->now() instead.',
+                10,
             ],
             [
                 'Forbidden: new \DateTimeImmutable(\'2024-01-01\') has no explicit timezone offset. Use ISO 8601 with offset, e.g. \'2024-01-01T00:00:00+00:00\'.',
-                7,
+                11,
             ],
         ]);
     }

@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Support\Factory;
 
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\OrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;

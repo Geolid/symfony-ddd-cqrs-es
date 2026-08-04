@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\ApiTokenCredentialId;
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Security\SecretHasher;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;

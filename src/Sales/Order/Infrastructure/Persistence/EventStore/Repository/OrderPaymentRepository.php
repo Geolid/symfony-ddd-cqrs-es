@@ -8,8 +8,8 @@ use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\OrderPayment;
-use Sales\Order\Domain\OrderPaymentId;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class OrderPaymentRepository implements OrderPaymentRepositoryInterface

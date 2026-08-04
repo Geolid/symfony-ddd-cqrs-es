@@ -29,10 +29,15 @@ parameters:
             missingCheckedExceptionInThrows: true
             tooWideThrowType: true
 
+        # Only a business failure is checked — call sites must declare/catch it.
+        # Framework and vendor exceptions stay unchecked (@throws noise for bugs, not domain outcomes).
         checkedExceptionClasses:
             - 'DomainException'
             - 'Shared\Application\Exception\ApplicationExceptionInterface'
 
+    # This base is shared by src/ and every per-DM config, each analysing a different path subset —
+    # an ignoreErrors entry scoped to a path outside the current run's paths would else fail the build
+    # for having no match.
     reportUnmatchedIgnoredErrors: false
 
     ignoreErrors:
@@ -43,8 +48,10 @@ parameters:
             paths:
                 - 'src/**/Domain/**'
         -
-            # Ignore missing @throws in tests and test support (factories, traits, abstract cases).
+            # Tests assert on the exception directly (or don't care) — @throws discipline
+            # only earns its keep at a real call site.
             message: '#throws checked exception .* but it''s missing from the PHPDoc @throws tag#'
+            identifier: missingType.checkedException
             paths:
                 - 'demo/**'
                 - '*Test.php'

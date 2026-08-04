@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\Query\GetOrder;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
-use Sales\Order\Domain\OrderId;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

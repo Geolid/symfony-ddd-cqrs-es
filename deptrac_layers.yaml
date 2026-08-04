@@ -3,7 +3,7 @@ deptrac:
   cache_file: var/.deptrac_layers.cache
 
   layers:
-    # --- Domain (Inner Core) ---
+    # Domain (Inner Core)
     - name: Domain
       collectors:
         - { type: directory, value: 'src/.*/Domain/.*' }
@@ -16,7 +16,7 @@ deptrac:
         - { type: classNameRegex, value: '#^Ramsey\\Uuid\\.*#' }
         - { type: classNameRegex, value: '#^Webmozart\\Assert\\.*#' }
 
-    # --- Application (Use Cases) ---
+    # Application (Use Cases)
     - name: Application
       collectors:
         - { type: directory, value: 'src/.*/Application/.*' }
@@ -26,7 +26,7 @@ deptrac:
         - { type: classNameRegex, value: '#^Psr\\(Log|Clock)\\.*#' }
         - { type: classNameRegex, value: '#^Symfony\\Component\\Validator\\.*#' }
 
-    # --- Infrastructure (Outer Ring) ---
+    # Infrastructure (Outer Ring)
     - name: Infrastructure
       collectors:
         - { type: directory, value: 'src/.*/Infrastructure/.*' }

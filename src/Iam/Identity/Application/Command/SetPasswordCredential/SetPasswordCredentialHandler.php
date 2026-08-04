@@ -6,13 +6,13 @@ namespace Iam\Identity\Application\Command\SetPasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
-use Iam\Identity\Domain\IdentityId;
-use Iam\Identity\Domain\Login;
 use Iam\Identity\Domain\PasswordCredential;
-use Iam\Identity\Domain\PasswordCredentialId;
-use Iam\Identity\Domain\PasswordCredentialUniqueValue;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;

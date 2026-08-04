@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
-use Fulfilment\Shipment\Domain\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;

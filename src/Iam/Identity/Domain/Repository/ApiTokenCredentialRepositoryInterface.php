@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain\Repository;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\ApiTokenCredentialId;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 
 interface ApiTokenCredentialRepositoryInterface
 {

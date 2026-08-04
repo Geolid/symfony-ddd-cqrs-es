@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Access\Application\Validation;
 
 use Iam\Access\Application\Validation\ValidPermission;
-use Iam\Access\Domain\Permission;
+use Iam\Access\Domain\ValueObject\Permission;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidValueObject;

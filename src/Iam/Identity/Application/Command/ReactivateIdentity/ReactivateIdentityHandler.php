@@ -6,8 +6,8 @@ namespace Iam\Identity\Application\Command\ReactivateIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
-use Iam\Identity\Domain\IdentityId;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 

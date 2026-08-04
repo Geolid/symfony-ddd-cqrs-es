@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\Exception;
 
-use Iam\Identity\Domain\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 
 final class ApiTokenCredentialNotFoundException extends \DomainException
 {

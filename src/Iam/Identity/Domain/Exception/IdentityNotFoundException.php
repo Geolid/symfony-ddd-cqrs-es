@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\Exception;
 
-use Iam\Identity\Domain\IdentityId;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 
 final class IdentityNotFoundException extends \DomainException
 {

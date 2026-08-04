@@ -14,6 +14,8 @@ use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
+use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\Email;
 
 #[Aggregate('sales.customer.customer')]
 final class Customer implements AggregateRoot, AggregateRootMetadataAware

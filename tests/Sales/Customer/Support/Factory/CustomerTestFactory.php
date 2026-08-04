@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Support\Factory;
 
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\CustomerId;
-use Sales\Customer\Domain\Email;
+use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
