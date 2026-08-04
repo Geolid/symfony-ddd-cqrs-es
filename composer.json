@@ -102,7 +102,6 @@
       "Iam\\Tests\\": "tests/Iam/",
       "Sales\\Tests\\": "tests/Sales/",
       "Shared\\Tests\\": "tests/Shared/",
-      "Ui\\Tests\\": "tests/Ui/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",
       "Tools\\": "tools/"
