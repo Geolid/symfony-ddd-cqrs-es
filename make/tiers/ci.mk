@@ -7,9 +7,6 @@ ci.build: composer-validate vendor assets ## CI — validate, install dependenci
 ci.static: warmup security static ## CI — warmup then run static analysis
 .PHONY: ci.static
 
-ci.test: test ## CI — run test suite
-.PHONY: ci.test
-
 ci.coverage: coverage ## CI — run test suite with coverage
 .PHONY: ci.coverage
 
