@@ -28,7 +28,9 @@
       "Bash(make:*)"
     ],
     "deny": [
-      "Read(**/.env*)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.local.php)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Read(**/id_rsa*)",

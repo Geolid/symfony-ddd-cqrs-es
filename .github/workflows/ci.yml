@@ -5,10 +5,12 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   TIER: ci
   APP_ENV: test
-  MAILER_DSN: null://null
   EVENT_STORE_URL: mysql://root@127.0.0.1:3306/app_event_store?serverVersion=mariadb-11.8.0&charset=utf8mb4
   READ_MODEL_URL: mysql://root@127.0.0.1:3306/app_read_model?serverVersion=mariadb-11.8.0&charset=utf8mb4
   MESSENGER_URL: mysql://root@127.0.0.1:3306/app_messenger?serverVersion=mariadb-11.8.0&charset=utf8mb4
@@ -18,15 +20,15 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'
           tools: composer:v2
           coverage: none
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.composer/cache
           key: composer-${{ hashFiles('composer.json', 'composer.lock') }}
@@ -35,7 +37,7 @@ jobs:
       - name: make ci.build
         run: make ci.build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vendor
           path: |
@@ -48,15 +50,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'
           tools: composer:v2
           coverage: none
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: vendor
           path: .
@@ -83,15 +85,15 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'
           tools: composer:v2
           coverage: none
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: vendor
           path: .
@@ -118,22 +120,22 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'
           tools: composer:v2
           coverage: xdebug
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: vendor
           path: .
 
       - run: chmod -R +x vendor/bin
 
-      - name: make mutation
-        run: make mutation
+      - name: make ci.mutation
+        run: make ci.mutation

@@ -2,16 +2,29 @@
 
 declare(strict_types=1);
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
+use Iam\Access\Domain\Exception\GrantNotFoundException;
+use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
+use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
+use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
+use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
+use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
+use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
+use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -28,23 +41,38 @@ return static function (ContainerConfigurator $container): void {
             // Catalog
             ProductNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ProductAlreadyDelistedException::class => ['log_level' => 'info', 'status_code' => 409],
-
-            // Sales
-            AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
-            CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            ProductNotAvailableException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ProductResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Fulfilment
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+
+            // Iam
+            GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            PermissionAlreadyRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ApiTokenCredentialAlreadyRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            IdentityAlreadySuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            PasswordCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+
+            // Sales
+            AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
+            CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            CustomerAlreadyLinkedToIdentityException::class => ['log_level' => 'info', 'status_code' => 409],
+            BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            ProductNotAvailableException::class => ['log_level' => 'info', 'status_code' => 422],
+            OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],

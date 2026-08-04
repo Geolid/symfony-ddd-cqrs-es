@@ -108,16 +108,6 @@ make start   # stack up, composer install, event store + read model set up, demo
 Then visit `http://localhost/web/` (already showing the seeded orders) or call
 `http://localhost/api/v1/sales/orders`. Mailpit's UI is at `http://localhost:8025`.
 
-To use https locally instead: install [mkcert](https://github.com/FiloSottile/mkcert), run
-`mkcert -install` once per machine (trusts a local CA), then from the repo root:
-```bash
-mkdir -p docker/nginx/certs
-mkcert -cert-file docker/nginx/certs/server.crt -key-file docker/nginx/certs/server.key localhost 127.0.0.1 ::1
-docker compose exec nginx nginx -s reload
-```
-Skip this and the browser will still work over https — it'll just show an untrusted-certificate
-warning, since nothing signed the certificate.
-
 `make start` is `up wait-db install setup seed` — see `Makefile` for each step, or run them
 individually. Re-run `make seed` any time to add more demo orders (`demo/SeedCommand.php`,
 a worked example of writing fixtures for an event-sourced app: through the Command bus, never

@@ -19,9 +19,7 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Iam');
 
     if ('test' === $container->env()) {
-        // These #[AsDrivingPort] ports (plus the user_checker wired into a firewall) are only
-        // ever consumed by a DM (apps/web, apps/api, apps/cli) — a bare BC-level test container
-        // has no such consumer, so the compiler would otherwise prune them as unused.
+        // Only consumed by apps/web|api|cli; alias+public here or the test container's compiler prunes them.
         $services->alias(AuthenticatePasswordCredentialInterface::class, PasswordCredentialAuthenticationService::class)->public();
         $services->alias(AuthenticateApiTokenCredentialInterface::class, ApiTokenCredentialAuthenticationService::class)->public();
         $services->alias(IssueApiTokenCredentialInterface::class, ApiTokenCredentialIssuingService::class)->public();

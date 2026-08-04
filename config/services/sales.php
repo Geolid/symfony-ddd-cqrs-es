@@ -14,8 +14,7 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Sales');
 
     if ('test' === $container->env()) {
-        // This #[AsDrivingPort] is only ever consumed by a DM (apps/web) — a bare BC-level test
-        // container has no such consumer, so the compiler would otherwise prune it as unused.
+        // Only consumed by apps/web; alias+public here or the test container's compiler prunes it.
         $services->alias(RequestOrderPaymentInterface::class, OrderPaymentRequestingService::class)->public();
     }
 };
