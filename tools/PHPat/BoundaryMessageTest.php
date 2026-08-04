@@ -15,6 +15,7 @@ use Shared\Application\Command\CommandInterface;
 use Shared\Application\Event\IntegrationEventInterface;
 use Shared\Application\Query\QueryInterface;
 use Shared\Domain\Event\DomainEventInterface;
+use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
 final class BoundaryMessageTest
 {
@@ -73,8 +74,9 @@ final class BoundaryMessageTest
                     Selector::classname(Event::class),
                     Selector::classname(PersonalData::class),
                     Selector::classname(DataSubjectId::class),
+                    Selector::classname(DataSubjectErasureInterface::class),
                 )
-                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[PersonalData], #[DataSubjectId]) — nothing else, or a VO/vendor type couples both sides to internals.');
+                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[PersonalData], #[DataSubjectId]) and, if it erases personal data, the DataSubjectErasureInterface marker — nothing else, or a VO/vendor type couples both sides to internals.');
         }
     }
 }

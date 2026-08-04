@@ -16,8 +16,6 @@ services:
         condition: service_healthy
     volumes:
       - ./:/srv/
-    environment:
-      PHP_DATE_TIMEZONE: UTC
     command: [ 'php-fpm' ]
 
   db:
@@ -33,7 +31,7 @@ services:
       retries: 30
 
   mailer:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.29.3
 
 volumes:
   db-data: ~
