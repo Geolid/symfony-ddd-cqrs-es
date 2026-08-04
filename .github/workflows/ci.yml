@@ -72,7 +72,7 @@ jobs:
     name: Tests
     needs: static
     runs-on: ubuntu-latest
-    services:
+    services: &mariadb-service
       mariadb:
         image: mariadb:11.8
         env:
@@ -109,23 +109,13 @@ jobs:
         with:
           name: coverage-report-php
           path: var/coverage/cobertura.xml
+          retention-days: 1
 
   mutation:
     name: Mutation testing
     needs: static
     runs-on: ubuntu-latest
-    services:
-      mariadb:
-        image: mariadb:11.8
-        env:
-          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="healthcheck.sh --connect --innodb_initialized"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    services: *mariadb-service
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -161,8 +151,8 @@ jobs:
         with:
           name: coverage-report-php
 
-      - uses: actions/upload-code-coverage@v1
+      - uses: actions/upload-code-coverage@1c15be36fc3733ba839b1dd643bd9556e4426dc1 # v1.4.1
         with:
           file: cobertura.xml
           language: PHP
-          label: code-coverage-agent
+          label: code-coverage/phpunit
