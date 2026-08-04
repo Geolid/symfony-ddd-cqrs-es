@@ -1,23 +1,24 @@
 ---
 name: Bug report
 about: Something doesn't work as expected
+title: "[Bug] "
 labels: bug
 ---
 
-## Where
+## Describe the bug
 
-BC/DM:
+<!-- clear, concise description of what's wrong -->
 
-## Steps to reproduce
+## To reproduce
+
+<!-- steps to trigger it, add/remove as needed -->
 
 1.
+2.
+3.
 
-## Expected
+## Expected behaviour
 
-## Actual
+## Additional context
 
-## Command output
-
-```
-
-```
+<!-- logs, screenshots, stack traces -->
