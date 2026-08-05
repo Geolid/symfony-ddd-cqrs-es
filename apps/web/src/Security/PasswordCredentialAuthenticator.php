@@ -58,6 +58,7 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator implem
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         $request->getSession()->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
+        $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, (string) $request->request->get('login', ''));
 
         return new RedirectResponse($this->urlGenerator->generate('security_login'));
     }

@@ -5,16 +5,14 @@
 
 {% block content %}
     {{ form_start(form) }}
-    <p>
-        {{ form_label(form.email) }}<br>
-        {{ form_widget(form.email) }}
-        {{ form_errors(form.email) }}
-    </p>
-    <p>
-        {{ form_label(form.password) }}<br>
-        {{ form_widget(form.password) }}
-        {{ form_errors(form.password) }}
-    </p>
-    <button type="submit">{{ 'sales.customer.register.submit_button'|trans }}</button>
+    {{ form_label(form.email) }}
+    {{ form_widget(form.email) }}
+    {{ form_errors(form.email) }}
+
+    {{ form_label(form.password) }}
+    {{ form_widget(form.password) }}
+    {{ form_errors(form.password) }}
+
+    <button type="submit">{{ 'sales.customer.register.button_submit'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

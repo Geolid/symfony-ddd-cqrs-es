@@ -19,10 +19,13 @@ final class PlaceOrderType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('lines', CollectionType::class, [
-            'label' => 'sales.order.place.lines_label',
-            'translation_domain' => 'messages',
+            'label' => false,
             'entry_type' => OrderLineType::class,
-            'entry_options' => ['label' => false, 'products' => $options['products']],
+            'entry_options' => [
+                'label' => false,
+                'products' => $options['products'],
+                'productPricesInCents' => $options['productPricesInCents'],
+            ],
             'allow_add' => true,
             'allow_delete' => true,
             'prototype' => true,
@@ -34,7 +37,8 @@ final class PlaceOrderType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => PlaceOrderFormData::class]);
-        $resolver->setRequired('products');
+        $resolver->setRequired(['products', 'productPricesInCents']);
         $resolver->setAllowedTypes('products', 'array');
+        $resolver->setAllowedTypes('productPricesInCents', 'array');
     }
 }

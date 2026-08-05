@@ -34,8 +34,11 @@
     "symfony/scheduler": "8.1.*",
     "symfony/security-bundle": "8.1.*",
     "symfony/security-csrf": "8.1.*",
+    "symfony/stimulus-bundle": "^3.4",
     "symfony/translation": "8.1.*",
     "symfony/twig-bundle": "8.1.*",
+    "symfony/ux-icons": "^3.4",
+    "symfony/ux-twig-component": "^3.4",
     "symfony/validator": "8.1.*",
     "symfony/webhook": "8.1.*",
     "symfony/yaml": "8.1.*",
@@ -77,27 +80,28 @@
   "autoload": {
     "psr-4": {
       "Bootstrap\\": "bootstrap/",
-      "Web\\": "apps/web/src/",
       "Api\\": "apps/api/src/",
       "Cli\\": "apps/cli/src/",
+      "Web\\": "apps/web/src/",
       "Webhook\\": "apps/webhook/src/",
-      "Sales\\": "src/Sales/",
+      "Catalog\\": "src/Catalog/",
       "Fulfilment\\": "src/Fulfilment/",
       "Iam\\": "src/Iam/",
-      "Catalog\\": "src/Catalog/",
-      "Shared\\": "src/Shared/"
+      "Sales\\": "src/Sales/",
+      "Shared\\": "src/Shared/",
+      "Ui\\": "ui/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Web\\Tests\\": "apps/web/tests/",
       "Api\\Tests\\": "apps/api/tests/",
       "Cli\\Tests\\": "apps/cli/tests/",
+      "Web\\Tests\\": "apps/web/tests/",
       "Webhook\\Tests\\": "apps/webhook/tests/",
-      "Sales\\Tests\\": "tests/Sales/",
+      "Catalog\\Tests\\": "tests/Catalog/",
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
       "Iam\\Tests\\": "tests/Iam/",
-      "Catalog\\Tests\\": "tests/Catalog/",
+      "Sales\\Tests\\": "tests/Sales/",
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",

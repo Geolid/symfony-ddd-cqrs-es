@@ -5,18 +5,20 @@
 
 {% block content %}
     {% if error %}
-        <p data-testid="login-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+        <twig:ui:Alert variant="error" data-testid="login-error">
+            {{ error.messageKey|trans(error.messageData, 'security') }}
+        </twig:ui:Alert>
     {% endif %}
 
     <form method="post">
-        <label for="login">{{ 'security.login.login_label'|trans }}</label>
+        <label for="login">{{ 'security.login.label_login'|trans }}</label>
         <input type="text" id="login" name="login" value="{{ last_username }}" required autofocus>
 
-        <label for="password">{{ 'security.login.password_label'|trans }}</label>
+        <label for="password">{{ 'security.login.label_password'|trans }}</label>
         <input type="password" id="password" name="password" required>
 
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-        <button type="submit" data-testid="login-submit">{{ 'security.login.submit_button'|trans }}</button>
+        <button type="submit" data-testid="login-submit">{{ 'security.login.button_submit'|trans }}</button>
     </form>
 {% endblock %}

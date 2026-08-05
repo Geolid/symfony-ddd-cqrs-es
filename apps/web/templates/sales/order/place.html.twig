@@ -5,27 +5,7 @@
 
 {% block content %}
     {{ form_start(form) }}
-    <fieldset data-testid="order-lines" x-data="{
-        rows: {{ form.lines|length }},
-        prototype: {{ form_widget(form.lines.vars.prototype)|json_encode|e('html_attr') }},
-    }">
-        <legend>{{ form_label(form.lines) }}</legend>
-        {{ form_errors(form.lines) }}
-        <div x-ref="rows" data-testid="order-lines-rows">
-            {% for line in form.lines %}
-                <p data-testid="order-line">
-                    {{ form_label(line.productId) }} {{ form_widget(line.productId) }}
-                    {{ form_label(line.quantity) }} {{ form_widget(line.quantity) }}
-                    {{ form_errors(line) }}
-                </p>
-            {% endfor %}
-        </div>
-        <button type="button"
-                data-testid="add-order-line"
-                @click="$refs.rows.insertAdjacentHTML('beforeend', prototype.replaceAll('__name__', rows++))">
-            {{ 'sales.order.place.add_line_button'|trans }}
-        </button>
-    </fieldset>
-    <button type="submit">{{ 'sales.order.place.submit_button'|trans }}</button>
+    <twig:OrderLinesTable :lines="form.lines" />
+    <button type="submit">{{ 'sales.order.place.button_submit'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

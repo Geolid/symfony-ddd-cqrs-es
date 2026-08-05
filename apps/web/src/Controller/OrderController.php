@@ -15,12 +15,12 @@ use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderResult;
-use Sales\Order\Application\Language\PublishedOrderPaymentStatus;
-use Sales\Order\Application\Language\PublishedOrderStatus;
 use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
+use Sales\Order\Application\Query\GetOrderLines\GetOrderLines;
 use Sales\Order\Application\Query\GetOrderPaymentByOrder\GetOrderPaymentByOrder;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
+use Sales\OrderTracking\Application\Query\GetOrderTracking\GetOrderTracking;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -68,15 +68,14 @@ final class OrderController extends AbstractController
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        $payments = [];
+        $trackings = [];
         foreach ($orders->items as $order) {
-            $payments[$order->id] = $this->queryBus->ask(new GetOrderPaymentByOrder($order->id));
+            $trackings[$order->id] = $this->queryBus->ask(new GetOrderTracking($order->id));
         }
 
         return $this->render('sales/order/list.html.twig', [
             'orders' => $orders,
-            'payments' => $payments,
-            'cancellableStatus' => PublishedOrderStatus::PLACED->value,
+            'trackings' => $trackings,
         ]);
     }
 
@@ -94,12 +93,15 @@ final class OrderController extends AbstractController
             throw $this->createNotFoundException('No order carries that identifier.');
         }
 
+        $tracking = $this->queryBus->ask(new GetOrderTracking($id));
+        \assert(null !== $tracking);
+
         return $this->render('sales/order/show.html.twig', [
             'order' => $order,
+            'lines' => $this->queryBus->ask(new GetOrderLines($id)),
+            'tracking' => $tracking,
             'payment' => $this->queryBus->ask(new GetOrderPaymentByOrder($id)),
             'shipment' => $this->queryBus->ask(new GetShipmentByOrder($id)),
-            'cancellableStatus' => PublishedOrderStatus::PLACED->value,
-            'capturedPaymentStatus' => PublishedOrderPaymentStatus::CAPTURED->value,
         ]);
     }
 
@@ -115,12 +117,17 @@ final class OrderController extends AbstractController
         /** @var ListResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
+        $productPricesInCents = [];
         foreach ($products->items as $product) {
             $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitAmountInCents / 100, 2))] = $product->id;
+            $productPricesInCents[$product->id] = $product->unitAmountInCents;
         }
 
         $formData = new PlaceOrderFormData();
-        $form = $this->createForm(PlaceOrderType::class, $formData, ['products' => $productChoices]);
+        $form = $this->createForm(PlaceOrderType::class, $formData, [
+            'products' => $productChoices,
+            'productPricesInCents' => $productPricesInCents,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

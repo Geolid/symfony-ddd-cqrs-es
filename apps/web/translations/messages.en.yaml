@@ -6,62 +6,74 @@ layout:
         login: Log in
         logout: Log out
         account: My account
-        change_password: Change password
-        erase_account: Erase my account
-        erase_confirm_message: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
-        erase_dismiss_button: Keep my account
+        profile: Profile
 
 security:
     login:
         title: Log in
-        login_label: Login
-        password_label: Password
-        submit_button: Log in
+        label_login: Login
+        label_password: Password
+        button_submit: Log in
 
 sales:
     order:
         list:
             title: My orders
-            place_order_button: Place an order
-            view_button: View
-            pay_button: Pay
+            button_place_order: Place an order
+            button_view: View
+            button_pay: Pay
             table:
                 id: ID
                 total: Total
                 status: Status
-                payment: Payment
                 placed_at: Placed at
                 actions: Actions
             empty: No orders yet.
-            cancel_button: Cancel
-            cancel_confirm_message: Are you sure you want to cancel this order?
-            cancel_dismiss_button: Keep order
+            button_cancel: Cancel
+            message_cancel_confirm: Are you sure you want to cancel this order?
+            button_cancel_dismiss: Keep order
         show:
             title: Order detail
-            payment_title: Payment
+            title_lines: Items
+            table_lines:
+                product: Product
+                quantity: Quantity
+                unit_price: Unit price
+                subtotal: Subtotal
+            title_payment: Payment
             payment_none: No payment requested yet.
             payment_reference: 'Payment ref.: %reference%'
-            payment_hint: To confirm via the Webhook DM (/webhook/docs).
-            shipment_title: Shipment
+            hint_payment: Confirm it via the Webhook DM:
+            title_shipment: Shipment
             shipment_none: No shipment yet — a shipment is created automatically once the payment is confirmed.
+            hint_shipment: 'Dispatch it by running the CLI:'
             shipment_tracking_reference: 'Tracking reference: %reference%'
             no_actions: No action available — payment for this order has already been requested.
             no_actions_cancelled: This order is cancelled.
-            back_link: Back to my orders
+            link_back: Back to my orders
         place:
             title: Place an order
-            lines_label: Lines
-            line_product_label: Product
-            line_product_placeholder: Choose a product
-            line_quantity_label: Quantity
-            add_line_button: Add a line
-            submit_button: Place order
-        status:
-            placed: Placed
-            cancelled: Cancelled
-        payment_status:
-            requested: Payment pending
-            captured: Paid
+            label_line_product: Product
+            placeholder_line_product: Choose a product
+            label_line_price: Price
+            label_line_quantity: Quantity
+            button_add_line: Add product
+            button_remove_line: Remove product
+            label_estimated_total: 'Estimated total:'
+            button_submit: Place order
+        status_view:
+            badge:
+                placed: Placed
+                payment_pending: Payment pending
+                preparing: Preparing
+                dispatched: Dispatched
+                delivered: Delivered
+                cancelled: Cancelled
+            step:
+                placed: Placed
+                paid: Paid
+                shipped: Shipped
+                delivered: Delivered
         flash:
             placed: Order placed.
             cancelled: Order cancelled.
@@ -71,23 +83,21 @@ sales:
     customer:
         register:
             title: Register
-            email_label: Email
-            password_label: Password
-            submit_button: Register
-        change_password:
-            title: Change password
-            password_label: New password
-            submit_button: Change password
+            label_email: Email
+            label_password: Password
+            button_submit: Register
+        profile:
+            title: Profile
+            title_password: Change password
+            title_danger_zone: Danger zone
+            label_password: New password
+            button_submit: Change password
+            button_erase_account: Erase my account
+            message_erase_confirm: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
+            button_erase_dismiss: Keep my account
         flash:
             registered: Account created — please log in.
             erased: Your account has been erased.
             address_taken: This address is already registered.
             login_taken: This email is already used to log in.
             password_changed: Password changed.
-
-fulfilment:
-    shipment:
-        status:
-            pending: Pending
-            dispatched: Dispatched
-            delivered: Delivered

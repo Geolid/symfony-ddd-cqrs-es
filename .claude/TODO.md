@@ -309,6 +309,78 @@ were surfaced later and have no original number.
 
 - **#28/#29/#30 — Final audits.** Blocked by every item above landing first.
 
+- **Consolidate `Sales.Order`'s read side into a `Sales.OrderSummary` composite BC (rename/expand
+  `Sales.OrderTracking`), replacing per-field N+1 querying with one denormalized report.**
+  `OrderController::list()` currently dispatches `ListOrders` then loops `GetOrderTracking` once
+  per order (N+1 query-bus dispatch); `show()` dispatches four separate queries (`GetOrder`,
+  `GetOrderLines`, `GetOrderPaymentByOrder`, `GetShipmentByOrder`). `Sales.OrderTracking` already
+  exists as a composite projection (subscribes to `Sales.Order`'s and `Fulfilment.Shipment`'s
+  Integration Events, resolves a unified `status` via `OrderTrackingStatusResolver`) with a batch,
+  paginable/filterable query (`ListOrderTrackings`) the Web controller never actually calls — but
+  its `OrderTrackingResult` only carries `orderId/customerId/status/placedAt`, not enough to
+  replace `ListOrders` outright (`list.html.twig` also needs `totalAmountInCents`, already present
+  on `OrderPlacedIntegrationEvent` and simply not captured by
+  `DbalOrderTrackingProjector::onOrderPlaced`).
+  Real intent surfaced during review: this isn't "add one field to Tracking", it's "the
+  customer/admin-facing report was always meant to be Order + OrderLine + Payment + Shipment
+  composited, not just a unified status" — `OrderTracking` undersold the actual scope. Rename to
+  `Sales.OrderSummary`, widen `sales_order_tracking` into `sales_order_summary` (`order_id,
+  customer_id, total_amount_in_cents, order_status, placed_at, cancelled_at, payment_status,
+  payment_amount_in_cents, payment_reference, paid_at, shipment_status, tracking_reference,
+  dispatched_at, delivered_at` — keep every lifecycle date, not just the ones that looked like
+  headline fields at first pass: cancelled/dispatched need their own date shown in "my orders"
+  same as delivered/paid do) plus a child table `sales_order_summary_line` (`order_id, position,
+  label, quantity, unit_amount_in_cents`, fed by `OrderPlaced.lines`, already present in the
+  payload). `ListOrderSummaries`/`GetOrderSummary` replace `ListOrders`+loop and the four-query
+  `show()` respectively.
+  Both `apps/web` and `apps/api` become consumers of the same composite: `apps/api`'s
+  `OrderResource` currently exposes neither payment nor shipment info (no admin visibility on
+  either), and `ShipmentResource` leaks `orderCancelledAt` (an `Order`-level fact on a `Shipment`
+  resource) while carrying zero payment info itself — `OrderResource::fromResult(OrderSummaryResult)`
+  picks up both refs (`paymentReference`/`trackingReference` — "the 2 refs" an admin actually
+  needs) and `ShipmentResource` is dropped outright once merged. Checked and ruled out keeping
+  `ShipmentResource` alive for a separate "logistics" API consumer: `DispatchShipment` is
+  CLI/cron-triggered internally (`apps/cli/DispatchPendingShipmentsCommand`, no external caller),
+  the only external inbound flow is the carrier's delivery webhook
+  (`Webhook\Consumer\CarrierDeliveryConsumer`) — no external actor ever reads the API for shipment
+  status, so there's no consumer left to justify a split resource. (Separately verified not a gap:
+  nobody currently holds `sales:read`/`fulfilment:read` in `demo/`'s seeders, but the provisioning
+  mechanism already exists and is generic — `iam:identity:register --permission sales:read
+  --permission fulfilment:read` via the existing `GrantPermission` command — just never run for a
+  demo admin; no code change needed there.)
+
+- **`DbalOrderLineFinder::allForOrder` doesn't follow the Finder convention.** Per
+  `infrastructure.md`, a Finder returning more than a single row belongs on `AbstractDbalFinder`
+  with `with*(): static` filters (see `DbalOrderTrackingFinder`'s `withCustomer()`/`withStatus()`),
+  not an ad-hoc method on a `final readonly` class with a direct `Connection`. Rewrite as
+  `withOrder(string $orderId): static` + `buildBaseQuery()` (`ORDER BY position ASC`);
+  `GetOrderLinesHandler` calls `iterator_to_array()` instead of the removed `allForOrder()`. Small,
+  independent of the `OrderSummary` item above — can land first or separately.
+
+- **Let a placed-but-unpaid order have its lines modified (add/remove/change quantity),
+  recalculating the total — currently orders are immutable after `place()`.** Surfaced while
+  discussing why `OrderLine` is a read-side Finder family today: `Order::place()` doesn't even
+  keep `$lines` in the aggregate's own state after construction (`applyOrderPlaced` only keeps
+  `totalAmount`), so nothing today could target "line 3 of order X" even if a Command existed. If
+  this lands: `OrderLine` needs a stable identity, gated the same way `cancel()` is
+  (`OrderPaymentAlreadyRequestedException` — modifiable only while payment hasn't been requested).
+  Implement as a **micro-aggregate**, not a `ChildAggregate` — `Patchlevel\EventSourcing\Attribute\ChildAggregate`
+  /`Aggregate\ChildAggregate` has been `@experimental` for 2 years and is what the library's own
+  `#[Stream]` attribute was built to replace (confirmed against `patchlevel/event-sourcing@f69120c`,
+  "poc replace child aggregates with micro aggregates" — the vendor's own `PersonalInformation`/
+  `Profile` test fixture was rewritten from `ChildAggregate` to a sibling `AggregateRoot` +
+  `#[Stream(Profile::class)]`). Note the cardinality trap: `#[Stream(X::class)]` co-locates by
+  **sharing the same aggregate id** as the target (that's how `Profile`/`PersonalInformation` — a
+  genuine 1:1 — stay atomic); `OrderLine` is 1:N per order, so the micro-aggregate is the
+  **collection root** `OrderLines` (one instance per `Order`, same `OrderId`,
+  `#[Aggregate('sales.order.lines')] #[Stream(Order::class)]`, internal `list<OrderLine>`), not one
+  micro-aggregate instance per line — a dedicated `OrderLinesRepositoryInterface` loads/mutates/
+  saves the whole thing per edit. Codebase convention is `implements AggregateRoot,
+  AggregateRootMetadataAware` + `use AggregateRootAttributeBehaviour` (see `Order.php`/
+  `OrderPayment.php`), never `extends BasicAggregateRoot` (that's the vendor's own test-fixture
+  style). If this lands, `sales_order_summary_line` above gains a feed from whatever line-changed
+  event this introduces, on top of `OrderPlaced.lines`.
+
 ## Dependency order
 
 1. `Catalog.Product` and `#24` have no dependency on each other — either can start first.
@@ -316,3 +388,6 @@ were surfaced later and have no original number.
 3. The Identity-erasure-cascade item needs `#24` first (auth wiring).
 4. `#18`, README, and emptying the registers can happen anytime, but final audits wait on
    everything.
+5. The `OrderSummary` consolidation and the `DbalOrderLineFinder` fix have no dependency on each
+   other or on the order-lines-editing item above; if the line-editing item lands too,
+   `OrderSummary`'s line table just gains a second event feed on top of `OrderPlaced.lines`.

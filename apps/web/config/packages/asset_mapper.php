@@ -11,6 +11,7 @@ return static function (ContainerConfigurator $container): void {
             'missing_import_mode' => 'strict',
             'paths' => [
                 '%kernel.project_dir%/ui/assets/' => 'shared',
+                '%kernel.project_dir%/apps/web/assets/' => 'web',
             ],
             'vendor_dir' => '%kernel.project_dir%/ui/assets/vendor',
             'importmap_path' => '%kernel.project_dir%/apps/web/importmap.php',

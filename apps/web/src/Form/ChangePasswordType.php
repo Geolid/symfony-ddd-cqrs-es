@@ -18,7 +18,7 @@ final class ChangePasswordType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('password', PasswordType::class, [
-            'label' => 'sales.customer.change_password.password_label',
+            'label' => 'sales.customer.profile.label_password',
             'translation_domain' => 'messages',
         ]);
     }

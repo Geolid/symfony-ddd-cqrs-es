@@ -1,0 +1,4 @@
+<article class="alert {{ (this.colorClass ~ ' ' ~ attributes.render('class'))|trim }}" {{ attributes.without('class') }} role="alert">
+    <twig:ux:icon name="{{ this.icon }}" class="icon" />
+    <span>{% block content %}{% endblock %}</span>
+</article>

@@ -1,5 +1,4 @@
 {% extends 'layout.html.twig' %}
-{% import '@ui/_macros.html.twig' as ui %}
 
 {% block title %}{{ 'sales.order.show.title'|trans }}{% endblock %}
 {% block heading %}{{ 'sales.order.show.title'|trans }}{% endblock %}
@@ -17,7 +16,7 @@
         </tr>
         <tr>
             <th>{{ 'sales.order.list.table.status'|trans }}</th>
-            <td><span class="status" data-testid="order-status">{{ ('sales.order.status.' ~ order.status)|trans }}</span></td>
+            <td><span class="status" data-testid="order-status">{{ ('sales.order.status_view.badge.' ~ tracking.status)|trans }}</span></td>
         </tr>
         <tr>
             <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
@@ -26,52 +25,95 @@
         </tbody>
     </table>
 
-    <h2>{{ 'sales.order.show.payment_title'|trans }}</h2>
+    {% set workflowSteps = order_workflow_steps(tracking.status) %}
+    {% if workflowSteps is not empty %}
+        {% set labeledSteps = [] %}
+        {% for step in workflowSteps %}
+            {% set labeledSteps = labeledSteps|merge([{
+                label: ('sales.order.status_view.step.' ~ step.key)|trans,
+                state: step.state,
+            }]) %}
+        {% endfor %}
+        <twig:ui:StepIndicator :steps="labeledSteps" data-testid="order-workflow" />
+    {% endif %}
+
+    <h2>{{ 'sales.order.show.title_lines'|trans }}</h2>
+    <table data-testid="order-lines">
+        <thead>
+        <tr>
+            <th>{{ 'sales.order.show.table_lines.product'|trans }}</th>
+            <th>{{ 'sales.order.show.table_lines.quantity'|trans }}</th>
+            <th>{{ 'sales.order.show.table_lines.unit_price'|trans }}</th>
+            <th>{{ 'sales.order.show.table_lines.subtotal'|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for line in lines %}
+            <tr data-testid="order-line">
+                <td>{{ line.label }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>{{ line.unitAmountInCents|amount }}</td>
+                <td>{{ (line.quantity * line.unitAmountInCents)|amount }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>{{ 'sales.order.show.title_payment'|trans }}</h2>
     {% if payment is null %}
         <p data-testid="order-payment">{{ 'sales.order.show.payment_none'|trans }}</p>
     {% else %}
         <p data-testid="order-payment">
-            <span class="status">{{ ('sales.order.payment_status.' ~ payment.status)|trans }}</span>
-            {% if payment.status != capturedPaymentStatus %}
-                <br>
-                <small data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans({'%reference%': payment.reference}) }}</small>
-                <br>
-                <small>{{ 'sales.order.show.payment_hint'|trans }}</small>
-            {% endif %}
+            <span class="status">{{ ('sales.order.status_view.badge.' ~ tracking.status)|trans }}</span>
         </p>
+        {% if tracking.status == 'payment_pending' %}
+            <twig:ui:Alert variant="info" data-testid="order-payment-hint">
+                <span data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans({'%reference%': payment.reference}) }}</span>
+                — <a href="/webhook/docs">{{ 'sales.order.show.hint_payment'|trans }}</a>
+            </twig:ui:Alert>
+        {% endif %}
     {% endif %}
 
-    <h2>{{ 'sales.order.show.shipment_title'|trans }}</h2>
+    <h2>{{ 'sales.order.show.title_shipment'|trans }}</h2>
     {% if shipment is null %}
         <p data-testid="order-shipment">{{ 'sales.order.show.shipment_none'|trans }}</p>
     {% else %}
         <p data-testid="order-shipment">
-            <span class="status">{{ ('fulfilment.shipment.status.' ~ shipment.status)|trans }}</span>
+            <span class="status">{{ ('sales.order.status_view.badge.' ~ tracking.status)|trans }}</span>
             {% if shipment.trackingReference %}
                 <br>
                 <small data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans({'%reference%': shipment.trackingReference}) }}</small>
             {% endif %}
         </p>
+        {% if tracking.status == 'preparing' %}
+            <twig:ui:Alert variant="info" data-testid="order-shipment-hint">
+                {{ 'sales.order.show.hint_shipment'|trans }} <code>fulfilment:shipment:dispatch-pending</code>
+            </twig:ui:Alert>
+        {% endif %}
     {% endif %}
 
     <h2>{{ 'sales.order.list.table.actions'|trans }}</h2>
-    {% if order.status == cancellableStatus and payment is null %}
-        {{ ui.confirm_modal(
-            'cancel-order-' ~ order.id,
-            path('sales_order_cancel', {id: order.id}),
-            'sales.order.list.cancel_button'|trans,
-            'sales.order.list.cancel_confirm_message'|trans,
-            {cancel_label: 'sales.order.list.cancel_dismiss_button'|trans},
-        ) }}
-        <form method="post" action="{{ path('sales_order_pay', {id: order.id}) }}" style="display: inline">
-            <input type="hidden" name="_token" value="{{ csrf_token('pay-order-' ~ order.id) }}">
-            <button type="submit" data-testid="pay-order-button">{{ 'sales.order.list.pay_button'|trans }}</button>
-        </form>
-    {% elseif order.status != cancellableStatus %}
+    {% if tracking.status == 'placed' %}
+        <div role="group">
+            <twig:ui:ConfirmModal
+                id="cancel-order-{{ order.id }}"
+                :actionUrl="path('sales_order_cancel', {id: order.id})"
+                :triggerLabel="'sales.order.list.button_cancel'|trans"
+                :message="'sales.order.list.message_cancel_confirm'|trans"
+                :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
+            />
+            <twig:ui:CsrfButton
+                :actionUrl="path('sales_order_pay', {id: order.id})"
+                csrfId="pay-order-{{ order.id }}"
+                :label="'sales.order.list.button_pay'|trans"
+                data-testid="pay-order-button"
+            />
+        </div>
+    {% elseif tracking.status == 'cancelled' %}
         <p>{{ 'sales.order.show.no_actions_cancelled'|trans }}</p>
     {% else %}
         <p>{{ 'sales.order.show.no_actions'|trans }}</p>
     {% endif %}
 
-    <p><a href="{{ path('sales_order_list') }}">{{ 'sales.order.show.back_link'|trans }}</a></p>
+    <p><a href="{{ path('sales_order_list') }}">{{ 'sales.order.show.link_back'|trans }}</a></p>
 {% endblock %}

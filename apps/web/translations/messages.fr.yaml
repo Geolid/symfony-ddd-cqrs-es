@@ -6,62 +6,74 @@ layout:
         login: Se connecter
         logout: Se déconnecter
         account: Mon compte
-        change_password: Changer de mot de passe
-        erase_account: Effacer mon compte
-        erase_confirm_message: L'effacement supprime votre clé de chiffrement — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
-        erase_dismiss_button: Conserver mon compte
+        profile: Profil
 
 security:
     login:
         title: Connexion
-        login_label: Identifiant
-        password_label: Mot de passe
-        submit_button: Se connecter
+        label_login: Identifiant
+        label_password: Mot de passe
+        button_submit: Se connecter
 
 sales:
     order:
         list:
             title: Mes commandes
-            place_order_button: Passer une commande
-            view_button: Voir
-            pay_button: Payer
+            button_place_order: Passer une commande
+            button_view: Voir
+            button_pay: Payer
             table:
                 id: ID
                 total: Total
                 status: Statut
-                payment: Paiement
                 placed_at: Passée le
                 actions: Actions
             empty: Aucune commande pour le moment.
-            cancel_button: Annuler
-            cancel_confirm_message: Confirmez-vous l'annulation de cette commande ?
-            cancel_dismiss_button: Conserver la commande
+            button_cancel: Annuler
+            message_cancel_confirm: Confirmez-vous l'annulation de cette commande ?
+            button_cancel_dismiss: Conserver la commande
         show:
             title: Détail de la commande
-            payment_title: Paiement
+            title_lines: Articles
+            table_lines:
+                product: Produit
+                quantity: Quantité
+                unit_price: Prix unitaire
+                subtotal: Sous-total
+            title_payment: Paiement
             payment_none: Aucun paiement demandé pour le moment.
             payment_reference: 'Réf. paiement : %reference%'
-            payment_hint: À valider via le DM Webhook (/webhook/docs).
-            shipment_title: Livraison
+            hint_payment: 'Validez-le via le DM Webhook :'
+            title_shipment: Livraison
             shipment_none: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement est confirmé.
+            hint_shipment: 'Expédiez-la en lançant la commande CLI :'
             shipment_tracking_reference: 'Numéro de suivi : %reference%'
             no_actions: Aucune action possible — le paiement de cette commande a déjà été demandé.
             no_actions_cancelled: Cette commande est annulée.
-            back_link: Retour à mes commandes
+            link_back: Retour à mes commandes
         place:
             title: Passer une commande
-            lines_label: Lignes
-            line_product_label: Produit
-            line_product_placeholder: Choisissez un produit
-            line_quantity_label: Quantité
-            add_line_button: Ajouter une ligne
-            submit_button: Passer la commande
-        status:
-            placed: Passée
-            cancelled: Annulée
-        payment_status:
-            requested: Paiement en attente
-            captured: Payée
+            label_line_product: Produit
+            placeholder_line_product: Choisissez un produit
+            label_line_price: Prix
+            label_line_quantity: Quantité
+            button_add_line: Ajouter un produit
+            button_remove_line: Supprimer le produit
+            label_estimated_total: 'Total estimé :'
+            button_submit: Passer la commande
+        status_view:
+            badge:
+                placed: Passée
+                payment_pending: Paiement en attente
+                preparing: En préparation
+                dispatched: Expédiée
+                delivered: Livrée
+                cancelled: Annulée
+            step:
+                placed: Passée
+                paid: Payée
+                shipped: Expédiée
+                delivered: Livrée
         flash:
             placed: Commande passée.
             cancelled: Commande annulée.
@@ -71,23 +83,21 @@ sales:
     customer:
         register:
             title: S'inscrire
-            email_label: Email
-            password_label: Mot de passe
-            submit_button: S'inscrire
-        change_password:
-            title: Changer de mot de passe
-            password_label: Nouveau mot de passe
-            submit_button: Changer le mot de passe
+            label_email: Email
+            label_password: Mot de passe
+            button_submit: S'inscrire
+        profile:
+            title: Profil
+            title_password: Changer le mot de passe
+            title_danger_zone: Zone dangereuse
+            label_password: Nouveau mot de passe
+            button_submit: Changer le mot de passe
+            button_erase_account: Effacer mon compte
+            message_erase_confirm: L'effacement supprime votre clé de chiffrement — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
+            button_erase_dismiss: Conserver mon compte
         flash:
             registered: Compte créé — merci de vous connecter.
             erased: Votre compte a été effacé.
             address_taken: Cette adresse est déjà enregistrée.
             login_taken: Cet email est déjà utilisé pour se connecter.
             password_changed: Mot de passe changé.
-
-fulfilment:
-    shipment:
-        status:
-            pending: En attente
-            dispatched: Expédiée
-            delivered: Livrée

@@ -1,5 +1,4 @@
 {% extends '@ui/base.html.twig' %}
-{% import '@ui/_macros.html.twig' as ui %}
 
 {% block title %}{{ 'layout.title'|trans }}{% endblock %}
 
@@ -13,32 +12,18 @@
             <ul><li><strong>{{ 'layout.title'|trans }}</strong></li></ul>
             <ul>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                    <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
-                {% else %}
-                    <li><a href="{{ path('sales_customer_register') }}" role="button" class="outline">{{ 'layout.nav.register_customer'|trans }}</a></li>
-                {% endif %}
-            </ul>
-            <ul>
-                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     <li>
                         <details class="dropdown">
-                            <summary data-testid="nav-account">{{ 'layout.nav.account'|trans }}</summary>
+                            <summary data-testid="nav-account" class="icon-row"><twig:ux:icon name="account" class="icon" /> {{ 'layout.nav.account'|trans }}</summary>
                             <ul>
-                                <li><a href="{{ path('sales_customer_change_password') }}" data-testid="nav-change-password">{{ 'layout.nav.change_password'|trans }}</a></li>
-                                <li>
-                                    {{ ui.confirm_modal(
-                                        'erase-customer',
-                                        path('sales_customer_erase'),
-                                        'layout.nav.erase_account'|trans,
-                                        'layout.nav.erase_confirm_message'|trans,
-                                        {cancel_label: 'layout.nav.erase_dismiss_button'|trans, button_class: 'outline contrast'},
-                                    ) }}
-                                </li>
+                                <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
+                                <li><a href="{{ path('sales_customer_change_password') }}" data-testid="nav-profile">{{ 'layout.nav.profile'|trans }}</a></li>
                                 <li><a href="{{ path('security_logout') }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
                             </ul>
                         </details>
                     </li>
                 {% else %}
+                    <li><a href="{{ path('sales_customer_register') }}">{{ 'layout.nav.register_customer'|trans }}</a></li>
                     <li><a href="{{ path('security_login') }}" data-testid="nav-login">{{ 'layout.nav.login'|trans }}</a></li>
                 {% endif %}
             </ul>
@@ -46,7 +31,7 @@
     </header>
 
     <main class="container">
-        {{ ui.flashes(app.flashes) }}
+        <twig:ui:Flashes :flashes="app.flashes" />
         <h1>{% block heading %}{% endblock %}</h1>
         {% block content %}{% endblock %}
     </main>

@@ -1,0 +1,17 @@
+{% props flashes %}
+
+{% if flashes %}
+    <div class="flash-container">
+        {% for label, messages in flashes %}
+            {% for message in messages %}
+                <twig:ui:Alert
+                    :variant="label"
+                    data-controller="flash"
+                    data-action="click->flash#dismiss"
+                    data-testid="flash-{{ label }}">
+                    {{ message }}
+                </twig:ui:Alert>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}

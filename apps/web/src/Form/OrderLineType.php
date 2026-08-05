@@ -18,15 +18,21 @@ final class OrderLineType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var array<string, int> $productPricesInCents */
+        $productPricesInCents = $options['productPricesInCents'];
+
         $builder
             ->add('productId', ChoiceType::class, [
-                'label' => 'sales.order.place.line_product_label',
+                'label' => 'sales.order.place.label_line_product',
                 'translation_domain' => 'messages',
                 'choices' => $options['products'],
-                'placeholder' => 'sales.order.place.line_product_placeholder',
+                'placeholder' => 'sales.order.place.placeholder_line_product',
+                'choice_attr' => static fn (string $productId): array => [
+                    'data-price-cents' => $productPricesInCents[$productId] ?? 0,
+                ],
             ])
             ->add('quantity', IntegerType::class, [
-                'label' => 'sales.order.place.line_quantity_label',
+                'label' => 'sales.order.place.label_line_quantity',
                 'translation_domain' => 'messages',
             ]);
     }
@@ -34,7 +40,8 @@ final class OrderLineType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => OrderLineFormData::class]);
-        $resolver->setRequired('products');
+        $resolver->setRequired(['products', 'productPricesInCents']);
         $resolver->setAllowedTypes('products', 'array');
+        $resolver->setAllowedTypes('productPricesInCents', 'array');
     }
 }
