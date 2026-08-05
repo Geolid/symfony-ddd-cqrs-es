@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
+
+use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
+use Shared\Application\Query\QueryInterface;
+use Shared\Application\Query\Result\ListResult;
+
+/**
+ * @implements QueryInterface<ListResult<OrderSummaryResult>>
+ */
+final readonly class ListOrderSummaries implements QueryInterface
+{
+    public function __construct(
+        public ?string $customerId = null,
+        public ?string $status = null,
+        public int $page = 1,
+        public int $itemsPerPage = 20,
+    ) {
+    }
+}

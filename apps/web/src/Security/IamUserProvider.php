@@ -6,8 +6,8 @@ namespace Web\Security;
 
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
+use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
-use Iam\Identity\Application\Language\PublishedIdentityStatus;
 use Iam\Identity\Application\Query\GetIdentity\GetIdentity;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -36,7 +36,7 @@ final readonly class IamUserProvider implements UserProviderInterface
             throw new UserNotFoundException($e->getMessage(), 0, $e);
         }
 
-        if (!PublishedIdentityStatus::from($identity->status)->isActive()) {
+        if (!AppIdentityStatus::from($identity->status)->isActive()) {
             throw new UserNotFoundException(\sprintf('Identity "%s" is not active.', $identifier));
         }
 

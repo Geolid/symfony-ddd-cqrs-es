@@ -12,9 +12,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Sales/Order/.*' }
 
-    - name: Sales.OrderTracking
+    - name: Sales.OrderSummary
       collectors:
-        - { type: directory, value: 'src/Sales/OrderTracking/.*' }
+        - { type: directory, value: 'src/Sales/OrderSummary/.*' }
 
     - name: Fulfilment.Shipment
       collectors:
@@ -54,7 +54,7 @@ deptrac:
   ruleset:
     Sales.Customer:      [ Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Shared, Vendors ]
-    Sales.OrderTracking: [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
+    Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Access:          [ Shared, Vendors ]

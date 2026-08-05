@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Order;
 
-use Shared\Application\Query\Result\ResultInterface;
+use Shared\Application\Result\ResultInterface;
 
 final readonly class OrderResult implements ResultInterface
 {

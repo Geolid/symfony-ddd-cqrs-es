@@ -7,8 +7,7 @@ namespace Api\State\Provider;
 use Api\Resource\OrderResource;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
-use Sales\Order\Application\Query\GetOrder\GetOrder;
+use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Webmozart\Assert\Assert;
@@ -29,12 +28,8 @@ final readonly class OrderProvider implements ProviderInterface
     {
         Assert::string($uriVariables['id']);
 
-        try {
-            $result = $this->queryBus->ask(new GetOrder($uriVariables['id']));
-        } catch (OrderResultNotFoundException) {
-            return null;
-        }
+        $result = $this->queryBus->ask(new GetOrderSummary($uriVariables['id']));
 
-        return OrderResource::fromResult($result);
+        return null !== $result ? OrderResource::fromResult($result) : null;
     }
 }

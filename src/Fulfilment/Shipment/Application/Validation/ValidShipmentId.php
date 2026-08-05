@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Validation;
 
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Shared\Application\Language\PublishedLanguageInterface;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD)]
-final class ValidShipmentId extends Compound implements PublishedLanguageInterface
+final class ValidShipmentId extends Compound
 {
     protected function getConstraints(array $options): array
     {

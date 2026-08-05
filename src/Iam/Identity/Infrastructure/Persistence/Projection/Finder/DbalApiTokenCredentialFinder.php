@@ -4,39 +4,41 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
+ * @extends AbstractDbalFinder<ApiTokenCredentialResult>
+ *
  * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: string|int, expires_at: string}
  */
-final readonly class DbalApiTokenCredentialFinder implements ApiTokenCredentialFinderInterface
+final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements ApiTokenCredentialFinderInterface
 {
-    public function __construct(private Connection $connection)
-    {
-    }
-
     public function ofIdentifier(string $identifier): ?ApiTokenCredentialResult
     {
         /** @var Row|false $row */
-        $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, identity_id, identifier, hash, revoked, expires_at FROM %s WHERE identifier = :identifier', DbalApiTokenCredentialProjector::TABLE),
-            ['identifier' => $identifier],
-        );
+        $row = $this->query()
+            ->andWhere('identifier = :identifier')
+            ->setParameter('identifier', $identifier)
+            ->executeQuery()
+            ->fetchAssociative();
 
-        if (false === $row) {
-            return null;
-        }
+        return false !== $row ? $this->mapRow($row) : null;
+    }
 
-        return $this->mapRow($row);
+    protected function buildBaseQuery(QueryBuilder $qb): void
+    {
+        $qb->select('id', 'identity_id', 'identifier', 'hash', 'revoked', 'expires_at')
+            ->from(DbalApiTokenCredentialProjector::TABLE);
     }
 
     /**
      * @param Row $row
      */
-    private function mapRow(array $row): ApiTokenCredentialResult
+    protected function mapRow(array $row): ApiTokenCredentialResult
     {
         return new ApiTokenCredentialResult(
             id: $row['id'],

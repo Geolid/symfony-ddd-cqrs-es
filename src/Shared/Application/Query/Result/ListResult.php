@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Application\Query\Result;
 
 use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Result\ResultInterface;
 
 /**
  * @template TResult of object

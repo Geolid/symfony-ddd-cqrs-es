@@ -78,6 +78,46 @@ were surfaced later and have no original number.
   updated to match (both webhooks are human-triggered through the Webhook DM, not
   demo-simulated; the `Fulfilment.Shipment` trigger is no longer marked "planned").
 
+- **`Sales.OrderTracking` renamed/widened into `Sales.OrderSummary`** — full order report (order +
+  lines + payment + shipment) replacing `OrderController`'s N+1 `list()` (`ListOrders`+per-order
+  `GetOrderTracking`) and 5-query `show()` (`GetOrder`/`GetOrderLines`/`GetOrderPaymentByOrder`/
+  `GetShipmentByOrder`/`GetOrderTracking`) with `ListOrderSummaries`/`GetOrderSummary`+
+  `GetOrderSummaryLines`. `sales_order_summary` widened per the original plan (all lifecycle
+  dates/payment+shipment refs, plus a stored `status` column — kept, not derived-at-read-time,
+  since Web/API order filtering by status is a planned near-term use) + child table
+  `sales_order_summary_line`. Two Integration Events changed to carry the new data through:
+  `OrderPaymentRequestedIntegrationEvent` widened with `amountInCents`/`reference` (already on the
+  domain event, just not forwarded before); new
+  `ShipmentTrackingReferenceAssignedIntegrationEvent` (translator gained
+  `onTrackingReferenceAssigned`, mirroring `onShipmentDispatched`/`onShipmentDelivered`'s
+  repository-load-for-orderId pattern) since tracking-reference assignment never crossed the BC
+  boundary before. `apps/web`'s templates re-pointed (`tracking.status` → `order.status`,
+  `order.id` → `order.orderId`, `payment.*`/`shipment.*` → `order.payment*`/`order.*`) with zero
+  test changes needed (assertions target `data-testid`, not internal variable names). `apps/api`'s
+  `OrderResource` gained `paymentReference`/`trackingReference` and both operations (`Get`+
+  `GetCollection`) switched to the composite; `ShipmentResource`/`ShipmentCollectionProvider` +
+  their tests removed outright (checked: `DispatchShipment` is CLI/cron-triggered only, no external
+  caller ever read the API for shipment status).
+  Consequence surfaced during implementation, not in the original plan: `Fulfilment.Shipment`'s
+  pre-existing `OrderSummaryReducer`/`OrderSummary` DTO (denormalizing `customer_id`/
+  `order_total_in_cents` onto `fulfilment_shipment` via a fold-at-read-time read of `Sales.Order`'s
+  integration-event stream) became genuinely dead data once `Sales.OrderSummary` existed — its only
+  consumer was the now-deleted `ShipmentResource`. Removed entirely (schema, `DbalShipmentProjector`/
+  `ShipmentResult`/`DbalShipmentFinder` trimmed, `OrderSummaryReducerTest` deleted) after flagging
+  the trade-off: it was the repo's only example of the fold-at-read-time `Reducer` pattern
+  documented in `infrastructure.md`; that convention bullet is trimmed to match, since no
+  replacement example was added. Same pass also removed `Sales.Order`'s now-orphaned `OrderLine`
+  read side (`DbalOrderLineFinder`/`OrderLineResult`/`OrderLineFinderInterface`/`GetOrderLines`/
+  `DbalOrderLineProjector`, `sales_order_line` table) — Web was its only caller, replaced by
+  `Sales.OrderSummary`'s own lines child table — which makes the `DbalOrderLineFinder` convention-fix
+  item below moot (the class is gone, not fixed). `ShipmentFinderInterface`/`DbalShipmentFinder`
+  lost only `ofOrder()` (their sole caller, `GetShipmentByOrder`, was deleted too) — `ListShipments`/
+  the rest of the Finder stays, `apps/cli`'s `DispatchPendingShipmentsCommand` still calls it.
+
+- ~~**`DbalOrderLineFinder::allForOrder` doesn't follow the Finder convention.**~~ Moot: the class
+  was deleted as part of the `OrderSummary` consolidation above (Web's only caller switched to
+  `Sales.OrderSummary`'s own lines Finder), not fixed in place.
+
 ## Pending
 
 - **#18** — Add a `SentryContextProviderInterface` implementation per BC (the
@@ -309,54 +349,6 @@ were surfaced later and have no original number.
 
 - **#28/#29/#30 — Final audits.** Blocked by every item above landing first.
 
-- **Consolidate `Sales.Order`'s read side into a `Sales.OrderSummary` composite BC (rename/expand
-  `Sales.OrderTracking`), replacing per-field N+1 querying with one denormalized report.**
-  `OrderController::list()` currently dispatches `ListOrders` then loops `GetOrderTracking` once
-  per order (N+1 query-bus dispatch); `show()` dispatches four separate queries (`GetOrder`,
-  `GetOrderLines`, `GetOrderPaymentByOrder`, `GetShipmentByOrder`). `Sales.OrderTracking` already
-  exists as a composite projection (subscribes to `Sales.Order`'s and `Fulfilment.Shipment`'s
-  Integration Events, resolves a unified `status` via `OrderTrackingStatusResolver`) with a batch,
-  paginable/filterable query (`ListOrderTrackings`) the Web controller never actually calls — but
-  its `OrderTrackingResult` only carries `orderId/customerId/status/placedAt`, not enough to
-  replace `ListOrders` outright (`list.html.twig` also needs `totalAmountInCents`, already present
-  on `OrderPlacedIntegrationEvent` and simply not captured by
-  `DbalOrderTrackingProjector::onOrderPlaced`).
-  Real intent surfaced during review: this isn't "add one field to Tracking", it's "the
-  customer/admin-facing report was always meant to be Order + OrderLine + Payment + Shipment
-  composited, not just a unified status" — `OrderTracking` undersold the actual scope. Rename to
-  `Sales.OrderSummary`, widen `sales_order_tracking` into `sales_order_summary` (`order_id,
-  customer_id, total_amount_in_cents, order_status, placed_at, cancelled_at, payment_status,
-  payment_amount_in_cents, payment_reference, paid_at, shipment_status, tracking_reference,
-  dispatched_at, delivered_at` — keep every lifecycle date, not just the ones that looked like
-  headline fields at first pass: cancelled/dispatched need their own date shown in "my orders"
-  same as delivered/paid do) plus a child table `sales_order_summary_line` (`order_id, position,
-  label, quantity, unit_amount_in_cents`, fed by `OrderPlaced.lines`, already present in the
-  payload). `ListOrderSummaries`/`GetOrderSummary` replace `ListOrders`+loop and the four-query
-  `show()` respectively.
-  Both `apps/web` and `apps/api` become consumers of the same composite: `apps/api`'s
-  `OrderResource` currently exposes neither payment nor shipment info (no admin visibility on
-  either), and `ShipmentResource` leaks `orderCancelledAt` (an `Order`-level fact on a `Shipment`
-  resource) while carrying zero payment info itself — `OrderResource::fromResult(OrderSummaryResult)`
-  picks up both refs (`paymentReference`/`trackingReference` — "the 2 refs" an admin actually
-  needs) and `ShipmentResource` is dropped outright once merged. Checked and ruled out keeping
-  `ShipmentResource` alive for a separate "logistics" API consumer: `DispatchShipment` is
-  CLI/cron-triggered internally (`apps/cli/DispatchPendingShipmentsCommand`, no external caller),
-  the only external inbound flow is the carrier's delivery webhook
-  (`Webhook\Consumer\CarrierDeliveryConsumer`) — no external actor ever reads the API for shipment
-  status, so there's no consumer left to justify a split resource. (Separately verified not a gap:
-  nobody currently holds `sales:read`/`fulfilment:read` in `demo/`'s seeders, but the provisioning
-  mechanism already exists and is generic — `iam:identity:register --permission sales:read
-  --permission fulfilment:read` via the existing `GrantPermission` command — just never run for a
-  demo admin; no code change needed there.)
-
-- **`DbalOrderLineFinder::allForOrder` doesn't follow the Finder convention.** Per
-  `infrastructure.md`, a Finder returning more than a single row belongs on `AbstractDbalFinder`
-  with `with*(): static` filters (see `DbalOrderTrackingFinder`'s `withCustomer()`/`withStatus()`),
-  not an ad-hoc method on a `final readonly` class with a direct `Connection`. Rewrite as
-  `withOrder(string $orderId): static` + `buildBaseQuery()` (`ORDER BY position ASC`);
-  `GetOrderLinesHandler` calls `iterator_to_array()` instead of the removed `allForOrder()`. Small,
-  independent of the `OrderSummary` item above — can land first or separately.
-
 - **Let a placed-but-unpaid order have its lines modified (add/remove/change quantity),
   recalculating the total — currently orders are immutable after `place()`.** Surfaced while
   discussing why `OrderLine` is a read-side Finder family today: `Order::place()` doesn't even
@@ -388,6 +380,6 @@ were surfaced later and have no original number.
 3. The Identity-erasure-cascade item needs `#24` first (auth wiring).
 4. `#18`, README, and emptying the registers can happen anytime, but final audits wait on
    everything.
-5. The `OrderSummary` consolidation and the `DbalOrderLineFinder` fix have no dependency on each
-   other or on the order-lines-editing item above; if the line-editing item lands too,
-   `OrderSummary`'s line table just gains a second event feed on top of `OrderPlaced.lines`.
+5. The `OrderSummary` consolidation (done) had no dependency on the order-lines-editing item above;
+   if that item lands, `Sales.OrderSummary`'s line table just gains a second event feed on top of
+   `OrderPlaced.lines`.

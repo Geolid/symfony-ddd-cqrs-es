@@ -12,6 +12,8 @@ final readonly class OrderPaymentRequestedIntegrationEvent implements Integratio
 {
     public function __construct(
         public string $orderId,
+        public int $amountInCents,
+        public string $reference,
         public string $requestedAt,
     ) {
     }

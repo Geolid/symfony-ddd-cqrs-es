@@ -6,7 +6,6 @@ namespace Web\Controller;
 
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
-use Fulfilment\Shipment\Application\Query\GetShipmentByOrder\GetShipmentByOrder;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
@@ -17,10 +16,9 @@ use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
-use Sales\Order\Application\Query\GetOrderLines\GetOrderLines;
-use Sales\Order\Application\Query\GetOrderPaymentByOrder\GetOrderPaymentByOrder;
-use Sales\Order\Application\Query\ListOrders\ListOrders;
-use Sales\OrderTracking\Application\Query\GetOrderTracking\GetOrderTracking;
+use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
+use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
+use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -62,20 +60,14 @@ final class OrderController extends AbstractController
     ): Response {
         $customer = $this->resolveCustomer();
 
-        $orders = $this->queryBus->ask(new ListOrders(
+        $orders = $this->queryBus->ask(new ListOrderSummaries(
             customerId: $customer->id,
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
         ));
 
-        $trackings = [];
-        foreach ($orders->items as $order) {
-            $trackings[$order->id] = $this->queryBus->ask(new GetOrderTracking($order->id));
-        }
-
         return $this->render('sales/order/list.html.twig', [
             'orders' => $orders,
-            'trackings' => $trackings,
         ]);
     }
 
@@ -88,20 +80,17 @@ final class OrderController extends AbstractController
         $customer = $this->resolveCustomer();
 
         try {
-            $order = $this->resolveOwnedOrder($id, $customer);
+            $this->resolveOwnedOrder($id, $customer);
         } catch (OrderResultNotFoundException) {
             throw $this->createNotFoundException('No order carries that identifier.');
         }
 
-        $tracking = $this->queryBus->ask(new GetOrderTracking($id));
-        \assert(null !== $tracking);
+        $summary = $this->queryBus->ask(new GetOrderSummary($id));
+        \assert(null !== $summary);
 
         return $this->render('sales/order/show.html.twig', [
-            'order' => $order,
-            'lines' => $this->queryBus->ask(new GetOrderLines($id)),
-            'tracking' => $tracking,
-            'payment' => $this->queryBus->ask(new GetOrderPaymentByOrder($id)),
-            'shipment' => $this->queryBus->ask(new GetShipmentByOrder($id)),
+            'order' => $summary,
+            'lines' => $this->queryBus->ask(new GetOrderSummaryLines($id)),
         ]);
     }
 

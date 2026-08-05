@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
@@ -14,7 +13,6 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
-use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Reducer\OrderSummaryReducer;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
@@ -25,23 +23,12 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'fulfilment_shipment';
 
-    public function __construct(
-        Connection $connection,
-        private OrderSummaryReducer $orderSummary,
-    ) {
-        parent::__construct($connection);
-    }
-
     #[Subscribe(ShipmentCreated::class)]
     public function onShipmentCreated(ShipmentCreated $event): void
     {
-        $order = $this->orderSummary->forOrder($event->orderId);
-
         $this->connection->insert(self::TABLE, [
             'id' => $event->id,
             'order_id' => $event->orderId,
-            'customer_id' => $order?->customerId,
-            'order_total_in_cents' => $order?->totalAmountInCents,
             'status' => ShipmentStatus::PENDING->value,
             'created_at' => new \DateTimeImmutable($event->createdAt)->format('Y-m-d H:i:s'),
         ]);
@@ -101,8 +88,6 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('customer_id', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
-        $table->addColumn('order_total_in_cents', Types::INTEGER, ['notnull' => false, 'default' => null]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('created_at', Types::DATETIME_MUTABLE);
