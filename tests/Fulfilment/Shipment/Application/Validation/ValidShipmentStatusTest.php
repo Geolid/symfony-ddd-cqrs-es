@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Validation;
 
-use Fulfilment\Shipment\Application\Language\PublishedShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Validation\ValidShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidValueObject;
@@ -19,7 +20,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidShipmentStatusTest extends CompoundConstraintTestCase
 {
     #[Test]
-    #[DataProvider('providePublishedStatuses')]
+    #[DataProvider('provideValidStatuses')]
     public function itAcceptsAStatusOfTheVocabulary(string $status): void
     {
         // When
@@ -32,7 +33,7 @@ final class ValidShipmentStatusTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function providePublishedStatuses(): iterable
+    public static function provideValidStatuses(): iterable
     {
         yield 'pending' => ['pending'];
         yield 'dispatched' => ['dispatched'];
@@ -69,11 +70,11 @@ final class ValidShipmentStatusTest extends CompoundConstraintTestCase
 
     private static function choice(): Assert\Choice
     {
-        return new Assert\Choice(choices: array_column(PublishedShipmentStatus::cases(), 'value'));
+        return new Assert\Choice(choices: array_column(AppShipmentStatus::cases(), 'value'));
     }
 
     private static function valueObject(): ValidValueObject
     {
-        return new ValidValueObject(PublishedShipmentStatus::class, method: 'from');
+        return new ValidValueObject(ShipmentStatus::class, method: 'from');
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Finder\Product;
 
-use Shared\Application\Query\Result\ResultInterface;
+use Shared\Application\Result\ResultInterface;
 
 final readonly class ProductResult implements ResultInterface
 {

@@ -4,39 +4,40 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
+ * @extends AbstractDbalFinder<PasswordCredentialResult>
+ *
  * @phpstan-type Row array{id: string, identity_id: string, login: string, hash: string}
  */
-final readonly class DbalPasswordCredentialFinder implements PasswordCredentialFinderInterface
+final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements PasswordCredentialFinderInterface
 {
-    public function __construct(private Connection $connection)
-    {
-    }
-
     public function ofLogin(string $login): ?PasswordCredentialResult
     {
         /** @var Row|false $row */
-        $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, identity_id, login, hash FROM %s WHERE login = :login', DbalPasswordCredentialProjector::TABLE),
-            ['login' => $login],
-        );
+        $row = $this->query()
+            ->andWhere('login = :login')
+            ->setParameter('login', $login)
+            ->executeQuery()
+            ->fetchAssociative();
 
-        if (false === $row) {
-            return null;
-        }
+        return false !== $row ? $this->mapRow($row) : null;
+    }
 
-        return $this->mapRow($row);
+    protected function buildBaseQuery(QueryBuilder $qb): void
+    {
+        $qb->select('id', 'identity_id', 'login', 'hash')->from(DbalPasswordCredentialProjector::TABLE);
     }
 
     /**
      * @param Row $row
      */
-    private function mapRow(array $row): PasswordCredentialResult
+    protected function mapRow(array $row): PasswordCredentialResult
     {
         return new PasswordCredentialResult(
             id: $row['id'],

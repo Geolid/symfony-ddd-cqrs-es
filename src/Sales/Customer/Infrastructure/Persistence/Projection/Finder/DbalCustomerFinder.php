@@ -8,14 +8,14 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<CustomerResult>
+ * @extends AbstractDbalCollectionFinder<CustomerResult>
  *
  * @phpstan-type Row array{id: string, email: string|null, registered_at: string, erased_at: string|null, identity_id: string|null}
  */
-final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
+final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements CustomerFinderInterface
 {
     public function ofIdentityId(string $identityId): ?CustomerResult
     {

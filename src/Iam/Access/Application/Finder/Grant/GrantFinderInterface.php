@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Finder\Grant;
 
-use Shared\Application\Finder\FinderInterface;
+use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
- * @extends FinderInterface<GrantResult>
+ * @extends CollectionFinderInterface<GrantResult>
  */
-interface GrantFinderInterface extends FinderInterface
+interface GrantFinderInterface extends CollectionFinderInterface
 {
     public function forIdentity(string $identityId): static;
 

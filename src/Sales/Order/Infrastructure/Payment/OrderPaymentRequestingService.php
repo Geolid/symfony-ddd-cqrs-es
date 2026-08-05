@@ -10,7 +10,6 @@ use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Gateway\PaymentGatewayInterface;
-use Sales\Order\Application\Language\PublishedOrderStatus;
 use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -41,7 +40,7 @@ final readonly class OrderPaymentRequestingService implements RequestOrderPaymen
     {
         $result = $this->orderFinder->ofId($orderId) ?? throw OrderResultNotFoundException::forId($orderId);
 
-        if (PublishedOrderStatus::CANCELLED->value === $result->status) {
+        if ('cancelled' === $result->status) {
             throw OrderAlreadyCancelledException::forId(OrderId::fromString($orderId));
         }
 

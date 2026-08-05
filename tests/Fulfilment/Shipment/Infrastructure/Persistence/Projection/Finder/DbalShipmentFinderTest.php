@@ -6,10 +6,8 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Finder
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
@@ -54,7 +52,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()->dispatched()->create());
 
         // When
-        $results = iterator_to_array($this->finder->withStatus(ShipmentStatus::PENDING));
+        $results = iterator_to_array($this->finder->withStatus('pending'));
 
         // Then
         self::assertSame(2, $this->finder->count());
@@ -80,31 +78,5 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             static fn (ShipmentResult $shipment): string => $shipment->id,
             $results,
         ));
-    }
-
-    #[Test]
-    public function itReadsAShipmentByItsOrder(): void
-    {
-        // Given
-        $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
-        $this->store($shipment);
-
-        // When
-        $result = $this->finder->ofOrder($shipment->orderId());
-
-        // Then
-        self::assertInstanceOf(ShipmentResult::class, $result);
-        self::assertSame($shipment->id()->toString(), $result->id);
-        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
-    }
-
-    #[Test]
-    public function itReadsNothingForAnOrderWithoutAShipment(): void
-    {
-        // When
-        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
-
-        // Then
-        self::assertNull($result);
     }
 }

@@ -9,8 +9,13 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Shared\Application\Language\PublishedLanguageInterface;
+use Shared\Application\Command\CommandInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPortOutcomeInterface;
+use Shared\Application\Query\QueryInterface;
+use Shared\Application\Result\ResultInterface;
+use Symfony\Component\Validator\Constraints\Compound;
 
 final class DeliveryMechanismTest
 {
@@ -23,11 +28,17 @@ final class DeliveryMechanismTest
             ->dependOn()
             ->classes(
                 Selector::appliesAttribute(AsDrivingPort::class),
-                Selector::classname(PublishedLanguageInterface::class),
-                Selector::implements(PublishedLanguageInterface::class),
+                Selector::implements(CommandInterface::class),
+                Selector::implements(QueryInterface::class),
+                Selector::implements(ResultInterface::class),
+                Selector::classname(ApplicationExceptionInterface::class),
+                Selector::implements(ApplicationExceptionInterface::class),
+                Selector::extends(Compound::class),
+                Selector::implements(DrivingPortOutcomeInterface::class),
+                Selector::AllOf(Selector::isEnum(), Selector::withFilepath('#/Application/Enum/#', true)),
                 Selector::Not($this->projectCode()),
             )
-            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and its published language.');
+            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and their outcomes, its Command/Query/Result/Exception vocabulary, its validation compounds, and its Application/Enum vocabulary.');
     }
 
     #[TestRule]

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Application\Finder\Customer;
 
-use Shared\Application\Finder\PaginatedFinderInterface;
+use Shared\Application\Finder\PaginatedCollectionFinderInterface;
 
 /**
- * @extends PaginatedFinderInterface<CustomerResult>
+ * @extends PaginatedCollectionFinderInterface<CustomerResult>
  */
-interface CustomerFinderInterface extends PaginatedFinderInterface
+interface CustomerFinderInterface extends PaginatedCollectionFinderInterface
 {
     public function ofIdentityId(string $identityId): ?CustomerResult;
 

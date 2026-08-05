@@ -35,8 +35,8 @@ deptrac:
 
   # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: Open Host Service only).
   ruleset:
-    Web:     [ Sales.Customer, Sales.Order, Sales.OrderTracking, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors, Ui ]
-    Api:     [ Sales.Customer, Sales.Order, Catalog.Product, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
+    Web:     [ Sales.Customer, Sales.Order, Sales.OrderSummary, Catalog.Product, Iam.Identity, Iam.Access, Shared, Vendors, Ui ]
+    Api:     [ Sales.OrderSummary, Catalog.Product, Iam.Identity, Iam.Access, Shared, Vendors ]
     Cli:     [ Sales.Customer, Sales.Order, Fulfilment.Shipment, Iam.Identity, Iam.Access, Shared, Vendors ]
     Webhook: [ Fulfilment.Shipment, Sales.Order, Shared, Vendors ]
     EsAdmin: [ Shared, Vendors ]

@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
-use Sales\Order\Application\Finder\Order\OrderResult;
+use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 
 #[ApiResource(
     shortName: 'Order',
@@ -55,18 +55,24 @@ final class OrderResource
         public ?\DateTimeImmutable $placedAt = null,
         #[ApiProperty(description: 'The date and time when the order was cancelled, if it was.', example: '2026-01-15T14:20:00+00:00')]
         public ?\DateTimeImmutable $cancelledAt = null,
+        #[ApiProperty(description: 'The order payment\'s reference, once a payment has been requested.', example: 'GLBX-4Q7X2K9')]
+        public ?string $paymentReference = null,
+        #[ApiProperty(description: "The carrier's own tracking reference, once the pickup has been booked.", example: 'ACME-4Q7X2K9')]
+        public ?string $trackingReference = null,
     ) {
     }
 
-    public static function fromResult(OrderResult $result): self
+    public static function fromResult(OrderSummaryResult $result): self
     {
         return new self(
-            id: $result->id,
+            id: $result->orderId,
             customerId: $result->customerId,
             totalAmountInCents: $result->totalAmountInCents,
-            status: $result->status,
+            status: $result->status->value,
             placedAt: $result->placedAt,
             cancelledAt: $result->cancelledAt,
+            paymentReference: $result->paymentReference,
+            trackingReference: $result->trackingReference,
         );
     }
 }

@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
-use Sales\Order\Application\Query\ListOrders\ListOrders;
+use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 
@@ -31,7 +31,7 @@ final readonly class OrderCollectionProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
-        $result = $this->queryBus->ask(new ListOrders(
+        $result = $this->queryBus->ask(new ListOrderSummaries(
             page: (int) $this->pagination->getPage($context),
             itemsPerPage: (int) $this->pagination->getLimit($operation, $context),
         ));

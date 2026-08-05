@@ -8,14 +8,14 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Infrastructure\Persistence\Projection\Projector\DbalGrantProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<GrantResult>
+ * @extends AbstractDbalCollectionFinder<GrantResult>
  *
  * @phpstan-type Row array{id: string, identity_id: string, permission: string, revoked: string|int}
  */
-final class DbalGrantFinder extends AbstractDbalFinder implements GrantFinderInterface
+final class DbalGrantFinder extends AbstractDbalCollectionFinder implements GrantFinderInterface
 {
     public function forIdentity(string $identityId): static
     {

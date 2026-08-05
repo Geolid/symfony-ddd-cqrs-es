@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Finder\Grant;
 
-use Shared\Application\Query\Result\ResultInterface;
+use Shared\Application\Result\ResultInterface;
 
 final readonly class GrantResult implements ResultInterface
 {

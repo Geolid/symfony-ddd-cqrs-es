@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\ApiTokenCredential;
 
-use Shared\Application\Query\Result\ResultInterface;
+use Shared\Application\Result\ResultInterface;
 
 final readonly class ApiTokenCredentialResult implements ResultInterface
 {

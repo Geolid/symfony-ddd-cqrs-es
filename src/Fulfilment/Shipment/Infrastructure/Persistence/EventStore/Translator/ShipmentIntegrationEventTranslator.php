@@ -6,8 +6,10 @@ namespace Fulfilment\Shipment\Infrastructure\Persistence\EventStore\Translator;
 
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -58,6 +60,24 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),
                 deliveredAt: $event->deliveredAt,
+            ),
+        );
+    }
+
+    /**
+     * @throws ShipmentNotFoundException
+     */
+    #[Subscribe(TrackingReferenceAssigned::class)]
+    public function onTrackingReferenceAssigned(TrackingReferenceAssigned $event): void
+    {
+        $shipment = $this->repository->load(ShipmentId::fromString($event->id));
+
+        $this->append(
+            \sprintf('fulfilment.shipment.integration.%s', $event->id),
+            new ShipmentTrackingReferenceAssignedIntegrationEvent(
+                shipmentId: $event->id,
+                orderId: $shipment->orderId(),
+                trackingReference: $event->trackingReference,
             ),
         );
     }

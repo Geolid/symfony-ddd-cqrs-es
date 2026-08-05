@@ -26,6 +26,8 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
             \sprintf('sales.order.integration.%s', $event->orderId),
             new OrderPaymentRequestedIntegrationEvent(
                 orderId: $event->orderId,
+                amountInCents: $event->amountInCents,
+                reference: $event->reference,
                 requestedAt: $event->requestedAt,
             ),
         );

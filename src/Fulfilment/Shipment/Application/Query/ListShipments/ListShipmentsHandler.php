@@ -6,7 +6,6 @@ namespace Fulfilment\Shipment\Application\Query\ListShipments;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
 use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Pagination\PaginationInfo;
 use Shared\Application\Query\Result\ListResult;
@@ -23,7 +22,7 @@ final readonly class ListShipmentsHandler
      */
     public function __invoke(ListShipments $query): ListResult
     {
-        $finder = null !== $query->status ? $this->shipmentFinder->withStatus(ShipmentStatus::from($query->status)) : $this->shipmentFinder;
+        $finder = null !== $query->status ? $this->shipmentFinder->withStatus($query->status) : $this->shipmentFinder;
         $paginator = $finder->paginate($query->page, $query->itemsPerPage);
 
         /** @var list<ShipmentResult> $items */

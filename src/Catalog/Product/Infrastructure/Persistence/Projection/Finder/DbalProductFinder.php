@@ -8,14 +8,14 @@ use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Infrastructure\Persistence\Projection\Projector\DbalProductProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<ProductResult>
+ * @extends AbstractDbalCollectionFinder<ProductResult>
  *
  * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string, delisted: string|int}
  */
-final class DbalProductFinder extends AbstractDbalFinder implements ProductFinderInterface
+final class DbalProductFinder extends AbstractDbalCollectionFinder implements ProductFinderInterface
 {
     public function ofId(string $id): ?ProductResult
     {

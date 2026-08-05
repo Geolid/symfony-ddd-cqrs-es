@@ -26,7 +26,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
     }
 
     #[Test]
-    public function itOpensAShipmentEnrichedWithTheOrderSummaryOnOrderPaymentCaptured(): void
+    public function itOpensAShipmentOnOrderPaymentCaptured(): void
     {
         // Given
         $order = $this->placedOrder();
@@ -39,8 +39,6 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         self::assertCount(1, $results);
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
-        self::assertSame('customer-1', $results[0]->customerId);
-        self::assertSame(4_200, $results[0]->orderTotalInCents);
         self::assertSame('pending', $results[0]->status);
         self::assertSame('buyer@example.com', $this->addressOf($order));
     }

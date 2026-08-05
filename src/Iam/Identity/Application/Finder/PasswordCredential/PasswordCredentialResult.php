@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\PasswordCredential;
 
-use Shared\Application\Query\Result\ResultInterface;
+use Shared\Application\Result\ResultInterface;
 
 final readonly class PasswordCredentialResult implements ResultInterface
 {

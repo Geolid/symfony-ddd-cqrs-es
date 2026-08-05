@@ -4,39 +4,40 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
+ * @extends AbstractDbalFinder<IdentityResult>
+ *
  * @phpstan-type Row array{id: string, status: string, registered_at: string}
  */
-final readonly class DbalIdentityFinder implements IdentityFinderInterface
+final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
 {
-    public function __construct(private Connection $connection)
-    {
-    }
-
     public function ofId(string $id): ?IdentityResult
     {
         /** @var Row|false $row */
-        $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, status, registered_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
-            ['id' => $id],
-        );
+        $row = $this->query()
+            ->andWhere('id = :id')
+            ->setParameter('id', $id)
+            ->executeQuery()
+            ->fetchAssociative();
 
-        if (false === $row) {
-            return null;
-        }
+        return false !== $row ? $this->mapRow($row) : null;
+    }
 
-        return $this->mapRow($row);
+    protected function buildBaseQuery(QueryBuilder $qb): void
+    {
+        $qb->select('id', 'status', 'registered_at')->from(DbalIdentityProjector::TABLE);
     }
 
     /**
      * @param Row $row
      */
-    private function mapRow(array $row): IdentityResult
+    protected function mapRow(array $row): IdentityResult
     {
         return new IdentityResult(
             id: $row['id'],

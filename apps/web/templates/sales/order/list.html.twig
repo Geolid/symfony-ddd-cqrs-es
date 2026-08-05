@@ -21,30 +21,29 @@
         </thead>
         <tbody>
         {% for order in orders.items %}
-            {% set tracking = trackings[order.id] %}
-            {% set cancellable = tracking.status == 'placed' %}
+            {% set cancellable = order.status.isPlaced %}
             <tr>
-                <td>{{ order.id }}</td>
+                <td>{{ order.orderId }}</td>
                 <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
                 <td data-testid="order-status">
-                    <span class="status">{{ ('sales.order.status_view.badge.' ~ tracking.status)|trans }}</span>
+                    <span class="status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span>
                 </td>
                 <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
                 <td>
                     <div role="group">
-                        <a href="{{ path('sales_order_show', {id: order.id}) }}" role="button"
+                        <a href="{{ path('sales_order_show', {id: order.orderId}) }}" role="button"
                            class="outline">{{ 'sales.order.list.button_view'|trans }}</a>
                         <twig:ui:ConfirmModal
-                            id="cancel-order-{{ order.id }}"
-                            :actionUrl="path('sales_order_cancel', {id: order.id})"
+                            id="cancel-order-{{ order.orderId }}"
+                            :actionUrl="path('sales_order_cancel', {id: order.orderId})"
                             :triggerLabel="'sales.order.list.button_cancel'|trans"
                             :message="'sales.order.list.message_cancel_confirm'|trans"
                             :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
                             :disabled="not cancellable"
                         />
                         <twig:ui:CsrfButton
-                            :actionUrl="path('sales_order_pay', {id: order.id})"
-                            csrfId="pay-order-{{ order.id }}"
+                            :actionUrl="path('sales_order_pay', {id: order.orderId})"
+                            csrfId="pay-order-{{ order.orderId }}"
                             :label="'sales.order.list.button_pay'|trans"
                             :disabled="not cancellable"
                             data-testid="pay-order-button"

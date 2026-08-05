@@ -61,6 +61,8 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         // When
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId('order-1')
+            ->withAmountInCents(2_500)
+            ->withReference('GLBX-ABC12345')
             ->create();
         $this->store($orderPayment);
 
@@ -70,6 +72,8 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $event = $published[0];
         self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $event);
         self::assertSame('order-1', $event->orderId);
+        self::assertSame(2_500, $event->amountInCents);
+        self::assertSame('GLBX-ABC12345', $event->reference);
     }
 
     #[Test]

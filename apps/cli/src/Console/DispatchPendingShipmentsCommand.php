@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Application\Language\PublishedShipmentStatus;
 use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -44,7 +44,7 @@ final class DispatchPendingShipmentsCommand
 
         try {
             /** @var ListResult<ShipmentResult> $pending */
-            $pending = $this->queryBus->ask(new ListShipments(status: PublishedShipmentStatus::PENDING->value, itemsPerPage: 100));
+            $pending = $this->queryBus->ask(new ListShipments(status: AppShipmentStatus::PENDING->value, itemsPerPage: 100));
 
             foreach ($pending->items as $shipment) {
                 $this->commandBus->dispatch(new DispatchShipment($shipment->id));
