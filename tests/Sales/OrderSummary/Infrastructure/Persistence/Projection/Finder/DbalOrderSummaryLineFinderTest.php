@@ -43,4 +43,24 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame([], $lines);
     }
+
+    #[Test]
+    public function itScopesTheLinesToTheirOwnOrder(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->withLines([
+            OrderLine::of('Widget', 2, Money::fromCents(1_000)),
+        ])->create();
+        $this->store($order);
+        $this->store(OrderTestFactory::new()->withLines([
+            OrderLine::of('Gizmo', 5, Money::fromCents(2_000)),
+        ])->create());
+
+        // When
+        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder($order->id()->toString()));
+
+        // Then
+        self::assertCount(1, $lines);
+        self::assertSame('Widget', $lines[0]->label);
+    }
 }
