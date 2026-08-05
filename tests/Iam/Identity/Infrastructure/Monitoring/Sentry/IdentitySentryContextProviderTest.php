@@ -6,6 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\Monitoring\Sentry;
 
 use Iam\Identity\Infrastructure\Monitoring\Sentry\IdentitySentryContextProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -14,7 +15,7 @@ use Symfony\Component\Security\Core\User\InMemoryUser;
 
 final class IdentitySentryContextProviderTest extends TestCase
 {
-    private TokenStorageInterface $tokenStorage;
+    private TokenStorageInterface&Stub $tokenStorage;
 
     protected function setUp(): void
     {
