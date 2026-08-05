@@ -28,6 +28,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             'order_id' => $event->orderId,
             'amount_in_cents' => $event->amountInCents,
             'reference' => $event->reference,
+            'checkout_url' => $event->checkoutUrl,
             'status' => OrderPaymentStatus::REQUESTED->value,
             'requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
         ]);
@@ -56,6 +57,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
         $table->addColumn('amount_in_cents', Types::INTEGER);
         $table->addColumn('reference', Types::STRING, ['length' => 64]);
+        $table->addColumn('checkout_url', Types::STRING, ['length' => 2048]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('requested_at', Types::DATETIME_MUTABLE);
         $table->addColumn('captured_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);

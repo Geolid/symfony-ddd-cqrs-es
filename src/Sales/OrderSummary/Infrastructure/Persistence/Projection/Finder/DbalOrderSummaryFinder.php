@@ -14,7 +14,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<OrderSummaryResult>
  *
- * @phpstan-type Row array{order_id: string, customer_id: string, total_amount_in_cents: int|string, status: string, order_status: string, placed_at: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string}
+ * @phpstan-type Row array{order_id: string, customer_id: string, total_amount_in_cents: int|string, status: string, order_status: string, placed_at: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string}
  */
 final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implements OrderSummaryFinderInterface
 {
@@ -67,6 +67,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             'payment_status',
             'payment_amount_in_cents',
             'payment_reference',
+            'payment_checkout_url',
             'paid_at',
             'shipment_status',
             'tracking_reference',
@@ -94,6 +95,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             paymentStatus: $row['payment_status'],
             paymentAmountInCents: null !== $row['payment_amount_in_cents'] ? (int) $row['payment_amount_in_cents'] : null,
             paymentReference: $row['payment_reference'],
+            paymentCheckoutUrl: $row['payment_checkout_url'],
             paidAt: null !== $row['paid_at'] ? new \DateTimeImmutable($row['paid_at'], new \DateTimeZone('UTC')) : null,
             shipmentStatus: $row['shipment_status'],
             trackingReference: $row['tracking_reference'],

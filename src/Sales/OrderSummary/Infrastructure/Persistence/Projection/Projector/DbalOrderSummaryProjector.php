@@ -62,6 +62,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         $this->recompute($event->orderId, [
             'payment_amount_in_cents' => $event->amountInCents,
             'payment_reference' => $event->reference,
+            'payment_checkout_url' => $event->checkoutUrl,
         ], paymentStatus: 'requested');
     }
 
@@ -112,6 +113,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         $table->addColumn('payment_status', Types::STRING, ['length' => 10, 'notnull' => false, 'default' => null]);
         $table->addColumn('payment_amount_in_cents', Types::INTEGER, ['notnull' => false, 'default' => null]);
         $table->addColumn('payment_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
+        $table->addColumn('payment_checkout_url', Types::STRING, ['length' => 2048, 'notnull' => false, 'default' => null]);
         $table->addColumn('paid_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('shipment_status', Types::STRING, ['length' => 10, 'notnull' => false, 'default' => null]);
         $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);

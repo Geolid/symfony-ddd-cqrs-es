@@ -22,6 +22,7 @@ use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
@@ -73,6 +74,7 @@ return static function (ContainerConfigurator $container): void {
             OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],

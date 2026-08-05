@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CancelOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Enum\AppOrderPaymentStatus;
+use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -26,14 +27,16 @@ final readonly class CancelOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderAlreadyCancelledException
-     * @throws OrderPaymentAlreadyRequestedException
+     * @throws OrderPaymentAlreadyCapturedException
      */
     public function __invoke(CancelOrder $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
 
-        if (null !== $this->orderPaymentFinder->ofOrder($command->id)) {
-            throw OrderPaymentAlreadyRequestedException::forOrderId($command->id);
+        $orderPayment = $this->orderPaymentFinder->ofOrder($command->id);
+
+        if (null !== $orderPayment && AppOrderPaymentStatus::from($orderPayment->status)->isCaptured()) {
+            throw OrderPaymentAlreadyCapturedException::forOrderId($command->id);
         }
 
         $order->cancel($this->clock->now());

@@ -14,6 +14,7 @@ final readonly class OrderPaymentRequestedIntegrationEvent implements Integratio
         public string $orderId,
         public int $amountInCents,
         public string $reference,
+        public string $checkoutUrl,
         public string $requestedAt,
     ) {
     }

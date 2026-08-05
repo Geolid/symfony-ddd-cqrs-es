@@ -13,7 +13,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<OrderPaymentResult>
  *
- * @phpstan-type Row array{id: string, order_id: string, amount_in_cents: int, reference: string, status: string, requested_at: string, captured_at: ?string}
+ * @phpstan-type Row array{id: string, order_id: string, amount_in_cents: int, reference: string, checkout_url: string, status: string, requested_at: string, captured_at: ?string}
  */
 final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPaymentFinderInterface
 {
@@ -43,7 +43,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'status', 'requested_at', 'captured_at')
+        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'captured_at')
             ->from(DbalOrderPaymentProjector::TABLE);
     }
 
@@ -57,6 +57,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
             orderId: $row['order_id'],
             amountInCents: (int) $row['amount_in_cents'],
             reference: $row['reference'],
+            checkoutUrl: $row['checkout_url'],
             status: $row['status'],
             requestedAt: new \DateTimeImmutable($row['requested_at'], new \DateTimeZone('UTC')),
             capturedAt: null !== $row['captured_at'] ? new \DateTimeImmutable($row['captured_at'], new \DateTimeZone('UTC')) : null,

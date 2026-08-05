@@ -17,5 +17,5 @@ interface RequestOrderPaymentInterface
      * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyRequestedException
      */
-    public function requestFor(string $orderId): void;
+    public function requestFor(string $orderId, int $itemCount, string $returnUrl): void;
 }

@@ -36,7 +36,7 @@ final readonly class OrderPaymentRequestingService implements RequestOrderPaymen
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $orderId): void
+    public function requestFor(string $orderId, int $itemCount, string $returnUrl): void
     {
         $result = $this->orderFinder->ofId($orderId) ?? throw OrderResultNotFoundException::forId($orderId);
 
@@ -50,7 +50,7 @@ final readonly class OrderPaymentRequestingService implements RequestOrderPaymen
 
         $order = $this->orderRepository->load(OrderId::fromString($orderId));
 
-        $reference = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents);
+        $session = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents, $itemCount, $returnUrl);
 
         $this->commandBus->dispatch(new RequestOrderPayment(
             id: OrderPaymentId::forOrder($orderId)->toString(),
@@ -58,7 +58,8 @@ final readonly class OrderPaymentRequestingService implements RequestOrderPaymen
             customerId: $result->customerId,
             buyerAddress: $order->buyerAddress(),
             amountInCents: $result->totalAmountInCents,
-            reference: $reference,
+            reference: $session->reference,
+            checkoutUrl: $session->checkoutUrl,
         ));
     }
 }

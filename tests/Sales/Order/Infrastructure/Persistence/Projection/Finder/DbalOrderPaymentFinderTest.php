@@ -26,7 +26,11 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itReadsAnOrderPaymentByItsReference(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->withAmountInCents(4_200)->create();
+        $orderPayment = OrderPaymentTestFactory::new()
+            ->withReference('GLBX-9F3K2M1P')
+            ->withAmountInCents(4_200)
+            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->create();
         $this->store($orderPayment);
 
         // When
@@ -37,6 +41,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($orderPayment->id()->toString(), $result->id);
         self::assertSame($orderPayment->orderId(), $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
+        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
         self::assertSame('requested', $result->status);
         self::assertNull($result->capturedAt);
     }

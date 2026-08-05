@@ -13,7 +13,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
+ * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
  */
 final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 {
@@ -47,6 +47,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
             ->withOrderId($order->id()->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
+            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->create();
         $this->store($orderPayment);
 
@@ -56,6 +57,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         self::assertSame('requested', $row['payment_status']);
         self::assertSame(2_500, (int) $row['payment_amount_in_cents']);
         self::assertSame('GLBX-ABC12345', $row['payment_reference']);
+        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $row['payment_checkout_url']);
         self::assertNull($row['paid_at']);
     }
 
@@ -187,7 +189,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, paid_at, shipment_status, tracking_reference, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
+                'SELECT customer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, payment_checkout_url, paid_at, shipment_status, tracking_reference, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
                 DbalOrderSummaryProjector::TABLE,
             ),
             ['orderId' => $orderId],

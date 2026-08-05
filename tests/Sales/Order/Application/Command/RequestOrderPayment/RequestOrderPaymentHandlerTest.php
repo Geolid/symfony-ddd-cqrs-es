@@ -28,6 +28,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
+            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
         ));
 
         // Then
@@ -50,6 +51,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
+            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
         ));
 
         // When
@@ -60,6 +62,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-OTHER',
+            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-OTHER',
         ));
 
         // Then

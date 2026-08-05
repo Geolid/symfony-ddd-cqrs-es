@@ -66,10 +66,9 @@
         <p data-testid="order-payment">
             <span class="status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span>
         </p>
-        {% if order.status.value == 'payment_pending' %}
+        {% if order.status.isPaymentPending %}
             <twig:ui:Alert variant="info" data-testid="order-payment-hint">
                 <span data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans({'%reference%': order.paymentReference}) }}</span>
-                — <a href="/webhook/docs">{{ 'sales.order.show.hint_payment'|trans }}</a>
             </twig:ui:Alert>
         {% endif %}
     {% endif %}
@@ -93,20 +92,18 @@
     {% endif %}
 
     <h2>{{ 'sales.order.list.table.actions'|trans }}</h2>
-    {% if order.status.isPlaced %}
+    {% if order.status.isPlaced or order.status.isPaymentPending %}
         <div role="group">
+            {% if order.status.isPaymentPending %}
+                <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}" role="button"
+                   data-testid="resume-payment-button">{{ 'sales.order.list.button_resume_payment'|trans }}</a>
+            {% endif %}
             <twig:ui:ConfirmModal
                 id="cancel-order-{{ order.orderId }}"
                 :actionUrl="path('sales_order_cancel', {id: order.orderId})"
                 :triggerLabel="'sales.order.list.button_cancel'|trans"
                 :message="'sales.order.list.message_cancel_confirm'|trans"
                 :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
-            />
-            <twig:ui:CsrfButton
-                :actionUrl="path('sales_order_pay', {id: order.orderId})"
-                csrfId="pay-order-{{ order.orderId }}"
-                :label="'sales.order.list.button_pay'|trans"
-                data-testid="pay-order-button"
             />
         </div>
     {% elseif order.status.isCancelled %}

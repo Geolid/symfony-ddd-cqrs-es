@@ -21,7 +21,7 @@ sales:
             title: Mes commandes
             button_place_order: Passer une commande
             button_view: Voir
-            button_pay: Payer
+            button_resume_payment: Continuer le paiement
             table:
                 id: ID
                 total: Total
@@ -43,12 +43,11 @@ sales:
             title_payment: Paiement
             payment_none: Aucun paiement demandé pour le moment.
             payment_reference: 'Réf. paiement : %reference%'
-            hint_payment: 'Validez-le via le DM Webhook :'
             title_shipment: Livraison
             shipment_none: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement est confirmé.
             hint_shipment: 'Expédiez-la en lançant la commande CLI :'
             shipment_tracking_reference: 'Numéro de suivi : %reference%'
-            no_actions: Aucune action possible — le paiement de cette commande a déjà été demandé.
+            no_actions: Aucune action possible — le paiement de cette commande a déjà été capturé.
             no_actions_cancelled: Cette commande est annulée.
             link_back: Retour à mes commandes
         place:
@@ -75,11 +74,8 @@ sales:
                 shipped: Expédiée
                 delivered: Livrée
         flash:
-            placed: Commande passée.
             cancelled: Commande annulée.
-            cannot_cancel_paid: Le paiement de cette commande a déjà été demandé, elle ne peut plus être annulée.
-            payment_requested: Paiement demandé — validez-le via le DM Webhook.
-            payment_already_requested: Le paiement de cette commande a déjà été demandé.
+            cannot_cancel_paid: Le paiement de cette commande a déjà été capturé, elle ne peut plus être annulée.
     customer:
         register:
             title: S'inscrire

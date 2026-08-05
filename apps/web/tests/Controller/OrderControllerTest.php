@@ -6,9 +6,10 @@ namespace Web\Tests\Controller;
 
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Shared\Application\Command\CommandBusInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -16,21 +17,20 @@ use Web\Tests\Support\AbstractWebTestCase;
 
 final class OrderControllerTest extends AbstractWebTestCase
 {
+    private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
+
     #[Test]
-    public function itPlacesAnOrderAndShowsItsDetail(): void
+    public function itPlacesAnOrderAndRedirectsToCheckout(): void
     {
         // Given
         $client = self::browser();
         $this->loggedInCustomer($client);
 
         // When
-        $id = $this->placeOrder($client);
+        $this->placeOrder($client);
 
         // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-        $client->followRedirect();
-        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertResponseRedirects(self::CHECKOUT_URL);
     }
 
     #[Test]
@@ -49,51 +49,18 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itPaysForAnOrder(): void
-    {
-        // Given
-        $client = self::browser();
-        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
-            json_encode(['chargeReference' => 'GLBX-TEST-REF'], \JSON_THROW_ON_ERROR),
-            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
-        )));
-        $this->loggedInCustomer($client);
-        $id = $this->placeOrder($client);
-
-        // When
-        $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
-            '_token' => $this->csrfToken($client, 'pay-order-'.$id),
-        ]);
-
-        // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-        $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-success"]');
-        self::assertSelectorTextContains('[data-testid="order-payment-reference"]', 'GLBX-TEST-REF');
-
-        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
-        self::assertNotNull($payment);
-        self::assertSame('GLBX-TEST-REF', $payment->reference);
-    }
-
-    #[Test]
-    public function itRefusesToPayTwice(): void
+    public function itResumesPaymentForAPendingOrder(): void
     {
         // Given
         $client = self::browser();
         $this->loggedInCustomer($client);
         $id = $this->placeOrder($client);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->create());
 
         // When
-        $client->request('POST', \sprintf('/sales/orders/%s/pay', $id), [
-            '_token' => $this->csrfToken($client, 'pay-order-'.$id),
-        ]);
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
 
         // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-        $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-error"]');
+        self::assertResponseRedirects(self::CHECKOUT_URL);
     }
 
     #[Test]
@@ -127,13 +94,15 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToCancelAnOrderAlreadyPaidFor(): void
+    public function itRefusesToCancelAnOrderAlreadyCaptured(): void
     {
         // Given
         $client = self::browser();
         $this->loggedInCustomer($client);
         $id = $this->placeOrder($client);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($id)->create());
+        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
+        self::assertNotNull($payment);
+        $this->service(CommandBusInterface::class)->dispatch(new CaptureOrderPayment($payment->id));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -201,6 +170,18 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseStatusCodeSame(403);
+    }
+
+    protected static function browser(): KernelBrowser
+    {
+        $client = parent::browser();
+
+        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
+            json_encode(['chargeReference' => 'GLBX-TEST-REF', 'checkoutUrl' => self::CHECKOUT_URL], \JSON_THROW_ON_ERROR),
+            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
+        )));
+
+        return $client;
     }
 
     private function placeOrder(KernelBrowser $client): string

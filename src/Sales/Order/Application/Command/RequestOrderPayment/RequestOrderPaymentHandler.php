@@ -35,6 +35,7 @@ final readonly class RequestOrderPaymentHandler
             $command->buyerAddress,
             Money::fromCents($command->amountInCents),
             $command->reference,
+            $command->checkoutUrl,
             $this->clock->now(),
         );
 
