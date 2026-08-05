@@ -20,6 +20,7 @@ final readonly class OrderSummaryResult implements ResultInterface
         public ?string $paymentStatus,
         public ?int $paymentAmountInCents,
         public ?string $paymentReference,
+        public ?string $paymentCheckoutUrl,
         public ?\DateTimeImmutable $paidAt,
         public ?string $shipmentStatus,
         public ?string $trackingReference,

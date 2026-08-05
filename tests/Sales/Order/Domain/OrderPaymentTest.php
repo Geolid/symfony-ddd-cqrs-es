@@ -30,6 +30,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 'buyer@example.com',
                 Money::fromCents(4_200),
                 'GLBX-9F3K2M1P',
+                'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
                 $requestedAt,
             ))
             ->then(new OrderPaymentRequested(
@@ -39,6 +40,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 'buyer@example.com',
                 4_200,
                 'GLBX-9F3K2M1P',
+                'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
                 $requestedAt->format('c'),
             ));
     }
@@ -51,7 +53,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         $capturedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPaymentRequested($id, 'order-1', 'customer-1', 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', $requestedAt->format('c')))
+            ->given(new OrderPaymentRequested($id, 'order-1', 'customer-1', 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $requestedAt->format('c')))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt))
             ->then(new OrderPaymentCaptured($id, 'order-1', 'customer-1', 'buyer@example.com', $capturedAt->format('c')));
     }
@@ -65,7 +67,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPaymentRequested($id, 'order-1', 'customer-1', 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', $requestedAt->format('c')),
+                new OrderPaymentRequested($id, 'order-1', 'customer-1', 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $requestedAt->format('c')),
                 new OrderPaymentCaptured($id, 'order-1', 'customer-1', 'buyer@example.com', $capturedAt->format('c')),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))

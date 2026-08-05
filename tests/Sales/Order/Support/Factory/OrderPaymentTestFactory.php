@@ -41,6 +41,11 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return static::new(array_merge($this->attributes, ['reference' => $reference]));
     }
 
+    public function withCheckoutUrl(string $checkoutUrl): self
+    {
+        return static::new(array_merge($this->attributes, ['checkoutUrl' => $checkoutUrl]));
+    }
+
     public function captured(): self
     {
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('now +00:00')));
@@ -54,6 +59,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
             'buyerAddress' => self::faker()->safeEmail(),
             'amountInCents' => self::faker()->numberBetween(500, 5_000),
             'reference' => 'GLBX-'.self::faker()->bothify('????????'),
+            'checkoutUrl' => 'https://fake-checkout.test/?ref='.self::faker()->bothify('????????'),
             'requestedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }
@@ -65,6 +71,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         Assert::nullOrStringNotEmpty($buyerAddress = $attributes['buyerAddress']);
         Assert::integer($amountInCents = $attributes['amountInCents']);
         Assert::stringNotEmpty($reference = $attributes['reference']);
+        Assert::stringNotEmpty($checkoutUrl = $attributes['checkoutUrl']);
         Assert::isInstanceOf($requestedAt = $attributes['requestedAt'], \DateTimeInterface::class);
 
         return OrderPayment::request(
@@ -74,6 +81,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
             $buyerAddress,
             Money::fromCents($amountInCents),
             $reference,
+            $checkoutUrl,
             \DateTimeImmutable::createFromInterface($requestedAt),
         );
     }

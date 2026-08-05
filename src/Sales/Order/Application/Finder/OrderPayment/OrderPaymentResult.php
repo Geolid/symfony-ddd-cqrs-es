@@ -13,6 +13,7 @@ final readonly class OrderPaymentResult implements ResultInterface
         public string $orderId,
         public int $amountInCents,
         public string $reference,
+        public string $checkoutUrl,
         public string $status,
         public \DateTimeImmutable $requestedAt,
         public ?\DateTimeImmutable $capturedAt,

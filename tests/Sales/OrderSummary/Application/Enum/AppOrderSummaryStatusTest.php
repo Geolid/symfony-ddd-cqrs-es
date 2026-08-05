@@ -25,4 +25,12 @@ final class AppOrderSummaryStatusTest extends TestCase
         self::assertTrue(AppOrderSummaryStatus::CANCELLED->isCancelled());
         self::assertFalse(AppOrderSummaryStatus::PLACED->isCancelled());
     }
+
+    #[Test]
+    public function itIsPaymentPendingOnlyWhenPaymentPending(): void
+    {
+        // Then
+        self::assertTrue(AppOrderSummaryStatus::PAYMENT_PENDING->isPaymentPending());
+        self::assertFalse(AppOrderSummaryStatus::PLACED->isPaymentPending());
+    }
 }

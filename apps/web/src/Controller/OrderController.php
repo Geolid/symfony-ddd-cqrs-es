@@ -11,7 +11,7 @@ use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -121,6 +122,10 @@ final class OrderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $id = Uuid::uuid7()->toString();
+            $itemCount = array_sum(array_map(
+                static fn (OrderLineFormData $line): int => (int) $line->quantity,
+                $formData->lines,
+            ));
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
@@ -134,12 +139,30 @@ final class OrderController extends AbstractController
                 )),
             ));
 
-            $this->addFlash('success', $this->translator->trans('sales.order.flash.placed'));
+            $returnUrl = $this->generateUrl('sales_order_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl);
 
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+            return $this->redirectToPaymentCheckout($id);
         }
 
         return $this->render('sales/order/place.html.twig', ['form' => $form]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    #[Route('/{id}/checkout', name: 'sales_order_resume_payment', methods: ['GET'], requirements: ['id' => Requirement::UUID])]
+    public function resumePayment(string $id): Response
+    {
+        $customer = $this->resolveCustomer();
+
+        try {
+            $this->resolveOwnedOrder($id, $customer);
+        } catch (OrderResultNotFoundException) {
+            throw $this->createNotFoundException('No order carries that identifier.');
+        }
+
+        return $this->redirectToPaymentCheckout($id);
     }
 
     /**
@@ -158,42 +181,13 @@ final class OrderController extends AbstractController
 
         try {
             $this->commandBus->dispatch(new CancelOrder($id));
-        } catch (OrderPaymentAlreadyRequestedException) {
+        } catch (OrderPaymentAlreadyCapturedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }
 
         $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
-
-        return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     * @throws \DomainException
-     */
-    #[Route('/{id}/pay', name: 'sales_order_pay', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
-    public function pay(Request $request, string $id): Response
-    {
-        if (!$this->isCsrfTokenValid('pay-order-'.$id, (string) $request->request->get('_token'))) {
-            throw new BadRequestHttpException('Invalid CSRF token.');
-        }
-
-        $customer = $this->resolveCustomer();
-        $this->resolveOwnedOrder($id, $customer);
-
-        try {
-            $this->orderPaymentRequester->requestFor($id);
-        } catch (OrderPaymentAlreadyRequestedException) {
-            $this->addFlash('error', $this->translator->trans('sales.order.flash.payment_already_requested'));
-
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-        } catch (OrderResultNotFoundException) {
-            throw $this->createNotFoundException('No order carries that identifier.');
-        }
-
-        $this->addFlash('success', $this->translator->trans('sales.order.flash.payment_requested'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
     }
@@ -223,5 +217,16 @@ final class OrderController extends AbstractController
         }
 
         return $order;
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    private function redirectToPaymentCheckout(string $orderId): Response
+    {
+        $summary = $this->queryBus->ask(new GetOrderSummary($orderId));
+        \assert(null !== $summary && null !== $summary->paymentCheckoutUrl);
+
+        return $this->redirect($summary->paymentCheckoutUrl);
     }
 }

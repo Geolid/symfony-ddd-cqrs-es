@@ -1,0 +1,203 @@
+<?php
+
+declare(strict_types=1);
+
+if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
+    $reference = (string)($_POST['ref'] ?? '');
+    $returnUrl = (string)($_POST['returnUrl'] ?? '');
+
+    $payload = json_encode(['paymentReference' => $reference], \JSON_THROW_ON_ERROR);
+    $signature = 'sha256=' . hash_hmac('sha256', $payload, (string)getenv('PAYMENT_WEBHOOK_SECRET'));
+
+    $context = stream_context_create(['http' => [
+        'method' => 'POST',
+        'header' => implode("\r\n", [
+            'Content-Type: application/json',
+            'X-Payment-Signature: ' . $signature,
+        ]),
+        'content' => $payload,
+        'ignore_errors' => true,
+    ]]);
+
+    @file_get_contents('http://nginx/webhook/webhooks/payment-captured', false, $context);
+    $statusLine = http_get_last_response_headers()[0] ?? '';
+
+    if (!preg_match('/\s(2\d\d)\s/', $statusLine)) {
+        http_response_code(502);
+        echo 'Webhook call failed: ' . htmlspecialchars($statusLine ?: 'no response');
+        exit;
+    }
+
+    header('Location: ' . $returnUrl);
+    exit;
+}
+
+$reference = (string)($_GET['ref'] ?? '');
+$items = (int)($_GET['items'] ?? 0);
+$total = number_format(((int)($_GET['total'] ?? 0)) / 100, 2) . ' €';
+$returnUrl = (string)($_GET['returnUrl'] ?? '');
+
+header('Content-Type: text/html; charset=utf-8');
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Globex Corporation — Secure Payment</title>
+    <style>
+        :root {
+            --fintech-blue: #635bff;
+            --fintech-blue-hover: #0a2540;
+            --page-bg: #f6f9fc;
+            --card-bg: #ffffff;
+            --text-dark: #30313d;
+            --text-light: #697386;
+            --border: #e6ebf1;
+        }
+
+        body {
+            background-color: var(--page-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .checkout-box {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, .1), 0 5px 15px rgba(0, 0, 0, .07);
+            overflow: hidden;
+        }
+
+        .test-mode-banner {
+            background-color: #fef3c7;
+            color: #b45309;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .checkout-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .checkout-header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .checkout-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--fintech-blue);
+            margin: 1rem 0;
+        }
+
+        .checkout-body {
+            padding: 0 2rem 2rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .info-row:last-of-type {
+            border-bottom: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-label {
+            color: var(--text-light);
+        }
+
+        .info-value {
+            font-weight: 600;
+            font-family: ui-monospace, monospace;
+        }
+
+        .btn-pay {
+            background-color: var(--fintech-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+        }
+
+        .btn-pay:hover {
+            background-color: var(--fintech-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
+        }
+
+        .checkout-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<div class="checkout-box">
+    <div class="test-mode-banner">
+        Sandbox Environment
+    </div>
+
+    <div class="checkout-header">
+        <h1>Globex Corporation</h1>
+        <div class="checkout-amount"><?php echo htmlspecialchars($total); ?></div>
+    </div>
+
+    <div class="checkout-body">
+        <div class="info-row">
+            <span class="info-label">Items in cart</span>
+            <span class="info-value"><?php echo htmlspecialchars((string)$items); ?></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Payment Reference</span>
+            <span class="info-value"><?php echo htmlspecialchars($reference); ?></span>
+        </div>
+
+        <form method="post">
+            <input type="hidden" name="ref" value="<?php echo htmlspecialchars($reference); ?>">
+            <input type="hidden" name="returnUrl" value="<?php echo htmlspecialchars($returnUrl); ?>">
+            <button type="submit" class="btn-pay">Authorize & Pay</button>
+        </form>
+
+        <div class="checkout-footer">
+            <strong>Disclaimer:</strong> This is a simulated environment. No real funds are processed.<br>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

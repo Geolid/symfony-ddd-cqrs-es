@@ -33,6 +33,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
             ->withOrderId($order->id()->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
+            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->create();
         $this->store($orderPayment);
 
@@ -49,6 +50,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertSame('requested', $result->paymentStatus);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
+        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
     }
 
     #[Test]

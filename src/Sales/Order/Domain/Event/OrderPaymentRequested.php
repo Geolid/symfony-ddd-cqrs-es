@@ -21,6 +21,7 @@ final readonly class OrderPaymentRequested implements DomainEventInterface
         public ?string $buyerAddress,
         public int $amountInCents,
         public string $reference,
+        public string $checkoutUrl,
         public string $requestedAt,
     ) {
     }

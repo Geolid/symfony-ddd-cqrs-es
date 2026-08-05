@@ -28,6 +28,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
                 orderId: $event->orderId,
                 amountInCents: $event->amountInCents,
                 reference: $event->reference,
+                checkoutUrl: $event->checkoutUrl,
                 requestedAt: $event->requestedAt,
             ),
         );

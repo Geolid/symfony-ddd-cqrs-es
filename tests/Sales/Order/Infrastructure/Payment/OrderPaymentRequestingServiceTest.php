@@ -11,6 +11,7 @@ use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Gateway\PaymentGatewayInterface;
+use Sales\Order\Application\Gateway\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
@@ -47,15 +48,18 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->store($order);
 
         // When
-        $this->service->requestFor($order->id()->toString());
+        $this->service->requestFor($order->id()->toString(), 2, 'https://web.test/sales/orders');
 
         // Then
         self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
+        self::assertSame(2, $this->paymentGateway->itemCount);
+        self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
 
         $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($order->id()->toString());
         self::assertNotNull($orderPayment);
         self::assertSame(DummyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
+        self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
     }
 
     #[Test]
@@ -65,7 +69,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString());
+        $this->service->requestFor(Uuid::uuid7()->toString(), 1, 'https://web.test/sales/orders');
     }
 
     #[Test]
@@ -80,7 +84,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderPaymentAlreadyRequestedException::class);
 
         // When
-        $this->service->requestFor($order->id()->toString());
+        $this->service->requestFor($order->id()->toString(), 1, 'https://web.test/sales/orders');
     }
 
     #[Test]
@@ -94,7 +98,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderAlreadyCancelledException::class);
 
         // When
-        $this->service->requestFor($order->id()->toString());
+        $this->service->requestFor($order->id()->toString(), 1, 'https://web.test/sales/orders');
     }
 }
 
@@ -102,15 +106,23 @@ final class DummyPaymentGateway implements PaymentGatewayInterface
 {
     public const string CHARGE_REFERENCE = 'GLBX-9F3K2M1P';
 
+    public const string CHECKOUT_URL = 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P';
+
     public ?string $orderId = null;
 
     public ?int $amountInCents = null;
 
-    public function requestPayment(string $orderId, int $amountInCents): string
+    public ?int $itemCount = null;
+
+    public ?string $returnUrl = null;
+
+    public function requestPayment(string $orderId, int $amountInCents, int $itemCount, string $returnUrl): PaymentSession
     {
         $this->orderId = $orderId;
         $this->amountInCents = $amountInCents;
+        $this->itemCount = $itemCount;
+        $this->returnUrl = $returnUrl;
 
-        return self::CHARGE_REFERENCE;
+        return new PaymentSession(self::CHARGE_REFERENCE, self::CHECKOUT_URL);
     }
 }

@@ -21,7 +21,7 @@
         </thead>
         <tbody>
         {% for order in orders.items %}
-            {% set cancellable = order.status.isPlaced %}
+            {% set cancellable = order.status.isPlaced or order.status.isPaymentPending %}
             <tr>
                 <td>{{ order.orderId }}</td>
                 <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
@@ -33,6 +33,10 @@
                     <div role="group">
                         <a href="{{ path('sales_order_show', {id: order.orderId}) }}" role="button"
                            class="outline">{{ 'sales.order.list.button_view'|trans }}</a>
+                        {% if order.status.isPaymentPending %}
+                            <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}" role="button"
+                               data-testid="resume-payment-button">{{ 'sales.order.list.button_resume_payment'|trans }}</a>
+                        {% endif %}
                         <twig:ui:ConfirmModal
                             id="cancel-order-{{ order.orderId }}"
                             :actionUrl="path('sales_order_cancel', {id: order.orderId})"
@@ -40,13 +44,6 @@
                             :message="'sales.order.list.message_cancel_confirm'|trans"
                             :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
                             :disabled="not cancellable"
-                        />
-                        <twig:ui:CsrfButton
-                            :actionUrl="path('sales_order_pay', {id: order.orderId})"
-                            csrfId="pay-order-{{ order.orderId }}"
-                            :label="'sales.order.list.button_pay'|trans"
-                            :disabled="not cancellable"
-                            data-testid="pay-order-button"
                         />
                     </div>
                 </td>

@@ -18,20 +18,29 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class GlobexPaymentGatewayTest extends TestCase
 {
     #[Test]
-    public function itChargesAnOrderAndReadsTheProviderReference(): void
+    public function itChargesAnOrderAndReadsTheProviderSession(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $response = self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P']);
+        $response = self::jsonResponse([
+            'chargeReference' => 'GLBX-9F3K2M1P',
+            'checkoutUrl' => 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+        ]);
 
         // When
-        $chargeReference = self::gateway($response)->requestPayment($orderId, 4_200);
+        $session = self::gateway($response)->requestPayment($orderId, 4_200, 2, 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame('GLBX-9F3K2M1P', $chargeReference);
+        self::assertSame('GLBX-9F3K2M1P', $session->reference);
+        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $session->checkoutUrl);
         self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
         self::assertSame(
-            ['reference' => $orderId, 'amountInCents' => 4_200],
+            [
+                'reference' => $orderId,
+                'amountInCents' => 4_200,
+                'itemCount' => 2,
+                'returnUrl' => 'https://web.test/sales/orders',
+            ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
         );
     }
@@ -44,7 +53,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200);
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 1, 'https://web.test/sales/orders');
     }
 
     /**
@@ -64,7 +73,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200);
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 1, 'https://web.test/sales/orders');
     }
 
     /**
@@ -73,9 +82,12 @@ final class GlobexPaymentGatewayTest extends TestCase
     public static function provideUnreadableResponses(): iterable
     {
         yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
-        yield 'charge reference absent' => [self::jsonResponse(['status' => 'charged'])];
-        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => ''])];
-        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42])];
+        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
+        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
+        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
+        yield 'checkout url absent' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P'])];
+        yield 'checkout url blank' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => ''])];
+        yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];
     }
 
     private static function gateway(callable|MockResponse $response): GlobexPaymentGateway

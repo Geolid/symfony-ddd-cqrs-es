@@ -34,5 +34,17 @@ services:
   mailer:
     image: axllent/mailpit:v1.29.3
 
+  # Fake Acme/Globex vendor APIs + Globex checkout page.
+  sandbox:
+    build:
+      context: docker/sandbox
+    networks:
+      default:
+        aliases:
+          - acme-api
+          - globex-api
+    volumes:
+      - ./sandbox:/var/www/sandbox
+
 volumes:
   db-data: ~

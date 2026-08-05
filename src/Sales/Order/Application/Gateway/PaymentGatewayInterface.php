@@ -6,8 +6,5 @@ namespace Sales\Order\Application\Gateway;
 
 interface PaymentGatewayInterface
 {
-    /**
-     * @return string the payment provider's own reference
-     */
-    public function requestPayment(string $orderId, int $amountInCents): string;
+    public function requestPayment(string $orderId, int $amountInCents, int $itemCount, string $returnUrl): PaymentSession;
 }

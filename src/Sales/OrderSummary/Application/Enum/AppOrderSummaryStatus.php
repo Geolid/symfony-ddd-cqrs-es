@@ -18,6 +18,11 @@ enum AppOrderSummaryStatus: string
         return self::PLACED === $this;
     }
 
+    public function isPaymentPending(): bool
+    {
+        return self::PAYMENT_PENDING === $this;
+    }
+
     public function isCancelled(): bool
     {
         return self::CANCELLED === $this;

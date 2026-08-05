@@ -21,7 +21,7 @@ sales:
             title: My orders
             button_place_order: Place an order
             button_view: View
-            button_pay: Pay
+            button_resume_payment: Continue to payment
             table:
                 id: ID
                 total: Total
@@ -43,12 +43,11 @@ sales:
             title_payment: Payment
             payment_none: No payment requested yet.
             payment_reference: 'Payment ref.: %reference%'
-            hint_payment: Confirm it via the Webhook DM:
             title_shipment: Shipment
             shipment_none: No shipment yet — a shipment is created automatically once the payment is confirmed.
             hint_shipment: 'Dispatch it by running the CLI:'
             shipment_tracking_reference: 'Tracking reference: %reference%'
-            no_actions: No action available — payment for this order has already been requested.
+            no_actions: No action available — payment for this order has already been captured.
             no_actions_cancelled: This order is cancelled.
             link_back: Back to my orders
         place:
@@ -75,11 +74,8 @@ sales:
                 shipped: Shipped
                 delivered: Delivered
         flash:
-            placed: Order placed.
             cancelled: Order cancelled.
-            cannot_cancel_paid: Payment for this order has already been requested, it can no longer be cancelled.
-            payment_requested: Payment requested — confirm it via the Webhook DM.
-            payment_already_requested: Payment for this order has already been requested.
+            cannot_cancel_paid: Payment for this order has already been captured, it can no longer be cancelled.
     customer:
         register:
             title: Register

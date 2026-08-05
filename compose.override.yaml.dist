@@ -19,3 +19,10 @@ services:
   mailer:
     ports:
       - '8025:8025'
+
+  sandbox:
+    environment:
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET}
+      FAKE_CHECKOUT_BASE_URL: http://localhost:8081
+    ports:
+      - '8081:80'
