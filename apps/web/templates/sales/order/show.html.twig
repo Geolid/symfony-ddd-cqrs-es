@@ -1,116 +1,138 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}{{ 'sales.order.show.title'|trans }}{% endblock %}
-{% block heading %}{{ 'sales.order.show.title'|trans }}{% endblock %}
+{% block title %}{{ 'sales.order.show.title'|trans({'%date%': order.placedAt|date('d/m/Y')}) }}{% endblock %}
+
+{% block heading %}
+    <nav aria-label="breadcrumb">
+        <ul>
+            <li><a href="{{ path('sales_order_list') }}"><small>← {{ 'sales.order.link_back'|trans }}</small></a></li>
+        </ul>
+    </nav>
+    <div class="heading-row">
+        <hgroup>
+            <h1>{{ 'sales.order.show.title'|trans({'%date%': order.placedAt|date('d/m/Y')}) }}</h1>
+            <p>{{ 'sales.order.show.subtitle'|trans }}</p>
+        </hgroup>
+
+        {% if order.status.isCancelled %}
+            <twig:ui:StatusBadge variant="{{ order_status_variant(order.status) }}" data-testid="order-status" data-status="{{ order.status.value }}">
+                {{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}
+            </twig:ui:StatusBadge>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block content %}
-    <table>
-        <tbody>
-        <tr>
-            <th>{{ 'sales.order.list.table.id'|trans }}</th>
-            <td data-testid="order-id">{{ order.orderId }}</td>
-        </tr>
-        <tr>
-            <th>{{ 'sales.order.list.table.total'|trans }}</th>
-            <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
-        </tr>
-        <tr>
-            <th>{{ 'sales.order.list.table.status'|trans }}</th>
-            <td><span class="status" data-testid="order-status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span></td>
-        </tr>
-        <tr>
-            <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
-            <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
-        </tr>
-        </tbody>
-    </table>
-
-    {% set workflowSteps = order_workflow_steps(order.status.value) %}
+    {% set workflowSteps = order_workflow_steps(order.status) %}
     {% if workflowSteps is not empty %}
-        {% set labeledSteps = [] %}
-        {% for step in workflowSteps %}
-            {% set labeledSteps = labeledSteps|merge([{
-                label: ('sales.order.status_view.step.' ~ step.key)|trans,
-                state: step.state,
-            }]) %}
-        {% endfor %}
-        <twig:ui:StepIndicator :steps="labeledSteps" data-testid="order-workflow" />
-    {% endif %}
-
-    <h2>{{ 'sales.order.show.title_lines'|trans }}</h2>
-    <table data-testid="order-lines">
-        <thead>
-        <tr>
-            <th>{{ 'sales.order.show.table_lines.product'|trans }}</th>
-            <th>{{ 'sales.order.show.table_lines.quantity'|trans }}</th>
-            <th>{{ 'sales.order.show.table_lines.unit_price'|trans }}</th>
-            <th>{{ 'sales.order.show.table_lines.subtotal'|trans }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for line in lines %}
-            <tr data-testid="order-line">
-                <td>{{ line.label }}</td>
-                <td>{{ line.quantity }}</td>
-                <td>{{ line.unitAmountInCents|amount }}</td>
-                <td>{{ (line.quantity * line.unitAmountInCents)|amount }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <h2>{{ 'sales.order.show.title_payment'|trans }}</h2>
-    {% if order.paymentStatus is null %}
-        <p data-testid="order-payment">{{ 'sales.order.show.payment_none'|trans }}</p>
-    {% else %}
-        <p data-testid="order-payment">
-            <span class="status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span>
-        </p>
-        {% if order.status.isPaymentPending %}
-            <twig:ui:Alert variant="info" data-testid="order-payment-hint">
-                <span data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans({'%reference%': order.paymentReference}) }}</span>
-            </twig:ui:Alert>
-        {% endif %}
-    {% endif %}
-
-    <h2>{{ 'sales.order.show.title_shipment'|trans }}</h2>
-    {% if order.shipmentStatus is null %}
-        <p data-testid="order-shipment">{{ 'sales.order.show.shipment_none'|trans }}</p>
-    {% else %}
-        <p data-testid="order-shipment">
-            <span class="status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span>
-            {% if order.trackingReference %}
-                <br>
-                <small data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans({'%reference%': order.trackingReference}) }}</small>
-            {% endif %}
-        </p>
-        {% if order.status.value == 'preparing' %}
-            <twig:ui:Alert variant="info" data-testid="order-shipment-hint">
-                {{ 'sales.order.show.hint_shipment'|trans }} <code>fulfilment:shipment:dispatch-pending</code>
-            </twig:ui:Alert>
-        {% endif %}
-    {% endif %}
-
-    <h2>{{ 'sales.order.list.table.actions'|trans }}</h2>
-    {% if order.status.isPlaced or order.status.isPaymentPending %}
-        <div role="group">
-            {% if order.status.isPaymentPending %}
-                <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}" role="button"
-                   data-testid="resume-payment-button">{{ 'sales.order.list.button_resume_payment'|trans }}</a>
-            {% endif %}
-            <twig:ui:ConfirmModal
-                id="cancel-order-{{ order.orderId }}"
-                :actionUrl="path('sales_order_cancel', {id: order.orderId})"
-                :triggerLabel="'sales.order.list.button_cancel'|trans"
-                :message="'sales.order.list.message_cancel_confirm'|trans"
-                :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
-            />
-        </div>
+        <article>
+            {% set labeledSteps = [] %}
+            {% for step in workflowSteps %}
+                {% set labeledSteps = labeledSteps|merge([{
+                    label: ('sales.order.status_view.step.' ~ step.key)|trans,
+                    state: step.state,
+                }]) %}
+            {% endfor %}
+            <twig:ui:StepIndicator :steps="labeledSteps" data-testid="order-workflow" />
+        </article>
     {% elseif order.status.isCancelled %}
-        <p>{{ 'sales.order.show.no_actions_cancelled'|trans }}</p>
-    {% else %}
-        <p>{{ 'sales.order.show.no_actions'|trans }}</p>
+        <article class="text-muted" data-testid="order-cancelled-note">
+            <em>{{ 'sales.order.show.cancelled_note'|trans }}</em>
+        </article>
     {% endif %}
 
-    <p><a href="{{ path('sales_order_list') }}">{{ 'sales.order.show.link_back'|trans }}</a></p>
+    <div class="grid">
+        <div>
+            <h2>{{ 'sales.order.show.title_lines'|trans }}</h2>
+            <figure>
+                <table class="striped" data-testid="order-lines">
+                    <caption class="sr-only">{{ 'sales.order.show.title_lines'|trans }}</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ 'sales.order.show.table_lines.product'|trans }}</th>
+                        <th scope="col" class="text-center">{{ 'sales.order.show.table_lines.quantity'|trans }}</th>
+                        <th scope="col" class="text-right">{{ 'sales.order.show.table_lines.subtotal'|trans }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for line in lines %}
+                        <tr data-testid="order-line">
+                            <td>
+                                <strong>{{ line.label }}</strong><br>
+                                <small class="text-muted">{{ line.unitAmountInCents|amount }} / u</small>
+                            </td>
+                            <td class="text-center">x{{ line.quantity }}</td>
+                            <td class="text-right"><strong>{{ (line.quantity * line.unitAmountInCents)|amount }}</strong></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-right"><strong>{{ 'sales.order.list.table.total'|trans }}</strong></td>
+                        <td class="text-right" data-testid="order-total">
+                            <strong>{{ order.totalAmountInCents|amount }}</strong>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </figure>
+        </div>
+
+        <aside>
+            <twig:SummaryCard title="{{ 'sales.order.show.title_payment'|trans }}" icon="credit-card">
+                {% if order.paymentStatus is null %}
+                    <p data-testid="order-payment" class="text-muted"><em>{{ 'sales.order.show.payment_none'|trans }}</em></p>
+                {% else %}
+                    {% if order.status.isPaymentPending %}
+                        <p data-testid="order-payment">
+                            <strong>{{ ('sales.order.show.payment_status.' ~ order.paymentStatus)|trans }}</strong>
+                            {% if order.paymentReference %}
+                                <br><small class="text-muted" data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans }} <code>{{ order.paymentReference }}</code></small>
+                            {% endif %}
+                        </p>
+                        <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}"
+                           role="button"
+                           data-testid="resume-payment-button">
+                            {{ 'sales.order.show.button_resume_payment'|trans }}
+                        </a>
+                    {% else %}
+                        <p data-testid="order-payment">
+                            <strong>{{ ('sales.order.show.payment_status.' ~ order.paymentStatus)|trans({'%date%': order.paidAt ? order.paidAt|date('d/m/Y') : null}) }}</strong>
+                            {% if order.paymentReference %}
+                                <br><small class="text-muted" data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans }} <code>{{ order.paymentReference }}</code></small>
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                {% endif %}
+            </twig:SummaryCard>
+
+            <twig:SummaryCard title="{{ 'sales.order.show.title_shipment'|trans }}" icon="package">
+                {% if order.shipmentStatus is null %}
+                    <p data-testid="order-shipment" class="text-muted"><em>{{ 'sales.order.show.shipment_none'|trans }}</em></p>
+                {% else %}
+                    {% set shipmentDate = order.shipmentStatus == 'delivered' ? order.deliveredAt : order.dispatchedAt %}
+                    <p data-testid="order-shipment">
+                        <strong>{{ ('sales.order.show.shipment_status.' ~ order.shipmentStatus)|trans({'%date%': shipmentDate ? shipmentDate|date('d/m/Y') : null}) }}</strong>
+                        {% if order.trackingReference %}
+                            <br><small class="text-muted" data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans }} <code>{{ order.trackingReference }}</code></small>
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </twig:SummaryCard>
+
+            {% set cancellable = order.status.isPlaced or order.status.isPaymentPending %}
+            {% if cancellable %}
+                <div class="form-actions-end">
+                    <twig:ui:ConfirmModal
+                        id="cancel-order-{{ order.orderId }}"
+                        :actionUrl="path('sales_order_cancel', {id: order.orderId})"
+                        :triggerLabel="'sales.order.show.button_cancel'|trans"
+                        :message="'sales.order.show.message_cancel_confirm'|trans"
+                        :cancelLabel="'sales.order.show.button_cancel_dismiss'|trans"
+                        :dangerous="true"
+                    />
+                </div>
+            {% endif %}
+        </aside>
+    </div>
 {% endblock %}

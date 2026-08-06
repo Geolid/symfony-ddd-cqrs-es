@@ -23,6 +23,21 @@ enum AppOrderSummaryStatus: string
         return self::PAYMENT_PENDING === $this;
     }
 
+    public function isPreparing(): bool
+    {
+        return self::PREPARING === $this;
+    }
+
+    public function isDispatched(): bool
+    {
+        return self::DISPATCHED === $this;
+    }
+
+    public function isDelivered(): bool
+    {
+        return self::DELIVERED === $this;
+    }
+
     public function isCancelled(): bool
     {
         return self::CANCELLED === $this;

@@ -107,9 +107,9 @@ final class CustomerController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/change-password', name: 'sales_customer_change_password', methods: ['GET', 'POST'])]
+    #[Route('/profile', name: 'sales_customer_profile', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function changePassword(Request $request): Response
+    public function profile(Request $request): Response
     {
         $customer = $this->resolveCustomer();
 
@@ -129,7 +129,7 @@ final class CustomerController extends AbstractController
             return $this->redirectToRoute('sales_order_list');
         }
 
-        return $this->render('sales/customer/change_password.html.twig', ['form' => $form]);
+        return $this->render('sales/customer/profile.html.twig', ['form' => $form]);
     }
 
     /**

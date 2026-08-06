@@ -1,24 +1,35 @@
 {% extends 'layout.html.twig' %}
 
 {% block title %}{{ 'security.login.title'|trans }}{% endblock %}
-{% block heading %}{{ 'security.login.title'|trans }}{% endblock %}
+
+{% block heading %}{% endblock %}
 
 {% block content %}
-    {% if error %}
-        <twig:ui:Alert variant="error" data-testid="login-error">
-            {{ error.messageKey|trans(error.messageData, 'security') }}
-        </twig:ui:Alert>
-    {% endif %}
+    <div class="form-page">
+        <hgroup>
+            <h1>{{ 'security.login.title'|trans }}</h1>
+        </hgroup>
 
-    <form method="post">
-        <label for="login">{{ 'security.login.label_login'|trans }}</label>
-        <input type="text" id="login" name="login" value="{{ last_username }}" required autofocus>
+        {% if error %}
+            <twig:ui:Alert variant="error" data-testid="login-error">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </twig:ui:Alert>
+        {% endif %}
 
-        <label for="password">{{ 'security.login.label_password'|trans }}</label>
-        <input type="password" id="password" name="password" required>
+        <article>
+            <form method="post">
+                <label for="login">{{ 'security.login.label_login'|trans }}</label>
+                <input type="text" id="login" name="login" value="{{ last_username }}" required autofocus>
 
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <label for="password">{{ 'security.login.label_password'|trans }}</label>
+                <input type="password" id="password" name="password" required>
 
-        <button type="submit" data-testid="login-submit">{{ 'security.login.button_submit'|trans }}</button>
-    </form>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" data-testid="login-submit">
+                    {{ 'security.login.button_submit'|trans }}
+                </button>
+            </form>
+        </article>
+    </div>
 {% endblock %}

@@ -1,11 +1,29 @@
 {% extends 'layout.html.twig' %}
 
 {% block title %}{{ 'sales.order.place.title'|trans }}{% endblock %}
-{% block heading %}{{ 'sales.order.place.title'|trans }}{% endblock %}
+
+{% block heading %}
+    <nav aria-label="breadcrumb">
+        <ul>
+            <li><a href="{{ path('sales_order_list') }}"><small>← {{ 'sales.order.link_back'|trans }}</small></a></li>
+        </ul>
+    </nav>
+    <hgroup>
+        <h1>{{ 'sales.order.place.title'|trans }}</h1>
+        <p>{{ 'sales.order.place.subtitle'|trans }}</p>
+    </hgroup>
+{% endblock %}
 
 {% block content %}
     {{ form_start(form) }}
+
     <twig:OrderLinesTable :lines="form.lines" />
-    <button type="submit">{{ 'sales.order.place.button_submit'|trans }}</button>
+
+    <div class="form-actions-end">
+        <button type="submit">
+            {{ 'sales.order.place.button_submit'|trans }}
+        </button>
+    </div>
+
     {{ form_end(form) }}
 {% endblock %}

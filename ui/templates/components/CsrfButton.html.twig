@@ -1,6 +1,6 @@
 {% props actionUrl, csrfId, label, disabled = false %}
 
-<form method="post" action="{{ actionUrl }}" style="display: inline">
+<form method="post" action="{{ actionUrl }}" class="csrf-button__form">
     <input type="hidden" name="_token" value="{{ csrf_token(csrfId) }}">
-    <button type="submit" style="margin-bottom: 0; width: auto" {{ disabled ? 'disabled' : '' }} {{ attributes }}>{{ label }}</button>
+    <button type="submit" {{ disabled ? 'disabled' : '' }} {{ attributes }}>{{ label }}</button>
 </form>

@@ -88,7 +88,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->loggedInCustomer($client, 'buyer-5@example.com');
 
         // When
-        $crawler = $client->request('GET', '/sales/customers/change-password');
+        $crawler = $client->request('GET', '/sales/customers/profile');
         $form = $crawler->filter('main form')->form();
         $prefix = $form->getName();
         $form->setValues([\sprintf('%s[password]', $prefix) => 'a brand new password']);

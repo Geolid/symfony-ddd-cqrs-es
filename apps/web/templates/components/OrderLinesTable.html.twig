@@ -27,38 +27,41 @@
           data-collection-prototype-value="{{ prototypeRow|e('html_attr') }}"
           data-collection-index-value="{{ lines|length }}">
     {{ form_errors(lines) }}
-    <table>
-        <thead>
-        <tr>
-            <th>{{ 'sales.order.place.label_line_product'|trans }}</th>
-            <th>{{ 'sales.order.place.label_line_price'|trans }}</th>
-            <th>{{ 'sales.order.place.label_line_quantity'|trans }}</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody data-collection-target="rows" data-testid="order-lines-rows"
-               data-action="change->order-line-pricing#recompute input->order-line-pricing#recompute">
-            {% for line in lines %}
-                <tr data-collection-target="row" data-testid="order-line">
-                    <td>
-                        <span class="sr-only">{{ form_label(line.productId) }}</span>
-                        {{ form_widget(line.productId) }}
-                        {{ form_errors(line.productId) }}
-                    </td>
-                    <td class="line-price">—</td>
-                    <td>
-                        <span class="sr-only">{{ form_label(line.quantity) }}</span>
-                        {{ form_widget(line.quantity) }}
-                        {{ form_errors(line.quantity) }}
-                    </td>
-                    <td>
-                        <button type="button" class="outline contrast" data-action="collection#remove order-line-pricing#recompute"
-                                aria-label="{{ 'sales.order.place.button_remove_line'|trans }}">✕</button>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <figure>
+        <table>
+            <caption class="sr-only">{{ 'sales.order.place.table_lines'|trans }}</caption>
+            <thead>
+            <tr>
+                <th>{{ 'sales.order.place.label_line_product'|trans }}</th>
+                <th>{{ 'sales.order.place.label_line_price'|trans }}</th>
+                <th>{{ 'sales.order.place.label_line_quantity'|trans }}</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody data-collection-target="rows" data-testid="order-lines-rows"
+                   data-action="change->order-line-pricing#recompute input->order-line-pricing#recompute">
+                {% for line in lines %}
+                    <tr data-collection-target="row" data-testid="order-line">
+                        <td>
+                            <span class="sr-only">{{ form_label(line.productId) }}</span>
+                            {{ form_widget(line.productId) }}
+                            {{ form_errors(line.productId) }}
+                        </td>
+                        <td class="line-price">—</td>
+                        <td>
+                            <span class="sr-only">{{ form_label(line.quantity) }}</span>
+                            {{ form_widget(line.quantity) }}
+                            {{ form_errors(line.quantity) }}
+                        </td>
+                        <td>
+                            <button type="button" class="outline contrast" data-action="collection#remove order-line-pricing#recompute"
+                                    aria-label="{{ 'sales.order.place.button_remove_line'|trans }}">✕</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </figure>
     <button type="button" class="secondary" data-testid="add-order-line" data-action="collection#add order-line-pricing#recompute">
         {{ 'sales.order.place.button_add_line'|trans }}
     </button>

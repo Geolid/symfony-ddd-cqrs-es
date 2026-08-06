@@ -1,0 +1,11 @@
+.confirm-modal__trigger {
+  margin-bottom: 0;
+}
+
+.csrf-button__form {
+  display: inline;
+}
+
+dialog footer [type="submit"] {
+  width: auto;
+}

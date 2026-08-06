@@ -1,0 +1,44 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'sales.customer.profile.title'|trans }}{% endblock %}
+
+{% block heading %}
+    <hgroup>
+        <h1>{{ 'sales.customer.profile.title'|trans }}</h1>
+        <p>{{ 'sales.customer.profile.subtitle'|trans }}</p>
+    </hgroup>
+{% endblock %}
+
+{% block content %}
+    <article>
+        <header><h2>{{ 'sales.customer.profile.title_password'|trans }}</h2></header>
+
+        {{ form_start(form) }}
+
+        {{ form_label(form.password) }}
+        <fieldset role="group" class="field-narrow">
+            {{ form_widget(form.password) }}
+            <button type="submit">{{ 'sales.customer.profile.button_submit'|trans }}</button>
+        </fieldset>
+        {{ form_errors(form.password) }}
+
+        {{ form_end(form) }}
+    </article>
+
+    <article class="danger-zone">
+        <header><h2>{{ 'sales.customer.profile.title_danger_zone'|trans }}</h2></header>
+
+        <div class="heading-row">
+            <p>{{ 'sales.customer.profile.message_danger_zone'|trans }}</p>
+
+            <twig:ui:ConfirmModal
+                id="erase-customer"
+                :actionUrl="path('sales_customer_erase')"
+                :triggerLabel="'sales.customer.profile.button_erase_account'|trans"
+                :message="'sales.customer.profile.message_erase_confirm'|trans"
+                :cancelLabel="'sales.customer.profile.button_erase_dismiss'|trans"
+                :dangerous="true"
+            />
+        </div>
+    </article>
+{% endblock %}
