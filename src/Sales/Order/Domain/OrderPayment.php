@@ -69,7 +69,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         string $customerId,
         ?string $buyerAddress,
         Money $amount,
-        string $reference,
+        PaymentReference $reference,
         string $checkoutUrl,
         \DateTimeImmutable $requestedAt,
     ): self {
@@ -80,7 +80,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             customerId: $customerId,
             buyerAddress: $buyerAddress,
             amountInCents: $amount->toCents(),
-            reference: PaymentReference::fromString($reference)->toString(),
+            reference: $reference->toString(),
             checkoutUrl: $checkoutUrl,
             requestedAt: $requestedAt->format('c'),
         ));

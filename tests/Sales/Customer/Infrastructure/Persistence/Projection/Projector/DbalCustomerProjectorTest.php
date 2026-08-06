@@ -6,6 +6,7 @@ namespace Sales\Tests\Customer\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -51,13 +52,14 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $this->store($other);
 
         // When
-        $customer = CustomerTestFactory::new()->linkedToIdentity('identity-1')->create();
+        $identityId = Uuid::uuid7()->toString();
+        $customer = CustomerTestFactory::new()->linkedToIdentity($identityId)->create();
         $this->store($customer);
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('identity-1', $row['identity_id']);
+        self::assertSame($identityId, $row['identity_id']);
 
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);

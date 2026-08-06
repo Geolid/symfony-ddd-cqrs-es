@@ -17,7 +17,7 @@ use Webmozart\Assert\Assert;
  */
 final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 {
-    public function forIdentity(string $identityId): self
+    public function withIdentityId(string $identityId): self
     {
         return static::new(array_merge($this->attributes, ['identityId' => $identityId]));
     }

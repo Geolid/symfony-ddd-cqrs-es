@@ -16,19 +16,17 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 
 #[ApiResource(
     shortName: 'Order',
-    routePrefix: '/v1/sales',
     operations: [
         new GetCollection(
-            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: ['200' => new Response(description: 'A collection of orders.')],
                 summary: 'Retrieves a collection of orders.',
             ),
+            security: "is_granted('sales:read')",
             provider: OrderCollectionProvider::class,
         ),
         new Get(
             uriTemplate: '/orders/{id}',
-            security: "is_granted('sales:read')",
             openapi: new Operation(
                 responses: [
                     '200' => new Response(description: 'The order.'),
@@ -36,9 +34,11 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
                 ],
                 summary: 'Retrieves a single order.',
             ),
+            security: "is_granted('sales:read')",
             provider: OrderProvider::class,
         ),
     ],
+    routePrefix: '/v1/sales',
 )]
 final class OrderResource
 {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Application\Query\ListOrderSummaries;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -29,12 +30,13 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsOrderSummariesByCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
-        $this->store(OrderTestFactory::new()->withCustomerId('customer-2')->create());
+        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
 
         // When
-        $result = $this->ask(new ListOrderSummaries(customerId: 'customer-1'));
+        $result = $this->ask(new ListOrderSummaries(customerId: $customerId));
 
         // Then
         self::assertCount(1, $result->items);

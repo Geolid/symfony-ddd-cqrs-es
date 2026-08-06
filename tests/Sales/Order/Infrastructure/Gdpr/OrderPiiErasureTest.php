@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Gdpr;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
@@ -19,15 +20,16 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsTheBuyerAddressOnErasure(): void
     {
         // Given
+        $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()
-            ->withCustomerId('customer-1')
+            ->withCustomerId($customerId)
             ->withBuyerAddress('buyer@example.com')
             ->create();
         $this->store($order);
 
         // When
         $this->service(DataSubjectEraser::class)->onEvent(
-            Message::create(new DummyDataSubjectErased('customer-1')),
+            Message::create(new DummyDataSubjectErased($customerId)),
         );
 
         // Then

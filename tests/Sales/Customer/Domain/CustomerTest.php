@@ -6,6 +6,7 @@ namespace Sales\Tests\Customer\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerIdentityLinked;
@@ -62,7 +63,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $identityId = 'identity-1';
+        $identityId = Uuid::uuid7()->toString();
 
         $this
             ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')))
@@ -79,9 +80,9 @@ final class CustomerTest extends AggregateRootTestCase
         $this
             ->given(
                 new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')),
-                new CustomerIdentityLinked($id, 'identity-1'),
+                new CustomerIdentityLinked($id, Uuid::uuid7()->toString()),
             )
-            ->when(static fn (Customer $customer) => $customer->linkIdentity('identity-2'))
+            ->when(static fn (Customer $customer) => $customer->linkIdentity(Uuid::uuid7()->toString()))
             ->expectsException(CustomerAlreadyLinkedToIdentityException::class);
     }
 

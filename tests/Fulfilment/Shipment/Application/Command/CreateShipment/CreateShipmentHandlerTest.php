@@ -22,7 +22,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         $id = ShipmentId::forOrder($orderId)->toString();
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'buyer@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, Uuid::uuid7()->toString(), 'buyer@example.com'));
 
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
@@ -41,11 +41,12 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId)->toString();
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'buyer@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'buyer@example.com'));
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'someone.else@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'someone.else@example.com'));
 
         // Then
         self::assertSame(

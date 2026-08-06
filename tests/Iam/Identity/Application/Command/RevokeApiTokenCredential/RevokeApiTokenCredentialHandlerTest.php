@@ -19,14 +19,15 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     public function itRevokesAnApiTokenCredential(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier('key-1')->create();
+        $identifier = 'key_'.bin2hex(random_bytes(4));
+        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->create();
         $this->store($credential);
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
 
         // Then
-        $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier('key-1');
+        $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($identifier);
         self::assertNotNull($result);
         self::assertTrue($result->revoked);
     }

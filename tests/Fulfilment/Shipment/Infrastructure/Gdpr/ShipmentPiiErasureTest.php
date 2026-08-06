@@ -9,6 +9,7 @@ use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 use Support\AbstractIntegrationTestCase;
@@ -19,15 +20,16 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsTheFrozenAddressOnErasure(): void
     {
         // Given
+        $customerId = Uuid::uuid7()->toString();
         $shipment = ShipmentTestFactory::new()
-            ->withCustomerId('customer-1')
+            ->withCustomerId($customerId)
             ->withCustomerAddress('buyer@example.com')
             ->create();
         $this->store($shipment);
 
         // When
         $this->service(DataSubjectEraser::class)->onEvent(
-            Message::create(new DummyDataSubjectErased('customer-1')),
+            Message::create(new DummyDataSubjectErased($customerId)),
         );
 
         // Then

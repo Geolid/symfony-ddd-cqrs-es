@@ -18,7 +18,7 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
         // Given
         $identityId = IdentityId::generate()->toString();
         $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identityId)
+            ->withIdentityId($identityId)
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
@@ -45,7 +45,7 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
     {
         // Given
         $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity(IdentityId::generate()->toString())
+            ->withIdentityId(IdentityId::generate()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());

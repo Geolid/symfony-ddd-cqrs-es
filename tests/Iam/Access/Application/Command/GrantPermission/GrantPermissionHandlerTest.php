@@ -8,6 +8,7 @@ use Iam\Access\Application\Command\GrantPermission\GrantPermission;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
@@ -17,16 +18,17 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = GrantId::generate()->toString();
-        $command = new GrantPermission($id, 'identity-1', 'sales:read');
+        $identityId = Uuid::uuid7()->toString();
+        $command = new GrantPermission($id, $identityId, 'fixture:read');
 
         // When
         $this->dispatch($command);
 
         // Then
-        $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity('identity-1')));
+        $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
         self::assertCount(1, $results);
         self::assertSame($id, $results[0]->id);
-        self::assertSame('sales:read', $results[0]->permission);
+        self::assertSame('fixture:read', $results[0]->permission);
         self::assertFalse($results[0]->revoked);
     }
 }

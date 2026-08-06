@@ -23,7 +23,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsACustomerItSaved(): void
+    public function itLoadsASavedCustomer(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
@@ -38,7 +38,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnACustomerItNeverSaved(): void
+    public function itThrowsOnAnUnsavedCustomer(): void
     {
         // Given
         $id = CustomerId::generate();

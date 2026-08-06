@@ -17,8 +17,9 @@ use Symfony\Component\Console\Attribute\MapInput;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key and grants (chicken-and-egg admin setup, demo/local seeding)')]
+#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key and grants (chicken-and-egg admin setup)')]
 final class RegisterIdentityCommand
 {
     use LockableTrait;
@@ -27,6 +28,7 @@ final class RegisterIdentityCommand
         private readonly CommandBusInterface $commandBus,
         private readonly IssueApiTokenCredentialInterface $apiTokenCredentialIssuer,
         private readonly ClockInterface $clock,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -43,6 +45,16 @@ final class RegisterIdentityCommand
         }
 
         try {
+            $violations = $this->validator->validate($input);
+
+            if (\count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $io->error(\sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage()));
+                }
+
+                return Command::FAILURE;
+            }
+
             $identityId = Uuid::uuid7()->toString();
             $expiresAt = $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays));
 

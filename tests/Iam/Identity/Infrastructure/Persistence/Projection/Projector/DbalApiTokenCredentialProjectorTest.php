@@ -22,7 +22,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // When
         $identityId = IdentityId::generate()->toString();
         $credential = ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identityId)
+            ->withIdentityId($identityId)
             ->withIdentifier('key_abc123')
             ->create();
         $this->store($credential);

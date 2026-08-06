@@ -144,12 +144,16 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
     private function statusOf(string $id): string
     {
-        foreach ($this->service(ShipmentFinderInterface::class) as $shipment) {
-            if ($id === $shipment->id) {
-                return $shipment->status;
-            }
+        $shipment = null;
+
+        foreach ($this->service(ShipmentFinderInterface::class)->withTrackingReference(self::TRACKING_REFERENCE) as $result) {
+            $shipment = $result;
         }
 
-        self::fail(\sprintf('Shipment "%s" was not projected.', $id));
+        if (null === $shipment || $id !== $shipment->id) {
+            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
+        }
+
+        return $shipment->status;
     }
 }

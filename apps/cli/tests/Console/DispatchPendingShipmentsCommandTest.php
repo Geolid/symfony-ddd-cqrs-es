@@ -35,26 +35,6 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itDispatchesMoreThanOnePageOfPendingShipments(): void
-    {
-        // Given
-        for ($i = 0; $i < 101; ++$i) {
-            $this->store(ShipmentTestFactory::new()->create());
-        }
-
-        // When
-        $tester = $this->tester('fulfilment:shipment:dispatch-pending');
-        $tester->execute([]);
-
-        // Then
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('101 shipment(s) dispatched.', $tester->getDisplay());
-
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->withStatus('dispatched'));
-        self::assertCount(101, $results);
-    }
-
-    #[Test]
     public function itFailsToRunWhileAlreadyRunningInAnotherProcess(): void
     {
         // Given

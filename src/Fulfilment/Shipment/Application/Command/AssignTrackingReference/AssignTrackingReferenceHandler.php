@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Shared\Application\Command\AsCommandHandler;
 
 #[AsCommandHandler]
@@ -24,7 +25,7 @@ final readonly class AssignTrackingReferenceHandler
     public function __invoke(AssignTrackingReference $command): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($command->id));
-        $shipment->assignTrackingReference($command->trackingReference);
+        $shipment->assignTrackingReference(TrackingReference::fromString($command->trackingReference));
         $this->repository->save($shipment);
     }
 }

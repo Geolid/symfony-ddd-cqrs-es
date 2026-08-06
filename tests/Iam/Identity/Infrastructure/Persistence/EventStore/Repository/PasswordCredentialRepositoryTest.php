@@ -23,7 +23,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAPasswordCredentialItSaved(): void
+    public function itLoadsASavedPasswordCredential(): void
     {
         // Given
         $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->create();
@@ -38,7 +38,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAPasswordCredentialItNeverSaved(): void
+    public function itThrowsOnAnUnsavedPasswordCredential(): void
     {
         // Given
         $id = PasswordCredentialId::generate();

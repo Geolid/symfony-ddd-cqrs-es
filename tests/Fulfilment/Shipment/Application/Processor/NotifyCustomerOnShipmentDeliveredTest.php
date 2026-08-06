@@ -11,6 +11,7 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTestCase
@@ -36,8 +37,9 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
     public function itNotifiesTheCustomerOnShipmentDelivered(): void
     {
         // Given
+        $customerId = Uuid::uuid7()->toString();
         $shipment = ShipmentTestFactory::new()
-            ->withCustomerId('customer-1')
+            ->withCustomerId($customerId)
             ->withCustomerAddress('buyer@example.com')
             ->delivered()
             ->create();
@@ -51,7 +53,7 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         self::assertInstanceOf(ShipmentDeliveredNotification::class, $notification);
         self::assertSame($shipment->id()->toString(), $notification->shipmentId);
         self::assertSame($shipment->orderId(), $notification->orderId);
-        self::assertSame('customer-1', $notification->customerId);
+        self::assertSame($customerId, $notification->customerId);
         self::assertSame('buyer@example.com', $notification->customerAddress);
     }
 

@@ -11,6 +11,7 @@ use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
@@ -19,14 +20,15 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
     public function itRevokesAPermission(): void
     {
         // Given
-        $grant = GrantTestFactory::new()->forIdentity('identity-1')->create();
+        $identityId = Uuid::uuid7()->toString();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->create();
         $this->store($grant);
 
         // When
         $this->dispatch(new RevokePermission($grant->id()->toString()));
 
         // Then
-        $result = $this->service(GrantFinderInterface::class)->withIdentity('identity-1')->withoutRevoked();
+        $result = $this->service(GrantFinderInterface::class)->withIdentity($identityId)->withoutRevoked();
         self::assertCount(0, $result);
     }
 

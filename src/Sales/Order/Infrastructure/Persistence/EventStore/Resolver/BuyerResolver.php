@@ -13,6 +13,7 @@ use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
 use Sales\Order\Application\Buyer\Buyer;
 use Sales\Order\Application\Buyer\BuyerResolverInterface;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 
 final readonly class BuyerResolver implements BuyerResolverInterface
 {
@@ -23,7 +24,7 @@ final readonly class BuyerResolver implements BuyerResolverInterface
     public function resolveFor(string $customerId): ?Buyer
     {
         $stream = $this->store->load(new Criteria(
-            new StreamCriterion(\sprintf('sales.customer.integration.%s', $customerId)),
+            new StreamCriterion(IntegrationStreamId::build('sales.customer', $customerId)),
         ));
 
         /** @var array{address: ?string} $state */

@@ -18,7 +18,7 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
         // Given
         $identityId = IdentityId::generate()->toString();
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity($identityId)
+            ->withIdentityId($identityId)
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
@@ -45,7 +45,7 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     {
         // Given
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity(IdentityId::generate()->toString())
+            ->withIdentityId(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->create());
@@ -62,7 +62,7 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     {
         // Given
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity(IdentityId::generate()->toString())
+            ->withIdentityId(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->revoked()
@@ -80,7 +80,7 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     {
         // Given
         $this->store(ApiTokenCredentialTestFactory::new()
-            ->forIdentity(IdentityId::generate()->toString())
+            ->withIdentityId(IdentityId::generate()->toString())
             ->withIdentifier('key_abc123')
             ->withSecret('super-secret')
             ->expired()

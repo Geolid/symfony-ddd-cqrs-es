@@ -42,20 +42,4 @@ enum AppOrderSummaryStatus: string
     {
         return self::CANCELLED === $this;
     }
-
-    /**
-     * Position among the non-cancelled progression, for a UI progress indicator. Null once cancelled — the
-     * progression no longer applies.
-     */
-    public function progressionStep(): ?int
-    {
-        return match ($this) {
-            self::PLACED => 0,
-            self::PAYMENT_PENDING => 1,
-            self::PREPARING => 2,
-            self::DISPATCHED => 3,
-            self::DELIVERED => 4,
-            self::CANCELLED => null,
-        };
-    }
 }

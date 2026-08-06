@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -25,21 +26,22 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itReadsAnOrderAsItWasPlaced(): void
     {
         // Given
+        $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()
-            ->withCustomerId('customer-1')
+            ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
             ->create();
         $this->store($order);
 
         // When
-        $results = iterator_to_array($this->finder->withCustomer('customer-1'));
+        $results = iterator_to_array($this->finder->withCustomer($customerId));
 
         // Then
         self::assertCount(1, $results);
         $result = $results[0];
         self::assertInstanceOf(OrderResult::class, $result);
         self::assertSame($order->id()->toString(), $result->id);
-        self::assertSame('customer-1', $result->customerId);
+        self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
         self::assertSame('placed', $result->status);
         self::assertNull($result->cancelledAt);
@@ -49,11 +51,12 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itFiltersOrdersByCustomer(): void
     {
         // Given
-        $this->store(OrderTestFactory::new()->withCustomerId('customer-1')->create());
-        $this->store(OrderTestFactory::new()->withCustomerId('customer-2')->create());
+        $customerId = Uuid::uuid7()->toString();
+        $this->store(OrderTestFactory::new()->withCustomerId($customerId)->create());
+        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
 
         // When
-        $finder = $this->finder->withCustomer('customer-1');
+        $finder = $this->finder->withCustomer($customerId);
 
         // Then
         self::assertCount(1, $finder);

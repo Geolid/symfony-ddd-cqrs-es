@@ -23,7 +23,7 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAProductItSaved(): void
+    public function itLoadsASavedProduct(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
@@ -38,7 +38,7 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAProductItNeverSaved(): void
+    public function itThrowsOnAnUnsavedProduct(): void
     {
         // Given
         $id = ProductId::generate();

@@ -16,7 +16,7 @@ use Webmozart\Assert\Assert;
  */
 final class GrantTestFactory extends AbstractAggregateTestFactory
 {
-    public function forIdentity(string $identityId): self
+    public function withIdentityId(string $identityId): self
     {
         return static::new(array_merge($this->attributes, ['identityId' => $identityId]));
     }
@@ -36,7 +36,7 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
         return [
             'id' => GrantId::generate()->toString(),
             'identityId' => Uuid::uuid7()->toString(),
-            'permission' => 'sales:read',
+            'permission' => 'fixture:read',
             'grantedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }

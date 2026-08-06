@@ -16,6 +16,8 @@ paths:
 - Mock an Aggregate or a Result object directly — build it through the matching Test Factory instead of a test double.
 - Call `expects()` on a `createStub()` — a stub simulates a return value, a mock (`createMock()` + `expects()`) verifies a behavior.
 - Suffix a variable with `Mock`/`Stub` — use the short class name (`$repository`) or the constructor argument's name when several dependencies share a type.
+- Use a literal value that doesn't match the real field's format — a UUID-typed id gets a fake UUID (e.g. `Uuid::uuid7()->toString()`), not an arbitrary string.
+- Hardcode another BC's vocabulary as a literal — use a generic/fake value instead.
 
 ## Conventions
 

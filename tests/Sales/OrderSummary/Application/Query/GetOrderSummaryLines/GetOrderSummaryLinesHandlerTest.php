@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Application\Query\GetOrderSummaryLines;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -37,7 +38,7 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
     public function itGetsNoLinesForAnUnknownOrder(): void
     {
         // When
-        $results = $this->ask(new GetOrderSummaryLines('unknown-order'));
+        $results = $this->ask(new GetOrderSummaryLines(Uuid::uuid7()->toString()));
 
         // Then
         self::assertSame([], $results);

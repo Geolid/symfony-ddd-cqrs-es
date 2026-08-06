@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptur
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Order;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -60,7 +61,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
     private function placedOrder(): Order
     {
         $order = OrderTestFactory::new()
-            ->withCustomerId('customer-1')
+            ->withCustomerId(Uuid::uuid7()->toString())
             ->withBuyerAddress('buyer@example.com')
             ->withTotalAmountInCents(4_200)
             ->create();
@@ -74,7 +75,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
     {
         return new OrderPaymentCapturedIntegrationEvent(
             orderId: $order->id()->toString(),
-            customerId: 'customer-1',
+            customerId: Uuid::uuid7()->toString(),
             buyerAddress: 'buyer@example.com',
             capturedAt: '2026-01-01T00:00:00+00:00',
         );

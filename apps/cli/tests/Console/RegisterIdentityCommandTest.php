@@ -28,9 +28,12 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
 
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($matches[1]);
         self::assertNotNull($credential);
+        self::assertNotEmpty($credential->identityId);
+        self::assertGreaterThan(new \DateTimeImmutable('now +00:00')->modify('+364 days'), $credential->expiresAt);
 
-        $grants = iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId));
+        $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
         self::assertCount(2, $grants);
+        self::assertSame(['sales:read', 'fulfilment:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
     }
 
     #[Test]
@@ -41,6 +44,17 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $tester->execute([]);
 
         // Then
-        self::assertNotSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+    }
+
+    #[Test]
+    public function itFailsWhenAPermissionIsMalformed(): void
+    {
+        // When
+        $tester = $this->tester('iam:identity:register');
+        $tester->execute(['--permission' => ['not-a-valid-permission-format']]);
+
+        // Then
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
     }
 }

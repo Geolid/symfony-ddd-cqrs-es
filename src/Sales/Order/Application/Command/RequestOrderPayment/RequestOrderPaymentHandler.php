@@ -8,6 +8,7 @@ use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\ValueObject\Money;
 
@@ -34,7 +35,7 @@ final readonly class RequestOrderPaymentHandler
             $command->customerId,
             $command->buyerAddress,
             Money::fromCents($command->amountInCents),
-            $command->reference,
+            PaymentReference::fromString($command->reference),
             $command->checkoutUrl,
             $this->clock->now(),
         );

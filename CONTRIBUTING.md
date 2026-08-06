@@ -1,11 +1,10 @@
 # Contributing
 
-## Getting started
+## Opening a PR
 
-`make start` boots the whole stack, installs dependencies, and seeds demo
-data — see the README's [Getting started](README.md#getting-started) section.
-
-## Workflow
+Set up the project per the README's [Getting started](README.md#getting-started)
+section, and read its [Architecture](README.md#architecture) section before
+proposing a structural change.
 
 - Branch from `main`.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
@@ -15,16 +14,9 @@ data — see the README's [Getting started](README.md#getting-started) section.
   architecture isolation (Deptrac/PHPat), tests, and mutation testing.
 - Fill in the PR template.
 
-## Architecture
+## Opening an issue
 
-This is a DDD/CQRS/Event Sourcing showcase — Bounded Context isolation and
-Onion layering are enforced by static analysis (Deptrac/PHPat), not just
-convention. Read the README's [Architecture](README.md#architecture) section
-before proposing a change that crosses a Bounded Context boundary.
-
-## Reporting a bug or requesting a feature
-
-Use the issue templates — they'll guide you through what's needed.
+Pick the issue template that matches what you need — it'll guide you through what's needed.
 
 ## Security
 

@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\Result\StreamResult;
 
 #[AsQueryHandler]
 final readonly class ListPendingShipmentsHandler
@@ -17,11 +18,10 @@ final readonly class ListPendingShipmentsHandler
     }
 
     /**
-     * @return list<ShipmentResult>
+     * @return StreamResult<ShipmentResult>
      */
-    public function __invoke(ListPendingShipments $query): array
+    public function __invoke(ListPendingShipments $query): StreamResult
     {
-        /** @var list<ShipmentResult> */
-        return iterator_to_array($this->shipmentFinder->withStatus(AppShipmentStatus::PENDING->value));
+        return new StreamResult($this->shipmentFinder->withStatus(AppShipmentStatus::PENDING->value));
     }
 }

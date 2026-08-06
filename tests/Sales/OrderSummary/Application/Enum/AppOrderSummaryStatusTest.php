@@ -46,22 +46,6 @@ final class AppOrderSummaryStatusTest extends TestCase
         self::assertOnlyTrueFor(AppOrderSummaryStatus::DELIVERED, static fn (AppOrderSummaryStatus $status): bool => $status->isDelivered());
     }
 
-    #[Test]
-    public function itHasNoProgressionStepOnceCancelled(): void
-    {
-        self::assertNull(AppOrderSummaryStatus::CANCELLED->progressionStep());
-    }
-
-    #[Test]
-    public function itOrdersTheProgressionSteps(): void
-    {
-        self::assertSame(0, AppOrderSummaryStatus::PLACED->progressionStep());
-        self::assertSame(1, AppOrderSummaryStatus::PAYMENT_PENDING->progressionStep());
-        self::assertSame(2, AppOrderSummaryStatus::PREPARING->progressionStep());
-        self::assertSame(3, AppOrderSummaryStatus::DISPATCHED->progressionStep());
-        self::assertSame(4, AppOrderSummaryStatus::DELIVERED->progressionStep());
-    }
-
     /**
      * @param callable(AppOrderSummaryStatus): bool $predicate
      */

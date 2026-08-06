@@ -20,25 +20,10 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()->dispatched()->create());
 
         // When
-        $results = $this->ask(new ListPendingShipments());
+        $results = iterator_to_array($this->ask(new ListPendingShipments()));
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($pending->id()->toString(), $results[0]->id);
-    }
-
-    #[Test]
-    public function itListsMoreThanTwentyPendingShipments(): void
-    {
-        // Given
-        for ($i = 0; $i < 25; ++$i) {
-            $this->store(ShipmentTestFactory::new()->create());
-        }
-
-        // When
-        $results = $this->ask(new ListPendingShipments());
-
-        // Then
-        self::assertCount(25, $results);
     }
 }

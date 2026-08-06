@@ -23,10 +23,10 @@ final class ApiTokenCredentialRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAnApiTokenCredentialItSaved(): void
+    public function itLoadsASavedApiTokenCredential(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier('key-1')->create();
+        $credential = ApiTokenCredentialTestFactory::new()->create();
 
         // When
         $this->repository->save($credential);
@@ -38,7 +38,7 @@ final class ApiTokenCredentialRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnApiTokenCredentialItNeverSaved(): void
+    public function itThrowsOnAnUnsavedApiTokenCredential(): void
     {
         // Given
         $id = ApiTokenCredentialId::generate();

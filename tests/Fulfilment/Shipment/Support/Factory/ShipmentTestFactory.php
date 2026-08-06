@@ -6,6 +6,7 @@ namespace Fulfilment\Tests\Shipment\Support\Factory;
 
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
@@ -38,7 +39,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     public function tracked(string $trackingReference): self
     {
         return $this->dispatched()->withModifier(
-            static fn (Shipment $shipment) => $shipment->assignTrackingReference($trackingReference),
+            static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString($trackingReference)),
         );
     }
 

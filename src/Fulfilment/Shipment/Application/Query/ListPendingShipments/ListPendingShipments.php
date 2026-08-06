@@ -6,9 +6,10 @@ namespace Fulfilment\Shipment\Application\Query\ListPendingShipments;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Shared\Application\Query\QueryInterface;
+use Shared\Application\Query\Result\StreamResult;
 
 /**
- * @implements QueryInterface<list<ShipmentResult>>
+ * @implements QueryInterface<StreamResult<ShipmentResult>>
  */
 final readonly class ListPendingShipments implements QueryInterface
 {

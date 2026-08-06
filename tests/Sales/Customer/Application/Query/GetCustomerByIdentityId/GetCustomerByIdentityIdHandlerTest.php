@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Application\Query\GetCustomerByIdentityId;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -15,12 +16,13 @@ final class GetCustomerByIdentityIdHandlerTest extends AbstractIntegrationTestCa
     public function itGetsACustomerByIdentityId(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->linkedToIdentity('identity-1')->create();
+        $identityId = Uuid::uuid7()->toString();
+        $customer = CustomerTestFactory::new()->linkedToIdentity($identityId)->create();
         $this->store($customer);
         $this->store(CustomerTestFactory::new()->create());
 
         // When
-        $result = $this->ask(new GetCustomerByIdentityId('identity-1'));
+        $result = $this->ask(new GetCustomerByIdentityId($identityId));
 
         // Then
         self::assertNotNull($result);
@@ -34,7 +36,7 @@ final class GetCustomerByIdentityIdHandlerTest extends AbstractIntegrationTestCa
         $this->store(CustomerTestFactory::new()->create());
 
         // When
-        $result = $this->ask(new GetCustomerByIdentityId('identity-1'));
+        $result = $this->ask(new GetCustomerByIdentityId(Uuid::uuid7()->toString()));
 
         // Then
         self::assertNull($result);

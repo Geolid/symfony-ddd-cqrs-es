@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -19,13 +20,14 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheOrderOnOrderPlaced(): void
     {
         // When
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(2_500)->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
         $this->store($order);
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('customer-1', $row['customer_id']);
+        self::assertSame($customerId, $row['customer_id']);
         self::assertSame(2_500, (int) $row['total_amount_in_cents']);
         self::assertSame('placed', $row['status']);
         self::assertNull($row['cancelled_at']);

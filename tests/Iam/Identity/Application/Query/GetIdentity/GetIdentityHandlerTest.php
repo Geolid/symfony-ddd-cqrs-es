@@ -17,7 +17,8 @@ final class GetIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itGetsAnIdentityById(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $registeredAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $identity = IdentityTestFactory::new()->registeredAt($registeredAt)->create();
         $this->store($identity);
         $this->store(IdentityTestFactory::new()->create());
 
@@ -27,6 +28,7 @@ final class GetIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($identity->id()->toString(), $result->id);
         self::assertSame('active', $result->status);
+        self::assertSame($registeredAt->format('c'), $result->registeredAt->format('c'));
     }
 
     #[Test]

@@ -18,7 +18,7 @@ use Patchlevel\EventSourcing\Store\Store;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
-#[Translator('fulfilment.shipment.integration_translator')]
+#[Translator('fulfilment.shipment.integration')]
 final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrationEventTranslator
 {
     public function __construct(

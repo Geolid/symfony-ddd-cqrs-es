@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Query\ListOrders;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Query\ListOrders\ListOrders;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -15,7 +16,7 @@ final class ListOrdersHandlerTest extends AbstractIntegrationTestCase
     public function itListsOrders(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->create();
+        $order = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
         $this->store($order);
 
         // When
@@ -34,12 +35,13 @@ final class ListOrdersHandlerTest extends AbstractIntegrationTestCase
     public function itListsOrdersByCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
-        $this->store(OrderTestFactory::new()->withCustomerId('customer-2')->create());
+        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
 
         // When
-        $result = $this->ask(new ListOrders(customerId: 'customer-1'));
+        $result = $this->ask(new ListOrders(customerId: $customerId));
 
         // Then
         self::assertCount(1, $result->items);

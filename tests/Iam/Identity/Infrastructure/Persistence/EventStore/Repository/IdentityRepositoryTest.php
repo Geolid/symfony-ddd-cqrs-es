@@ -23,7 +23,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAnIdentityItSaved(): void
+    public function itLoadsASavedIdentity(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
@@ -38,7 +38,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnIdentityItNeverSaved(): void
+    public function itThrowsOnAnUnsavedIdentity(): void
     {
         // Given
         $id = IdentityId::generate();

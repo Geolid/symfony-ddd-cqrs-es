@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -29,7 +31,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesAnAddressAlreadyRegistered(): void
+    public function itRefusesToRegisterAnAddressAlreadyRegistered(): void
     {
         // Given
         $client = self::browser();
@@ -37,7 +39,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
@@ -55,7 +57,10 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client, 'buyer-3@example.com');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(CustomerTestFactory::new()->withEmail('buyer-3@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->loginAs($client, $identity);
 
         // When
         $client->request('POST', '/sales/customers/erase', [
@@ -71,7 +76,10 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client, 'buyer-4@example.com');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(CustomerTestFactory::new()->withEmail('buyer-4@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->loginAs($client, $identity);
 
         // When
         $client->request('POST', '/sales/customers/erase', ['_token' => 'invalid']);
@@ -85,11 +93,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client, 'buyer-5@example.com');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(CustomerTestFactory::new()->withEmail('buyer-5@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->loginAs($client, $identity);
 
         // When
         $crawler = $client->request('GET', '/sales/customers/profile');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([\sprintf('%s[password]', $prefix) => 'a brand new password']);
         $client->submit($form);
@@ -107,7 +118,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     private function registerCustomer(KernelBrowser $client, string $email, string $password): void
     {
         $crawler = $client->request('GET', '/sales/customers/register');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
             \sprintf('%s[email]', $prefix) => $email,

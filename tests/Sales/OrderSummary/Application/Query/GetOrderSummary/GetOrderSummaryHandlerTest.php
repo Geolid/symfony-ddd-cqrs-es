@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Application\Query\GetOrderSummary;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -16,7 +17,8 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     public function itGetsAnOrderSummary(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(4_200)->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // When
@@ -25,7 +27,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($result);
         self::assertSame($order->id()->toString(), $result->orderId);
-        self::assertSame('customer-1', $result->customerId);
+        self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame('placed', $result->status->value);
         self::assertNull($result->paymentStatus);

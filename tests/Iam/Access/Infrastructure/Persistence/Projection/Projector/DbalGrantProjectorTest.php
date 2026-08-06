@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Access\Infrastructure\Persistence\Projection\Projector\DbalGrantProjector;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 /**
@@ -19,14 +20,15 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheGrantOnPermissionGranted(): void
     {
         // When
-        $grant = GrantTestFactory::new()->forIdentity('identity-1')->withPermission('sales:read')->create();
+        $identityId = Uuid::uuid7()->toString();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:read')->create();
         $this->store($grant);
 
         // Then
         $row = $this->fetchRow($grant->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('identity-1', $row['identity_id']);
-        self::assertSame('sales:read', $row['permission']);
+        self::assertSame($identityId, $row['identity_id']);
+        self::assertSame('fixture:read', $row['permission']);
         self::assertSame(0, (int) $row['revoked']);
     }
 

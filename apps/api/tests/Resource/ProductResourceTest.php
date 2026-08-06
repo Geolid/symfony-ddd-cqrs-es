@@ -7,6 +7,7 @@ namespace Api\Tests\Resource;
 use Api\Resource\ProductResource;
 use Api\Tests\Support\AbstractApiTestCase;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itReturnsAProduct(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->create();
         $this->store($product);
 
@@ -40,7 +43,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownProduct(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
 
         // When
         $client->request('GET', '/v1/catalog/products/'.Uuid::uuid7()->toString());
@@ -53,7 +58,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itReturnsTheProducts(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
         $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
         $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
 
@@ -71,7 +78,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itReturnsTheProductsIncludingDelistedOnes(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
         $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
         $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
 
@@ -87,7 +96,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsAnUnauthenticatedRequest(): void
     {
         // Given
-        $client = self::jsonClient();
+        $client = self::unauthenticatedClient();
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -100,7 +109,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsACallerWithoutTheReadGrant(): void
     {
         // Given
-        $client = $this->authenticatedClient();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -110,10 +121,40 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
+    public function itRejectsAMalformedApiKey(): void
+    {
+        // Given
+        $client = self::malformedApiKeyClient();
+
+        // When
+        $client->request('GET', '/v1/catalog/products');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
+    public function itRejectsAnInvalidApiKey(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->invalidApiKeyClient($identity);
+
+        // When
+        $client->request('GET', '/v1/catalog/products');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
     public function itAcceptsAProductToListForSale(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
 
         // When
         $response = $client->request('POST', '/v1/catalog/products', [
@@ -136,7 +177,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptANegativeUnitAmount(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -151,7 +194,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptABlankLabel(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -166,7 +211,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsACreationWithoutTheWriteGrant(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -181,7 +228,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsAReprice(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write', 'catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write', 'catalog:read');
         $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->create();
         $this->store($product);
 
@@ -201,7 +250,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptANegativeReprice(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -218,7 +269,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToRepriceAnUnknownProduct(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', Uuid::uuid7()->toString()), [
@@ -233,7 +286,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsARepriceWithoutTheWriteGrant(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -250,7 +305,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsADelisting(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write', 'catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write', 'catalog:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -268,7 +325,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToDelistAnUnknownProduct(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', Uuid::uuid7()->toString()));
@@ -281,7 +340,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsADelistingOnAProductAlreadyDelisted(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:write');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:write');
         $product = ProductTestFactory::new()->delisted()->create();
         $this->store($product);
 
@@ -296,7 +357,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsADelistingWithoutTheWriteGrant(): void
     {
         // Given
-        $client = $this->authenticatedClient('catalog:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'catalog:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 

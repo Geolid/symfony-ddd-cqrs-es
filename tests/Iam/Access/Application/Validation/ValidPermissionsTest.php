@@ -21,7 +21,7 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
     public function itAcceptsAtLeastOnePermission(): void
     {
         // When
-        $this->validateValue(['sales:read']);
+        $this->validateValue(['fixture:read']);
 
         // Then
         $this->assertNoViolation();
@@ -47,7 +47,7 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
     public static function provideRefusedPermissions(): iterable
     {
         yield 'no permission at all' => [[], [new Assert\Count(min: 1)]];
-        yield 'a countable that is not an array' => [new \ArrayObject(['sales:read']), [new Assert\Type('array')]];
+        yield 'a countable that is not an array' => [new \ArrayObject(['fixture:read']), [new Assert\Type('array')]];
         yield 'a malformed permission' => [['sales'], [self::permissionShape()]];
     }
 
