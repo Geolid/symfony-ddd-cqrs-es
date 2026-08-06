@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\ReactivateIdentity;
 
 use Iam\Identity\Application\Command\ReactivateIdentity\ReactivateIdentity;
+use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
@@ -28,7 +29,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
         self::assertNotNull($result);
-        self::assertSame('active', $result->status);
+        self::assertSame(AppIdentityStatus::ACTIVE, $result->status);
     }
 
     #[Test]

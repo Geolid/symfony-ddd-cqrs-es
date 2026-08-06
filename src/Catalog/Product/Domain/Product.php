@@ -24,7 +24,6 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private ProductId $id;
-    private string $label;
     private Money $unitAmount;
     private bool $delisted;
 
@@ -33,19 +32,9 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function label(): string
-    {
-        return $this->label;
-    }
-
     public function unitAmount(): Money
     {
         return $this->unitAmount;
-    }
-
-    public function isDelisted(): bool
-    {
-        return $this->delisted;
     }
 
     public static function list(ProductId $id, string $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
@@ -89,7 +78,6 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     private function applyProductListed(ProductListed $event): void
     {
         $this->id = ProductId::fromString($event->id);
-        $this->label = $event->label;
         $this->unitAmount = Money::fromCents($event->unitAmountInCents);
         $this->delisted = false;
     }

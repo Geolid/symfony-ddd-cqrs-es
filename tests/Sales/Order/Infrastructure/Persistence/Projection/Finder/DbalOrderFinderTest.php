@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Enum\AppOrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -43,7 +44,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id()->toString(), $result->id);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
-        self::assertSame('placed', $result->status);
+        self::assertSame(AppOrderStatus::PLACED, $result->status);
         self::assertNull($result->cancelledAt);
     }
 

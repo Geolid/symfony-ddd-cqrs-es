@@ -10,12 +10,14 @@ use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Shared\Application\Port\AsDrivingPort;
 
 #[AsDrivingPort]
-interface RequestOrderPaymentInterface
+interface OrderPaymentRequesterInterface
 {
     /**
+     * @return string the checkout URL the buyer should be redirected to
+     *
      * @throws OrderResultNotFoundException
      * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyRequestedException
      */
-    public function requestFor(string $orderId, int $itemCount, string $returnUrl): void;
+    public function requestFor(string $orderId, int $itemCount, string $returnUrl): string;
 }

@@ -34,7 +34,7 @@ final class ApiTokenCredentialRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $credential->id();
         self::assertTrue($this->repository->has($id));
-        self::assertFalse($this->repository->load($id)->isRevoked());
+        $this->repository->load($id);
     }
 
     #[Test]

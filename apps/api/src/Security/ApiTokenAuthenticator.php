@@ -6,7 +6,7 @@ namespace Api\Security;
 
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
-use Iam\Identity\Application\Security\AuthenticateApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\ApiTokenCredentialAuthenticatorInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,7 +26,7 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator implements Authe
     private const string HEADER = 'X-Api-Key';
 
     public function __construct(
-        private AuthenticateApiTokenCredentialInterface $authenticator,
+        private ApiTokenCredentialAuthenticatorInterface $authenticator,
         private QueryBusInterface $queryBus,
     ) {
     }

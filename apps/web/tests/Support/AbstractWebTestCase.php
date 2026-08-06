@@ -6,12 +6,13 @@ namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
 use Iam\Identity\Domain\Identity;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Web\Security\IamUser;
+use Web\Security\IamUserProvider;
 
 abstract class AbstractWebTestCase extends WebTestCase
 {
@@ -42,9 +43,12 @@ abstract class AbstractWebTestCase extends WebTestCase
         $client->submit($form);
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     protected function loginAs(KernelBrowser $client, Identity $identity): void
     {
-        $client->loginUser(new IamUser($identity->id()->toString()));
+        $client->loginUser($this->service(IamUserProvider::class)->loadUserByIdentifier($identity->id()->toString()));
     }
 
     protected function csrfToken(KernelBrowser $client, string $tokenId): string

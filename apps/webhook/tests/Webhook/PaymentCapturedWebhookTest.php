@@ -6,6 +6,7 @@ namespace Webhook\Tests\Webhook;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Application\Enum\AppOrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +31,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame('captured', $this->statusOf($orderPayment->id()->toString()));
+        self::assertSame(AppOrderPaymentStatus::CAPTURED, $this->statusOf($orderPayment->id()->toString()));
     }
 
     #[Test]
@@ -146,7 +147,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
         return json_encode(['paymentReference' => $paymentReference], \JSON_THROW_ON_ERROR);
     }
 
-    private function statusOf(string $id): string
+    private function statusOf(string $id): AppOrderPaymentStatus
     {
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference(self::REFERENCE);
 

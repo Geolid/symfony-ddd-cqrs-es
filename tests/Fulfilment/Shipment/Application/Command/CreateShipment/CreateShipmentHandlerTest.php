@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\CreateShipment;
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -29,7 +30,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         self::assertSame($id, $results[0]->id);
         self::assertSame($orderId, $results[0]->orderId);
-        self::assertSame('pending', $results[0]->status);
+        self::assertSame(AppShipmentStatus::PENDING, $results[0]->status);
         self::assertSame(
             'buyer@example.com',
             $this->service(ShipmentRepositoryInterface::class)->load(ShipmentId::fromString($id))->customerAddress(),

@@ -140,7 +140,8 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheCancellationOnOrderCancelledWithoutLosingThePaymentAndShipmentStatus(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->create();
         $this->store($orderPayment);
@@ -148,7 +149,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // When
-        $order->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
         $this->store($order);
 
         // Then

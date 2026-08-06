@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
@@ -53,7 +54,7 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
         return new ShipmentResult(
             id: $row['id'],
             orderId: $row['order_id'],
-            status: $row['status'],
+            status: AppShipmentStatus::from($row['status']),
             trackingReference: $row['tracking_reference'],
             createdAt: new \DateTimeImmutable($row['created_at'], new \DateTimeZone('UTC')),
             dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,

@@ -28,7 +28,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RevokePermission($grant->id()->toString()));
 
         // Then
-        $result = $this->service(GrantFinderInterface::class)->withIdentity($identityId)->withoutRevoked();
+        $result = $this->service(GrantFinderInterface::class)->withIdentity($identityId);
         self::assertCount(0, $result);
     }
 

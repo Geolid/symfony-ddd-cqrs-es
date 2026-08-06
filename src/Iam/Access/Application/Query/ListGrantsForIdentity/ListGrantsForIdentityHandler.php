@@ -21,6 +21,6 @@ final readonly class ListGrantsForIdentityHandler
     public function __invoke(ListGrantsForIdentity $query): array
     {
         /** @var list<GrantResult> */
-        return iterator_to_array($this->grantFinder->withIdentity($query->identityId)->withoutRevoked());
+        return iterator_to_array($this->grantFinder->withIdentity($query->identityId));
     }
 }

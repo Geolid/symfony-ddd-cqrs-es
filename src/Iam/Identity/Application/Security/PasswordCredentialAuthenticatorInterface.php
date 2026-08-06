@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\Security;
 use Shared\Application\Port\AsDrivingPort;
 
 #[AsDrivingPort]
-interface AuthenticatePasswordCredentialInterface
+interface PasswordCredentialAuthenticatorInterface
 {
     /**
      * @return string|null the authenticated identity's id, or null when the login/password pair is refused

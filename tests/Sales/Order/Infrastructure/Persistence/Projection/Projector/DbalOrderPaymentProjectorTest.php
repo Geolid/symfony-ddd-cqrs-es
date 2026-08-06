@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -19,7 +20,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsThePaymentOnOrderPaymentRequested(): void
     {
         // When
+        $orderId = Uuid::uuid7()->toString();
         $orderPayment = OrderPaymentTestFactory::new()
+            ->withOrderId($orderId)
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
@@ -29,7 +32,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame($orderPayment->orderId(), $row['order_id']);
+        self::assertSame($orderId, $row['order_id']);
         self::assertSame(4_200, (int) $row['amount_in_cents']);
         self::assertSame('GLBX-9F3K2M1P', $row['reference']);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $row['checkout_url']);

@@ -33,7 +33,6 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $orderPayment = $this->service(OrderPaymentRepositoryInterface::class)->load(OrderPaymentId::fromString($id));
-        self::assertSame($orderId, $orderPayment->orderId());
         self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
         self::assertTrue($orderPayment->status()->isRequested());
     }

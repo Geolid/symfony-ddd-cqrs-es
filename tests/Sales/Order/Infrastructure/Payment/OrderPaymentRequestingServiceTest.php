@@ -48,9 +48,10 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->store($order);
 
         // When
-        $this->service->requestFor($order->id()->toString(), 2, 'https://web.test/sales/orders');
+        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 2, 'https://web.test/sales/orders');
 
         // Then
+        self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
         self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame(2, $this->paymentGateway->itemCount);

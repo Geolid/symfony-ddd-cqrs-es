@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
-use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\ApiTokenCredentialIssuerInterface;
 use Iam\Identity\Application\Security\IssuedApiKey;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final readonly class ApiTokenCredentialIssuingService implements IssueApiTokenCredentialInterface
+final readonly class ApiTokenCredentialIssuingService implements ApiTokenCredentialIssuerInterface
 {
     public function __construct(private CommandBusInterface $commandBus)
     {

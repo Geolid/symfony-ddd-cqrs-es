@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
+use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -28,7 +29,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
         self::assertNotNull($result);
-        self::assertSame('suspended', $result->status);
+        self::assertSame(AppIdentityStatus::SUSPENDED, $result->status);
     }
 
     #[Test]

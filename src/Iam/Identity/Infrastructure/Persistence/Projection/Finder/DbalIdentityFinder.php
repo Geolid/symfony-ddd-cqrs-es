@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
@@ -41,7 +42,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
     {
         return new IdentityResult(
             id: $row['id'],
-            status: $row['status'],
+            status: AppIdentityStatus::from($row['status']),
             registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
         );
     }

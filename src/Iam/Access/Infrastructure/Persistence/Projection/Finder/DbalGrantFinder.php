@@ -13,7 +13,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<GrantResult>
  *
- * @phpstan-type Row array{id: string, identity_id: string, permission: string, revoked: string|int}
+ * @phpstan-type Row array{id: string, identity_id: string, permission: string}
  */
 final class DbalGrantFinder extends AbstractDbalCollectionFinder implements GrantFinderInterface
 {
@@ -27,17 +27,11 @@ final class DbalGrantFinder extends AbstractDbalCollectionFinder implements Gran
         );
     }
 
-    public function withoutRevoked(): static
-    {
-        return $this->filter(static function (QueryBuilder $qb): void {
-            $qb->andWhere('revoked = 0');
-        });
-    }
-
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'permission', 'revoked')
-            ->from(DbalGrantProjector::TABLE);
+        $qb->select('id', 'identity_id', 'permission')
+            ->from(DbalGrantProjector::TABLE)
+            ->andWhere('revoked = 0');
     }
 
     /**
@@ -49,7 +43,6 @@ final class DbalGrantFinder extends AbstractDbalCollectionFinder implements Gran
             id: $row['id'],
             identityId: $row['identity_id'],
             permission: $row['permission'],
-            revoked: (bool) $row['revoked'],
         );
     }
 }

@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -58,13 +59,14 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsALaterCancellationOnOrderCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
         $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->create();
         $this->store($shipment);
 
         // When
-        $order->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
         $this->store($order);
 
         // Then

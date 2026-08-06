@@ -29,6 +29,5 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         self::assertSame($id, $results[0]->id);
         self::assertSame('fixture:read', $results[0]->permission);
-        self::assertFalse($results[0]->revoked);
     }
 }

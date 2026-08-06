@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webhook\Tests\Webhook;
 
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -31,7 +32,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame('delivered', $this->statusOf($shipment->id()->toString()));
+        self::assertSame(AppShipmentStatus::DELIVERED, $this->statusOf($shipment->id()->toString()));
     }
 
     #[Test]
@@ -142,7 +143,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
     }
 
-    private function statusOf(string $id): string
+    private function statusOf(string $id): AppShipmentStatus
     {
         $shipment = null;
 

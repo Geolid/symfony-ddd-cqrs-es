@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
+use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -15,6 +15,6 @@ return static function (ContainerConfigurator $container): void {
 
     if ('test' === $container->env()) {
         // Only consumed by apps/web; alias+public here or the test container's compiler prunes it.
-        $services->alias(RequestOrderPaymentInterface::class, OrderPaymentRequestingService::class)->public();
+        $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequestingService::class)->public();
     }
 };

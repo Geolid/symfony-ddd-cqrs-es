@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
-use Iam\Identity\Application\Security\AuthenticatePasswordCredentialInterface;
+use Iam\Identity\Application\Security\PasswordCredentialAuthenticatorInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,7 +24,7 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->create());
 
         // When
-        $result = $this->service(AuthenticatePasswordCredentialInterface::class)->authenticate('buyer@example.com', 'correct horse battery staple');
+        $result = $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('buyer@example.com', 'correct horse battery staple');
 
         // Then
         self::assertSame($identityId, $result);
@@ -34,7 +34,7 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
     public function itRefusesAnUnknownLogin(): void
     {
         // When
-        $result = $this->service(AuthenticatePasswordCredentialInterface::class)->authenticate('ghost@example.com', 'whatever');
+        $result = $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('ghost@example.com', 'whatever');
 
         // Then
         self::assertNull($result);
@@ -51,7 +51,7 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->create());
 
         // When
-        $result = $this->service(AuthenticatePasswordCredentialInterface::class)->authenticate('buyer@example.com', 'wrong password');
+        $result = $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('buyer@example.com', 'wrong password');
 
         // Then
         self::assertNull($result);

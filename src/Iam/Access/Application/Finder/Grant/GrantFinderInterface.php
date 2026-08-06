@@ -12,6 +12,4 @@ use Shared\Application\Finder\CollectionFinderInterface;
 interface GrantFinderInterface extends CollectionFinderInterface
 {
     public function withIdentity(string $identityId): static;
-
-    public function withoutRevoked(): static;
 }

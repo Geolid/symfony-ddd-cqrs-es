@@ -33,11 +33,6 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         return $this->id;
     }
 
-    public function isRevoked(): bool
-    {
-        return $this->revoked;
-    }
-
     public function isExpired(\DateTimeImmutable $now): bool
     {
         return $now > $this->expiresAt;

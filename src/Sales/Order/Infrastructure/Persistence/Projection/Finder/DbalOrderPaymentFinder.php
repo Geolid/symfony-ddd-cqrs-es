@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Sales\Order\Application\Enum\AppOrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
@@ -58,7 +59,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
             amountInCents: (int) $row['amount_in_cents'],
             reference: $row['reference'],
             checkoutUrl: $row['checkout_url'],
-            status: $row['status'],
+            status: AppOrderPaymentStatus::from($row['status']),
             requestedAt: new \DateTimeImmutable($row['requested_at'], new \DateTimeZone('UTC')),
             capturedAt: null !== $row['captured_at'] ? new \DateTimeImmutable($row['captured_at'], new \DateTimeZone('UTC')) : null,
         );

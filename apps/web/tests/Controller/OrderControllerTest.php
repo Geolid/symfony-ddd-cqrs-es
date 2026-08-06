@@ -9,9 +9,11 @@ use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
+use Sales\Order\Application\Enum\AppOrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -67,6 +69,26 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itRefusesToResumePaymentWhenNoCheckoutHasBeenRequested(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $customer = CustomerTestFactory::new()->withEmail('buyer-7@example.com')->linkedToIdentity($identity->id()->toString())->create();
+        $this->store($customer);
+        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->create();
+        $this->store($order);
+        $this->loginAs($client, $identity);
+
+        // When
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
+
+        // Then
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    #[Test]
     public function itRefusesAnonymousAccess(): void
     {
         // Given
@@ -119,7 +141,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertNotNull($order);
-        self::assertSame('placed', $order->status);
+        self::assertSame(AppOrderStatus::PLACED, $order->status);
     }
 
     #[Test]

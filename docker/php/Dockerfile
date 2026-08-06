@@ -1,11 +1,12 @@
 FROM php:8.5-fpm-alpine
 
-RUN apk add --no-cache icu-dev git $PHPIZE_DEPS \
+RUN apk add --no-cache icu-dev git make $PHPIZE_DEPS \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo_mysql \
     && pecl install pcov \
     && docker-php-ext-enable pcov \
-    && apk del $PHPIZE_DEPS
+    && apk del $PHPIZE_DEPS \
+    && apk add --no-cache make
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

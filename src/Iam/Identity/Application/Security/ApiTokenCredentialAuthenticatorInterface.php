@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\Security;
 use Shared\Application\Port\AsDrivingPort;
 
 #[AsDrivingPort]
-interface AuthenticateApiTokenCredentialInterface
+interface ApiTokenCredentialAuthenticatorInterface
 {
     /**
      * @return string|null the authenticated identity's id, or null when the identifier/secret pair is refused

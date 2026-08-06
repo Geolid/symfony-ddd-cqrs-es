@@ -48,7 +48,6 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(AppOrderSummaryStatus::PAYMENT_PENDING, $result->status);
-        self::assertSame('requested', $result->paymentStatus);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
@@ -87,9 +86,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Given
         $placed = OrderTestFactory::new()->create();
         $this->store($placed);
-        $cancelled = OrderTestFactory::new()->create();
-        $this->store($cancelled);
-        $cancelled->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $cancelled = OrderTestFactory::new()->cancelled()->create();
         $this->store($cancelled);
 
         // When

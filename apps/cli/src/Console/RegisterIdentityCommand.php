@@ -7,7 +7,7 @@ namespace Cli\Console;
 use Cli\Console\Input\RegisterIdentityInput;
 use Iam\Access\Application\Command\GrantPermission\GrantPermission;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\ApiTokenCredentialIssuerInterface;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -26,7 +26,7 @@ final class RegisterIdentityCommand
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly IssueApiTokenCredentialInterface $apiTokenCredentialIssuer,
+        private readonly ApiTokenCredentialIssuerInterface $apiTokenCredentialIssuer,
         private readonly ClockInterface $clock,
         private readonly ValidatorInterface $validator,
     ) {

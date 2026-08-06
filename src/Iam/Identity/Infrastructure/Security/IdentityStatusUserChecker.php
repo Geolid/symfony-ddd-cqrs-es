@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
-use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Query\GetIdentity\GetIdentity;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -31,7 +30,7 @@ final readonly class IdentityStatusUserChecker implements UserCheckerInterface
             throw new CustomUserMessageAccountStatusException('Invalid credentials.');
         }
 
-        if (!AppIdentityStatus::from($identity->status)->isActive()) {
+        if (!$identity->status->isActive()) {
             throw new CustomUserMessageAccountStatusException('This account is suspended.');
         }
     }

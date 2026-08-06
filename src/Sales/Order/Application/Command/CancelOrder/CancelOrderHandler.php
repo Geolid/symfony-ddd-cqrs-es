@@ -7,6 +7,7 @@ namespace Sales\Order\Application\Command\CancelOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
@@ -27,6 +28,7 @@ final readonly class CancelOrderHandler
 
     /**
      * @throws OrderNotFoundException
+     * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyCapturedException
      * @throws OrderPaymentNotFoundException
@@ -43,7 +45,7 @@ final readonly class CancelOrderHandler
             throw OrderPaymentAlreadyCapturedException::forOrderId($command->id);
         }
 
-        $order->cancel($this->clock->now());
+        $order->cancel($command->customerId, $this->clock->now());
         $this->repository->save($order);
     }
 }
