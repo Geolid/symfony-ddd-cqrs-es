@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Application\Query\ListShipments\ListShipments;
+use Fulfilment\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Application\Query\Result\ListResult;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
@@ -43,15 +41,15 @@ final class DispatchPendingShipmentsCommand
         }
 
         try {
-            /** @var ListResult<ShipmentResult> $pending */
-            $pending = $this->queryBus->ask(new ListShipments(status: AppShipmentStatus::PENDING->value, itemsPerPage: 100));
+            /** @var list<ShipmentResult> $pending */
+            $pending = $this->queryBus->ask(new ListPendingShipments());
 
-            foreach ($pending->items as $shipment) {
+            foreach ($pending as $shipment) {
                 $this->commandBus->dispatch(new DispatchShipment($shipment->id));
                 $io->writeln(\sprintf('Dispatched shipment %s (order %s)', $shipment->id, $shipment->orderId));
             }
 
-            $io->success(\sprintf('%d shipment(s) dispatched.', \count($pending->items)));
+            $io->success(\sprintf('%d shipment(s) dispatched.', \count($pending)));
         } finally {
             $this->release();
         }

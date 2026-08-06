@@ -36,18 +36,11 @@ final class OrderWorkflowStepsExtension extends AbstractExtension
      */
     public function steps(AppOrderSummaryStatus $status): array
     {
-        if ($status->isCancelled()) {
+        $current = $status->progressionStep();
+
+        if (null === $current) {
             return [];
         }
-
-        $current = match (true) {
-            $status->isPlaced() => 0,
-            $status->isPaymentPending() => 1,
-            $status->isPreparing() => 2,
-            $status->isDispatched() => 3,
-            $status->isDelivered() => 4,
-            default => 0,
-        };
 
         return array_map(
             static fn (int $index, string $step): array => [

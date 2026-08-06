@@ -57,7 +57,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $finder);
-        self::assertSame(2, $this->finder->count());
+        self::assertSame(2, \count($this->finder));
     }
 
     #[Test]

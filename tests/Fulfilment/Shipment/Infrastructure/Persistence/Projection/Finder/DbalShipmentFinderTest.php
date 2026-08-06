@@ -55,7 +55,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder->withStatus('pending'));
 
         // Then
-        self::assertSame(2, $this->finder->count());
+        self::assertSame(2, \count($this->finder));
         self::assertSame([$pending->id()->toString()], array_map(
             static fn (ShipmentResult $shipment): string => $shipment->id,
             $results,

@@ -13,48 +13,62 @@ final class AppOrderSummaryStatusTest extends TestCase
     #[Test]
     public function itIsPlacedOnlyWhenPlaced(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::PLACED->isPlaced());
-        self::assertFalse(AppOrderSummaryStatus::CANCELLED->isPlaced());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::PLACED, static fn (AppOrderSummaryStatus $status): bool => $status->isPlaced());
     }
 
     #[Test]
     public function itIsCancelledOnlyWhenCancelled(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::CANCELLED->isCancelled());
-        self::assertFalse(AppOrderSummaryStatus::PLACED->isCancelled());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::CANCELLED, static fn (AppOrderSummaryStatus $status): bool => $status->isCancelled());
     }
 
     #[Test]
     public function itIsPaymentPendingOnlyWhenPaymentPending(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::PAYMENT_PENDING->isPaymentPending());
-        self::assertFalse(AppOrderSummaryStatus::PLACED->isPaymentPending());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::PAYMENT_PENDING, static fn (AppOrderSummaryStatus $status): bool => $status->isPaymentPending());
     }
 
     #[Test]
     public function itIsPreparingOnlyWhenPreparing(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::PREPARING->isPreparing());
-        self::assertFalse(AppOrderSummaryStatus::PLACED->isPreparing());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::PREPARING, static fn (AppOrderSummaryStatus $status): bool => $status->isPreparing());
     }
 
     #[Test]
     public function itIsDispatchedOnlyWhenDispatched(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::DISPATCHED->isDispatched());
-        self::assertFalse(AppOrderSummaryStatus::PLACED->isDispatched());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::DISPATCHED, static fn (AppOrderSummaryStatus $status): bool => $status->isDispatched());
     }
 
     #[Test]
     public function itIsDeliveredOnlyWhenDelivered(): void
     {
-        // Then
-        self::assertTrue(AppOrderSummaryStatus::DELIVERED->isDelivered());
-        self::assertFalse(AppOrderSummaryStatus::PLACED->isDelivered());
+        self::assertOnlyTrueFor(AppOrderSummaryStatus::DELIVERED, static fn (AppOrderSummaryStatus $status): bool => $status->isDelivered());
+    }
+
+    #[Test]
+    public function itHasNoProgressionStepOnceCancelled(): void
+    {
+        self::assertNull(AppOrderSummaryStatus::CANCELLED->progressionStep());
+    }
+
+    #[Test]
+    public function itOrdersTheProgressionSteps(): void
+    {
+        self::assertSame(0, AppOrderSummaryStatus::PLACED->progressionStep());
+        self::assertSame(1, AppOrderSummaryStatus::PAYMENT_PENDING->progressionStep());
+        self::assertSame(2, AppOrderSummaryStatus::PREPARING->progressionStep());
+        self::assertSame(3, AppOrderSummaryStatus::DISPATCHED->progressionStep());
+        self::assertSame(4, AppOrderSummaryStatus::DELIVERED->progressionStep());
+    }
+
+    /**
+     * @param callable(AppOrderSummaryStatus): bool $predicate
+     */
+    private static function assertOnlyTrueFor(AppOrderSummaryStatus $expected, callable $predicate): void
+    {
+        foreach (AppOrderSummaryStatus::cases() as $status) {
+            self::assertSame($expected === $status, $predicate($status), $status->value);
+        }
     }
 }

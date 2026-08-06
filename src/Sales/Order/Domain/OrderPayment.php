@@ -94,7 +94,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     public function capture(\DateTimeImmutable $capturedAt): void
     {
         if (!$this->status->isRequested()) {
-            throw OrderPaymentInvalidTransitionException::alreadyCaptured();
+            throw OrderPaymentInvalidTransitionException::cannotCapture();
         }
 
         $this->recordThat(new OrderPaymentCaptured(

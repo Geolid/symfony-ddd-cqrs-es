@@ -31,6 +31,7 @@ use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
+use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -75,6 +76,7 @@ return static function (ContainerConfigurator $container): void {
             OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 
             // Shared
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CancelOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Order\Application\Enum\AppOrderPaymentStatus;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
+use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\AsCommandHandler;
 
 #[AsCommandHandler]
@@ -19,7 +20,7 @@ final readonly class CancelOrderHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
-        private OrderPaymentFinderInterface $orderPaymentFinder,
+        private OrderPaymentRepositoryInterface $orderPaymentRepository,
         private ClockInterface $clock,
     ) {
     }
@@ -28,14 +29,17 @@ final readonly class CancelOrderHandler
      * @throws OrderNotFoundException
      * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyCapturedException
+     * @throws OrderPaymentNotFoundException
      */
     public function __invoke(CancelOrder $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
 
-        $orderPayment = $this->orderPaymentFinder->ofOrder($command->id);
+        $orderPaymentId = OrderPaymentId::forOrder($command->id);
 
-        if (null !== $orderPayment && AppOrderPaymentStatus::from($orderPayment->status)->isCaptured()) {
+        if ($this->orderPaymentRepository->has($orderPaymentId)
+            && $this->orderPaymentRepository->load($orderPaymentId)->status()->isCaptured()
+        ) {
             throw OrderPaymentAlreadyCapturedException::forOrderId($command->id);
         }
 

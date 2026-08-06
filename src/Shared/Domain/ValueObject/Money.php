@@ -8,9 +8,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class Money
 {
-    private function __construct(private int $amountInCents)
+    private int $amountInCents;
+
+    private function __construct(int $amountInCents)
     {
         Assert::greaterThanEq($amountInCents, 0, 'A monetary amount cannot be negative, %s given.');
+
+        $this->amountInCents = $amountInCents;
     }
 
     public static function fromCents(int $amountInCents): self

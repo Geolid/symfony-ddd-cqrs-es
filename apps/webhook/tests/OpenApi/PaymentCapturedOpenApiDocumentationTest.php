@@ -21,6 +21,7 @@ final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenA
         // Then
         $operation = self::operation($client->getResponse());
 
+        self::assertSame(['Webhook'], self::toArray($operation['tags']));
         self::assertSame('Report an order payment as captured.', $operation['summary']);
         self::assertSame([202, 400, 401, 404, 422], array_keys(self::toArray($operation['responses'])));
     }

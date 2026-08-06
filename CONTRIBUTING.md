@@ -13,8 +13,7 @@ data — see the README's [Getting started](README.md#getting-started) section.
   it with `make hooks` (already wired into `make start`).
 - Run `make qa` before opening a PR — it covers linting, coding standards,
   architecture isolation (Deptrac/PHPat), tests, and mutation testing.
-- Fill in the PR template; if the change affects an architecture decision,
-  add or update an entry in `.claude/memory/adr/`.
+- Fill in the PR template.
 
 ## Architecture
 

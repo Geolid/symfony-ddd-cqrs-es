@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Geolid/symfony-ddd-cqrs-es/security/policy
+    about: Don't open a public issue for a security vulnerability — see SECURITY.md for private reporting.

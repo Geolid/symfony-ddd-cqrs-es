@@ -14,7 +14,6 @@ final readonly class OrderSummaryResult implements ResultInterface
         public string $customerId,
         public int $totalAmountInCents,
         public AppOrderSummaryStatus $status,
-        public string $orderStatus,
         public \DateTimeImmutable $placedAt,
         public ?\DateTimeImmutable $cancelledAt,
         public ?string $paymentStatus,

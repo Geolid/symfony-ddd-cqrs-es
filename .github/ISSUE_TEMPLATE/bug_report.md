@@ -11,7 +11,8 @@ labels: bug
 
 ## To reproduce
 
-<!-- steps to trigger it, add/remove as needed -->
+<!-- steps to trigger it, add/remove as needed. If relevant, include the Command payload
+     or the exact API request -->
 
 1.
 2.
@@ -21,4 +22,4 @@ labels: bug
 
 ## Additional context
 
-<!-- logs, screenshots, stack traces -->
+<!-- logs, screenshots, stack traces. If relevant, mention the Event that got triggered -->

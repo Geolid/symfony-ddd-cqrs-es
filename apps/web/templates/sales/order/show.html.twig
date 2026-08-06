@@ -110,7 +110,7 @@
                 {% if order.shipmentStatus is null %}
                     <p data-testid="order-shipment" class="text-muted"><em>{{ 'sales.order.show.shipment_none'|trans }}</em></p>
                 {% else %}
-                    {% set shipmentDate = order.shipmentStatus == 'delivered' ? order.deliveredAt : order.dispatchedAt %}
+                    {% set shipmentDate = order.deliveredAt ?? order.dispatchedAt %}
                     <p data-testid="order-shipment">
                         <strong>{{ ('sales.order.show.shipment_status.' ~ order.shipmentStatus)|trans({'%date%': shipmentDate ? shipmentDate|date('d/m/Y') : null}) }}</strong>
                         {% if order.trackingReference %}

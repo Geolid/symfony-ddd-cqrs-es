@@ -79,7 +79,34 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         yield 'reference blank' => [self::body('')];
         yield 'reference longer than the carrier can issue' => [self::body(str_repeat('A', 65))];
+        // No value at all is mapped to `trackingReference` — COLLECT_DENORMALIZATION_ERRORS
+        // folds this into the same PartialDenormalizationException as a type mismatch below.
         yield 'reference absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
+        // A value is mapped to `trackingReference` but of an incompatible type.
+        yield 'reference not a string' => [json_encode(['trackingReference' => ['nested' => 'object']], \JSON_THROW_ON_ERROR)];
+    }
+
+    #[Test]
+    #[DataProvider('provideRequestsNotMatchingTheWebhookShape')]
+    public function itRejectsARequestNotMatchingTheWebhookShape(string $method, string $body): void
+    {
+        // Given
+        $client = self::createClient();
+
+        // When
+        $client->request($method, self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideRequestsNotMatchingTheWebhookShape(): iterable
+    {
+        yield 'method is not POST' => ['GET', self::body(self::TRACKING_REFERENCE)];
+        yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
     #[Test]

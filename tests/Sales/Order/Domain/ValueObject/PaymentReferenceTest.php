@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Domain\ValueObject;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sales\Order\Domain\ValueObject\PaymentReference;
@@ -24,23 +25,15 @@ final class PaymentReferenceTest extends TestCase
     public function itComparesEquality(): void
     {
         // Given
-        $a = PaymentReference::fromString('GLBX-9F3K2M1P');
-        $b = PaymentReference::fromString('GLBX-9F3K2M1P');
-        $other = PaymentReference::fromString('GLBX-OTHER');
+        $value = 'GLBX-9F3K2M1P';
+
+        // When
+        $a = PaymentReference::fromString($value);
+        $b = PaymentReference::fromString($value);
 
         // Then
         self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals($other));
-    }
-
-    #[Test]
-    public function itProtectsInvariants(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        PaymentReference::fromString('');
+        self::assertFalse($a->equals(PaymentReference::fromString('GLBX-OTHER')));
     }
 
     #[Test]
@@ -57,12 +50,22 @@ final class PaymentReferenceTest extends TestCase
     }
 
     #[Test]
-    public function itRefusesAReferenceLongerThanTheProviderCanIssue(): void
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        PaymentReference::fromString(str_repeat('A', 65));
+        PaymentReference::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'longer than the provider can issue' => [str_repeat('A', 65)];
     }
 }

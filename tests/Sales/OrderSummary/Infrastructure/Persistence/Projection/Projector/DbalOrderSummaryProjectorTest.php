@@ -135,7 +135,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationWithoutLosingThePaymentAndShipmentStatus(): void
+    public function itProjectsTheCancellationOnOrderCancelledWithoutLosingThePaymentAndShipmentStatus(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -160,7 +160,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itScopesTheUpdateToItsOwnOrder(): void
+    public function itProjectsTheCaptureOnOrderPaymentCapturedWithoutTouchingAnotherOrder(): void
     {
         // Given
         $untouchedOrder = OrderTestFactory::new()->withCustomerId('customer-untouched')->create();

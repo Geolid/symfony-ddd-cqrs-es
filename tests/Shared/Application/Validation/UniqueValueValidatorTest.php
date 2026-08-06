@@ -121,7 +121,7 @@ final class DummyUniqueValueRegistry implements UniqueValueRegistryInterface
     public function reserve(\BackedEnum $type, string $value): void
     {
         if ($this->exists($type, $value)) {
-            throw new UniqueValueAlreadyTakenException($type, $value);
+            throw UniqueValueAlreadyTakenException::forValue($type, $value);
         }
 
         $this->reserved[] = self::key($type, $value);

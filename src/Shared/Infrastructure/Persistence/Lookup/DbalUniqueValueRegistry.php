@@ -33,7 +33,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
                 'key_value' => $value,
             ]);
         } catch (UniqueConstraintViolationException) {
-            throw new UniqueValueAlreadyTakenException($type, $value);
+            throw UniqueValueAlreadyTakenException::forValue($type, $value);
         }
     }
 

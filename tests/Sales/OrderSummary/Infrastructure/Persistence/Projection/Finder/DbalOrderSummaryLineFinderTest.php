@@ -35,7 +35,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReturnsAnEmptyListForAnUnknownOrder(): void
+    public function itListsNoLinesForAnUnknownOrder(): void
     {
         // When
         $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder('unknown-order'));

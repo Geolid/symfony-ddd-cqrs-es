@@ -11,7 +11,8 @@ labels: enhancement
 
 ## Proposed solution
 
-<!-- what you'd like to happen -->
+<!-- what you'd like to happen. This is a DDD/CQRS/ES showcase, so also say how this helps
+     demonstrate those patterns, if it does -->
 
 ## Alternatives considered
 

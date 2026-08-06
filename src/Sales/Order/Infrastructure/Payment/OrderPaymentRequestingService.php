@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Payment;
 
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
+use Sales\Order\Application\Enum\AppOrderStatus;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -40,7 +41,7 @@ final readonly class OrderPaymentRequestingService implements RequestOrderPaymen
     {
         $result = $this->orderFinder->ofId($orderId) ?? throw OrderResultNotFoundException::forId($orderId);
 
-        if ('cancelled' === $result->status) {
+        if (AppOrderStatus::from($result->status)->isCancelled()) {
             throw OrderAlreadyCancelledException::forId(OrderId::fromString($orderId));
         }
 

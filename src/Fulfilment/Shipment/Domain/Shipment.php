@@ -101,7 +101,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (null !== $this->trackingReference) {
-            throw ShipmentInvalidTransitionException::trackingReferenceAlreadyAssigned($this->trackingReference->toString());
+            throw ShipmentInvalidTransitionException::cannotReassignTrackingReference($this->trackingReference->toString());
         }
 
         $this->recordThat(new TrackingReferenceAssigned(

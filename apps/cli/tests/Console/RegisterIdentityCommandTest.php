@@ -29,7 +29,18 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($matches[1]);
         self::assertNotNull($credential);
 
-        $grants = iterator_to_array($this->service(GrantFinderInterface::class)->forIdentity($credential->identityId));
+        $grants = iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId));
         self::assertCount(2, $grants);
+    }
+
+    #[Test]
+    public function itFailsWhenNoPermissionIsProvided(): void
+    {
+        // When
+        $tester = $this->tester('iam:identity:register');
+        $tester->execute([]);
+
+        // Then
+        self::assertNotSame(Command::SUCCESS, $tester->getStatusCode());
     }
 }

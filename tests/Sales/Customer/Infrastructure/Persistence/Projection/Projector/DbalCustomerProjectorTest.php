@@ -30,7 +30,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRedactsTheEmailOnCustomerErased(): void
+    public function itProjectsTheRedactionOnCustomerErased(): void
     {
         // When
         $customer = CustomerTestFactory::new()->erased()->create();

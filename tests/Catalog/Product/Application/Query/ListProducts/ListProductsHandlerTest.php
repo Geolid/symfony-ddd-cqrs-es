@@ -31,7 +31,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itExcludesDelistedProductsByDefault(): void
+    public function itListsProductsExcludingDelistedByDefault(): void
     {
         // Given
         $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
@@ -47,7 +47,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIncludesDelistedProductsWhenAsked(): void
+    public function itListsDelistedProductsWhenAsked(): void
     {
         // Given
         $this->store(ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create());
