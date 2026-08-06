@@ -33,4 +33,28 @@ final class AppOrderSummaryStatusTest extends TestCase
         self::assertTrue(AppOrderSummaryStatus::PAYMENT_PENDING->isPaymentPending());
         self::assertFalse(AppOrderSummaryStatus::PLACED->isPaymentPending());
     }
+
+    #[Test]
+    public function itIsPreparingOnlyWhenPreparing(): void
+    {
+        // Then
+        self::assertTrue(AppOrderSummaryStatus::PREPARING->isPreparing());
+        self::assertFalse(AppOrderSummaryStatus::PLACED->isPreparing());
+    }
+
+    #[Test]
+    public function itIsDispatchedOnlyWhenDispatched(): void
+    {
+        // Then
+        self::assertTrue(AppOrderSummaryStatus::DISPATCHED->isDispatched());
+        self::assertFalse(AppOrderSummaryStatus::PLACED->isDispatched());
+    }
+
+    #[Test]
+    public function itIsDeliveredOnlyWhenDelivered(): void
+    {
+        // Then
+        self::assertTrue(AppOrderSummaryStatus::DELIVERED->isDelivered());
+        self::assertFalse(AppOrderSummaryStatus::PLACED->isDelivered());
+    }
 }
