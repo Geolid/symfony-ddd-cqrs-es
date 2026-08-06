@@ -1,22 +1,14 @@
-{% set triggerLabel = this.triggerLabel %}
-{% set title = this.title %}
-{% set message = this.message %}
-{% set confirmLabel = this.confirmLabel %}
-{% set cancelLabel = this.cancelLabel %}
-{% set actionUrl = this.actionUrl %}
-{% set csrfId = this.id %}
-{% set triggerClass = this.dangerous ? 'pico-background-red-600 pico-color-white' : 'outline contrast' %}
-{% set disabled = this.disabled %}
+{% set c = this %}
 <twig:ui:Modal>
     {% block trigger %}
-        <button type="button" class="{{ triggerClass }}" style="margin-bottom: 0" data-action="modal#open" {{ disabled ? 'disabled' : '' }}>
-            {{ triggerLabel }}
+        <button type="button" class="confirm-modal__trigger {{ c.triggerClass }}" data-action="modal#open" {{ c.disabled ? 'disabled' : '' }}>
+            {{ c.triggerLabel }}
         </button>
     {% endblock %}
-    <h2>{{ title }}</h2>
-    <p>{{ message }}</p>
+    <h2>{{ c.title }}</h2>
+    <p>{{ c.message }}</p>
     <footer>
-        <button class="secondary" style="margin-bottom: 0" data-action="modal#close">{{ cancelLabel }}</button>
-        <twig:ui:CsrfButton :actionUrl="actionUrl" :csrfId="csrfId" :label="confirmLabel" :disabled="disabled" />
+        <button class="secondary" data-action="modal#close">{{ c.cancelLabel }}</button>
+        <twig:ui:CsrfButton :actionUrl="c.actionUrl" :csrfId="c.id" :label="c.confirmLabel" :disabled="c.disabled" class="{{ c.confirmClass }}" />
     </footer>
 </twig:ui:Modal>

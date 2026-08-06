@@ -1,0 +1,9 @@
+{% props title, icon = null %}
+
+<article class="summary-card {{ attributes.render('class') }}" {{ attributes.without('class') }}>
+    <header{% if icon %} class="icon-row"{% endif %}>
+        {% if icon %}<twig:ux:icon name="{{ icon }}" class="icon" />{% endif %}
+        <h2>{{ title }}</h2>
+    </header>
+    {% block content %}{% endblock %}
+</article>

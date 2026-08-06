@@ -1,18 +1,26 @@
 {% extends 'layout.html.twig' %}
 
 {% block title %}{{ 'sales.customer.register.title'|trans }}{% endblock %}
-{% block heading %}{{ 'sales.customer.register.title'|trans }}{% endblock %}
+
+{% block heading %}{% endblock %}
 
 {% block content %}
-    {{ form_start(form) }}
-    {{ form_label(form.email) }}
-    {{ form_widget(form.email) }}
-    {{ form_errors(form.email) }}
+    <div class="form-page">
+        <hgroup>
+            <h1>{{ 'sales.customer.register.title'|trans }}</h1>
+        </hgroup>
 
-    {{ form_label(form.password) }}
-    {{ form_widget(form.password) }}
-    {{ form_errors(form.password) }}
+        <article>
+            {{ form_start(form) }}
 
-    <button type="submit">{{ 'sales.customer.register.button_submit'|trans }}</button>
-    {{ form_end(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.password) }}
+
+            <button type="submit">
+                {{ 'sales.customer.register.button_submit'|trans }}
+            </button>
+
+            {{ form_end(form) }}
+        </article>
+    </div>
 {% endblock %}

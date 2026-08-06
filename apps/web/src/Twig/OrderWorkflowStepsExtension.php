@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Twig;
 
+use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -12,31 +13,41 @@ final class OrderWorkflowStepsExtension extends AbstractExtension
     /** @var list<string> */
     private const array STEPS = ['placed', 'paid', 'shipped', 'delivered'];
 
-    /** @var array<string, int> */
-    private const array CURRENT_STEP_BY_STATUS = [
-        'placed' => 0,
-        'payment_pending' => 1,
-        'paid' => 2,
-        'preparing' => 2,
-        'dispatched' => 3,
-        'delivered' => 4,
-    ];
-
     public function getFunctions(): array
     {
-        return [new TwigFunction('order_workflow_steps', $this->steps(...))];
+        return [
+            new TwigFunction('order_workflow_steps', $this->steps(...)),
+            new TwigFunction('order_status_variant', $this->statusVariant(...)),
+        ];
+    }
+
+    public function statusVariant(AppOrderSummaryStatus $status): string
+    {
+        return match (true) {
+            $status->isDelivered() => 'success',
+            $status->isPaymentPending() => 'warning',
+            $status->isCancelled() => 'error',
+            default => 'info',
+        };
     }
 
     /**
      * @return list<array{key: string, state: string}>
      */
-    public function steps(string $status): array
+    public function steps(AppOrderSummaryStatus $status): array
     {
-        if ('cancelled' === $status) {
+        if ($status->isCancelled()) {
             return [];
         }
 
-        $current = self::CURRENT_STEP_BY_STATUS[$status] ?? 0;
+        $current = match (true) {
+            $status->isPlaced() => 0,
+            $status->isPaymentPending() => 1,
+            $status->isPreparing() => 2,
+            $status->isDispatched() => 3,
+            $status->isDelivered() => 4,
+            default => 0,
+        };
 
         return array_map(
             static fn (int $index, string $step): array => [

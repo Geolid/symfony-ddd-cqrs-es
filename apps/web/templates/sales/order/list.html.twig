@@ -3,55 +3,59 @@
 {% block title %}{{ 'sales.order.list.title'|trans }}{% endblock %}
 
 {% block heading %}
-    {{ 'sales.order.list.title'|trans }}
-    <a href="{{ path('sales_order_place') }}" role="button" data-testid="place-order-button"
-       style="float: right">{{ 'sales.order.list.button_place_order'|trans }}</a>
+    <div class="heading-row">
+        <hgroup>
+            <h1>{{ 'sales.order.list.title'|trans }}</h1>
+            <p>{{ 'sales.order.list.subtitle'|trans }}</p>
+        </hgroup>
+        <a href="{{ path('sales_order_place') }}" role="button" class="icon-row" data-testid="place-order-button">
+            <twig:ux:icon name="plus" class="icon" /> {{ 'sales.order.list.button_place_order'|trans }}
+        </a>
+    </div>
 {% endblock %}
 
 {% block content %}
-    <table>
-        <thead>
-        <tr>
-            <th>{{ 'sales.order.list.table.id'|trans }}</th>
-            <th>{{ 'sales.order.list.table.total'|trans }}</th>
-            <th>{{ 'sales.order.list.table.status'|trans }}</th>
-            <th>{{ 'sales.order.list.table.placed_at'|trans }}</th>
-            <th>{{ 'sales.order.list.table.actions'|trans }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for order in orders.items %}
-            {% set cancellable = order.status.isPlaced or order.status.isPaymentPending %}
+    <figure>
+        <table class="striped">
+            <caption class="sr-only">{{ 'sales.order.list.title'|trans }}</caption>
+            <thead>
             <tr>
-                <td>{{ order.orderId }}</td>
-                <td data-testid="order-total">{{ order.totalAmountInCents|amount }}</td>
-                <td data-testid="order-status">
-                    <span class="status">{{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}</span>
-                </td>
-                <td>{{ order.placedAt|date('Y-m-d H:i') }}</td>
-                <td>
-                    <div role="group">
-                        <a href="{{ path('sales_order_show', {id: order.orderId}) }}" role="button"
-                           class="outline">{{ 'sales.order.list.button_view'|trans }}</a>
-                        {% if order.status.isPaymentPending %}
-                            <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}" role="button"
-                               data-testid="resume-payment-button">{{ 'sales.order.list.button_resume_payment'|trans }}</a>
-                        {% endif %}
-                        <twig:ui:ConfirmModal
-                            id="cancel-order-{{ order.orderId }}"
-                            :actionUrl="path('sales_order_cancel', {id: order.orderId})"
-                            :triggerLabel="'sales.order.list.button_cancel'|trans"
-                            :message="'sales.order.list.message_cancel_confirm'|trans"
-                            :cancelLabel="'sales.order.list.button_cancel_dismiss'|trans"
-                            :disabled="not cancellable"
-                        />
-                    </div>
-                </td>
+                <th scope="col">{{ 'sales.order.list.table.order'|trans }}</th>
+                <th scope="col">{{ 'sales.order.list.table.total'|trans }}</th>
+                <th scope="col">{{ 'sales.order.list.table.status'|trans }}</th>
+                <th scope="col" class="text-right">{{ 'sales.order.list.table.actions'|trans }}</th>
             </tr>
-        {% else %}
-            <tr data-testid="orders-empty"><td colspan="5">{{ 'sales.order.list.empty'|trans }}</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <twig:ui:Pagination :currentPage="orders.pagination.currentPage" :lastPage="orders.pagination.lastPage" route="sales_order_list" />
+            </thead>
+            <tbody>
+            {% for order in orders.items %}
+                <tr>
+                    <td>{{ 'sales.order.list.row_label'|trans({'%date%': order.placedAt|date('d/m/Y')}) }}</td>
+                    <td data-testid="order-total"><strong>{{ order.totalAmountInCents|amount }}</strong></td>
+                    <td data-testid="order-status">
+                        <twig:ui:StatusBadge variant="{{ order_status_variant(order.status) }}" data-status="{{ order.status.value }}">
+                            {{ ('sales.order.status_view.badge.' ~ order.status.value)|trans }}
+                        </twig:ui:StatusBadge>
+                    </td>
+                    <td class="text-right">
+                        <a href="{{ path('sales_order_show', {id: order.orderId}) }}"
+                           role="button"
+                           class="secondary outline">{{ 'sales.order.list.button_view'|trans }}</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr data-testid="orders-empty">
+                    <td colspan="4" class="text-center text-muted">
+                        <em>{{ 'sales.order.list.empty'|trans }}</em>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </figure>
+
+    <twig:ui:Pagination
+        :currentPage="orders.pagination.currentPage"
+        :lastPage="orders.pagination.lastPage"
+        route="sales_order_list"
+    />
 {% endblock %}

@@ -17,23 +17,22 @@ security:
 
 sales:
     order:
+        link_back: Retour à mes commandes
         list:
             title: Mes commandes
+            subtitle: Toutes vos commandes, au même endroit.
             button_place_order: Passer une commande
-            button_view: Voir
-            button_resume_payment: Continuer le paiement
+            button_view: Détail
             table:
-                id: ID
+                order: Commande
                 total: Total
                 status: Statut
-                placed_at: Passée le
                 actions: Actions
+            row_label: 'Commande du %date%'
             empty: Aucune commande pour le moment.
-            button_cancel: Annuler
-            message_cancel_confirm: Confirmez-vous l'annulation de cette commande ?
-            button_cancel_dismiss: Conserver la commande
         show:
-            title: Détail de la commande
+            title: 'Commande du %date%'
+            subtitle: Voici où en est votre commande.
             title_lines: Articles
             table_lines:
                 product: Produit
@@ -42,16 +41,26 @@ sales:
                 subtotal: Sous-total
             title_payment: Paiement
             payment_none: Aucun paiement demandé pour le moment.
-            payment_reference: 'Réf. paiement : %reference%'
+            payment_status:
+                requested: En attente
+                captured: 'Reçu le %date%'
+            payment_reference: 'Réf.'
             title_shipment: Livraison
-            shipment_none: Aucune livraison pour le moment — une livraison est créée automatiquement dès que le paiement est confirmé.
-            hint_shipment: 'Expédiez-la en lançant la commande CLI :'
-            shipment_tracking_reference: 'Numéro de suivi : %reference%'
-            no_actions: Aucune action possible — le paiement de cette commande a déjà été capturé.
-            no_actions_cancelled: Cette commande est annulée.
-            link_back: Retour à mes commandes
+            shipment_none: Pas encore expédiée — on vous préviendra dès qu'elle sera en route.
+            shipment_status:
+                pending: En préparation
+                dispatched: 'En cours de livraison depuis le %date%'
+                delivered: 'Livrée le %date%'
+            shipment_tracking_reference: Suivi
+            button_resume_payment: Continuer vers le paiement
+            button_cancel: Annuler la commande
+            message_cancel_confirm: Confirmez-vous l'annulation de cette commande ?
+            button_cancel_dismiss: Conserver la commande
+            cancelled_note: Cette commande a été annulée — aucune étape supplémentaire.
         place:
             title: Passer une commande
+            subtitle: Ajoutez les produits souhaités et validez votre commande.
+            table_lines: Lignes de la commande
             label_line_product: Produit
             placeholder_line_product: Choisissez un produit
             label_line_price: Prix
@@ -84,12 +93,14 @@ sales:
             button_submit: S'inscrire
         profile:
             title: Profil
+            subtitle: Gérez vos paramètres de sécurité et vos données personnelles.
             title_password: Changer le mot de passe
             title_danger_zone: Zone dangereuse
+            message_danger_zone: La suppression de votre compte est définitive. Toutes vos données et l'historique de vos commandes seront effacés.
             label_password: Nouveau mot de passe
             button_submit: Changer le mot de passe
             button_erase_account: Effacer mon compte
-            message_erase_confirm: L'effacement supprime votre clé de chiffrement — chaque événement passé se relit sur une valeur de remplacement, sans retour possible. Confirmez-vous ?
+            message_erase_confirm: Cette action supprime définitivement votre compte et toutes vos données. Impossible de revenir en arrière.
             button_erase_dismiss: Conserver mon compte
         flash:
             registered: Compte créé — merci de vous connecter.

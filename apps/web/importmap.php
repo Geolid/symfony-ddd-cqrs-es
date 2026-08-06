@@ -26,6 +26,7 @@ declare(strict_types=1);
  */
 return [
     'shared' => ['path' => 'shared/shared.js', 'entrypoint' => true],
+    'web' => ['path' => 'web/web.js', 'entrypoint' => true],
     '@picocss/pico' => ['version' => '2.1.1'],
     '@picocss/pico/css/pico.min.css' => ['version' => '2.1.1', 'type' => 'css'],
     '@picocss/pico/css/pico.colors.min.css' => ['version' => '2.1.1', 'type' => 'css'],

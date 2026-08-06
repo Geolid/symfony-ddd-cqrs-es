@@ -36,4 +36,14 @@ final class ConfirmModal
         $this->confirmLabel = $confirmLabel ?? $triggerLabel;
         $this->cancelLabel = $cancelLabel ?? $this->translator->trans('confirm_modal.button_cancel');
     }
+
+    public function getTriggerClass(): string
+    {
+        return $this->dangerous ? 'pico-background-red-600 pico-color-white' : 'outline contrast';
+    }
+
+    public function getConfirmClass(): string
+    {
+        return $this->dangerous ? 'pico-background-red-600 pico-color-white' : '';
+    }
 }

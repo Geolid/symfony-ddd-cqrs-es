@@ -17,23 +17,22 @@ security:
 
 sales:
     order:
+        link_back: Back to my orders
         list:
             title: My orders
+            subtitle: All your orders, in one place.
             button_place_order: Place an order
-            button_view: View
-            button_resume_payment: Continue to payment
+            button_view: Details
             table:
-                id: ID
+                order: Order
                 total: Total
                 status: Status
-                placed_at: Placed at
                 actions: Actions
+            row_label: 'Order from %date%'
             empty: No orders yet.
-            button_cancel: Cancel
-            message_cancel_confirm: Are you sure you want to cancel this order?
-            button_cancel_dismiss: Keep order
         show:
-            title: Order detail
+            title: 'Order from %date%'
+            subtitle: Here's how it's coming along.
             title_lines: Items
             table_lines:
                 product: Product
@@ -42,16 +41,26 @@ sales:
                 subtotal: Subtotal
             title_payment: Payment
             payment_none: No payment requested yet.
-            payment_reference: 'Payment ref.: %reference%'
+            payment_status:
+                requested: Pending
+                captured: 'Received on %date%'
+            payment_reference: 'Ref.'
             title_shipment: Shipment
-            shipment_none: No shipment yet — a shipment is created automatically once the payment is confirmed.
-            hint_shipment: 'Dispatch it by running the CLI:'
-            shipment_tracking_reference: 'Tracking reference: %reference%'
-            no_actions: No action available — payment for this order has already been captured.
-            no_actions_cancelled: This order is cancelled.
-            link_back: Back to my orders
+            shipment_none: Not shipped yet — we'll let you know when it's on its way.
+            shipment_status:
+                pending: Preparing
+                dispatched: 'On its way since %date%'
+                delivered: 'Delivered on %date%'
+            shipment_tracking_reference: Tracking
+            button_resume_payment: Continue to payment
+            button_cancel: Cancel order
+            message_cancel_confirm: Are you sure you want to cancel this order?
+            button_cancel_dismiss: Keep order
+            cancelled_note: This order was cancelled — no further steps.
         place:
             title: Place an order
+            subtitle: Add the products you want and confirm your order.
+            table_lines: Order lines
             label_line_product: Product
             placeholder_line_product: Choose a product
             label_line_price: Price
@@ -84,12 +93,14 @@ sales:
             button_submit: Register
         profile:
             title: Profile
+            subtitle: Manage your security settings and personal data.
             title_password: Change password
             title_danger_zone: Danger zone
+            message_danger_zone: Deleting your account is permanent. All your data and order history will be erased.
             label_password: New password
             button_submit: Change password
             button_erase_account: Erase my account
-            message_erase_confirm: Erasing drops your encryption key — every past event decrypts to a placeholder and cannot be recovered. Confirm?
+            message_erase_confirm: This will permanently delete your account and all your data. This can't be undone.
             button_erase_dismiss: Keep my account
         flash:
             registered: Account created — please log in.
