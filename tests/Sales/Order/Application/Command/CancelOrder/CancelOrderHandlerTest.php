@@ -32,10 +32,10 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(OrderFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame(AppOrderStatus::CANCELLED, $results[0]->status);
-        self::assertNotNull($results[0]->cancelledAt);
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        self::assertNotNull($result);
+        self::assertSame(AppOrderStatus::CANCELLED, $result->status);
+        self::assertNotNull($result->cancelledAt);
     }
 
     #[Test]
@@ -90,9 +90,9 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(OrderFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame(AppOrderStatus::CANCELLED, $results[0]->status);
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        self::assertNotNull($result);
+        self::assertSame(AppOrderStatus::CANCELLED, $result->status);
     }
 
     #[Test]

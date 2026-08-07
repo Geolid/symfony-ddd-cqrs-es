@@ -32,12 +32,12 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), $this->lines()));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(OrderFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame($id, $results[0]->id);
-        self::assertSame($customer->id()->toString(), $results[0]->customerId);
-        self::assertSame(1_999, $results[0]->totalAmountInCents);
-        self::assertSame(AppOrderStatus::PLACED, $results[0]->status);
+        $result = $this->service(OrderFinderInterface::class)->ofId($id);
+        self::assertNotNull($result);
+        self::assertSame($id, $result->id);
+        self::assertSame($customer->id()->toString(), $result->customerId);
+        self::assertSame(1_999, $result->totalAmountInCents);
+        self::assertSame(AppOrderStatus::PLACED, $result->status);
         self::assertSame('buyer@example.com', $this->buyerAddressOf($id));
     }
 

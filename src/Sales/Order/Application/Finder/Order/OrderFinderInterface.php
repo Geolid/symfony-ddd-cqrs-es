@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Order;
 
-use Shared\Application\Finder\PaginatedCollectionFinderInterface;
+use Shared\Application\Finder\FinderInterface;
 
-/**
- * @extends PaginatedCollectionFinderInterface<OrderResult>
- */
-interface OrderFinderInterface extends PaginatedCollectionFinderInterface
+interface OrderFinderInterface extends FinderInterface
 {
     public function ofId(string $id): ?OrderResult;
-
-    public function withCustomer(string $customerId): static;
 }
