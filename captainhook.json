@@ -30,9 +30,9 @@
             {
                 "action": "\\CaptainHook\\App\\Hook\\Branch\\Action\\EnsureNaming",
                 "options": {
-                    "regex": "#^(main|(build|chore|ci|docs|feat|fix|perf|refactor|revert|simplify|style|test)/[a-z0-9]+(-[a-z0-9]+)*)$#",
-                    "error": "Branch name must follow Conventional Commits: <type>/<kebab-case-description> (or be \"main\")\nAllowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, simplify, style, test",
-                    "success": "Branch naming OK"
+                    "regex": "#^(feature|feat|bugfix|fix|hotfix|release|chore|ai|claude|codex|copilot|cursor)/[a-z0-9]+(\\.[a-z0-9]+)*(-[a-z0-9]+(\\.[a-z0-9]+)*)*$#",
+                    "error": "Branch name must follow Conventional Branch: <type>/<description>\nAllowed types: feature, feat, bugfix, fix, hotfix, release, chore, ai, claude, codex, copilot, cursor",
+                    "success": "Conventional Branch format OK"
                 }
             }
         ]
@@ -43,9 +43,9 @@
             {
                 "action": "\\CaptainHook\\App\\Hook\\Branch\\Action\\EnsureNaming",
                 "options": {
-                    "regex": "#^(main|(build|chore|ci|docs|feat|fix|perf|refactor|revert|simplify|style|test)/[a-z0-9]+(-[a-z0-9]+)*)$#",
-                    "error": "Branch name must follow Conventional Commits: <type>/<kebab-case-description> (or be \"main\")\nAllowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, simplify, style, test",
-                    "success": "Branch naming OK"
+                    "regex": "#^(feature|feat|bugfix|fix|hotfix|release|chore|ai|claude|codex|copilot|cursor)/[a-z0-9]+(\\.[a-z0-9]+)*(-[a-z0-9]+(\\.[a-z0-9]+)*)*$#",
+                    "error": "Branch name must follow Conventional Branch: <type>/<description>\nAllowed types: feature, feat, bugfix, fix, hotfix, release, chore, ai, claude, codex, copilot, cursor",
+                    "success": "Conventional Branch format OK"
                 }
             }
         ]
