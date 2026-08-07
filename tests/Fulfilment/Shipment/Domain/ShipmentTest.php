@@ -11,8 +11,10 @@ use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 
 final class ShipmentTest extends AggregateRootTestCase
 {
@@ -21,11 +23,13 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $id = ShipmentId::generate();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
 
         $this
             ->given()
-            ->when(static fn () => Shipment::create($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt))
-            ->then(new ShipmentCreated($id->toString(), 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')));
+            ->when(static fn () => Shipment::create($id, $orderId, $customerId, 'buyer@example.com', $createdAt))
+            ->then(new ShipmentCreated($id->toString(), $orderId, $customerId, 'buyer@example.com', $createdAt->format('c')));
     }
 
     #[Test]
@@ -36,7 +40,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
             ->then(new ShipmentDispatched($id, $dispatchedAt->format('c')));
     }
@@ -50,10 +54,10 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
                 new ShipmentDispatched($id, $dispatchedAt->format('c')),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference('ACME-4Q7X2K9'))
+            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-4Q7X2K9')))
             ->then(new TrackingReferenceAssigned($id, 'ACME-4Q7X2K9'));
     }
 
@@ -64,8 +68,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')))
-            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference('ACME-4Q7X2K9'))
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
+            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-4Q7X2K9')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -78,23 +82,11 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
                 new ShipmentDispatched($id, $dispatchedAt->format('c')),
                 new TrackingReferenceAssigned($id, 'ACME-4Q7X2K9'),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference('ACME-OTHER'))
-            ->expectsException(ShipmentInvalidTransitionException::class);
-    }
-
-    #[Test]
-    public function itCannotBeDeliveredBeforeBeingDispatched(): void
-    {
-        $id = ShipmentId::generate()->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')))
-            ->when(static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-OTHER')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -108,11 +100,23 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, 'order-1', 'customer-1', 'buyer@example.com', $createdAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
                 new ShipmentDispatched($id, $dispatchedAt->format('c')),
             )
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered($deliveredAt))
             ->then(new ShipmentDelivered($id, $deliveredAt->format('c')));
+    }
+
+    #[Test]
+    public function itCannotBeDeliveredBeforeBeingDispatched(): void
+    {
+        $id = ShipmentId::generate()->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
+            ->when(static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
     protected function aggregateClass(): string

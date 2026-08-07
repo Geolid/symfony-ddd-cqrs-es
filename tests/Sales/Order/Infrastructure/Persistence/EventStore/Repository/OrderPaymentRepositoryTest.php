@@ -23,7 +23,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAnOrderPaymentItSaved(): void
+    public function itLoadsASavedOrderPayment(): void
     {
         // Given
         $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->create();
@@ -38,7 +38,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnOrderPaymentItNeverSaved(): void
+    public function itThrowsOnAnUnsavedOrderPayment(): void
     {
         // Given
         $id = OrderPaymentId::generate();

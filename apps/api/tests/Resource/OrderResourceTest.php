@@ -6,6 +6,7 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\OrderResource;
 use Api\Tests\Support\AbstractApiTestCase;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -17,7 +18,9 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsAnOrder(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'sales:read');
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
         $this->store($order);
@@ -41,7 +44,9 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownOrder(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'sales:read');
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', Uuid::uuid7()->toString()));
@@ -54,7 +59,9 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsTheOrders(): void
     {
         // Given
-        $client = $this->authenticatedClient('sales:read');
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'sales:read');
         $this->store(OrderTestFactory::new()->withTotalAmountInCents(1_999)->create());
 
         // When
@@ -71,7 +78,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsAnUnauthenticatedRequest(): void
     {
         // Given
-        $client = self::jsonClient();
+        $client = self::unauthenticatedClient();
 
         // When
         $client->request('GET', '/v1/sales/orders');
@@ -84,12 +91,42 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsACallerWithoutTheReadGrant(): void
     {
         // Given
-        $client = $this->authenticatedClient();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', '/v1/sales/orders');
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    #[Test]
+    public function itRejectsAMalformedApiKey(): void
+    {
+        // Given
+        $client = self::malformedApiKeyClient();
+
+        // When
+        $client->request('GET', '/v1/sales/orders');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
+    public function itRejectsAnInvalidApiKey(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->invalidApiKeyClient($identity);
+
+        // When
+        $client->request('GET', '/v1/sales/orders');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }

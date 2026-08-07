@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotification;
 use Fulfilment\Shipment\Infrastructure\Notification\MailerShipmentDeliveredNotifier;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -21,10 +22,12 @@ final class MailerShipmentDeliveredNotifierTest extends TestCase
     {
         // Given
         $mailer = new DummyMailer();
+        $shipmentId = Uuid::uuid7()->toString();
+        $orderId = Uuid::uuid7()->toString();
         $notification = new ShipmentDeliveredNotification(
-            shipmentId: 'shipment-1',
-            orderId: 'order-1',
-            customerId: 'customer-1',
+            shipmentId: $shipmentId,
+            orderId: $orderId,
+            customerId: Uuid::uuid7()->toString(),
             customerAddress: 'buyer@example.com',
         );
 
@@ -38,9 +41,9 @@ final class MailerShipmentDeliveredNotifierTest extends TestCase
             static fn (Address $address): string => $address->getAddress(),
             $email->getTo(),
         ));
-        self::assertSame('Your order order-1 has been delivered', $email->getSubject());
-        self::assertStringContainsString('order-1', (string) $email->getTextBody());
-        self::assertStringContainsString('shipment-1', (string) $email->getTextBody());
+        self::assertSame(\sprintf('Your order %s has been delivered', $orderId), $email->getSubject());
+        self::assertStringContainsString($orderId, (string) $email->getTextBody());
+        self::assertStringContainsString($shipmentId, (string) $email->getTextBody());
     }
 }
 

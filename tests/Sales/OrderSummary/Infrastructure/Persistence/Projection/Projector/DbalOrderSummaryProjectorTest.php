@@ -7,6 +7,7 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Project
 use Doctrine\DBAL\Connection;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryProjector;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -21,13 +22,14 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsThePlacementOnOrderPlaced(): void
     {
         // When
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(4_200)->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('customer-1', $row['customer_id']);
+        self::assertSame($customerId, $row['customer_id']);
         self::assertSame(4_200, (int) $row['total_amount_in_cents']);
         self::assertSame('placed', $row['order_status']);
         self::assertNull($row['payment_status']);
@@ -135,10 +137,11 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationWithoutLosingThePaymentAndShipmentStatus(): void
+    public function itProjectsTheCancellationOnOrderCancelledWithoutLosingThePaymentAndShipmentStatus(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->create();
         $this->store($orderPayment);
@@ -146,7 +149,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // When
-        $order->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
         $this->store($order);
 
         // Then
@@ -160,10 +163,11 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itScopesTheUpdateToItsOwnOrder(): void
+    public function itProjectsTheCaptureOnOrderPaymentCapturedWithoutTouchingAnotherOrder(): void
     {
         // Given
-        $untouchedOrder = OrderTestFactory::new()->withCustomerId('customer-untouched')->create();
+        $untouchedCustomerId = Uuid::uuid7()->toString();
+        $untouchedOrder = OrderTestFactory::new()->withCustomerId($untouchedCustomerId)->create();
         $this->store($untouchedOrder);
         $order = OrderTestFactory::new()->create();
         $this->store($order);
@@ -175,7 +179,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($untouchedOrder->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('customer-untouched', $row['customer_id']);
+        self::assertSame($untouchedCustomerId, $row['customer_id']);
         self::assertSame('placed', $row['order_status']);
         self::assertNull($row['payment_status']);
         self::assertSame('placed', $row['status']);

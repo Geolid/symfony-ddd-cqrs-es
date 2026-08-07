@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Query\GetOrderPaymentByReference;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -16,7 +17,8 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
     public function itGetsAPaymentByItsReference(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->create();
+        $orderId = Uuid::uuid7()->toString();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
         $this->store($orderPayment);
 
         // When
@@ -24,7 +26,7 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
 
         // Then
         self::assertSame($orderPayment->id()->toString(), $result->id);
-        self::assertSame($orderPayment->orderId(), $result->orderId);
+        self::assertSame($orderId, $result->orderId);
     }
 
     #[Test]

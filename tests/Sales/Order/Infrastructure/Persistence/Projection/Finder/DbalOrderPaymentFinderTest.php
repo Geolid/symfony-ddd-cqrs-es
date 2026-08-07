@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Enum\AppOrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -26,7 +27,9 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itReadsAnOrderPaymentByItsReference(): void
     {
         // Given
+        $orderId = Uuid::uuid7()->toString();
         $orderPayment = OrderPaymentTestFactory::new()
+            ->withOrderId($orderId)
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
@@ -39,10 +42,10 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertInstanceOf(OrderPaymentResult::class, $result);
         self::assertSame($orderPayment->id()->toString(), $result->id);
-        self::assertSame($orderPayment->orderId(), $result->orderId);
+        self::assertSame($orderId, $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
-        self::assertSame('requested', $result->status);
+        self::assertSame(AppOrderPaymentStatus::REQUESTED, $result->status);
         self::assertNull($result->capturedAt);
     }
 
@@ -60,11 +63,12 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itReadsAnOrderPaymentByItsOrder(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->create();
+        $orderId = Uuid::uuid7()->toString();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
         $this->store($orderPayment);
 
         // When
-        $result = $this->finder->ofOrder($orderPayment->orderId());
+        $result = $this->finder->ofOrder($orderId);
 
         // Then
         self::assertInstanceOf(OrderPaymentResult::class, $result);

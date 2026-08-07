@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Domain\ValueObject;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderId;
 
 final class OrderIdTest extends TestCase
@@ -18,7 +19,7 @@ final class OrderIdTest extends TestCase
         $id = OrderId::generate();
 
         // Then
-        self::assertNotEmpty($id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]

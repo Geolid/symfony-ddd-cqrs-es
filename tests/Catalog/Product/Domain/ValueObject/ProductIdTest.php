@@ -8,6 +8,7 @@ use Catalog\Product\Domain\ValueObject\ProductId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class ProductIdTest extends TestCase
 {
@@ -18,7 +19,7 @@ final class ProductIdTest extends TestCase
         $id = ProductId::generate();
 
         // Then
-        self::assertNotEmpty($id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]

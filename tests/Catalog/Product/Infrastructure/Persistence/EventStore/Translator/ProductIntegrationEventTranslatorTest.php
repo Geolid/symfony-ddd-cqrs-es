@@ -8,9 +8,6 @@ use Catalog\Product\Application\Event\ProductDelistedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductListedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductRepricedIntegrationEvent;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
-use Patchlevel\EventSourcing\Store\Criteria\Criteria;
-use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
-use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -19,8 +16,10 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
     #[Test]
     public function itPublishesTheListingOnProductListed(): void
     {
-        // When
+        // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+
+        // When
         $this->store($product);
 
         // Then
@@ -36,8 +35,10 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
     #[Test]
     public function itPublishesTheRepriceOnProductRepriced(): void
     {
-        // When
+        // Given
         $product = ProductTestFactory::new()->repriced(2_000)->create();
+
+        // When
         $this->store($product);
 
         // Then
@@ -52,8 +53,10 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
     #[Test]
     public function itPublishesTheDelistingOnProductDelisted(): void
     {
-        // When
+        // Given
         $product = ProductTestFactory::new()->delisted()->create();
+
+        // When
         $this->store($product);
 
         // Then
@@ -62,19 +65,5 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $event = $published[1];
         self::assertInstanceOf(ProductDelistedIntegrationEvent::class, $event);
         self::assertSame($product->id()->toString(), $event->productId);
-    }
-
-    /**
-     * @return list<object>
-     */
-    private function publishedTo(string $streamId): array
-    {
-        $published = [];
-
-        foreach ($this->service(Store::class)->load(new Criteria(new StreamCriterion($streamId))) as $message) {
-            $published[] = $message->event();
-        }
-
-        return $published;
     }
 }

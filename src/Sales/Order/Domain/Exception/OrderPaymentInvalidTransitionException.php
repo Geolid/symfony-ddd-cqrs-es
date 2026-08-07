@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Exception;
 
 final class OrderPaymentInvalidTransitionException extends \DomainException
 {
-    public static function alreadyCaptured(): self
+    public static function cannotCapture(): self
     {
         return new self('This payment has already been captured.');
     }

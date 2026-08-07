@@ -53,7 +53,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function suspend(\DateTimeImmutable $suspendedAt): void
     {
-        if (IdentityStatus::SUSPENDED === $this->status) {
+        if ($this->status->isSuspended()) {
             throw IdentityAlreadySuspendedException::forId($this->id);
         }
 
@@ -68,7 +68,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function reactivate(\DateTimeImmutable $reactivatedAt): void
     {
-        if (IdentityStatus::ACTIVE === $this->status) {
+        if ($this->status->isActive()) {
             throw IdentityNotSuspendedException::forId($this->id);
         }
 

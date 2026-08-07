@@ -11,17 +11,18 @@ use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
-#[Translator('catalog.product.integration_translator')]
+#[Translator('catalog.product.integration')]
 final readonly class ProductIntegrationEventTranslator extends AbstractIntegrationEventTranslator
 {
     #[Subscribe(ProductListed::class)]
     public function onProductListed(ProductListed $event): void
     {
         $this->append(
-            \sprintf('catalog.product.integration.%s', $event->id),
+            IntegrationStreamId::build('catalog.product', $event->id),
             new ProductListedIntegrationEvent(
                 productId: $event->id,
                 label: $event->label,
@@ -35,7 +36,7 @@ final readonly class ProductIntegrationEventTranslator extends AbstractIntegrati
     public function onProductRepriced(ProductRepriced $event): void
     {
         $this->append(
-            \sprintf('catalog.product.integration.%s', $event->id),
+            IntegrationStreamId::build('catalog.product', $event->id),
             new ProductRepricedIntegrationEvent(
                 productId: $event->id,
                 unitAmountInCents: $event->unitAmountInCents,
@@ -48,7 +49,7 @@ final readonly class ProductIntegrationEventTranslator extends AbstractIntegrati
     public function onProductDelisted(ProductDelisted $event): void
     {
         $this->append(
-            \sprintf('catalog.product.integration.%s', $event->id),
+            IntegrationStreamId::build('catalog.product', $event->id),
             new ProductDelistedIntegrationEvent(
                 productId: $event->id,
                 delistedAt: $event->delistedAt,

@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Iam\Identity\Domain\Identity;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
+use Sales\Order\Application\Enum\AppOrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -24,7 +29,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
 
         // When
         $this->placeOrder($client);
@@ -38,7 +43,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-2@example.com'));
         $this->placeOrder($client);
 
         // When
@@ -53,7 +58,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-3@example.com'));
         $id = $this->placeOrder($client);
 
         // When
@@ -61,6 +66,26 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(self::CHECKOUT_URL);
+    }
+
+    #[Test]
+    public function itRefusesToResumePaymentWhenNoCheckoutHasBeenRequested(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $customer = CustomerTestFactory::new()->withEmail('buyer-7@example.com')->linkedToIdentity($identity->id()->toString())->create();
+        $this->store($customer);
+        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->create();
+        $this->store($order);
+        $this->loginAs($client, $identity);
+
+        // When
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
+
+        // Then
+        self::assertResponseStatusCodeSame(404);
     }
 
     #[Test]
@@ -81,7 +106,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-4@example.com'));
         $id = $this->placeOrder($client);
 
         // When
@@ -98,7 +123,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
         $id = $this->placeOrder($client);
         $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
         self::assertNotNull($payment);
@@ -116,7 +141,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertNotNull($order);
-        self::assertSame('placed', $order->status);
+        self::assertSame(AppOrderStatus::PLACED, $order->status);
     }
 
     #[Test]
@@ -124,7 +149,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client);
+        $this->loginAs($client, $this->registerCustomer('buyer-6@example.com'));
         $id = $this->placeOrder($client);
 
         // When
@@ -139,11 +164,11 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client, 'owner@example.com');
+        $this->loginAs($client, $this->registerCustomer('owner@example.com'));
         $id = $this->placeOrder($client);
 
         $client->request('GET', '/logout');
-        $this->loggedInCustomer($client, 'intruder@example.com');
+        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -159,11 +184,11 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loggedInCustomer($client, 'owner@example.com');
+        $this->loginAs($client, $this->registerCustomer('owner@example.com'));
         $id = $this->placeOrder($client);
 
         $client->request('GET', '/logout');
-        $this->loggedInCustomer($client, 'intruder@example.com');
+        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
 
         // When
         $client->request('GET', \sprintf('/sales/orders/%s', $id));
@@ -184,13 +209,22 @@ final class OrderControllerTest extends AbstractWebTestCase
         return $client;
     }
 
+    private function registerCustomer(string $email): Identity
+    {
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->store(CustomerTestFactory::new()->withEmail($email)->linkedToIdentity($identity->id()->toString())->create());
+
+        return $identity;
+    }
+
     private function placeOrder(KernelBrowser $client): string
     {
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($product);
 
         $crawler = $client->request('GET', '/sales/orders/place');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
         $prefix = $form->getName();
 
         $form->setValues([

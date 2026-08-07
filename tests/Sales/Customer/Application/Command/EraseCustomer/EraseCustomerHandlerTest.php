@@ -9,13 +9,14 @@ use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
+use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itRedactsTheAddressFromTheProjection(): void
+    public function itRedactsTheAddress(): void
     {
         // Given
         $id = CustomerId::generate()->toString();
@@ -25,7 +26,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EraseCustomer($id));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
+        $results = $this->allCustomers();
         self::assertCount(1, $results);
         self::assertNull($results[0]->email);
         self::assertNotNull($results[0]->erasedAt);
@@ -64,13 +65,13 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EraseCustomer($id));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
+        $results = $this->allCustomers();
         self::assertCount(1, $results);
         self::assertNull($results[0]->email);
     }
 
     #[Test]
-    public function itDoesNotFreeAnAddressTakenAgainSinceTheErasure(): void
+    public function itRefusesAnAddressAlreadyTakenAfterASecondErasure(): void
     {
         // Given
         $erased = CustomerId::generate()->toString();
@@ -84,5 +85,13 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
+    }
+
+    /**
+     * @return list<CustomerResult>
+     */
+    private function allCustomers(): array
+    {
+        return array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
     }
 }

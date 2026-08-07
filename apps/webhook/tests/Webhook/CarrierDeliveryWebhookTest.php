@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webhook\Tests\Webhook;
 
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -31,7 +32,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame('delivered', $this->statusOf($shipment->id()->toString()));
+        self::assertSame(AppShipmentStatus::DELIVERED, $this->statusOf($shipment->id()->toString()));
     }
 
     #[Test]
@@ -79,7 +80,34 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         yield 'reference blank' => [self::body('')];
         yield 'reference longer than the carrier can issue' => [self::body(str_repeat('A', 65))];
+        // No value at all is mapped to `trackingReference` — COLLECT_DENORMALIZATION_ERRORS
+        // folds this into the same PartialDenormalizationException as a type mismatch below.
         yield 'reference absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
+        // A value is mapped to `trackingReference` but of an incompatible type.
+        yield 'reference not a string' => [json_encode(['trackingReference' => ['nested' => 'object']], \JSON_THROW_ON_ERROR)];
+    }
+
+    #[Test]
+    #[DataProvider('provideRequestsNotMatchingTheWebhookShape')]
+    public function itRejectsARequestNotMatchingTheWebhookShape(string $method, string $body): void
+    {
+        // Given
+        $client = self::createClient();
+
+        // When
+        $client->request($method, self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideRequestsNotMatchingTheWebhookShape(): iterable
+    {
+        yield 'method is not POST' => ['GET', self::body(self::TRACKING_REFERENCE)];
+        yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
     #[Test]
@@ -115,14 +143,18 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
     }
 
-    private function statusOf(string $id): string
+    private function statusOf(string $id): AppShipmentStatus
     {
-        foreach ($this->service(ShipmentFinderInterface::class) as $shipment) {
-            if ($id === $shipment->id) {
-                return $shipment->status;
-            }
+        $shipment = null;
+
+        foreach ($this->service(ShipmentFinderInterface::class)->withTrackingReference(self::TRACKING_REFERENCE) as $result) {
+            $shipment = $result;
         }
 
-        self::fail(\sprintf('Shipment "%s" was not projected.', $id));
+        if (null === $shipment || $id !== $shipment->id) {
+            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
+        }
+
+        return $shipment->status;
     }
 }

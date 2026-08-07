@@ -7,7 +7,7 @@ namespace Cli\Console;
 use Cli\Console\Input\RegisterIdentityInput;
 use Iam\Access\Application\Command\GrantPermission\GrantPermission;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\ApiTokenCredentialIssuerInterface;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -17,16 +17,18 @@ use Symfony\Component\Console\Attribute\MapInput;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key and grants (chicken-and-egg admin setup, demo/local seeding)')]
+#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key and grants (chicken-and-egg admin setup)')]
 final class RegisterIdentityCommand
 {
     use LockableTrait;
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly IssueApiTokenCredentialInterface $apiTokenCredentialIssuer,
+        private readonly ApiTokenCredentialIssuerInterface $apiTokenCredentialIssuer,
         private readonly ClockInterface $clock,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -43,6 +45,16 @@ final class RegisterIdentityCommand
         }
 
         try {
+            $violations = $this->validator->validate($input);
+
+            if (\count($violations) > 0) {
+                foreach ($violations as $violation) {
+                    $io->error(\sprintf('%s: %s', $violation->getPropertyPath(), $violation->getMessage()));
+                }
+
+                return Command::FAILURE;
+            }
+
             $identityId = Uuid::uuid7()->toString();
             $expiresAt = $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays));
 

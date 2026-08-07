@@ -6,6 +6,7 @@ namespace Tools\PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
@@ -51,7 +52,20 @@ final class ForbidDateTimeImmutableWithoutTimezoneRule implements Rule
         }
 
         $firstArg = $node->args[0];
-        if (!$firstArg instanceof Arg || !$firstArg->value instanceof String_) {
+        if (!$firstArg instanceof Arg) {
+            return [];
+        }
+
+        if ($firstArg->value instanceof ArrayDimFetch && 1 === \count($node->args)) {
+            return [
+                RuleErrorBuilder::message(\sprintf(
+                    'Forbidden: new \%s($row[...]) rehydrating a database column with no explicit \DateTimeZone argument implicitly uses the server\'s local timezone. Pass new \DateTimeZone(\'UTC\') as the second argument.',
+                    $class,
+                ))->identifier('app.datetime.noTimezone')->build(),
+            ];
+        }
+
+        if (!$firstArg->value instanceof String_) {
             return [];
         }
 

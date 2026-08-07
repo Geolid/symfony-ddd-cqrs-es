@@ -94,19 +94,19 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws ShipmentInvalidTransitionException
      */
-    public function assignTrackingReference(string $trackingReference): void
+    public function assignTrackingReference(TrackingReference $trackingReference): void
     {
         if (!$this->status->isDispatched()) {
             throw ShipmentInvalidTransitionException::cannotAssignTrackingReference($this->status);
         }
 
         if (null !== $this->trackingReference) {
-            throw ShipmentInvalidTransitionException::trackingReferenceAlreadyAssigned($this->trackingReference->toString());
+            throw ShipmentInvalidTransitionException::cannotReassignTrackingReference($this->trackingReference->toString());
         }
 
         $this->recordThat(new TrackingReferenceAssigned(
             id: $this->id->toString(),
-            trackingReference: TrackingReference::fromString($trackingReference)->toString(),
+            trackingReference: $trackingReference->toString(),
         ));
     }
 

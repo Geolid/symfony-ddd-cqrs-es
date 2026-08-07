@@ -23,7 +23,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAShipmentItSaved(): void
+    public function itLoadsASavedShipment(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
@@ -38,7 +38,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAShipmentItNeverSaved(): void
+    public function itThrowsOnAnUnsavedShipment(): void
     {
         // Given
         $id = ShipmentId::generate();

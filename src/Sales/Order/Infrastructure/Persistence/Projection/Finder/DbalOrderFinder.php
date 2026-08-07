@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Sales\Order\Application\Enum\AppOrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
@@ -60,7 +61,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             id: $row['id'],
             customerId: $row['customer_id'],
             totalAmountInCents: (int) $row['total_amount_in_cents'],
-            status: $row['status'],
+            status: AppOrderStatus::from($row['status']),
             placedAt: new \DateTimeImmutable($row['placed_at'], new \DateTimeZone('UTC')),
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
         );

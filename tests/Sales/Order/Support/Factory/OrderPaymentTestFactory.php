@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Support\Factory;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
@@ -80,7 +81,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
             $customerId,
             $buyerAddress,
             Money::fromCents($amountInCents),
-            $reference,
+            PaymentReference::fromString($reference),
             $checkoutUrl,
             \DateTimeImmutable::createFromInterface($requestedAt),
         );

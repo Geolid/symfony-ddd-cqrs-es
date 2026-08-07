@@ -43,8 +43,11 @@ final class AppUrlEnvVarProcessorTest extends TestCase
     #[Test]
     public function itProvidesTheAppUrlPrefix(): void
     {
+        // When
+        $types = AppUrlEnvVarProcessor::getProvidedTypes();
+
         // Then
-        self::assertSame(['app_url' => 'string'], AppUrlEnvVarProcessor::getProvidedTypes());
+        self::assertSame(['app_url' => 'string'], $types);
     }
 
     private static function env(string $environment): \Closure

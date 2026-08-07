@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Query\GetOrder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Query\GetOrder\GetOrder;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -17,7 +18,8 @@ final class GetOrderHandlerTest extends AbstractIntegrationTestCase
     public function itGetsAnOrderById(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(2_500)->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
         $this->store($order);
         $this->store(OrderTestFactory::new()->create());
 
@@ -26,7 +28,7 @@ final class GetOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($order->id()->toString(), $result->id);
-        self::assertSame('customer-1', $result->customerId);
+        self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
     }
 

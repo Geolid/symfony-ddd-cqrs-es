@@ -12,7 +12,6 @@ final readonly class GrantResult implements ResultInterface
         public string $id,
         public string $identityId,
         public string $permission,
-        public bool $revoked,
     ) {
     }
 }

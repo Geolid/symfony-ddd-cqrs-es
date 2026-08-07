@@ -23,25 +23,23 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
 
 #[ApiResource(
     shortName: 'Product',
-    routePrefix: '/v1/catalog',
     operations: [
         new GetCollection(
-            security: "is_granted('catalog:read')",
             openapi: new Operation(
                 responses: ['200' => new Response(description: 'A collection of products.')],
                 summary: 'Retrieves a collection of products.',
             ),
+            security: "is_granted('catalog:read')",
             provider: ProductCollectionProvider::class,
             parameters: [
                 'includeDelisted' => new QueryParameter(
-                    schema: ['type' => 'boolean'],
+                    schema: ['type' => 'boolean', 'example' => false],
                     description: 'Whether delisted products are included in the collection.',
                 ),
             ],
         ),
         new Get(
             uriTemplate: '/products/{id}',
-            security: "is_granted('catalog:read')",
             openapi: new Operation(
                 responses: [
                     '200' => new Response(description: 'The product.'),
@@ -49,12 +47,12 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 ],
                 summary: 'Retrieves a single product.',
             ),
+            security: "is_granted('catalog:read')",
             provider: ProductProvider::class,
         ),
         new Post(
             uriTemplate: '/products',
             status: 201,
-            security: "is_granted('catalog:write')",
             openapi: new Operation(
                 responses: [
                     '201' => new Response(description: 'The product that was listed for sale.'),
@@ -62,13 +60,13 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 ],
                 summary: 'Lists a new product for sale.',
             ),
+            security: "is_granted('catalog:write')",
             input: ListProductForSaleInput::class,
             processor: ListProductForSaleProcessor::class,
         ),
         new Post(
             uriTemplate: '/products/{id}/reprice',
             status: 204,
-            security: "is_granted('catalog:write')",
             openapi: new Operation(
                 responses: [
                     '204' => new Response(description: 'The product was repriced.'),
@@ -76,6 +74,7 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 ],
                 summary: "Changes a product's unit price.",
             ),
+            security: "is_granted('catalog:write')",
             input: RepriceProductInput::class,
             output: false,
             name: 'reprice',
@@ -84,7 +83,6 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
         new Post(
             uriTemplate: '/products/{id}/delist',
             status: 204,
-            security: "is_granted('catalog:write')",
             openapi: new Operation(
                 responses: [
                     '204' => new Response(description: 'The product was delisted.'),
@@ -93,12 +91,14 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 ],
                 summary: 'Delists a product.',
             ),
+            security: "is_granted('catalog:write')",
             input: false,
             output: false,
             name: 'delist',
             processor: DelistProductProcessor::class,
         ),
     ],
+    routePrefix: '/v1/catalog',
 )]
 final class ProductResource
 {

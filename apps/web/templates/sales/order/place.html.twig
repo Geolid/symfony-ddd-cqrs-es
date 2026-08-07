@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block content %}
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {'data-testid': 'place-order-form'}}) }}
 
     <twig:OrderLinesTable :lines="form.lines" />
 

@@ -13,6 +13,7 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
@@ -26,6 +27,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private OrderId $id;
+    private string $customerId;
     private ?string $buyerAddress;
     private Money $totalAmount;
     private OrderStatus $status;
@@ -88,10 +90,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
+     * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderAlreadyCancelledException
      */
-    public function cancel(\DateTimeImmutable $cancelledAt): void
+    public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
     {
+        if ($this->customerId !== $customerId) {
+            throw OrderBelongsToAnotherCustomerException::forId($this->id);
+        }
+
         if ($this->status->isCancelled()) {
             throw OrderAlreadyCancelledException::forId($this->id);
         }
@@ -106,6 +113,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyOrderPlaced(OrderPlaced $event): void
     {
         $this->id = OrderId::fromString($event->id);
+        $this->customerId = $event->customerId;
         $this->buyerAddress = $event->buyerAddress;
         $this->totalAmount = Money::fromCents($event->totalAmountInCents);
         $this->status = OrderStatus::PLACED;

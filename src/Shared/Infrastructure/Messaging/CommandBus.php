@@ -14,6 +14,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 final class CommandBus implements CommandBusInterface
 {
     use HandleTrait;
+    use UnwrapsHandlerFailedException;
 
     public function __construct(#[Autowire(service: 'command.bus')] MessageBusInterface $messageBus)
     {
@@ -25,9 +26,7 @@ final class CommandBus implements CommandBusInterface
         try {
             $this->handle($command);
         } catch (HandlerFailedException $e) {
-            $exception = current($e->getWrappedExceptions(recursive: true));
-
-            throw $exception ?: $e;
+            throw $this->unwrap($e);
         }
     }
 }

@@ -5,10 +5,6 @@ start: ## Full project installation and startup
 start: compose.override.yaml up vendor hooks db assets
 .PHONY: start
 
-hooks: vendor ## Install git hooks (CaptainHook)
-	@$(EXEC) vendor/bin/captainhook install -f -n
-.PHONY: hooks
-
 up: ## Build images and start containers
 	@$(FIG) pull
 	@$(FIG) build --pull
@@ -22,6 +18,10 @@ stop: ## Stop and remove containers
 destroy: ## Remove containers, volumes, and networks
 	@$(FIG) down -v
 .PHONY: destroy
+
+hooks: vendor ## Install git hooks (CaptainHook)
+	@$(EXEC) vendor/bin/captainhook install -f -n
+.PHONY: hooks
 
 ## Daily Use
 ##---------------------------------------------------------------------------

@@ -53,7 +53,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder->withoutDelisted());
 
         // Then
-        self::assertSame(2, $this->finder->count());
+        self::assertSame(2, \count($this->finder));
         self::assertSame([$listed->id()->toString()], array_map(
             static fn (ProductResult $product): string => $product->id,
             $results,

@@ -13,6 +13,7 @@
 # DEV TOOLS & QUALITY ASSURANCE
 # =============================================================================
 /.claude/settings.local.json
+/.claude/review/
 .php-cs-fixer.php
 .twig-cs-fixer.php
 phpstan.neon

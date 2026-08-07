@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Application\Security\IssueApiTokenCredentialInterface;
+use Iam\Identity\Application\Security\ApiTokenCredentialIssuerInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -20,7 +20,7 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
         $expiresAt = new \DateTimeImmutable('+30 days +00:00');
 
         // When
-        $apiKey = $this->service(IssueApiTokenCredentialInterface::class)->issue($identityId, $expiresAt);
+        $apiKey = $this->service(ApiTokenCredentialIssuerInterface::class)->issue($identityId, $expiresAt);
 
         // Then
         self::assertMatchesRegularExpression('/^key_[0-9a-f]{16}$/', $apiKey->identifier);
@@ -38,7 +38,7 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
         // Given
         $identityId = IdentityId::generate()->toString();
         $expiresAt = new \DateTimeImmutable('+30 days +00:00');
-        $issuer = $this->service(IssueApiTokenCredentialInterface::class);
+        $issuer = $this->service(ApiTokenCredentialIssuerInterface::class);
 
         // When
         $first = $issuer->issue($identityId, $expiresAt);

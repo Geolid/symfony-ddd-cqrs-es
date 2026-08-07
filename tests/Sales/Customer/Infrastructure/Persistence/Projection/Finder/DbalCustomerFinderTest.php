@@ -52,7 +52,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder->withoutErased());
 
         // Then
-        self::assertSame(2, $this->finder->count());
+        self::assertSame(2, \count($this->finder));
         self::assertSame([$registered->id()->toString()], array_map(
             static fn (CustomerResult $customer): string => $customer->id,
             $results,

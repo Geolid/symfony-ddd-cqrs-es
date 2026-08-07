@@ -13,7 +13,7 @@
     <article>
         <header><h2>{{ 'sales.customer.profile.title_password'|trans }}</h2></header>
 
-        {{ form_start(form) }}
+        {{ form_start(form, {attr: {'data-testid': 'change-password-form'}}) }}
 
         {{ form_label(form.password) }}
         <fieldset role="group" class="field-narrow">

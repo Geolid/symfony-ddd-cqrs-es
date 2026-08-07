@@ -13,7 +13,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<OrderSummaryLineResult>
  *
- * @phpstan-type Row array{order_id: string, label: string, quantity: int, unit_amount_in_cents: int}
+ * @phpstan-type Row array{order_id: string, label: string, quantity: int|string, unit_amount_in_cents: int|string}
  */
 final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder implements OrderSummaryLineFinderInterface
 {

@@ -14,6 +14,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 final class QueryBus implements QueryBusInterface
 {
     use HandleTrait;
+    use UnwrapsHandlerFailedException;
 
     public function __construct(#[Autowire(service: 'query.bus')] MessageBusInterface $messageBus)
     {
@@ -32,9 +33,7 @@ final class QueryBus implements QueryBusInterface
         try {
             return $this->handle($query);
         } catch (HandlerFailedException $e) {
-            $exception = current($e->getWrappedExceptions(recursive: true));
-
-            throw $exception ?: $e;
+            throw $this->unwrap($e);
         }
     }
 }

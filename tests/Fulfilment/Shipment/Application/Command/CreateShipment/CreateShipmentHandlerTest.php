@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\CreateShipment;
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
+use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -22,14 +23,14 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         $id = ShipmentId::forOrder($orderId)->toString();
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'buyer@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, Uuid::uuid7()->toString(), 'buyer@example.com'));
 
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
         self::assertCount(1, $results);
         self::assertSame($id, $results[0]->id);
         self::assertSame($orderId, $results[0]->orderId);
-        self::assertSame('pending', $results[0]->status);
+        self::assertSame(AppShipmentStatus::PENDING, $results[0]->status);
         self::assertSame(
             'buyer@example.com',
             $this->service(ShipmentRepositoryInterface::class)->load(ShipmentId::fromString($id))->customerAddress(),
@@ -41,11 +42,12 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId)->toString();
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'buyer@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'buyer@example.com'));
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, 'customer-1', 'someone.else@example.com'));
+        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'someone.else@example.com'));
 
         // Then
         self::assertSame(

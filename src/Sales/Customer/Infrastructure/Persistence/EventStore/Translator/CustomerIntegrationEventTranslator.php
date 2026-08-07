@@ -9,17 +9,18 @@ use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
-#[Translator('sales.customer.integration_translator')]
+#[Translator('sales.customer.integration')]
 final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrationEventTranslator
 {
     #[Subscribe(CustomerRegistered::class)]
     public function onCustomerRegistered(CustomerRegistered $event): void
     {
         $this->append(
-            \sprintf('sales.customer.integration.%s', $event->id),
+            IntegrationStreamId::build('sales.customer', $event->id),
             new CustomerRegisteredIntegrationEvent(
                 customerId: $event->id,
                 email: $event->email,
@@ -32,7 +33,7 @@ final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrat
     public function onCustomerErased(CustomerErased $event): void
     {
         $this->append(
-            \sprintf('sales.customer.integration.%s', $event->id),
+            IntegrationStreamId::build('sales.customer', $event->id),
             new CustomerErasedIntegrationEvent(
                 customerId: $event->id,
                 erasedAt: $event->erasedAt,

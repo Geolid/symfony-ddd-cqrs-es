@@ -7,6 +7,9 @@ namespace Support\Helpers;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
+use Patchlevel\EventSourcing\Store\Criteria\Criteria;
+use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
+use Patchlevel\EventSourcing\Store\Store;
 use Patchlevel\EventSourcing\Subscription\Subscriber\MetadataSubscriberAccessor;
 use Patchlevel\EventSourcing\Subscription\Subscriber\SubscriberAccessorRepository;
 
@@ -48,6 +51,20 @@ trait EventSourcingTrait
         $events = $this->extractEvents(...$aggregates);
 
         new SubscriberUtilities($this->service($projector))->executeRun(...$events);
+    }
+
+    /**
+     * @return list<object>
+     */
+    protected function publishedTo(string $streamId): array
+    {
+        $published = [];
+
+        foreach ($this->service(Store::class)->load(new Criteria(new StreamCriterion($streamId))) as $message) {
+            $published[] = $message->event();
+        }
+
+        return $published;
     }
 
     /**

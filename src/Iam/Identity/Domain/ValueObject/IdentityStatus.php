@@ -8,4 +8,14 @@ enum IdentityStatus: string
 {
     case ACTIVE = 'active';
     case SUSPENDED = 'suspended';
+
+    public function isActive(): bool
+    {
+        return self::ACTIVE === $this;
+    }
+
+    public function isSuspended(): bool
+    {
+        return self::SUSPENDED === $this;
+    }
 }

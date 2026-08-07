@@ -14,6 +14,7 @@ use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 use Sales\Order\Application\Product\Product;
 use Sales\Order\Application\Product\ProductResolverInterface;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 
 final readonly class ProductResolver implements ProductResolverInterface
 {
@@ -24,7 +25,7 @@ final readonly class ProductResolver implements ProductResolverInterface
     public function resolveFor(string $productId): ?Product
     {
         $stream = $this->store->load(new Criteria(
-            new StreamCriterion(\sprintf('catalog.product.integration.%s', $productId)),
+            new StreamCriterion(IntegrationStreamId::build('catalog.product', $productId)),
         ));
 
         /** @var array{label: ?string, unitAmountInCents: ?int, delisted: bool} $state */

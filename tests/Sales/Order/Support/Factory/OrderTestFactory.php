@@ -47,7 +47,10 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 
     public function cancelled(): self
     {
-        return $this->withModifier(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('now +00:00')));
+        Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
+
+        return static::new(array_merge($this->attributes, ['customerId' => $customerId]))
+            ->withModifier(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('now +00:00')));
     }
 
     protected function defaults(): array

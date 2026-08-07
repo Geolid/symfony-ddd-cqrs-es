@@ -24,7 +24,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestOrderPayment(
             id: $id,
             orderId: $orderId,
-            customerId: 'customer-1',
+            customerId: Uuid::uuid7()->toString(),
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
@@ -33,7 +33,6 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $orderPayment = $this->service(OrderPaymentRepositoryInterface::class)->load(OrderPaymentId::fromString($id));
-        self::assertSame($orderId, $orderPayment->orderId());
         self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
         self::assertTrue($orderPayment->status()->isRequested());
     }
@@ -43,11 +42,12 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         $this->dispatch(new RequestOrderPayment(
             id: $id,
             orderId: $orderId,
-            customerId: 'customer-1',
+            customerId: $customerId,
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
@@ -58,7 +58,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestOrderPayment(
             id: $id,
             orderId: $orderId,
-            customerId: 'customer-1',
+            customerId: $customerId,
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-OTHER',

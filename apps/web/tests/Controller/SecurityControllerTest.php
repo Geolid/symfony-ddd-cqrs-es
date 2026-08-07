@@ -22,7 +22,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
@@ -30,7 +30,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
@@ -48,14 +48,14 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'wrong password']);
         $client->submit($form);
 
@@ -74,14 +74,14 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($identity);
         $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
+            ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->create());
 
         // When
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
@@ -98,23 +98,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
-            ->withLogin('admin@example.com')
-            ->withPassword('correct horse battery staple')
-            ->create());
-        $this->store(GrantTestFactory::new()->forIdentity($identity->id()->toString())->withPermission('sales:read')->create());
+        $this->store(GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture:read')->create());
 
         // When
-        $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
-        $form->setValues(['login' => 'admin@example.com', 'password' => 'correct horse battery staple']);
-        $client->submit($form);
+        $this->loginAs($client, $identity);
 
         // Then
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
-        self::assertTrue($authorizationChecker->isGranted('sales:read'));
-        self::assertFalse($authorizationChecker->isGranted('catalog:manage'));
+        self::assertTrue($authorizationChecker->isGranted('fixture:read'));
+        self::assertFalse($authorizationChecker->isGranted('fixture:write'));
     }
 
     #[Test]
@@ -124,15 +116,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
-            ->withLogin('buyer@example.com')
-            ->withPassword('correct horse battery staple')
-            ->create());
-        $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
-        $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
-        $client->submit($form);
+        $this->loginAs($client, $identity);
 
         // When
         $client->request('GET', '/logout');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Domain\ValueObject;
 
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -34,16 +35,6 @@ final class TrackingReferenceTest extends TestCase
     }
 
     #[Test]
-    public function itProtectsInvariants(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        TrackingReference::fromString('');
-    }
-
-    #[Test]
     public function itAcceptsAReferenceAtTheMaximumLength(): void
     {
         // Given
@@ -57,12 +48,22 @@ final class TrackingReferenceTest extends TestCase
     }
 
     #[Test]
-    public function itRefusesAReferenceLongerThanTheCarrierCanIssue(): void
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        TrackingReference::fromString(str_repeat('A', 65));
+        TrackingReference::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'longer than the carrier can issue' => [str_repeat('A', 65)];
     }
 }

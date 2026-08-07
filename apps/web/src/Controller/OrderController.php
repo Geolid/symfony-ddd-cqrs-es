@@ -7,15 +7,10 @@ namespace Web\Controller;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Finder\Customer\CustomerResult;
-use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
-use Sales\Order\Application\Finder\Order\OrderResult;
-use Sales\Order\Application\Payment\RequestOrderPaymentInterface;
-use Sales\Order\Application\Query\GetOrder\GetOrder;
+use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
@@ -37,7 +32,8 @@ use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
-use Web\Security\IamUser;
+use Web\Security\Attribute\CurrentCustomerId;
+use Web\Security\Voter\OrderVoter;
 
 #[Route('/sales/orders')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -46,7 +42,7 @@ final class OrderController extends AbstractController
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
-        private readonly RequestOrderPaymentInterface $orderPaymentRequester,
+        private readonly OrderPaymentRequesterInterface $orderPaymentRequester,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -56,13 +52,13 @@ final class OrderController extends AbstractController
      */
     #[Route(name: 'sales_order_list', methods: ['GET'])]
     public function list(
+        #[CurrentCustomerId]
+        string $customerId,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
     ): Response {
-        $customer = $this->resolveCustomer();
-
         $orders = $this->queryBus->ask(new ListOrderSummaries(
-            customerId: $customer->id,
+            customerId: $customerId,
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
         ));
@@ -75,19 +71,15 @@ final class OrderController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route('/{id}', name: 'sales_order_show', methods: ['GET'], requirements: ['id' => Requirement::UUID])]
+    #[Route('/{id}', name: 'sales_order_show', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
     public function show(string $id): Response
     {
-        $customer = $this->resolveCustomer();
-
-        try {
-            $this->resolveOwnedOrder($id, $customer);
-        } catch (OrderResultNotFoundException) {
+        $summary = $this->queryBus->ask(new GetOrderSummary($id));
+        if (null === $summary) {
             throw $this->createNotFoundException('No order carries that identifier.');
         }
 
-        $summary = $this->queryBus->ask(new GetOrderSummary($id));
-        \assert(null !== $summary);
+        $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
         return $this->render('sales/order/show.html.twig', [
             'order' => $summary,
@@ -100,10 +92,8 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
-    public function place(Request $request): Response
+    public function place(Request $request, #[CurrentCustomerId] string $customerId): Response
     {
-        $customer = $this->resolveCustomer();
-
         /** @var ListResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
@@ -129,7 +119,7 @@ final class OrderController extends AbstractController
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
-                customerId: $customer->id,
+                customerId: $customerId,
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
                         'productId' => (string) $line->productId,
@@ -140,9 +130,8 @@ final class OrderController extends AbstractController
             ));
 
             $returnUrl = $this->generateUrl('sales_order_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
-            $this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl);
 
-            return $this->redirectToPaymentCheckout($id);
+            return $this->redirect($this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl));
         }
 
         return $this->render('sales/order/place.html.twig', ['form' => $form]);
@@ -151,36 +140,36 @@ final class OrderController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route('/{id}/checkout', name: 'sales_order_resume_payment', methods: ['GET'], requirements: ['id' => Requirement::UUID])]
+    #[Route('/{id}/checkout', name: 'sales_order_resume_payment', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
     public function resumePayment(string $id): Response
     {
-        $customer = $this->resolveCustomer();
-
-        try {
-            $this->resolveOwnedOrder($id, $customer);
-        } catch (OrderResultNotFoundException) {
+        $summary = $this->queryBus->ask(new GetOrderSummary($id));
+        if (null === $summary) {
             throw $this->createNotFoundException('No order carries that identifier.');
         }
 
-        return $this->redirectToPaymentCheckout($id);
+        $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
+
+        if (null === $summary->paymentCheckoutUrl) {
+            throw $this->createNotFoundException('No payment checkout is available for that order.');
+        }
+
+        return $this->redirect($summary->paymentCheckoutUrl);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/{id}/cancel', name: 'sales_order_cancel', methods: ['POST'], requirements: ['id' => Requirement::UUID])]
-    public function cancel(Request $request, string $id): Response
+    #[Route('/{id}/cancel', name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
+    public function cancel(Request $request, string $id, #[CurrentCustomerId] string $customerId): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
-        $customer = $this->resolveCustomer();
-        $this->resolveOwnedOrder($id, $customer);
-
         try {
-            $this->commandBus->dispatch(new CancelOrder($id));
+            $this->commandBus->dispatch(new CancelOrder($id, $customerId));
         } catch (OrderPaymentAlreadyCapturedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
 
@@ -190,43 +179,5 @@ final class OrderController extends AbstractController
         $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     */
-    private function resolveCustomer(): CustomerResult
-    {
-        $user = $this->getUser();
-        \assert($user instanceof IamUser);
-
-        $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
-
-        return $customer ?? throw $this->createAccessDeniedException('No customer is linked to this identity.');
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     */
-    private function resolveOwnedOrder(string $id, CustomerResult $customer): OrderResult
-    {
-        $order = $this->queryBus->ask(new GetOrder($id));
-
-        if ($order->customerId !== $customer->id) {
-            throw $this->createAccessDeniedException('This order does not belong to you.');
-        }
-
-        return $order;
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     */
-    private function redirectToPaymentCheckout(string $orderId): Response
-    {
-        $summary = $this->queryBus->ask(new GetOrderSummary($orderId));
-        \assert(null !== $summary && null !== $summary->paymentCheckoutUrl);
-
-        return $this->redirect($summary->paymentCheckoutUrl);
     }
 }

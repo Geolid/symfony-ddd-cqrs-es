@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\RequestMatcher\MethodRequestMatcher;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RemoteEvent\RemoteEvent;
-use Symfony\Component\Serializer\Exception\MissingConstructorArgumentsException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\Exception\PartialDenormalizationException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -66,7 +65,7 @@ abstract class AbstractSignedRequestParser extends AbstractRequestParser
             );
         } catch (NotEncodableValueException) {
             throw new RejectWebhookException(Response::HTTP_BAD_REQUEST, 'Invalid JSON payload.');
-        } catch (PartialDenormalizationException|MissingConstructorArgumentsException $e) {
+        } catch (PartialDenormalizationException $e) {
             throw new RejectWebhookException(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
         }
 

@@ -16,7 +16,7 @@ use Sales\Order\Domain\Event\OrderPlaced;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
-#[Translator('sales.order.integration_translator')]
+#[Translator('sales.order.integration')]
 final readonly class OrderIntegrationEventTranslator extends AbstractIntegrationEventTranslator
 {
     #[Subscribe(OrderPaymentRequested::class)]

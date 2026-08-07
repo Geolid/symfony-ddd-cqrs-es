@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -35,10 +36,10 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReturnsAnEmptyListForAnUnknownOrder(): void
+    public function itListsNoLinesForAnUnknownOrder(): void
     {
         // When
-        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder('unknown-order'));
+        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder(Uuid::uuid7()->toString()));
 
         // Then
         self::assertSame([], $lines);

@@ -6,9 +6,11 @@ namespace Sales\Tests\Order\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -22,11 +24,12 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $customerId = Uuid::uuid7()->toString();
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', self::lines(), $placedAt))
-            ->then(new OrderPlaced($id->toString(), 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')));
+            ->when(static fn () => Order::place($id, $customerId, 'buyer@example.com', self::lines(), $placedAt))
+            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')));
     }
 
     #[Test]
@@ -37,7 +40,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, 'customer-1', 'buyer@example.com', [], $placedAt))
+            ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), 'buyer@example.com', [], $placedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -45,12 +48,13 @@ final class OrderTest extends AggregateRootTestCase
     public function itCancelsAPlacedOrder(): void
     {
         $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
-            ->when(static fn (Order $order) => $order->cancel($cancelledAt))
+            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
+            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format('c')));
     }
 
@@ -58,16 +62,29 @@ final class OrderTest extends AggregateRootTestCase
     public function itCannotCancelAnAlreadyCancelledOrder(): void
     {
         $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(
-                new OrderPlaced($id, 'customer-1', 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')),
+                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')),
                 new OrderCancelled($id, $cancelledAt->format('c')),
             )
-            ->when(static fn (Order $order) => $order->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(OrderAlreadyCancelledException::class);
+    }
+
+    #[Test]
+    public function itCannotCancelAnOrderBelongingToAnotherCustomer(): void
+    {
+        $id = OrderId::generate()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
+            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     protected function aggregateClass(): string

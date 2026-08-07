@@ -43,11 +43,6 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         return $this->erased;
     }
 
-    public function identityId(): ?string
-    {
-        return $this->identityId;
-    }
-
     public static function register(CustomerId $id, Email $email, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Customer\Infrastructure\Persistence\EventStore\Translator;
 
-use Patchlevel\EventSourcing\Store\Criteria\Criteria;
-use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
-use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
@@ -18,8 +15,10 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
     #[Test]
     public function itPublishesTheRegistrationOnCustomerRegistered(): void
     {
-        // When
+        // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+
+        // When
         $this->store($customer);
 
         // Then
@@ -34,8 +33,10 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
     #[Test]
     public function itPublishesTheErasureOnCustomerErased(): void
     {
-        // When
+        // Given
         $customer = CustomerTestFactory::new()->erased()->create();
+
+        // When
         $this->store($customer);
 
         // Then
@@ -44,19 +45,5 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[1];
         self::assertInstanceOf(CustomerErasedIntegrationEvent::class, $event);
         self::assertSame($customer->id()->toString(), $event->customerId);
-    }
-
-    /**
-     * @return list<object>
-     */
-    private function publishedTo(string $streamId): array
-    {
-        $published = [];
-
-        foreach ($this->service(Store::class)->load(new Criteria(new StreamCriterion($streamId))) as $message) {
-            $published[] = $message->event();
-        }
-
-        return $published;
     }
 }

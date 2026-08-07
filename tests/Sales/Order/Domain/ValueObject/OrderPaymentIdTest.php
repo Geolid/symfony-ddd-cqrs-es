@@ -19,7 +19,7 @@ final class OrderPaymentIdTest extends TestCase
         $id = OrderPaymentId::generate();
 
         // Then
-        self::assertNotEmpty($id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]

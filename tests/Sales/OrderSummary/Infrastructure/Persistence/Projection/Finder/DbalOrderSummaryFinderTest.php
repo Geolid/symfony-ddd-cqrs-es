@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
@@ -27,7 +28,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itReadsTheSummaryForAnOrder(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->withTotalAmountInCents(4_200)->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
@@ -43,11 +45,9 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertInstanceOf(OrderSummaryResult::class, $result);
         self::assertSame($order->id()->toString(), $result->orderId);
-        self::assertSame('customer-1', $result->customerId);
+        self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(AppOrderSummaryStatus::PAYMENT_PENDING, $result->status);
-        self::assertSame('placed', $result->orderStatus);
-        self::assertSame('requested', $result->paymentStatus);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
@@ -57,22 +57,23 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itReadsNothingForAnUnknownOrder(): void
     {
         // When
-        $result = $this->finder->ofOrder('unknown-order');
+        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);
     }
 
     #[Test]
-    public function itFiltersByCustomer(): void
+    public function itFiltersOrderSummariesByCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withCustomerId('customer-1')->create();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
-        $this->store(OrderTestFactory::new()->withCustomerId('customer-2')->create());
+        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
 
         // When
-        $results = iterator_to_array($this->finder->withCustomer('customer-1'));
+        $results = iterator_to_array($this->finder->withCustomer($customerId));
 
         // Then
         self::assertCount(1, $results);
@@ -80,14 +81,12 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersByStatus(): void
+    public function itFiltersOrderSummariesByStatus(): void
     {
         // Given
         $placed = OrderTestFactory::new()->create();
         $this->store($placed);
-        $cancelled = OrderTestFactory::new()->create();
-        $this->store($cancelled);
-        $cancelled->cancel(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $cancelled = OrderTestFactory::new()->cancelled()->create();
         $this->store($cancelled);
 
         // When

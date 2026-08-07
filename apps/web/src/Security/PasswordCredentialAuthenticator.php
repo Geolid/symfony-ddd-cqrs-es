@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Identity\Application\Security\AuthenticatePasswordCredentialInterface;
+use Iam\Identity\Application\Security\PasswordCredentialAuthenticatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
 final class PasswordCredentialAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public function __construct(
-        private AuthenticatePasswordCredentialInterface $authenticator,
+        private PasswordCredentialAuthenticatorInterface $authenticator,
         private UrlGeneratorInterface $urlGenerator,
     ) {
     }

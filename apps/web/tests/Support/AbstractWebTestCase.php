@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
-use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Iam\Identity\Domain\Identity;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Web\Security\IamUserProvider;
 
 abstract class AbstractWebTestCase extends WebTestCase
 {
@@ -38,29 +38,17 @@ abstract class AbstractWebTestCase extends WebTestCase
     protected function logIn(KernelBrowser $client, string $login, string $password): void
     {
         $crawler = $client->request('GET', '/login');
-        $form = $crawler->filter('main form')->form();
+        $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => $login, 'password' => $password]);
         $client->submit($form);
     }
 
     /**
-     * Registers an Identity + PasswordCredential + linked Customer, and logs in as them.
+     * @throws ApplicationExceptionInterface
      */
-    protected function loggedInCustomer(KernelBrowser $client, string $login = 'buyer@example.com'): string
+    protected function loginAs(KernelBrowser $client, Identity $identity): void
     {
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
-            ->forIdentity($identity->id()->toString())
-            ->withLogin($login)
-            ->withPassword('correct horse battery staple')
-            ->create());
-        $customer = CustomerTestFactory::new()->linkedToIdentity($identity->id()->toString())->create();
-        $this->store($customer);
-
-        $this->logIn($client, $login, 'correct horse battery staple');
-
-        return $customer->id()->toString();
+        $client->loginUser($this->service(IamUserProvider::class)->loadUserByIdentifier($identity->id()->toString()));
     }
 
     protected function csrfToken(KernelBrowser $client, string $tokenId): string

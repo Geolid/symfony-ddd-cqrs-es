@@ -8,10 +8,8 @@ use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
-use Patchlevel\EventSourcing\Store\Criteria\Criteria;
-use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
-use Patchlevel\EventSourcing\Store\Store;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -19,8 +17,11 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     #[Test]
     public function itPublishesTheDispatchOnShipmentDispatched(): void
     {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->dispatched()->create();
+
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId('order-1')->dispatched()->create();
         $this->store($shipment);
 
         // Then
@@ -29,14 +30,17 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[0];
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $event);
         self::assertSame($shipment->id()->toString(), $event->shipmentId);
-        self::assertSame('order-1', $event->orderId);
+        self::assertSame($orderId, $event->orderId);
     }
 
     #[Test]
     public function itPublishesTheDeliveryOnShipmentDelivered(): void
     {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->delivered()->create();
+
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId('order-1')->delivered()->create();
         $this->store($shipment);
 
         // Then
@@ -46,14 +50,17 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[1];
         self::assertInstanceOf(ShipmentDeliveredIntegrationEvent::class, $event);
         self::assertSame($shipment->id()->toString(), $event->shipmentId);
-        self::assertSame('order-1', $event->orderId);
+        self::assertSame($orderId, $event->orderId);
     }
 
     #[Test]
     public function itPublishesTheTrackingReferenceOnTrackingReferenceAssigned(): void
     {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->tracked('ACME-4Q7X2K9')->create();
+
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId('order-1')->tracked('ACME-4Q7X2K9')->create();
         $this->store($shipment);
 
         // Then
@@ -63,21 +70,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[1];
         self::assertInstanceOf(ShipmentTrackingReferenceAssignedIntegrationEvent::class, $event);
         self::assertSame($shipment->id()->toString(), $event->shipmentId);
-        self::assertSame('order-1', $event->orderId);
+        self::assertSame($orderId, $event->orderId);
         self::assertSame('ACME-4Q7X2K9', $event->trackingReference);
-    }
-
-    /**
-     * @return list<object>
-     */
-    private function publishedTo(string $streamId): array
-    {
-        $published = [];
-
-        foreach ($this->service(Store::class)->load(new Criteria(new StreamCriterion($streamId))) as $message) {
-            $published[] = $message->event();
-        }
-
-        return $published;
     }
 }

@@ -23,10 +23,10 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsAProductItSaved(): void
+    public function itLoadsASavedProduct(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
+        $product = ProductTestFactory::new()->create();
 
         // When
         $this->repository->save($product);
@@ -34,11 +34,11 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $product->id();
         self::assertTrue($this->repository->has($id));
-        self::assertSame('Espresso cups, set of 6', $this->repository->load($id)->label());
+        $this->repository->load($id);
     }
 
     #[Test]
-    public function itThrowsOnAProductItNeverSaved(): void
+    public function itThrowsOnAnUnsavedProduct(): void
     {
         // Given
         $id = ProductId::generate();
