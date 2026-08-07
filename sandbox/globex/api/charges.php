@@ -11,7 +11,6 @@ $chargeReference = fake_api_reference('GLBX-LOCAL', $rawBody);
 
 $checkoutUrl = rtrim((string) getenv('FAKE_CHECKOUT_BASE_URL'), '/').'/?'.http_build_query([
     'ref' => $chargeReference,
-    'items' => (int) ($body['itemCount'] ?? 0),
     'total' => (int) ($body['amountInCents'] ?? 0),
     'returnUrl' => (string) ($body['returnUrl'] ?? ''),
 ]);

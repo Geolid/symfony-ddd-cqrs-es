@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
+use Iam\Identity\Application\Exception\PasswordCredentialAuthenticationFailedException;
 use Iam\Identity\Application\Security\PasswordCredentialAuthenticatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,9 +39,9 @@ final class PasswordCredentialAuthenticator extends AbstractAuthenticator implem
         $login = (string) $request->request->get('login', '');
         $password = (string) $request->request->get('password', '');
 
-        $identityId = $this->authenticator->authenticate($login, $password);
-
-        if (null === $identityId) {
+        try {
+            $identityId = $this->authenticator->authenticate($login, $password);
+        } catch (PasswordCredentialAuthenticationFailedException) {
             throw new CustomUserMessageAuthenticationException('Invalid credentials.');
         }
 

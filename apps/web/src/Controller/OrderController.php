@@ -75,9 +75,6 @@ final class OrderController extends AbstractController
     public function show(string $id): Response
     {
         $summary = $this->queryBus->ask(new GetOrderSummary($id));
-        if (null === $summary) {
-            throw $this->createNotFoundException('No order carries that identifier.');
-        }
 
         $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
@@ -112,10 +109,6 @@ final class OrderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $id = Uuid::uuid7()->toString();
-            $itemCount = array_sum(array_map(
-                static fn (OrderLineFormData $line): int => (int) $line->quantity,
-                $formData->lines,
-            ));
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
@@ -129,9 +122,7 @@ final class OrderController extends AbstractController
                 )),
             ));
 
-            $returnUrl = $this->generateUrl('sales_order_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            return $this->redirect($this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl));
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }
 
         return $this->render('sales/order/place.html.twig', ['form' => $form]);
@@ -139,22 +130,22 @@ final class OrderController extends AbstractController
 
     /**
      * @throws ApplicationExceptionInterface
+     * @throws \DomainException
      */
-    #[Route('/{id}/checkout', name: 'sales_order_resume_payment', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
-    public function resumePayment(string $id): Response
+    #[Route('/{id}/checkout', name: 'sales_order_pay', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
+    public function pay(string $id): Response
     {
         $summary = $this->queryBus->ask(new GetOrderSummary($id));
-        if (null === $summary) {
-            throw $this->createNotFoundException('No order carries that identifier.');
-        }
 
         $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
-        if (null === $summary->paymentCheckoutUrl) {
-            throw $this->createNotFoundException('No payment checkout is available for that order.');
+        if (null !== $summary->paymentCheckoutUrl) {
+            return $this->redirect($summary->paymentCheckoutUrl);
         }
 
-        return $this->redirect($summary->paymentCheckoutUrl);
+        $returnUrl = $this->generateUrl('sales_order_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->redirect($this->orderPaymentRequester->requestFor($id, $returnUrl));
     }
 
     /**

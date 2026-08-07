@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\ApiTokenCredentialAuthenticationFailedException;
 use Iam\Identity\Application\Security\ApiTokenCredentialAuthenticatorInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
@@ -33,11 +34,11 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
     #[Test]
     public function itRefusesAnUnknownIdentifier(): void
     {
-        // When
-        $result = $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_ghost', 'whatever');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(ApiTokenCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_ghost', 'whatever');
     }
 
     #[Test]
@@ -50,11 +51,11 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->withSecret('super-secret')
             ->create());
 
-        // When
-        $result = $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'wrong-secret');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(ApiTokenCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'wrong-secret');
     }
 
     #[Test]
@@ -68,11 +69,11 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->revoked()
             ->create());
 
-        // When
-        $result = $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'super-secret');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(ApiTokenCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'super-secret');
     }
 
     #[Test]
@@ -86,10 +87,10 @@ final class ApiTokenCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->expired()
             ->create());
 
-        // When
-        $result = $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'super-secret');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(ApiTokenCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(ApiTokenCredentialAuthenticatorInterface::class)->authenticate('key_abc123', 'super-secret');
     }
 }

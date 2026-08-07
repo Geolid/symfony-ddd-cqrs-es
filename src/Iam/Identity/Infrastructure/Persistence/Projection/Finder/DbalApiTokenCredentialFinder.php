@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
@@ -17,7 +18,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements ApiTokenCredentialFinderInterface
 {
-    public function ofIdentifier(string $identifier): ?ApiTokenCredentialResult
+    public function ofIdentifier(string $identifier): ApiTokenCredentialResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -26,7 +27,11 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements A
             ->executeQuery()
             ->fetchAssociative();
 
-        return false !== $row ? $this->mapRow($row) : null;
+        if (false === $row) {
+            throw ApiTokenCredentialResultNotFoundException::forIdentifier($identifier);
+        }
+
+        return $this->mapRow($row);
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

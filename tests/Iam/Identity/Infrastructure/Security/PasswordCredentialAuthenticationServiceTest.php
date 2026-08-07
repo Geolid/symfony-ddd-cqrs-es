@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\PasswordCredentialAuthenticationFailedException;
 use Iam\Identity\Application\Security\PasswordCredentialAuthenticatorInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
@@ -33,11 +34,11 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
     #[Test]
     public function itRefusesAnUnknownLogin(): void
     {
-        // When
-        $result = $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('ghost@example.com', 'whatever');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(PasswordCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('ghost@example.com', 'whatever');
     }
 
     #[Test]
@@ -50,10 +51,10 @@ final class PasswordCredentialAuthenticationServiceTest extends AbstractIntegrat
             ->withPassword('correct horse battery staple')
             ->create());
 
-        // When
-        $result = $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('buyer@example.com', 'wrong password');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(PasswordCredentialAuthenticationFailedException::class);
+
+        // When
+        $this->service(PasswordCredentialAuthenticatorInterface::class)->authenticate('buyer@example.com', 'wrong password');
     }
 }

@@ -28,7 +28,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         ]);
 
         // When
-        $session = self::gateway($response)->requestPayment($orderId, 4_200, 2, 'https://web.test/sales/orders');
+        $session = self::gateway($response)->requestPayment($orderId, 4_200, 'https://web.test/sales/orders');
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
@@ -38,7 +38,6 @@ final class GlobexPaymentGatewayTest extends TestCase
             [
                 'reference' => $orderId,
                 'amountInCents' => 4_200,
-                'itemCount' => 2,
                 'returnUrl' => 'https://web.test/sales/orders',
             ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
@@ -53,7 +52,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 1, 'https://web.test/sales/orders');
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders');
     }
 
     /**
@@ -73,7 +72,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 1, 'https://web.test/sales/orders');
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders');
     }
 
     /**

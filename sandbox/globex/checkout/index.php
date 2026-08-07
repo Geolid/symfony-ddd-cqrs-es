@@ -33,7 +33,6 @@ if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
 }
 
 $reference = (string) ($_GET['ref'] ?? '');
-$items = (int) ($_GET['items'] ?? 0);
 $total = number_format(((int) ($_GET['total'] ?? 0)) / 100, 2).' €';
 $returnUrl = (string) ($_GET['returnUrl'] ?? '');
 
@@ -194,10 +193,6 @@ header('Content-Type: text/html; charset=utf-8');
     </div>
 
     <div class="checkout__body">
-        <div class="checkout__row">
-            <span class="checkout__label">Items in cart</span>
-            <span class="checkout__value"><?php echo htmlspecialchars((string) $items); ?></span>
-        </div>
         <div class="checkout__row">
             <span class="checkout__label">Payment Reference</span>
             <span class="checkout__value"><?php echo htmlspecialchars($reference); ?></span>

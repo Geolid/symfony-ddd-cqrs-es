@@ -7,8 +7,8 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
-use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -25,7 +25,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsTheSummaryForAnOrder(): void
+    public function itGetsTheSummaryForAnOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -43,7 +43,6 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofOrder($order->id()->toString());
 
         // Then
-        self::assertInstanceOf(OrderSummaryResult::class, $result);
         self::assertSame($order->id()->toString(), $result->orderId);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
@@ -54,13 +53,13 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNoSummaryForAnUnknownOrder(): void
+    public function itThrowsOnAnUnknownOrder(): void
     {
-        // When
-        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
-
         // Then
-        self::assertNull($result);
+        $this->expectException(OrderSummaryResultNotFoundException::class);
+
+        // When
+        $this->finder->ofOrder(Uuid::uuid7()->toString());
     }
 
     #[Test]

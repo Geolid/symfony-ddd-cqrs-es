@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
@@ -17,7 +18,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements PasswordCredentialFinderInterface
 {
-    public function ofLogin(string $login): ?PasswordCredentialResult
+    public function ofLogin(string $login): PasswordCredentialResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -26,7 +27,11 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
             ->executeQuery()
             ->fetchAssociative();
 
-        return false !== $row ? $this->mapRow($row) : null;
+        if (false === $row) {
+            throw PasswordCredentialResultNotFoundException::forLogin($login);
+        }
+
+        return $this->mapRow($row);
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

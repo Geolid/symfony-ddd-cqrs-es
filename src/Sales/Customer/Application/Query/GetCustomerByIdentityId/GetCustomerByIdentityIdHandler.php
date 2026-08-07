@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Application\Query\GetCustomerByIdentityId;
 
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Shared\Application\Query\AsQueryHandler;
@@ -17,6 +18,10 @@ final readonly class GetCustomerByIdentityIdHandler
 
     public function __invoke(GetCustomerByIdentityId $query): ?CustomerResult
     {
-        return $this->customerFinder->ofIdentityId($query->identityId);
+        try {
+            return $this->customerFinder->ofIdentityId($query->identityId);
+        } catch (CustomerResultNotFoundException) {
+            return null;
+        }
     }
 }

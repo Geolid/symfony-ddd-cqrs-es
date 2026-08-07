@@ -29,7 +29,6 @@ final class LinkCustomerIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofIdentityId($identityId);
-        self::assertNotNull($result);
         self::assertSame($identityId, $result->identityId);
     }
 

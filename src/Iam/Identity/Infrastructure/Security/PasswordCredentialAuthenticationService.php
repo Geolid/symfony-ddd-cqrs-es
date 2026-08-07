@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\PasswordCredentialAuthenticationFailedException;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Security\PasswordCredentialAuthenticatorInterface;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
@@ -21,20 +23,21 @@ final readonly class PasswordCredentialAuthenticationService implements Password
     }
 
     /**
+     * @throws PasswordCredentialAuthenticationFailedException
      * @throws PasswordCredentialNotFoundException
      */
-    public function authenticate(string $login, string $plainPassword): ?string
+    public function authenticate(string $login, string $plainPassword): string
     {
-        $credentialResult = $this->passwordCredentialFinder->ofLogin($login);
-
-        if (null === $credentialResult) {
-            return null;
+        try {
+            $credentialResult = $this->passwordCredentialFinder->ofLogin($login);
+        } catch (PasswordCredentialResultNotFoundException) {
+            throw PasswordCredentialAuthenticationFailedException::forLogin($login);
         }
 
         $credential = $this->passwordCredentialRepository->load(PasswordCredentialId::fromString($credentialResult->id));
 
         if (!$credential->verify($plainPassword, $this->hasher)) {
-            return null;
+            throw PasswordCredentialAuthenticationFailedException::forLogin($login);
         }
 
         return $credentialResult->identityId;

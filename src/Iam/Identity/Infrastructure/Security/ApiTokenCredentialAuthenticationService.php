@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\ApiTokenCredentialAuthenticationFailedException;
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Security\ApiTokenCredentialAuthenticatorInterface;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
@@ -23,20 +25,21 @@ final readonly class ApiTokenCredentialAuthenticationService implements ApiToken
     }
 
     /**
+     * @throws ApiTokenCredentialAuthenticationFailedException
      * @throws ApiTokenCredentialNotFoundException
      */
-    public function authenticate(string $identifier, string $plainSecret): ?string
+    public function authenticate(string $identifier, string $plainSecret): string
     {
-        $credentialResult = $this->apiTokenCredentialFinder->ofIdentifier($identifier);
-
-        if (null === $credentialResult) {
-            return null;
+        try {
+            $credentialResult = $this->apiTokenCredentialFinder->ofIdentifier($identifier);
+        } catch (ApiTokenCredentialResultNotFoundException) {
+            throw ApiTokenCredentialAuthenticationFailedException::forIdentifier($identifier);
         }
 
         $credential = $this->apiTokenCredentialRepository->load(ApiTokenCredentialId::fromString($credentialResult->id));
 
         if (!$credential->verify($plainSecret, $this->hasher, $this->clock->now())) {
-            return null;
+            throw ApiTokenCredentialAuthenticationFailedException::forIdentifier($identifier);
         }
 
         return $credentialResult->identityId;

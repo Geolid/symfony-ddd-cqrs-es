@@ -6,6 +6,7 @@ namespace Api\Security;
 
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
+use Iam\Identity\Application\Exception\ApiTokenCredentialAuthenticationFailedException;
 use Iam\Identity\Application\Security\ApiTokenCredentialAuthenticatorInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -49,9 +50,9 @@ final class ApiTokenAuthenticator extends AbstractAuthenticator implements Authe
 
         [$identifier, $secret] = explode('.', $token, 2);
 
-        $identityId = $this->authenticator->authenticate($identifier, $secret);
-
-        if (null === $identityId) {
+        try {
+            $identityId = $this->authenticator->authenticate($identifier, $secret);
+        } catch (ApiTokenCredentialAuthenticationFailedException) {
             throw new CustomUserMessageAuthenticationException('Invalid API key.');
         }
 
