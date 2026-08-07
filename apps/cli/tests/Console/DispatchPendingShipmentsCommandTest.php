@@ -21,10 +21,10 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
         // Given
         $shipment = ShipmentTestFactory::new()->create();
         $this->store($shipment);
+        $tester = $this->tester();
 
         // When
-        $tester = $this->tester('fulfilment:shipment:dispatch-pending');
-        $tester->execute([]);
+        $tester->run(['command' => 'fulfilment:shipment:dispatch-pending']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -42,11 +42,11 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = (new LockFactory($store))->createLock('fulfilment:shipment:dispatch-pending');
         $lock->acquire();
+        $tester = $this->tester();
 
         try {
             // When
-            $tester = $this->tester('fulfilment:shipment:dispatch-pending');
-            $tester->execute([]);
+            $tester->run(['command' => 'fulfilment:shipment:dispatch-pending']);
 
             // Then
             self::assertSame(Command::SUCCESS, $tester->getStatusCode());

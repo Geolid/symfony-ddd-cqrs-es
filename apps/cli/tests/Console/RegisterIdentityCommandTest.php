@@ -8,16 +8,23 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\Console\Command\Command;
 
 final class RegisterIdentityCommandTest extends AbstractCliTestCase
 {
+    use ClockSensitiveTrait;
+
     #[Test]
     public function itRegistersAnIdentityWithAnApiKeyAndGrants(): void
     {
+        // Given
+        $now = new \DateTimeImmutable('2026-08-07T10:00:00+00:00');
+        self::mockTime($now);
+        $tester = $this->tester();
+
         // When
-        $tester = $this->tester('iam:identity:register');
-        $tester->execute(['--permission' => ['sales:read', 'fulfilment:write']]);
+        $tester->run(['command' => 'iam:identity:register', '--permission' => ['fixture:read', 'fixture:write']]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -29,32 +36,38 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($matches[1]);
         self::assertNotNull($credential);
         self::assertNotEmpty($credential->identityId);
-        self::assertGreaterThan(new \DateTimeImmutable('now +00:00')->modify('+364 days'), $credential->expiresAt);
+        self::assertSame($now->modify('+365 days')->format(\DateTimeInterface::ATOM), $credential->expiresAt->format(\DateTimeInterface::ATOM));
 
         $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
         self::assertCount(2, $grants);
-        self::assertSame(['sales:read', 'fulfilment:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
+        self::assertSame(['fixture:read', 'fixture:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
     }
 
     #[Test]
     public function itFailsWhenNoPermissionIsProvided(): void
     {
+        // Given
+        $tester = $this->tester();
+
         // When
-        $tester = $this->tester('iam:identity:register');
-        $tester->execute([]);
+        $tester->run(['command' => 'iam:identity:register']);
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('--permission:', $tester->getDisplay());
     }
 
     #[Test]
     public function itFailsWhenAPermissionIsMalformed(): void
     {
+        // Given
+        $tester = $this->tester();
+
         // When
-        $tester = $this->tester('iam:identity:register');
-        $tester->execute(['--permission' => ['not-a-valid-permission-format']]);
+        $tester->run(['command' => 'iam:identity:register', '--permission' => ['not-a-valid-permission-format']]);
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('permission[0]:', $tester->getDisplay());
     }
 }
