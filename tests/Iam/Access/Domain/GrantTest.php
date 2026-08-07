@@ -25,7 +25,7 @@ final class GrantTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Grant::grant($id, $identityId, Permission::fromString('sales:order_write'), $grantedAt))
-            ->then(new PermissionGranted($id->toString(), $identityId, 'sales:order_write', $grantedAt->format('c')));
+            ->then(new PermissionGranted($id->toString(), $identityId, 'sales:order_write', $grantedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -36,9 +36,9 @@ final class GrantTest extends AggregateRootTestCase
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new PermissionGranted($id, 'an-identity-id', 'sales:order_write', $grantedAt->format('c')))
+            ->given(new PermissionGranted($id, 'an-identity-id', 'sales:order_write', $grantedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Grant $grant) => $grant->revoke($revokedAt))
-            ->then(new PermissionRevoked($id, $revokedAt->format('c')));
+            ->then(new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -50,8 +50,8 @@ final class GrantTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new PermissionGranted($id, 'an-identity-id', 'sales:order_write', $grantedAt->format('c')),
-                new PermissionRevoked($id, $revokedAt->format('c')),
+                new PermissionGranted($id, 'an-identity-id', 'sales:order_write', $grantedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Grant $grant) => $grant->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(PermissionAlreadyRevokedException::class);

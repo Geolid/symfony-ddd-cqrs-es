@@ -71,7 +71,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             amountInCents: $amount->toCents(),
             reference: $reference->toString(),
             checkoutUrl: $checkoutUrl,
-            requestedAt: $requestedAt->format('c'),
+            requestedAt: $requestedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -91,7 +91,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             orderId: $this->orderId,
             customerId: $this->customerId,
             buyerAddress: $this->buyerAddress,
-            capturedAt: $capturedAt->format('c'),
+            capturedAt: $capturedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

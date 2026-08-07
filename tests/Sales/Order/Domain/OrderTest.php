@@ -29,7 +29,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Order::place($id, $customerId, 'buyer@example.com', self::lines(), $placedAt))
-            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')));
+            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -53,9 +53,9 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
+            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
-            ->then(new OrderCancelled($id, $cancelledAt->format('c')));
+            ->then(new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -68,8 +68,8 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')),
-                new OrderCancelled($id, $cancelledAt->format('c')),
+                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)),
+                new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(OrderAlreadyCancelledException::class);
@@ -82,7 +82,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format('c')))
+            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }

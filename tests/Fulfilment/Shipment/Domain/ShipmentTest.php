@@ -29,7 +29,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Shipment::create($id, $orderId, $customerId, 'buyer@example.com', $createdAt))
-            ->then(new ShipmentCreated($id->toString(), $orderId, $customerId, 'buyer@example.com', $createdAt->format('c')));
+            ->then(new ShipmentCreated($id->toString(), $orderId, $customerId, 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -40,9 +40,9 @@ final class ShipmentTest extends AggregateRootTestCase
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
-            ->then(new ShipmentDispatched($id, $dispatchedAt->format('c')));
+            ->then(new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -54,8 +54,8 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
-                new ShipmentDispatched($id, $dispatchedAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-4Q7X2K9')))
             ->then(new TrackingReferenceAssigned($id, 'ACME-4Q7X2K9'));
@@ -68,7 +68,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-4Q7X2K9')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
@@ -82,8 +82,8 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
-                new ShipmentDispatched($id, $dispatchedAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new TrackingReferenceAssigned($id, 'ACME-4Q7X2K9'),
             )
             ->when(static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString('ACME-OTHER')))
@@ -100,11 +100,11 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')),
-                new ShipmentDispatched($id, $dispatchedAt->format('c')),
+                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered($deliveredAt))
-            ->then(new ShipmentDelivered($id, $deliveredAt->format('c')));
+            ->then(new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -114,7 +114,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format('c')))
+            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }

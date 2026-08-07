@@ -29,7 +29,7 @@ final class ApiTokenCredentialIssuingServiceTest extends AbstractIntegrationTest
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($apiKey->identifier);
         self::assertNotNull($credential);
         self::assertSame($identityId, $credential->identityId);
-        self::assertSame($expiresAt->format('c'), $credential->expiresAt->format('c'));
+        self::assertSame($expiresAt->format(\DateTimeInterface::ATOM), $credential->expiresAt->format(\DateTimeInterface::ATOM));
     }
 
     #[Test]

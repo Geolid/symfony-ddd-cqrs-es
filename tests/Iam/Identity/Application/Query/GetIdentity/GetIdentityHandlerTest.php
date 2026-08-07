@@ -29,7 +29,7 @@ final class GetIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($identity->id()->toString(), $result->id);
         self::assertSame(AppIdentityStatus::ACTIVE, $result->status);
-        self::assertSame($registeredAt->format('c'), $result->registeredAt->format('c'));
+        self::assertSame($registeredAt->format(\DateTimeInterface::ATOM), $result->registeredAt->format(\DateTimeInterface::ATOM));
     }
 
     #[Test]

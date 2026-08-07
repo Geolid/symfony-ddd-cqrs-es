@@ -36,7 +36,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(fn () => PasswordCredential::set($id, $identityId, $login, 'S3cr3t!', $this->hasher, $setAt))
-            ->then(new PasswordCredentialSet($id->toString(), $identityId->toString(), 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format('c')));
+            ->then(new PasswordCredentialSet($id->toString(), $identityId->toString(), 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -48,9 +48,9 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $changedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('OldS3cr3t!'), $setAt->format('c')))
+            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('OldS3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
             ->when(fn (PasswordCredential $credential) => $credential->change('NewS3cr3t!', $this->hasher, $changedAt))
-            ->then(new PasswordCredentialChanged($id, $this->hasher->hash('NewS3cr3t!'), $changedAt->format('c')));
+            ->then(new PasswordCredentialChanged($id, $this->hasher->hash('NewS3cr3t!'), $changedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -65,7 +65,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         // When
         $this
-            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format('c')))
+            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
             ->when(function (PasswordCredential $credential) use (&$correctResult, &$wrongResult): void {
                 $correctResult = $credential->verify('S3cr3t!', $this->hasher);
                 $wrongResult = $credential->verify('wrong', $this->hasher);

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Application\Query\Result\StreamResult;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
@@ -42,7 +40,6 @@ final class DispatchPendingShipmentsCommand
         }
 
         try {
-            /** @var StreamResult<ShipmentResult> $pending */
             $pending = $this->queryBus->ask(new ListPendingShipments());
             $total = \count($pending);
 

@@ -7,7 +7,7 @@ namespace Cli\Tests\Support;
 use Bootstrap\Kernel;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractCliTestCase extends AbstractIntegrationTestCase
@@ -17,6 +17,7 @@ abstract class AbstractCliTestCase extends AbstractIntegrationTestCase
     protected function setUp(): void
     {
         $this->application = new Application(self::bootKernel());
+        $this->application->setAutoExit(false);
     }
 
     /**
@@ -27,8 +28,8 @@ abstract class AbstractCliTestCase extends AbstractIntegrationTestCase
         return new Kernel('test', false, 'cli');
     }
 
-    protected function tester(string $commandName): CommandTester
+    protected function tester(): ApplicationTester
     {
-        return new CommandTester($this->application->find($commandName));
+        return new ApplicationTester($this->application);
     }
 }

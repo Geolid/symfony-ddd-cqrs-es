@@ -53,8 +53,8 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
             identityId: $identityId->toString(),
             identifier: $identifier,
             secretHash: $hasher->hash($plainSecret),
-            issuedAt: $issuedAt->format('c'),
-            expiresAt: $expiresAt->format('c'),
+            issuedAt: $issuedAt->format(\DateTimeInterface::ATOM),
+            expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -76,7 +76,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
 
         $this->recordThat(new ApiTokenCredentialRevoked(
             id: $this->id->toString(),
-            revokedAt: $revokedAt->format('c'),
+            revokedAt: $revokedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
