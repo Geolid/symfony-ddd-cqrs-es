@@ -70,7 +70,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             orderId: $orderId,
             customerId: $customerId,
             customerAddress: $customerAddress,
-            createdAt: $createdAt->format('c'),
+            createdAt: $createdAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -87,7 +87,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentDispatched(
             id: $this->id->toString(),
-            dispatchedAt: $dispatchedAt->format('c'),
+            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -121,7 +121,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentDelivered(
             id: $this->id->toString(),
-            deliveredAt: $deliveredAt->format('c'),
+            deliveredAt: $deliveredAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

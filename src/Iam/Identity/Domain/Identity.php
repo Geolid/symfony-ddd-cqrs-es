@@ -42,7 +42,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new IdentityRegistered(
             id: $id->toString(),
-            registeredAt: $registeredAt->format('c'),
+            registeredAt: $registeredAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -59,7 +59,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentitySuspended(
             id: $this->id->toString(),
-            suspendedAt: $suspendedAt->format('c'),
+            suspendedAt: $suspendedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -74,7 +74,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentityReactivated(
             id: $this->id->toString(),
-            reactivatedAt: $reactivatedAt->format('c'),
+            reactivatedAt: $reactivatedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

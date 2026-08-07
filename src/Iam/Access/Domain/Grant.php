@@ -37,7 +37,7 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             identityId: $identityId,
             permission: $permission->toString(),
-            grantedAt: $grantedAt->format('c'),
+            grantedAt: $grantedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -54,7 +54,7 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PermissionRevoked(
             id: $this->id->toString(),
-            revokedAt: $revokedAt->format('c'),
+            revokedAt: $revokedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

@@ -31,7 +31,7 @@ final readonly class ApiTokenCredentialIssuingService implements ApiTokenCredent
             identityId: $identityId,
             identifier: $identifier,
             secret: $secret,
-            expiresAt: $expiresAt->format('c'),
+            expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),
         ));
 
         return new IssuedApiKey($identifier, $secret);

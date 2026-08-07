@@ -51,7 +51,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
             identityId: $identityId->toString(),
             login: $login->toString(),
             hash: $hasher->hash($plainPassword),
-            setAt: $setAt->format('c'),
+            setAt: $setAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -62,7 +62,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id->toString(),
             hash: $hasher->hash($plainPassword),
-            changedAt: $changedAt->format('c'),
+            changedAt: $changedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

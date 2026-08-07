@@ -83,7 +83,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                 $lines,
             )),
             totalAmountInCents: $total->toCents(),
-            placedAt: $placedAt->format('c'),
+            placedAt: $placedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -105,7 +105,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderCancelled(
             id: $this->id->toString(),
-            cancelledAt: $cancelledAt->format('c'),
+            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

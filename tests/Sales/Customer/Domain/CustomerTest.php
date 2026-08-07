@@ -26,7 +26,7 @@ final class CustomerTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Customer::register($id, Email::fromString('Buyer@Example.COM'), $registeredAt))
-            ->then(new CustomerRegistered($id->toString(), 'buyer@example.com', $registeredAt->format('c')));
+            ->then(new CustomerRegistered($id->toString(), 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -37,9 +37,9 @@ final class CustomerTest extends AggregateRootTestCase
         $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')))
+            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Customer $customer) => $customer->erase($erasedAt))
-            ->then(new CustomerErased($id, $erasedAt->format('c')));
+            ->then(new CustomerErased($id, $erasedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -51,8 +51,8 @@ final class CustomerTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')),
-                new CustomerErased($id, $erasedAt->format('c')),
+                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
+                new CustomerErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -66,7 +66,7 @@ final class CustomerTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
 
         $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')))
+            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Customer $customer) => $customer->linkIdentity($identityId))
             ->then(new CustomerIdentityLinked($id, $identityId));
     }
@@ -79,7 +79,7 @@ final class CustomerTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format('c')),
+                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
                 new CustomerIdentityLinked($id, Uuid::uuid7()->toString()),
             )
             ->when(static fn (Customer $customer) => $customer->linkIdentity(Uuid::uuid7()->toString()))

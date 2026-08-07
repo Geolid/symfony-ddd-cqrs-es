@@ -25,7 +25,7 @@ final class ProductTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Product::list($id, 'Espresso cups, set of 6', Money::fromCents(1_750), $listedAt))
-            ->then(new ProductListed($id->toString(), 'Espresso cups, set of 6', 1_750, $listedAt->format('c')));
+            ->then(new ProductListed($id->toString(), 'Espresso cups, set of 6', 1_750, $listedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -36,9 +36,9 @@ final class ProductTest extends AggregateRootTestCase
         $repricedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format('c')))
+            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Product $product) => $product->reprice(Money::fromCents(1_950), $repricedAt))
-            ->then(new ProductRepriced($id, 1_950, $repricedAt->format('c')));
+            ->then(new ProductRepriced($id, 1_950, $repricedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -49,9 +49,9 @@ final class ProductTest extends AggregateRootTestCase
         $delistedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format('c')))
+            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Product $product) => $product->delist($delistedAt))
-            ->then(new ProductDelisted($id, $delistedAt->format('c')));
+            ->then(new ProductDelisted($id, $delistedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -63,8 +63,8 @@ final class ProductTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format('c')),
-                new ProductDelisted($id, $delistedAt->format('c')),
+                new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt->format(\DateTimeInterface::ATOM)),
+                new ProductDelisted($id, $delistedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Product $product) => $product->delist(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(ProductAlreadyDelistedException::class);

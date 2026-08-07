@@ -41,8 +41,8 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
                 $identityId->toString(),
                 'key_abc123',
                 $this->hasher->hash('S3cr3t!'),
-                $issuedAt->format('c'),
-                $expiresAt->format('c'),
+                $issuedAt->format(\DateTimeInterface::ATOM),
+                $expiresAt->format(\DateTimeInterface::ATOM),
             ));
     }
 
@@ -56,9 +56,9 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (ApiTokenCredential $credential) => $credential->revoke($revokedAt))
-            ->then(new ApiTokenCredentialRevoked($id, $revokedAt->format('c')));
+            ->then(new ApiTokenCredentialRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -72,8 +72,8 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')),
-                new ApiTokenCredentialRevoked($id, $revokedAt->format('c')),
+                new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)),
+                new ApiTokenCredentialRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (ApiTokenCredential $credential) => $credential->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(ApiTokenCredentialAlreadyRevokedException::class);
@@ -92,7 +92,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
 
         // When
         $this
-            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)))
             ->when(static function (ApiTokenCredential $credential) use ($expiresAt, &$atExpiry, &$afterExpiry): void {
                 $atExpiry = $credential->isExpired($expiresAt);
                 $afterExpiry = $credential->isExpired($expiresAt->modify('+1 second'));
@@ -118,7 +118,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
 
         // When
         $this
-            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)))
             ->when(function (ApiTokenCredential $credential) use ($now, &$correctResult, &$wrongResult): void {
                 $correctResult = $credential->verify('S3cr3t!', $this->hasher, $now);
                 $wrongResult = $credential->verify('wrong', $this->hasher, $now);
@@ -143,7 +143,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
 
         // When
         $this
-            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')))
+            ->given(new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)))
             ->when(function (ApiTokenCredential $credential) use ($afterExpiry, &$result): void {
                 $result = $credential->verify('S3cr3t!', $this->hasher, $afterExpiry);
             })
@@ -168,8 +168,8 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
         // When
         $this
             ->given(
-                new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format('c'), $expiresAt->format('c')),
-                new ApiTokenCredentialRevoked($id, $revokedAt->format('c')),
+                new ApiTokenCredentialIssued($id, $identityId, 'key_abc123', $this->hasher->hash('S3cr3t!'), $issuedAt->format(\DateTimeInterface::ATOM), $expiresAt->format(\DateTimeInterface::ATOM)),
+                new ApiTokenCredentialRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(function (ApiTokenCredential $credential) use ($now, &$result): void {
                 $result = $credential->verify('S3cr3t!', $this->hasher, $now);

@@ -25,7 +25,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(static fn () => Identity::register($id, $registeredAt))
-            ->then(new IdentityRegistered($id->toString(), $registeredAt->format('c')));
+            ->then(new IdentityRegistered($id->toString(), $registeredAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -36,9 +36,9 @@ final class IdentityTest extends AggregateRootTestCase
         $suspendedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new IdentityRegistered($id, $registeredAt->format('c')))
+            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Identity $identity) => $identity->suspend($suspendedAt))
-            ->then(new IdentitySuspended($id, $suspendedAt->format('c')));
+            ->then(new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -50,8 +50,8 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format('c')),
-                new IdentitySuspended($id, $suspendedAt->format('c')),
+                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Identity $identity) => $identity->suspend(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(IdentityAlreadySuspendedException::class);
@@ -67,11 +67,11 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format('c')),
-                new IdentitySuspended($id, $suspendedAt->format('c')),
+                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate($reactivatedAt))
-            ->then(new IdentityReactivated($id, $reactivatedAt->format('c')));
+            ->then(new IdentityReactivated($id, $reactivatedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -81,7 +81,7 @@ final class IdentityTest extends AggregateRootTestCase
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new IdentityRegistered($id, $registeredAt->format('c')))
+            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Identity $identity) => $identity->reactivate(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(IdentityNotSuspendedException::class);
     }

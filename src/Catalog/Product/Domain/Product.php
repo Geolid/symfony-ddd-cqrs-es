@@ -44,7 +44,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             label: $label,
             unitAmountInCents: $unitAmount->toCents(),
-            listedAt: $listedAt->format('c'),
+            listedAt: $listedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -55,7 +55,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new ProductRepriced(
             id: $this->id->toString(),
             unitAmountInCents: $unitAmount->toCents(),
-            repricedAt: $repricedAt->format('c'),
+            repricedAt: $repricedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -70,7 +70,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ProductDelisted(
             id: $this->id->toString(),
-            delistedAt: $delistedAt->format('c'),
+            delistedAt: $delistedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
