@@ -26,6 +26,27 @@
                 "config": {
                     "label": "Lint staged PHP files"
                 }
+            },
+            {
+                "action": "\\CaptainHook\\App\\Hook\\Branch\\Action\\EnsureNaming",
+                "options": {
+                    "regex": "#^(main|(build|chore|ci|docs|feat|fix|perf|refactor|revert|simplify|style|test)/[a-z0-9]+(-[a-z0-9]+)*)$#",
+                    "error": "Branch name must follow Conventional Commits: <type>/<kebab-case-description> (or be \"main\")\nAllowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, simplify, style, test",
+                    "success": "Branch naming OK"
+                }
+            }
+        ]
+    },
+    "pre-push": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "\\CaptainHook\\App\\Hook\\Branch\\Action\\EnsureNaming",
+                "options": {
+                    "regex": "#^(main|(build|chore|ci|docs|feat|fix|perf|refactor|revert|simplify|style|test)/[a-z0-9]+(-[a-z0-9]+)*)$#",
+                    "error": "Branch name must follow Conventional Commits: <type>/<kebab-case-description> (or be \"main\")\nAllowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, simplify, style, test",
+                    "success": "Branch naming OK"
+                }
             }
         ]
     }
