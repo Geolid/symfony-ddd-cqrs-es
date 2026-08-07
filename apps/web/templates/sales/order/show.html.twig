@@ -94,8 +94,8 @@
                     </p>
                     <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}"
                        role="button"
-                       data-testid="resume-payment-button">
-                        {{ 'sales.order.show.button_resume_payment'|trans }}
+                       data-testid="pay-button">
+                        {{ 'sales.order.show.button_pay'|trans }}
                     </a>
                 {% elseif order.status.isPreparing or order.status.isDispatched or order.status.isDelivered %}
                     <p data-testid="order-payment">

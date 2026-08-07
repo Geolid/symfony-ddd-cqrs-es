@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Finder\Product;
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Shared\Application\Finder\PaginatedCollectionFinderInterface;
 
 /**
@@ -11,7 +12,10 @@ use Shared\Application\Finder\PaginatedCollectionFinderInterface;
  */
 interface ProductFinderInterface extends PaginatedCollectionFinderInterface
 {
-    public function ofId(string $id): ?ProductResult;
+    /**
+     * @throws ProductResultNotFoundException
+     */
+    public function ofId(string $id): ProductResult;
 
     public function withoutDelisted(): static;
 }

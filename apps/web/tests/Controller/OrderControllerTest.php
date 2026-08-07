@@ -24,6 +24,8 @@ final class OrderControllerTest extends AbstractWebTestCase
 {
     private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
 
+    private static ?string $lastReturnUrl = null;
+
     #[Test]
     public function itPlacesAnOrderAndRedirectsToCheckout(): void
     {
@@ -140,7 +142,6 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSelectorExists('[data-testid="flash-error"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertNotNull($order);
         self::assertSame(AppOrderStatus::PLACED, $order->status);
     }
 
@@ -201,10 +202,19 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         $client = parent::browser();
 
-        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
-            json_encode(['chargeReference' => 'GLBX-TEST-REF', 'checkoutUrl' => self::CHECKOUT_URL], \JSON_THROW_ON_ERROR),
-            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
-        )));
+        self::$lastReturnUrl = null;
+        self::getContainer()->set('globex.client', new MockHttpClient(
+            static function (string $method, string $url, array $options): MockResponse {
+                /** @var array{returnUrl: string} $body */
+                $body = json_decode((string) $options['body'], true, 512, \JSON_THROW_ON_ERROR);
+                self::$lastReturnUrl = $body['returnUrl'];
+
+                return new MockResponse(
+                    json_encode(['chargeReference' => 'GLBX-TEST-REF', 'checkoutUrl' => self::CHECKOUT_URL], \JSON_THROW_ON_ERROR),
+                    ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
+                );
+            },
+        ));
 
         return $client;
     }
@@ -234,8 +244,10 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $client->submit($form);
 
-        $orders = iterator_to_array($this->service(OrderFinderInterface::class)->paginate(1, 20));
+        if (1 !== preg_match('#/sales/orders/([0-9a-f-]{36})$#', (string) self::$lastReturnUrl, $matches)) {
+            self::fail(\sprintf('No order id found in the return URL sent to the payment gateway: "%s".', self::$lastReturnUrl));
+        }
 
-        return $orders[0]->id;
+        return $matches[1];
     }
 }

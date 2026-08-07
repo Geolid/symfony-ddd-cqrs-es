@@ -52,7 +52,7 @@ sales:
                 dispatched: 'On its way since %date%'
                 delivered: 'Delivered on %date%'
             shipment_tracking_reference: Tracking
-            button_resume_payment: Continue to payment
+            button_pay: Pay
             button_cancel: Cancel order
             message_cancel_confirm: Are you sure you want to cancel this order?
             button_cancel_dismiss: Keep order

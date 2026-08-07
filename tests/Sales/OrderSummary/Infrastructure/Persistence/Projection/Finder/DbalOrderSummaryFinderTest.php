@@ -25,7 +25,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsTheSummaryForAnOrder(): void
+    public function itFindsTheSummaryForAnOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -54,7 +54,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsNothingForAnUnknownOrder(): void
+    public function itFindsNoSummaryForAnUnknownOrder(): void
     {
         // When
         $result = $this->finder->ofOrder(Uuid::uuid7()->toString());

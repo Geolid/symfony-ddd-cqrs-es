@@ -151,7 +151,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
     {
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference(self::REFERENCE);
 
-        if (null === $result || $id !== $result->id) {
+        if ($id !== $result->id) {
             self::fail(\sprintf('OrderPayment "%s" was not projected.', $id));
         }
 

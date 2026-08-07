@@ -22,7 +22,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsACustomerAsItWasRegistered(): void
+    public function itListsCustomers(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();

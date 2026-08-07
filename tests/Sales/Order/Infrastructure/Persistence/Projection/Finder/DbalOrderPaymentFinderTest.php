@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Enum\AppOrderPaymentStatus;
+use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -24,7 +25,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsAnOrderPaymentByItsReference(): void
+    public function itGetsAnOrderPaymentByItsReference(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -40,7 +41,6 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofReference('GLBX-9F3K2M1P');
 
         // Then
-        self::assertInstanceOf(OrderPaymentResult::class, $result);
         self::assertSame($orderPayment->id()->toString(), $result->id);
         self::assertSame($orderId, $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
@@ -50,17 +50,17 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsNothingForAReferenceItNeverSaw(): void
+    public function itThrowsOnAnUnknownReference(): void
     {
-        // When
-        $result = $this->finder->ofReference('GLBX-NEVER-ISSUED');
-
         // Then
-        self::assertNull($result);
+        $this->expectException(OrderPaymentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofReference('GLBX-NEVER-ISSUED');
     }
 
     #[Test]
-    public function itReadsAnOrderPaymentByItsOrder(): void
+    public function itFindsAnOrderPaymentByItsOrder(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -77,7 +77,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsNothingForAnOrderWithoutAPayment(): void
+    public function itFindsNoPaymentForAnOrderThatNeverRequestedOne(): void
     {
         // When
         $result = $this->finder->ofOrder(Uuid::uuid7()->toString());

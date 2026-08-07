@@ -21,7 +21,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsAPasswordCredentialByLogin(): void
+    public function itFindsAPasswordCredentialByLogin(): void
     {
         // Given
         $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->create();
@@ -37,7 +37,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsNothingForAnUnknownLogin(): void
+    public function itFindsNoCredentialForAnUnknownLogin(): void
     {
         // When
         $result = $this->finder->ofLogin('unknown@example.com');

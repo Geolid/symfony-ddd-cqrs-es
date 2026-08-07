@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -23,7 +24,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsAnOrderAsItWasPlaced(): void
+    public function itGetsAnOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -37,7 +38,6 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofId($order->id()->toString());
 
         // Then
-        self::assertNotNull($result);
         self::assertSame($order->id()->toString(), $result->id);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
@@ -46,12 +46,12 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsNullWhenTheOrderDoesNotExist(): void
+    public function itThrowsOnAnUnknownOrder(): void
     {
-        // When
-        $result = $this->finder->ofId(Uuid::uuid7()->toString());
-
         // Then
-        self::assertNull($result);
+        $this->expectException(OrderResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(Uuid::uuid7()->toString());
     }
 }

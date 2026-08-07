@@ -33,7 +33,6 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertNotNull($result);
         self::assertSame($id, $result->id);
         self::assertSame($customer->id()->toString(), $result->customerId);
         self::assertSame(1_999, $result->totalAmountInCents);

@@ -23,7 +23,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsAShipmentAsItWasHandedToTheCarrier(): void
+    public function itListsShipments(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();

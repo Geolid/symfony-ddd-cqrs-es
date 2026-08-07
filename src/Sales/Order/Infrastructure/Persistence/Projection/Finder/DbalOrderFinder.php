@@ -6,6 +6,7 @@ namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
@@ -18,7 +19,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
 {
-    public function ofId(string $id): ?OrderResult
+    public function ofId(string $id): OrderResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -28,7 +29,7 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
             ->fetchAssociative();
 
         if (false === $row) {
-            return null;
+            throw OrderResultNotFoundException::forId($id);
         }
 
         return $this->mapRow($row);

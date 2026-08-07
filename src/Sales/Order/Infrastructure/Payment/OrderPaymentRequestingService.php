@@ -38,7 +38,7 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
      */
     public function requestFor(string $orderId, int $itemCount, string $returnUrl): string
     {
-        $result = $this->orderFinder->ofId($orderId) ?? throw OrderResultNotFoundException::forId($orderId);
+        $result = $this->orderFinder->ofId($orderId);
 
         if ($result->status->isCancelled()) {
             throw OrderAlreadyCancelledException::forId(OrderId::fromString($orderId));

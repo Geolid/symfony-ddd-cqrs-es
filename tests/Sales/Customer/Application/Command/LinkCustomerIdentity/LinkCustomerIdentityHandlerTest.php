@@ -28,9 +28,9 @@ final class LinkCustomerIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new LinkCustomerIdentity($customer->id()->toString(), $identityId));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame($identityId, $results[0]->identityId);
+        $result = $this->service(CustomerFinderInterface::class)->ofIdentityId($identityId);
+        self::assertNotNull($result);
+        self::assertSame($identityId, $result->identityId);
     }
 
     #[Test]

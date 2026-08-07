@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
-    $reference = (string)($_POST['ref'] ?? '');
-    $returnUrl = (string)($_POST['returnUrl'] ?? '');
+    $reference = (string) ($_POST['ref'] ?? '');
+    $returnUrl = (string) ($_POST['returnUrl'] ?? '');
 
     $payload = json_encode(['paymentReference' => $reference], \JSON_THROW_ON_ERROR);
-    $signature = 'sha256=' . hash_hmac('sha256', $payload, (string)getenv('PAYMENT_WEBHOOK_SECRET'));
+    $signature = 'sha256='.hash_hmac('sha256', $payload, (string) getenv('PAYMENT_WEBHOOK_SECRET'));
 
     $context = stream_context_create(['http' => [
         'method' => 'POST',
         'header' => implode("\r\n", [
             'Content-Type: application/json',
-            'X-Payment-Signature: ' . $signature,
+            'X-Payment-Signature: '.$signature,
         ]),
         'content' => $payload,
         'ignore_errors' => true,
@@ -24,18 +24,18 @@ if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
 
     if (!preg_match('/\s(2\d\d)\s/', $statusLine)) {
         http_response_code(502);
-        echo 'Webhook call failed: ' . htmlspecialchars($statusLine ?: 'no response');
+        echo 'Webhook call failed: '.htmlspecialchars($statusLine ?: 'no response');
         exit;
     }
 
-    header('Location: ' . $returnUrl);
+    header('Location: '.$returnUrl);
     exit;
 }
 
-$reference = (string)($_GET['ref'] ?? '');
-$items = (int)($_GET['items'] ?? 0);
-$total = number_format(((int)($_GET['total'] ?? 0)) / 100, 2) . ' €';
-$returnUrl = (string)($_GET['returnUrl'] ?? '');
+$reference = (string) ($_GET['ref'] ?? '');
+$items = (int) ($_GET['items'] ?? 0);
+$total = number_format(((int) ($_GET['total'] ?? 0)) / 100, 2).' €';
+$returnUrl = (string) ($_GET['returnUrl'] ?? '');
 
 header('Content-Type: text/html; charset=utf-8');
 ?>
@@ -154,6 +154,22 @@ header('Content-Type: text/html; charset=utf-8');
             box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
         }
 
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 0.75rem;
+            padding: 1rem;
+            border-radius: 4px;
+            color: #df1b41;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn-cancel:hover {
+            text-decoration: underline;
+        }
+
         .checkout-footer {
             margin-top: 1.5rem;
             text-align: center;
@@ -180,7 +196,7 @@ header('Content-Type: text/html; charset=utf-8');
     <div class="checkout-body">
         <div class="info-row">
             <span class="info-label">Items in cart</span>
-            <span class="info-value"><?php echo htmlspecialchars((string)$items); ?></span>
+            <span class="info-value"><?php echo htmlspecialchars((string) $items); ?></span>
         </div>
         <div class="info-row">
             <span class="info-label">Payment Reference</span>
@@ -192,6 +208,7 @@ header('Content-Type: text/html; charset=utf-8');
             <input type="hidden" name="returnUrl" value="<?php echo htmlspecialchars($returnUrl); ?>">
             <button type="submit" class="btn-pay">Authorize & Pay</button>
         </form>
+        <a href="<?php echo htmlspecialchars($returnUrl); ?>" class="btn-cancel">Cancel</a>
 
         <div class="checkout-footer">
             <strong>Disclaimer:</strong> This is a simulated environment. No real funds are processed.<br>

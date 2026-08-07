@@ -129,7 +129,7 @@ final class OrderController extends AbstractController
                 )),
             ));
 
-            $returnUrl = $this->generateUrl('sales_order_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $returnUrl = $this->generateUrl('sales_order_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
 
             return $this->redirect($this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl));
         }

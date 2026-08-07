@@ -22,7 +22,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsAProductAsItWasListed(): void
+    public function itListsProducts(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
