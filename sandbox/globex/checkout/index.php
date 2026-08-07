@@ -47,8 +47,8 @@ header('Content-Type: text/html; charset=utf-8');
     <title>Globex Corporation — Secure Payment</title>
     <style>
         :root {
-            --fintech-blue: #635bff;
-            --fintech-blue-hover: #0a2540;
+            --globex-blue: #635bff;
+            --globex-blue-hover: #0a2540;
             --page-bg: #f6f9fc;
             --card-bg: #ffffff;
             --text-dark: #30313d;
@@ -69,7 +69,7 @@ header('Content-Type: text/html; charset=utf-8');
             -webkit-font-smoothing: antialiased;
         }
 
-        .checkout-box {
+        .checkout {
             background: var(--card-bg);
             width: 100%;
             max-width: 420px;
@@ -78,7 +78,7 @@ header('Content-Type: text/html; charset=utf-8');
             overflow: hidden;
         }
 
-        .test-mode-banner {
+        .checkout__banner {
             background-color: #fef3c7;
             color: #b45309;
             text-align: center;
@@ -89,30 +89,30 @@ header('Content-Type: text/html; charset=utf-8');
             letter-spacing: 0.05em;
         }
 
-        .checkout-header {
+        .checkout__header {
             padding: 2rem 2rem 1rem;
             text-align: center;
         }
 
-        .checkout-header h1 {
+        .checkout__header h1 {
             margin: 0;
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--text-dark);
         }
 
-        .checkout-amount {
+        .checkout__amount {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--fintech-blue);
+            color: var(--globex-blue);
             margin: 1rem 0;
         }
 
-        .checkout-body {
+        .checkout__body {
             padding: 0 2rem 2rem;
         }
 
-        .info-row {
+        .checkout__row {
             display: flex;
             justify-content: space-between;
             padding: 0.75rem 0;
@@ -120,57 +120,57 @@ header('Content-Type: text/html; charset=utf-8');
             font-size: 0.9rem;
         }
 
-        .info-row:last-of-type {
+        .checkout__row:last-of-type {
             border-bottom: none;
             margin-bottom: 1.5rem;
         }
 
-        .info-label {
+        .checkout__label {
             color: var(--text-light);
         }
 
-        .info-value {
+        .checkout__value {
             font-weight: 600;
             font-family: ui-monospace, monospace;
         }
 
-        .btn-pay {
-            background-color: var(--fintech-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .checkout__button {
+            display: block;
+            text-align: center;
             width: 100%;
+            border-radius: 4px;
             padding: 1rem;
             font-size: 1rem;
             font-weight: 600;
+        }
+
+        .checkout__button--pay {
+            background-color: var(--globex-blue);
+            color: white;
+            border: none;
             cursor: pointer;
             transition: all 0.15s ease;
             box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
         }
 
-        .btn-pay:hover {
-            background-color: var(--fintech-blue-hover);
+        .checkout__button--pay:hover {
+            background-color: var(--globex-blue-hover);
             transform: translateY(-1px);
             box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
         }
 
-        .btn-cancel {
-            display: block;
-            text-align: center;
+        .checkout__button--cancel {
             margin-top: 0.75rem;
-            padding: 1rem;
-            border-radius: 4px;
             color: #df1b41;
             text-decoration: none;
-            font-weight: 600;
             font-size: 0.9rem;
         }
 
-        .btn-cancel:hover {
+        .checkout__button--cancel:hover {
             text-decoration: underline;
         }
 
-        .checkout-footer {
+        .checkout__footer {
             margin-top: 1.5rem;
             text-align: center;
             font-size: 0.75rem;
@@ -183,34 +183,34 @@ header('Content-Type: text/html; charset=utf-8');
 </head>
 <body>
 
-<div class="checkout-box">
-    <div class="test-mode-banner">
+<div class="checkout">
+    <div class="checkout__banner">
         Sandbox Environment
     </div>
 
-    <div class="checkout-header">
+    <div class="checkout__header">
         <h1>Globex Corporation</h1>
-        <div class="checkout-amount"><?php echo htmlspecialchars($total); ?></div>
+        <div class="checkout__amount"><?php echo htmlspecialchars($total); ?></div>
     </div>
 
-    <div class="checkout-body">
-        <div class="info-row">
-            <span class="info-label">Items in cart</span>
-            <span class="info-value"><?php echo htmlspecialchars((string) $items); ?></span>
+    <div class="checkout__body">
+        <div class="checkout__row">
+            <span class="checkout__label">Items in cart</span>
+            <span class="checkout__value"><?php echo htmlspecialchars((string) $items); ?></span>
         </div>
-        <div class="info-row">
-            <span class="info-label">Payment Reference</span>
-            <span class="info-value"><?php echo htmlspecialchars($reference); ?></span>
+        <div class="checkout__row">
+            <span class="checkout__label">Payment Reference</span>
+            <span class="checkout__value"><?php echo htmlspecialchars($reference); ?></span>
         </div>
 
         <form method="post">
             <input type="hidden" name="ref" value="<?php echo htmlspecialchars($reference); ?>">
             <input type="hidden" name="returnUrl" value="<?php echo htmlspecialchars($returnUrl); ?>">
-            <button type="submit" class="btn-pay">Authorize & Pay</button>
+            <button type="submit" class="checkout__button checkout__button--pay">Authorize & Pay</button>
         </form>
-        <a href="<?php echo htmlspecialchars($returnUrl); ?>" class="btn-cancel">Cancel</a>
+        <a href="<?php echo htmlspecialchars($returnUrl); ?>" class="checkout__button checkout__button--cancel">Cancel</a>
 
-        <div class="checkout-footer">
+        <div class="checkout__footer">
             <strong>Disclaimer:</strong> This is a simulated environment. No real funds are processed.<br>
         </div>
     </div>
