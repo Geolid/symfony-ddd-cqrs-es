@@ -28,6 +28,16 @@ final class ValidLabelTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    #[Test]
+    public function itAcceptsTheMaximumLength(): void
+    {
+        // When
+        $this->validateValue(str_repeat('a', 255));
+
+        // Then
+        $this->assertNoViolation();
+    }
+
     /**
      * @param list<Constraint> $rules
      */

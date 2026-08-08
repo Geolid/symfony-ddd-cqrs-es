@@ -22,7 +22,17 @@ final class LabelTest extends TestCase
     }
 
     #[Test]
-    public function itTrims(): void
+    public function itAcceptsTheMaximumLength(): void
+    {
+        // When
+        $label = Label::fromString(str_repeat('a', 255));
+
+        // Then
+        self::assertSame(str_repeat('a', 255), $label->toString());
+    }
+
+    #[Test]
+    public function itNormalizes(): void
     {
         // When
         $label = Label::fromString('  Espresso cups, set of 6  ');
