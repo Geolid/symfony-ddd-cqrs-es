@@ -28,6 +28,16 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
         $this->assertNoViolation();
     }
 
+    #[Test]
+    public function itAcceptsTheMaximumLength(): void
+    {
+        // When
+        $this->validateValue(str_pad('fixture', 85, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write'));
+
+        // Then
+        $this->assertNoViolation();
+    }
+
     /**
      * @param list<Constraint> $rules
      */
@@ -53,6 +63,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
         yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
         yield 'missing the action segment' => ['fixture.widget', [self::regex(), self::valueObject()]];
         yield 'missing the bc segment' => ['fixture:read', [self::regex(), self::valueObject()]];
+        yield 'too long' => [str_pad('fixture', 86, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write'), [new Assert\Length(max: 255), self::valueObject()]];
     }
 
     protected function createCompound(): ValidPermission

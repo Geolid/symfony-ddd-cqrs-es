@@ -18,6 +18,7 @@ final class ValidPermission extends Compound
             new Assert\NotBlank(normalizer: 'trim'),
             new Assert\Type('string'),
             new Assert\Regex(pattern: Permission::PATTERN, message: 'A permission must be formatted "<subdomain>.<bc>:<action>".'),
+            new Assert\Length(max: 255),
             new ValidValueObject(Permission::class),
         ];
     }

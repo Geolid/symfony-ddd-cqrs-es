@@ -14,6 +14,7 @@ final readonly class Login
     {
         $value = trim($value);
         Assert::notEmpty($value, 'A login cannot be empty, %s given.');
+        Assert::maxLength($value, 255, 'A login cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

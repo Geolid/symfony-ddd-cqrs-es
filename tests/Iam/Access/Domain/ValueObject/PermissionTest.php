@@ -20,6 +20,16 @@ final class PermissionTest extends TestCase
     }
 
     #[Test]
+    public function itAcceptsTheMaximumLength(): void
+    {
+        $value = str_pad('fixture', 85, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write');
+
+        $permission = Permission::fromString($value);
+
+        self::assertSame($value, $permission->toString());
+    }
+
+    #[Test]
     public function itComparesEquality(): void
     {
         $a = Permission::fromString('fixture.widget:write');
@@ -50,5 +60,6 @@ final class PermissionTest extends TestCase
         yield 'missing the subdomain segment' => ['.widget:write'];
         yield 'uppercase' => ['Fixture.Widget:Write'];
         yield 'contains whitespace' => ['fixture.widget:has space'];
+        yield 'too long' => [str_pad('fixture', 86, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write')];
     }
 }

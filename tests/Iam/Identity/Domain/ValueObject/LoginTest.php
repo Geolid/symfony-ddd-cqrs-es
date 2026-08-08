@@ -22,6 +22,19 @@ final class LoginTest extends TestCase
     }
 
     #[Test]
+    public function itAcceptsTheMaximumLength(): void
+    {
+        // Given
+        $value = str_pad('operator', 255, 'operator');
+
+        // When
+        $login = Login::fromString($value);
+
+        // Then
+        self::assertSame($value, $login->toString());
+    }
+
+    #[Test]
     public function itTrims(): void
     {
         // When
@@ -79,5 +92,6 @@ final class LoginTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'whitespace only' => ['   '];
+        yield 'too long' => [str_pad('operator', 256, 'operator')];
     }
 }

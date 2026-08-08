@@ -15,6 +15,7 @@ final readonly class Permission
     private function __construct(string $value)
     {
         Assert::regex($value, self::PATTERN, 'A permission must be formatted "<subdomain>.<bc>:<action>", %s given.');
+        Assert::maxLength($value, 255, 'A permission cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }
