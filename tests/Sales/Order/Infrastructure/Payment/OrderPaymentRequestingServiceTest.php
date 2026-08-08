@@ -48,13 +48,12 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->store($order);
 
         // When
-        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 2, 'https://web.test/sales/orders');
+        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
 
         // Then
         self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
         self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
-        self::assertSame(2, $this->paymentGateway->itemCount);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
 
         $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($order->id()->toString());
@@ -70,7 +69,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 1, 'https://web.test/sales/orders');
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');
     }
 
     #[Test]
@@ -85,7 +84,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderPaymentAlreadyRequestedException::class);
 
         // When
-        $this->service->requestFor($order->id()->toString(), 1, 'https://web.test/sales/orders');
+        $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
     }
 
     #[Test]
@@ -99,7 +98,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->expectException(OrderAlreadyCancelledException::class);
 
         // When
-        $this->service->requestFor($order->id()->toString(), 1, 'https://web.test/sales/orders');
+        $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
     }
 }
 
@@ -113,15 +112,12 @@ final class DummyPaymentGateway implements PaymentGatewayInterface
 
     public ?int $amountInCents = null;
 
-    public ?int $itemCount = null;
-
     public ?string $returnUrl = null;
 
-    public function requestPayment(string $orderId, int $amountInCents, int $itemCount, string $returnUrl): PaymentSession
+    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl): PaymentSession
     {
         $this->orderId = $orderId;
         $this->amountInCents = $amountInCents;
-        $this->itemCount = $itemCount;
         $this->returnUrl = $returnUrl;
 
         return new PaymentSession(self::CHARGE_REFERENCE, self::CHECKOUT_URL);

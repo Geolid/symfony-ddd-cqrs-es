@@ -25,17 +25,17 @@ final class OrderControllerTest extends AbstractWebTestCase
     private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
 
     #[Test]
-    public function itPlacesAnOrderAndRedirectsToCheckout(): void
+    public function itPlacesAnOrderAndRedirectsToItsDetail(): void
     {
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
 
         // When
-        $this->placeOrder($client);
+        $id = $this->placeOrder($client);
 
         // Then
-        self::assertResponseRedirects(self::CHECKOUT_URL);
+        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
     }
 
     #[Test]
@@ -54,7 +54,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itResumesPaymentForAPendingOrder(): void
+    public function itPaysForAPlacedOrder(): void
     {
         // Given
         $client = self::browser();
@@ -69,7 +69,23 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToResumePaymentWhenNoCheckoutHasBeenRequested(): void
+    public function itResumesAnAlreadyRequestedPayment(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-8@example.com'));
+        $id = $this->placeOrder($client);
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
+
+        // When
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
+
+        // Then
+        self::assertResponseRedirects(self::CHECKOUT_URL);
+    }
+
+    #[Test]
+    public function itRefusesToPayForACancelledOrder(): void
     {
         // Given
         $client = self::browser();
@@ -77,7 +93,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->store($identity);
         $customer = CustomerTestFactory::new()->withEmail('buyer-7@example.com')->linkedToIdentity($identity->id()->toString())->create();
         $this->store($customer);
-        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->create();
+        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->cancelled()->withoutIncrementalIds()->create();
         $this->store($order);
         $this->loginAs($client, $identity);
 
@@ -85,7 +101,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
 
         // Then
-        self::assertResponseStatusCodeSame(404);
+        self::assertResponseStatusCodeSame(409);
     }
 
     #[Test]
@@ -125,6 +141,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
         $id = $this->placeOrder($client);
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
         $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
         self::assertNotNull($payment);
         $this->service(CommandBusInterface::class)->dispatch(new CaptureOrderPayment($payment->id));
@@ -140,7 +157,6 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSelectorExists('[data-testid="flash-error"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertNotNull($order);
         self::assertSame(AppOrderStatus::PLACED, $order->status);
     }
 
@@ -234,8 +250,11 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         $client->submit($form);
 
-        $orders = iterator_to_array($this->service(OrderFinderInterface::class)->paginate(1, 20));
+        $location = (string) $client->getResponse()->headers->get('Location');
+        if (1 !== preg_match('#/sales/orders/([0-9a-f-]{36})$#', $location, $matches)) {
+            self::fail(\sprintf('Placing the order did not redirect to its detail page: "%s".', $location));
+        }
 
-        return $orders[0]->id;
+        return $matches[1];
     }
 }

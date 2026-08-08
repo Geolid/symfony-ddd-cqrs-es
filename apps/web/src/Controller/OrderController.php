@@ -7,6 +7,7 @@ namespace Web\Controller;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
@@ -32,7 +33,7 @@ use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
-use Web\Security\Attribute\CurrentCustomerId;
+use Web\Security\Attribute\CurrentCustomer;
 use Web\Security\Voter\OrderVoter;
 
 #[Route('/sales/orders')]
@@ -52,13 +53,13 @@ final class OrderController extends AbstractController
      */
     #[Route(name: 'sales_order_list', methods: ['GET'])]
     public function list(
-        #[CurrentCustomerId]
-        string $customerId,
+        #[CurrentCustomer]
+        CustomerResult $customer,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
     ): Response {
         $orders = $this->queryBus->ask(new ListOrderSummaries(
-            customerId: $customerId,
+            customerId: $customer->id,
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
         ));
@@ -75,9 +76,6 @@ final class OrderController extends AbstractController
     public function show(string $id): Response
     {
         $summary = $this->queryBus->ask(new GetOrderSummary($id));
-        if (null === $summary) {
-            throw $this->createNotFoundException('No order carries that identifier.');
-        }
 
         $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
@@ -92,7 +90,7 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
-    public function place(Request $request, #[CurrentCustomerId] string $customerId): Response
+    public function place(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
     {
         /** @var ListResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
@@ -112,14 +110,10 @@ final class OrderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $id = Uuid::uuid7()->toString();
-            $itemCount = array_sum(array_map(
-                static fn (OrderLineFormData $line): int => (int) $line->quantity,
-                $formData->lines,
-            ));
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
-                customerId: $customerId,
+                customerId: $customer->id,
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
                         'productId' => (string) $line->productId,
@@ -129,9 +123,7 @@ final class OrderController extends AbstractController
                 )),
             ));
 
-            $returnUrl = $this->generateUrl('sales_order_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            return $this->redirect($this->orderPaymentRequester->requestFor($id, $itemCount, $returnUrl));
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }
 
         return $this->render('sales/order/place.html.twig', ['form' => $form]);
@@ -139,22 +131,22 @@ final class OrderController extends AbstractController
 
     /**
      * @throws ApplicationExceptionInterface
+     * @throws \DomainException
      */
-    #[Route('/{id}/checkout', name: 'sales_order_resume_payment', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
-    public function resumePayment(string $id): Response
+    #[Route('/{id}/checkout', name: 'sales_order_pay', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
+    public function pay(string $id): Response
     {
         $summary = $this->queryBus->ask(new GetOrderSummary($id));
-        if (null === $summary) {
-            throw $this->createNotFoundException('No order carries that identifier.');
-        }
 
         $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
-        if (null === $summary->paymentCheckoutUrl) {
-            throw $this->createNotFoundException('No payment checkout is available for that order.');
+        if (null !== $summary->paymentCheckoutUrl) {
+            return $this->redirect($summary->paymentCheckoutUrl);
         }
 
-        return $this->redirect($summary->paymentCheckoutUrl);
+        $returnUrl = $this->generateUrl('sales_order_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->redirect($this->orderPaymentRequester->requestFor($id, $returnUrl));
     }
 
     /**
@@ -162,14 +154,14 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/{id}/cancel', name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
-    public function cancel(Request $request, string $id, #[CurrentCustomerId] string $customerId): Response
+    public function cancel(Request $request, string $id, #[CurrentCustomer] CustomerResult $customer): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
         try {
-            $this->commandBus->dispatch(new CancelOrder($id, $customerId));
+            $this->commandBus->dispatch(new CancelOrder($id, $customer->id));
         } catch (OrderPaymentAlreadyCapturedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
 

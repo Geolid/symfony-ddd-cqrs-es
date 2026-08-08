@@ -52,7 +52,7 @@ sales:
                 dispatched: 'En cours de livraison depuis le %date%'
                 delivered: 'Livrée le %date%'
             shipment_tracking_reference: Suivi
-            button_resume_payment: Continuer vers le paiement
+            button_pay: Payer
             button_cancel: Annuler la commande
             message_cancel_confirm: Confirmez-vous l'annulation de cette commande ?
             button_cancel_dismiss: Conserver la commande

@@ -6,6 +6,7 @@ namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
@@ -18,7 +19,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
 {
-    public function ofId(string $id): ?IdentityResult
+    public function ofId(string $id): IdentityResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -27,7 +28,11 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
             ->executeQuery()
             ->fetchAssociative();
 
-        return false !== $row ? $this->mapRow($row) : null;
+        if (false === $row) {
+            throw IdentityResultNotFoundException::forId($id);
+        }
+
+        return $this->mapRow($row);
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

@@ -7,15 +7,16 @@ namespace Web\Tests\Security\Voter;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
-use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
+use Sales\Customer\Application\Query\GetCustomerByIdentity\GetCustomerByIdentity;
 use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
-use Web\Security\CustomerIdentityProvider;
-use Web\Security\IamUser;
+use Web\Security\CustomerIdentityResolver;
+use Web\Security\PasswordUser;
 use Web\Security\Voter\OrderVoter;
 
 final class OrderVoterTest extends TestCase
@@ -27,11 +28,11 @@ final class OrderVoterTest extends TestCase
         $identityId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $order = $this->summary($customerId);
-        $customerIdentityProvider = new CustomerIdentityProvider($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
-        $token = new UsernamePasswordToken(new IamUser($identityId), 'main', ['ROLE_USER']);
+        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
+        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter($customerIdentityProvider))->vote($token, $order, [OrderVoter::VIEW]);
+        $vote = (new OrderVoter($customerIdentityResolver))->vote($token, $order, [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_GRANTED, $vote);
@@ -44,18 +45,18 @@ final class OrderVoterTest extends TestCase
         $identityId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $order = $this->summary(Uuid::uuid7()->toString());
-        $customerIdentityProvider = new CustomerIdentityProvider($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
-        $token = new UsernamePasswordToken(new IamUser($identityId), 'main', ['ROLE_USER']);
+        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
+        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter($customerIdentityProvider))->vote($token, $order, [OrderVoter::VIEW]);
+        $vote = (new OrderVoter($customerIdentityResolver))->vote($token, $order, [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
     }
 
     #[Test]
-    public function itDeniesAccessWhenNoCustomerIsLinkedToTheIdentity(): void
+    public function itThrowsWhenNoCustomerIsLinkedToTheIdentity(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
@@ -63,16 +64,16 @@ final class OrderVoterTest extends TestCase
         $queryBus = $this->createMock(QueryBusInterface::class);
         $queryBus->expects(self::once())
             ->method('ask')
-            ->with(self::equalTo(new GetCustomerByIdentityId($identityId)))
-            ->willReturn(null);
-        $customerIdentityProvider = new CustomerIdentityProvider($queryBus);
-        $token = new UsernamePasswordToken(new IamUser($identityId), 'main', ['ROLE_USER']);
-
-        // When
-        $vote = (new OrderVoter($customerIdentityProvider))->vote($token, $order, [OrderVoter::VIEW]);
+            ->with(self::equalTo(new GetCustomerByIdentity($identityId)))
+            ->willThrowException(CustomerResultNotFoundException::forIdentityId($identityId));
+        $customerIdentityResolver = new CustomerIdentityResolver($queryBus);
+        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // Then
-        self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
+        $this->expectException(CustomerResultNotFoundException::class);
+
+        // When
+        (new OrderVoter($customerIdentityResolver))->vote($token, $order, [OrderVoter::VIEW]);
     }
 
     #[Test]
@@ -81,11 +82,11 @@ final class OrderVoterTest extends TestCase
         // Given
         $queryBus = $this->createMock(QueryBusInterface::class);
         $queryBus->expects(self::never())->method('ask');
-        $customerIdentityProvider = new CustomerIdentityProvider($queryBus);
-        $token = new UsernamePasswordToken(new IamUser(Uuid::uuid7()->toString()), 'main', ['ROLE_USER']);
+        $customerIdentityResolver = new CustomerIdentityResolver($queryBus);
+        $token = new UsernamePasswordToken(new PasswordUser(Uuid::uuid7()->toString(), 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter($customerIdentityProvider))->vote($token, new \stdClass(), [OrderVoter::VIEW]);
+        $vote = (new OrderVoter($customerIdentityResolver))->vote($token, new \stdClass(), [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_ABSTAIN, $vote);
@@ -126,7 +127,7 @@ final class OrderVoterTest extends TestCase
         $queryBus = $this->createMock(QueryBusInterface::class);
         $queryBus->expects(self::once())
             ->method('ask')
-            ->with(self::equalTo(new GetCustomerByIdentityId($identityId)))
+            ->with(self::equalTo(new GetCustomerByIdentity($identityId)))
             ->willReturn($customer);
 
         return $queryBus;

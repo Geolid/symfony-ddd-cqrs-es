@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Application\Finder\Customer;
 
-use Shared\Application\Finder\PaginatedCollectionFinderInterface;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
+use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
- * @extends PaginatedCollectionFinderInterface<CustomerResult>
+ * @extends CollectionFinderInterface<CustomerResult>
  */
-interface CustomerFinderInterface extends PaginatedCollectionFinderInterface
+interface CustomerFinderInterface extends CollectionFinderInterface
 {
-    public function ofIdentityId(string $identityId): ?CustomerResult;
+    /**
+     * @throws CustomerResultNotFoundException
+     */
+    public function ofId(string $id): CustomerResult;
 
-    public function withoutErased(): static;
+    /**
+     * @throws CustomerResultNotFoundException
+     */
+    public function ofIdentityId(string $identityId): CustomerResult;
 }

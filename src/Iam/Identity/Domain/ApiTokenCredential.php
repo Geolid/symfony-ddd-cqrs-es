@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain;
 
 use Iam\Identity\Domain\Event\ApiTokenCredentialIssued;
+use Iam\Identity\Domain\Event\ApiTokenCredentialRehashed;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
@@ -24,18 +25,11 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     private ApiTokenCredentialId $id;
-    private string $hash;
-    private \DateTimeImmutable $expiresAt;
     private bool $revoked;
 
     public function id(): ApiTokenCredentialId
     {
         return $this->id;
-    }
-
-    public function isExpired(\DateTimeImmutable $now): bool
-    {
-        return $now > $this->expiresAt;
     }
 
     public static function issue(
@@ -60,11 +54,6 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         return $self;
     }
 
-    public function verify(string $plainSecret, SecretHasherInterface $hasher, \DateTimeImmutable $now): bool
-    {
-        return !$this->revoked && !$this->isExpired($now) && $hasher->verify($this->hash, $plainSecret);
-    }
-
     /**
      * @throws ApiTokenCredentialAlreadyRevokedException
      */
@@ -80,12 +69,19 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         ));
     }
 
+    public function rehash(string $plainSecret, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
+    {
+        $this->recordThat(new ApiTokenCredentialRehashed(
+            id: $this->id->toString(),
+            hash: $hasher->hash($plainSecret),
+            rehashedAt: $rehashedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     #[Apply]
     private function applyApiTokenCredentialIssued(ApiTokenCredentialIssued $event): void
     {
         $this->id = ApiTokenCredentialId::fromString($event->id);
-        $this->hash = $event->secretHash;
-        $this->expiresAt = new \DateTimeImmutable($event->expiresAt);
         $this->revoked = false;
     }
 
@@ -93,5 +89,10 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyApiTokenCredentialRevoked(ApiTokenCredentialRevoked $event): void
     {
         $this->revoked = true;
+    }
+
+    #[Apply]
+    private function applyApiTokenCredentialRehashed(ApiTokenCredentialRehashed $event): void
+    {
     }
 }

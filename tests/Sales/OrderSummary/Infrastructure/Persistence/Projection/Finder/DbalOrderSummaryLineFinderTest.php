@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsTheLinesForAnOrderInPositionOrder(): void
+    public function itFiltersLinesByOrderInPositionOrder(): void
     {
         // Given
         $order = OrderTestFactory::new()->withLines([
@@ -36,7 +36,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsNoLinesForAnUnknownOrder(): void
+    public function itFiltersNoLinesForAnUnknownOrder(): void
     {
         // When
         $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder(Uuid::uuid7()->toString()));

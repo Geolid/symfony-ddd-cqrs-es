@@ -6,6 +6,7 @@ namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryProjector;
@@ -18,7 +19,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implements OrderSummaryFinderInterface
 {
-    public function ofOrder(string $orderId): ?OrderSummaryResult
+    public function ofOrder(string $orderId): OrderSummaryResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -28,7 +29,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             ->fetchAssociative();
 
         if (false === $row) {
-            return null;
+            throw OrderSummaryResultNotFoundException::forOrderId($orderId);
         }
 
         return $this->mapRow($row);

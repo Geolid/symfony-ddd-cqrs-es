@@ -7,8 +7,8 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -24,7 +24,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsAnOrderAsItWasPlaced(): void
+    public function itGetsAnOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -35,12 +35,9 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // When
-        $results = iterator_to_array($this->finder->withCustomer($customerId));
+        $result = $this->finder->ofId($order->id()->toString());
 
         // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
-        self::assertInstanceOf(OrderResult::class, $result);
         self::assertSame($order->id()->toString(), $result->id);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
@@ -49,39 +46,12 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersOrdersByCustomer(): void
+    public function itThrowsOnAnUnknownOrder(): void
     {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $this->store(OrderTestFactory::new()->withCustomerId($customerId)->create());
-        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
+        // Then
+        $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $finder = $this->finder->withCustomer($customerId);
-
-        // Then
-        self::assertCount(1, $finder);
-        self::assertSame(2, \count($this->finder));
-    }
-
-    #[Test]
-    public function itPaginatesOrdersNewestFirst(): void
-    {
-        // Given
-        $older = OrderTestFactory::new()->placedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
-        $newer = OrderTestFactory::new()->placedAt(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))->create();
-        $this->store($older);
-        $this->store($newer);
-
-        // When
-        $paginator = $this->finder->paginate(1, 1);
-
-        // Then
-        self::assertSame(2, $paginator->totalItems());
-        self::assertSame(2, $paginator->lastPage());
-        self::assertSame([$newer->id()->toString()], array_map(
-            static fn (OrderResult $order): string => $order->id,
-            iterator_to_array($paginator),
-        ));
+        $this->finder->ofId(Uuid::uuid7()->toString());
     }
 }

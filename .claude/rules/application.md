@@ -28,6 +28,7 @@ paths:
 - A side-effect reaction lives in `Application/Processor/<Action>On<Event>`, named `#[Processor('<subdomain>.<bc>.<action>_on_<event>')]` — snake_case of its own class name. It is invokable: `#[Subscribe(<Event>::class)]` sits on `__invoke()`, one reaction for one event, where a Projector or a Translator carries one `on<Event>()` per event.
 - A Processor that creates an aggregate derives the identity from the triggering event (`uuid5` on a bound namespace) and its handler returns early when that aggregate already exists — otherwise a replay opens a duplicate.
 - A Query's class documents its return contract: `@implements QueryInterface<TResult>` (otherwise `ask()` only returns `mixed`). Its return shape is one of: `ListResult<X>` (paginated), `StreamResult<X>` (streamed, for volume), `list<X>` (all), `?XResult` (one or none), `XResult` (exactly one).
+- A Command/Query name referencing another aggregate names the concept (`By<Concept>`, `For<Concept>`), never its carrier field (`By<Concept>Id`) — the constructor argument itself stays `<concept>Id`.
 - A Service holds pure logic (zero I/O) or extracts steps of a use case: inject it as the concrete class plus bound scalars. An interface is reserved for an actual I/O boundary (substitution/stub in tests).
 
 ## Tests

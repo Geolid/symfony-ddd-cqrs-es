@@ -6,7 +6,9 @@ namespace Iam\Identity\Domain\Service;
 
 interface SecretHasherInterface
 {
-    public function hash(string $secret): string;
+    public function hash(#[\SensitiveParameter] string $secret): string;
 
-    public function verify(string $hash, string $secret): bool;
+    public function verify(string $hash, #[\SensitiveParameter] string $secret): bool;
+
+    public function needsRehash(string $hash): bool;
 }

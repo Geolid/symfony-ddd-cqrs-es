@@ -8,7 +8,7 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\QueryInterface;
 
 /**
- * @implements QueryInterface<?OrderSummaryResult>
+ * @implements QueryInterface<OrderSummaryResult>
  */
 final readonly class GetOrderSummary implements QueryInterface
 {

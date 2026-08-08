@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Application\Query\GetOrderSummary;
 
+use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\AsQueryHandler;
@@ -15,7 +16,10 @@ final readonly class GetOrderSummaryHandler
     {
     }
 
-    public function __invoke(GetOrderSummary $query): ?OrderSummaryResult
+    /**
+     * @throws OrderSummaryResultNotFoundException
+     */
+    public function __invoke(GetOrderSummary $query): OrderSummaryResult
     {
         return $this->orderSummaryFinder->ofOrder($query->orderId);
     }

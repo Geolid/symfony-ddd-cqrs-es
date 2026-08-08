@@ -6,8 +6,9 @@ namespace Cli\Console;
 
 use Cli\Console\Input\RegisterIdentityInput;
 use Iam\Access\Application\Command\GrantPermission\GrantPermission;
+use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Security\ApiTokenCredentialIssuerInterface;
+use Iam\Identity\Application\Security\ApiKeyGeneratorInterface;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -25,7 +26,7 @@ final class RegisterIdentityCommand
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly ApiTokenCredentialIssuerInterface $apiTokenCredentialIssuer,
+        private readonly ApiKeyGeneratorInterface $apiKeyGenerator,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -47,7 +48,15 @@ final class RegisterIdentityCommand
             $expiresAt = $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays));
 
             $this->commandBus->dispatch(new RegisterIdentity($identityId));
-            $apiKey = $this->apiTokenCredentialIssuer->issue($identityId, $expiresAt);
+
+            $apiKey = $this->apiKeyGenerator->generate();
+            $this->commandBus->dispatch(new IssueApiTokenCredential(
+                id: Uuid::uuid7()->toString(),
+                identityId: $identityId,
+                identifier: $apiKey->identifier,
+                secret: $apiKey->secret,
+                expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),
+            ));
 
             foreach ($input->permission as $permission) {
                 $this->commandBus->dispatch(new GrantPermission(Uuid::uuid7()->toString(), $identityId, $permission));

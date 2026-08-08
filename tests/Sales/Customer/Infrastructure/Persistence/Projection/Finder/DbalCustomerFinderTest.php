@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -22,7 +24,33 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReadsACustomerAsItWasRegistered(): void
+    public function itGetsACustomer(): void
+    {
+        // Given
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $this->store($customer);
+
+        // When
+        $result = $this->finder->ofId($customer->id()->toString());
+
+        // Then
+        self::assertSame($customer->id()->toString(), $result->id);
+        self::assertSame('buyer@example.com', $result->email);
+        self::assertNull($result->erasedAt);
+    }
+
+    #[Test]
+    public function itThrowsOnAnUnknownCustomer(): void
+    {
+        // Then
+        $this->expectException(CustomerResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
+    public function itListsCustomers(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
@@ -38,24 +66,5 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customer->id()->toString(), $result->id);
         self::assertSame('buyer@example.com', $result->email);
         self::assertNull($result->erasedAt);
-    }
-
-    #[Test]
-    public function itFiltersCustomersByErasure(): void
-    {
-        // Given
-        $registered = CustomerTestFactory::new()->create();
-        $this->store($registered);
-        $this->store(CustomerTestFactory::new()->erased()->create());
-
-        // When
-        $results = iterator_to_array($this->finder->withoutErased());
-
-        // Then
-        self::assertSame(2, \count($this->finder));
-        self::assertSame([$registered->id()->toString()], array_map(
-            static fn (CustomerResult $customer): string => $customer->id,
-            $results,
-        ));
     }
 }

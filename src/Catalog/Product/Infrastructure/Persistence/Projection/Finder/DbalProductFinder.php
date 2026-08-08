@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Infrastructure\Persistence\Projection\Finder;
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Infrastructure\Persistence\Projection\Projector\DbalProductProjector;
@@ -17,7 +18,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalProductFinder extends AbstractDbalCollectionFinder implements ProductFinderInterface
 {
-    public function ofId(string $id): ?ProductResult
+    public function ofId(string $id): ProductResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -27,7 +28,7 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
             ->fetchAssociative();
 
         if (false === $row) {
-            return null;
+            throw ProductResultNotFoundException::forId($id);
         }
 
         return $this->mapRow($row);

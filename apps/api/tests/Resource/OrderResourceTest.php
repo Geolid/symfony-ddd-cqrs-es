@@ -129,4 +129,49 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
+
+    #[Test]
+    public function itRejectsARevokedApiKey(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->revokedApiKeyClient($identity);
+
+        // When
+        $client->request('GET', '/v1/sales/orders');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
+    public function itRejectsAnExpiredApiKey(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $client = $this->expiredApiKeyClient($identity);
+
+        // When
+        $client->request('GET', '/v1/sales/orders');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    #[Test]
+    public function itRejectsASuspendedIdentity(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity);
+        $client = $this->authenticatedClient($identity, 'sales:read');
+
+        // When
+        $client->request('GET', '/v1/sales/orders');
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
 }

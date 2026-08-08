@@ -36,9 +36,9 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $orderId, int $itemCount, string $returnUrl): string
+    public function requestFor(string $orderId, string $returnUrl): string
     {
-        $result = $this->orderFinder->ofId($orderId) ?? throw OrderResultNotFoundException::forId($orderId);
+        $result = $this->orderFinder->ofId($orderId);
 
         if ($result->status->isCancelled()) {
             throw OrderAlreadyCancelledException::forId(OrderId::fromString($orderId));
@@ -50,7 +50,7 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
 
         $order = $this->orderRepository->load(OrderId::fromString($orderId));
 
-        $session = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents, $itemCount, $returnUrl);
+        $session = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents, $returnUrl);
 
         $this->commandBus->dispatch(new RequestOrderPayment(
             id: OrderPaymentId::forOrder($orderId)->toString(),

@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Api\Security;
+
+use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Webmozart\Assert\Assert;
+
+final readonly class ApiUser implements UserInterface
+{
+    /**
+     * @param list<string> $grants
+     */
+    public function __construct(
+        public string $id,
+        private string $identityId,
+        private string $identifier,
+        private array $grants,
+        public bool $revoked,
+        public \DateTimeImmutable $expiresAt,
+        public AppIdentityStatus $identityStatus,
+    ) {
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER', ...$this->grants];
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        Assert::stringNotEmpty($this->identifier);
+
+        return $this->identifier;
+    }
+
+    public function identityId(): string
+    {
+        return $this->identityId;
+    }
+}

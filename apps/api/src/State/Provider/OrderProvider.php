@@ -24,12 +24,10 @@ final readonly class OrderProvider implements ProviderInterface
     /**
      * @throws ApplicationExceptionInterface
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?OrderResource
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderResource
     {
         Assert::string($uriVariables['id']);
 
-        $result = $this->queryBus->ask(new GetOrderSummary($uriVariables['id']));
-
-        return null !== $result ? OrderResource::fromResult($result) : null;
+        return OrderResource::fromResult($this->queryBus->ask(new GetOrderSummary($uriVariables['id'])));
     }
 }

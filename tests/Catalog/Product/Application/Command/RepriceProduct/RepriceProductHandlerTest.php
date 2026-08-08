@@ -25,9 +25,8 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RepriceProduct($id, 1_950));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ProductFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame(1_950, $results[0]->unitAmountInCents);
+        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        self::assertSame(1_950, $result->unitAmountInCents);
     }
 
     #[Test]

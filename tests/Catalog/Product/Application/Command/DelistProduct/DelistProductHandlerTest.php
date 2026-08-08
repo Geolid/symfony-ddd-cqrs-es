@@ -26,9 +26,8 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new DelistProduct($id));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ProductFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertTrue($results[0]->delisted);
+        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        self::assertTrue($result->delisted);
     }
 
     #[Test]

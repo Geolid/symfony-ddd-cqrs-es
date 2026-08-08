@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Application\Finder\OrderSummary;
 
+use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Finder\PaginatedCollectionFinderInterface;
 
 /**
@@ -11,7 +12,10 @@ use Shared\Application\Finder\PaginatedCollectionFinderInterface;
  */
 interface OrderSummaryFinderInterface extends PaginatedCollectionFinderInterface
 {
-    public function ofOrder(string $orderId): ?OrderSummaryResult;
+    /**
+     * @throws OrderSummaryResultNotFoundException
+     */
+    public function ofOrder(string $orderId): OrderSummaryResult;
 
     public function withCustomer(string $customerId): static;
 

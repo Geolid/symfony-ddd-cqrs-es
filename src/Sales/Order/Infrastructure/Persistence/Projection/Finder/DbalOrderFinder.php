@@ -6,19 +6,20 @@ namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<OrderResult>
+ * @extends AbstractDbalFinder<OrderResult>
  *
  * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, cancelled_at: string|null}
  */
-final class DbalOrderFinder extends AbstractDbalCollectionFinder implements OrderFinderInterface
+final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
 {
-    public function ofId(string $id): ?OrderResult
+    public function ofId(string $id): OrderResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -28,20 +29,10 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             ->fetchAssociative();
 
         if (false === $row) {
-            return null;
+            throw OrderResultNotFoundException::forId($id);
         }
 
         return $this->mapRow($row);
-    }
-
-    public function withCustomer(string $customerId): static
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId) {
-                $qb->andWhere('customer_id = :customerId')
-                    ->setParameter('customerId', $customerId);
-            },
-        );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

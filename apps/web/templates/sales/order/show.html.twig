@@ -83,19 +83,21 @@
 
         <aside>
             <twig:SummaryCard title="{{ 'sales.order.show.title_payment'|trans }}" icon="credit-card">
-                {% if order.status.isPaymentPending %}
-                    <p data-testid="order-payment">
-                        <strong>{{ 'sales.order.show.payment_status.requested'|trans }}</strong>
-                        {% if order.paymentReference %}
-                            <br><small class="text-muted"
-                                       data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans }}
-                            <code>{{ order.paymentReference }}</code></small>
-                        {% endif %}
-                    </p>
-                    <a href="{{ path('sales_order_resume_payment', {id: order.orderId}) }}"
+                {% if order.status.isPlaced or order.status.isPaymentPending %}
+                    {% if order.status.isPaymentPending %}
+                        <p data-testid="order-payment">
+                            <strong>{{ 'sales.order.show.payment_status.requested'|trans }}</strong>
+                            {% if order.paymentReference %}
+                                <br><small class="text-muted"
+                                           data-testid="order-payment-reference">{{ 'sales.order.show.payment_reference'|trans }}
+                                <code>{{ order.paymentReference }}</code></small>
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    <a href="{{ path('sales_order_pay', {id: order.orderId}) }}"
                        role="button"
-                       data-testid="resume-payment-button">
-                        {{ 'sales.order.show.button_resume_payment'|trans }}
+                       data-testid="pay-button">
+                        {{ 'sales.order.show.button_pay'|trans }}
                     </a>
                 {% elseif order.status.isPreparing or order.status.isDispatched or order.status.isDelivered %}
                     <p data-testid="order-payment">

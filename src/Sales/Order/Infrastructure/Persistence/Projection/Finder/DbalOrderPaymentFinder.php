@@ -6,6 +6,7 @@ namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Enum\AppOrderPaymentStatus;
+use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
@@ -18,7 +19,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPaymentFinderInterface
 {
-    public function ofReference(string $reference): ?OrderPaymentResult
+    public function ofReference(string $reference): OrderPaymentResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -27,7 +28,11 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
             ->executeQuery()
             ->fetchAssociative();
 
-        return false !== $row ? $this->mapRow($row) : null;
+        if (false === $row) {
+            throw OrderPaymentResultNotFoundException::forReference($reference);
+        }
+
+        return $this->mapRow($row);
     }
 
     public function ofOrder(string $orderId): ?OrderPaymentResult

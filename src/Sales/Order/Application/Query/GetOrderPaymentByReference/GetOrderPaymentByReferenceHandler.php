@@ -21,6 +21,6 @@ final readonly class GetOrderPaymentByReferenceHandler
      */
     public function __invoke(GetOrderPaymentByReference $query): OrderPaymentResult
     {
-        return $this->orderPaymentFinder->ofReference($query->reference) ?? throw OrderPaymentResultNotFoundException::forReference($query->reference);
+        return $this->orderPaymentFinder->ofReference($query->reference);
     }
 }

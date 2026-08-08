@@ -20,12 +20,11 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws GlobexClientException
      */
-    public function requestPayment(string $orderId, int $amountInCents, int $itemCount, string $returnUrl): PaymentSession
+    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl): PaymentSession
     {
         $response = $this->globexClient->post(self::CHARGES_PATH, [
             'reference' => $orderId,
             'amountInCents' => $amountInCents,
-            'itemCount' => $itemCount,
             'returnUrl' => $returnUrl,
         ]);
 

@@ -13,7 +13,7 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Fulfilment');
 
     if ('test' === $container->env()) {
-        // Processors are exercised directly in tests (fetched by type), must be public.
+        // Fetched directly by type; must be public for that.
         $services->get(CreateShipmentOnOrderPaymentCaptured::class)->public();
     }
 };

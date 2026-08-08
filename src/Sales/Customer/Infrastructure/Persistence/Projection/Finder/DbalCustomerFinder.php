@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Customer\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
@@ -17,7 +18,23 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements CustomerFinderInterface
 {
-    public function ofIdentityId(string $identityId): ?CustomerResult
+    public function ofId(string $id): CustomerResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('id = :id')
+            ->setParameter('id', $id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            throw CustomerResultNotFoundException::forId($id);
+        }
+
+        return $this->mapRow($row);
+    }
+
+    public function ofIdentityId(string $identityId): CustomerResult
     {
         /** @var Row|false $row */
         $row = $this->query()
@@ -27,17 +44,10 @@ final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements C
             ->fetchAssociative();
 
         if (false === $row) {
-            return null;
+            throw CustomerResultNotFoundException::forIdentityId($identityId);
         }
 
         return $this->mapRow($row);
-    }
-
-    public function withoutErased(): static
-    {
-        return $this->filter(static function (QueryBuilder $qb): void {
-            $qb->andWhere('erased_at IS NULL');
-        });
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

@@ -23,10 +23,9 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch($command);
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ProductFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame($id, $results[0]->id);
-        self::assertSame('Espresso cups, set of 6', $results[0]->label);
-        self::assertSame(1_750, $results[0]->unitAmountInCents);
+        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        self::assertSame($id, $result->id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+        self::assertSame(1_750, $result->unitAmountInCents);
     }
 }
