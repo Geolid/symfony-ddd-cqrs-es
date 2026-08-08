@@ -54,7 +54,7 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itMarksTheGrantAsActiveOnPermissionReactivated(): void
+    public function itProjectsTheReactivationOnPermissionReactivated(): void
     {
         // Given
         $grant = GrantTestFactory::new()->revoked()->create();
