@@ -83,6 +83,14 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     public function itUpdatesTheIdentityStatusOnIdentitySuspended(): void
     {
         // Given
+        $other = IdentityTestFactory::new()->create();
+        $this->store($other);
+        $otherCredential = ApiTokenCredentialTestFactory::new()
+            ->withIdentityId($other->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($otherCredential);
+
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $credential = ApiTokenCredentialTestFactory::new()
@@ -99,12 +107,24 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
         self::assertSame('suspended', $row['identity_status']);
+
+        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame('active', $otherRow['identity_status']);
     }
 
     #[Test]
     public function itUpdatesTheIdentityStatusOnIdentityReactivated(): void
     {
         // Given
+        $other = IdentityTestFactory::new()->suspended()->create();
+        $this->store($other);
+        $otherCredential = ApiTokenCredentialTestFactory::new()
+            ->withIdentityId($other->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($otherCredential);
+
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($identity);
         $credential = ApiTokenCredentialTestFactory::new()
@@ -121,6 +141,38 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
         self::assertSame('active', $row['identity_status']);
+
+        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame('suspended', $otherRow['identity_status']);
+    }
+
+    #[Test]
+    public function itProjectsTheNewHashOnApiTokenCredentialRehashed(): void
+    {
+        // Given
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
+        $this->store($other);
+        $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherHashBeforeRehash);
+
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
+        $this->store($credential);
+        $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
+        self::assertNotFalse($hashBeforeRehash);
+
+        // When
+        $credential->rehash('a new correct horse battery staple', new DummySecretHasher(), new \DateTimeImmutable('now +00:00'));
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id()->toString());
+        self::assertNotFalse($row);
+        self::assertNotSame($hashBeforeRehash['hash'], $row['hash']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame($otherHashBeforeRehash['hash'], $otherRow['hash']);
     }
 
     /**
