@@ -6,13 +6,12 @@ namespace Sales\Tests\Customer\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{email: ?string, erased_at: ?string, identity_id: ?string}
+ * @phpstan-type Row array{email: ?string, erased_at: ?string}
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -44,28 +43,6 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['erased_at']);
     }
 
-    #[Test]
-    public function itProjectsTheIdentityIdOnCustomerIdentityLinked(): void
-    {
-        // Given
-        $other = CustomerTestFactory::new()->create();
-        $this->store($other);
-
-        // When
-        $identityId = Uuid::uuid7()->toString();
-        $customer = CustomerTestFactory::new()->linkedToIdentity($identityId)->create();
-        $this->store($customer);
-
-        // Then
-        $row = $this->fetchRow($customer->id()->toString());
-        self::assertNotFalse($row);
-        self::assertSame($identityId, $row['identity_id']);
-
-        $otherRow = $this->fetchRow($other->id()->toString());
-        self::assertNotFalse($otherRow);
-        self::assertNull($otherRow['identity_id']);
-    }
-
     /**
      * @return Row|false
      */
@@ -73,7 +50,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT email, erased_at, identity_id FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
+            \sprintf('SELECT email, erased_at FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
             ['id' => $id],
         );
     }

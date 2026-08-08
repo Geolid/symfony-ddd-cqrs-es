@@ -21,6 +21,6 @@ final readonly class GetCustomerByIdentityHandler
      */
     public function __invoke(GetCustomerByIdentity $query): CustomerResult
     {
-        return $this->customerFinder->ofIdentityId($query->identityId);
+        return $this->customerFinder->ofId($query->identityId);
     }
 }

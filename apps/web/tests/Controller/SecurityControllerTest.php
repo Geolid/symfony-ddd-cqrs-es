@@ -28,7 +28,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
             ->create());
-        $this->store(CustomerTestFactory::new()->linkedToIdentity($identity->id()->toString())->create());
+        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->create());
 
         // When
         $crawler = $client->request('GET', '/login');

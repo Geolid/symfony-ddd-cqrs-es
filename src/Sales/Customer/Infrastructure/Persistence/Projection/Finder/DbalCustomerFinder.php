@@ -14,7 +14,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<CustomerResult>
  *
- * @phpstan-type Row array{id: string, email: string|null, registered_at: string, erased_at: string|null, identity_id: string|null}
+ * @phpstan-type Row array{id: string, email: string|null, registered_at: string, erased_at: string|null}
  */
 final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements CustomerFinderInterface
 {
@@ -34,25 +34,9 @@ final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements C
         return $this->mapRow($row);
     }
 
-    public function ofIdentityId(string $identityId): CustomerResult
-    {
-        /** @var Row|false $row */
-        $row = $this->query()
-            ->andWhere('identity_id = :identityId')
-            ->setParameter('identityId', $identityId)
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if (false === $row) {
-            throw CustomerResultNotFoundException::forIdentityId($identityId);
-        }
-
-        return $this->mapRow($row);
-    }
-
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'email', 'registered_at', 'erased_at', 'identity_id')
+        $qb->select('id', 'email', 'registered_at', 'erased_at')
             ->from(DbalCustomerProjector::TABLE)
             ->orderBy('registered_at', 'DESC')
             ->addOrderBy('id', 'DESC');
@@ -68,7 +52,6 @@ final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements C
             email: $row['email'],
             registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
             erasedAt: null !== $row['erased_at'] ? new \DateTimeImmutable($row['erased_at'], new \DateTimeZone('UTC')) : null,
-            identityId: $row['identity_id'],
         );
     }
 }

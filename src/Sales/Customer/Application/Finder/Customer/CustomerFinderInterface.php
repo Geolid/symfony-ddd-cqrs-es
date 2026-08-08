@@ -16,9 +16,4 @@ interface CustomerFinderInterface extends CollectionFinderInterface
      * @throws CustomerResultNotFoundException
      */
     public function ofId(string $id): CustomerResult;
-
-    /**
-     * @throws CustomerResultNotFoundException
-     */
-    public function ofIdentityId(string $identityId): CustomerResult;
 }
