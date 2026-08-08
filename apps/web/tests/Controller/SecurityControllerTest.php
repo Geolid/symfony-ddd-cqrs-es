@@ -102,15 +102,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture:read')->create());
+        $this->store(GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture.widget:read')->create());
 
         // When
         $this->loginAs($client, $identity);
 
         // Then
         $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
-        self::assertTrue($authorizationChecker->isGranted('fixture:read'));
-        self::assertFalse($authorizationChecker->isGranted('fixture:write'));
+        self::assertTrue($authorizationChecker->isGranted('fixture.widget:read'));
+        self::assertFalse($authorizationChecker->isGranted('fixture.widget:write'));
     }
 
     #[Test]

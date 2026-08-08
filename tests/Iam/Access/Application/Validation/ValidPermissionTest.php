@@ -22,7 +22,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     public function itAcceptsAPermission(): void
     {
         // When
-        $this->validateValue('fixture:read');
+        $this->validateValue('fixture.widget:read');
 
         // Then
         $this->assertNoViolation();
@@ -48,9 +48,10 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     public static function provideRefusedPermissions(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
-        yield 'missing the action segment' => ['sales', [self::valueObject()]];
+        yield 'blanks only' => ['   ', [self::notBlank(), self::regex(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
+        yield 'missing the action segment' => ['fixture.widget', [self::regex(), self::valueObject()]];
+        yield 'missing the bc segment' => ['fixture:read', [self::regex(), self::valueObject()]];
     }
 
     protected function createCompound(): ValidPermission
@@ -61,6 +62,11 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     private static function notBlank(): Assert\NotBlank
     {
         return new Assert\NotBlank(normalizer: 'trim');
+    }
+
+    private static function regex(): Assert\Regex
+    {
+        return new Assert\Regex(pattern: Permission::PATTERN, message: 'A permission must be formatted "<subdomain>.<bc>:<action>".');
     }
 
     private static function valueObject(): ValidValueObject

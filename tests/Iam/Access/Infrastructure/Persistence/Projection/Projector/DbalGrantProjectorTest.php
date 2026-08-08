@@ -21,14 +21,14 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     {
         // When
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:read')->create();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create();
         $this->store($grant);
 
         // Then
         $row = $this->fetchRow($grant->id()->toString());
         self::assertNotFalse($row);
         self::assertSame($identityId, $row['identity_id']);
-        self::assertSame('fixture:read', $row['permission']);
+        self::assertSame('fixture.widget:read', $row['permission']);
         self::assertSame(0, (int) $row['revoked']);
     }
 
@@ -51,6 +51,29 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(0, (int) $otherRow['revoked']);
+    }
+
+    #[Test]
+    public function itProjectsTheReactivationOnPermissionReactivated(): void
+    {
+        // Given
+        $other = GrantTestFactory::new()->revoked()->create();
+        $this->store($other);
+        $grant = GrantTestFactory::new()->revoked()->create();
+        $this->store($grant);
+
+        // When
+        $grant->reactivate(new \DateTimeImmutable('now +00:00'));
+        $this->store($grant);
+
+        // Then
+        $row = $this->fetchRow($grant->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(0, (int) $row['revoked']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(1, (int) $otherRow['revoked']);
     }
 
     /**

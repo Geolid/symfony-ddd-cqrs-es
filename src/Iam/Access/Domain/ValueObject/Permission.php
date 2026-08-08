@@ -8,13 +8,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class Permission
 {
-    private const string PATTERN = '/^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
+    public const string PATTERN = '/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
 
     private string $value;
 
     private function __construct(string $value)
     {
-        Assert::regex($value, self::PATTERN, 'A permission must be formatted "<subdomain>:<action>", %s given.');
+        Assert::regex($value, self::PATTERN, 'A permission must be formatted "<subdomain>.<bc>:<action>", %s given.');
 
         $this->value = $value;
     }

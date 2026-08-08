@@ -9,6 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Access\Domain\Event\PermissionGranted;
+use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -34,6 +35,12 @@ final readonly class DbalGrantProjector extends AbstractDbalProjector
     public function onPermissionRevoked(PermissionRevoked $event): void
     {
         $this->connection->update(self::TABLE, ['revoked' => 1], ['id' => $event->id]);
+    }
+
+    #[Subscribe(PermissionReactivated::class)]
+    public function onPermissionReactivated(PermissionReactivated $event): void
+    {
+        $this->connection->update(self::TABLE, ['revoked' => 0], ['id' => $event->id]);
     }
 
     /**

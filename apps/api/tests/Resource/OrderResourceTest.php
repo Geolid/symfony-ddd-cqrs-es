@@ -20,7 +20,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'sales:read');
+        $client = $this->authenticatedClient($identity, 'sales.order:read');
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
         $this->store($order);
@@ -46,7 +46,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'sales:read');
+        $client = $this->authenticatedClient($identity, 'sales.order:read');
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', Uuid::uuid7()->toString()));
@@ -61,7 +61,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'sales:read');
+        $client = $this->authenticatedClient($identity, 'sales.order:read');
         $this->store(OrderTestFactory::new()->withTotalAmountInCents(1_999)->create());
 
         // When
@@ -166,7 +166,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'sales:read');
+        $client = $this->authenticatedClient($identity, 'sales.order:read');
 
         // When
         $client->request('GET', '/v1/sales/orders');

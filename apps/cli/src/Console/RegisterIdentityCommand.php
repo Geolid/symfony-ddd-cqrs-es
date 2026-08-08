@@ -59,7 +59,7 @@ final class RegisterIdentityCommand
             ));
 
             foreach ($input->permission as $permission) {
-                $this->commandBus->dispatch(new GrantPermission(Uuid::uuid7()->toString(), $identityId, $permission));
+                $this->commandBus->dispatch(new GrantPermission($identityId, $permission));
             }
 
             $io->success(\sprintf('Identity %s registered.', $identityId));
