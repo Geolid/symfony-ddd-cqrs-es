@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
-use Iam\Identity\Domain\ValueObject\Login;
-use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -64,9 +61,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $this->store(CustomerTestFactory::new()->withEmail('buyer-3@example.com')->linkedToIdentity($identity->id()->toString())->create());
-        $this->loginAs($client, $identity, 'buyer-3');
-        $fingerprint = Login::fromString('buyer-3')->fingerprint();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
+        $this->loginAs($client, $identity);
 
         // When
         $client->request('POST', '/sales/customers/erase', [
@@ -75,7 +70,6 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/logout');
-        self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(PasswordCredentialUniqueValue::LOGIN, $fingerprint));
     }
 
     #[Test]

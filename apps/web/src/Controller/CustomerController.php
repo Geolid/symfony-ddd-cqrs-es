@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Web\Controller;
 
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Command\ReleasePasswordCredentialLogin\ReleasePasswordCredentialLogin;
 use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
@@ -99,10 +98,6 @@ final class CustomerController extends AbstractController
         }
 
         $this->commandBus->dispatch(new EraseCustomer($customer->id));
-
-        if (null !== $customer->identityId) {
-            $this->commandBus->dispatch(new ReleasePasswordCredentialLogin($customer->identityId));
-        }
 
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
