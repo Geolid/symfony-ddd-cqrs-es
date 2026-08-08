@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Command\GrantPermission;
 
+use Iam\Access\Domain\Exception\GrantNotFoundException;
+use Iam\Access\Domain\Exception\PermissionNotRevokedException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
@@ -20,13 +22,28 @@ final readonly class GrantPermissionHandler
     ) {
     }
 
+    /**
+     * @throws GrantNotFoundException
+     * @throws PermissionNotRevokedException
+     */
     public function __invoke(GrantPermission $command): void
     {
-        $this->repository->save(Grant::grant(
-            GrantId::fromString($command->id),
-            $command->identityId,
-            Permission::fromString($command->permission),
-            $this->clock->now(),
-        ));
+        $permission = Permission::fromString($command->permission);
+        $id = GrantId::forIdentityAndPermission($command->identityId, $permission->toString());
+
+        if ($this->repository->has($id)) {
+            $grant = $this->repository->load($id);
+
+            if (!$grant->isRevoked()) {
+                return;
+            }
+
+            $grant->reactivate($this->clock->now());
+            $this->repository->save($grant);
+
+            return;
+        }
+
+        $this->repository->save(Grant::grant($id, $command->identityId, $permission, $this->clock->now()));
     }
 }

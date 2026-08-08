@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Iam\Access\Domain;
 
 use Iam\Access\Domain\Event\PermissionGranted;
+use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
+use Iam\Access\Domain\Exception\PermissionNotRevokedException;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Access\Domain\ValueObject\Permission;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -28,6 +30,11 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
     public function id(): GrantId
     {
         return $this->id;
+    }
+
+    public function isRevoked(): bool
+    {
+        return $this->revoked;
     }
 
     public static function grant(GrantId $id, string $identityId, Permission $permission, \DateTimeImmutable $grantedAt): self
@@ -58,6 +65,21 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PermissionNotRevokedException
+     */
+    public function reactivate(\DateTimeImmutable $reactivatedAt): void
+    {
+        if (!$this->revoked) {
+            throw PermissionNotRevokedException::forId($this->id);
+        }
+
+        $this->recordThat(new PermissionReactivated(
+            id: $this->id->toString(),
+            reactivatedAt: $reactivatedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     #[Apply]
     private function applyPermissionGranted(PermissionGranted $event): void
     {
@@ -69,5 +91,11 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
     private function applyPermissionRevoked(PermissionRevoked $event): void
     {
         $this->revoked = true;
+    }
+
+    #[Apply]
+    private function applyPermissionReactivated(PermissionReactivated $event): void
+    {
+        $this->revoked = false;
     }
 }

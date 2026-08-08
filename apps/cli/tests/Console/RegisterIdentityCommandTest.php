@@ -40,7 +40,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
 
         $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
         self::assertCount(2, $grants);
-        self::assertSame(['fixture:read', 'fixture:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
+        self::assertEqualsCanonicalizing(['fixture:read', 'fixture:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
     }
 
     #[Test]

@@ -39,7 +39,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(GrantNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokePermission(GrantId::generate()->toString()));
+        $this->dispatch(new RevokePermission(GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture:read')->toString()));
     }
 
     #[Test]

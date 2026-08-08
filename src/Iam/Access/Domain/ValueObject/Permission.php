@@ -8,7 +8,7 @@ use Webmozart\Assert\Assert;
 
 final readonly class Permission
 {
-    private const string PATTERN = '/^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
+    public const string PATTERN = '/^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
 
     private string $value;
 

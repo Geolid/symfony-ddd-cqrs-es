@@ -53,6 +53,23 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(0, (int) $otherRow['revoked']);
     }
 
+    #[Test]
+    public function itMarksTheGrantAsActiveOnPermissionReactivated(): void
+    {
+        // Given
+        $grant = GrantTestFactory::new()->revoked()->create();
+        $this->store($grant);
+
+        // When
+        $grant->reactivate(new \DateTimeImmutable('now +00:00'));
+        $this->store($grant);
+
+        // Then
+        $row = $this->fetchRow($grant->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(0, (int) $row['revoked']);
+    }
+
     /**
      * @return Row|false
      */

@@ -34,7 +34,6 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => GrantId::generate()->toString(),
             'identityId' => Uuid::uuid7()->toString(),
             'permission' => 'fixture:read',
             'grantedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
@@ -43,13 +42,12 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
 
     protected function build(array $attributes): Grant
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($identityId = $attributes['identityId']);
         Assert::stringNotEmpty($permission = $attributes['permission']);
         Assert::isInstanceOf($grantedAt = $attributes['grantedAt'], \DateTimeInterface::class);
 
         return Grant::grant(
-            GrantId::fromString($id),
+            GrantId::forIdentityAndPermission($identityId, $permission),
             $identityId,
             Permission::fromString($permission),
             \DateTimeImmutable::createFromInterface($grantedAt),
