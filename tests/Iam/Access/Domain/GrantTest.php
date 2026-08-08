@@ -22,25 +22,25 @@ final class GrantTest extends AggregateRootTestCase
     public function itGrantsAPermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write');
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write');
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn () => Grant::grant($id, $identityId, Permission::fromString('fixture:write'), $grantedAt))
-            ->then(new PermissionGranted($id->toString(), $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn () => Grant::grant($id, $identityId, Permission::fromString('fixture.widget:write'), $grantedAt))
+            ->then(new PermissionGranted($id->toString(), $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
     public function itRevokesAPermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write')->toString();
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new PermissionGranted($id, $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)))
+            ->given(new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Grant $grant) => $grant->revoke($revokedAt))
             ->then(new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)));
     }
@@ -49,13 +49,13 @@ final class GrantTest extends AggregateRootTestCase
     public function itCannotRevokeAnAlreadyRevokedPermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write')->toString();
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(
-                new PermissionGranted($id, $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)),
                 new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Grant $grant) => $grant->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -66,14 +66,14 @@ final class GrantTest extends AggregateRootTestCase
     public function itReactivatesARevokedPermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write')->toString();
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $reactivatedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
 
         $this
             ->given(
-                new PermissionGranted($id, $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)),
                 new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Grant $grant) => $grant->reactivate($reactivatedAt))
@@ -84,7 +84,7 @@ final class GrantTest extends AggregateRootTestCase
     public function itCanBeRevokedAgainAfterBeingReactivated(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write')->toString();
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $reactivatedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
@@ -92,7 +92,7 @@ final class GrantTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new PermissionGranted($id, $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)),
                 new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
                 new PermissionReactivated($id, $reactivatedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -104,11 +104,11 @@ final class GrantTest extends AggregateRootTestCase
     public function itCannotReactivateAnActivePermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
-        $id = GrantId::forIdentityAndPermission($identityId, 'fixture:write')->toString();
+        $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
         $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new PermissionGranted($id, $identityId, 'fixture:write', $grantedAt->format(\DateTimeInterface::ATOM)))
+            ->given(new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Grant $grant) => $grant->reactivate(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(PermissionNotRevokedException::class);
     }

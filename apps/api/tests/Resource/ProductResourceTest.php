@@ -20,7 +20,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->create();
         $this->store($product);
 
@@ -45,7 +45,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
 
         // When
         $client->request('GET', '/v1/catalog/products/'.Uuid::uuid7()->toString());
@@ -60,7 +60,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
         $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
         $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
 
@@ -80,7 +80,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
         $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
         $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
 
@@ -184,7 +184,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -199,7 +199,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
 
         // When
         $response = $client->request('POST', '/v1/catalog/products', [
@@ -224,7 +224,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -241,7 +241,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -258,7 +258,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -275,7 +275,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write', 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write', 'catalog.product:read');
         $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->create();
         $this->store($product);
 
@@ -297,7 +297,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -316,7 +316,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', Uuid::uuid7()->toString()), [
@@ -333,7 +333,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -352,7 +352,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write', 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write', 'catalog.product:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
@@ -372,7 +372,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', Uuid::uuid7()->toString()));
@@ -387,7 +387,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:write');
+        $client = $this->authenticatedClient($identity, 'catalog.product:write');
         $product = ProductTestFactory::new()->delisted()->create();
         $this->store($product);
 
@@ -404,7 +404,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $client = $this->authenticatedClient($identity, 'catalog:read');
+        $client = $this->authenticatedClient($identity, 'catalog.product:read');
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 

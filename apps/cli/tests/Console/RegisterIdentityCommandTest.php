@@ -24,7 +24,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'iam:identity:register', '--permission' => ['fixture:read', 'fixture:write']]);
+        $tester->run(['command' => 'iam:identity:register', '--permission' => ['fixture.widget:read', 'fixture.widget:write']]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -40,7 +40,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
 
         $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
         self::assertCount(2, $grants);
-        self::assertEqualsCanonicalizing(['fixture:read', 'fixture:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
+        self::assertEqualsCanonicalizing(['fixture.widget:read', 'fixture.widget:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
     }
 
     #[Test]

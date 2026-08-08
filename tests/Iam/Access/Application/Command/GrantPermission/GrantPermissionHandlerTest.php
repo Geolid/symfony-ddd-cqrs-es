@@ -19,7 +19,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $command = new GrantPermission($identityId, 'fixture:read');
+        $command = new GrantPermission($identityId, 'fixture.widget:read');
 
         // When
         $this->dispatch($command);
@@ -27,8 +27,8 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         // Then
         $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
         self::assertCount(1, $results);
-        self::assertSame(GrantId::forIdentityAndPermission($identityId, 'fixture:read')->toString(), $results[0]->id);
-        self::assertSame('fixture:read', $results[0]->permission);
+        self::assertSame(GrantId::forIdentityAndPermission($identityId, 'fixture.widget:read')->toString(), $results[0]->id);
+        self::assertSame('fixture.widget:read', $results[0]->permission);
     }
 
     #[Test]
@@ -36,11 +36,11 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:read')->revoked()->create();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->revoked()->create();
         $this->store($grant);
 
         // When
-        $this->dispatch(new GrantPermission($identityId, 'fixture:read'));
+        $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
 
         // Then
         $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
@@ -53,10 +53,10 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $this->dispatch(new GrantPermission($identityId, 'fixture:read'));
+        $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
 
         // When
-        $this->dispatch(new GrantPermission($identityId, 'fixture:read'));
+        $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
 
         // Then
         $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));

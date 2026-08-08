@@ -16,10 +16,10 @@ final class GrantIdTest extends TestCase
     public function itDerivesAKnownIdForAKnownIdentityAndPermission(): void
     {
         // When
-        $id = GrantId::forIdentityAndPermission('0199a1b2-3c4d-7e5f-8061-72839405a6b7', 'fixture:read');
+        $id = GrantId::forIdentityAndPermission('0199a1b2-3c4d-7e5f-8061-72839405a6b7', 'fixture.widget:read');
 
         // Then
-        self::assertSame('d7ade99a-1608-589a-94e9-7eba625bd6f1', $id->toString());
+        self::assertSame('8afaf9b6-dc05-5a0f-bab4-229aac3cd635', $id->toString());
     }
 
     #[Test]
@@ -29,8 +29,8 @@ final class GrantIdTest extends TestCase
         $identityId = Uuid::uuid7()->toString();
 
         // When
-        $a = GrantId::forIdentityAndPermission($identityId, 'fixture:read');
-        $b = GrantId::forIdentityAndPermission($identityId, 'fixture:read');
+        $a = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:read');
+        $b = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:read');
 
         // Then
         self::assertTrue($a->equals($b));
@@ -40,8 +40,8 @@ final class GrantIdTest extends TestCase
     public function itDerivesADifferentIdForADifferentIdentity(): void
     {
         // When
-        $a = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture:read');
-        $b = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture:read');
+        $a = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read');
+        $b = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read');
 
         // Then
         self::assertFalse($a->equals($b));
@@ -54,8 +54,8 @@ final class GrantIdTest extends TestCase
         $identityId = Uuid::uuid7()->toString();
 
         // When
-        $a = GrantId::forIdentityAndPermission($identityId, 'fixture:read');
-        $b = GrantId::forIdentityAndPermission($identityId, 'fixture:write');
+        $a = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:read');
+        $b = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write');
 
         // Then
         self::assertFalse($a->equals($b));

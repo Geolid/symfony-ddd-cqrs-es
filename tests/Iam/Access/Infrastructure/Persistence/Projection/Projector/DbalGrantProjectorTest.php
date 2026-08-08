@@ -21,14 +21,14 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     {
         // When
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:read')->create();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create();
         $this->store($grant);
 
         // Then
         $row = $this->fetchRow($grant->id()->toString());
         self::assertNotFalse($row);
         self::assertSame($identityId, $row['identity_id']);
-        self::assertSame('fixture:read', $row['permission']);
+        self::assertSame('fixture.widget:read', $row['permission']);
         self::assertSame(0, (int) $row['revoked']);
     }
 

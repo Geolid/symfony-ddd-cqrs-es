@@ -22,7 +22,7 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
                 responses: ['200' => new Response(description: 'A collection of orders.')],
                 summary: 'Retrieves a collection of orders.',
             ),
-            security: "is_granted('sales:read')",
+            security: "is_granted('sales.order:read')",
             provider: OrderCollectionProvider::class,
         ),
         new Get(
@@ -34,7 +34,7 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
                 ],
                 summary: 'Retrieves a single order.',
             ),
-            security: "is_granted('sales:read')",
+            security: "is_granted('sales.order:read')",
             provider: OrderProvider::class,
         ),
     ],

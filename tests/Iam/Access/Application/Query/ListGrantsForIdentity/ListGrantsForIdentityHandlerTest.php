@@ -17,16 +17,16 @@ final class ListGrantsForIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $this->store(GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:read')->create());
-        $this->store(GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture:write')->revoked()->create());
-        $this->store(GrantTestFactory::new()->withIdentityId(Uuid::uuid7()->toString())->withPermission('fixture:read')->create());
+        $this->store(GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create());
+        $this->store(GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:write')->revoked()->create());
+        $this->store(GrantTestFactory::new()->withIdentityId(Uuid::uuid7()->toString())->withPermission('fixture.widget:read')->create());
 
         // When
         $result = $this->ask(new ListGrantsForIdentity($identityId));
 
         // Then
         self::assertCount(1, $result);
-        self::assertSame('fixture:read', $result[0]->permission);
+        self::assertSame('fixture.widget:read', $result[0]->permission);
     }
 
     #[Test]

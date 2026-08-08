@@ -14,17 +14,17 @@ final class PermissionTest extends TestCase
     #[Test]
     public function itCreates(): void
     {
-        $permission = Permission::fromString('fixture:write');
+        $permission = Permission::fromString('fixture.widget:write');
 
-        self::assertSame('fixture:write', $permission->toString());
+        self::assertSame('fixture.widget:write', $permission->toString());
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
-        $a = Permission::fromString('fixture:write');
-        $b = Permission::fromString('fixture:write');
-        $other = Permission::fromString('fixture:read');
+        $a = Permission::fromString('fixture.widget:write');
+        $b = Permission::fromString('fixture.widget:write');
+        $other = Permission::fromString('fixture.widget:read');
 
         self::assertTrue($a->equals($b));
         self::assertFalse($a->equals($other));
@@ -45,9 +45,10 @@ final class PermissionTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
-        yield 'missing the action segment' => ['fixture'];
-        yield 'missing the subdomain segment' => [':write'];
-        yield 'uppercase' => ['Fixture:Write'];
-        yield 'contains whitespace' => ['fixture:has space'];
+        yield 'missing the action segment' => ['fixture.widget'];
+        yield 'missing the bc segment' => ['fixture:write'];
+        yield 'missing the subdomain segment' => ['.widget:write'];
+        yield 'uppercase' => ['Fixture.Widget:Write'];
+        yield 'contains whitespace' => ['fixture.widget:has space'];
     }
 }

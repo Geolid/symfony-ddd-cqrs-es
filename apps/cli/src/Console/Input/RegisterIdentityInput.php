@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class RegisterIdentityInput
 {
     /** @var list<string> */
-    #[Option(description: 'A permission to grant, formatted "<subdomain>:<action>"; repeat for several')]
+    #[Option(description: 'A permission to grant, formatted "<subdomain>.<bc>:<action>"; repeat for several')]
     #[ValidPermissions]
     public array $permission = [];
 

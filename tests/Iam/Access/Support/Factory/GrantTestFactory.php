@@ -35,7 +35,7 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'identityId' => Uuid::uuid7()->toString(),
-            'permission' => 'fixture:read',
+            'permission' => 'fixture.widget:read',
             'grantedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }
