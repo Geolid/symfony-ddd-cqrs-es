@@ -39,6 +39,7 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
         $this->validateValue($amount);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 

@@ -39,6 +39,7 @@ final class ValidLabelTest extends CompoundConstraintTestCase
         $this->validateValue($label);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 

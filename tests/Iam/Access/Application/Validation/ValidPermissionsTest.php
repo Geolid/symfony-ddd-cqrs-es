@@ -32,23 +32,25 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
      */
     #[Test]
     #[DataProvider('provideRefusedPermissions')]
-    public function itRefusesPermissions(mixed $permissions, array $rules): void
+    public function itRefusesPermissions(mixed $permissions, array $rules, int $violationCount): void
     {
         // When
         $this->validateValue($permissions);
 
         // Then
+        $this->assertViolationsCount($violationCount);
         $this->assertViolationsRaisedByCompound($rules);
     }
 
     /**
-     * @return iterable<string, array{mixed, list<Constraint>}>
+     * @return iterable<string, array{mixed, list<Constraint>, int}>
      */
     public static function provideRefusedPermissions(): iterable
     {
-        yield 'no permission at all' => [[], [new Assert\Count(min: 1)]];
-        yield 'a countable that is not an array' => [new \ArrayObject(['fixture.widget:read']), [new Assert\Type('array')]];
-        yield 'a malformed permission' => [['fixture.widget'], [self::permissionShape()]];
+        yield 'no permission at all' => [[], [new Assert\Count(min: 1)], 1];
+        yield 'a countable that is not an array' => [new \ArrayObject(['fixture.widget:read']), [new Assert\Type('array')], 1];
+        // A malformed permission trips both the format Regex and the closing ValidValueObject net inside the nested ValidPermission compound.
+        yield 'a malformed permission' => [['fixture.widget'], [self::permissionShape()], 2];
     }
 
     protected function createCompound(): ValidPermissions

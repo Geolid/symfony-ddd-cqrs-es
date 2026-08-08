@@ -39,6 +39,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
         $this->validateValue($permission);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 

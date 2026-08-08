@@ -39,6 +39,7 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         $this->validateValue($address);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 
