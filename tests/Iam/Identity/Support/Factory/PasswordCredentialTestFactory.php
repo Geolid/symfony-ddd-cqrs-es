@@ -7,8 +7,8 @@ namespace Iam\Tests\Identity\Support\Factory;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
-use Shared\Domain\ValueObject\Email;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -41,7 +41,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'identityId' => IdentityId::generate()->toString(),
-            'login' => self::faker()->unique()->safeEmail(),
+            'login' => self::faker()->unique()->userName(),
             'password' => self::faker()->password(),
             'setAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
@@ -59,7 +59,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         return PasswordCredential::set(
             PasswordCredentialId::forIdentity($identityId),
             IdentityId::fromString($identityId),
-            Email::fromString($login),
+            Login::fromString($login),
             $password,
             $hasher,
             \DateTimeImmutable::createFromInterface($setAt),

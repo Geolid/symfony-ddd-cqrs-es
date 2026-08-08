@@ -23,13 +23,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheCredentialOnPasswordCredentialSet(): void
     {
         // When
-        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->withHasher(new DummySecretHasher())->create();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->create();
         $this->store($credential);
 
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('buyer@example.com', $row['login']);
+        self::assertSame('operator', $row['login']);
     }
 
     #[Test]

@@ -28,7 +28,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedPasswordCredential(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->withHasher(new DummySecretHasher())->create();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->create();
 
         // When
         $this->repository->save($credential);
@@ -36,7 +36,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $credential->id();
         self::assertTrue($this->repository->has($id));
-        self::assertSame('buyer@example.com', $this->repository->load($id)->login()->toString());
+        self::assertSame('operator', $this->repository->load($id)->login()->toString());
     }
 
     #[Test]

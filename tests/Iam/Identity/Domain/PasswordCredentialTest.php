@@ -10,11 +10,11 @@ use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\Email;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
 {
@@ -32,13 +32,13 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $identityId = IdentityId::generate();
         $id = PasswordCredentialId::forIdentity($identityId->toString());
-        $login = Email::fromString('operator@example.com');
+        $login = Login::fromString('operator');
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
             ->when(fn () => PasswordCredential::set($id, $identityId, $login, 'S3cr3t!', $this->hasher, $setAt))
-            ->then(new PasswordCredentialSet($id->toString(), $identityId->toString(), 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)));
+            ->then(new PasswordCredentialSet($id->toString(), $identityId->toString(), 'operator', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -50,7 +50,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $changedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('OldS3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
+            ->given(new PasswordCredentialSet($id, $identityId, 'operator', $this->hasher->hash('OldS3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
             ->when(fn (PasswordCredential $credential) => $credential->change('NewS3cr3t!', $this->hasher, $changedAt))
             ->then(new PasswordCredentialChanged($id, $this->hasher->hash('NewS3cr3t!'), $changedAt->format(\DateTimeInterface::ATOM)));
     }
@@ -64,7 +64,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $rehashedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
+            ->given(new PasswordCredentialSet($id, $identityId, 'operator', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
             ->when(fn (PasswordCredential $credential) => $credential->rehash('S3cr3t!', $this->hasher, $rehashedAt))
             ->then(new PasswordCredentialRehashed($id, $this->hasher->hash('S3cr3t!'), $rehashedAt->format(\DateTimeInterface::ATOM)));
     }
