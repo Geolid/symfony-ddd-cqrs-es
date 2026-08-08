@@ -77,6 +77,25 @@ final class GrantTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itCanBeRevokedAgainAfterBeingReactivated(): void
+    {
+        $id = GrantId::forIdentityAndPermission('an-identity-id', 'sales:order_write')->toString();
+        $grantedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $reactivatedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $revokedAgainAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                new PermissionGranted($id, 'an-identity-id', 'sales:order_write', $grantedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
+                new PermissionReactivated($id, $reactivatedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Grant $grant) => $grant->revoke($revokedAgainAt))
+            ->then(new PermissionRevoked($id, $revokedAgainAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
     public function itCannotReactivateAnActivePermission(): void
     {
         $id = GrantId::forIdentityAndPermission('an-identity-id', 'sales:order_write')->toString();

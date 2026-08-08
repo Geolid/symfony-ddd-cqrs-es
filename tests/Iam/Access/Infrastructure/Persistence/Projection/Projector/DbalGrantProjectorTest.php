@@ -57,6 +57,8 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheReactivationOnPermissionReactivated(): void
     {
         // Given
+        $other = GrantTestFactory::new()->revoked()->create();
+        $this->store($other);
         $grant = GrantTestFactory::new()->revoked()->create();
         $this->store($grant);
 
@@ -68,6 +70,10 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($grant->id()->toString());
         self::assertNotFalse($row);
         self::assertSame(0, (int) $row['revoked']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(1, (int) $otherRow['revoked']);
     }
 
     /**
