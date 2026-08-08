@@ -13,7 +13,7 @@ use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Sales\Customer\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\Email;
 
 final class CustomerTest extends AggregateRootTestCase
 {

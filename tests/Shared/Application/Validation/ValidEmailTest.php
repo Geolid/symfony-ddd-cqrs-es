@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Customer\Application\Validation;
+namespace Shared\Tests\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Application\Validation\ValidEmail;
-use Sales\Customer\Domain\ValueObject\Email;
+use Shared\Application\Validation\ValidEmail;
 use Shared\Application\Validation\ValidValueObject;
+use Shared\Domain\ValueObject\Email;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -51,6 +51,7 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Email(), self::valueObject()]];
         yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email(), self::valueObject()]];
+        yield 'too long' => ['buyer@'.rtrim(str_repeat('example.com.', 22), '.'), [new Assert\Length(max: 255), self::valueObject()]];
     }
 
     protected function createCompound(): ValidEmail

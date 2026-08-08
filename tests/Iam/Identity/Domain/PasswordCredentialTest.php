@@ -10,11 +10,11 @@ use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Email;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
 {
@@ -32,7 +32,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $identityId = IdentityId::generate();
         $id = PasswordCredentialId::forIdentity($identityId->toString());
-        $login = Login::fromString('operator@example.com');
+        $login = Email::fromString('operator@example.com');
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this

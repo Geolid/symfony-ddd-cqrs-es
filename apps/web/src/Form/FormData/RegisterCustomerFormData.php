@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Sales\Customer\Application\Validation\ValidEmail;
+use Shared\Application\Validation\ValidEmail;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class RegisterCustomerFormData
