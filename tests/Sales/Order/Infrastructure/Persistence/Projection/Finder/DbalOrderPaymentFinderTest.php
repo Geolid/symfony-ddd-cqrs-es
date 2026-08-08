@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Enum\AppOrderPaymentStatus;
+use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
@@ -45,7 +45,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($orderId, $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
-        self::assertSame(AppOrderPaymentStatus::REQUESTED, $result->status);
+        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
         self::assertNull($result->capturedAt);
     }
 

@@ -9,7 +9,7 @@ use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
-use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -157,7 +157,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSelectorExists('[data-testid="flash-error"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertSame(AppOrderStatus::PLACED, $order->status);
+        self::assertSame(OrderStatus::PLACED, $order->status);
     }
 
     #[Test]

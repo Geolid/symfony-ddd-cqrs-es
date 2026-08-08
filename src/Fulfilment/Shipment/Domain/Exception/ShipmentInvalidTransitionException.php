@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain\Exception;
 
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 
 final class ShipmentInvalidTransitionException extends \DomainException
 {
-    public static function cannotDispatch(ShipmentStatus $current): self
+    public static function cannotDispatch(ShipmentState $current): self
     {
         return new self(\sprintf('Cannot dispatch shipment with status "%s".', $current->value));
     }
 
-    public static function cannotMarkDelivered(ShipmentStatus $current): self
+    public static function cannotMarkDelivered(ShipmentState $current): self
     {
         return new self(\sprintf('Cannot mark shipment as delivered with status "%s".', $current->value));
     }
 
-    public static function cannotAssignTrackingReference(ShipmentStatus $current): self
+    public static function cannotAssignTrackingReference(ShipmentState $current): self
     {
         return new self(\sprintf('Cannot assign a tracking reference to a shipment with status "%s".', $current->value));
     }

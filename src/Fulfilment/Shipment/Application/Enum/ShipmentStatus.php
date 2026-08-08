@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Enum;
 
-enum AppShipmentStatus: string
+enum ShipmentStatus: string
 {
     case PENDING = 'pending';
     case DISPATCHED = 'dispatched';

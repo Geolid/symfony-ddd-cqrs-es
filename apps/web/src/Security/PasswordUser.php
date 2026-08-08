@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Webmozart\Assert\Assert;
 
@@ -17,7 +17,7 @@ final readonly class PasswordUser implements UserInterface
         private string $identityId,
         private string $login,
         private array $grants = [],
-        public AppIdentityStatus $identityStatus = AppIdentityStatus::ACTIVE,
+        public IdentityStatus $identityStatus = IdentityStatus::ACTIVE,
     ) {
     }
 

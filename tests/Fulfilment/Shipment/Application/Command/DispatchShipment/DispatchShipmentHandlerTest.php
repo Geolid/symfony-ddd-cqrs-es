@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\DispatchShipment;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -29,7 +29,7 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
         self::assertCount(1, $results);
-        self::assertSame(AppShipmentStatus::DISPATCHED, $results[0]->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $results[0]->status);
         self::assertNotNull($results[0]->dispatchedAt);
         self::assertNull($results[0]->trackingReference);
     }

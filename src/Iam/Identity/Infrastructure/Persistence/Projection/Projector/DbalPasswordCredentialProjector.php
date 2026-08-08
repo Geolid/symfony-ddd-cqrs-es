@@ -14,6 +14,7 @@ use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
+use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -58,13 +59,13 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     #[Subscribe(IdentitySuspended::class)]
     public function onIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->connection->update(self::TABLE, ['identity_status' => 'suspended'], ['identity_id' => $event->id]);
+        $this->connection->update(self::TABLE, ['identity_status' => IdentityState::SUSPENDED->value], ['identity_id' => $event->id]);
     }
 
     #[Subscribe(IdentityReactivated::class)]
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->connection->update(self::TABLE, ['identity_status' => 'active'], ['identity_id' => $event->id]);
+        $this->connection->update(self::TABLE, ['identity_status' => IdentityState::ACTIVE->value], ['identity_id' => $event->id]);
     }
 
     /**

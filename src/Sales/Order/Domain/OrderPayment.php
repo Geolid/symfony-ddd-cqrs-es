@@ -14,7 +14,7 @@ use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Order\Domain\ValueObject\OrderPaymentStatus;
+use Sales\Order\Domain\ValueObject\OrderPaymentState;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 
@@ -30,7 +30,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     private ?string $buyerAddress;
     private Money $amount;
     private PaymentReference $reference;
-    private OrderPaymentStatus $status;
+    private OrderPaymentState $status;
 
     public function id(): OrderPaymentId
     {
@@ -47,7 +47,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         return $this->reference;
     }
 
-    public function status(): OrderPaymentStatus
+    public function status(): OrderPaymentState
     {
         return $this->status;
     }
@@ -104,12 +104,12 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $this->buyerAddress = $event->buyerAddress;
         $this->amount = Money::fromCents($event->amountInCents);
         $this->reference = PaymentReference::fromString($event->reference);
-        $this->status = OrderPaymentStatus::REQUESTED;
+        $this->status = OrderPaymentState::REQUESTED;
     }
 
     #[Apply]
     private function applyOrderPaymentCaptured(OrderPaymentCaptured $event): void
     {
-        $this->status = OrderPaymentStatus::CAPTURED;
+        $this->status = OrderPaymentState::CAPTURED;
     }
 }

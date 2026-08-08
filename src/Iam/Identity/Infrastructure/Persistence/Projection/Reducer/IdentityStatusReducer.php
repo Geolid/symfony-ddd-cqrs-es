@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Reducer;
 
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Patchlevel\EventSourcing\Message\Reducer;
@@ -18,17 +18,17 @@ final readonly class IdentityStatusReducer
     {
     }
 
-    public function statusFor(string $identityId): AppIdentityStatus
+    public function statusFor(string $identityId): IdentityStatus
     {
         $stream = $this->store->load(new Criteria(
             new StreamCriterion('iam.identity.identity-'.$identityId),
         ));
 
-        /** @var array{status: AppIdentityStatus} $state */
+        /** @var array{status: IdentityStatus} $state */
         $state = (new Reducer())
-            ->initState(['status' => AppIdentityStatus::ACTIVE])
-            ->when(IdentitySuspended::class, static fn (): array => ['status' => AppIdentityStatus::SUSPENDED])
-            ->when(IdentityReactivated::class, static fn (): array => ['status' => AppIdentityStatus::ACTIVE])
+            ->initState(['status' => IdentityStatus::ACTIVE])
+            ->when(IdentitySuspended::class, static fn (): array => ['status' => IdentityStatus::SUSPENDED])
+            ->when(IdentityReactivated::class, static fn (): array => ['status' => IdentityStatus::ACTIVE])
             ->reduce($stream);
 
         return $state['status'];

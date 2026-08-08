@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\MarkShipmentDelivered;
 
 use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -29,7 +29,7 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
         self::assertCount(1, $results);
-        self::assertSame(AppShipmentStatus::DELIVERED, $results[0]->status);
+        self::assertSame(ShipmentStatus::DELIVERED, $results[0]->status);
         self::assertNotNull($results[0]->deliveredAt);
     }
 

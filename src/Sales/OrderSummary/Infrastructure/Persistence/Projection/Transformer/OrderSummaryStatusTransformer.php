@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Transformer;
 
-use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 
 final readonly class OrderSummaryStatusTransformer
 {
@@ -12,18 +12,18 @@ final readonly class OrderSummaryStatusTransformer
         string $orderStatus,
         ?string $paymentStatus,
         ?string $shipmentStatus,
-    ): AppOrderSummaryStatus {
+    ): OrderSummaryStatus {
         if ('cancelled' === $orderStatus) {
-            return AppOrderSummaryStatus::CANCELLED;
+            return OrderSummaryStatus::CANCELLED;
         }
 
         return match ($paymentStatus) {
-            null => AppOrderSummaryStatus::PLACED,
-            'requested' => AppOrderSummaryStatus::PAYMENT_PENDING,
+            null => OrderSummaryStatus::PLACED,
+            'requested' => OrderSummaryStatus::PAYMENT_PENDING,
             default => match ($shipmentStatus) {
-                null, 'pending' => AppOrderSummaryStatus::PREPARING,
-                'dispatched' => AppOrderSummaryStatus::DISPATCHED,
-                default => AppOrderSummaryStatus::DELIVERED,
+                null, 'pending' => OrderSummaryStatus::PREPARING,
+                'dispatched' => OrderSummaryStatus::DISPATCHED,
+                default => OrderSummaryStatus::DELIVERED,
             },
         };
     }

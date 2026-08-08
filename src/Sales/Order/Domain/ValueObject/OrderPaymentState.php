@@ -2,12 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Enum;
+namespace Sales\Order\Domain\ValueObject;
 
-enum AppOrderPaymentStatus: string
+enum OrderPaymentState: string
 {
     case REQUESTED = 'requested';
     case CAPTURED = 'captured';
+
+    public function isRequested(): bool
+    {
+        return self::REQUESTED === $this;
+    }
 
     public function isCaptured(): bool
     {

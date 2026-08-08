@@ -11,7 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\ValueObject\IdentityStatus;
+use Iam\Identity\Domain\ValueObject\IdentityState;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
@@ -26,7 +26,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     {
         $this->connection->insert(self::TABLE, [
             'id' => $event->id,
-            'status' => IdentityStatus::ACTIVE->value,
+            'status' => IdentityState::ACTIVE->value,
             'registered_at' => new \DateTimeImmutable($event->registeredAt)->format('Y-m-d H:i:s'),
         ]);
     }
@@ -34,13 +34,13 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     #[Subscribe(IdentitySuspended::class)]
     public function onIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityStatus::SUSPENDED->value], ['id' => $event->id]);
+        $this->connection->update(self::TABLE, ['status' => IdentityState::SUSPENDED->value], ['id' => $event->id]);
     }
 
     #[Subscribe(IdentityReactivated::class)]
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityStatus::ACTIVE->value], ['id' => $event->id]);
+        $this->connection->update(self::TABLE, ['status' => IdentityState::ACTIVE->value], ['id' => $event->id]);
     }
 
     /**

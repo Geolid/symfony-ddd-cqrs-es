@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Reducer;
 
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -23,7 +23,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
 
         // Then
-        self::assertSame(AppIdentityStatus::ACTIVE, $status);
+        self::assertSame(IdentityStatus::ACTIVE, $status);
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
 
         // Then
-        self::assertSame(AppIdentityStatus::SUSPENDED, $status);
+        self::assertSame(IdentityStatus::SUSPENDED, $status);
     }
 
     #[Test]
@@ -53,6 +53,6 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
 
         // Then
-        self::assertSame(AppIdentityStatus::ACTIVE, $status);
+        self::assertSame(IdentityStatus::ACTIVE, $status);
     }
 }

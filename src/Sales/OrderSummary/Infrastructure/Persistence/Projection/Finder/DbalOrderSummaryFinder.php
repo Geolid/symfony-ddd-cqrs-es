@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
@@ -86,7 +86,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             orderId: $row['order_id'],
             customerId: $row['customer_id'],
             totalAmountInCents: (int) $row['total_amount_in_cents'],
-            status: AppOrderSummaryStatus::from($row['status']),
+            status: OrderSummaryStatus::from($row['status']),
             placedAt: new \DateTimeImmutable($row['placed_at'], new \DateTimeZone('UTC')),
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
             paymentAmountInCents: null !== $row['payment_amount_in_cents'] ? (int) $row['payment_amount_in_cents'] : null,

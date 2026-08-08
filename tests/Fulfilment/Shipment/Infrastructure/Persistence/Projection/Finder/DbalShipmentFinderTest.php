@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Finder;
 
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
@@ -38,7 +38,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(ShipmentResult::class, $result);
         self::assertSame($shipment->id()->toString(), $result->id);
         self::assertSame($shipment->orderId(), $result->orderId);
-        self::assertSame(AppShipmentStatus::DISPATCHED, $result->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);

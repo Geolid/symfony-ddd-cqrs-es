@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Query\ListPendingShipments;
 
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Shared\Application\Query\AsQueryHandler;
@@ -22,6 +22,6 @@ final readonly class ListPendingShipmentsHandler
      */
     public function __invoke(ListPendingShipments $query): StreamResult
     {
-        return new StreamResult($this->shipmentFinder->withStatus(AppShipmentStatus::PENDING->value));
+        return new StreamResult($this->shipmentFinder->withStatus(ShipmentStatus::PENDING->value));
     }
 }

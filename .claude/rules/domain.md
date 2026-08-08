@@ -23,6 +23,7 @@ paths:
 - Naming a static constructor: it should read as a sentence at the throw site — a single nameable fact gets a specific class + `for*` (`forId`); a failure that depends on state gets a category class + `cannot<Verb>`.
 - A Value Object is `final readonly`; private constructor enforces invariants (`Webmozart\Assert`); a named constructor (`fromCents`, `fromString`...) validates the input shape. Expose `equals()`/`toString()` as needed.
 - A Value Object lives in `Domain/ValueObject/` of the BC that owns it; it moves to `Shared\Domain\ValueObject` as soon as a second BC uses it, with its `Valid<X>` compound moving to `Shared\Application\Validation` alongside — never promoted before that.
+- A closed-vocabulary lifecycle enum folded from events (`Domain/ValueObject/<X>State`) is suffixed `State`, never `Status` — `Status` names its Application-side counterpart (`Application/Enum/<X>Status`), a separate read/UI-facing value space that never proxies this enum's case values.
 - `#[Aggregate('<subdomain>.<bc>.<aggregate>')]`, three segments even when the aggregate shares its BC's name (e.g. `sales.order.order`); `#[Event('<subdomain>.<bc>.<past-tense verb>')]` — same two-segment prefix, the aggregate segment replaced by the verb (e.g. `sales.order.placed`).
 - An aggregate root ID implements `AggregateRootId` via `Shared\Domain\UuidTrait`; an identity that only *references* another aggregate/BC never does.
 - An `#[Apply]` method name is `apply<EventClassName>` — the full event class name, never a short verb.

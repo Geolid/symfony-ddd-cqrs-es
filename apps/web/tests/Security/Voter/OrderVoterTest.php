@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Application\Query\GetCustomerByIdentity\GetCustomerByIdentity;
-use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -98,7 +98,7 @@ final class OrderVoterTest extends TestCase
             orderId: Uuid::uuid7()->toString(),
             customerId: $customerId,
             totalAmountInCents: 4_200,
-            status: AppOrderSummaryStatus::PLACED,
+            status: OrderSummaryStatus::PLACED,
             placedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             cancelledAt: null,
             paymentAmountInCents: null,
