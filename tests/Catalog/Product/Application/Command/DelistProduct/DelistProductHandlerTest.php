@@ -54,4 +54,21 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new DelistProduct($id));
     }
+
+    #[Test]
+    public function itFreesTheLabelForAnotherProduct(): void
+    {
+        // Given
+        $delisted = ProductId::generate()->toString();
+        $this->dispatch(new ListProductForSale($delisted, 'Espresso cups, set of 6', 1_750));
+        $this->dispatch(new DelistProduct($delisted));
+
+        // When
+        $id = ProductId::generate()->toString();
+        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_950));
+
+        // Then
+        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+    }
 }

@@ -2,42 +2,42 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Customer\Domain\ValueObject;
+namespace Catalog\Tests\Product\Domain\ValueObject;
 
+use Catalog\Product\Domain\ValueObject\Label;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Customer\Domain\ValueObject\Email;
 
-final class EmailTest extends TestCase
+final class LabelTest extends TestCase
 {
     #[Test]
     public function itCreates(): void
     {
         // When
-        $email = Email::fromString('buyer@example.com');
+        $label = Label::fromString('Espresso cups, set of 6');
 
         // Then
-        self::assertSame('buyer@example.com', $email->toString());
+        self::assertSame('Espresso cups, set of 6', $label->toString());
     }
 
     #[Test]
-    public function itNormalizes(): void
+    public function itTrims(): void
     {
         // When
-        $email = Email::fromString('  Buyer@Example.COM  ');
+        $label = Label::fromString('  Espresso cups, set of 6  ');
 
         // Then
-        self::assertSame('buyer@example.com', $email->toString());
+        self::assertSame('Espresso cups, set of 6', $label->toString());
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
         // Given
-        $a = Email::fromString('buyer@example.com');
-        $b = Email::fromString('  Buyer@Example.COM  ');
-        $other = Email::fromString('other@example.com');
+        $a = Label::fromString('Espresso cups, set of 6');
+        $b = Label::fromString('  Espresso cups, set of 6  ');
+        $other = Label::fromString('Wireless mouse');
 
         // When
         $equalResult = $a->equals($b);
@@ -49,19 +49,6 @@ final class EmailTest extends TestCase
     }
 
     #[Test]
-    public function itFingerprints(): void
-    {
-        // Given
-        $email = Email::fromString('  Buyer@Example.COM  ');
-
-        // When
-        $fingerprint = $email->fingerprint();
-
-        // Then
-        self::assertSame(hash('sha256', 'buyer@example.com'), $fingerprint);
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value, string $reason): void
     {
@@ -70,7 +57,7 @@ final class EmailTest extends TestCase
         $this->expectExceptionMessageMatches($reason);
 
         // When
-        Email::fromString($value);
+        Label::fromString($value);
     }
 
     /**
@@ -80,8 +67,6 @@ final class EmailTest extends TestCase
     {
         yield 'empty string' => ['', '/cannot be empty/'];
         yield 'whitespace only' => ['   ', '/cannot be empty/'];
-        yield 'missing at sign' => ['not-an-address', '/is expected/'];
-        yield 'missing domain' => ['buyer@', '/is expected/'];
-        yield 'missing local part' => ['@example.com', '/is expected/'];
+        yield 'too long' => [str_repeat('a', 256), '/cannot exceed 255 characters/'];
     }
 }
