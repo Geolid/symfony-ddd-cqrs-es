@@ -21,9 +21,9 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itIsCreatedForAnOrder(): void
     {
-        $id = ShipmentId::generate();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $orderId = Uuid::uuid7()->toString();
+        $id = ShipmentId::forOrder($orderId);
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
 
         $this
@@ -35,7 +35,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itDispatchesAPendingShipment(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
@@ -48,7 +48,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itIsTrackedOnceHandedToTheCarrier(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
@@ -64,7 +64,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCannotBeTrackedBeforeBeingDispatched(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
@@ -76,7 +76,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCannotBeTrackedTwice(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
@@ -93,7 +93,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itIsDeliveredOnceDispatched(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
@@ -110,7 +110,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCannotBeDeliveredBeforeBeingDispatched(): void
     {
-        $id = ShipmentId::generate()->toString();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this

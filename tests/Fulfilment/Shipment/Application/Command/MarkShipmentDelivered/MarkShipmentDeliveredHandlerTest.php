@@ -12,6 +12,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
@@ -54,6 +55,6 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new MarkShipmentDelivered(ShipmentId::generate()->toString()));
+        $this->dispatch(new MarkShipmentDelivered(ShipmentId::forOrder(Uuid::uuid7()->toString())->toString()));
     }
 }

@@ -11,6 +11,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
@@ -52,6 +53,6 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new AssignTrackingReference(ShipmentId::generate()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new AssignTrackingReference(ShipmentId::forOrder(Uuid::uuid7()->toString())->toString(), 'ACME-4Q7X2K9'));
     }
 }

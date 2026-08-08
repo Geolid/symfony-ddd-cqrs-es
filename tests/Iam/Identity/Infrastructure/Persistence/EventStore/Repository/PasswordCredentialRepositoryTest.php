@@ -10,6 +10,7 @@ use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
@@ -42,7 +43,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnsavedPasswordCredential(): void
     {
         // Given
-        $id = PasswordCredentialId::generate();
+        $id = PasswordCredentialId::forIdentity(Uuid::uuid7()->toString());
 
         // Then
         self::assertFalse($this->repository->has($id));

@@ -30,8 +30,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itSetsAPasswordCredential(): void
     {
-        $id = PasswordCredentialId::generate();
         $identityId = IdentityId::generate();
+        $id = PasswordCredentialId::forIdentity($identityId->toString());
         $login = Login::fromString('operator@example.com');
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
@@ -44,8 +44,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itChangesAPasswordCredential(): void
     {
-        $id = PasswordCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
+        $id = PasswordCredentialId::forIdentity($identityId)->toString();
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $changedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
@@ -58,8 +58,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRehashesAPasswordCredential(): void
     {
-        $id = PasswordCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
+        $id = PasswordCredentialId::forIdentity($identityId)->toString();
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $rehashedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 

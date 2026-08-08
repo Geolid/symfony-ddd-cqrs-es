@@ -13,16 +13,6 @@ use Ramsey\Uuid\Uuid;
 final class PasswordCredentialIdTest extends TestCase
 {
     #[Test]
-    public function itGenerates(): void
-    {
-        // When
-        $id = PasswordCredentialId::generate();
-
-        // Then
-        self::assertTrue(Uuid::isValid($id->toString()));
-    }
-
-    #[Test]
     public function itDerivesTheSameIdForTheSameIdentity(): void
     {
         // Given

@@ -8,32 +8,33 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class ShipmentIdTest extends TestCase
 {
     #[Test]
-    public function itGenerates(): void
-    {
-        // When
-        $id = ShipmentId::generate();
-
-        // Then
-        self::assertNotEmpty($id->toString());
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
+    public function itDerivesTheSameIdForTheSameOrder(): void
     {
         // Given
-        $value = ShipmentId::generate()->toString();
+        $orderId = Uuid::uuid7()->toString();
 
         // When
-        $a = ShipmentId::fromString($value);
-        $b = ShipmentId::fromString($value);
+        $a = ShipmentId::forOrder($orderId);
+        $b = ShipmentId::forOrder($orderId);
 
         // Then
         self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(ShipmentId::generate()));
+    }
+
+    #[Test]
+    public function itDerivesADifferentIdForADifferentOrder(): void
+    {
+        // When
+        $a = ShipmentId::forOrder(Uuid::uuid7()->toString());
+        $b = ShipmentId::forOrder(Uuid::uuid7()->toString());
+
+        // Then
+        self::assertFalse($a->equals($b));
     }
 
     #[Test]
