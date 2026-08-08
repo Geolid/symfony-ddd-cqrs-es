@@ -1,10 +1,8 @@
 ## Summary
 
--
-
-Relates to / Fixes #
+- What changed, and why
+- Relates to / Fixes #
 
 ## Test plan
 
-- [ ] `make qa`
 - [ ] Manual check:
