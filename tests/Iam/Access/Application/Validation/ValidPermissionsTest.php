@@ -48,7 +48,7 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
     {
         yield 'no permission at all' => [[], [new Assert\Count(min: 1)]];
         yield 'a countable that is not an array' => [new \ArrayObject(['fixture:read']), [new Assert\Type('array')]];
-        yield 'a malformed permission' => [['sales'], [self::permissionShape()]];
+        yield 'a malformed permission' => [['fixture'], [self::permissionShape()]];
     }
 
     protected function createCompound(): ValidPermissions

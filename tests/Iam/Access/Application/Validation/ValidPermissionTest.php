@@ -50,7 +50,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), self::regex(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
-        yield 'missing the action segment' => ['sales', [self::regex(), self::valueObject()]];
+        yield 'missing the action segment' => ['fixture', [self::regex(), self::valueObject()]];
     }
 
     protected function createCompound(): ValidPermission
