@@ -88,6 +88,7 @@ sales:
     customer:
         register:
             title: Register
+            label_login: Login
             label_email: Email
             label_password: Password
             button_submit: Register
@@ -106,5 +107,5 @@ sales:
             registered: Account created — please log in.
             erased: Your account has been erased.
             address_taken: This address is already registered.
-            login_taken: This email is already used to log in.
+            login_taken: This login is already taken.
             password_changed: Password changed.

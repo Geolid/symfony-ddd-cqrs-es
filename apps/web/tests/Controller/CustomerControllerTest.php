@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -19,14 +22,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $this->registerCustomer($client, 'buyer-1@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-1', 'buyer-1@example.com', 'correct horse battery staple');
 
         // Then
         self::assertResponseRedirects('/login');
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="flash-success"]');
 
-        $this->logIn($client, 'buyer-1@example.com', 'correct horse battery staple');
+        $this->logIn($client, 'buyer-1', 'correct horse battery staple');
         self::assertResponseRedirects('/sales/orders');
     }
 
@@ -35,13 +38,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-2@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-2', 'buyer-2@example.com', 'correct horse battery staple');
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
+            \sprintf('%s[login]', $prefix) => 'buyer-2-retry',
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
             \sprintf('%s[password]', $prefix) => 'another password entirely',
         ]);
@@ -60,7 +64,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $this->store(CustomerTestFactory::new()->withEmail('buyer-3@example.com')->linkedToIdentity($identity->id()->toString())->create());
-        $this->loginAs($client, $identity);
+        $this->loginAs($client, $identity, 'buyer-3');
+        $fingerprint = Login::fromString('buyer-3')->fingerprint();
+        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
 
         // When
         $client->request('POST', '/sales/customers/erase', [
@@ -69,6 +75,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/logout');
+        self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(PasswordCredentialUniqueValue::LOGIN, $fingerprint));
     }
 
     #[Test]
@@ -115,12 +122,13 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/sales/orders');
     }
 
-    private function registerCustomer(KernelBrowser $client, string $email, string $password): void
+    private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void
     {
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
+            \sprintf('%s[login]', $prefix) => $login,
             \sprintf('%s[email]', $prefix) => $email,
             \sprintf('%s[password]', $prefix) => $password,
         ]);

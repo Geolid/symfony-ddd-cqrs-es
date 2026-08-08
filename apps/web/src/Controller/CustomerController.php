@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Controller;
 
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
+use Iam\Identity\Application\Command\ReleasePasswordCredentialLogin\ReleasePasswordCredentialLogin;
 use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
@@ -54,6 +55,7 @@ final class CustomerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $login = (string) $formData->login;
             $email = (string) $formData->email;
 
             try {
@@ -68,7 +70,7 @@ final class CustomerController extends AbstractController
             try {
                 $identityId = Uuid::uuid7()->toString();
                 $this->commandBus->dispatch(new RegisterIdentity($identityId));
-                $this->commandBus->dispatch(new SetPasswordCredential($identityId, $email, (string) $formData->password));
+                $this->commandBus->dispatch(new SetPasswordCredential($identityId, $login, (string) $formData->password));
             } catch (LoginAlreadyTakenException) {
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.login_taken'));
 
@@ -97,6 +99,10 @@ final class CustomerController extends AbstractController
         }
 
         $this->commandBus->dispatch(new EraseCustomer($customer->id));
+
+        if (null !== $customer->identityId) {
+            $this->commandBus->dispatch(new ReleasePasswordCredentialLogin($customer->identityId));
+        }
 
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 

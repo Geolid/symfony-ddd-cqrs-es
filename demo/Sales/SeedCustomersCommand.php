@@ -35,19 +35,20 @@ final readonly class SeedCustomersCommand
 
         for ($i = 1; $i <= $input->count; ++$i) {
             $customerId = CustomerId::generate()->toString();
+            $login = \sprintf('buyer-%d', $i);
             $email = \sprintf('buyer-%d@%s', $i, $input->domain);
             $identityId = Uuid::uuid7()->toString();
 
             $this->commandBus->dispatch(new RegisterCustomer($customerId, $email));
             $this->commandBus->dispatch(new RegisterIdentity($identityId));
-            $this->commandBus->dispatch(new SetPasswordCredential($identityId, $email, self::DEMO_PASSWORD));
+            $this->commandBus->dispatch(new SetPasswordCredential($identityId, $login, self::DEMO_PASSWORD));
             $this->commandBus->dispatch(new LinkCustomerIdentity($customerId, $identityId));
 
             $io->progressAdvance();
         }
 
         $io->progressFinish();
-        $io->success(\sprintf('%d customer(s) seeded. Log in with buyer-<n>@%s / %s.', $input->count, $input->domain, self::DEMO_PASSWORD));
+        $io->success(\sprintf('%d customer(s) seeded. Log in with buyer-<n> / %s.', $input->count, self::DEMO_PASSWORD));
 
         return Command::SUCCESS;
     }
