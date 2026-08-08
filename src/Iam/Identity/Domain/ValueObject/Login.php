@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\ValueObject;
 
+use Shared\Domain\FingerprintableValue;
 use Webmozart\Assert\Assert;
 
 final readonly class Login
 {
+    use FingerprintableValue;
+
     private string $value;
 
     private function __construct(string $value)
@@ -27,11 +30,6 @@ final readonly class Login
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function fingerprint(): string
-    {
-        return hash('sha256', $this->value);
     }
 
     public function toString(): string
