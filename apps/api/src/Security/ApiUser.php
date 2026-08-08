@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Webmozart\Assert\Assert;
 
@@ -20,7 +20,7 @@ final readonly class ApiUser implements UserInterface
         private array $grants,
         public bool $revoked,
         public \DateTimeImmutable $expiresAt,
-        public AppIdentityStatus $identityStatus,
+        public IdentityStatus $identityStatus,
     ) {
     }
 

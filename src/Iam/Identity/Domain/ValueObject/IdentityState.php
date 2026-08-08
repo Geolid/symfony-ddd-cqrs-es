@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\ValueObject;
 
-enum IdentityStatus: string
+enum IdentityState: string
 {
     case ACTIVE = 'active';
     case SUSPENDED = 'suspended';

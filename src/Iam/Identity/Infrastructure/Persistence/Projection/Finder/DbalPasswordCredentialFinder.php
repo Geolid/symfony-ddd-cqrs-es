@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
@@ -66,7 +66,7 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
             identityId: $row['identity_id'],
             login: $row['login'],
             hash: $row['hash'],
-            identityStatus: AppIdentityStatus::from($row['identity_status']),
+            identityStatus: IdentityStatus::from($row['identity_status']),
         );
     }
 }

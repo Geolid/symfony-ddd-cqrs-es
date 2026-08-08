@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
@@ -53,7 +53,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements A
             hash: $row['hash'],
             revoked: (bool) $row['revoked'],
             expiresAt: new \DateTimeImmutable($row['expires_at'], new \DateTimeZone('UTC')),
-            identityStatus: AppIdentityStatus::from($row['identity_status']),
+            identityStatus: IdentityStatus::from($row['identity_status']),
         );
     }
 }

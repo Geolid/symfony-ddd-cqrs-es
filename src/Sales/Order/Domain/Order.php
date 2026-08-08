@@ -17,7 +17,7 @@ use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Order\Domain\ValueObject\OrderStatus;
+use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('sales.order.order')]
@@ -30,7 +30,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private string $customerId;
     private ?string $buyerAddress;
     private Money $totalAmount;
-    private OrderStatus $status;
+    private OrderState $status;
 
     public function id(): OrderId
     {
@@ -116,12 +116,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->customerId = $event->customerId;
         $this->buyerAddress = $event->buyerAddress;
         $this->totalAmount = Money::fromCents($event->totalAmountInCents);
-        $this->status = OrderStatus::PLACED;
+        $this->status = OrderState::PLACED;
     }
 
     #[Apply]
     private function applyOrderCancelled(OrderCancelled $event): void
     {
-        $this->status = OrderStatus::CANCELLED;
+        $this->status = OrderState::CANCELLED;
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Domain\ValueObject;
 
-enum OrderStatus: string
+enum OrderState: string
 {
     case PLACED = 'placed';
     case CANCELLED = 'cancelled';

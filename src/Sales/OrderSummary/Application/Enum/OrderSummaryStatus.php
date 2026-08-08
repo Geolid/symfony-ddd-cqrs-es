@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Application\Enum;
 
-enum AppOrderSummaryStatus: string
+enum OrderSummaryStatus: string
 {
     case PLACED = 'placed';
     case PAYMENT_PENDING = 'payment_pending';

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Order;
 
-use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Enum\OrderStatus;
 use Shared\Application\Result\ResultInterface;
 
 final readonly class OrderResult implements ResultInterface
@@ -13,7 +13,7 @@ final readonly class OrderResult implements ResultInterface
         public string $id,
         public string $customerId,
         public int $totalAmountInCents,
-        public AppOrderStatus $status,
+        public OrderStatus $status,
         public \DateTimeImmutable $placedAt,
         public ?\DateTimeImmutable $cancelledAt,
     ) {

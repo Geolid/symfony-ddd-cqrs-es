@@ -14,6 +14,7 @@ use Iam\Identity\Domain\Event\ApiTokenCredentialRehashed;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
+use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -60,13 +61,13 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
     #[Subscribe(IdentitySuspended::class)]
     public function onIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->connection->update(self::TABLE, ['identity_status' => 'suspended'], ['identity_id' => $event->id]);
+        $this->connection->update(self::TABLE, ['identity_status' => IdentityState::SUSPENDED->value], ['identity_id' => $event->id]);
     }
 
     #[Subscribe(IdentityReactivated::class)]
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->connection->update(self::TABLE, ['identity_status' => 'active'], ['identity_id' => $event->id]);
+        $this->connection->update(self::TABLE, ['identity_status' => IdentityState::ACTIVE->value], ['identity_id' => $event->id]);
     }
 
     /**

@@ -9,7 +9,7 @@ use Demo\Shared\WeightedPicker;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Order\Domain\ValueObject\OrderStatus;
+use Sales\Order\Domain\ValueObject\OrderState;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\ValueObject\Money;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -32,8 +32,8 @@ final readonly class SeedOrdersCommand
         SeedOrdersInput $input,
     ): int {
         $weights = [
-            OrderStatus::PLACED->value => $input->placedWeight,
-            OrderStatus::CANCELLED->value => $input->cancelledWeight,
+            OrderState::PLACED->value => $input->placedWeight,
+            OrderState::CANCELLED->value => $input->cancelledWeight,
         ];
         $stats = array_fill_keys(array_keys($weights), 0);
 
@@ -56,10 +56,10 @@ final readonly class SeedOrdersCommand
                 ->withLines([OrderLine::of('Assorted goods', random_int(1, 5), Money::fromCents(random_int(500, 5_000)))])
                 ->withoutIncrementalIds();
 
-            $status = OrderStatus::from(WeightedPicker::pick($weights));
+            $status = OrderState::from(WeightedPicker::pick($weights));
 
             $order = match ($status) {
-                OrderStatus::CANCELLED => $factory->cancelled()->create(),
+                OrderState::CANCELLED => $factory->cancelled()->create(),
                 default => $factory->create(),
             };
 
@@ -73,8 +73,8 @@ final readonly class SeedOrdersCommand
         $io->success(\sprintf(
             '%d order(s) seeded (placed: %d, cancelled: %d).',
             array_sum($stats),
-            $stats[OrderStatus::PLACED->value],
-            $stats[OrderStatus::CANCELLED->value],
+            $stats[OrderState::PLACED->value],
+            $stats[OrderState::CANCELLED->value],
         ));
 
         return Command::SUCCESS;

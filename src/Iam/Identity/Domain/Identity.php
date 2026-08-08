@@ -10,7 +10,7 @@ use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\IdentityStatus;
+use Iam\Identity\Domain\ValueObject\IdentityState;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -25,14 +25,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private IdentityId $id;
-    private IdentityStatus $status;
+    private IdentityState $status;
 
     public function id(): IdentityId
     {
         return $this->id;
     }
 
-    public function status(): IdentityStatus
+    public function status(): IdentityState
     {
         return $this->status;
     }
@@ -82,18 +82,18 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyIdentityRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
-        $this->status = IdentityStatus::ACTIVE;
+        $this->status = IdentityState::ACTIVE;
     }
 
     #[Apply]
     private function applyIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->status = IdentityStatus::SUSPENDED;
+        $this->status = IdentityState::SUSPENDED;
     }
 
     #[Apply]
     private function applyIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->status = IdentityStatus::ACTIVE;
+        $this->status = IdentityState::ACTIVE;
     }
 }

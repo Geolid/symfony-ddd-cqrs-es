@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Twig;
 
-use Sales\OrderSummary\Application\Enum\AppOrderSummaryStatus;
+use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -21,7 +21,7 @@ final class OrderWorkflowStepsExtension extends AbstractExtension
         ];
     }
 
-    public function statusVariant(AppOrderSummaryStatus $status): string
+    public function statusVariant(OrderSummaryStatus $status): string
     {
         return match (true) {
             $status->isDelivered() => 'success',
@@ -34,7 +34,7 @@ final class OrderWorkflowStepsExtension extends AbstractExtension
     /**
      * @return list<array{key: string, state: string}>
      */
-    public function steps(AppOrderSummaryStatus $status): array
+    public function steps(OrderSummaryStatus $status): array
     {
         if ($status->isCancelled()) {
             return [];

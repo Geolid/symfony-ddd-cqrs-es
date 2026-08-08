@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain\ValueObject;
 
-enum ShipmentStatus: string
+enum ShipmentState: string
 {
     case PENDING = 'pending';
     case DISPATCHED = 'dispatched';

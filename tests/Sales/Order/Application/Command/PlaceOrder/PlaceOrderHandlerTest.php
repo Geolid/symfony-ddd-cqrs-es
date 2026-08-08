@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -36,7 +36,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($id, $result->id);
         self::assertSame($customer->id()->toString(), $result->customerId);
         self::assertSame(1_999, $result->totalAmountInCents);
-        self::assertSame(AppOrderStatus::PLACED, $result->status);
+        self::assertSame(OrderStatus::PLACED, $result->status);
         self::assertSame('buyer@example.com', $this->buyerAddressOf($id));
     }
 

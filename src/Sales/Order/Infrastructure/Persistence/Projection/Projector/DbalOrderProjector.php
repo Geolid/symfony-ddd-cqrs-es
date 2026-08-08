@@ -12,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\ValueObject\OrderStatus;
+use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
 #[Projector('sales.order.orders')]
@@ -27,7 +27,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             'id' => $event->id,
             'customer_id' => $event->customerId,
             'total_amount_in_cents' => $event->totalAmountInCents,
-            'status' => OrderStatus::PLACED->value,
+            'status' => OrderState::PLACED->value,
             'placed_at' => new \DateTimeImmutable($event->placedAt)->format('Y-m-d H:i:s'),
         ]);
     }
@@ -38,7 +38,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderStatus::CANCELLED->value,
+                'status' => OrderState::CANCELLED->value,
                 'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],

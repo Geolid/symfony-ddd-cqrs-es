@@ -10,7 +10,7 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentStatus;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -30,7 +30,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private string $customerId;
     private ?string $customerAddress;
     private ?TrackingReference $trackingReference;
-    private ShipmentStatus $status;
+    private ShipmentState $status;
 
     public function id(): ShipmentId
     {
@@ -133,13 +133,13 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->customerId = $event->customerId;
         $this->customerAddress = $event->customerAddress;
         $this->trackingReference = null;
-        $this->status = ShipmentStatus::PENDING;
+        $this->status = ShipmentState::PENDING;
     }
 
     #[Apply]
     private function applyShipmentDispatched(ShipmentDispatched $event): void
     {
-        $this->status = ShipmentStatus::DISPATCHED;
+        $this->status = ShipmentState::DISPATCHED;
     }
 
     #[Apply]
@@ -151,6 +151,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyShipmentDelivered(ShipmentDelivered $event): void
     {
-        $this->status = ShipmentStatus::DELIVERED;
+        $this->status = ShipmentState::DELIVERED;
     }
 }

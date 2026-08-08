@@ -12,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
-use Sales\Order\Domain\ValueObject\OrderPaymentStatus;
+use Sales\Order\Domain\ValueObject\OrderPaymentState;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
 #[Projector('sales.order.order_payments')]
@@ -29,7 +29,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             'amount_in_cents' => $event->amountInCents,
             'reference' => $event->reference,
             'checkout_url' => $event->checkoutUrl,
-            'status' => OrderPaymentStatus::REQUESTED->value,
+            'status' => OrderPaymentState::REQUESTED->value,
             'requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
         ]);
     }
@@ -40,7 +40,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderPaymentStatus::CAPTURED->value,
+                'status' => OrderPaymentState::CAPTURED->value,
                 'captured_at' => new \DateTimeImmutable($event->capturedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],

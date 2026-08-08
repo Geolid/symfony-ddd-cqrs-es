@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\Command\CancelOrder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
-use Sales\Order\Application\Enum\AppOrderStatus;
+use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
@@ -33,7 +33,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
-        self::assertSame(AppOrderStatus::CANCELLED, $result->status);
+        self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->cancelledAt);
     }
 
@@ -90,7 +90,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
-        self::assertSame(AppOrderStatus::CANCELLED, $result->status);
+        self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 
     #[Test]

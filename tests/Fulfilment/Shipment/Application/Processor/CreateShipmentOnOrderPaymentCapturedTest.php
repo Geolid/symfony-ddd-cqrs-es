@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
-use Fulfilment\Shipment\Application\Enum\AppShipmentStatus;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
@@ -41,7 +41,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         self::assertCount(1, $results);
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
-        self::assertSame(AppShipmentStatus::PENDING, $results[0]->status);
+        self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
         self::assertSame('buyer@example.com', $this->addressOf($order));
     }
 
