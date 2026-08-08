@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Domain\ValueObject;
+namespace Iam\Identity\Domain\ValueObject;
 
 use Shared\Domain\FingerprintTrait;
 use Webmozart\Assert\Assert;
 
-final readonly class Email
+final readonly class Login
 {
     use FingerprintTrait;
 
@@ -15,9 +15,9 @@ final readonly class Email
 
     private function __construct(string $value)
     {
-        $value = strtolower(trim($value));
-        Assert::notEmpty($value, 'An email address cannot be empty, %s given.');
-        Assert::email($value, 'An email address is expected, %s given.');
+        $value = trim($value);
+        Assert::notEmpty($value, 'A login cannot be empty, %s given.');
+        Assert::maxLength($value, 50, 'A login cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

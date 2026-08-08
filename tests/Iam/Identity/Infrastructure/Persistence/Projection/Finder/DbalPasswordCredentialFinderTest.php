@@ -26,15 +26,15 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itGetsAPasswordCredentialByLogin(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->withHasher(new DummySecretHasher())->create();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->create();
         $this->store($credential);
 
         // When
-        $result = $this->finder->ofLogin('buyer@example.com');
+        $result = $this->finder->ofLogin('operator');
 
         // Then
         self::assertSame($credential->id()->toString(), $result->id);
-        self::assertSame('buyer@example.com', $result->login);
+        self::assertSame('operator', $result->login);
     }
 
     #[Test]
