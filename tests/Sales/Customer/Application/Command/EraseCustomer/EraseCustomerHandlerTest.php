@@ -9,7 +9,6 @@ use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Support\AbstractIntegrationTestCase;
 
@@ -26,10 +25,9 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EraseCustomer($id));
 
         // Then
-        $results = $this->allCustomers();
-        self::assertCount(1, $results);
-        self::assertNull($results[0]->email);
-        self::assertNotNull($results[0]->erasedAt);
+        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
+        self::assertNull($result->email);
+        self::assertNotNull($result->erasedAt);
     }
 
     #[Test]
@@ -44,13 +42,8 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RegisterCustomer($id = CustomerId::generate()->toString(), 'buyer@example.com'));
 
         // Then
-        $emails = [];
-
-        foreach ($this->service(CustomerFinderInterface::class) as $customer) {
-            $emails[$customer->id] = $customer->email;
-        }
-
-        self::assertSame('buyer@example.com', $emails[$id]);
+        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
+        self::assertSame('buyer@example.com', $result->email);
     }
 
     #[Test]
@@ -65,9 +58,8 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EraseCustomer($id));
 
         // Then
-        $results = $this->allCustomers();
-        self::assertCount(1, $results);
-        self::assertNull($results[0]->email);
+        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
+        self::assertNull($result->email);
     }
 
     #[Test]
@@ -85,13 +77,5 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
-    }
-
-    /**
-     * @return list<CustomerResult>
-     */
-    private function allCustomers(): array
-    {
-        return array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
     }
 }

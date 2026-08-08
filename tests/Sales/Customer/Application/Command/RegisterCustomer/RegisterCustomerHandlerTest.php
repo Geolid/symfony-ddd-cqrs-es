@@ -24,11 +24,10 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch($command);
 
         // Then
-        $results = array_values(iterator_to_array($this->service(CustomerFinderInterface::class)));
-        self::assertCount(1, $results);
-        self::assertSame($id, $results[0]->id);
-        self::assertSame('buyer@example.com', $results[0]->email);
-        self::assertNull($results[0]->erasedAt);
+        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
+        self::assertSame($id, $result->id);
+        self::assertSame('buyer@example.com', $result->email);
+        self::assertNull($result->erasedAt);
     }
 
     #[Test]

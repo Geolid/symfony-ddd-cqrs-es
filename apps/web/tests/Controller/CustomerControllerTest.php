@@ -96,7 +96,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $this->store(CustomerTestFactory::new()->withEmail('buyer-5@example.com')->linkedToIdentity($identity->id()->toString())->create());
-        $this->loginAs($client, $identity);
+        $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When
         $crawler = $client->request('GET', '/sales/customers/profile');

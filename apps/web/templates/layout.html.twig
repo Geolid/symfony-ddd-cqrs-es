@@ -18,7 +18,7 @@
                             <ul>
                                 <li><a href="{{ path('sales_order_list') }}">{{ 'layout.nav.orders'|trans }}</a></li>
                                 <li><a href="{{ path('sales_customer_profile') }}" data-testid="nav-profile">{{ 'layout.nav.profile'|trans }}</a></li>
-                                <li><a href="{{ path('security_logout') }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
+                                <li><a href="{{ logout_path() }}" data-testid="nav-logout">{{ 'layout.nav.logout'|trans }}</a></li>
                             </ul>
                         </details>
                     </li>

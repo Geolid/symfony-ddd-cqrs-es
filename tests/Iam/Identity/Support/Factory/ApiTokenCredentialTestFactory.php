@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\ApiTokenCredential;
+use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Infrastructure\Security\SecretHasher;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -41,6 +41,11 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
         return static::new(array_merge($this->attributes, ['expiresAt' => new \DateTimeImmutable('-1 day +00:00')]));
     }
 
+    public function withHasher(SecretHasherInterface $hasher): self
+    {
+        return static::new(array_merge($this->attributes, ['hasher' => $hasher]));
+    }
+
     protected function defaults(): array
     {
         return [
@@ -61,13 +66,15 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::stringNotEmpty($secret = $attributes['secret']);
         Assert::isInstanceOf($issuedAt = $attributes['issuedAt'], \DateTimeInterface::class);
         Assert::isInstanceOf($expiresAt = $attributes['expiresAt'], \DateTimeInterface::class);
+        Assert::keyExists($attributes, 'hasher', 'Missing hasher — call withHasher() before create().');
+        Assert::isInstanceOf($hasher = $attributes['hasher'], SecretHasherInterface::class);
 
         return ApiTokenCredential::issue(
             ApiTokenCredentialId::fromString($id),
             IdentityId::fromString($identityId),
             $identifier,
             $secret,
-            new SecretHasher(),
+            $hasher,
             \DateTimeImmutable::createFromInterface($issuedAt),
             \DateTimeImmutable::createFromInterface($expiresAt),
         );

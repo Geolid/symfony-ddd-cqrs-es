@@ -36,7 +36,7 @@ final readonly class SetPasswordCredentialHandler
     public function __invoke(SetPasswordCredential $command): void
     {
         $identityId = IdentityId::fromString($command->identityId);
-        $id = PasswordCredentialId::fromString($identityId->toString());
+        $id = PasswordCredentialId::forIdentity($identityId->toString());
 
         if ($this->repository->has($id)) {
             $credential = $this->repository->load($id);

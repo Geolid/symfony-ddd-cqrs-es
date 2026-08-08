@@ -8,6 +8,11 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class CustomerResultNotFoundException extends \RuntimeException implements ApplicationExceptionInterface
 {
+    public static function forId(string $id): self
+    {
+        return new self(\sprintf('No customer found for id "%s".', $id));
+    }
+
     public static function forIdentityId(string $identityId): self
     {
         return new self(\sprintf('No customer is linked to identity "%s".', $identityId));

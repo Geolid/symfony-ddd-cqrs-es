@@ -9,7 +9,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Web\Security\CustomerIdentityProvider;
+use Web\Security\CustomerIdentityResolver;
 
 /**
  * @extends Voter<string, mixed>
@@ -18,7 +18,7 @@ final class OrderVoter extends Voter
 {
     public const string VIEW = 'VIEW';
 
-    public function __construct(private readonly CustomerIdentityProvider $customerIdentityProvider)
+    public function __construct(private readonly CustomerIdentityResolver $customerIdentityResolver)
     {
     }
 
@@ -34,8 +34,8 @@ final class OrderVoter extends Voter
     {
         \assert($subject instanceof OrderSummaryResult);
 
-        $customerId = $this->customerIdentityProvider->resolveCustomerId($token);
+        $customer = $this->customerIdentityResolver->resolveFor($token);
 
-        return null !== $customerId && $subject->customerId === $customerId;
+        return $subject->customerId === $customer->id;
     }
 }

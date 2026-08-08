@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Iam\Identity\Application\Enum\AppIdentityStatus;
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
@@ -14,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<ApiTokenCredentialResult>
  *
- * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: string|int, expires_at: string}
+ * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: string|int, expires_at: string, identity_status: string}
  */
 final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements ApiTokenCredentialFinderInterface
 {
@@ -36,7 +37,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements A
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'identifier', 'hash', 'revoked', 'expires_at')
+        $qb->select('id', 'identity_id', 'identifier', 'hash', 'revoked', 'expires_at', 'identity_status')
             ->from(DbalApiTokenCredentialProjector::TABLE);
     }
 
@@ -52,6 +53,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements A
             hash: $row['hash'],
             revoked: (bool) $row['revoked'],
             expiresAt: new \DateTimeImmutable($row['expires_at'], new \DateTimeZone('UTC')),
+            identityStatus: AppIdentityStatus::from($row['identity_status']),
         );
     }
 }

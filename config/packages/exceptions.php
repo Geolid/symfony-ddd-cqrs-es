@@ -19,6 +19,7 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -68,6 +69,7 @@ return static function (ContainerConfigurator $container): void {
             AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             CustomerAlreadyLinkedToIdentityException::class => ['log_level' => 'info', 'status_code' => 409],
+            CustomerResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             ProductNotAvailableException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

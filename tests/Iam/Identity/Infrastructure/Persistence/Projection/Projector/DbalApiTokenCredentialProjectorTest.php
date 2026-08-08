@@ -8,11 +8,13 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: int, expires_at: string}
+ * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: int, expires_at: string, identity_status: string}
  */
 final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -24,6 +26,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withIdentifier('key_abc123')
+            ->withHasher(new DummySecretHasher())
             ->create();
         $this->store($credential);
 
@@ -39,11 +42,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     public function itMarksTheCredentialAsRevokedOnApiTokenCredentialRevoked(): void
     {
         // Given
-        $other = ApiTokenCredentialTestFactory::new()->create();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
         $this->store($other);
 
         // When
-        $credential = ApiTokenCredentialTestFactory::new()->revoked()->create();
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->create();
         $this->store($credential);
 
         // Then
@@ -56,6 +59,70 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         self::assertSame(0, (int) $otherRow['revoked']);
     }
 
+    #[Test]
+    public function itProjectsTheIdentityStatusOnApiTokenCredentialIssued(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity);
+
+        // When
+        $credential = ApiTokenCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('suspended', $row['identity_status']);
+    }
+
+    #[Test]
+    public function itUpdatesTheIdentityStatusOnIdentitySuspended(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $credential = ApiTokenCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($credential);
+
+        // When
+        $identity->suspend(new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($credential->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('suspended', $row['identity_status']);
+    }
+
+    #[Test]
+    public function itUpdatesTheIdentityStatusOnIdentityReactivated(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity);
+        $credential = ApiTokenCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($credential);
+
+        // When
+        $identity->reactivate(new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($credential->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame('active', $row['identity_status']);
+    }
+
     /**
      * @return Row|false
      */
@@ -64,7 +131,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT id, identity_id, identifier, hash, revoked, expires_at FROM %s WHERE id = :id',
+                'SELECT id, identity_id, identifier, hash, revoked, expires_at, identity_status FROM %s WHERE id = :id',
                 DbalApiTokenCredentialProjector::TABLE,
             ),
             ['id' => $id],

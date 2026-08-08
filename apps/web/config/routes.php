@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return static function (RoutingConfigurator $routes): void {
     $routes->import('../src/Controller/', 'attribute');
+    $routes->import('security.route_loader.logout', 'service');
 
     $routes->add('web.home', '/')
         ->controller(RedirectController::class)

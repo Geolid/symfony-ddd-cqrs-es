@@ -8,6 +8,7 @@ use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -26,7 +27,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedPasswordCredential(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->create();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->withHasher(new DummySecretHasher())->create();
 
         // When
         $this->repository->save($credential);

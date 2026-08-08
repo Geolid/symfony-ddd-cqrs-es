@@ -18,6 +18,22 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements CustomerFinderInterface
 {
+    public function ofId(string $id): CustomerResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('id = :id')
+            ->setParameter('id', $id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            throw CustomerResultNotFoundException::forId($id);
+        }
+
+        return $this->mapRow($row);
+    }
+
     public function ofIdentityId(string $identityId): CustomerResult
     {
         /** @var Row|false $row */
@@ -32,13 +48,6 @@ final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements C
         }
 
         return $this->mapRow($row);
-    }
-
-    public function withoutErased(): static
-    {
-        return $this->filter(static function (QueryBuilder $qb): void {
-            $qb->andWhere('erased_at IS NULL');
-        });
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

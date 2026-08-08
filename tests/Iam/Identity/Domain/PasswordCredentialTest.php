@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
+use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
+use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -54,44 +56,21 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itVerifiesTheCorrectPassword(): void
+    public function itRehashesAPasswordCredential(): void
     {
-        // Given
         $id = PasswordCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
         $setAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $correctResult = null;
-        $wrongResult = null;
+        $rehashedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
-        // When
         $this
             ->given(new PasswordCredentialSet($id, $identityId, 'operator@example.com', $this->hasher->hash('S3cr3t!'), $setAt->format(\DateTimeInterface::ATOM)))
-            ->when(function (PasswordCredential $credential) use (&$correctResult, &$wrongResult): void {
-                $correctResult = $credential->verify('S3cr3t!', $this->hasher);
-                $wrongResult = $credential->verify('wrong', $this->hasher);
-            })
-            ->then();
-
-        // Then
-        self::assertTrue($correctResult);
-        self::assertFalse($wrongResult);
+            ->when(fn (PasswordCredential $credential) => $credential->rehash('S3cr3t!', $this->hasher, $rehashedAt))
+            ->then(new PasswordCredentialRehashed($id, $this->hasher->hash('S3cr3t!'), $rehashedAt->format(\DateTimeInterface::ATOM)));
     }
 
     protected function aggregateClass(): string
     {
         return PasswordCredential::class;
-    }
-}
-
-final class DummySecretHasher implements SecretHasherInterface
-{
-    public function hash(string $secret): string
-    {
-        return 'hashed:'.$secret;
-    }
-
-    public function verify(string $hash, string $secret): bool
-    {
-        return $hash === $this->hash($secret);
     }
 }

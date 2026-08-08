@@ -14,7 +14,8 @@ return static function (ContainerConfigurator $container): void {
     SubdomainServiceLoader::load($services, 'Sales');
 
     if ('test' === $container->env()) {
-        // Only consumed by apps/web; alias+public here or the test container's compiler prunes it.
+        // Not otherwise referenced by a service definition; alias+public here or the
+        // test container's compiler prunes it.
         $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequestingService::class)->public();
     }
 };

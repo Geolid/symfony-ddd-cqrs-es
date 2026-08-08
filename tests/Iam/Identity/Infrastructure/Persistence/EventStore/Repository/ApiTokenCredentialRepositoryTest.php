@@ -8,6 +8,7 @@ use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -26,7 +27,7 @@ final class ApiTokenCredentialRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedApiTokenCredential(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->create();
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
 
         // When
         $this->repository->save($credential);

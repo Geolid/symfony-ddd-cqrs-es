@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Finder\Customer;
 
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
-use Shared\Application\Finder\PaginatedCollectionFinderInterface;
+use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
- * @extends PaginatedCollectionFinderInterface<CustomerResult>
+ * @extends CollectionFinderInterface<CustomerResult>
  */
-interface CustomerFinderInterface extends PaginatedCollectionFinderInterface
+interface CustomerFinderInterface extends CollectionFinderInterface
 {
     /**
      * @throws CustomerResultNotFoundException
      */
-    public function ofIdentityId(string $identityId): CustomerResult;
+    public function ofId(string $id): CustomerResult;
 
-    public function withoutErased(): static;
+    /**
+     * @throws CustomerResultNotFoundException
+     */
+    public function ofIdentityId(string $identityId): CustomerResult;
 }

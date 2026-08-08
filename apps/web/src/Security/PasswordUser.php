@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Web\Security;
+
+use Iam\Identity\Application\Enum\AppIdentityStatus;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Webmozart\Assert\Assert;
+
+final readonly class PasswordUser implements UserInterface
+{
+    /**
+     * @param list<string> $grants
+     */
+    public function __construct(
+        private string $identityId,
+        private string $login,
+        private array $grants = [],
+        public AppIdentityStatus $identityStatus = AppIdentityStatus::ACTIVE,
+    ) {
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER', ...$this->grants];
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        Assert::stringNotEmpty($this->login);
+
+        return $this->login;
+    }
+
+    public function identityId(): string
+    {
+        return $this->identityId;
+    }
+}

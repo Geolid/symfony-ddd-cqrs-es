@@ -13,30 +13,32 @@ use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
-use Sales\Customer\Application\Query\GetCustomerByIdentityId\GetCustomerByIdentityId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Query\QueryBusInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Form\ChangePasswordType;
 use Web\Form\FormData\ChangePasswordFormData;
 use Web\Form\FormData\RegisterCustomerFormData;
 use Web\Form\RegisterCustomerType;
-use Web\Security\IamUser;
+use Web\Security\Attribute\CurrentCustomer;
 
 #[Route('/sales/customers')]
 final class CustomerController extends AbstractController
 {
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly QueryBusInterface $queryBus,
         private readonly TranslatorInterface $translator,
+        #[Autowire(service: 'security.logout_url_generator')]
+        private readonly LogoutUrlGenerator $logoutUrlGenerator,
     ) {
     }
 
@@ -88,10 +90,8 @@ final class CustomerController extends AbstractController
      */
     #[Route('/erase', name: 'sales_customer_erase', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function erase(Request $request): Response
+    public function erase(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
     {
-        $customer = $this->resolveCustomer();
-
         if (!$this->isCsrfTokenValid('erase-customer', (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
@@ -100,7 +100,7 @@ final class CustomerController extends AbstractController
 
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
-        return $this->redirectToRoute('security_logout');
+        return new RedirectResponse($this->logoutUrlGenerator->getLogoutPath());
     }
 
     /**
@@ -109,10 +109,8 @@ final class CustomerController extends AbstractController
      */
     #[Route('/profile', name: 'sales_customer_profile', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function profile(Request $request): Response
+    public function profile(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
     {
-        $customer = $this->resolveCustomer();
-
         $formData = new ChangePasswordFormData();
         $form = $this->createForm(ChangePasswordType::class, $formData);
         $form->handleRequest($request);
@@ -130,17 +128,5 @@ final class CustomerController extends AbstractController
         }
 
         return $this->render('sales/customer/profile.html.twig', ['form' => $form]);
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     */
-    private function resolveCustomer(): CustomerResult
-    {
-        $user = $this->getUser();
-        \assert($user instanceof IamUser);
-        $customer = $this->queryBus->ask(new GetCustomerByIdentityId($user->getUserIdentifier()));
-
-        return $customer ?? throw $this->createAccessDeniedException('No customer is linked to this identity.');
     }
 }

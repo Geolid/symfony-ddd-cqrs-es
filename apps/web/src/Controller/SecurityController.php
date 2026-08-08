@@ -19,10 +19,4 @@ final class SecurityController extends AbstractController
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
-
-    #[Route('/logout', name: 'security_logout', methods: ['GET'])]
-    public function logout(): never
-    {
-        throw new \LogicException('This method can be blank — it is intercepted by the firewall logout listener.');
-    }
 }

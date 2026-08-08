@@ -13,4 +13,9 @@ interface PasswordCredentialFinderInterface extends FinderInterface
      * @throws PasswordCredentialResultNotFoundException
      */
     public function ofLogin(string $login): PasswordCredentialResult;
+
+    /**
+     * @throws PasswordCredentialResultNotFoundException
+     */
+    public function ofIdentityId(string $identityId): PasswordCredentialResult;
 }

@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -25,7 +26,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itGetsAPasswordCredentialByLogin(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->create();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('buyer@example.com')->withHasher(new DummySecretHasher())->create();
         $this->store($credential);
 
         // When

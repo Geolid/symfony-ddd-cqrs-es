@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $container): void {
     $queryBusAlias = $services->alias(QueryBusInterface::class, QueryBus::class);
 
     if ('test' === $container->env()) {
-        // CqrsTrait::dispatch()/ask() fetch these by type from the container; must be public.
+        // Fetched by type from the container; must be public for that.
         $commandBusAlias->public();
         $queryBusAlias->public();
     }
