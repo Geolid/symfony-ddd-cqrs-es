@@ -8,6 +8,7 @@ use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
+use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -24,6 +25,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private ProductId $id;
+    private Label $label;
     private Money $unitAmount;
     private bool $delisted;
 
@@ -32,17 +34,22 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
+    public function label(): Label
+    {
+        return $this->label;
+    }
+
     public function unitAmount(): Money
     {
         return $this->unitAmount;
     }
 
-    public static function list(ProductId $id, string $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
+    public static function list(ProductId $id, Label $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
     {
         $self = new self();
         $self->recordThat(new ProductListed(
             id: $id->toString(),
-            label: $label,
+            label: $label->toString(),
             unitAmountInCents: $unitAmount->toCents(),
             listedAt: $listedAt->format(\DateTimeInterface::ATOM),
         ));
@@ -78,6 +85,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     private function applyProductListed(ProductListed $event): void
     {
         $this->id = ProductId::fromString($event->id);
+        $this->label = Label::fromString($event->label);
         $this->unitAmount = Money::fromCents($event->unitAmountInCents);
         $this->delisted = false;
     }

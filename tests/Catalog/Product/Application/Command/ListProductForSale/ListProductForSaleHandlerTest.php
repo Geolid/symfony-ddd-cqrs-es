@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Command\ListProductForSale;
 
 use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
+use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,5 +28,18 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($id, $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
+    }
+
+    #[Test]
+    public function itFailsWhenTheLabelIsAlreadyTaken(): void
+    {
+        // Given
+        $this->dispatch(new ListProductForSale(ProductId::generate()->toString(), 'Espresso cups, set of 6', 1_750));
+
+        // Then
+        $this->expectException(ProductLabelAlreadyTakenException::class);
+
+        // When
+        $this->dispatch(new ListProductForSale(ProductId::generate()->toString(), 'Espresso cups, set of 6', 1_950));
     }
 }

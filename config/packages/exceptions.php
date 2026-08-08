@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
@@ -46,6 +47,7 @@ return static function (ContainerConfigurator $container): void {
             // Catalog
             ProductNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ProductAlreadyDelistedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ProductResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Fulfilment

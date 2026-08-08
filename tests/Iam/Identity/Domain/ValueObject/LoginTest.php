@@ -49,7 +49,7 @@ final class LoginTest extends TestCase
     }
 
     #[Test]
-    public function itFingerprintsTheNormalizedValue(): void
+    public function itFingerprints(): void
     {
         // Given
         $login = Login::fromString('  operator  ');

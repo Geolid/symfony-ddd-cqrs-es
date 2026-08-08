@@ -49,7 +49,7 @@ final class EmailTest extends TestCase
     }
 
     #[Test]
-    public function itFingerprintsTheNormalizedValue(): void
+    public function itFingerprints(): void
     {
         // Given
         $email = Email::fromString('  Buyer@Example.COM  ');

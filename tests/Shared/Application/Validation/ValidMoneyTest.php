@@ -39,6 +39,7 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
         $this->validateValue($amount);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 
@@ -47,6 +48,7 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedAmounts(): iterable
     {
+        yield 'missing' => [null, [new Assert\NotNull()]];
         yield 'not a whole number' => [19.99, [new Assert\Type('int'), self::valueObject()]];
         yield 'negative' => [-1, [new Assert\PositiveOrZero(), self::valueObject()]];
     }

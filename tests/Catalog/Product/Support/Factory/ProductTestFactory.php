@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Support\Factory;
 
 use Catalog\Product\Domain\Product;
+use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
@@ -57,7 +58,7 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
 
         return Product::list(
             ProductId::fromString($id),
-            $label,
+            Label::fromString($label),
             Money::fromCents($unitAmountInCents),
             \DateTimeImmutable::createFromInterface($listedAt),
         );

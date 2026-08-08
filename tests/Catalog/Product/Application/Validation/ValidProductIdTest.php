@@ -40,6 +40,7 @@ final class ValidProductIdTest extends CompoundConstraintTestCase
         $this->validateValue($id);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 

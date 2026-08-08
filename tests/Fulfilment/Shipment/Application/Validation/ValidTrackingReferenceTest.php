@@ -39,6 +39,7 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
         $this->validateValue($trackingReference);
 
         // Then
+        $this->assertViolationsCount(\count($rules));
         $this->assertViolationsRaisedByCompound($rules);
     }
 
@@ -47,7 +48,7 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedTrackingReferences(): iterable
     {
-        yield 'blank' => ['', [new Assert\NotBlank(normalizer: 'trim'), self::valueObject()]];
+        yield 'blank' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'longer than the carrier can issue' => [str_repeat('A', 65), [self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
     }

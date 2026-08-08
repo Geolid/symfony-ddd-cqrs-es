@@ -14,6 +14,7 @@ final class ValidMoney extends Compound
     protected function getConstraints(array $options): array
     {
         return [
+            new Assert\NotNull(),
             new Assert\Type('int'),
             new Assert\PositiveOrZero(),
             new ValidValueObject(Money::class, method: 'fromCents'),
