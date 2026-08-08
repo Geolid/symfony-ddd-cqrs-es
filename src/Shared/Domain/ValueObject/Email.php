@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Shared\Domain\ValueObject;
 
-use Shared\Domain\FingerprintableValue;
+use Shared\Domain\FingerprintTrait;
 use Webmozart\Assert\Assert;
 
 final readonly class Email
 {
-    use FingerprintableValue;
+    use FingerprintTrait;
 
     private string $value;
 

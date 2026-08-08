@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-trait FingerprintableValue
+trait FingerprintTrait
 {
     public function fingerprint(): string
     {
