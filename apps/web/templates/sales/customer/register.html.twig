@@ -13,6 +13,7 @@
         <article>
             {{ form_start(form, {attr: {'data-testid': 'register-customer-form'}}) }}
 
+            {{ form_row(form.login) }}
             {{ form_row(form.email) }}
             {{ form_row(form.password) }}
 

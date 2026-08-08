@@ -7,6 +7,7 @@ namespace Web\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Web\Form\FormData\RegisterCustomerFormData;
@@ -19,6 +20,10 @@ final class RegisterCustomerType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('login', TextType::class, [
+                'label' => 'sales.customer.register.label_login',
+                'translation_domain' => 'messages',
+            ])
             ->add('email', EmailType::class, [
                 'label' => 'sales.customer.register.label_email',
                 'translation_domain' => 'messages',

@@ -19,14 +19,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $this->registerCustomer($client, 'buyer-1@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-1', 'buyer-1@example.com', 'correct horse battery staple');
 
         // Then
         self::assertResponseRedirects('/login');
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="flash-success"]');
 
-        $this->logIn($client, 'buyer-1@example.com', 'correct horse battery staple');
+        $this->logIn($client, 'buyer-1', 'correct horse battery staple');
         self::assertResponseRedirects('/sales/orders');
     }
 
@@ -35,13 +35,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-2@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-2', 'buyer-2@example.com', 'correct horse battery staple');
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
+            \sprintf('%s[login]', $prefix) => 'buyer-2-retry',
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
             \sprintf('%s[password]', $prefix) => 'another password entirely',
         ]);
@@ -115,12 +116,13 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/sales/orders');
     }
 
-    private function registerCustomer(KernelBrowser $client, string $email, string $password): void
+    private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void
     {
         $crawler = $client->request('GET', '/sales/customers/register');
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
+            \sprintf('%s[login]', $prefix) => $login,
             \sprintf('%s[email]', $prefix) => $email,
             \sprintf('%s[password]', $prefix) => $password,
         ]);

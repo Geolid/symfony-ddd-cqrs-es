@@ -54,6 +54,7 @@ final class CustomerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $login = (string) $formData->login;
             $email = (string) $formData->email;
 
             try {
@@ -68,7 +69,7 @@ final class CustomerController extends AbstractController
             try {
                 $identityId = Uuid::uuid7()->toString();
                 $this->commandBus->dispatch(new RegisterIdentity($identityId));
-                $this->commandBus->dispatch(new SetPasswordCredential($identityId, $email, (string) $formData->password));
+                $this->commandBus->dispatch(new SetPasswordCredential($identityId, $login, (string) $formData->password));
             } catch (LoginAlreadyTakenException) {
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.login_taken'));
 

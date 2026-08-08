@@ -88,6 +88,7 @@ sales:
     customer:
         register:
             title: S'inscrire
+            label_login: Identifiant
             label_email: Email
             label_password: Mot de passe
             button_submit: S'inscrire
@@ -106,5 +107,5 @@ sales:
             registered: Compte créé — merci de vous connecter.
             erased: Votre compte a été effacé.
             address_taken: Cette adresse est déjà enregistrée.
-            login_taken: Cet email est déjà utilisé pour se connecter.
+            login_taken: Cet identifiant est déjà pris.
             password_changed: Mot de passe changé.
