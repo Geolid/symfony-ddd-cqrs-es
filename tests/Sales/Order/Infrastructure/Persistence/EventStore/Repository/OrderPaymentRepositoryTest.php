@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
@@ -41,7 +42,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnsavedOrderPayment(): void
     {
         // Given
-        $id = OrderPaymentId::generate();
+        $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
 
         // Then
         self::assertFalse($this->repository->has($id));

@@ -13,16 +13,6 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 final class OrderPaymentIdTest extends TestCase
 {
     #[Test]
-    public function itGenerates(): void
-    {
-        // When
-        $id = OrderPaymentId::generate();
-
-        // Then
-        self::assertTrue(Uuid::isValid($id->toString()));
-    }
-
-    #[Test]
     public function itDerivesTheSameIdForTheSameOrder(): void
     {
         // Given

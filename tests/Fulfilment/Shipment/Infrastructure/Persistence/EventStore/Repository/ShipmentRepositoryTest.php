@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
@@ -41,7 +42,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnsavedShipment(): void
     {
         // Given
-        $id = ShipmentId::generate();
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString());
 
         // Then
         self::assertFalse($this->repository->has($id));

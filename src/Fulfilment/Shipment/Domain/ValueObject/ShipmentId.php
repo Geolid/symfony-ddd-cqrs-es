@@ -6,11 +6,11 @@ namespace Fulfilment\Shipment\Domain\ValueObject;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootId;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\UuidTrait;
+use Shared\Domain\DerivedUuidTrait;
 
 final readonly class ShipmentId implements AggregateRootId
 {
-    use UuidTrait;
+    use DerivedUuidTrait;
 
     private const string ORDER_NAMESPACE = '6f9b1a52-3c7d-4e08-9a41-2b5c8d0e7f36';
 
