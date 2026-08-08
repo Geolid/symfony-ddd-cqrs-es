@@ -10,10 +10,10 @@ use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
-use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Email;
 
 #[AsCommandHandler]
 final readonly class RegisterCustomerHandler

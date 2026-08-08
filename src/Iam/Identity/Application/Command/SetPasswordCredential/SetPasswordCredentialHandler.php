@@ -10,13 +10,13 @@ use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Email;
 
 #[AsCommandHandler]
 final readonly class SetPasswordCredentialHandler
@@ -46,7 +46,7 @@ final readonly class SetPasswordCredentialHandler
             return;
         }
 
-        $login = Login::fromString($command->login);
+        $login = Email::fromString($command->login);
         $fingerprint = $login->fingerprint();
 
         try {

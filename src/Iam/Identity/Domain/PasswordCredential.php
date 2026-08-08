@@ -9,7 +9,6 @@ use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -17,6 +16,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\ValueObject\Email;
 
 #[Aggregate('iam.identity.password_credential')]
 final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAware
@@ -25,14 +25,14 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     private PasswordCredentialId $id;
-    private Login $login;
+    private Email $login;
 
     public function id(): PasswordCredentialId
     {
         return $this->id;
     }
 
-    public function login(): Login
+    public function login(): Email
     {
         return $this->login;
     }
@@ -40,7 +40,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     public static function set(
         PasswordCredentialId $id,
         IdentityId $identityId,
-        Login $login,
+        Email $login,
         string $plainPassword,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $setAt,
@@ -79,7 +79,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyPasswordCredentialSet(PasswordCredentialSet $event): void
     {
         $this->id = PasswordCredentialId::fromString($event->id);
-        $this->login = Login::fromString($event->login);
+        $this->login = Email::fromString($event->login);
     }
 
     #[Apply]

@@ -7,8 +7,8 @@ namespace Iam\Tests\Identity\Support\Factory;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
+use Shared\Domain\ValueObject\Email;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -59,7 +59,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         return PasswordCredential::set(
             PasswordCredentialId::forIdentity($identityId),
             IdentityId::fromString($identityId),
-            Login::fromString($login),
+            Email::fromString($login),
             $password,
             $hasher,
             \DateTimeImmutable::createFromInterface($setAt),

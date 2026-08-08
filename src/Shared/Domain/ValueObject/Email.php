@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Domain\ValueObject;
+namespace Shared\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class Login
+final readonly class Email
 {
     private string $value;
 
     private function __construct(string $value)
     {
-        $value = trim($value);
-        Assert::notEmpty($value, 'A login cannot be empty, %s given.');
+        $value = strtolower(trim($value));
+        Assert::notEmpty($value, 'An email address cannot be empty, %s given.');
+        Assert::email($value, 'An email address is expected, %s given.');
 
         $this->value = $value;
     }
