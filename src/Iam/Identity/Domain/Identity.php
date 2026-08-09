@@ -8,6 +8,7 @@ use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
+use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -56,10 +57,15 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
+     * @throws IdentityAlreadyErasedException
      * @throws IdentityAlreadySuspendedException
      */
     public function suspend(\DateTimeImmutable $suspendedAt): void
     {
+        if ($this->erased) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
         if ($this->status->isSuspended()) {
             throw IdentityAlreadySuspendedException::forId($this->id);
         }
@@ -71,10 +77,15 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
+     * @throws IdentityAlreadyErasedException
      * @throws IdentityNotSuspendedException
      */
     public function reactivate(\DateTimeImmutable $reactivatedAt): void
     {
+        if ($this->erased) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
         if ($this->status->isActive()) {
             throw IdentityNotSuspendedException::forId($this->id);
         }

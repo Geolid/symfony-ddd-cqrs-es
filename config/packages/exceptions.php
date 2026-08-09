@@ -16,6 +16,7 @@ use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
@@ -61,6 +62,7 @@ return static function (ContainerConfigurator $container): void {
             ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ApiTokenCredentialAlreadyRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadySuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

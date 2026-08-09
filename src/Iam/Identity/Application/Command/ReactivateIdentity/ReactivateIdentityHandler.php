@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Command\ReactivateIdentity;
 
+use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -22,6 +23,7 @@ final readonly class ReactivateIdentityHandler
 
     /**
      * @throws IdentityNotFoundException
+     * @throws IdentityAlreadyErasedException
      * @throws IdentityNotSuspendedException
      */
     public function __invoke(ReactivateIdentity $command): void
