@@ -50,6 +50,19 @@ final class LabelTest extends TestCase
     }
 
     #[Test]
+    public function itFingerprintsForAnIdentity(): void
+    {
+        // Given
+        $label = Label::fromString('  CI pipeline  ');
+
+        // When
+        $fingerprint = $label->fingerprintFor('identity-abc');
+
+        // Then
+        self::assertSame(hash('sha256', 'identity-abc|CI pipeline'), $fingerprint);
+    }
+
+    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
