@@ -9,12 +9,11 @@ use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Processor\SyncProcessorGroup;
+use Shared\Application\Processor\SyncProcessor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
-#[Processor('iam.identity.release_login_on_identity_erased', group: SyncProcessorGroup::NAME)]
+#[SyncProcessor('iam.identity.release_login_on_identity_erased')]
 final readonly class ReleaseLoginOnIdentityErased
 {
     public function __construct(
