@@ -11,6 +11,7 @@ use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Label;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -36,6 +37,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         ApiTokenCredentialId $id,
         IdentityId $identityId,
         string $identifier,
+        Label $label,
         string $plainSecret,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $issuedAt,
@@ -46,6 +48,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
             id: $id->toString(),
             identityId: $identityId->toString(),
             identifier: $identifier,
+            label: $label->toString(),
             secretHash: $hasher->hash($plainSecret),
             issuedAt: $issuedAt->format(\DateTimeInterface::ATOM),
             expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),

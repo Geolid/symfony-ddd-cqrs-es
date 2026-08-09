@@ -8,6 +8,7 @@ use Iam\Identity\Domain\ApiTokenCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Label;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -24,6 +25,11 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
     public function withIdentifier(string $identifier): self
     {
         return static::new(array_merge($this->attributes, ['identifier' => $identifier]));
+    }
+
+    public function withLabel(string $label): self
+    {
+        return static::new(array_merge($this->attributes, ['label' => $label]));
     }
 
     public function withSecret(string $secret): self
@@ -52,6 +58,7 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
             'id' => ApiTokenCredentialId::generate()->toString(),
             'identityId' => IdentityId::generate()->toString(),
             'identifier' => 'key_'.self::faker()->unique()->uuid(),
+            'label' => self::faker()->words(2, true),
             'secret' => self::faker()->uuid(),
             'issuedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
             'expiresAt' => new \DateTimeImmutable('+1 year +00:00'),
@@ -63,6 +70,7 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($identityId = $attributes['identityId']);
         Assert::stringNotEmpty($identifier = $attributes['identifier']);
+        Assert::stringNotEmpty($label = $attributes['label']);
         Assert::stringNotEmpty($secret = $attributes['secret']);
         Assert::isInstanceOf($issuedAt = $attributes['issuedAt'], \DateTimeInterface::class);
         Assert::isInstanceOf($expiresAt = $attributes['expiresAt'], \DateTimeInterface::class);
@@ -73,6 +81,7 @@ final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
             ApiTokenCredentialId::fromString($id),
             IdentityId::fromString($identityId),
             $identifier,
+            Label::fromString($label),
             $secret,
             $hasher,
             \DateTimeImmutable::createFromInterface($issuedAt),

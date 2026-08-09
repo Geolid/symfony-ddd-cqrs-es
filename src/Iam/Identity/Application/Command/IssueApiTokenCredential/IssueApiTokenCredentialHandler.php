@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Label;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 
@@ -28,6 +29,7 @@ final readonly class IssueApiTokenCredentialHandler
             ApiTokenCredentialId::fromString($command->id),
             IdentityId::fromString($command->identityId),
             $command->identifier,
+            Label::fromString($command->label),
             $command->secret,
             $this->hasher,
             $this->clock->now(),

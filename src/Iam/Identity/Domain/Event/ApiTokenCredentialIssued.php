@@ -14,6 +14,7 @@ final readonly class ApiTokenCredentialIssued implements DomainEventInterface
         public string $id,
         public string $identityId,
         public string $identifier,
+        public string $label,
         public string $secretHash,
         public string $issuedAt,
         public string $expiresAt,

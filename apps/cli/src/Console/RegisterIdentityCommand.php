@@ -55,6 +55,7 @@ final class RegisterIdentityCommand
                 identityId: $identityId,
                 identifier: $apiKey->identifier,
                 secret: $apiKey->secret,
+                label: $input->label,
                 expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),
             ));
 
