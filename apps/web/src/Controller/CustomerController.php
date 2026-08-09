@@ -72,6 +72,10 @@ final class CustomerController extends AbstractController
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.address_taken'));
 
                 return $this->render('sales/customer/register.html.twig', ['form' => $form]);
+            } catch (\Throwable $e) {
+                $this->commandBus->dispatch(new EraseIdentity($id));
+
+                throw $e;
             }
 
             $this->addFlash('success', $this->translator->trans('sales.customer.flash.registered'));
