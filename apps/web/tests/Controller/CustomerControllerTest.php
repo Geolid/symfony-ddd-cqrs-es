@@ -54,7 +54,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itCompensatesByErasingTheIdentityWhenRegistrationFailsAfterTheCredentialWasSet(): void
+    public function itFreesTheLoginAfterAFailedRegistration(): void
     {
         // Given
         $client = self::browser();
