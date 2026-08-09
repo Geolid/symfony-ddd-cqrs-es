@@ -35,11 +35,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function status(): IdentityState
-    {
-        return $this->status;
-    }
-
     public function isErased(): bool
     {
         return $this->erased;

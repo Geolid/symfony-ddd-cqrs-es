@@ -34,7 +34,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $identity->id();
         self::assertTrue($this->repository->has($id));
-        self::assertTrue($this->repository->load($id)->status()->isActive());
+        $this->repository->load($id);
     }
 
     #[Test]
