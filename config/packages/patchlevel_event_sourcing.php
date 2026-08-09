@@ -14,7 +14,7 @@ return static function (ContainerConfigurator $container): void {
             'gap_detection' => null,
             'run_after_aggregate_save' => [
                 'enabled' => true,
-                'groups' => ['sync_processor'],
+                'groups' => ['translator', 'sync_processor'],
             ],
         ],
         'hydrator' => ['cryptography' => true],
