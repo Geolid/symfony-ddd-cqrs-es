@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain;
 
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -26,6 +27,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private IdentityId $id;
     private IdentityState $status;
+    private bool $erased;
 
     public function id(): IdentityId
     {
@@ -35,6 +37,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public function status(): IdentityState
     {
         return $this->status;
+    }
+
+    public function isErased(): bool
+    {
+        return $this->erased;
     }
 
     public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
@@ -78,11 +85,30 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function erase(\DateTimeImmutable $erasedAt): void
+    {
+        if ($this->erased) {
+            return;
+        }
+
+        $this->recordThat(new IdentityErased(
+            id: $this->id->toString(),
+            erasedAt: $erasedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     #[Apply]
     private function applyIdentityRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
         $this->status = IdentityState::ACTIVE;
+        $this->erased = false;
+    }
+
+    #[Apply]
+    private function applyIdentityErased(IdentityErased $event): void
+    {
+        $this->erased = true;
     }
 
     #[Apply]

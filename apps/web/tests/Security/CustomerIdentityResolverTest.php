@@ -21,12 +21,11 @@ final class CustomerIdentityResolverTest extends TestCase
     public function itResolvesTheCustomerLinkedToTheIdentity(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $customer = $this->customer($customerId);
-        $queryBus = $this->queryBusResolvingCustomer($identityId, $customer);
+        $id = Uuid::uuid7()->toString();
+        $customer = $this->customer($id);
+        $queryBus = $this->queryBusResolvingCustomer($id, $customer);
         $resolver = new CustomerIdentityResolver($queryBus);
-        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
         $resolved = $resolver->resolveFor($token);
@@ -39,12 +38,11 @@ final class CustomerIdentityResolverTest extends TestCase
     public function itCachesTheResolvedCustomerOnTheToken(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $customer = $this->customer($customerId);
-        $queryBus = $this->queryBusResolvingCustomer($identityId, $customer);
+        $id = Uuid::uuid7()->toString();
+        $customer = $this->customer($id);
+        $queryBus = $this->queryBusResolvingCustomer($id, $customer);
         $resolver = new CustomerIdentityResolver($queryBus);
-        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
         $resolver->resolveFor($token);
@@ -63,7 +61,7 @@ final class CustomerIdentityResolverTest extends TestCase
         $queryBus->expects(self::once())
             ->method('ask')
             ->with(self::equalTo(new GetCustomerByIdentity($identityId)))
-            ->willThrowException(CustomerResultNotFoundException::forIdentityId($identityId));
+            ->willThrowException(CustomerResultNotFoundException::forId($identityId));
         $resolver = new CustomerIdentityResolver($queryBus);
         $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
@@ -81,7 +79,6 @@ final class CustomerIdentityResolverTest extends TestCase
             email: 'buyer@example.com',
             registeredAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             erasedAt: null,
-            identityId: null,
         );
     }
 

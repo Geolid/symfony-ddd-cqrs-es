@@ -18,7 +18,7 @@ final class GetCustomerByIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $customer = CustomerTestFactory::new()->linkedToIdentity($identityId)->create();
+        $customer = CustomerTestFactory::new()->withId($identityId)->create();
         $this->store($customer);
         $this->store(CustomerTestFactory::new()->create());
 
@@ -30,7 +30,7 @@ final class GetCustomerByIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNoCustomerIsLinkedToTheIdentity(): void
+    public function itFailsWhenNoCustomerExistsForTheIdentity(): void
     {
         // Given
         $this->store(CustomerTestFactory::new()->create());

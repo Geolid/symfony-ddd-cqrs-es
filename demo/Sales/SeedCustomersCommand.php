@@ -8,9 +8,7 @@ use Demo\Sales\Input\SeedCustomersInput;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
-use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\CommandBusInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\MapInput;
@@ -34,15 +32,13 @@ final readonly class SeedCustomersCommand
         $io->progressStart($input->count);
 
         for ($i = 1; $i <= $input->count; ++$i) {
-            $customerId = CustomerId::generate()->toString();
+            $id = Uuid::uuid7()->toString();
             $login = \sprintf('buyer-%d', $i);
             $email = \sprintf('buyer-%d@%s', $i, $input->domain);
-            $identityId = Uuid::uuid7()->toString();
 
-            $this->commandBus->dispatch(new RegisterCustomer($customerId, $email));
-            $this->commandBus->dispatch(new RegisterIdentity($identityId));
-            $this->commandBus->dispatch(new SetPasswordCredential($identityId, $login, self::DEMO_PASSWORD));
-            $this->commandBus->dispatch(new LinkCustomerIdentity($customerId, $identityId));
+            $this->commandBus->dispatch(new RegisterIdentity($id));
+            $this->commandBus->dispatch(new SetPasswordCredential($id, $login, self::DEMO_PASSWORD));
+            $this->commandBus->dispatch(new RegisterCustomer($id, $email));
 
             $io->progressAdvance();
         }

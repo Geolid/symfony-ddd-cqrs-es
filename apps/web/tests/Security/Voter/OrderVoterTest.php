@@ -25,11 +25,10 @@ final class OrderVoterTest extends TestCase
     public function itGrantsAccessWhenTheOrderBelongsToTheCustomer(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $order = $this->summary($customerId);
-        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
-        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $id = Uuid::uuid7()->toString();
+        $order = $this->summary($id);
+        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($id, $this->customer($id)));
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
         $vote = (new OrderVoter($customerIdentityResolver))->vote($token, $order, [OrderVoter::VIEW]);
@@ -42,11 +41,10 @@ final class OrderVoterTest extends TestCase
     public function itDeniesAccessWhenTheOrderBelongsToAnotherCustomer(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
+        $id = Uuid::uuid7()->toString();
         $order = $this->summary(Uuid::uuid7()->toString());
-        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($identityId, $this->customer($customerId)));
-        $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $customerIdentityResolver = new CustomerIdentityResolver($this->queryBusResolvingCustomer($id, $this->customer($id)));
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
         $vote = (new OrderVoter($customerIdentityResolver))->vote($token, $order, [OrderVoter::VIEW]);
@@ -65,7 +63,7 @@ final class OrderVoterTest extends TestCase
         $queryBus->expects(self::once())
             ->method('ask')
             ->with(self::equalTo(new GetCustomerByIdentity($identityId)))
-            ->willThrowException(CustomerResultNotFoundException::forIdentityId($identityId));
+            ->willThrowException(CustomerResultNotFoundException::forId($identityId));
         $customerIdentityResolver = new CustomerIdentityResolver($queryBus);
         $token = new UsernamePasswordToken(new PasswordUser($identityId, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
@@ -118,7 +116,6 @@ final class OrderVoterTest extends TestCase
             email: 'buyer@example.com',
             registeredAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             erasedAt: null,
-            identityId: null,
         );
     }
 

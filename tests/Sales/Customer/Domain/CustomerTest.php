@@ -6,12 +6,9 @@ namespace Sales\Tests\Customer\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\Event\CustomerErased;
-use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
-use Sales\Customer\Domain\Exception\CustomerAlreadyLinkedToIdentityException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Domain\ValueObject\Email;
 
@@ -56,34 +53,6 @@ final class CustomerTest extends AggregateRootTestCase
             )
             ->when(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
-    }
-
-    #[Test]
-    public function itLinksAnIdentity(): void
-    {
-        $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $identityId = Uuid::uuid7()->toString();
-
-        $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)))
-            ->when(static fn (Customer $customer) => $customer->linkIdentity($identityId))
-            ->then(new CustomerIdentityLinked($id, $identityId));
-    }
-
-    #[Test]
-    public function itCannotLinkAnIdentityTwice(): void
-    {
-        $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
-                new CustomerIdentityLinked($id, Uuid::uuid7()->toString()),
-            )
-            ->when(static fn (Customer $customer) => $customer->linkIdentity(Uuid::uuid7()->toString()))
-            ->expectsException(CustomerAlreadyLinkedToIdentityException::class);
     }
 
     protected function aggregateClass(): string

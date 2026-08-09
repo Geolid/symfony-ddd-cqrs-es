@@ -19,6 +19,11 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Identity $identity) => $identity->suspend(new \DateTimeImmutable('now +00:00')));
     }
 
+    public function erased(): self
+    {
+        return $this->withModifier(static fn (Identity $identity) => $identity->erase(new \DateTimeImmutable('now +00:00')));
+    }
+
     public function registeredAt(\DateTimeImmutable $registeredAt): self
     {
         return static::new(array_merge($this->attributes, ['registeredAt' => $registeredAt]));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Domain;
 
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -84,6 +85,35 @@ final class IdentityTest extends AggregateRootTestCase
             ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Identity $identity) => $identity->reactivate(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(IdentityNotSuspendedException::class);
+    }
+
+    #[Test]
+    public function itErasesAnIdentity(): void
+    {
+        $id = IdentityId::generate()->toString();
+        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
+            ->when(static fn (Identity $identity) => $identity->erase($erasedAt))
+            ->then(new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotEraseAnAlreadyErasedIdentity(): void
+    {
+        $id = IdentityId::generate()->toString();
+        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
+                new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Identity $identity) => $identity->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
     }
 
     protected function aggregateClass(): string

@@ -52,7 +52,7 @@ deptrac:
 
   # Deptrac draws which BC pairs may see each other; PHPat seals how (DomainEventTest, BoundedContextTest.onlyReachesAnotherBcThroughIntegrationEvents).
   ruleset:
-    Sales.Customer:      [ Shared, Vendors ]
+    Sales.Customer:      [ Iam.Identity, Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Shared, Vendors ]
     Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]

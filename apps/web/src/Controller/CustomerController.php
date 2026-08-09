@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
-use Sales\Customer\Application\Command\LinkCustomerIdentity\LinkCustomerIdentity;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
@@ -56,27 +55,29 @@ final class CustomerController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $login = (string) $formData->login;
             $email = (string) $formData->email;
+            $id = Uuid::uuid7()->toString();
+
+            $this->commandBus->dispatch(new RegisterIdentity($id));
 
             try {
-                $customerId = Uuid::uuid7()->toString();
-                $this->commandBus->dispatch(new RegisterCustomer(id: $customerId, email: $email));
-            } catch (AddressAlreadyRegisteredException) {
-                $this->addFlash('error', $this->translator->trans('sales.customer.flash.address_taken'));
-
-                return $this->render('sales/customer/register.html.twig', ['form' => $form]);
-            }
-
-            try {
-                $identityId = Uuid::uuid7()->toString();
-                $this->commandBus->dispatch(new RegisterIdentity($identityId));
-                $this->commandBus->dispatch(new SetPasswordCredential($identityId, $login, (string) $formData->password));
+                $this->commandBus->dispatch(new SetPasswordCredential($id, $login, (string) $formData->password));
+                $this->commandBus->dispatch(new RegisterCustomer(id: $id, email: $email));
             } catch (LoginAlreadyTakenException) {
+                $this->commandBus->dispatch(new EraseIdentity($id));
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.login_taken'));
 
                 return $this->render('sales/customer/register.html.twig', ['form' => $form]);
+            } catch (AddressAlreadyRegisteredException) {
+                $this->commandBus->dispatch(new EraseIdentity($id));
+                $this->addFlash('error', $this->translator->trans('sales.customer.flash.address_taken'));
+
+                return $this->render('sales/customer/register.html.twig', ['form' => $form]);
+            } catch (\Throwable $e) {
+                $this->commandBus->dispatch(new EraseIdentity($id));
+
+                throw $e;
             }
 
-            $this->commandBus->dispatch(new LinkCustomerIdentity($customerId, $identityId));
             $this->addFlash('success', $this->translator->trans('sales.customer.flash.registered'));
 
             return $this->redirectToRoute('security_login');
@@ -97,7 +98,7 @@ final class CustomerController extends AbstractController
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
-        $this->commandBus->dispatch(new EraseCustomer($customer->id));
+        $this->commandBus->dispatch(new EraseIdentity($customer->id));
 
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
@@ -118,7 +119,7 @@ final class CustomerController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->commandBus->dispatch(new SetPasswordCredential(
-                (string) $customer->identityId,
+                $customer->id,
                 (string) $customer->email,
                 (string) $formData->password,
             ));

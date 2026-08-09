@@ -15,6 +15,11 @@ use Webmozart\Assert\Assert;
  */
 final class CustomerTestFactory extends AbstractAggregateTestFactory
 {
+    public function withId(string $id): self
+    {
+        return static::new(array_merge($this->attributes, ['id' => $id]));
+    }
+
     public function withEmail(string $email): self
     {
         return static::new(array_merge($this->attributes, ['email' => $email]));
@@ -23,11 +28,6 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
     public function erased(): self
     {
         return $this->withModifier(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('now +00:00')));
-    }
-
-    public function linkedToIdentity(string $identityId): self
-    {
-        return $this->withModifier(static fn (Customer $customer) => $customer->linkIdentity($identityId));
     }
 
     protected function defaults(): array

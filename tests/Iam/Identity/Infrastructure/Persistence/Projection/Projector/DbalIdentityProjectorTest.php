@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, status: string, registered_at: string}
+ * @phpstan-type Row array{id: string, status: string, registered_at: string, erased_at: ?string}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
@@ -76,6 +76,30 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame('suspended', $otherRow['status']);
     }
 
+    #[Test]
+    public function itUpdatesTheErasedAtOnIdentityErased(): void
+    {
+        // Given
+        $other = IdentityTestFactory::new()->create();
+        $this->store($other);
+
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+
+        // When
+        $identity->erase(new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id()->toString());
+        self::assertNotFalse($row);
+        self::assertNotNull($row['erased_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['erased_at']);
+    }
+
     /**
      * @return Row|false
      */
@@ -83,7 +107,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT id, status, registered_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
+            \sprintf('SELECT id, status, registered_at, erased_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );
     }

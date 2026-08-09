@@ -54,13 +54,30 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itFreesTheLoginAfterAFailedRegistration(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->registerCustomer($client, 'buyer-6-taken', 'buyer-6@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
+
+        // When
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another password');
+
+        // Then
+        self::assertResponseRedirects('/login');
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-success"]');
+    }
+
+    #[Test]
     public function itErasesTheLoggedInCustomer(): void
     {
         // Given
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withEmail('buyer-3@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-3@example.com')->create());
         $this->loginAs($client, $identity);
 
         // When
@@ -79,7 +96,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withEmail('buyer-4@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-4@example.com')->create());
         $this->loginAs($client, $identity);
 
         // When
@@ -96,7 +113,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withEmail('buyer-5@example.com')->linkedToIdentity($identity->id()->toString())->create());
+        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-5@example.com')->create());
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When

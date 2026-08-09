@@ -91,7 +91,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $customer = CustomerTestFactory::new()->withEmail('buyer-7@example.com')->linkedToIdentity($identity->id()->toString())->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-7@example.com')->create();
         $this->store($customer);
         $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->cancelled()->withoutIncrementalIds()->create();
         $this->store($order);
@@ -229,7 +229,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withEmail($email)->linkedToIdentity($identity->id()->toString())->create());
+        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->create());
 
         return $identity;
     }

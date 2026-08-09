@@ -11,7 +11,6 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Domain\Event\CustomerErased;
-use Sales\Customer\Domain\Event\CustomerIdentityLinked;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 
@@ -43,12 +42,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(CustomerIdentityLinked::class)]
-    public function onCustomerIdentityLinked(CustomerIdentityLinked $event): void
-    {
-        $this->connection->update(self::TABLE, ['identity_id' => $event->identityId], ['id' => $event->id]);
-    }
-
     /**
      * @codeCoverageIgnore
      */
@@ -59,7 +52,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
         $table->addColumn('email', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
         $table->addColumn('registered_at', Types::DATETIME_MUTABLE);
         $table->addColumn('erased_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('identity_id', Types::STRING, ['length' => 36, 'notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
