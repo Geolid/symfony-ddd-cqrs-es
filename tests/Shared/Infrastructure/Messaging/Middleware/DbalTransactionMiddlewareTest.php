@@ -7,7 +7,6 @@ namespace Shared\Tests\Infrastructure\Messaging\Middleware;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Infrastructure\Messaging\Middleware\DbalTransactionMiddleware;
 use Support\AbstractIntegrationTestCase;
 use Support\Stub\DummyMessage;
@@ -19,16 +18,18 @@ use Symfony\Component\Messenger\Middleware\StackInterface;
 
 final class DbalTransactionMiddlewareTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private const string TABLE = 'dbal_transaction_middleware_test';
+
+    private Connection $connection;
     private DbalTransactionMiddleware $middleware;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
-        $connection = $this->serviceAs('doctrine.dbal.event_store_connection', Connection::class);
-        $this->middleware = new DbalTransactionMiddleware($connection);
+        $this->connection = $this->serviceAs('doctrine.dbal.event_store_connection', Connection::class);
+        $this->connection->executeStatement(\sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS %s (value VARCHAR(255) NOT NULL)', self::TABLE));
+        $this->middleware = new DbalTransactionMiddleware($this->connection);
     }
 
     #[Test]
@@ -36,13 +37,13 @@ final class DbalTransactionMiddlewareTest extends AbstractIntegrationTestCase
     {
         // Given
         $value = Uuid::uuid7()->toString();
-        $stack = new DummyStack(new ReserveThenDelegateMiddleware($this->uniqueValues, $value, new DummyNextMiddleware()));
+        $stack = new DummyStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new DummyNextMiddleware()));
 
         // When
         $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
 
         // Then
-        self::assertTrue($this->uniqueValues->exists(DummyUniqueValueType::TEST, $value));
+        self::assertSame($value, $this->connection->fetchOne(\sprintf('SELECT value FROM %s WHERE value = ?', self::TABLE), [$value]));
     }
 
     #[Test]
@@ -51,7 +52,7 @@ final class DbalTransactionMiddlewareTest extends AbstractIntegrationTestCase
         // Given
         $value = Uuid::uuid7()->toString();
         $failure = new \RuntimeException('Handler blew up.');
-        $stack = new DummyStack(new ReserveThenDelegateMiddleware($this->uniqueValues, $value, new DummyNextMiddleware($failure)));
+        $stack = new DummyStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new DummyNextMiddleware($failure)));
 
         // Then
         $this->expectExceptionObject($failure);
@@ -60,20 +61,16 @@ final class DbalTransactionMiddlewareTest extends AbstractIntegrationTestCase
         try {
             $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
         } finally {
-            self::assertFalse($this->uniqueValues->exists(DummyUniqueValueType::TEST, $value));
+            self::assertFalse($this->connection->fetchOne(\sprintf('SELECT value FROM %s WHERE value = ?', self::TABLE), [$value]));
         }
     }
 }
 
-enum DummyUniqueValueType: string
-{
-    case TEST = 'shared.test.dummy';
-}
-
-final readonly class ReserveThenDelegateMiddleware implements MiddlewareInterface
+final readonly class InsertThenDelegateMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private UniqueValueRegistryInterface $uniqueValues,
+        private Connection $connection,
+        private string $table,
         private string $value,
         private MiddlewareInterface $next,
     ) {
@@ -81,7 +78,7 @@ final readonly class ReserveThenDelegateMiddleware implements MiddlewareInterfac
 
     public function handle(Envelope $envelope, StackInterface $stack): Envelope
     {
-        $this->uniqueValues->reserve(DummyUniqueValueType::TEST, $this->value);
+        $this->connection->insert($this->table, ['value' => $this->value]);
 
         return $this->next->handle($envelope, $stack);
     }
