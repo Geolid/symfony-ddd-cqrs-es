@@ -8,6 +8,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -43,6 +44,16 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(self::TABLE, ['status' => IdentityState::ACTIVE->value], ['id' => $event->id]);
     }
 
+    #[Subscribe(IdentityErased::class)]
+    public function onIdentityErased(IdentityErased $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erased_at' => new \DateTimeImmutable($event->erasedAt)->format('Y-m-d H:i:s')],
+            ['id' => $event->id],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -52,6 +63,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('registered_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('erased_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
