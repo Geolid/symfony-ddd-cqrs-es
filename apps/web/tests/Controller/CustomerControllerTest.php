@@ -56,12 +56,12 @@ final class CustomerControllerTest extends AbstractWebTestCase
     #[Test]
     public function itCompensatesByErasingTheIdentityWhenRegistrationFailsAfterTheCredentialWasSet(): void
     {
-        // Given — the credential/login is created before the address collision is even checked.
+        // Given
         $client = self::browser();
         $this->registerCustomer($client, 'buyer-6-taken', 'buyer-6@example.com', 'correct horse battery staple');
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
 
-        // When — a later registration reuses the login the failed attempt should have freed up.
+        // When
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another password');
 
         // Then
