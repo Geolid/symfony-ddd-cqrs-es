@@ -12,6 +12,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
+use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
@@ -63,6 +64,7 @@ return static function (ContainerConfigurator $container): void {
             IdentityAlreadySuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             PasswordCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 

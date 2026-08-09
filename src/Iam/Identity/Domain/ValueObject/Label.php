@@ -29,6 +29,11 @@ final readonly class Label
         return $this->value === $other->value;
     }
 
+    public function fingerprintFor(string $identityId): string
+    {
+        return hash('sha256', $identityId.'|'.$this->value);
+    }
+
     public function toString(): string
     {
         return $this->value;

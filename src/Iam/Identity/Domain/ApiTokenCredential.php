@@ -26,11 +26,23 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     private ApiTokenCredentialId $id;
+    private IdentityId $identityId;
+    private Label $label;
     private bool $revoked;
 
     public function id(): ApiTokenCredentialId
     {
         return $this->id;
+    }
+
+    public function identityId(): IdentityId
+    {
+        return $this->identityId;
+    }
+
+    public function label(): Label
+    {
+        return $this->label;
     }
 
     public static function issue(
@@ -85,6 +97,8 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyApiTokenCredentialIssued(ApiTokenCredentialIssued $event): void
     {
         $this->id = ApiTokenCredentialId::fromString($event->id);
+        $this->identityId = IdentityId::fromString($event->identityId);
+        $this->label = Label::fromString($event->label);
         $this->revoked = false;
     }
 
