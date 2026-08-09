@@ -11,7 +11,6 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
-use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -28,7 +28,7 @@ use Web\Form\ChangePasswordType;
 use Web\Form\FormData\ChangePasswordFormData;
 use Web\Form\FormData\RegisterCustomerFormData;
 use Web\Form\RegisterCustomerType;
-use Web\Security\Attribute\CurrentCustomer;
+use Web\Security\PasswordUser;
 
 #[Route('/sales/customers')]
 final class CustomerController extends AbstractController
@@ -92,13 +92,13 @@ final class CustomerController extends AbstractController
      */
     #[Route('/erase', name: 'sales_customer_erase', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function erase(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
+    public function erase(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         if (!$this->isCsrfTokenValid('erase-customer', (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
-        $this->commandBus->dispatch(new EraseIdentity($customer->id));
+        $this->commandBus->dispatch(new EraseIdentity($user->identityId()));
 
         $this->addFlash('success', $this->translator->trans('sales.customer.flash.erased'));
 
@@ -111,7 +111,7 @@ final class CustomerController extends AbstractController
      */
     #[Route('/profile', name: 'sales_customer_profile', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function profile(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
+    public function profile(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $formData = new ChangePasswordFormData();
         $form = $this->createForm(ChangePasswordType::class, $formData);
@@ -119,8 +119,8 @@ final class CustomerController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->commandBus->dispatch(new SetPasswordCredential(
-                $customer->id,
-                (string) $customer->email,
+                $user->identityId(),
+                $user->getUserIdentifier(),
                 (string) $formData->password,
             ));
 

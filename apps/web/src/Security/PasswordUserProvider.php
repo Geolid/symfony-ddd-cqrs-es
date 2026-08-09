@@ -7,7 +7,6 @@ namespace Web\Security;
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
-use Iam\Identity\Application\Query\GetPasswordCredentialByIdentity\GetPasswordCredentialByIdentity;
 use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -54,24 +53,13 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new UnsupportedUserException(\sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
-        $identityId = $user->identityId();
+        $refreshed = $this->loadUserByIdentifier($user->getUserIdentifier());
 
-        try {
-            $credential = $this->queryBus->ask(new GetPasswordCredentialByIdentity($identityId));
-        } catch (PasswordCredentialResultNotFoundException $e) {
-            throw new UserNotFoundException($e->getMessage(), 0, $e);
+        if (!$refreshed->identityStatus->isActive()) {
+            throw new DisabledException(\sprintf('Identity "%s" is not active.', $refreshed->identityId()));
         }
 
-        if (!$credential->identityStatus->isActive()) {
-            throw new DisabledException(\sprintf('Identity "%s" is not active.', $identityId));
-        }
-
-        return new PasswordUser(
-            $identityId,
-            $credential->login,
-            $this->grantsFor($identityId),
-            $credential->identityStatus,
-        );
+        return $refreshed;
     }
 
     public function supportsClass(string $class): bool

@@ -9,6 +9,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
@@ -66,6 +67,12 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
         $this->connection->update(self::TABLE, ['identity_status' => IdentityState::ACTIVE->value], ['identity_id' => $event->id]);
+    }
+
+    #[Subscribe(IdentityErased::class)]
+    public function onIdentityErased(IdentityErased $event): void
+    {
+        $this->connection->delete(self::TABLE, ['identity_id' => $event->id]);
     }
 
     /**

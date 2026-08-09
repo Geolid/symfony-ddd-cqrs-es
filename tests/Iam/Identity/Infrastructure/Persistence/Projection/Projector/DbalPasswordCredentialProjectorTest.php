@@ -168,6 +168,35 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         self::assertSame($otherHashBeforeRehash['hash'], $otherRow['hash']);
     }
 
+    #[Test]
+    public function itProjectsTheErasureOnIdentityErased(): void
+    {
+        // Given
+        $other = IdentityTestFactory::new()->create();
+        $this->store($other);
+        $otherCredential = PasswordCredentialTestFactory::new()
+            ->withIdentityId($other->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($otherCredential);
+
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $credential = PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withHasher(new DummySecretHasher())
+            ->create();
+        $this->store($credential);
+
+        // When
+        $identity->erase(new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
+
+        // Then
+        self::assertFalse($this->fetchRow($credential->id()->toString()));
+        self::assertNotFalse($this->fetchRow($otherCredential->id()->toString()));
+    }
+
     /**
      * @return Row|false
      */
