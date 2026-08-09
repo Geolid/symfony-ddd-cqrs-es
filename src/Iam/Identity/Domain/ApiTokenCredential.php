@@ -11,6 +11,7 @@ use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Label;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -25,6 +26,8 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     private ApiTokenCredentialId $id;
+    private IdentityId $identityId;
+    private Label $label;
     private bool $revoked;
 
     public function id(): ApiTokenCredentialId
@@ -32,10 +35,21 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         return $this->id;
     }
 
+    public function identityId(): IdentityId
+    {
+        return $this->identityId;
+    }
+
+    public function label(): Label
+    {
+        return $this->label;
+    }
+
     public static function issue(
         ApiTokenCredentialId $id,
         IdentityId $identityId,
         string $identifier,
+        Label $label,
         string $plainSecret,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $issuedAt,
@@ -46,6 +60,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
             id: $id->toString(),
             identityId: $identityId->toString(),
             identifier: $identifier,
+            label: $label->toString(),
             secretHash: $hasher->hash($plainSecret),
             issuedAt: $issuedAt->format(\DateTimeInterface::ATOM),
             expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),
@@ -82,6 +97,8 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyApiTokenCredentialIssued(ApiTokenCredentialIssued $event): void
     {
         $this->id = ApiTokenCredentialId::fromString($event->id);
+        $this->identityId = IdentityId::fromString($event->identityId);
+        $this->label = Label::fromString($event->label);
         $this->revoked = false;
     }
 

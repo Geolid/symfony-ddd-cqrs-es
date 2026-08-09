@@ -39,6 +39,7 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
             'id' => $event->id,
             'identity_id' => $event->identityId,
             'identifier' => $event->identifier,
+            'label' => $event->label,
             'hash' => $event->secretHash,
             'revoked' => 0,
             'expires_at' => new \DateTimeImmutable($event->expiresAt)->format('Y-m-d H:i:s'),
@@ -79,6 +80,7 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('identifier', Types::STRING, ['length' => 255]);
+        $table->addColumn('label', Types::STRING, ['length' => 255]);
         $table->addColumn('hash', Types::STRING, ['length' => 255]);
         $table->addColumn('revoked', Types::BOOLEAN);
         $table->addColumn('expires_at', Types::DATETIME_MUTABLE);

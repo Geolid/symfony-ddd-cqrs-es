@@ -13,6 +13,7 @@ final readonly class ApiTokenCredentialResult implements ResultInterface
         public string $id,
         public string $identityId,
         public string $identifier,
+        public string $label,
         public string $hash,
         public bool $revoked,
         public \DateTimeImmutable $expiresAt,

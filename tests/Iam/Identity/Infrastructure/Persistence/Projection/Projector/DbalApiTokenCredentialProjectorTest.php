@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, identity_id: string, identifier: string, hash: string, revoked: int, expires_at: string, identity_status: string}
+ * @phpstan-type Row array{id: string, identity_id: string, identifier: string, label: string, hash: string, revoked: int, expires_at: string, identity_status: string}
  */
 final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -26,6 +26,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withIdentifier('key_abc123')
+            ->withLabel('CI pipeline')
             ->withHasher(new DummySecretHasher())
             ->create();
         $this->store($credential);
@@ -35,6 +36,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         self::assertNotFalse($row);
         self::assertSame($identityId, $row['identity_id']);
         self::assertSame('key_abc123', $row['identifier']);
+        self::assertSame('CI pipeline', $row['label']);
         self::assertSame(0, (int) $row['revoked']);
     }
 
@@ -183,7 +185,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT id, identity_id, identifier, hash, revoked, expires_at, identity_status FROM %s WHERE id = :id',
+                'SELECT id, identity_id, identifier, label, hash, revoked, expires_at, identity_status FROM %s WHERE id = :id',
                 DbalApiTokenCredentialProjector::TABLE,
             ),
             ['id' => $id],

@@ -8,14 +8,17 @@ use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[AsCommandHandler]
 final readonly class RevokeApiTokenCredentialHandler
 {
     public function __construct(
         private ApiTokenCredentialRepositoryInterface $repository,
+        private UniqueValueRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
@@ -30,5 +33,8 @@ final readonly class RevokeApiTokenCredentialHandler
         $apiTokenCredential->revoke($this->clock->now());
 
         $this->repository->save($apiTokenCredential);
+
+        $fingerprint = $apiTokenCredential->label()->fingerprintFor($apiTokenCredential->identityId()->toString());
+        $this->uniqueValues->release(ApiTokenCredentialUniqueValue::LABEL, $fingerprint);
     }
 }

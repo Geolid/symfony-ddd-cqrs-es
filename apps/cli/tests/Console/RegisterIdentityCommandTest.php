@@ -24,7 +24,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'iam:identity:register', '--permission' => ['fixture.widget:read', 'fixture.widget:write']]);
+        $tester->run(['command' => 'iam:identity:register', '--label' => 'CI pipeline', '--permission' => ['fixture.widget:read', 'fixture.widget:write']]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -36,11 +36,26 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $credential = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($matches[1]);
         self::assertNotNull($credential);
         self::assertNotEmpty($credential->identityId);
+        self::assertSame('CI pipeline', $credential->label);
         self::assertSame($now->modify('+365 days')->format(\DateTimeInterface::ATOM), $credential->expiresAt->format(\DateTimeInterface::ATOM));
 
         $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
         self::assertCount(2, $grants);
         self::assertEqualsCanonicalizing(['fixture.widget:read', 'fixture.widget:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
+    }
+
+    #[Test]
+    public function itFailsWhenNoLabelIsProvided(): void
+    {
+        // Given
+        $tester = $this->tester();
+
+        // When
+        $tester->run(['command' => 'iam:identity:register', '--permission' => ['fixture.widget:read']]);
+
+        // Then
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('label:', $tester->getDisplay());
     }
 
     #[Test]
@@ -50,7 +65,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'iam:identity:register']);
+        $tester->run(['command' => 'iam:identity:register', '--label' => 'CI pipeline']);
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
@@ -64,7 +79,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'iam:identity:register', '--permission' => ['not-a-valid-permission-format']]);
+        $tester->run(['command' => 'iam:identity:register', '--label' => 'CI pipeline', '--permission' => ['not-a-valid-permission-format']]);
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
