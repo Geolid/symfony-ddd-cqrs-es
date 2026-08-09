@@ -7,7 +7,6 @@ namespace Web\Controller;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
@@ -27,13 +26,14 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
-use Web\Security\Attribute\CurrentCustomer;
+use Web\Security\PasswordUser;
 use Web\Security\Voter\OrderVoter;
 
 #[Route('/sales/orders')]
@@ -53,13 +53,13 @@ final class OrderController extends AbstractController
      */
     #[Route(name: 'sales_order_list', methods: ['GET'])]
     public function list(
-        #[CurrentCustomer]
-        CustomerResult $customer,
+        #[CurrentUser]
+        PasswordUser $user,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         OrderCriteria $criteria = new OrderCriteria(),
     ): Response {
         $orders = $this->queryBus->ask(new ListOrderSummaries(
-            customerId: $customer->id,
+            customerId: $user->identityId(),
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
         ));
@@ -90,7 +90,7 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
-    public function place(Request $request, #[CurrentCustomer] CustomerResult $customer): Response
+    public function place(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         /** @var ListResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
@@ -113,7 +113,7 @@ final class OrderController extends AbstractController
 
             $this->commandBus->dispatch(new PlaceOrder(
                 id: $id,
-                customerId: $customer->id,
+                customerId: $user->identityId(),
                 lines: array_values(array_map(
                     static fn (OrderLineFormData $line): array => [
                         'productId' => (string) $line->productId,
@@ -154,14 +154,14 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/{id}/cancel', name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
-    public function cancel(Request $request, string $id, #[CurrentCustomer] CustomerResult $customer): Response
+    public function cancel(Request $request, string $id, #[CurrentUser] PasswordUser $user): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
         try {
-            $this->commandBus->dispatch(new CancelOrder($id, $customer->id));
+            $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
         } catch (OrderPaymentAlreadyCapturedException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
 
