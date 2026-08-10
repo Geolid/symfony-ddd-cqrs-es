@@ -19,7 +19,7 @@ paths:
 - Add `#[OnFailed]` to an Integration Event Translator's subscriber — a failed translation must halt the subscription, not skip silently.
 
 ### Conventions
-- `Infrastructure/`'s top-level folders name a technical concern (`Persistence/`, `Monitoring/`, `Security/`...), never a framework mechanism — the mechanism stays visible in the class name's own suffix instead, not the path.
+- `Infrastructure/`'s top-level folders name a technical concern (`Persistence/`, `Monitoring/`, `Security/`...), never a vendor mechanism — the mechanism stays visible in the class name's own suffix instead, not the path.
 - Event Store repository: `Persistence/EventStore/Repository/<Agg>Repository`, `final readonly`, implements `<Agg>RepositoryInterface`; injects `#[Autowire(service: 'event_sourcing.<subdomain>.<bc>.<aggregate>.repository')] Repository<Agg> $repository`; `has()`/`save()` delegate as-is, `load()` catches `AggregateNotFound` and re-throws.
 - Projector: `#[Projector('<subdomain>.<bc>.<name>')] final readonly Dbal<X>Projector extends AbstractDbalProjector` (e.g. `sales.order.orders`), a `public const string TABLE`, one `#[Subscribe(<Event>::class)] on<Event>()` method per event, and `configureSchema()`.
 - One projection per materialization shape (one table, named after what it materializes); as many Finders as there are read axes over that table. A new Projector is warranted only when the access shape itself differs (key, granularity, denormalization) — never just for a new DTO.
