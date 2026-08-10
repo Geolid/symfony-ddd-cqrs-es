@@ -17,7 +17,7 @@ use Shared\Domain\ValueObject\Money;
 final class ProductTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itListsAProduct(): void
+    public function itLists(): void
     {
         $id = ProductId::generate();
         $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -29,7 +29,7 @@ final class ProductTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRepricesAProduct(): void
+    public function itReprices(): void
     {
         $id = ProductId::generate()->toString();
         $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -42,7 +42,7 @@ final class ProductTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDelistsAProduct(): void
+    public function itDelists(): void
     {
         $id = ProductId::generate()->toString();
         $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -55,7 +55,7 @@ final class ProductTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotDelistAnAlreadyDelistedProduct(): void
+    public function itDoesNotDelistAnAlreadyDelisted(): void
     {
         $id = ProductId::generate()->toString();
         $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');

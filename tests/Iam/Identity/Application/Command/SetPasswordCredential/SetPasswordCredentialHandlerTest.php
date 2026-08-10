@@ -16,6 +16,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
 {
+    private PasswordCredentialFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(PasswordCredentialFinderInterface::class);
+    }
+
     #[Test]
     public function itSetsAPasswordCredentialForAnActiveIdentity(): void
     {
@@ -27,7 +36,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id()->toString());
+        $result = $this->finder->ofIdentityId($identity->id()->toString());
         self::assertSame('quentin', $result->login);
     }
 
@@ -43,7 +52,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'An0therS3cr3t!'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id()->toString());
+        $result = $this->finder->ofIdentityId($identity->id()->toString());
         self::assertSame('quentin', $result->login);
     }
 

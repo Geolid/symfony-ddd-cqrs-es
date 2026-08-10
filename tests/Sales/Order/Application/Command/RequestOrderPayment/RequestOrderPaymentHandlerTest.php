@@ -13,6 +13,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderPaymentRepositoryInterface $repository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->repository = $this->service(OrderPaymentRepositoryInterface::class);
+    }
+
     #[Test]
     public function itRequestsAPaymentForAnOrder(): void
     {
@@ -32,7 +41,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $orderPayment = $this->service(OrderPaymentRepositoryInterface::class)->load(OrderPaymentId::fromString($id));
+        $orderPayment = $this->repository->load(OrderPaymentId::fromString($id));
         self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
         self::assertTrue($orderPayment->status()->isRequested());
     }
@@ -66,7 +75,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $orderPayment = $this->service(OrderPaymentRepositoryInterface::class)->load(OrderPaymentId::fromString($id));
+        $orderPayment = $this->repository->load(OrderPaymentId::fromString($id));
         self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
     }
 }

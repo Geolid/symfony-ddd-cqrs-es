@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Security;
 
-use Iam\Identity\Infrastructure\Security\ApiKeyGenerator;
+use Iam\Identity\Infrastructure\Security\ApiTokenGenerator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class ApiKeyGeneratorTest extends TestCase
+final class ApiTokenGeneratorTest extends TestCase
 {
     #[Test]
     public function itGeneratesAnIdentifierAndSecretInTheExpectedFormat(): void
     {
         // Given
-        $generator = new ApiKeyGenerator();
+        $generator = new ApiTokenGenerator();
 
         // When
         $apiKey = $generator->generate();
@@ -28,7 +28,7 @@ final class ApiKeyGeneratorTest extends TestCase
     public function itGeneratesAUniqueIdentifierAndSecretEachTime(): void
     {
         // Given
-        $generator = new ApiKeyGenerator();
+        $generator = new ApiTokenGenerator();
 
         // When
         $first = $generator->generate();

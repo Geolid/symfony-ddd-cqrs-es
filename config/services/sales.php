@@ -18,7 +18,7 @@ return static function (ContainerConfigurator $container): void {
     if ('test' === $container->env()) {
         // Not otherwise referenced by a service definition; alias+public here or the
         // test container's compiler prunes it.
-        $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequestingService::class)->public();
         $services->alias(CustomerFinderInterface::class, DbalCustomerFinder::class)->public();
+        $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequestingService::class)->public();
     }
 };

@@ -15,6 +15,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
 {
+    private ShipmentRepositoryInterface $repository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->repository = $this->service(ShipmentRepositoryInterface::class);
+    }
+
     #[Test]
     public function itCreatesAShipmentForAnOrder(): void
     {
@@ -33,7 +42,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
         self::assertSame(
             'buyer@example.com',
-            $this->service(ShipmentRepositoryInterface::class)->load(ShipmentId::fromString($id))->customerAddress(),
+            $this->repository->load(ShipmentId::fromString($id))->customerAddress(),
         );
     }
 
@@ -52,7 +61,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame(
             'buyer@example.com',
-            $this->service(ShipmentRepositoryInterface::class)->load(ShipmentId::fromString($id))->customerAddress(),
+            $this->repository->load(ShipmentId::fromString($id))->customerAddress(),
         );
     }
 }

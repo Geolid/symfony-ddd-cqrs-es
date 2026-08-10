@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\Security;
 use Shared\Application\Port\AsDrivingPort;
 
 #[AsDrivingPort]
-interface ApiKeyGeneratorInterface
+interface ApiTokenGeneratorInterface
 {
-    public function generate(): GeneratedApiKey;
+    public function generate(): GeneratedApiToken;
 }

@@ -28,7 +28,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIssuesAnApiTokenCredential(): void
+    public function itIssues(): void
     {
         $id = ApiTokenCredentialId::generate();
         $identityId = IdentityId::generate();
@@ -50,7 +50,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRevokesAnApiTokenCredential(): void
+    public function itRevokes(): void
     {
         $id = ApiTokenCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
@@ -65,7 +65,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRevokeAnAlreadyRevokedApiTokenCredential(): void
+    public function itDoesNotRevokeAnAlreadyRevoked(): void
     {
         $id = ApiTokenCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
@@ -83,7 +83,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRehashesAnApiTokenCredential(): void
+    public function itRehashes(): void
     {
         $id = ApiTokenCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();

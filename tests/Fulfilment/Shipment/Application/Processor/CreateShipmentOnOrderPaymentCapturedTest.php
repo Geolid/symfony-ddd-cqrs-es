@@ -19,12 +19,14 @@ use Support\AbstractIntegrationTestCase;
 final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegrationTestCase
 {
     private CreateShipmentOnOrderPaymentCaptured $processor;
+    private ShipmentFinderInterface $shipmentFinder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->processor = $this->service(CreateShipmentOnOrderPaymentCaptured::class);
+        $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
     }
 
     #[Test]
@@ -37,7 +39,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        $results = array_values(iterator_to_array($this->shipmentFinder));
         self::assertCount(1, $results);
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
@@ -56,7 +58,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
-        self::assertCount(1, iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        self::assertCount(1, iterator_to_array($this->shipmentFinder));
     }
 
     private function placedOrder(): Order

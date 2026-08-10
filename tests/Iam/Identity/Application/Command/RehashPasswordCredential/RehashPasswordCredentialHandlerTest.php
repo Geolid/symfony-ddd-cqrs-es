@@ -16,6 +16,17 @@ use Support\AbstractIntegrationTestCase;
 
 final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
 {
+    private SecretHasherInterface $hasher;
+    private PasswordCredentialFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->hasher = $this->service(SecretHasherInterface::class);
+        $this->finder = $this->service(PasswordCredentialFinderInterface::class);
+    }
+
     #[Test]
     public function itRehashesAnOutdatedPasswordCredential(): void
     {
@@ -27,15 +38,15 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
             ->withHasher(new DummySecretHasher())
             ->create();
         $this->store($credential);
-        $staleHash = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identityId)->hash;
+        $staleHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When
         $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identityId);
+        $result = $this->finder->ofIdentityId($identityId);
         self::assertNotSame($staleHash, $result->hash);
-        self::assertTrue($this->service(SecretHasherInterface::class)->verify($result->hash, 'S3cr3t!'));
+        self::assertTrue($this->hasher->verify($result->hash, 'S3cr3t!'));
     }
 
     #[Test]
@@ -46,16 +57,16 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withHasher($this->hasher)
             ->create();
         $this->store($credential);
-        $currentHash = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identityId)->hash;
+        $currentHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When
         $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identityId);
+        $result = $this->finder->ofIdentityId($identityId);
         self::assertSame($currentHash, $result->hash);
     }
 

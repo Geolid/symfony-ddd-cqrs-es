@@ -13,6 +13,17 @@ use Support\AbstractIntegrationTestCase;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
+    private SecretHasherInterface $hasher;
+    private PasswordCredentialVerifierInterface $verifier;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->hasher = $this->service(SecretHasherInterface::class);
+        $this->verifier = $this->service(PasswordCredentialVerifierInterface::class);
+    }
+
     #[Test]
     public function itVerifiesAMatchingSecret(): void
     {
@@ -21,12 +32,12 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withHasher($this->hasher)
             ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->service(PasswordCredentialVerifierInterface::class)->verify($identityId, 'S3cr3t!');
+        $verified = $this->verifier->verify($identityId, 'S3cr3t!');
 
         // Then
         self::assertTrue($verified);
@@ -40,12 +51,12 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withHasher($this->hasher)
             ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->service(PasswordCredentialVerifierInterface::class)->verify($identityId, 'wrong');
+        $verified = $this->verifier->verify($identityId, 'wrong');
 
         // Then
         self::assertFalse($verified);
