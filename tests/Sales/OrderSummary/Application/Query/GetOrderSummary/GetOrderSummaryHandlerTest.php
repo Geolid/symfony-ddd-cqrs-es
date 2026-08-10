@@ -35,10 +35,13 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheOrderSummaryDoesNotExist(): void
     {
+        // Given
+        $id = OrderId::generate()->toString();
+
         // Then
         $this->expectException(OrderSummaryResultNotFoundException::class);
 
         // When
-        $this->ask(new GetOrderSummary(OrderId::generate()->toString()));
+        $this->ask(new GetOrderSummary($id));
     }
 }

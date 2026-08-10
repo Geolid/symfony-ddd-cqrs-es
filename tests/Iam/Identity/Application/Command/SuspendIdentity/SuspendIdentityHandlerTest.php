@@ -35,11 +35,14 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheIdentityDoesNotExist(): void
     {
+        // Given
+        $id = IdentityId::generate()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity(IdentityId::generate()->toString()));
+        $this->dispatch(new SuspendIdentity($id));
     }
 
     #[Test]

@@ -71,11 +71,14 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itFailsWhenTheCredentialDoesNotExist(): void
     {
+        // Given
+        $id = ApiTokenCredentialId::generate()->toString();
+
         // Then
         $this->expectException(ApiTokenCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokeApiTokenCredential(ApiTokenCredentialId::generate()->toString()));
+        $this->dispatch(new RevokeApiTokenCredential($id));
     }
 
     #[Test]

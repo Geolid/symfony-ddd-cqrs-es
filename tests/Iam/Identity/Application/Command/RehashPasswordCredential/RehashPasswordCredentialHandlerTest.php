@@ -62,10 +62,13 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itFailsWhenTheCredentialDoesNotExist(): void
     {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->dispatch(new RehashPasswordCredential(Uuid::uuid7()->toString(), 'S3cr3t!'));
+        $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));
     }
 }

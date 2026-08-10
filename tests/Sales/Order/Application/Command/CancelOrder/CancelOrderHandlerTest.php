@@ -55,11 +55,15 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
+        // Given
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelOrder(OrderId::generate()->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new CancelOrder($id, $customerId));
     }
 
     #[Test]

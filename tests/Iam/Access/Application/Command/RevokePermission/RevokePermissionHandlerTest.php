@@ -35,11 +35,14 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheGrantDoesNotExist(): void
     {
+        // Given
+        $id = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read')->toString();
+
         // Then
         $this->expectException(GrantNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokePermission(GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read')->toString()));
+        $this->dispatch(new RevokePermission($id));
     }
 
     #[Test]

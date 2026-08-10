@@ -33,11 +33,14 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheProductDoesNotExist(): void
     {
+        // Given
+        $id = ProductId::generate()->toString();
+
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct(ProductId::generate()->toString()));
+        $this->dispatch(new DelistProduct($id));
     }
 
     #[Test]
