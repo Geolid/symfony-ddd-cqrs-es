@@ -382,7 +382,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsADelistingOnAProductAlreadyDelisted(): void
+    public function itAcceptsADelistingOnAProductAlreadyDelisted(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
@@ -395,7 +395,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id()->toString()));
 
         // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
 
     #[Test]

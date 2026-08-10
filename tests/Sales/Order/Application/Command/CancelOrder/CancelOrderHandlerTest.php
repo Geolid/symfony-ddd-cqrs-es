@@ -10,7 +10,6 @@ use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -38,18 +37,18 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderIsAlreadyCancelled(): void
+    public function itIgnoresAnAlreadyCancelledOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
         $this->store($order);
 
-        // Then
-        $this->expectException(OrderAlreadyCancelledException::class);
-
         // When
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 
     #[Test]

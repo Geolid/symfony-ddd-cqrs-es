@@ -7,7 +7,6 @@ namespace Catalog\Product\Domain;
 use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
-use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -66,13 +65,10 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws ProductAlreadyDelistedException
-     */
     public function delist(\DateTimeImmutable $delistedAt): void
     {
         if ($this->delisted) {
-            throw ProductAlreadyDelistedException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new ProductDelisted(

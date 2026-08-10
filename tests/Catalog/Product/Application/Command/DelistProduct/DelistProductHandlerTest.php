@@ -6,7 +6,6 @@ namespace Catalog\Tests\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
@@ -44,16 +43,16 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheProductIsAlreadyDelisted(): void
+    public function itIgnoresAnAlreadyDelistedProduct(): void
     {
         // Given
         $product = ProductTestFactory::new()->delisted()->create();
         $this->store($product);
 
-        // Then
-        $this->expectException(ProductAlreadyDelistedException::class);
-
         // When
         $this->dispatch(new DelistProduct($product->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

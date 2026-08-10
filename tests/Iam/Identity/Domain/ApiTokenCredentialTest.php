@@ -8,7 +8,6 @@ use Iam\Identity\Domain\ApiTokenCredential;
 use Iam\Identity\Domain\Event\ApiTokenCredentialIssued;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRehashed;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -66,7 +65,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRevokeAnAlreadyRevokedApiTokenCredential(): void
+    public function itDoesNotRevokeAnAlreadyRevokedApiTokenCredential(): void
     {
         $id = ApiTokenCredentialId::generate()->toString();
         $identityId = IdentityId::generate()->toString();
@@ -80,7 +79,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
                 new ApiTokenCredentialRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (ApiTokenCredential $credential) => $credential->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(ApiTokenCredentialAlreadyRevokedException::class);
+            ->then();
     }
 
     #[Test]

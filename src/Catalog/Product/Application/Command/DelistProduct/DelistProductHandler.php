@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Command\DelistProduct;
 
-use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
@@ -22,7 +21,6 @@ final readonly class DelistProductHandler
 
     /**
      * @throws ProductNotFoundException
-     * @throws ProductAlreadyDelistedException
      */
     public function __invoke(DelistProduct $command): void
     {

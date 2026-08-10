@@ -7,7 +7,6 @@ namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -46,16 +45,16 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheIdentityIsAlreadySuspended(): void
+    public function itIgnoresAnAlreadySuspendedIdentity(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($identity);
 
-        // Then
-        $this->expectException(IdentityAlreadySuspendedException::class);
-
         // When
         $this->dispatch(new SuspendIdentity($identity->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

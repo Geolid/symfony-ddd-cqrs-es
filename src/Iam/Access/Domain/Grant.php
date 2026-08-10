@@ -7,8 +7,6 @@ namespace Iam\Access\Domain;
 use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
-use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
-use Iam\Access\Domain\Exception\PermissionNotRevokedException;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Access\Domain\ValueObject\Permission;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -50,13 +48,10 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    /**
-     * @throws PermissionAlreadyRevokedException
-     */
     public function revoke(\DateTimeImmutable $revokedAt): void
     {
         if ($this->revoked) {
-            throw PermissionAlreadyRevokedException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new PermissionRevoked(
@@ -65,13 +60,10 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws PermissionNotRevokedException
-     */
     public function reactivate(\DateTimeImmutable $reactivatedAt): void
     {
         if (!$this->revoked) {
-            throw PermissionNotRevokedException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new PermissionReactivated(

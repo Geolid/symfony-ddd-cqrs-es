@@ -7,8 +7,6 @@ namespace Iam\Tests\Access\Domain;
 use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
-use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
-use Iam\Access\Domain\Exception\PermissionNotRevokedException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Access\Domain\ValueObject\Permission;
@@ -46,7 +44,7 @@ final class GrantTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRevokeAnAlreadyRevokedPermission(): void
+    public function itDoesNotRevokeAnAlreadyRevokedPermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
         $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
@@ -59,7 +57,7 @@ final class GrantTest extends AggregateRootTestCase
                 new PermissionRevoked($id, $revokedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Grant $grant) => $grant->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(PermissionAlreadyRevokedException::class);
+            ->then();
     }
 
     #[Test]
@@ -101,7 +99,7 @@ final class GrantTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotReactivateAnActivePermission(): void
+    public function itDoesNotReactivateAnActivePermission(): void
     {
         $identityId = Uuid::uuid7()->toString();
         $id = GrantId::forIdentityAndPermission($identityId, 'fixture.widget:write')->toString();
@@ -110,7 +108,7 @@ final class GrantTest extends AggregateRootTestCase
         $this
             ->given(new PermissionGranted($id, $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Grant $grant) => $grant->reactivate(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
-            ->expectsException(PermissionNotRevokedException::class);
+            ->then();
     }
 
     protected function aggregateClass(): string

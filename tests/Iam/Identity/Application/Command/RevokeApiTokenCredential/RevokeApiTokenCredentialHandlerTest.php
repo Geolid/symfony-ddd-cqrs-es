@@ -6,7 +6,6 @@ namespace Iam\Tests\Identity\Application\Command\RevokeApiTokenCredential;
 
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
@@ -47,16 +46,16 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itFailsWhenTheCredentialIsAlreadyRevoked(): void
+    public function itIgnoresAnAlreadyRevokedCredential(): void
     {
         // Given
         $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->create();
         $this->store($credential);
 
-        // Then
-        $this->expectException(ApiTokenCredentialAlreadyRevokedException::class);
-
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }
