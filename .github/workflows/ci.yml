@@ -72,7 +72,7 @@ jobs:
     name: Tests
     needs: static
     runs-on: ubuntu-latest
-    services: &mariadb-service
+    services:
       mariadb:
         image: mariadb:11.8
         env:
@@ -86,6 +86,8 @@ jobs:
           --health-retries=5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # make ci.mutation diffs against origin/main
 
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
@@ -109,34 +111,6 @@ jobs:
           name: coverage-report-php
           path: var/coverage
           retention-days: 1
-
-  mutation:
-    name: Mutation testing
-    needs: tests
-    runs-on: ubuntu-latest
-    services: *mariadb-service
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: '8.5'
-          tools: composer:v2
-          coverage: none
-
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: vendor
-          path: .
-
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: coverage-report-php
-          path: var/coverage
-
-      - run: chmod -R +x vendor/bin
 
       - name: make ci.mutation
         run: make ci.mutation
