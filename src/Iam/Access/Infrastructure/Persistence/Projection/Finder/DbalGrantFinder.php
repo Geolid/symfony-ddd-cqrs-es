@@ -17,7 +17,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalGrantFinder extends AbstractDbalCollectionFinder implements GrantFinderInterface
 {
-    public function withIdentity(string $identityId): static
+    public function byIdentity(string $identityId): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId) {

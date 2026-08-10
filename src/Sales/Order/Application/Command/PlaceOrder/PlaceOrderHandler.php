@@ -39,10 +39,10 @@ final readonly class PlaceOrderHandler
             ?? throw BuyerNotRegisteredException::forId($command->customerId);
 
         $order = Order::place(
-            OrderId::fromString($command->id),
-            $buyer->id,
-            $buyer->address,
-            array_map(
+            id: OrderId::fromString($command->id),
+            customerId: $buyer->id,
+            buyerAddress: $buyer->address,
+            lines: array_map(
                 function (array $line): OrderLine {
                     $product = $this->productResolver->resolveFor($line['productId'])
                         ?? throw ProductNotAvailableException::forId($line['productId']);
@@ -55,7 +55,7 @@ final readonly class PlaceOrderHandler
                 },
                 $command->lines,
             ),
-            $this->clock->now(),
+            placedAt: $this->clock->now(),
         );
 
         $this->repository->save($order);

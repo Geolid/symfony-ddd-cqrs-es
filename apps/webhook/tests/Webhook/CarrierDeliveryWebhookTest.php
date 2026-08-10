@@ -147,7 +147,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         $shipment = null;
 
-        foreach ($this->service(ShipmentFinderInterface::class)->withTrackingReference(self::TRACKING_REFERENCE) as $result) {
+        foreach ($this->service(ShipmentFinderInterface::class)->byTrackingReference(self::TRACKING_REFERENCE) as $result) {
             $shipment = $result;
         }
 

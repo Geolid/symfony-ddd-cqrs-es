@@ -39,7 +39,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
         self::assertSame('CI pipeline', $credential->label);
         self::assertSame($now->modify('+365 days')->format(\DateTimeInterface::ATOM), $credential->expiresAt->format(\DateTimeInterface::ATOM));
 
-        $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($credential->identityId)));
+        $grants = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->byIdentity($credential->identityId)));
         self::assertCount(2, $grants);
         self::assertEqualsCanonicalizing(['fixture.widget:read', 'fixture.widget:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
     }

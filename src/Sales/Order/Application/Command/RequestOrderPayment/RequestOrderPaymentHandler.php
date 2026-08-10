@@ -30,14 +30,14 @@ final readonly class RequestOrderPaymentHandler
         }
 
         $orderPayment = OrderPayment::request(
-            $id,
-            $command->orderId,
-            $command->customerId,
-            $command->buyerAddress,
-            Money::fromCents($command->amountInCents),
-            PaymentReference::fromString($command->reference),
-            $command->checkoutUrl,
-            $this->clock->now(),
+            id: $id,
+            orderId: $command->orderId,
+            customerId: $command->customerId,
+            buyerAddress: $command->buyerAddress,
+            amount: Money::fromCents($command->amountInCents),
+            reference: PaymentReference::fromString($command->reference),
+            checkoutUrl: $command->checkoutUrl,
+            requestedAt: $this->clock->now(),
         );
 
         $this->repository->save($orderPayment);

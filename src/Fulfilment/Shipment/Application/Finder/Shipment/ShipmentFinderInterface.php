@@ -11,7 +11,7 @@ use Shared\Application\Finder\PaginatedCollectionFinderInterface;
  */
 interface ShipmentFinderInterface extends PaginatedCollectionFinderInterface
 {
-    public function withStatus(string $status): static;
+    public function byStatus(string ...$values): static;
 
-    public function withTrackingReference(string $trackingReference): static;
+    public function byTrackingReference(string $trackingReference): static;
 }

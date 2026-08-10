@@ -7,25 +7,39 @@ namespace Iam\Tests\Identity\Infrastructure\Security;
 use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class ApiTokenCredentialVerifierTest extends AbstractIntegrationTestCase
 {
+    use ApiTokenTrait;
+
+    private SecretHasherInterface $hasher;
+    private ApiTokenCredentialVerifierInterface $verifier;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->hasher = $this->service(SecretHasherInterface::class);
+        $this->verifier = $this->service(ApiTokenCredentialVerifierInterface::class);
+    }
+
     #[Test]
     public function itVerifiesAMatchingSecret(): void
     {
         // Given
-        $identifier = 'key_'.bin2hex(random_bytes(4));
+        $identifier = $this->generateIdentifier();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withHasher($this->hasher)
             ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->service(ApiTokenCredentialVerifierInterface::class)->verify($identifier, 'S3cr3t!');
+        $verified = $this->verifier->verify($identifier, 'S3cr3t!');
 
         // Then
         self::assertTrue($verified);
@@ -35,16 +49,16 @@ final class ApiTokenCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRejectsAWrongSecret(): void
     {
         // Given
-        $identifier = 'key_'.bin2hex(random_bytes(4));
+        $identifier = $this->generateIdentifier();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withHasher($this->hasher)
             ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->service(ApiTokenCredentialVerifierInterface::class)->verify($identifier, 'wrong');
+        $verified = $this->verifier->verify($identifier, 'wrong');
 
         // Then
         self::assertFalse($verified);

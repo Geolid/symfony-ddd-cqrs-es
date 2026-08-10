@@ -21,9 +21,11 @@ final readonly class RegisterIdentityHandler
 
     public function __invoke(RegisterIdentity $command): void
     {
-        $this->repository->save(Identity::register(
-            IdentityId::fromString($command->id),
-            $this->clock->now(),
-        ));
+        $identity = Identity::register(
+            id: IdentityId::fromString($command->id),
+            registeredAt: $this->clock->now(),
+        );
+
+        $this->repository->save($identity);
     }
 }

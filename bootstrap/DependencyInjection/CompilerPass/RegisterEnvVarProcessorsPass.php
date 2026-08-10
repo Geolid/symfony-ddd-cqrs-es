@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 
-final class TagEnvVarProcessorsPass implements CompilerPassInterface
+final class RegisterEnvVarProcessorsPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
