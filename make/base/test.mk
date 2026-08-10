@@ -12,7 +12,7 @@ coverage: ## Run test suite with coverage
 .PHONY: coverage
 
 # Scoped to the diff — 100% is only reasonable because it's just the changed lines, not the whole repo.
-mutation: ## Run mutation testing scoped to the diff (optional: make mutation coverage=1 to reuse var/coverage from `make coverage` instead of running the suite again)
+mutation: ## Run mutation testing scoped to the diff (optional: make mutation coverage=1 to reuse var/coverage from `make coverage`)
 	@$(EXEC) vendor/bin/infection \
 		--threads=max \
 		--git-diff-lines \
