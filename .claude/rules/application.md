@@ -19,6 +19,7 @@ paths:
 **NEVER**
 - Translate or persist an Integration Event from Application — Domain-to-Integration translation and appending to the store is the Translator's job (Infrastructure). Application only defines the contract (`Application/Event/`) and reacts to it (`#[Processor]`).
 - Put a non-native-type field on an Integration Event — enforced by `Tools\PHPat\BoundaryMessageTest`.
+- Pre-check a condition the target aggregate's transition method already guards — call it unconditionally, let the aggregate decide (Tell, Don't Ask).
 
 ### Conventions
 - An application failure is a `final` exception extending `\RuntimeException`, implementing `Shared\Application\Exception\ApplicationExceptionInterface`; named static factory (`forId`, `forIdentifier`...).
@@ -27,6 +28,7 @@ paths:
 - An Integration Event lives in `Application/Event/`, suffixed `*IntegrationEvent`, is `final readonly`, implements `IntegrationEventInterface`; named `#[Event('<subdomain>.<bc>.integration.<verb>')]` — same prefix as its Domain Event, an `integration` segment before the verb keeps the two names distinct in the shared store. Tagged `#[PersonalData]`/`#[DataSubjectId]` when it carries personal data.
 - A side-effect reaction lives in `Application/Processor/<Action>On<Event>`, named `#[Processor('<subdomain>.<bc>.<action>_on_<event>')]` — snake_case of its own class name. It is invokable: `#[Subscribe(<Event>::class)]` sits on `__invoke()`, one reaction for one event, where a Projector or a Translator carries one `on<Event>()` per event.
 - A Processor that creates an aggregate derives the identity from the triggering event (`uuid5` on a bound namespace) and its handler returns early when that aggregate already exists — otherwise a replay opens a duplicate.
+- A side effect needing the same transaction as its trigger (no eventual-consistency tolerance) uses `#[Shared\Application\Processor\SyncProcessor]` instead of `#[Processor]` — its group runs synchronously, same connection, in every environment. A reaction tolerating eventual consistency stays on `#[Processor]`'s default group.
 - A Query's class documents its return contract: `@implements QueryInterface<TResult>` (otherwise `ask()` only returns `mixed`). Its return shape is one of: `ListResult<X>` (paginated), `StreamResult<X>` (streamed, for volume), `list<X>` (all), `?XResult` (one or none), `XResult` (exactly one).
 - A Command/Query name referencing another aggregate names the concept (`By<Concept>`, `For<Concept>`), never its carrier field (`By<Concept>Id`) — the constructor argument itself stays `<concept>Id`.
 - A Service holds pure logic (zero I/O) or extracts steps of a use case: inject it as the concrete class plus bound scalars. An interface is reserved for an actual I/O boundary (substitution/stub in tests).

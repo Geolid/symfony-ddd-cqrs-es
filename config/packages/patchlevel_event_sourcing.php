@@ -10,7 +10,13 @@ return static function (ContainerConfigurator $container): void {
         'events' => ['%kernel.project_dir%/src/'],
         'connection' => ['service' => 'doctrine.dbal.event_store_connection'],
         'store' => ['type' => 'dbal_stream'],
-        'subscription' => ['gap_detection' => null],
+        'subscription' => [
+            'gap_detection' => null,
+            'run_after_aggregate_save' => [
+                'enabled' => true,
+                'groups' => ['translator', 'sync_processor'],
+            ],
+        ],
         'hydrator' => ['cryptography' => true],
     ]);
 
@@ -34,7 +40,7 @@ return static function (ContainerConfigurator $container): void {
                 'throw_on_error' => true,
                 'run_after_aggregate_save' => [
                     'enabled' => true,
-                    'groups' => ['translator', 'projector'],
+                    'groups' => ['translator', 'projector', 'sync_processor'],
                 ],
             ],
         ]);

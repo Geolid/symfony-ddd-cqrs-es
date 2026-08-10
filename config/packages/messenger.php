@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Shared\Infrastructure\Messaging\Middleware\DbalTransactionMiddleware;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
+use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -13,7 +13,7 @@ return static function (ContainerConfigurator $container): void {
         'messenger' => [
             'default_bus' => 'command.bus',
             'buses' => [
-                'command.bus' => ['middleware' => [SentryMessengerMiddleware::class, DbalTransactionMiddleware::class]],
+                'command.bus' => ['middleware' => [SentryMessengerMiddleware::class, DbalTransactionMessengerMiddleware::class]],
                 'query.bus' => ['middleware' => [SentryMessengerMiddleware::class]],
             ],
             'failure_transport' => 'failed',

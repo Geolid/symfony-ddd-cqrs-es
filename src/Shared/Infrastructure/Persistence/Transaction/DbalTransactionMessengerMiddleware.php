@@ -2,17 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Messaging\Middleware;
+namespace Shared\Infrastructure\Persistence\Transaction;
 
 use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 
-final readonly class DbalTransactionMiddleware implements MiddlewareInterface
+final readonly class DbalTransactionMessengerMiddleware implements MiddlewareInterface
 {
-    public function __construct(private Connection $connection)
-    {
+    public function __construct(
+        #[Autowire(service: 'doctrine.dbal.event_store_connection')]
+        private Connection $connection,
+    ) {
     }
 
     public function handle(Envelope $envelope, StackInterface $stack): Envelope

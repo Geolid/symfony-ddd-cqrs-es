@@ -12,9 +12,10 @@ use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
+use Support\Stub\DummyMessage;
+use Support\Stub\DummyNextMiddleware;
+use Support\Stub\DummyStack;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
-use Symfony\Component\Messenger\Middleware\StackInterface;
 
 final class SentryMessengerMiddlewareTest extends TestCase
 {
@@ -42,7 +43,7 @@ final class SentryMessengerMiddlewareTest extends TestCase
         $envelope = new Envelope(new DummyMessage());
 
         // When
-        $handled = new SentryMessengerMiddleware()->handle($envelope, new DummyStack());
+        $handled = new SentryMessengerMiddleware()->handle($envelope, new DummyStack(new DummyNextMiddleware()));
 
         // Then
         self::assertSame($envelope, $handled);
@@ -60,7 +61,7 @@ final class SentryMessengerMiddlewareTest extends TestCase
 
         // When
         try {
-            new SentryMessengerMiddleware()->handle(new Envelope(new DummyMessage()), new DummyStack($failure));
+            new SentryMessengerMiddleware()->handle(new Envelope(new DummyMessage()), new DummyStack(new DummyNextMiddleware($failure)));
         } finally {
             self::assertSame(['message' => DummyMessage::class], $this->contextOfAReport());
         }
@@ -75,37 +76,5 @@ final class SentryMessengerMiddlewareTest extends TestCase
 
         /** @var array<string, mixed> */
         return $contexts['messenger'] ?? [];
-    }
-}
-
-final readonly class DummyMessage
-{
-}
-
-final readonly class DummyStack implements StackInterface
-{
-    public function __construct(private ?\Throwable $failure = null)
-    {
-    }
-
-    public function next(): MiddlewareInterface
-    {
-        return new DummyNextMiddleware($this->failure);
-    }
-}
-
-final readonly class DummyNextMiddleware implements MiddlewareInterface
-{
-    public function __construct(private ?\Throwable $failure)
-    {
-    }
-
-    public function handle(Envelope $envelope, StackInterface $stack): Envelope
-    {
-        if (null !== $this->failure) {
-            throw $this->failure;
-        }
-
-        return $envelope;
     }
 }
