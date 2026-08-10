@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 /**
@@ -175,6 +177,26 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherHashBeforeRehash['hash'], $otherRow['hash']);
+    }
+
+    #[Test]
+    public function itRemovesTheCredentialOnIdentityErased(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
+        $this->store($other);
+        $credential = ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->create();
+        $this->store($credential);
+
+        // When
+        $this->service(DbalApiTokenCredentialProjector::class)->onIdentityErased(
+            new IdentityErased($identityId, '2026-01-02T00:00:00+00:00'),
+        );
+
+        // Then
+        self::assertFalse($this->fetchRow($credential->id()->toString()));
+        self::assertNotFalse($this->fetchRow($other->id()->toString()));
     }
 
     /**

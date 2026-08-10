@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
+use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
 use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -24,6 +25,7 @@ return static function (ContainerConfigurator $container): void {
             'routing' => [
                 CreateShipment::class => 'async',
                 DispatchShipment::class => 'async',
+                RevokeApiTokenCredential::class => 'async',
             ],
         ],
     ]);
