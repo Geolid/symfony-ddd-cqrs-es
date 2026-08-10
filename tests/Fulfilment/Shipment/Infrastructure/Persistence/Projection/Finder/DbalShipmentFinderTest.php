@@ -53,7 +53,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()->dispatched()->create());
 
         // When
-        $results = iterator_to_array($this->finder->withStatus('pending'));
+        $results = iterator_to_array($this->finder->byStatus('pending'));
 
         // Then
         self::assertSame([$pending->id()->toString()], array_map(
@@ -71,7 +71,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()->tracked('ACME-OTHER')->create());
 
         // When
-        $results = iterator_to_array($this->finder->withTrackingReference('ACME-4Q7X2K9'));
+        $results = iterator_to_array($this->finder->byTrackingReference('ACME-4Q7X2K9'));
 
         // Then
         self::assertSame([$tracked->id()->toString()], array_map(

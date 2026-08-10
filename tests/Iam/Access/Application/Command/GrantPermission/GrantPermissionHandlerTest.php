@@ -14,6 +14,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
 {
+    private GrantFinderInterface $grantFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->grantFinder = $this->service(GrantFinderInterface::class);
+    }
+
     #[Test]
     public function itGrantsAPermission(): void
     {
@@ -25,7 +34,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch($command);
 
         // Then
-        $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
+        $results = array_values(iterator_to_array($this->grantFinder->byIdentity($identityId)));
         self::assertCount(1, $results);
         self::assertSame(GrantId::forIdentityAndPermission($identityId, 'fixture.widget:read')->toString(), $results[0]->id);
         self::assertSame('fixture.widget:read', $results[0]->permission);
@@ -43,7 +52,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
+        $results = array_values(iterator_to_array($this->grantFinder->byIdentity($identityId)));
         self::assertCount(1, $results);
         self::assertSame($grant->id()->toString(), $results[0]->id);
     }
@@ -60,7 +69,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(GrantFinderInterface::class)->withIdentity($identityId)));
+        $results = array_values(iterator_to_array($this->grantFinder->byIdentity($identityId)));
         self::assertCount(1, $results);
     }
 }

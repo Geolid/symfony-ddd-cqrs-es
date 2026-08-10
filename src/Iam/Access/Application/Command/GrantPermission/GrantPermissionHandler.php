@@ -33,7 +33,12 @@ final readonly class GrantPermissionHandler
             $grant = $this->repository->load($id);
             $grant->reactivate($this->clock->now());
         } else {
-            $grant = Grant::grant($id, $command->identityId, $permission, $this->clock->now());
+            $grant = Grant::grant(
+                id: $id,
+                identityId: $command->identityId,
+                permission: $permission,
+                grantedAt: $this->clock->now(),
+            );
         }
 
         $this->repository->save($grant);

@@ -39,11 +39,13 @@ final readonly class ListProductForSaleHandler
             throw ProductLabelAlreadyTakenException::forLabel($label->toString());
         }
 
-        $this->repository->save(Product::list(
-            ProductId::fromString($command->id),
-            $label,
-            Money::fromCents($command->unitAmountInCents),
-            $this->clock->now(),
-        ));
+        $product = Product::list(
+            id: ProductId::fromString($command->id),
+            label: $label,
+            unitAmount: Money::fromCents($command->unitAmountInCents),
+            listedAt: $this->clock->now(),
+        );
+
+        $this->repository->save($product);
     }
 }

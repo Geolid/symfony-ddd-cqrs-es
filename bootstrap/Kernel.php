@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Bootstrap;
 
 use Bootstrap\DependencyInjection\CompilerPass\RegisterDoctrineSchemaConfiguratorsPass;
+use Bootstrap\DependencyInjection\CompilerPass\RegisterEnvVarProcessorsPass;
 use Bootstrap\DependencyInjection\CompilerPass\RegisterMessageBusHandlersPass;
-use Bootstrap\DependencyInjection\CompilerPass\TagEnvVarProcessorsPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -73,7 +73,7 @@ class Kernel extends BaseKernel
         // AttributeAutoconfigurationPass (priority 100) to ensure our rules apply.
         $container->addCompilerPass(new RegisterMessageBusHandlersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterDoctrineSchemaConfiguratorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
-        $container->addCompilerPass(new TagEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
+        $container->addCompilerPass(new RegisterEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void

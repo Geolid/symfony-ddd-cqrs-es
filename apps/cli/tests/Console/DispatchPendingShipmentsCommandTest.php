@@ -15,6 +15,15 @@ use Symfony\Component\Lock\Store\SemaphoreStore;
 
 final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
 {
+    private ShipmentFinderInterface $shipmentFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+    }
+
     #[Test]
     public function itDispatchesEveryPendingShipment(): void
     {
@@ -30,7 +39,7 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('1 shipment(s) dispatched.', $tester->getDisplay());
 
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->withStatus('dispatched'));
+        $results = iterator_to_array($this->shipmentFinder->byStatus('dispatched'));
         self::assertCount(1, $results);
     }
 
@@ -52,7 +61,7 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
             self::assertSame(Command::SUCCESS, $tester->getStatusCode());
             self::assertStringContainsString('already running in another process', $tester->getDisplay());
 
-            $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->withStatus('dispatched'));
+            $results = iterator_to_array($this->shipmentFinder->byStatus('dispatched'));
             self::assertCount(0, $results);
         } finally {
             $lock->release();

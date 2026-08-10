@@ -39,10 +39,12 @@ final readonly class RegisterCustomerHandler
             throw AddressAlreadyRegisteredException::forFingerprint($fingerprint);
         }
 
-        $this->repository->save(Customer::register(
-            CustomerId::fromString($command->id),
-            $email,
-            $this->clock->now(),
-        ));
+        $customer = Customer::register(
+            id: CustomerId::fromString($command->id),
+            email: $email,
+            registeredAt: $this->clock->now(),
+        );
+
+        $this->repository->save($customer);
     }
 }

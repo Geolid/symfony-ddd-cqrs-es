@@ -7,17 +7,28 @@ namespace Iam\Tests\Identity\Application\Command\IssueApiTokenCredential;
 use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Application\Security\ApiKeyGeneratorInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
 {
+    use ApiTokenIdentifierTrait;
+
+    private ApiTokenCredentialFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(ApiTokenCredentialFinderInterface::class);
+    }
+
     #[Test]
     public function itIssuesAnApiTokenCredential(): void
     {
@@ -37,7 +48,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         ));
 
         // Then
-        $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($identifier);
+        $result = $this->finder->ofIdentifier($identifier);
         self::assertSame('CI pipeline', $result->label);
     }
 
@@ -101,7 +112,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         ));
 
         // Then
-        $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($identifier);
+        $result = $this->finder->ofIdentifier($identifier);
         self::assertSame('CI pipeline', $result->label);
     }
 
@@ -162,10 +173,5 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
             label: 'CI pipeline',
             expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
         ));
-    }
-
-    private function generateIdentifier(): string
-    {
-        return $this->service(ApiKeyGeneratorInterface::class)->generate()->identifier;
     }
 }

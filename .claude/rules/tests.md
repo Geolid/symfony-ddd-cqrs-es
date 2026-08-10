@@ -9,7 +9,7 @@ paths:
 **ALWAYS**
 - Test methods carry the `#[Test]` attribute.
 - Code is organized in three blocks separated by blank lines: `// Given`, `// When`, `// Then`. For an exception test, `// Then` (`expectException()`) comes before `// When`.
-- Shared fixtures/test doubles are built in `setUp()`.
+- A `service(<X>::class)` resolution called identically across two or more methods of the same test class is hoisted to a property, resolved once in `setUp()` — `setUp()` re-runs fresh per test, so this changes nothing about isolation, only removes the repetition.
 - Success and failure cases for the same behavior are grouped together, success first.
 
 **NEVER**

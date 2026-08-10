@@ -22,6 +22,6 @@ final readonly class ListPendingShipmentsHandler
      */
     public function __invoke(ListPendingShipments $query): StreamResult
     {
-        return new StreamResult($this->shipmentFinder->withStatus(ShipmentStatus::PENDING->value));
+        return new StreamResult($this->shipmentFinder->byStatus(ShipmentStatus::PENDING->value));
     }
 }

@@ -21,7 +21,7 @@ final readonly class GetShipmentByTrackingReferenceHandler
      */
     public function __invoke(GetShipmentByTrackingReference $query): ShipmentResult
     {
-        foreach ($this->shipmentFinder->withTrackingReference($query->trackingReference) as $shipment) {
+        foreach ($this->shipmentFinder->byTrackingReference($query->trackingReference) as $shipment) {
             return $shipment;
         }
 

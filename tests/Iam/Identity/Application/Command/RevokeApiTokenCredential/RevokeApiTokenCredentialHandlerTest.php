@@ -9,17 +9,20 @@ use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderI
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
 {
+    use ApiTokenIdentifierTrait;
+
     #[Test]
     public function itRevokesAnApiTokenCredential(): void
     {
         // Given
-        $identifier = 'key_'.bin2hex(random_bytes(4));
+        $identifier = $this->generateIdentifier();
         $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new DummySecretHasher())->create();
         $this->store($credential);
 

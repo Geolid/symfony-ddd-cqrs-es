@@ -28,11 +28,11 @@ final readonly class CreateShipmentHandler
         }
 
         $shipment = Shipment::create(
-            $id,
-            $command->orderId,
-            $command->customerId,
-            $command->customerAddress,
-            $this->clock->now(),
+            id: $id,
+            orderId: $command->orderId,
+            customerId: $command->customerId,
+            customerAddress: $command->customerAddress,
+            createdAt: $this->clock->now(),
         );
 
         $this->repository->save($shipment);
