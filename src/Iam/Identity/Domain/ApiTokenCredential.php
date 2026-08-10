@@ -7,7 +7,6 @@ namespace Iam\Identity\Domain;
 use Iam\Identity\Domain\Event\ApiTokenCredentialIssued;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRehashed;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -69,13 +68,10 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         return $self;
     }
 
-    /**
-     * @throws ApiTokenCredentialAlreadyRevokedException
-     */
     public function revoke(\DateTimeImmutable $revokedAt): void
     {
         if ($this->revoked) {
-            throw ApiTokenCredentialAlreadyRevokedException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new ApiTokenCredentialRevoked(

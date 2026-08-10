@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
-use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
@@ -65,7 +64,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotBeCapturedTwice(): void
+    public function itDoesNotCaptureAnAlreadyCapturedPayment(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -79,7 +78,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 new OrderPaymentCaptured($id, $orderId, $customerId, 'buyer@example.com', $capturedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(OrderPaymentInvalidTransitionException::class);
+            ->then();
     }
 
     protected function aggregateClass(): string

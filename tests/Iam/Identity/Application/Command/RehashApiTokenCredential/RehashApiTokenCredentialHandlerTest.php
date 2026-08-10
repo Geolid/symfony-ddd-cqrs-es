@@ -61,10 +61,13 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itFailsWhenTheCredentialDoesNotExist(): void
     {
+        // Given
+        $identifier = 'key_unknown';
+
         // Then
         $this->expectException(ApiTokenCredentialResultNotFoundException::class);
 
         // When
-        $this->dispatch(new RehashApiTokenCredential('key_unknown', 'S3cr3t!'));
+        $this->dispatch(new RehashApiTokenCredential($identifier, 'S3cr3t!'));
     }
 }

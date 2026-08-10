@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
+use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
@@ -41,6 +42,12 @@ final readonly class DbalGrantProjector extends AbstractDbalProjector
     public function onPermissionReactivated(PermissionReactivated $event): void
     {
         $this->connection->update(self::TABLE, ['revoked' => 0], ['id' => $event->id]);
+    }
+
+    #[Subscribe(IdentityErasedIntegrationEvent::class)]
+    public function onIdentityErased(IdentityErasedIntegrationEvent $event): void
+    {
+        $this->connection->delete(self::TABLE, ['identity_id' => $event->identityId]);
     }
 
     /**

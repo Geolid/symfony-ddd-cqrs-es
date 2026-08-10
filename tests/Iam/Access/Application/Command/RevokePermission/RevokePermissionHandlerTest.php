@@ -7,7 +7,6 @@ namespace Iam\Tests\Access\Application\Command\RevokePermission;
 use Iam\Access\Application\Command\RevokePermission\RevokePermission;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
-use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,24 +34,27 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheGrantDoesNotExist(): void
     {
+        // Given
+        $id = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read')->toString();
+
         // Then
         $this->expectException(GrantNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokePermission(GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read')->toString()));
+        $this->dispatch(new RevokePermission($id));
     }
 
     #[Test]
-    public function itFailsWhenThePermissionIsAlreadyRevoked(): void
+    public function itIgnoresAnAlreadyRevokedPermission(): void
     {
         // Given
         $grant = GrantTestFactory::new()->revoked()->create();
         $this->store($grant);
 
-        // Then
-        $this->expectException(PermissionAlreadyRevokedException::class);
-
         // When
         $this->dispatch(new RevokePermission($grant->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

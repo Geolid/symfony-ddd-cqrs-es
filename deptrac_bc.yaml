@@ -57,6 +57,6 @@ deptrac:
     Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
-    Iam.Access:          [ Shared, Vendors ]
+    Iam.Access:          [ Iam.Identity, Shared, Vendors ]
     Catalog.Product:     [ Shared, Vendors ]
     Shared:              [ Vendors ]

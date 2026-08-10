@@ -12,7 +12,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -91,7 +90,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws OrderBelongsToAnotherCustomerException
-     * @throws OrderAlreadyCancelledException
      */
     public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
     {
@@ -100,7 +98,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if ($this->status->isCancelled()) {
-            throw OrderAlreadyCancelledException::forId($this->id);
+            return;
         }
 
         $this->recordThat(new OrderCancelled(

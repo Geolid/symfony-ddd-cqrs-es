@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
@@ -59,7 +58,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCancelAnAlreadyCancelledOrder(): void
+    public function itDoesNotCancelAnAlreadyCancelledOrder(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -72,7 +71,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(OrderAlreadyCancelledException::class);
+            ->then();
     }
 
     #[Test]

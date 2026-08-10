@@ -7,7 +7,6 @@ namespace Catalog\Tests\Product\Domain;
 use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
-use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
@@ -56,7 +55,7 @@ final class ProductTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotDelistAnAlreadyDelistedProduct(): void
+    public function itDoesNotDelistAnAlreadyDelistedProduct(): void
     {
         $id = ProductId::generate()->toString();
         $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -68,7 +67,7 @@ final class ProductTest extends AggregateRootTestCase
                 new ProductDelisted($id, $delistedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Product $product) => $product->delist(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(ProductAlreadyDelistedException::class);
+            ->then();
     }
 
     protected function aggregateClass(): string

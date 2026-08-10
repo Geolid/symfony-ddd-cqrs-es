@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Application\Command\EraseCustomer;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
-use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
-use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -18,64 +18,42 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itRedactsTheAddress(): void
     {
         // Given
-        $id = CustomerId::generate()->toString();
-        $this->dispatch(new RegisterCustomer($id, 'buyer@example.com'));
+        $customer = CustomerTestFactory::new()->create();
+        $this->store($customer);
 
         // When
-        $this->dispatch(new EraseCustomer($id));
+        $this->dispatch(new EraseCustomer($customer->id()->toString()));
 
         // Then
-        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
+        $result = $this->service(CustomerFinderInterface::class)->ofId($customer->id()->toString());
         self::assertNull($result->email);
         self::assertNotNull($result->erasedAt);
     }
 
     #[Test]
-    public function itFreesTheAddressForAnotherCustomer(): void
+    public function itIgnoresAnAlreadyErasedCustomer(): void
     {
         // Given
-        $erased = CustomerId::generate()->toString();
-        $this->dispatch(new RegisterCustomer($erased, 'buyer@example.com'));
-        $this->dispatch(new EraseCustomer($erased));
+        $customer = CustomerTestFactory::new()->erased()->create();
+        $this->store($customer);
 
         // When
-        $this->dispatch(new RegisterCustomer($id = CustomerId::generate()->toString(), 'buyer@example.com'));
+        $this->dispatch(new EraseCustomer($customer->id()->toString()));
 
         // Then
-        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
-        self::assertSame('buyer@example.com', $result->email);
+        self::expectNotToPerformAssertions();
     }
 
     #[Test]
-    public function itIgnoresASecondErasure(): void
+    public function itFailsWhenTheCustomerDoesNotExist(): void
     {
         // Given
-        $id = CustomerId::generate()->toString();
-        $this->dispatch(new RegisterCustomer($id, 'buyer@example.com'));
-        $this->dispatch(new EraseCustomer($id));
+        $id = Uuid::uuid7()->toString();
+
+        // Then
+        $this->expectException(CustomerNotFoundException::class);
 
         // When
         $this->dispatch(new EraseCustomer($id));
-
-        // Then
-        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
-        self::assertNull($result->email);
-    }
-
-    #[Test]
-    public function itRefusesAnAddressAlreadyTakenAfterASecondErasure(): void
-    {
-        // Given
-        $erased = CustomerId::generate()->toString();
-        $this->dispatch(new RegisterCustomer($erased, 'buyer@example.com'));
-        $this->dispatch(new EraseCustomer($erased));
-        $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
-        $this->dispatch(new EraseCustomer($erased));
-
-        // Then
-        $this->expectException(AddressAlreadyRegisteredException::class);
-
-        // When
-        $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
     }
 }

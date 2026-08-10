@@ -8,7 +8,6 @@ use Iam\Identity\Application\Command\ReactivateIdentity\ReactivateIdentity;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,24 +34,27 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheIdentityDoesNotExist(): void
     {
+        // Given
+        $id = IdentityId::generate()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ReactivateIdentity(IdentityId::generate()->toString()));
+        $this->dispatch(new ReactivateIdentity($id));
     }
 
     #[Test]
-    public function itFailsWhenTheIdentityIsNotSuspended(): void
+    public function itIgnoresAnIdentityThatIsNotSuspended(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
 
-        // Then
-        $this->expectException(IdentityNotSuspendedException::class);
-
         // When
         $this->dispatch(new ReactivateIdentity($identity->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

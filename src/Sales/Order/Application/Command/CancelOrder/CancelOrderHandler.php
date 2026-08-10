@@ -6,7 +6,6 @@ namespace Sales\Order\Application\Command\CancelOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
@@ -29,7 +28,6 @@ final readonly class CancelOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderBelongsToAnotherCustomerException
-     * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyCapturedException
      * @throws OrderPaymentNotFoundException
      */

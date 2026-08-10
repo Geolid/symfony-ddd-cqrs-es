@@ -4,22 +4,17 @@ declare(strict_types=1);
 
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
-use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
-use Iam\Access\Domain\Exception\PermissionAlreadyRevokedException;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityAlreadySuspendedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
@@ -33,7 +28,6 @@ use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
@@ -47,7 +41,6 @@ return static function (ContainerConfigurator $container): void {
         'exceptions' => [
             // Catalog
             ProductNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            ProductAlreadyDelistedException::class => ['log_level' => 'info', 'status_code' => 409],
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ProductResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
@@ -58,13 +51,9 @@ return static function (ContainerConfigurator $container): void {
 
             // Iam
             GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            PermissionAlreadyRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            ApiTokenCredentialAlreadyRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
-            IdentityAlreadySuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
-            IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -82,7 +71,6 @@ return static function (ContainerConfigurator $container): void {
             OrderResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],

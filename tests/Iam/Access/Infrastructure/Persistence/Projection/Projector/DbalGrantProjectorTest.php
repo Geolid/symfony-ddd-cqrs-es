@@ -6,6 +6,7 @@ namespace Iam\Tests\Access\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Access\Infrastructure\Persistence\Projection\Projector\DbalGrantProjector;
+use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -74,6 +75,26 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(1, (int) $otherRow['revoked']);
+    }
+
+    #[Test]
+    public function itRemovesTheGrantOnIdentityErased(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $other = GrantTestFactory::new()->create();
+        $this->store($other);
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->create();
+        $this->store($grant);
+
+        // When
+        $this->service(DbalGrantProjector::class)->onIdentityErased(
+            new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'),
+        );
+
+        // Then
+        self::assertFalse($this->fetchRow($grant->id()->toString()));
+        self::assertNotFalse($this->fetchRow($other->id()->toString()));
     }
 
     /**

@@ -49,11 +49,12 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDoesNothingWhenThePermissionIsAlreadyGranted(): void
+    public function itIgnoresAnAlreadyGrantedPermission(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create();
+        $this->store($grant);
 
         // When
         $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));

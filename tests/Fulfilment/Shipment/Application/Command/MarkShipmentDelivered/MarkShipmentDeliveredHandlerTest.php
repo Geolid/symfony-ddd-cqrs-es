@@ -51,10 +51,13 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenTheShipmentDoesNotExist(): void
     {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new MarkShipmentDelivered(ShipmentId::forOrder(Uuid::uuid7()->toString())->toString()));
+        $this->dispatch(new MarkShipmentDelivered($id));
     }
 }

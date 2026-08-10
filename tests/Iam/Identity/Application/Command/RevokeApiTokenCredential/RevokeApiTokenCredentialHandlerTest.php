@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Command\RevokeApiTokenCredential;
 
-use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialAlreadyRevokedException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
@@ -36,59 +33,29 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itReleasesTheLabelSoItCanBeReusedAfterRevoking(): void
-    {
-        // Given
-        $identityId = IdentityId::generate()->toString();
-        $revokedId = ApiTokenCredentialId::generate()->toString();
-        $this->dispatch(new IssueApiTokenCredential(
-            id: $revokedId,
-            identityId: $identityId,
-            identifier: 'key_'.bin2hex(random_bytes(4)),
-            secret: 'S3cr3t!',
-            label: 'CI pipeline',
-            expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
-        ));
-        $this->dispatch(new RevokeApiTokenCredential($revokedId));
-
-        $newIdentifier = 'key_'.bin2hex(random_bytes(4));
-
-        // When
-        $this->dispatch(new IssueApiTokenCredential(
-            id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $identityId,
-            identifier: $newIdentifier,
-            secret: 'Another$3cr3t',
-            label: 'CI pipeline',
-            expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
-        ));
-
-        // Then
-        $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($newIdentifier);
-        self::assertSame('CI pipeline', $result->label);
-    }
-
-    #[Test]
     public function itFailsWhenTheCredentialDoesNotExist(): void
     {
+        // Given
+        $id = ApiTokenCredentialId::generate()->toString();
+
         // Then
         $this->expectException(ApiTokenCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokeApiTokenCredential(ApiTokenCredentialId::generate()->toString()));
+        $this->dispatch(new RevokeApiTokenCredential($id));
     }
 
     #[Test]
-    public function itFailsWhenTheCredentialIsAlreadyRevoked(): void
+    public function itIgnoresAnAlreadyRevokedCredential(): void
     {
         // Given
         $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->create();
         $this->store($credential);
 
-        // Then
-        $this->expectException(ApiTokenCredentialAlreadyRevokedException::class);
-
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

@@ -49,10 +49,13 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
     #[Test]
     public function itFailsWhenTheShipmentDoesNotExist(): void
     {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new AssignTrackingReference(ShipmentId::forOrder(Uuid::uuid7()->toString())->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new AssignTrackingReference($id, 'ACME-4Q7X2K9'));
     }
 }
