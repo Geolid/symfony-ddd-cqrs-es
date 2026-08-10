@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\SetPasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\PasswordCredential;
+use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -22,6 +25,7 @@ use Shared\Domain\Service\UniqueValueRegistryInterface;
 final readonly class SetPasswordCredentialHandler
 {
     public function __construct(
+        private IdentityRepositoryInterface $identities,
         private PasswordCredentialRepositoryInterface $repository,
         private UniqueValueRegistryInterface $uniqueValues,
         private SecretHasherInterface $hasher,
@@ -30,38 +34,41 @@ final readonly class SetPasswordCredentialHandler
     }
 
     /**
+     * @throws IdentityNotFoundException
+     * @throws IdentityNotActiveException
      * @throws PasswordCredentialNotFoundException
      * @throws LoginAlreadyTakenException
      */
     public function __invoke(SetPasswordCredential $command): void
     {
         $identityId = IdentityId::fromString($command->identityId);
+        $this->identities->load($identityId)->ensureActive();
+
         $id = PasswordCredentialId::forIdentity($identityId->toString());
 
         if ($this->repository->has($id)) {
             $credential = $this->repository->load($id);
             $credential->change($command->password, $this->hasher, $this->clock->now());
-            $this->repository->save($credential);
+        } else {
+            $login = Login::fromString($command->login);
+            $fingerprint = $login->fingerprint();
 
-            return;
+            try {
+                $this->uniqueValues->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
+            } catch (UniqueValueAlreadyTakenException) {
+                throw LoginAlreadyTakenException::forFingerprint($fingerprint);
+            }
+
+            $credential = PasswordCredential::set(
+                id: $id,
+                identityId: $identityId,
+                login: $login,
+                plainPassword: $command->password,
+                hasher: $this->hasher,
+                setAt: $this->clock->now(),
+            );
         }
 
-        $login = Login::fromString($command->login);
-        $fingerprint = $login->fingerprint();
-
-        try {
-            $this->uniqueValues->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
-        } catch (UniqueValueAlreadyTakenException) {
-            throw LoginAlreadyTakenException::forFingerprint($fingerprint);
-        }
-
-        $this->repository->save(PasswordCredential::set(
-            $id,
-            $identityId,
-            $login,
-            $command->password,
-            $this->hasher,
-            $this->clock->now(),
-        ));
+        $this->repository->save($credential);
     }
 }

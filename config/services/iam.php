@@ -6,11 +6,13 @@ use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Application\Security\ApiKeyGeneratorInterface;
 use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Application\Security\PasswordCredentialVerifierInterface;
 use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalApiTokenCredentialFinder;
 use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalIdentityFinder;
 use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
+use Iam\Identity\Infrastructure\Security\ApiKeyGenerator;
 use Iam\Identity\Infrastructure\Security\ApiTokenCredentialVerifier;
 use Iam\Identity\Infrastructure\Security\PasswordCredentialVerifier;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -36,5 +38,6 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
         $services->alias(PasswordCredentialVerifierInterface::class, PasswordCredentialVerifier::class)->public();
         $services->alias(ApiTokenCredentialVerifierInterface::class, ApiTokenCredentialVerifier::class)->public();
+        $services->alias(ApiKeyGeneratorInterface::class, ApiKeyGenerator::class)->public();
     }
 };

@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -80,6 +81,16 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             reactivatedAt: $reactivatedAt->format(\DateTimeInterface::ATOM),
         ));
+    }
+
+    /**
+     * @throws IdentityNotActiveException
+     */
+    public function ensureActive(): void
+    {
+        if ($this->erased || $this->status->isSuspended()) {
+            throw IdentityNotActiveException::forId($this->id);
+        }
     }
 
     public function erase(\DateTimeImmutable $erasedAt): void

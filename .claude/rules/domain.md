@@ -20,6 +20,7 @@ paths:
 
 ### Conventions
 - A transition method's self-guard is decided by outcome, not re-entry: still matches the caller's intent → no-op; no business meaning on the current state → throw.
+- A cross-aggregate invariant (another aggregate's own state gating this one's creation or transition, same BC) is asserted by the aggregate that owns the state being checked, as a nullary `ensure<Invariant>(): void`, throwing its own named exception (`Identity::ensureActive()` → `IdentityNotActiveException`) — same shape as a transition's self-guard, just without a state change on success. The calling Application Handler loads that aggregate through its own Repository and calls the guard; it never re-implements the check inline.
 - A business failure is a `final` exception under `Domain/Exception/`, extending `\DomainException`; exposed via a DM → an entry in `config/packages/exceptions.php` (otherwise falls back to 422); named static constructor, no public constructor (e.g. `OrderAlreadyCancelledException::forId($id)`).
 - Naming a static constructor: it should read as a sentence at the throw site — a single nameable fact gets a specific class + `for*` (`forId`); a failure that depends on state gets a category class + `cannot<Verb>`.
 - A Value Object is `final readonly`; private constructor enforces invariants (`Webmozart\Assert`); a named constructor (`fromCents`, `fromString`...) validates the input shape. Expose `equals()`/`toString()` as needed.

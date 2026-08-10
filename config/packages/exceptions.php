@@ -14,6 +14,7 @@ use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
@@ -53,6 +54,7 @@ return static function (ContainerConfigurator $container): void {
             GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            IdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
