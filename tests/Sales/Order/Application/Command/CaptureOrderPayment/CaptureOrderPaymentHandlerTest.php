@@ -6,7 +6,6 @@ namespace Sales\Tests\Order\Application\Command\CaptureOrderPayment;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
-use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -29,16 +28,16 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyCaptured(): void
+    public function itIgnoresAnAlreadyCapturedPayment(): void
     {
         // Given
         $orderPayment = OrderPaymentTestFactory::new()->captured()->create();
         $this->store($orderPayment);
 
-        // Then
-        $this->expectException(OrderPaymentInvalidTransitionException::class);
-
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

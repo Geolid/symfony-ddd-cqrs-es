@@ -12,7 +12,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
-use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentState;
 use Sales\Order\Domain\ValueObject\PaymentReference;
@@ -77,13 +76,10 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    /**
-     * @throws OrderPaymentInvalidTransitionException
-     */
     public function capture(\DateTimeImmutable $capturedAt): void
     {
         if (!$this->status->isRequested()) {
-            throw OrderPaymentInvalidTransitionException::cannotCapture();
+            return;
         }
 
         $this->recordThat(new OrderPaymentCaptured(

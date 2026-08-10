@@ -28,7 +28,6 @@ use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\Exception\OrderPaymentInvalidTransitionException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
@@ -72,7 +71,6 @@ return static function (ContainerConfigurator $container): void {
             OrderResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderPaymentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
