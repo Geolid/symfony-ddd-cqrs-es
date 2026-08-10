@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
-use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
+use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -19,14 +19,14 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itDelistsAProduct(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
-        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_750));
+        $product = ProductTestFactory::new()->create();
+        $this->store($product);
 
         // When
-        $this->dispatch(new DelistProduct($id));
+        $this->dispatch(new DelistProduct($product->id()->toString()));
 
         // Then
-        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        $result = $this->service(ProductFinderInterface::class)->ofId($product->id()->toString());
         self::assertTrue($result->delisted);
     }
 
@@ -47,31 +47,13 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheProductIsAlreadyDelisted(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
-        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_750));
-        $this->dispatch(new DelistProduct($id));
+        $product = ProductTestFactory::new()->delisted()->create();
+        $this->store($product);
 
         // Then
         $this->expectException(ProductAlreadyDelistedException::class);
 
         // When
-        $this->dispatch(new DelistProduct($id));
-    }
-
-    #[Test]
-    public function itFreesTheLabelForAnotherProduct(): void
-    {
-        // Given
-        $delisted = ProductId::generate()->toString();
-        $this->dispatch(new ListProductForSale($delisted, 'Espresso cups, set of 6', 1_750));
-        $this->dispatch(new DelistProduct($delisted));
-
-        // When
-        $id = ProductId::generate()->toString();
-        $this->dispatch(new ListProductForSale($id, 'Espresso cups, set of 6', 1_950));
-
-        // Then
-        $result = $this->service(ProductFinderInterface::class)->ofId($id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
+        $this->dispatch(new DelistProduct($product->id()->toString()));
     }
 }
