@@ -19,7 +19,7 @@ paths:
 - Rename a `#[Event]`/`#[Aggregate]` string identifier without an upcaster in the same change — every existing stream becomes undeserializable on the next replay.
 
 ### Conventions
-- A transition method self-guards by outcome, not by re-entry: repeating it while it would still yield the caller's intended state is a no-op (`erase()` called twice); attempting it in a state where it has no business meaning throws (`suspend()` on an erased identity).
+- A transition method's self-guard is decided by outcome, not re-entry: still matches the caller's intent → no-op; no business meaning on the current state → throw.
 - A business failure is a `final` exception under `Domain/Exception/`, extending `\DomainException`; exposed via a DM → an entry in `config/packages/exceptions.php` (otherwise falls back to 422); named static constructor, no public constructor (e.g. `OrderAlreadyCancelledException::forId($id)`).
 - Naming a static constructor: it should read as a sentence at the throw site — a single nameable fact gets a specific class + `for*` (`forId`); a failure that depends on state gets a category class + `cannot<Verb>`.
 - A Value Object is `final readonly`; private constructor enforces invariants (`Webmozart\Assert`); a named constructor (`fromCents`, `fromString`...) validates the input shape. Expose `equals()`/`toString()` as needed.
