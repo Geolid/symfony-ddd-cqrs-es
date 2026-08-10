@@ -86,8 +86,6 @@
         </report>
     </coverage>
 
-    <!-- Consumed by `make mutation coverage=1` (Infection's "coverage" option) to reuse this run's
-         coverage instead of executing the test suite a second time just to regenerate it. -->
     <logging>
         <junit outputFile="var/coverage/junit.xml"/>
     </logging>
