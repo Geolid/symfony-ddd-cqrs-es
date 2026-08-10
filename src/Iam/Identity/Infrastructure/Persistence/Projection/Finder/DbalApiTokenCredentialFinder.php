@@ -10,15 +10,34 @@ use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<ApiTokenCredentialResult>
+ * @extends AbstractDbalCollectionFinder<ApiTokenCredentialResult>
  *
  * @phpstan-type Row array{id: string, identity_id: string, identifier: string, label: string, hash: string, revoked: string|int, expires_at: string, identity_status: string}
  */
-final class DbalApiTokenCredentialFinder extends AbstractDbalFinder implements ApiTokenCredentialFinderInterface
+final class DbalApiTokenCredentialFinder extends AbstractDbalCollectionFinder implements ApiTokenCredentialFinderInterface
 {
+    public function byIdentity(string $identityId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($identityId) {
+                $qb->andWhere('identity_id = :identityId')
+                    ->setParameter('identityId', $identityId);
+            },
+        );
+    }
+
+    public function active(): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) {
+                $qb->andWhere('revoked = 0');
+            },
+        );
+    }
+
     public function ofIdentifier(string $identifier): ApiTokenCredentialResult
     {
         /** @var Row|false $row */

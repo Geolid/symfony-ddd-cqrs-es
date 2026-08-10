@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Domain\Event\ApiTokenCredentialIssued;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRehashed;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
+use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
@@ -69,6 +70,12 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
         $this->connection->update(self::TABLE, ['identity_status' => IdentityState::ACTIVE->value], ['identity_id' => $event->id]);
+    }
+
+    #[Subscribe(IdentityErased::class)]
+    public function onIdentityErased(IdentityErased $event): void
+    {
+        $this->connection->delete(self::TABLE, ['identity_id' => $event->id]);
     }
 
     /**
