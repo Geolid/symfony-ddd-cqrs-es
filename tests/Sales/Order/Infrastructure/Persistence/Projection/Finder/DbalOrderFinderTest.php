@@ -42,6 +42,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
+        self::assertNotNull($result->placedAt);
         self::assertNull($result->cancelledAt);
     }
 

@@ -36,6 +36,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($customer->id()->toString(), $result->id);
         self::assertSame('buyer@example.com', $result->email);
+        self::assertNotNull($result->registeredAt);
         self::assertNull($result->erasedAt);
     }
 
@@ -65,6 +66,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(CustomerResult::class, $result);
         self::assertSame($customer->id()->toString(), $result->id);
         self::assertSame('buyer@example.com', $result->email);
+        self::assertNotNull($result->registeredAt);
         self::assertNull($result->erasedAt);
     }
 }

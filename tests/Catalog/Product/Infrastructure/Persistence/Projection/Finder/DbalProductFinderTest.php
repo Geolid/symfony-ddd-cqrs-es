@@ -45,7 +45,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersProductsByDelisting(): void
     {
         // Given
-        $listed = ProductTestFactory::new()->create();
+        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($listed);
         $this->store(ProductTestFactory::new()->delisted()->create());
 
@@ -54,9 +54,11 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame(2, \count($this->finder));
-        self::assertSame([$listed->id()->toString()], array_map(
-            static fn (ProductResult $product): string => $product->id,
-            $results,
-        ));
+        self::assertCount(1, $results);
+        $result = $results[0];
+        self::assertSame($listed->id()->toString(), $result->id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
     }
 }

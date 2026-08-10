@@ -28,6 +28,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
     }
 
     #[Test]
