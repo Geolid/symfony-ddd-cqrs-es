@@ -9,14 +9,14 @@ use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
 {
-    use ApiTokenIdentifierTrait;
+    use ApiTokenTrait;
 
     private SecretHasherInterface $hasher;
     private ApiTokenCredentialFinderInterface $finder;

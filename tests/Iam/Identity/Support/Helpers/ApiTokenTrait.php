@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Support\Helpers;
 use Iam\Identity\Application\Security\ApiKeyGeneratorInterface;
 use Iam\Identity\Application\Security\GeneratedApiKey;
 
-trait ApiTokenIdentifierTrait
+trait ApiTokenTrait
 {
     /**
      * @template T of object

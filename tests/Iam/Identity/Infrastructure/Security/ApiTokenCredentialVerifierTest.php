@@ -7,13 +7,13 @@ namespace Iam\Tests\Identity\Infrastructure\Security;
 use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class ApiTokenCredentialVerifierTest extends AbstractIntegrationTestCase
 {
-    use ApiTokenIdentifierTrait;
+    use ApiTokenTrait;
 
     private SecretHasherInterface $hasher;
     private ApiTokenCredentialVerifierInterface $verifier;

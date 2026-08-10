@@ -11,14 +11,14 @@ use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractApiTestCase extends ApiTestCase
 {
-    use ApiTokenIdentifierTrait;
+    use ApiTokenTrait;
     use EventSourcingTrait;
     use ServiceLocatorTrait;
 

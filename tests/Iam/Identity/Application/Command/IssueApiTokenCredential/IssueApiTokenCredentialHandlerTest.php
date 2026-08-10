@@ -12,13 +12,13 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
-use Iam\Tests\Identity\Support\Helpers\ApiTokenIdentifierTrait;
+use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
 {
-    use ApiTokenIdentifierTrait;
+    use ApiTokenTrait;
 
     private ApiTokenCredentialFinderInterface $finder;
 
