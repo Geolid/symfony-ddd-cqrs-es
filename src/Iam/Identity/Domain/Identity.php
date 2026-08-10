@@ -35,11 +35,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function isErased(): bool
-    {
-        return $this->erased;
-    }
-
     public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
