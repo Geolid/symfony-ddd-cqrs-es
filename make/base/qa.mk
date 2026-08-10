@@ -4,5 +4,6 @@ include make/base/test.mk
 ## Quality Assurance
 ##---------------------------------------------------------------------------
 
-qa: composer-validate static test mutation ## Run full QA pipeline
+qa: composer-validate static coverage ## Run full QA pipeline
+	@$(MAKE) mutation coverage=1
 .PHONY: qa

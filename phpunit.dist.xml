@@ -81,9 +81,14 @@
             <html outputDirectory="var/coverage/html"/>
             <clover outputFile="var/coverage/clover.xml"/>
             <cobertura outputFile="var/coverage/cobertura.xml"/>
+            <xml outputDirectory="var/coverage/coverage-xml"/>
             <text outputFile="php://stdout"/>
         </report>
     </coverage>
+
+    <logging>
+        <junit outputFile="var/coverage/junit.xml"/>
+    </logging>
 
     <extensions>
         <bootstrap class="Support\PHPUnit\SetupDatabaseExtension"/>

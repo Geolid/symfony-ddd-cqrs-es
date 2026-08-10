@@ -10,7 +10,8 @@ ci.static: warmup security static ## CI — warmup then run static analysis
 ci.coverage: coverage ## CI — run test suite with coverage
 .PHONY: ci.coverage
 
-ci.mutation: mutation ## CI — run mutation testing
+ci.mutation: ## CI — run mutation testing
+	@$(MAKE) mutation coverage=1
 .PHONY: ci.mutation
 
 # Explicit allowlist of what a running instance actually needs — never "everything except a
