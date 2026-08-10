@@ -10,7 +10,7 @@ ci.static: warmup security static ## CI — warmup then run static analysis
 ci.coverage: coverage ## CI — run test suite with coverage
 .PHONY: ci.coverage
 
-ci.mutation: ## CI — run mutation testing, reusing the coverage ci.coverage already generated
+ci.mutation: ## CI — run mutation testing
 	@$(MAKE) mutation coverage=1
 .PHONY: ci.mutation
 
