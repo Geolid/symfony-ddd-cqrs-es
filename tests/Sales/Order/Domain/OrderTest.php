@@ -19,7 +19,7 @@ use Shared\Domain\ValueObject\Money;
 final class OrderTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itPlacesAnOrderDerivingItsTotalFromItsLines(): void
+    public function itPlacesDerivingItsTotalFromItsLines(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -32,7 +32,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotPlaceAnOrderWithoutALine(): void
+    public function itCannotPlaceWithoutALine(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -44,7 +44,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCancelsAPlacedOrder(): void
+    public function itCancels(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -58,7 +58,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCancelAnAlreadyCancelledOrder(): void
+    public function itDoesNotCancelAnAlreadyCancelled(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -75,7 +75,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCancelAnOrderBelongingToAnotherCustomer(): void
+    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');

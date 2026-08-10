@@ -14,6 +14,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
 {
+    private OrderSummaryLineFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderSummaryLineFinderInterface::class);
+    }
+
     #[Test]
     public function itFiltersLinesByOrderInPositionOrder(): void
     {
@@ -25,7 +34,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // When
-        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder($order->id()->toString()));
+        $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));
 
         // Then
         self::assertCount(2, $lines);
@@ -39,7 +48,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     public function itFiltersNoLinesForAnUnknownOrder(): void
     {
         // When
-        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder(Uuid::uuid7()->toString()));
+        $lines = iterator_to_array($this->finder->withOrder(Uuid::uuid7()->toString()));
 
         // Then
         self::assertSame([], $lines);
@@ -58,7 +67,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         ])->create());
 
         // When
-        $lines = iterator_to_array($this->service(OrderSummaryLineFinderInterface::class)->withOrder($order->id()->toString()));
+        $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));
 
         // Then
         self::assertCount(1, $lines);

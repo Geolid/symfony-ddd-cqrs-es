@@ -19,6 +19,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderFinderInterface::class);
+    }
+
     #[Test]
     public function itCancelsAPlacedOrder(): void
     {
@@ -31,7 +40,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id()->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->cancelledAt);
     }
@@ -92,7 +101,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id()->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 

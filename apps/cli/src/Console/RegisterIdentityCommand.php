@@ -8,7 +8,7 @@ use Cli\Console\Input\RegisterIdentityInput;
 use Iam\Access\Application\Command\GrantPermission\GrantPermission;
 use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Security\ApiKeyGeneratorInterface;
+use Iam\Identity\Application\Security\ApiTokenGeneratorInterface;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -26,7 +26,7 @@ final class RegisterIdentityCommand
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly ApiKeyGeneratorInterface $apiKeyGenerator,
+        private readonly ApiTokenGeneratorInterface $apiTokenGenerator,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -49,7 +49,7 @@ final class RegisterIdentityCommand
 
             $this->commandBus->dispatch(new RegisterIdentity($identityId));
 
-            $apiKey = $this->apiKeyGenerator->generate();
+            $apiKey = $this->apiTokenGenerator->generate();
             $this->commandBus->dispatch(new IssueApiTokenCredential(
                 id: Uuid::uuid7()->toString(),
                 identityId: $identityId,

@@ -15,7 +15,7 @@ use Shared\Domain\ValueObject\Email;
 final class CustomerTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itRegistersACustomer(): void
+    public function itRegisters(): void
     {
         $id = CustomerId::generate();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -27,7 +27,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErasesACustomer(): void
+    public function itErases(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -40,7 +40,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotEraseAnAlreadyErasedCustomer(): void
+    public function itDoesNotEraseAnAlreadyErased(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');

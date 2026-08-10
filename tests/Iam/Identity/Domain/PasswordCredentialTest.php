@@ -28,7 +28,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itSetsAPasswordCredential(): void
+    public function itSets(): void
     {
         $identityId = IdentityId::generate();
         $id = PasswordCredentialId::forIdentity($identityId->toString());
@@ -42,7 +42,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itChangesAPasswordCredential(): void
+    public function itChanges(): void
     {
         $identityId = IdentityId::generate()->toString();
         $id = PasswordCredentialId::forIdentity($identityId)->toString();
@@ -56,7 +56,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRehashesAPasswordCredential(): void
+    public function itRehashes(): void
     {
         $identityId = IdentityId::generate()->toString();
         $id = PasswordCredentialId::forIdentity($identityId)->toString();

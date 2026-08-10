@@ -33,7 +33,7 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDispatchesAPendingShipment(): void
+    public function itDispatchesPending(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');

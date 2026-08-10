@@ -12,6 +12,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
 {
+    private IdentityStatusReducer $reducer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->reducer = $this->service(IdentityStatusReducer::class);
+    }
+
     #[Test]
     public function itReducesToActiveWhenNeverSuspended(): void
     {
@@ -20,7 +29,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id()->toString());
 
         // Then
         self::assertSame(IdentityStatus::ACTIVE, $status);
@@ -34,7 +43,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id()->toString());
 
         // Then
         self::assertSame(IdentityStatus::SUSPENDED, $status);
@@ -50,7 +59,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $status = $this->service(IdentityStatusReducer::class)->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id()->toString());
 
         // Then
         self::assertSame(IdentityStatus::ACTIVE, $status);
