@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
 final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -22,7 +23,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.customer.integration.%s', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(CustomerRegisteredIntegrationEvent::class, $event);
@@ -40,7 +41,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.customer.integration.%s', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(CustomerErasedIntegrationEvent::class, $event);

@@ -13,12 +13,17 @@ trait CqrsTrait
 {
     abstract protected function service(string $serviceId): mixed;
 
+    /**
+     * Dispatches a command through the command bus.
+     */
     protected function dispatch(CommandInterface $command): void
     {
         $this->service(CommandBusInterface::class)->dispatch($command);
     }
 
     /**
+     * Executes a query through the query bus.
+     *
      * @template T
      *
      * @param QueryInterface<T> $query

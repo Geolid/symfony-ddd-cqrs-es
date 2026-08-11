@@ -13,6 +13,7 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
@@ -23,7 +24,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderPaymentRequested(OrderPaymentRequested $event): void
     {
         $this->append(
-            \sprintf('sales.order.integration.%s', $event->orderId),
+            IntegrationStreamId::build('sales.order', $event->orderId),
             new OrderPaymentRequestedIntegrationEvent(
                 orderId: $event->orderId,
                 amountInCents: $event->amountInCents,
@@ -38,7 +39,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderPlaced(OrderPlaced $event): void
     {
         $this->append(
-            \sprintf('sales.order.integration.%s', $event->id),
+            IntegrationStreamId::build('sales.order', $event->id),
             new OrderPlacedIntegrationEvent(
                 orderId: $event->id,
                 customerId: $event->customerId,
@@ -54,7 +55,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderCancelled(OrderCancelled $event): void
     {
         $this->append(
-            \sprintf('sales.order.integration.%s', $event->id),
+            IntegrationStreamId::build('sales.order', $event->id),
             new OrderCancelledIntegrationEvent(
                 orderId: $event->id,
                 cancelledAt: $event->cancelledAt,
@@ -66,7 +67,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderPaymentCaptured(OrderPaymentCaptured $event): void
     {
         $this->append(
-            \sprintf('sales.order.integration.%s', $event->orderId),
+            IntegrationStreamId::build('sales.order', $event->orderId),
             new OrderPaymentCapturedIntegrationEvent(
                 orderId: $event->orderId,
                 customerId: $event->customerId,

@@ -10,10 +10,10 @@ use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Processor\SyncProcessor;
+use Shared\Application\Processor\Processor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
-#[SyncProcessor('iam.identity.release_label_on_api_token_credential_revoked')]
+#[Processor('iam.identity.release_label_on_api_token_credential_revoked', sync: true)]
 final readonly class ReleaseLabelOnApiTokenCredentialRevoked
 {
     public function __construct(

@@ -115,7 +115,7 @@ abstract class AbstractAggregateTestFactory
         return $clone;
     }
 
-    public static function resetSequences(): void
+    public static function resetSequence(): void
     {
         self::$incrementalFactory?->reset();
     }

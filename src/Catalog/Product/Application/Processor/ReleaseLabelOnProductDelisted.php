@@ -10,10 +10,10 @@ use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Processor\SyncProcessor;
+use Shared\Application\Processor\Processor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
-#[SyncProcessor('catalog.product.release_label_on_product_delisted')]
+#[Processor('catalog.product.release_label_on_product_delisted', sync: true)]
 final readonly class ReleaseLabelOnProductDelisted
 {
     public function __construct(

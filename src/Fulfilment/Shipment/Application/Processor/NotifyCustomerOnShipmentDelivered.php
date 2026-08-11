@@ -10,8 +10,8 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\Processor\Processor;
 
 #[Processor('fulfilment.shipment.notify_customer_on_shipment_delivered')]
 final readonly class NotifyCustomerOnShipmentDelivered

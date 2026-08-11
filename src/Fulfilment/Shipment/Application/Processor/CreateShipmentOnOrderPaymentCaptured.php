@@ -6,11 +6,11 @@ namespace Fulfilment\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Processor\Processor;
 
 #[Processor('fulfilment.shipment.create_shipment_on_order_payment_captured')]
 final readonly class CreateShipmentOnOrderPaymentCaptured

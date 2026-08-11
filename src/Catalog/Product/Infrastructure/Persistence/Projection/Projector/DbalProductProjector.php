@@ -11,9 +11,9 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('catalog.product.products')]
 final readonly class DbalProductProjector extends AbstractDbalProjector

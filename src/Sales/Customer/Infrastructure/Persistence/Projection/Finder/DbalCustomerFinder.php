@@ -9,14 +9,14 @@ use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<CustomerResult>
+ * @extends AbstractDbalFinder<CustomerResult>
  *
  * @phpstan-type Row array{id: string, email: string|null, registered_at: string, erased_at: string|null}
  */
-final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements CustomerFinderInterface
+final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
     public function ofId(string $id): CustomerResult
     {
@@ -37,9 +37,7 @@ final class DbalCustomerFinder extends AbstractDbalCollectionFinder implements C
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'email', 'registered_at', 'erased_at')
-            ->from(DbalCustomerProjector::TABLE)
-            ->orderBy('registered_at', 'DESC')
-            ->addOrderBy('id', 'DESC');
+            ->from(DbalCustomerProjector::TABLE);
     }
 
     /**

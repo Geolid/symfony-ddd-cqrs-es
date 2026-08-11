@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Gdpr;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\EventSourcing\Store\Store;
+use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
@@ -26,6 +26,10 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
             ->withCustomerAddress('buyer@example.com')
             ->create();
         $this->store($shipment);
+        $serialized = $this->serializedEventOf(
+            ShipmentCreated::class,
+            static fn (ShipmentCreated $event): bool => $event->id === $shipment->id()->toString(),
+        );
 
         // When
         $this->service(DataSubjectEraser::class)->onEvent(
@@ -33,20 +37,9 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // Then
-        self::assertNull($this->createdEventOf($shipment->id()->toString())->customerAddress);
-    }
-
-    private function createdEventOf(string $id): ShipmentCreated
-    {
-        foreach ($this->service(Store::class)->load() as $message) {
-            $event = $message->event();
-
-            if ($event instanceof ShipmentCreated && $event->id === $id) {
-                return $event;
-            }
-        }
-
-        self::fail('ShipmentCreated event not found in the stream.');
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(ShipmentCreated::class, $rehydrated);
+        self::assertNull($rehydrated->customerAddress);
     }
 }
 

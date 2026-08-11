@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tools\PHPat;
 
-use Patchlevel\EventSourcing\Attribute\Projector;
 use PHPat\Selector\Selector;
 use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 final class ProjectorTest
 {
@@ -47,6 +47,7 @@ final class ProjectorTest
     {
         return Selector::AllOf(
             Selector::withFilepath('#/Infrastructure/Persistence/Projection/Projector/#', true),
+            Selector::Not(Selector::withFilepath('#/Shared/#', true)),
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),
             Selector::Not(Selector::isAbstract()),

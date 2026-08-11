@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Infrastructure\Persistence\EventStore\Translator;
 use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
 final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -21,7 +22,7 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($identity);
 
         // Then
-        $published = $this->publishedTo(\sprintf('iam.identity.integration.%s', $identity->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id()->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(IdentityErasedIntegrationEvent::class, $event);

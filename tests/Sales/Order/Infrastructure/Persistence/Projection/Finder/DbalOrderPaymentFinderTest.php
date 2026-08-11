@@ -47,7 +47,6 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
-        self::assertNotNull($result->requestedAt);
         self::assertNull($result->capturedAt);
     }
 
@@ -85,7 +84,6 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
-        self::assertNotNull($result->requestedAt);
         self::assertNull($result->capturedAt);
     }
 

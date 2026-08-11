@@ -12,9 +12,9 @@ use Iam\Access\Domain\Event\PermissionGranted;
 use Iam\Access\Domain\Event\PermissionReactivated;
 use Iam\Access\Domain\Event\PermissionRevoked;
 use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('iam.access.grants')]
 final readonly class DbalGrantProjector extends AbstractDbalProjector

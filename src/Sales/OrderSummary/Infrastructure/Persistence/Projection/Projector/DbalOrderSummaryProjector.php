@@ -12,7 +12,6 @@ use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
@@ -20,6 +19,7 @@ use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Transformer\OrderSummaryStatusTransformer;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('sales.order_summary.order_summaries')]
 final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector

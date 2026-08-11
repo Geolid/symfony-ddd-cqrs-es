@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Processor;
 
 use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Processor\Processor;
 
 #[Processor('sales.customer.erase_customer_on_identity_erased')]
 final readonly class EraseCustomerOnIdentityErased

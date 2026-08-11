@@ -17,9 +17,11 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $pending = ShipmentTestFactory::new()->create();
-        $this->store($pending);
-        $this->store(ShipmentTestFactory::new()->dispatched()->create());
-        $this->store(ShipmentTestFactory::new()->delivered()->create());
+        $this->store(
+            $pending,
+            ...ShipmentTestFactory::new()->dispatched()->many(2)->createList(),
+            ...ShipmentTestFactory::new()->delivered()->many(2)->createList(),
+        );
 
         // When
         $results = iterator_to_array($this->ask(new ListPendingShipments()));

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Finder;
 
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
@@ -49,9 +50,11 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $pending = ShipmentTestFactory::new()->create();
-        $this->store($pending);
-        $this->store(ShipmentTestFactory::new()->dispatched()->create());
-        $this->store(ShipmentTestFactory::new()->delivered()->create());
+        $this->store(
+            $pending,
+            ...ShipmentTestFactory::new()->dispatched()->many(2)->createList(),
+            ...ShipmentTestFactory::new()->delivered()->many(2)->createList(),
+        );
 
         // When
         $results = iterator_to_array($this->finder->byStatus('pending'));
@@ -70,26 +73,32 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersShipmentsByTrackingReference(): void
+    public function itGetsByTrackingReference(): void
     {
         // Given
         $tracked = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
-        $this->store($tracked);
-        $this->store(ShipmentTestFactory::new()->tracked('ACME-OTHER')->create());
+        $this->store($tracked, ShipmentTestFactory::new()->tracked('ACME-OTHER')->create());
 
         // When
-        $results = iterator_to_array($this->finder->byTrackingReference('ACME-4Q7X2K9'));
+        $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
 
         // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
         self::assertSame($tracked->id()->toString(), $result->id);
         self::assertSame($tracked->orderId(), $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
-        self::assertNotNull($result->createdAt);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
         self::assertNull($result->orderCancelledAt);
+    }
+
+    #[Test]
+    public function itThrowsOnAnUnknownTrackingReference(): void
+    {
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');
     }
 }

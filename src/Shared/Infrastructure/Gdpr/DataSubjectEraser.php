@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\Gdpr;
 
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
+use Shared\Application\Processor\Processor;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
 #[Processor('shared.gdpr.data_subject_eraser')]

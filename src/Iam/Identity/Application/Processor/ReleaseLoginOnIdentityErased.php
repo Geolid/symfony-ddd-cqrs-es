@@ -10,10 +10,10 @@ use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Processor\SyncProcessor;
+use Shared\Application\Processor\Processor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
-#[SyncProcessor('iam.identity.release_login_on_identity_erased')]
+#[Processor('iam.identity.release_login_on_identity_erased', sync: true)]
 final readonly class ReleaseLoginOnIdentityErased
 {
     public function __construct(

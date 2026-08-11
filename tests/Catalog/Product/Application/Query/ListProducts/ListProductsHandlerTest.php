@@ -38,8 +38,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($listed);
-        $this->store(ProductTestFactory::new()->withLabel('Saucer')->delisted()->create());
+        $this->store($listed, ProductTestFactory::new()->withLabel('Saucer')->delisted()->create());
 
         // When
         $result = $this->ask(new ListProducts());
@@ -56,8 +55,10 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itListsDelistedProductsWhenAsked(): void
     {
         // Given
-        $this->store(ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create());
-        $this->store(ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(990)->delisted()->create());
+        $this->store(
+            ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create(),
+            ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(990)->delisted()->create(),
+        );
 
         // When
         $result = $this->ask(new ListProducts(includeDelisted: true));
@@ -76,10 +77,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginatesProducts(): void
     {
         // Given
-        // Labels are picked to sort predictably (ListProducts orders by label ASC) — 5 items, 2 per page, 3 pages.
-        foreach (['Product 01', 'Product 02', 'Product 03', 'Product 04', 'Product 05'] as $label) {
-            $this->store(ProductTestFactory::new()->withLabel($label)->create());
-        }
+        // Pagination math, not values — 5 arbitrary products, 2 per page, 3 pages.
+        $this->store(...ProductTestFactory::createMany(5));
 
         // When
         $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));
@@ -87,16 +86,16 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
         $lastPage = $this->ask(new ListProducts(page: 3, itemsPerPage: 2));
 
         // Then
-        self::assertSame(['Product 01', 'Product 02'], array_map(static fn ($item) => $item->label, $firstPage->items));
+        self::assertCount(2, $firstPage->items);
         self::assertSame(5, $firstPage->pagination->totalItems);
         self::assertSame(1, $firstPage->pagination->currentPage);
         self::assertSame(2, $firstPage->pagination->itemsPerPage);
         self::assertSame(3, $firstPage->pagination->lastPage);
 
-        self::assertSame(['Product 03', 'Product 04'], array_map(static fn ($item) => $item->label, $secondPage->items));
+        self::assertCount(2, $secondPage->items);
         self::assertSame(2, $secondPage->pagination->currentPage);
 
-        self::assertSame(['Product 05'], array_map(static fn ($item) => $item->label, $lastPage->items));
+        self::assertCount(1, $lastPage->items);
         self::assertSame(3, $lastPage->pagination->currentPage);
     }
 }

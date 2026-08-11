@@ -8,10 +8,10 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('sales.order_summary.order_summary_lines')]
 final readonly class DbalOrderSummaryLineProjector extends AbstractDbalProjector

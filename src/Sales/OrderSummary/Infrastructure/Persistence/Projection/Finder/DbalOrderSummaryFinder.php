@@ -55,6 +55,13 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
         );
     }
 
+    public function sortedByPlacedAt(): static
+    {
+        return $this->filter(static function (QueryBuilder $qb): void {
+            $qb->orderBy('placed_at', 'DESC')->addOrderBy('order_id', 'DESC');
+        });
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select(
@@ -72,9 +79,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             'dispatched_at',
             'delivered_at',
         )
-            ->from(DbalOrderSummaryProjector::TABLE)
-            ->orderBy('placed_at', 'DESC')
-            ->addOrderBy('order_id', 'DESC');
+            ->from(DbalOrderSummaryProjector::TABLE);
     }
 
     /**

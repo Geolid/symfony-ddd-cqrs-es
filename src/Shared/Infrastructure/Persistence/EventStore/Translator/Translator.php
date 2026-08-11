@@ -10,7 +10,9 @@ use Patchlevel\EventSourcing\Subscription\RunMode;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final class Translator extends Subscriber
 {
-    public function __construct(string $id, string $group = 'translator', RunMode $runMode = RunMode::FromBeginning)
+    public const string GROUP = 'translator';
+
+    public function __construct(string $id, string $group = self::GROUP, RunMode $runMode = RunMode::FromBeginning)
     {
         parent::__construct($id, $runMode, $group);
     }

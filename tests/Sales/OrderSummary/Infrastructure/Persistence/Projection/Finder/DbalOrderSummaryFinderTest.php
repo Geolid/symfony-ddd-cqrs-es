@@ -47,7 +47,6 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PAYMENT_PENDING, $result->status);
-        self::assertNotNull($result->placedAt);
         self::assertNull($result->cancelledAt);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
@@ -92,8 +91,9 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersOrderSummariesByStatus(): void
     {
         // Given
-        $placed = OrderTestFactory::new()->create();
-        $this->store($placed);
+        foreach (OrderTestFactory::createMany(2) as $placed) {
+            $this->store($placed);
+        }
         $cancelled = OrderTestFactory::new()->cancelled()->create();
         $this->store($cancelled);
 

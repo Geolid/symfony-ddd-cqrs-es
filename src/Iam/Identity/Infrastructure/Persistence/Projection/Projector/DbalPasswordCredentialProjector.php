@@ -17,9 +17,9 @@ use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('iam.identity.password_credentials')]
 final readonly class DbalPasswordCredentialProjector extends AbstractDbalProjector
