@@ -8,7 +8,7 @@ stan: stan.src stan.tests $(addprefix stan.,$(APPS)) ## Run PHPStan on src/, tes
 
 stan.src: ## Run static analysis on shared src/
 	@$(EXEC) env APP_ENV=$(APP_ENV) APP_ENV_UCFIRST=$(APP_ENV_UCFIRST) \
-		vendor/bin/phpstan analyse -c phpstan.dist.neon
+		vendor/bin/phpstan analyse -c phpstan.neon
 .PHONY: stan.src
 
 stan.tests: ## Run static analysis on tests/ (always against the test-env container)
@@ -18,5 +18,5 @@ stan.tests: ## Run static analysis on tests/ (always against the test-env contai
 
 stan.%: ## Run static analysis on a specific DM (ex: make stan.api)
 	@$(EXEC) env APP_ID=$* APP_ENV=$(APP_ENV) APP_ENV_UCFIRST=$(APP_ENV_UCFIRST) \
-		vendor/bin/phpstan analyse -c $(firstword $(wildcard apps/$*/phpstan.dist.neon) apps/phpstan.dist.neon)
+		vendor/bin/phpstan analyse -c $(firstword $(wildcard apps/$*/phpstan.neon) apps/phpstan.neon)
 .PHONY: stan.%
