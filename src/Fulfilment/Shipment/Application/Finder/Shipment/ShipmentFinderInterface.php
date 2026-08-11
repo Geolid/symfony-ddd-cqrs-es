@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
-use Shared\Application\Finder\PaginatedCollectionFinderInterface;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
+use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
- * @extends PaginatedCollectionFinderInterface<ShipmentResult>
+ * @extends CollectionFinderInterface<ShipmentResult>
  */
-interface ShipmentFinderInterface extends PaginatedCollectionFinderInterface
+interface ShipmentFinderInterface extends CollectionFinderInterface
 {
-    public function byStatus(string ...$values): static;
+    /**
+     * @throws ShipmentResultNotFoundException
+     */
+    public function ofTrackingReference(string $trackingReference): ShipmentResult;
 
-    public function byTrackingReference(string $trackingReference): static;
+    public function byStatus(string ...$values): static;
 }

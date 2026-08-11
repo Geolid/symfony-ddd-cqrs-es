@@ -6,6 +6,7 @@ namespace Sales\Tests\OrderSummary\Application\Query\ListOrderSummaries;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -13,66 +14,99 @@ use Support\AbstractIntegrationTestCase;
 final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsOrderSummaries(): void
+    public function itLists(): void
     {
         // Given
-        $this->store(OrderTestFactory::new()->create());
-        $this->store(OrderTestFactory::new()->create());
+        $customerId = Uuid::uuid7()->toString();
+
+        $orders = [
+            OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create(),
+            ...OrderTestFactory::createMany(4),
+        ];
+        $this->store(...$orders);
 
         // When
         $result = $this->ask(new ListOrderSummaries());
 
         // Then
-        self::assertCount(2, $result->items);
+        self::assertCount(5, $result);
+
+        self::assertSame($customerId, $result->items[0]->customerId);
+        self::assertSame(4_200, $result->items[0]->totalAmountInCents);
+
+        for ($i = 1; $i < 5; ++$i) {
+            self::assertSame($orders[$i]->id()->toString(), $result->items[$i]->orderId);
+        }
     }
 
     #[Test]
-    public function itListsOrderSummariesByCustomer(): void
+    public function itListsByCustomer(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order);
-        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
+        $this->store($order, ...OrderTestFactory::createMany(2));
 
         // When
         $result = $this->ask(new ListOrderSummaries(customerId: $customerId));
 
         // Then
-        self::assertCount(1, $result->items);
+        self::assertCount(1, $result);
         self::assertSame($order->id()->toString(), $result->items[0]->orderId);
     }
 
     #[Test]
-    public function itListsOrderSummariesByStatus(): void
+    public function itListsByStatus(): void
     {
         // Given
-        $placed = OrderTestFactory::new()->create();
-        $this->store($placed);
-        $this->store(OrderTestFactory::new()->cancelled()->create());
+        $cancelled = OrderTestFactory::new()->cancelled()->create();
+        $this->store($cancelled, OrderTestFactory::createOne());
 
         // When
-        $result = $this->ask(new ListOrderSummaries(status: 'placed'));
+        $result = $this->ask(new ListOrderSummaries(status: OrderSummaryStatus::CANCELLED->value));
 
         // Then
-        self::assertCount(1, $result->items);
-        self::assertSame($placed->id()->toString(), $result->items[0]->orderId);
+        self::assertCount(1, $result);
+        self::assertSame($cancelled->id()->toString(), $result->items[0]->orderId);
     }
 
     #[Test]
-    public function itPaginatesOrderSummaries(): void
+    public function itSortsByPlacedAt(): void
     {
         // Given
-        $this->store(OrderTestFactory::new()->create());
-        $this->store(OrderTestFactory::new()->create());
-        $this->store(OrderTestFactory::new()->create());
+        $middle = OrderTestFactory::new()->placedAt(new \DateTimeImmutable('-2 days +00:00'))->create();
+        $oldest = OrderTestFactory::new()->placedAt(new \DateTimeImmutable('-3 days +00:00'))->create();
+        $newest = OrderTestFactory::new()->placedAt(new \DateTimeImmutable('-1 day +00:00'))->create();
+        $this->store($middle, $oldest, $newest);
 
         // When
-        $result = $this->ask(new ListOrderSummaries(page: 1, itemsPerPage: 2));
+        $result = $this->ask(new ListOrderSummaries(sortedByPlacedAt: true));
 
         // Then
-        self::assertCount(2, $result->items);
-        self::assertSame(3, $result->pagination->totalItems);
-        self::assertSame(2, $result->pagination->lastPage);
+        self::assertCount(3, $result);
+        self::assertSame($newest->id()->toString(), $result->items[0]->orderId);
+        self::assertSame($middle->id()->toString(), $result->items[1]->orderId);
+        self::assertSame($oldest->id()->toString(), $result->items[2]->orderId);
+    }
+
+    #[Test]
+    public function itPaginates(): void
+    {
+        // Given
+        $orders = OrderTestFactory::createMany(5);
+        $this->store(...$orders);
+
+        // When
+        $result = $this->ask(new ListOrderSummaries(page: 2, itemsPerPage: 2));
+
+        // Then
+        self::assertCount(2, $result);
+        self::assertSame($orders[2]->id()->toString(), $result->items[0]->orderId);
+        self::assertSame($orders[3]->id()->toString(), $result->items[1]->orderId);
+
+        self::assertSame(5, $result->pagination->totalItems);
+        self::assertSame(2, $result->pagination->currentPage);
+        self::assertSame(2, $result->pagination->itemsPerPage);
+        self::assertSame(3, $result->pagination->lastPage);
     }
 }

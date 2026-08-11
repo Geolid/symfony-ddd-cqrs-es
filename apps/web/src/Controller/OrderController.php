@@ -62,6 +62,7 @@ final class OrderController extends AbstractController
             customerId: $user->identityId(),
             page: $criteria->page,
             itemsPerPage: $criteria->itemsPerPage,
+            sortedByPlacedAt: true,
         ));
 
         return $this->render('sales/order/list.html.twig', [

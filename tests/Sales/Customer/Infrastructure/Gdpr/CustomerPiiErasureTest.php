@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Infrastructure\Gdpr;
 
 use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\EventSourcing\Store\Store;
+use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
@@ -21,6 +21,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
         $this->store($customer);
+        $serialized = $this->serializedEventOf(
+            CustomerRegistered::class,
+            static fn (CustomerRegistered $event): bool => $event->id === $customer->id()->toString(),
+        );
 
         // When
         $this->service(DataSubjectEraser::class)->onEvent(
@@ -28,19 +32,8 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // Then
-        self::assertSame('erased@erased.invalid', $this->registeredEventOf($customer->id()->toString())->email);
-    }
-
-    private function registeredEventOf(string $id): CustomerRegistered
-    {
-        foreach ($this->service(Store::class)->load() as $message) {
-            $event = $message->event();
-
-            if ($event instanceof CustomerRegistered && $event->id === $id) {
-                return $event;
-            }
-        }
-
-        self::fail('CustomerRegistered event not found in the stream.');
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(CustomerRegistered::class, $rehydrated);
+        self::assertSame('erased@erased.invalid', $rehydrated->email);
     }
 }

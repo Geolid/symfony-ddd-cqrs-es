@@ -18,8 +18,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
-        $this->store(ProductTestFactory::new()->create());
+        $this->store($product, ProductTestFactory::new()->create());
 
         // When
         $result = $this->ask(new GetProduct($product->id()->toString()));
@@ -28,6 +27,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
     }
 
     #[Test]

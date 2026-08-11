@@ -15,6 +15,7 @@ use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Store\Store;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 
@@ -37,7 +38,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
         $this->append(
-            \sprintf('fulfilment.shipment.integration.%s', $event->id),
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentDispatchedIntegrationEvent(
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),
@@ -55,7 +56,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
         $this->append(
-            \sprintf('fulfilment.shipment.integration.%s', $event->id),
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentDeliveredIntegrationEvent(
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),
@@ -73,7 +74,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
         $this->append(
-            \sprintf('fulfilment.shipment.integration.%s', $event->id),
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentTrackingReferenceAssignedIntegrationEvent(
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),

@@ -44,6 +44,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($orderPayment->id()->toString(), $result->id);
         self::assertSame($orderId, $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
+        self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
         self::assertNull($result->capturedAt);
@@ -64,7 +65,12 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
+        $orderPayment = OrderPaymentTestFactory::new()
+            ->withOrderId($orderId)
+            ->withReference('GLBX-9F3K2M1P')
+            ->withAmountInCents(4_200)
+            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->create();
         $this->store($orderPayment);
 
         // When
@@ -73,7 +79,12 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertInstanceOf(OrderPaymentResult::class, $result);
         self::assertSame($orderPayment->id()->toString(), $result->id);
+        self::assertSame($orderId, $result->orderId);
+        self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
+        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
+        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
+        self::assertNull($result->capturedAt);
     }
 
     #[Test]

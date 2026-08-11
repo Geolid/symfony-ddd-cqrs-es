@@ -10,10 +10,10 @@ use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
-use Shared\Application\Processor\SyncProcessor;
+use Shared\Application\Processor\Processor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
-#[SyncProcessor('sales.customer.release_email_on_customer_erased')]
+#[Processor('sales.customer.release_email_on_customer_erased', sync: true)]
 final readonly class ReleaseEmailOnCustomerErased
 {
     public function __construct(

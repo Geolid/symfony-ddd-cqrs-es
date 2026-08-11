@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Shared\Application\Processor\Processor;
+use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -14,7 +17,7 @@ return static function (ContainerConfigurator $container): void {
             'gap_detection' => null,
             'run_after_aggregate_save' => [
                 'enabled' => true,
-                'groups' => ['translator', 'sync_processor'],
+                'groups' => [Translator::GROUP, Processor::GROUP_SYNC],
             ],
         ],
         'hydrator' => ['cryptography' => true],
@@ -34,13 +37,14 @@ return static function (ContainerConfigurator $container): void {
 
     if ('test' === $container->env()) {
         $container->extension('patchlevel_event_sourcing', [
+            'store' => ['type' => 'in_memory'],
             'subscription' => [
                 'store' => ['type' => 'static_in_memory'],
                 'catch_up' => true,
                 'throw_on_error' => true,
                 'run_after_aggregate_save' => [
                     'enabled' => true,
-                    'groups' => ['translator', 'projector', 'sync_processor'],
+                    'groups' => [Translator::GROUP, Projector::GROUP, Processor::GROUP_SYNC],
                 ],
             ],
         ]);

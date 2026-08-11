@@ -18,6 +18,7 @@ final readonly class ListOrderSummaries implements QueryInterface
         public ?string $status = null,
         public int $page = 1,
         public int $itemsPerPage = 20,
+        public bool $sortedByPlacedAt = false,
     ) {
     }
 }

@@ -12,6 +12,7 @@ use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -31,7 +32,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.order.integration.%s', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(OrderPlacedIntegrationEvent::class, $event);
@@ -51,7 +52,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.order.integration.%s', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(OrderCancelledIntegrationEvent::class, $event);
@@ -74,7 +75,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($orderPayment);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.order.integration.%s', $orderId));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $orderId));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $event);
@@ -101,7 +102,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($orderPayment);
 
         // Then
-        $published = $this->publishedTo(\sprintf('sales.order.integration.%s', $orderId));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $orderId));
         self::assertCount(2, $published);
         self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $published[0]);
         $event = $published[1];

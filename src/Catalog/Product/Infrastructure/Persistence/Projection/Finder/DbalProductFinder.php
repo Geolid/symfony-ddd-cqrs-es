@@ -41,12 +41,17 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
         });
     }
 
+    public function sortedByLabel(): static
+    {
+        return $this->filter(static function (QueryBuilder $qb): void {
+            $qb->orderBy('label', 'ASC');
+        });
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'label', 'unit_amount_in_cents', 'delisted')
-            ->from(DbalProductProjector::TABLE)
-            ->orderBy('label', 'ASC')
-            ->addOrderBy('id', 'ASC');
+            ->from(DbalProductProjector::TABLE);
     }
 
     /**

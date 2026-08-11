@@ -1,0 +1,21 @@
+includes:
+    - ../phpstan.base.neon
+
+parameters:
+    tmpDir: '%currentWorkingDirectory%/var/phpstan/tests'
+
+    paths:
+        - '%currentWorkingDirectory%/tests/'
+
+    symfony:
+        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
+
+    ignoreErrors:
+        -
+            # KernelTestCaseHelper reaches the container via KernelTestCase::getContainer(), which grants
+            # private-service access at runtime just like `test.service_container` does — but the
+            # extension only recognises that literal id, not this indirection.
+            message: '#^Service "Patchlevel\\EventSourcing\\Store\\InMemoryStore" is private\.$#'
+            identifier: symfonyContainer.privateService
+            paths:
+                - '**/ResetStateOnPreparationStarted.php'

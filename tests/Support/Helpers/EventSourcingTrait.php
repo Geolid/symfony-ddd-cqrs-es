@@ -5,55 +5,34 @@ declare(strict_types=1);
 namespace Support\Helpers;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
+use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\EventSourcing\Serializer\SerializedEvent;
 use Patchlevel\EventSourcing\Store\Criteria\Criteria;
 use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
-use Patchlevel\EventSourcing\Subscription\Subscriber\MetadataSubscriberAccessor;
-use Patchlevel\EventSourcing\Subscription\Subscriber\SubscriberAccessorRepository;
 
 trait EventSourcingTrait
 {
     abstract protected function service(string $serviceId): mixed;
 
-    protected function store(AggregateRoot $aggregate): void
-    {
-        $this->service(RepositoryManager::class)
-            ->get($aggregate::class)
-            ->save($aggregate);
-    }
-
-    protected function project(AggregateRoot ...$aggregates): void
-    {
-        $events = $this->extractEvents(...$aggregates);
-
-        /** @var iterable<MetadataSubscriberAccessor<object>> $accessors */
-        $accessors = $this->service(SubscriberAccessorRepository::class)->all();
-        $projectors = [];
-
-        foreach ($accessors as $accessor) {
-            if ('projector' === $accessor->metadata()->group) {
-                $projectors[] = $accessor->subscriber();
-            }
-        }
-
-        new SubscriberUtilities($projectors)->executeRun(...$events);
-    }
-
     /**
-     * @template T of object
+     * Saves aggregates, synchronously triggering translators, projectors, and sync processors.
      *
-     * @param class-string<T> $projector
+     * @see config/packages/patchlevel_event_sourcing.php (run_after_aggregate_save)
      */
-    protected function projectWith(string $projector, AggregateRoot ...$aggregates): void
+    protected function store(AggregateRoot ...$aggregates): void
     {
-        $events = $this->extractEvents(...$aggregates);
-
-        new SubscriberUtilities($this->service($projector))->executeRun(...$events);
+        foreach ($aggregates as $aggregate) {
+            $this->service(RepositoryManager::class)
+                ->get($aggregate::class)
+                ->save($aggregate);
+        }
     }
 
     /**
+     * Retrieves all events published to a specific stream.
+     *
      * @return list<object>
      */
     protected function publishedTo(string $streamId): array
@@ -68,10 +47,25 @@ trait EventSourcingTrait
     }
 
     /**
-     * @return array<object>
+     * Serializes the matching event now, while its subject's cipher key still exists — the InMemoryStore
+     * used in tests never round-trips events through the serializer, so crypto-shredding can't be
+     * observed on it otherwise.
+     *
+     * @template T of object
+     *
+     * @param class-string<T>   $eventClass
+     * @param callable(T): bool $matches
      */
-    private function extractEvents(AggregateRoot ...$aggregates): array
+    protected function serializedEventOf(string $eventClass, callable $matches): SerializedEvent
     {
-        return array_merge(...array_map(static fn ($a) => $a->releaseEvents(), $aggregates));
+        foreach ($this->service(Store::class)->load() as $message) {
+            $event = $message->event();
+
+            if ($event instanceof $eventClass && $matches($event)) {
+                return $this->service(EventSerializer::class)->serialize($event);
+            }
+        }
+
+        self::fail(\sprintf('%s event not found in the stream.', $eventClass));
     }
 }

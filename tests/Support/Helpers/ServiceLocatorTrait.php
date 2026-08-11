@@ -11,6 +11,8 @@ trait ServiceLocatorTrait
     abstract public static function getContainer(): ContainerInterface;
 
     /**
+     * Retrieves a service by its class name and ensures its type.
+     *
      * @template T of object
      *
      * @param class-string<T> $serviceId
@@ -27,6 +29,8 @@ trait ServiceLocatorTrait
     }
 
     /**
+     * Retrieves a service by ID and ensures it matches the specified type.
+     *
      * @template T of object
      *
      * @param class-string<T> $type

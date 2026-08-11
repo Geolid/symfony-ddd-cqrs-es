@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Query\ListPendingShipments;
 
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,8 +17,11 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $pending = ShipmentTestFactory::new()->create();
-        $this->store($pending);
-        $this->store(ShipmentTestFactory::new()->dispatched()->create());
+        $this->store(
+            $pending,
+            ...ShipmentTestFactory::new()->dispatched()->many(2)->createList(),
+            ...ShipmentTestFactory::new()->delivered()->many(2)->createList(),
+        );
 
         // When
         $results = iterator_to_array($this->ask(new ListPendingShipments()));
@@ -25,5 +29,12 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($pending->id()->toString(), $results[0]->id);
+        self::assertSame($pending->orderId(), $results[0]->orderId);
+        self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
+        self::assertNull($results[0]->trackingReference);
+        self::assertNotNull($results[0]->createdAt);
+        self::assertNull($results[0]->dispatchedAt);
+        self::assertNull($results[0]->deliveredAt);
+        self::assertNull($results[0]->orderCancelledAt);
     }
 }

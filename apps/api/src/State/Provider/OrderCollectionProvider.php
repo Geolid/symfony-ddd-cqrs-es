@@ -32,8 +32,9 @@ final readonly class OrderCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
         $result = $this->queryBus->ask(new ListOrderSummaries(
-            page: (int) $this->pagination->getPage($context),
-            itemsPerPage: (int) $this->pagination->getLimit($operation, $context),
+            page: $this->pagination->getPage($context),
+            itemsPerPage: $this->pagination->getLimit($operation, $context),
+            sortedByPlacedAt: true,
         ));
 
         return new TraversablePaginator(

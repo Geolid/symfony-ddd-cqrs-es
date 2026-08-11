@@ -15,7 +15,6 @@
 /.claude/settings.local.json
 .php-cs-fixer.php
 .twig-cs-fixer.php
-phpstan.neon
 phpunit.xml
 
 # =============================================================================

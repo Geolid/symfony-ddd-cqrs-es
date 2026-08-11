@@ -17,9 +17,9 @@ use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
-use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 #[Projector('iam.identity.api_token_credentials')]
 final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProjector

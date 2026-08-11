@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
@@ -19,6 +20,22 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements ShipmentFinderInterface
 {
+    public function ofTrackingReference(string $trackingReference): ShipmentResult
+    {
+        /** @var Row|false $row */
+        $row = $this->query()
+            ->andWhere('tracking_reference = :trackingReference')
+            ->setParameter('trackingReference', $trackingReference)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (false === $row) {
+            throw ShipmentResultNotFoundException::forTrackingReference($trackingReference);
+        }
+
+        return $this->mapRow($row);
+    }
+
     public function byStatus(string ...$values): static
     {
         return $this->filter(
@@ -29,22 +46,10 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
         );
     }
 
-    public function byTrackingReference(string $trackingReference): static
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($trackingReference) {
-                $qb->andWhere('tracking_reference = :trackingReference')
-                    ->setParameter('trackingReference', $trackingReference);
-            },
-        );
-    }
-
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'order_id', 'status', 'tracking_reference', 'created_at', 'dispatched_at', 'delivered_at', 'order_cancelled_at')
-            ->from(DbalShipmentProjector::TABLE)
-            ->orderBy('created_at', 'DESC')
-            ->addOrderBy('id', 'DESC');
+            ->from(DbalShipmentProjector::TABLE);
     }
 
     /**

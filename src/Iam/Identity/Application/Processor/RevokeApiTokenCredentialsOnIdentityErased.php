@@ -6,10 +6,10 @@ namespace Iam\Identity\Application\Processor;
 
 use Iam\Identity\Application\Command\RevokeApiTokenCredentialsForIdentity\RevokeApiTokenCredentialsForIdentity;
 use Iam\Identity\Domain\Event\IdentityErased;
-use Patchlevel\EventSourcing\Attribute\Processor;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Processor\Processor;
 
 #[Processor('iam.identity.revoke_api_token_credentials_on_identity_erased')]
 final readonly class RevokeApiTokenCredentialsOnIdentityErased

@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Application\Finder\Customer\CustomerResult;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -24,7 +23,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsACustomer(): void
+    public function itGetsById(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
@@ -40,31 +39,12 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownCustomer(): void
+    public function itThrowsOnAnUnknown(): void
     {
         // Then
         $this->expectException(CustomerResultNotFoundException::class);
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());
-    }
-
-    #[Test]
-    public function itListsCustomers(): void
-    {
-        // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
-
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
-        self::assertInstanceOf(CustomerResult::class, $result);
-        self::assertSame($customer->id()->toString(), $result->id);
-        self::assertSame('buyer@example.com', $result->email);
-        self::assertNull($result->erasedAt);
     }
 }

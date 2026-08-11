@@ -32,6 +32,10 @@ final readonly class ListOrderSummariesHandler
             $finder = $finder->withStatus($query->status);
         }
 
+        if ($query->sortedByPlacedAt) {
+            $finder = $finder->sortedByPlacedAt();
+        }
+
         $paginator = $finder->paginate($query->page, $query->itemsPerPage);
 
         /** @var list<OrderSummaryResult> $items */

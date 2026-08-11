@@ -3,6 +3,7 @@ includes:
     - vendor/phpstan/phpstan-symfony/rules.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpat/phpat/extension.neon
+    - vendor/patchlevel/event-sourcing-phpstan-extension/extension.neon
 
 services:
     -

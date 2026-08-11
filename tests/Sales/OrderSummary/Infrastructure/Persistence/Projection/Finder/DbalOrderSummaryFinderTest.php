@@ -47,9 +47,14 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PAYMENT_PENDING, $result->status);
+        self::assertNull($result->cancelledAt);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
+        self::assertNull($result->paidAt);
+        self::assertNull($result->trackingReference);
+        self::assertNull($result->dispatchedAt);
+        self::assertNull($result->deliveredAt);
     }
 
     #[Test]
@@ -67,7 +72,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->create();
         $this->store($order);
         $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
 
@@ -77,14 +82,18 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
+        self::assertSame($customerId, $results[0]->customerId);
+        self::assertSame(1_500, $results[0]->totalAmountInCents);
+        self::assertSame(OrderSummaryStatus::PLACED, $results[0]->status);
     }
 
     #[Test]
     public function itFiltersOrderSummariesByStatus(): void
     {
         // Given
-        $placed = OrderTestFactory::new()->create();
-        $this->store($placed);
+        foreach (OrderTestFactory::createMany(2) as $placed) {
+            $this->store($placed);
+        }
         $cancelled = OrderTestFactory::new()->cancelled()->create();
         $this->store($cancelled);
 
@@ -94,5 +103,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cancelled->id()->toString(), $results[0]->orderId);
+        self::assertSame(OrderSummaryStatus::CANCELLED, $results[0]->status);
+        self::assertNotNull($results[0]->cancelledAt);
     }
 }

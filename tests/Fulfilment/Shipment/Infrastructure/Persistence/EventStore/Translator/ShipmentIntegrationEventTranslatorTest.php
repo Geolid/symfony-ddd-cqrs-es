@@ -10,6 +10,7 @@ use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedInteg
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
 final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -25,7 +26,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(\sprintf('fulfilment.shipment.integration.%s', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $event);
@@ -44,7 +45,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(\sprintf('fulfilment.shipment.integration.%s', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
         self::assertCount(2, $published);
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $published[0]);
         $event = $published[1];
@@ -64,7 +65,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(\sprintf('fulfilment.shipment.integration.%s', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
         self::assertCount(2, $published);
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $published[0]);
         $event = $published[1];

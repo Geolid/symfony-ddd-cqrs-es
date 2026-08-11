@@ -30,6 +30,15 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame('placed', $result->status->value);
+        self::assertNotNull($result->placedAt);
+        self::assertNull($result->cancelledAt);
+        self::assertNull($result->paymentAmountInCents);
+        self::assertNull($result->paymentReference);
+        self::assertNull($result->paymentCheckoutUrl);
+        self::assertNull($result->paidAt);
+        self::assertNull($result->trackingReference);
+        self::assertNull($result->dispatchedAt);
+        self::assertNull($result->deliveredAt);
     }
 
     #[Test]

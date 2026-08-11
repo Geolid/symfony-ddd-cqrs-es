@@ -42,21 +42,40 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itListsProductsSortedByLabel(): void
+    {
+        // Given
+        $zebra = ProductTestFactory::new()->withLabel('Zebra mug')->create();
+        $apple = ProductTestFactory::new()->withLabel('Apple crate')->create();
+        $this->store($zebra, $apple);
+
+        // When
+        $results = iterator_to_array($this->finder->sortedByLabel());
+
+        // Then
+        self::assertSame(
+            ['Apple crate', 'Zebra mug'],
+            array_map(static fn (ProductResult $result): string => $result->label, $results),
+        );
+    }
+
+    #[Test]
     public function itFiltersProductsByDelisting(): void
     {
         // Given
-        $listed = ProductTestFactory::new()->create();
-        $this->store($listed);
-        $this->store(ProductTestFactory::new()->delisted()->create());
+        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($listed, ProductTestFactory::new()->delisted()->create());
 
         // When
         $results = iterator_to_array($this->finder->withoutDelisted());
 
         // Then
         self::assertSame(2, \count($this->finder));
-        self::assertSame([$listed->id()->toString()], array_map(
-            static fn (ProductResult $product): string => $product->id,
-            $results,
-        ));
+        self::assertCount(1, $results);
+        $result = $results[0];
+        self::assertSame($listed->id()->toString(), $result->id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
     }
 }

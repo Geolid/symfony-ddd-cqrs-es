@@ -9,6 +9,7 @@ use Catalog\Product\Application\Event\ProductListedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductRepricedIntegrationEvent;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
 final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
@@ -23,7 +24,7 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(\sprintf('catalog.product.integration.%s', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(ProductListedIntegrationEvent::class, $event);
@@ -42,7 +43,7 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(\sprintf('catalog.product.integration.%s', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(ProductRepricedIntegrationEvent::class, $event);
@@ -60,7 +61,7 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(\sprintf('catalog.product.integration.%s', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(ProductDelistedIntegrationEvent::class, $event);

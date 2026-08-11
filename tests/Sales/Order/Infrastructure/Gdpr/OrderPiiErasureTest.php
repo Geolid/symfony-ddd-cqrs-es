@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Gdpr;
 
 use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\EventSourcing\Store\Store;
+use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderPlaced;
@@ -26,6 +26,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
             ->withBuyerAddress('buyer@example.com')
             ->create();
         $this->store($order);
+        $serialized = $this->serializedEventOf(
+            OrderPlaced::class,
+            static fn (OrderPlaced $event): bool => $event->id === $order->id()->toString(),
+        );
 
         // When
         $this->service(DataSubjectEraser::class)->onEvent(
@@ -33,20 +37,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // Then
-        self::assertNull($this->placedEventOf($order->id()->toString())->buyerAddress);
-    }
-
-    private function placedEventOf(string $id): OrderPlaced
-    {
-        foreach ($this->service(Store::class)->load() as $message) {
-            $event = $message->event();
-
-            if ($event instanceof OrderPlaced && $event->id === $id) {
-                return $event;
-            }
-        }
-
-        self::fail('OrderPlaced event not found in the stream.');
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(OrderPlaced::class, $rehydrated);
+        self::assertNull($rehydrated->buyerAddress);
     }
 }
 
