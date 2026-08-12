@@ -8,7 +8,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerId;use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Email;
 use Support\AbstractIntegrationTestCase;
 
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -34,7 +36,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheAddressIsAlreadyRegistered(): void
     {
         // Given
-        $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'buyer@example.com'));
+        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer@example.com')->fingerprint());
 
         // Then
         $this->expectException(AddressAlreadyRegisteredException::class);

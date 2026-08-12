@@ -10,10 +10,13 @@ use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderI
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Label;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -57,14 +60,10 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // Given
         $identity = IdentityTestFactory::new()->store();
         $identityId = $identity->id()->toString();
-        $this->dispatch(new IssueApiTokenCredential(
-            id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $identityId,
-            identifier: $this->generateIdentifier(),
-            secret: 'S3cr3t!',
-            label: 'CI pipeline',
-            expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
-        ));
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            ApiTokenCredentialUniqueValue::LABEL,
+            Label::fromString('CI pipeline')->fingerprintFor($identityId),
+        );
 
         // Then
         $this->expectException(LabelAlreadyTakenException::class);
@@ -74,7 +73,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
             id: ApiTokenCredentialId::generate()->toString(),
             identityId: $identityId,
             identifier: $this->generateIdentifier(),
-            secret: 'Another$3cr3t',
+            secret: 'NewS3cr3t!',
             label: 'CI pipeline',
             expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
         ));
@@ -85,14 +84,10 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     {
         // Given
         $firstIdentity = IdentityTestFactory::new()->store();
-        $this->dispatch(new IssueApiTokenCredential(
-            id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $firstIdentity->id()->toString(),
-            identifier: $this->generateIdentifier(),
-            secret: 'S3cr3t!',
-            label: 'CI pipeline',
-            expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
-        ));
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            ApiTokenCredentialUniqueValue::LABEL,
+            Label::fromString('CI pipeline')->fingerprintFor($firstIdentity->id()->toString()),
+        );
 
         $secondIdentity = IdentityTestFactory::new()->store();
         $identifier = $this->generateIdentifier();
@@ -102,7 +97,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
             id: ApiTokenCredentialId::generate()->toString(),
             identityId: $secondIdentity->id()->toString(),
             identifier: $identifier,
-            secret: 'Another$3cr3t',
+            secret: 'NewS3cr3t!',
             label: 'CI pipeline',
             expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
         ));

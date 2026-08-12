@@ -8,7 +8,9 @@ use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
+use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
@@ -34,7 +36,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheLabelIsAlreadyTaken(): void
     {
         // Given
-        $this->dispatch(new ListProductForSale(ProductId::generate()->toString(), 'Espresso cups, set of 6', 1_750));
+        $this->service(UniqueValueRegistryInterface::class)->reserve(ProductUniqueValue::LABEL, 'Espresso cups, set of 6');
 
         // Then
         $this->expectException(ProductLabelAlreadyTakenException::class);
