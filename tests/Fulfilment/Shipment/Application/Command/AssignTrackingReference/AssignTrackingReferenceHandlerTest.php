@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\AssignTrackingReference;
 
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
+use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -55,5 +56,20 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
 
         // When
         $this->dispatch(new AssignTrackingReference($id, 'ACME-4Q7X2K9'));
+    }
+
+    #[Test]
+    public function itFailsWhenTheTrackingReferenceIsAlreadyTaken(): void
+    {
+        // Given
+        $first = ShipmentTestFactory::new()->dispatched()->store();
+        $second = ShipmentTestFactory::new()->dispatched()->store();
+        $this->dispatch(new AssignTrackingReference($first->id()->toString(), 'ACME-4Q7X2K9'));
+
+        // Then
+        $this->expectException(TrackingReferenceAlreadyTakenException::class);
+
+        // When
+        $this->dispatch(new AssignTrackingReference($second->id()->toString(), 'ACME-4Q7X2K9'));
     }
 }
