@@ -10,6 +10,7 @@ use Doctrine\DBAL\Schema\Table;
 use Patchlevel\EventSourcing\Attribute\Cleanup;
 use Patchlevel\EventSourcing\Attribute\Setup;
 use Patchlevel\EventSourcing\Subscription\Cleanup\Dbal\DropTableTask;
+use Webmozart\Assert\Assert;
 
 abstract readonly class AbstractDbalProjector
 {
@@ -40,7 +41,12 @@ abstract readonly class AbstractDbalProjector
         $this->configureSchema($schema);
 
         return array_map(
-            static fn (Table $table): DropTableTask => new DropTableTask($table->getObjectName()->toString()),
+            static function (Table $table): DropTableTask {
+                $name = $table->getObjectName()->toString();
+                Assert::stringNotEmpty($name);
+
+                return new DropTableTask($name);
+            },
             $schema->getTables(),
         );
     }
