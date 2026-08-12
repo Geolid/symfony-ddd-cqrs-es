@@ -11,5 +11,5 @@ use Shared\Application\Finder\CollectionFinderInterface;
  */
 interface OrderSummaryLineFinderInterface extends CollectionFinderInterface
 {
-    public function withOrder(string $orderId): static;
+    public function byOrder(string $orderId): static;
 }

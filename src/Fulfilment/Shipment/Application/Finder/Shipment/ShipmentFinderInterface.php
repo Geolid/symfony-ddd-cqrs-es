@@ -17,5 +17,5 @@ interface ShipmentFinderInterface extends CollectionFinderInterface
      */
     public function ofTrackingReference(string $trackingReference): ShipmentResult;
 
-    public function byStatus(string ...$values): static;
+    public function byStatus(string $status): static;
 }

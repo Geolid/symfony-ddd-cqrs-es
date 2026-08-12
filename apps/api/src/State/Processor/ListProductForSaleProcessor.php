@@ -14,7 +14,6 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Webmozart\Assert\Assert;
 
 /**
  * @implements ProcessorInterface<ListProductForSaleInput, ProductResource>
@@ -33,9 +32,9 @@ final readonly class ListProductForSaleProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ProductResource
     {
-        Assert::isInstanceOf($data, ListProductForSaleInput::class);
-        Assert::stringNotEmpty($data->label);
-        Assert::integer($data->unitAmountInCents);
+        \assert($data instanceof ListProductForSaleInput);
+        \assert(null !== $data->label);
+        \assert(null !== $data->unitAmountInCents);
 
         $id = Uuid::uuid7()->toString();
         $this->commandBus->dispatch(new ListProductForSale($id, $data->label, $data->unitAmountInCents));

@@ -10,6 +10,6 @@ final class IdentityNotFoundException extends \DomainException
 {
     public static function forId(IdentityId $id): self
     {
-        return new self(\sprintf('No identity carries the id "%s".', $id->toString()));
+        return new self(\sprintf('Identity with ID "%s" not found.', $id->toString()));
     }
 }

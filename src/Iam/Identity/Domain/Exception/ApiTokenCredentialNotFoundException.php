@@ -10,6 +10,6 @@ final class ApiTokenCredentialNotFoundException extends \DomainException
 {
     public static function forId(ApiTokenCredentialId $id): self
     {
-        return new self(\sprintf('No API token credential carries the id "%s".', $id->toString()));
+        return new self(\sprintf('API token credential with ID "%s" not found.', $id->toString()));
     }
 }

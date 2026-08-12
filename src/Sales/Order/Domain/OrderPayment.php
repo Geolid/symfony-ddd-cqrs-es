@@ -27,23 +27,11 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     private string $orderId;
     private string $customerId;
     private string $buyerAddress;
-    private Money $amount;
-    private PaymentReference $reference;
     private OrderPaymentState $status;
 
     public function id(): OrderPaymentId
     {
         return $this->id;
-    }
-
-    public function amount(): Money
-    {
-        return $this->amount;
-    }
-
-    public function reference(): PaymentReference
-    {
-        return $this->reference;
     }
 
     public function status(): OrderPaymentState
@@ -98,8 +86,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $this->orderId = $event->orderId;
         $this->customerId = $event->customerId;
         $this->buyerAddress = $event->buyerAddress;
-        $this->amount = Money::fromCents($event->amountInCents);
-        $this->reference = PaymentReference::fromString($event->reference);
         $this->status = OrderPaymentState::REQUESTED;
     }
 

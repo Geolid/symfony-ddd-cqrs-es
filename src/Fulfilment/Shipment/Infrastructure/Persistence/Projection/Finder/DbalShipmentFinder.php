@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
@@ -36,12 +35,12 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
         return $this->mapRow($row);
     }
 
-    public function byStatus(string ...$values): static
+    public function byStatus(string $status): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($values) {
-                $qb->andWhere($qb->expr()->in('status', ':statuses'))
-                    ->setParameter('statuses', $values, ArrayParameterType::STRING);
+            static function (QueryBuilder $qb) use ($status) {
+                $qb->andWhere('status = :status')
+                    ->setParameter('status', $status);
             },
         );
     }

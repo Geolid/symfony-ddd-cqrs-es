@@ -10,9 +10,11 @@ use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenExcep
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
@@ -56,6 +58,7 @@ return static function (ContainerConfigurator $container): void {
             // Iam
             GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ApiTokenCredentialResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             IdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -63,6 +66,7 @@ return static function (ContainerConfigurator $container): void {
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             PasswordCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            PasswordCredentialResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Sales
             AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],

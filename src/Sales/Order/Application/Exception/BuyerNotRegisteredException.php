@@ -10,6 +10,6 @@ final class BuyerNotRegisteredException extends \RuntimeException implements App
 {
     public static function forId(string $customerId): self
     {
-        return new self(\sprintf('No registered buyer carries the ID "%s".', $customerId));
+        return new self(\sprintf('Buyer with ID "%s" is not registered.', $customerId));
     }
 }

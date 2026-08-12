@@ -10,6 +10,6 @@ final class ApiTokenCredentialResultNotFoundException extends \RuntimeException 
 {
     public static function forIdentifier(string $identifier): self
     {
-        return new self(\sprintf('No API token credential carries the identifier "%s".', $identifier));
+        return new self(\sprintf('API token credential identified by "%s" not found.', $identifier));
     }
 }

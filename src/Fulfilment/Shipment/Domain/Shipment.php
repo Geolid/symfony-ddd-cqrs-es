@@ -64,11 +64,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
     }
 
-    public function trackingReference(): ?TrackingReference
-    {
-        return $this->trackingReference;
-    }
-
     public static function create(
         ShipmentId $id,
         string $orderId,

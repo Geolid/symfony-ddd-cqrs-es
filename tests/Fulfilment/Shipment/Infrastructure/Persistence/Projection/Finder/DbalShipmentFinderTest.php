@@ -10,6 +10,8 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
@@ -27,9 +29,17 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itListsShipments(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->tracked('ACME-4Q7X2K9')->store();
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->dispatched()
+            ->tracked('ACME-4Q7X2K9')
+            ->store();
 
         // When
+        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $this->store($order);
         $results = iterator_to_array($this->finder);
 
         // Then
@@ -42,6 +52,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
+        self::assertNotNull($result->orderCancelledAt);
     }
 
     #[Test]

@@ -10,6 +10,6 @@ final class GrantNotFoundException extends \DomainException
 {
     public static function forId(GrantId $id): self
     {
-        return new self(\sprintf('No grant carries the id "%s".', $id->toString()));
+        return new self(\sprintf('Grant with ID "%s" not found.', $id->toString()));
     }
 }

@@ -10,6 +10,6 @@ final class OrderSummaryResultNotFoundException extends \RuntimeException implem
 {
     public static function forOrderId(string $orderId): self
     {
-        return new self(\sprintf('No summary is available for order "%s".', $orderId));
+        return new self(\sprintf('Summary for order "%s" not found.', $orderId));
     }
 }

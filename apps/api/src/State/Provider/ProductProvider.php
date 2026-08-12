@@ -11,7 +11,6 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Webmozart\Assert\Assert;
 
 /**
  * @implements ProviderInterface<ProductResource>
@@ -27,7 +26,7 @@ final readonly class ProductProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?ProductResource
     {
-        Assert::string($uriVariables['id']);
+        \assert(\is_string($uriVariables['id']));
 
         try {
             $result = $this->queryBus->ask(new GetProduct($uriVariables['id']));

@@ -35,7 +35,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'permission' => ['fixture.widget:read'];
-        yield 'maximum length' => [str_pad('fixture.widget:write', 255, 'write')];
+        yield 'maximum length' => [str_pad('fixture.widget:write', 64, '_')];
     }
 
     /**
@@ -63,7 +63,7 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
         yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
         yield 'missing the action segment' => ['fixture.widget', [self::regex(), self::valueObject()]];
         yield 'missing the bc segment' => ['fixture:read', [self::regex(), self::valueObject()]];
-        yield 'too long' => [str_pad('fixture.widget:write', 256, 'write'), [new Assert\Length(max: 255), self::valueObject()]];
+        yield 'too long' => [str_pad('fixture.widget:write', 65, '_'), [new Assert\Length(max: 64), self::valueObject()]];
     }
 
     protected function createCompound(): ValidPermission

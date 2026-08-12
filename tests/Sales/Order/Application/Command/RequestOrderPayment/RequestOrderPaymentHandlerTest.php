@@ -7,8 +7,9 @@ namespace Sales\Tests\Order\Application\Command\RequestOrderPayment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
+use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
-use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
+use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -17,13 +18,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
-    private OrderPaymentRepositoryInterface $repository;
+    private OrderPaymentFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->repository = $this->service(OrderPaymentRepositoryInterface::class);
+        $this->finder = $this->service(OrderPaymentFinderInterface::class);
     }
 
     #[Test]
@@ -45,9 +46,10 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $orderPayment = $this->repository->load(OrderPaymentId::fromString($id));
-        self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
-        self::assertTrue($orderPayment->status()->isRequested());
+        $result = $this->finder->ofOrder($orderId);
+        self::assertNotNull($result);
+        self::assertSame('GLBX-9F3K2M1P', $result->reference);
+        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
 
     #[Test]
@@ -78,8 +80,9 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $orderPayment = $this->repository->load(OrderPaymentId::fromString($id));
-        self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
+        $result = $this->finder->ofOrder($orderId);
+        self::assertNotNull($result);
+        self::assertSame('GLBX-9F3K2M1P', $result->reference);
     }
 
     #[Test]

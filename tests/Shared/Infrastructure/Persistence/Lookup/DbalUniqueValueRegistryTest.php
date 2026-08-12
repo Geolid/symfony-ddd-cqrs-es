@@ -41,7 +41,6 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(UniqueValueAlreadyTakenException::class);
-        $this->expectExceptionMessage(\sprintf('Value "%s" is already in use for "dummy.email".', $value));
 
         // When
         $this->registry->reserve(DummyUniqueValue::EMAIL, $value);

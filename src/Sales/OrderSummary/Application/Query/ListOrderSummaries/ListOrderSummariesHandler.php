@@ -25,11 +25,11 @@ final readonly class ListOrderSummariesHandler
         $finder = $this->orderSummaryFinder;
 
         if (null !== $query->customerId) {
-            $finder = $finder->withCustomer($query->customerId);
+            $finder = $finder->byCustomer($query->customerId);
         }
 
         if (null !== $query->status) {
-            $finder = $finder->withStatus($query->status);
+            $finder = $finder->byStatus($query->status);
         }
 
         if ($query->sortedByPlacedAt) {

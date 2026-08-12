@@ -35,7 +35,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
         return $this->mapRow($row);
     }
 
-    public function withCustomer(string $customerId): static
+    public function byCustomer(string $customerId): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($customerId) {
@@ -45,7 +45,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
         );
     }
 
-    public function withStatus(string $status): static
+    public function byStatus(string $status): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($status) {

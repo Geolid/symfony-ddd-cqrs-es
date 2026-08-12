@@ -17,7 +17,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder implements OrderSummaryLineFinderInterface
 {
-    public function withOrder(string $orderId): static
+    public function byOrder(string $orderId): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($orderId) {

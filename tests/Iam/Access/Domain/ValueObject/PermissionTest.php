@@ -26,7 +26,7 @@ final class PermissionTest extends TestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'permission' => ['fixture.widget:write'];
-        yield 'maximum length' => [str_pad('fixture.widget:write', 255, 'write')];
+        yield 'maximum length' => [str_pad('fixture.widget:write', 64, '_')];
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class PermissionTest extends TestCase
         yield 'missing the subdomain segment' => ['.widget:write'];
         yield 'uppercase' => ['Fixture.Widget:Write'];
         yield 'contains whitespace' => ['fixture.widget:has space'];
-        yield 'too long' => [str_pad('fixture.widget:write', 256, 'write')];
+        yield 'too long' => [str_pad('fixture.widget:write', 65, '_')];
     }
 
     #[Test]
