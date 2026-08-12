@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidPermissionsTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAtLeastOnePermission(): void
+    public function itAccepts(): void
     {
         // When
         $this->validateValue(['fixture.widget:read']);
@@ -31,8 +31,8 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedPermissions')]
-    public function itRefusesPermissions(mixed $permissions, array $rules, int $violationCount): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $permissions, array $rules, int $violationCount): void
     {
         // When
         $this->validateValue($permissions);
@@ -45,7 +45,7 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>, int}>
      */
-    public static function provideRefusedPermissions(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'no permission at all' => [[], [new Assert\Count(min: 1)], 1];
         yield 'a countable that is not an array' => [new \ArrayObject(['fixture.widget:read']), [new Assert\Type('array')], 1];

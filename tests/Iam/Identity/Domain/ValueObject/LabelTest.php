@@ -13,7 +13,7 @@ final class LabelTest extends TestCase
 {
     #[Test]
     #[DataProvider('provideAcceptedValues')]
-    public function itAccepts(string $value, string $expected): void
+    public function itCreates(string $value, string $expected): void
     {
         // When
         $label = Label::fromString($value);
@@ -27,9 +27,30 @@ final class LabelTest extends TestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'a label' => ['CI pipeline', 'CI pipeline'];
-        yield 'the maximum length' => [str_pad('CI pipeline', 255, 'x'), str_pad('CI pipeline', 255, 'x')];
+        yield 'label' => ['CI pipeline', 'CI pipeline'];
+        yield 'maximum length' => [str_pad('CI pipeline', 255, 'x'), str_pad('CI pipeline', 255, 'x')];
         yield 'surrounding whitespace' => ['  CI pipeline  ', 'CI pipeline'];
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Label::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
+        yield 'too long' => [str_pad('CI pipeline', 256, 'x')];
     }
 
     #[Test]
@@ -60,26 +81,5 @@ final class LabelTest extends TestCase
 
         // Then
         self::assertSame(hash('sha256', 'identity-abc|CI pipeline'), $fingerprint);
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $value): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        Label::fromString($value);
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function provideInvalidValues(): iterable
-    {
-        yield 'empty string' => [''];
-        yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_pad('CI pipeline', 256, 'x')];
     }
 }

@@ -23,21 +23,6 @@ final class ProductIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $value = ProductId::generate()->toString();
-
-        // When
-        $a = ProductId::fromString($value);
-        $b = ProductId::fromString($value);
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(ProductId::generate()));
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -55,5 +40,20 @@ final class ProductIdTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'invalid uuid' => ['not-a-uuid'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $value = ProductId::generate()->toString();
+
+        // When
+        $a = ProductId::fromString($value);
+        $b = ProductId::fromString($value);
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(ProductId::generate()));
     }
 }

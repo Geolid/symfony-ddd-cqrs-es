@@ -22,6 +22,26 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(int $value): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Money::fromCents($value);
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'negative amount' => [-1];
+        yield 'largely negative amount' => [\PHP_INT_MIN];
+    }
+
+    #[Test]
     public function itComparesEquality(): void
     {
         // Given
@@ -56,25 +76,5 @@ final class MoneyTest extends TestCase
 
         // Then
         self::assertSame(249, $product->toCents());
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(int $value): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        Money::fromCents($value);
-    }
-
-    /**
-     * @return iterable<string, array{int}>
-     */
-    public static function provideInvalidValues(): iterable
-    {
-        yield 'negative amount' => [-1];
-        yield 'largely negative amount' => [\PHP_INT_MIN];
     }
 }

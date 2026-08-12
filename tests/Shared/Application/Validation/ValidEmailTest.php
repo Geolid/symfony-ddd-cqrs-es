@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidEmailTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAnAddress(): void
+    public function itAccepts(): void
     {
         // When
         $this->validateValue('buyer@example.com');
@@ -32,8 +32,8 @@ final class ValidEmailTest extends CompoundConstraintTestCase
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedAddresses')]
-    public function itRefusesAnAddress(mixed $address, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $address, array $rules): void
     {
         // When
         $this->validateValue($address);
@@ -46,10 +46,11 @@ final class ValidEmailTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedAddresses(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), new Assert\Email(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Email(), self::valueObject()]];
         yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email(), self::valueObject()]];
         yield 'too long' => ['buyer@'.rtrim(str_repeat('example.com.', 22), '.'), [new Assert\Length(max: 255), self::valueObject()]];
     }

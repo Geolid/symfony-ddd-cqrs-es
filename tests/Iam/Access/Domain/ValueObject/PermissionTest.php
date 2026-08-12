@@ -12,32 +12,21 @@ use PHPUnit\Framework\TestCase;
 final class PermissionTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
-        $permission = Permission::fromString('fixture.widget:write');
-
-        self::assertSame('fixture.widget:write', $permission->toString());
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        $value = str_pad('fixture', 85, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write');
-
         $permission = Permission::fromString($value);
 
         self::assertSame($value, $permission->toString());
     }
 
-    #[Test]
-    public function itComparesEquality(): void
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
     {
-        $a = Permission::fromString('fixture.widget:write');
-        $b = Permission::fromString('fixture.widget:write');
-        $other = Permission::fromString('fixture.widget:read');
-
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals($other));
+        yield 'permission' => ['fixture.widget:write'];
+        yield 'maximum length' => [str_pad('fixture.widget:write', 255, 'write')];
     }
 
     #[Test]
@@ -60,6 +49,17 @@ final class PermissionTest extends TestCase
         yield 'missing the subdomain segment' => ['.widget:write'];
         yield 'uppercase' => ['Fixture.Widget:Write'];
         yield 'contains whitespace' => ['fixture.widget:has space'];
-        yield 'too long' => [str_pad('fixture', 86, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write')];
+        yield 'too long' => [str_pad('fixture.widget:write', 256, 'write')];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        $a = Permission::fromString('fixture.widget:write');
+        $b = Permission::fromString('fixture.widget:write');
+        $other = Permission::fromString('fixture.widget:read');
+
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals($other));
     }
 }

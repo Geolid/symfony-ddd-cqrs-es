@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Domain\ValueObject;
+namespace Iam\Tests\Identity\Domain\ValueObject;
 
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\ValueObject\OrderId;
 
-final class OrderIdTest extends TestCase
+final class IdentityIdTest extends TestCase
 {
     #[Test]
     public function itGenerates(): void
     {
         // When
-        $id = OrderId::generate();
+        $id = IdentityId::generate();
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -30,7 +30,7 @@ final class OrderIdTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        OrderId::fromString($value);
+        IdentityId::fromString($value);
     }
 
     /**
@@ -46,14 +46,14 @@ final class OrderIdTest extends TestCase
     public function itComparesEquality(): void
     {
         // Given
-        $value = OrderId::generate()->toString();
+        $value = IdentityId::generate()->toString();
 
         // When
-        $a = OrderId::fromString($value);
-        $b = OrderId::fromString($value);
+        $a = IdentityId::fromString($value);
+        $b = IdentityId::fromString($value);
 
         // Then
         self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(OrderId::generate()));
+        self::assertFalse($a->equals(IdentityId::generate()));
     }
 }

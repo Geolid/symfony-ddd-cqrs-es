@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidProductIdTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAUuid(): void
+    public function itAccepts(): void
     {
         // When
         $this->validateValue(Uuid::uuid7()->toString());
@@ -33,8 +33,8 @@ final class ValidProductIdTest extends CompoundConstraintTestCase
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedIds')]
-    public function itRefusesAnId(mixed $id, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $id, array $rules): void
     {
         // When
         $this->validateValue($id);
@@ -47,10 +47,11 @@ final class ValidProductIdTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedIds(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'nothing' => ['', [new Assert\NotBlank()]];
         yield 'blanks only' => ['   ', [new Assert\Uuid(strict: false), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(strict: false), self::valueObject()]];
         yield 'out of the UUID format' => ['not-a-uuid', [new Assert\Uuid(strict: false), self::valueObject()]];
     }
 

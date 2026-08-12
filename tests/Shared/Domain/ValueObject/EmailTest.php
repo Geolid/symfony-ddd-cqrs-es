@@ -12,23 +12,47 @@ use Shared\Domain\ValueObject\Email;
 final class EmailTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value, string $expected): void
     {
         // When
-        $email = Email::fromString('buyer@example.com');
+        $email = Email::fromString($value);
 
         // Then
-        self::assertSame('buyer@example.com', $email->toString());
+        self::assertSame($expected, $email->toString());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'email' => ['buyer@example.com', 'buyer@example.com'];
+        yield 'mixed case and surrounding whitespace' => ['  Buyer@Example.COM  ', 'buyer@example.com'];
     }
 
     #[Test]
-    public function itNormalizes(): void
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value, string $reason): void
     {
-        // When
-        $email = Email::fromString('  Buyer@Example.COM  ');
-
         // Then
-        self::assertSame('buyer@example.com', $email->toString());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($reason);
+
+        // When
+        Email::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => ['', '/cannot be empty/'];
+        yield 'whitespace only' => ['   ', '/cannot be empty/'];
+        yield 'missing at sign' => ['not-an-address', '/is expected/'];
+        yield 'missing domain' => ['buyer@', '/is expected/'];
+        yield 'missing local part' => ['@example.com', '/is expected/'];
     }
 
     #[Test]
@@ -59,29 +83,5 @@ final class EmailTest extends TestCase
 
         // Then
         self::assertSame(hash('sha256', 'buyer@example.com'), $fingerprint);
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $value, string $reason): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($reason);
-
-        // When
-        Email::fromString($value);
-    }
-
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function provideInvalidValues(): iterable
-    {
-        yield 'empty string' => ['', '/cannot be empty/'];
-        yield 'whitespace only' => ['   ', '/cannot be empty/'];
-        yield 'missing at sign' => ['not-an-address', '/is expected/'];
-        yield 'missing domain' => ['buyer@', '/is expected/'];
-        yield 'missing local part' => ['@example.com', '/is expected/'];
     }
 }

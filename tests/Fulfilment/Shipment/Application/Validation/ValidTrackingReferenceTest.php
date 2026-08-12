@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAValidTrackingReference(): void
+    public function itAccepts(): void
     {
         // When
         $this->validateValue('ACME-1234567890');
@@ -32,8 +32,8 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedTrackingReferences')]
-    public function itRefusesATrackingReference(mixed $trackingReference, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $trackingReference, array $rules): void
     {
         // When
         $this->validateValue($trackingReference);
@@ -46,9 +46,9 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedTrackingReferences(): iterable
+    public static function provideRefusedValues(): iterable
     {
-        yield 'blank' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
+        yield 'nothing' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'longer than the carrier can issue' => [str_repeat('A', 65), [self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
     }

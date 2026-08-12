@@ -19,31 +19,31 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidPermissionTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAPermission(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAccepts(string $permission): void
     {
         // When
-        $this->validateValue('fixture.widget:read');
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        // When
-        $this->validateValue(str_pad('fixture', 85, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write'));
+        $this->validateValue($permission);
 
         // Then
         $this->assertNoViolation();
     }
 
     /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'permission' => ['fixture.widget:read'];
+        yield 'maximum length' => [str_pad('fixture.widget:write', 255, 'write')];
+    }
+
+    /**
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedPermissions')]
-    public function itRefusesAPermission(mixed $permission, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $permission, array $rules): void
     {
         // When
         $this->validateValue($permission);
@@ -56,14 +56,14 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedPermissions(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), self::regex(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
         yield 'missing the action segment' => ['fixture.widget', [self::regex(), self::valueObject()]];
         yield 'missing the bc segment' => ['fixture:read', [self::regex(), self::valueObject()]];
-        yield 'too long' => [str_pad('fixture', 86, 'fixture').'.'.str_pad('widget', 84, 'widget').':'.str_pad('write', 84, 'write'), [new Assert\Length(max: 255), self::valueObject()]];
+        yield 'too long' => [str_pad('fixture.widget:write', 256, 'write'), [new Assert\Length(max: 255), self::valueObject()]];
     }
 
     protected function createCompound(): ValidPermission

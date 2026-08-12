@@ -19,31 +19,31 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidLabelTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsALabel(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAccepts(string $label): void
     {
         // When
-        $this->validateValue('CI pipeline');
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        // When
-        $this->validateValue(str_pad('CI pipeline', 255, 'x'));
+        $this->validateValue($label);
 
         // Then
         $this->assertNoViolation();
     }
 
     /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'label' => ['CI pipeline'];
+        yield 'maximum length' => [str_pad('CI pipeline', 255, 'x')];
+    }
+
+    /**
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedLabels')]
-    public function itRefusesALabel(mixed $label, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $label, array $rules): void
     {
         // When
         $this->validateValue($label);
@@ -56,10 +56,11 @@ final class ValidLabelTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedLabels(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'nothing' => ['', [self::notBlank()]];
         yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
         yield 'too long' => [str_pad('CI pipeline', 256, 'x'), [new Assert\Length(max: 255), self::valueObject()]];
     }
 

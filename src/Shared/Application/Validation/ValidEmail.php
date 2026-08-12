@@ -15,6 +15,7 @@ final class ValidEmail extends Compound
     {
         return [
             new Assert\NotBlank(normalizer: 'trim'),
+            new Assert\Type('string'),
             new Assert\Email(),
             new Assert\Length(max: 255),
             new ValidValueObject(Email::class, method: 'fromString'),
