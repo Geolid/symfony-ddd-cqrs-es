@@ -6,7 +6,6 @@ namespace Web\Security;
 
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Webmozart\Assert\Assert;
 
 final readonly class PasswordUser implements UserInterface
 {
@@ -32,7 +31,7 @@ final readonly class PasswordUser implements UserInterface
 
     public function getUserIdentifier(): string
     {
-        Assert::stringNotEmpty($this->login);
+        \assert('' !== $this->login);
 
         return $this->login;
     }

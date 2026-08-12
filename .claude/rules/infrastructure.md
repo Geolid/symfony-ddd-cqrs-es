@@ -13,6 +13,7 @@ paths:
 - An Event Store repository's `load()` catches `AggregateNotFound` and re-throws the BC's own `<Aggregate>NotFoundException` — otherwise a vendor exception leaks out as a raw 500 instead of a mapped domain failure.
 - A Projector extends `AbstractDbalProjector` — outside that base class it isn't in the `projector` group and its schema is never created.
 - A Finder reads `from(<Projector>::TABLE)`, never a re-declared table-name literal — otherwise it silently drifts if the projector's table changes.
+- Native `\assert()` narrows a value already guaranteed correct by the calling code, never external/user input. `Webmozart\Assert` stays reserved for a real invariant that must hold in production and throw a catchable exception.
 
 **NEVER**
 - Use a raw `HttpClientInterface` outside `Shared\Infrastructure\Gateway` — enforced by `Tools\PHPat\GatewayTest`.

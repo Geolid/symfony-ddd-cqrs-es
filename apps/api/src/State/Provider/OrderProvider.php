@@ -10,7 +10,6 @@ use ApiPlatform\State\ProviderInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Webmozart\Assert\Assert;
 
 /**
  * @implements ProviderInterface<OrderResource>
@@ -26,7 +25,7 @@ final readonly class OrderProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderResource
     {
-        Assert::string($uriVariables['id']);
+        \assert(\is_string($uriVariables['id']));
 
         return OrderResource::fromResult($this->queryBus->ask(new GetOrderSummary($uriVariables['id'])));
     }

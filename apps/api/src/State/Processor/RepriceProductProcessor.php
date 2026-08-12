@@ -10,7 +10,6 @@ use ApiPlatform\State\ProcessorInterface;
 use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Webmozart\Assert\Assert;
 
 /**
  * @implements ProcessorInterface<RepriceProductInput, void>
@@ -27,9 +26,9 @@ final readonly class RepriceProductProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        Assert::isInstanceOf($data, RepriceProductInput::class);
-        Assert::integer($data->unitAmountInCents);
-        Assert::string($uriVariables['id']);
+        \assert($data instanceof RepriceProductInput);
+        \assert(null !== $data->unitAmountInCents);
+        \assert(\is_string($uriVariables['id']));
 
         $this->commandBus->dispatch(new RepriceProduct($uriVariables['id'], $data->unitAmountInCents));
     }

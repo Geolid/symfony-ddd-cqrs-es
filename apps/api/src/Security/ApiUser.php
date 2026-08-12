@@ -6,7 +6,6 @@ namespace Api\Security;
 
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Webmozart\Assert\Assert;
 
 final readonly class ApiUser implements UserInterface
 {
@@ -35,7 +34,7 @@ final readonly class ApiUser implements UserInterface
 
     public function getUserIdentifier(): string
     {
-        Assert::stringNotEmpty($this->identifier);
+        \assert('' !== $this->identifier);
 
         return $this->identifier;
     }
