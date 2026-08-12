@@ -58,8 +58,8 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::regex(), self::valueObject()]];
+        yield 'empty string' => ['', [self::notBlank()]];
+        yield 'whitespace only' => ['   ', [self::notBlank(), self::regex(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::regex(), self::valueObject()]];
         yield 'missing the action segment' => ['fixture.widget', [self::regex(), self::valueObject()]];
         yield 'missing the bc segment' => ['fixture:read', [self::regex(), self::valueObject()]];

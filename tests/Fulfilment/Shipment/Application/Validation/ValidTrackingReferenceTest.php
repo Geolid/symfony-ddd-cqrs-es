@@ -48,7 +48,7 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'nothing' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
+        yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'longer than the carrier can issue' => [str_repeat('A', 65), [self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
     }

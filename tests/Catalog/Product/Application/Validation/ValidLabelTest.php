@@ -58,8 +58,8 @@ final class ValidLabelTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'empty string' => ['', [self::notBlank()]];
+        yield 'whitespace only' => ['   ', [self::notBlank(), self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
         yield 'too long' => [str_repeat('a', 256), [new Assert\Length(max: 255), self::valueObject()]];
     }
