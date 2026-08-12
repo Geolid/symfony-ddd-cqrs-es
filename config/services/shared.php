@@ -9,8 +9,8 @@ use Sentry\Monolog\ExceptionToSentryIssueHandler;
 use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Infrastructure\Messaging\CommandBus;
-use Shared\Infrastructure\Messaging\QueryBus;
+use Shared\Infrastructure\Messaging\MessengerCommandBus;
+use Shared\Infrastructure\Messaging\MessengerQueryBus;
 use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -22,8 +22,8 @@ return static function (ContainerConfigurator $container): void {
 
     SubdomainServiceLoader::load($services, 'Shared');
 
-    $commandBusAlias = $services->alias(CommandBusInterface::class, CommandBus::class);
-    $queryBusAlias = $services->alias(QueryBusInterface::class, QueryBus::class);
+    $commandBusAlias = $services->alias(CommandBusInterface::class, MessengerCommandBus::class);
+    $queryBusAlias = $services->alias(QueryBusInterface::class, MessengerQueryBus::class);
 
     if ('test' === $container->env()) {
         // Fetched by type from the container; must be public for that.
