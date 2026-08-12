@@ -6,6 +6,7 @@ use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
@@ -25,6 +26,7 @@ use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
@@ -49,6 +51,7 @@ return static function (ContainerConfigurator $container): void {
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+            TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
             GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
@@ -75,6 +78,7 @@ return static function (ContainerConfigurator $container): void {
             OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
+            PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderSummaryResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 

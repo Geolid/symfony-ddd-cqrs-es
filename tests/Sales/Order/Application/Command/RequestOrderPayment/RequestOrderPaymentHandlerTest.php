@@ -7,8 +7,11 @@ namespace Sales\Tests\Order\Application\Command\RequestOrderPayment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
+use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
@@ -77,5 +80,28 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         // Then
         $orderPayment = $this->repository->load(OrderPaymentId::fromString($id));
         self::assertSame('GLBX-9F3K2M1P', $orderPayment->reference()->toString());
+    }
+
+    #[Test]
+    public function itFailsWhenTheReferenceIsAlreadyTaken(): void
+    {
+        // Given
+        $reference = 'GLBX-9F3K2M1P';
+        $this->service(UniqueValueRegistryInterface::class)->reserve(OrderPaymentUniqueValue::REFERENCE, $reference);
+        $orderId = Uuid::uuid7()->toString();
+
+        // Then
+        $this->expectException(PaymentReferenceAlreadyTakenException::class);
+
+        // When
+        $this->dispatch(new RequestOrderPayment(
+            id: OrderPaymentId::forOrder($orderId)->toString(),
+            orderId: $orderId,
+            customerId: Uuid::uuid7()->toString(),
+            buyerAddress: 'buyer@example.com',
+            amountInCents: 4_200,
+            reference: $reference,
+            checkoutUrl: \sprintf('https://fake-checkout.test/?ref=%s', $reference),
+        ));
     }
 }
