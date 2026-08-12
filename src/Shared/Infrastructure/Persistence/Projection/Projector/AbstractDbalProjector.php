@@ -6,8 +6,10 @@ namespace Shared\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\Table;
+use Patchlevel\EventSourcing\Attribute\Cleanup;
 use Patchlevel\EventSourcing\Attribute\Setup;
-use Patchlevel\EventSourcing\Attribute\Teardown;
+use Patchlevel\EventSourcing\Subscription\Cleanup\Dbal\DropTableTask;
 
 abstract readonly class AbstractDbalProjector
 {
@@ -27,14 +29,20 @@ abstract readonly class AbstractDbalProjector
     }
 
     /**
+     * @return list<DropTableTask>
+     *
      * @codeCoverageIgnore
      */
-    #[Teardown]
-    public function drop(): void
+    #[Cleanup]
+    public function cleanup(): array
     {
         $schema = new Schema();
         $this->configureSchema($schema);
-        $this->connection->createSchemaManager()->dropSchemaObjects($schema);
+
+        return array_map(
+            static fn (Table $table): DropTableTask => new DropTableTask($table->getObjectName()->toString()),
+            $schema->getTables(),
+        );
     }
 
     abstract protected function configureSchema(Schema $schema): void;
