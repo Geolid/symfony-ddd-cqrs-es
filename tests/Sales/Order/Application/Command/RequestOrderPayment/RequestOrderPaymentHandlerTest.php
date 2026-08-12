@@ -10,6 +10,8 @@ use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
