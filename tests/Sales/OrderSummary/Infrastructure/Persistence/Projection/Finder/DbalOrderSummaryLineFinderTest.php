@@ -31,9 +31,12 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
             OrderLine::of('Widget', 2, Money::fromCents(1_000)),
             OrderLine::of('Gadget', 1, Money::fromCents(3_000)),
         ])->store();
+        OrderTestFactory::new()->withLines([
+            OrderLine::of('Gizmo', 5, Money::fromCents(2_000)),
+        ])->store();
 
         // When
-        $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));
+        $lines = iterator_to_array($this->finder->byOrder($order->id()->toString()));
 
         // Then
         self::assertCount(2, $lines);
@@ -51,31 +54,9 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     public function itFiltersNoLinesForAnUnknownOrder(): void
     {
         // When
-        $lines = iterator_to_array($this->finder->withOrder(Uuid::uuid7()->toString()));
+        $lines = iterator_to_array($this->finder->byOrder(Uuid::uuid7()->toString()));
 
         // Then
         self::assertSame([], $lines);
-    }
-
-    #[Test]
-    public function itScopesTheLinesToTheirOwnOrder(): void
-    {
-        // Given
-        $order = OrderTestFactory::new()->withLines([
-            OrderLine::of('Widget', 2, Money::fromCents(1_000)),
-        ])->store();
-        OrderTestFactory::new()->withLines([
-            OrderLine::of('Gizmo', 5, Money::fromCents(2_000)),
-        ])->store();
-
-        // When
-        $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));
-
-        // Then
-        self::assertCount(1, $lines);
-        self::assertSame($order->id()->toString(), $lines[0]->orderId);
-        self::assertSame('Widget', $lines[0]->label);
-        self::assertSame(2, $lines[0]->quantity);
-        self::assertSame(1_000, $lines[0]->unitAmountInCents);
     }
 }

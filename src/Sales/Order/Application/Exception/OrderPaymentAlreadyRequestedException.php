@@ -10,6 +10,6 @@ final class OrderPaymentAlreadyRequestedException extends \RuntimeException impl
 {
     public static function forOrderId(string $orderId): self
     {
-        return new self(\sprintf('A payment has already been requested for order "%s".', $orderId));
+        return new self(\sprintf('The payment for order "%s" has already been requested.', $orderId));
     }
 }

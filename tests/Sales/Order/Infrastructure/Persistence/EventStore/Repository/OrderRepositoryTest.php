@@ -26,7 +26,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedOrder(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->withTotalAmountInCents(2_500)->create();
+        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->create();
 
         // When
         $this->repository->save($order);
@@ -35,7 +35,6 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
         $id = $order->id();
         self::assertTrue($this->repository->has($id));
         self::assertSame('buyer@example.com', $this->repository->load($id)->buyerAddress());
-        self::assertSame(2_500, $this->repository->load($id)->totalAmount()->toCents());
     }
 
     #[Test]

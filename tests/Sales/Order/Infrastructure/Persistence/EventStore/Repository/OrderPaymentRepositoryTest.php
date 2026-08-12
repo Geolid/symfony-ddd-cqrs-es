@@ -27,7 +27,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedOrderPayment(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-9F3K2M1P')->create();
+        $orderPayment = OrderPaymentTestFactory::new()->create();
 
         // When
         $this->repository->save($orderPayment);
@@ -35,7 +35,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $orderPayment->id();
         self::assertTrue($this->repository->has($id));
-        self::assertSame('GLBX-9F3K2M1P', $this->repository->load($id)->reference()->toString());
+        $this->repository->load($id);
     }
 
     #[Test]

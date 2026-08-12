@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Infrastructure\Persistence\Projection\Finder;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
 use Iam\Access\Application\Finder\Grant\GrantResult;
@@ -17,12 +18,12 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalGrantFinder extends AbstractDbalCollectionFinder implements GrantFinderInterface
 {
-    public function byIdentity(string $identityId): static
+    public function byIdentity(string ...$identityIds): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($identityId) {
-                $qb->andWhere('identity_id = :identityId')
-                    ->setParameter('identityId', $identityId);
+            static function (QueryBuilder $qb) use ($identityIds) {
+                $qb->andWhere($qb->expr()->in('identity_id', ':identityIds'))
+                    ->setParameter('identityIds', $identityIds, ArrayParameterType::STRING);
             },
         );
     }

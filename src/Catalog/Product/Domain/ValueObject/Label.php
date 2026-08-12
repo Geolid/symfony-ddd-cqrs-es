@@ -14,7 +14,7 @@ final readonly class Label
     {
         $value = trim($value);
         Assert::notEmpty($value, 'A product label cannot be empty, %s given.');
-        Assert::maxLength($value, 255, 'A product label cannot exceed 255 characters, %s given.');
+        Assert::maxLength($value, 255, 'A product label cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

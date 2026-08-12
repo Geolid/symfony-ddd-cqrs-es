@@ -28,7 +28,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private OrderId $id;
     private string $customerId;
     private string $buyerAddress;
-    private Money $totalAmount;
     private OrderState $status;
 
     public function id(): OrderId
@@ -39,11 +38,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public function buyerAddress(): string
     {
         return $this->buyerAddress;
-    }
-
-    public function totalAmount(): Money
-    {
-        return $this->totalAmount;
     }
 
     /**
@@ -113,7 +107,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->id = OrderId::fromString($event->id);
         $this->customerId = $event->customerId;
         $this->buyerAddress = $event->buyerAddress;
-        $this->totalAmount = Money::fromCents($event->totalAmountInCents);
         $this->status = OrderState::PLACED;
     }
 

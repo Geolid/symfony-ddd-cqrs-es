@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
@@ -36,6 +37,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
             ->withReference('GLBX-ABC12345')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->store();
+        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->tracked('ACME-4Q7X2K9')->store();
 
         // When
         $result = $this->finder->ofOrder($order->id()->toString());
@@ -50,8 +52,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
         self::assertNull($result->paidAt);
-        self::assertNull($result->trackingReference);
-        self::assertNull($result->dispatchedAt);
+        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
+        self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
 
@@ -74,7 +76,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->store();
 
         // When
-        $results = iterator_to_array($this->finder->withCustomer($customerId));
+        $results = iterator_to_array($this->finder->byCustomer($customerId));
 
         // Then
         self::assertCount(1, $results);
@@ -92,7 +94,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         $cancelled = OrderTestFactory::new()->cancelled()->store();
 
         // When
-        $results = iterator_to_array($this->finder->withStatus('cancelled'));
+        $results = iterator_to_array($this->finder->byStatus('cancelled'));
 
         // Then
         self::assertCount(1, $results);

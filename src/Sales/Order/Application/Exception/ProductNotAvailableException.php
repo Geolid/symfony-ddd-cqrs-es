@@ -10,6 +10,6 @@ final class ProductNotAvailableException extends \RuntimeException implements Ap
 {
     public static function forId(string $productId): self
     {
-        return new self(\sprintf('No product for sale carries the ID "%s".', $productId));
+        return new self(\sprintf('Product with ID "%s" is not available for sale.', $productId));
     }
 }

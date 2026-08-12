@@ -35,11 +35,6 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         return $this->email;
     }
 
-    public function isErased(): bool
-    {
-        return $this->erased;
-    }
-
     public static function register(CustomerId $id, Email $email, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();

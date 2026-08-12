@@ -25,7 +25,7 @@ final class ShipmentInvalidTransitionException extends \DomainException
 
     public static function cannotReassignTrackingReference(string $current): self
     {
-        return new self(\sprintf('Shipment already tracked under reference "%s".', $current));
+        return new self(\sprintf('Cannot reassign a tracking reference to a shipment already tracked under reference "%s".', $current));
     }
 
     public static function cannotCancel(ShipmentState $current): self

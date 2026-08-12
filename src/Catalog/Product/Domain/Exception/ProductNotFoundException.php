@@ -10,6 +10,6 @@ final class ProductNotFoundException extends \DomainException
 {
     public static function forId(ProductId $id): self
     {
-        return new self(\sprintf('Product with ID "%s" does not exist.', $id->toString()));
+        return new self(\sprintf('Product with ID "%s" not found.', $id->toString()));
     }
 }

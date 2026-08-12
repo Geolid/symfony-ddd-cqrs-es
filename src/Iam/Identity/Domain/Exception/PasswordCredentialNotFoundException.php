@@ -10,6 +10,6 @@ final class PasswordCredentialNotFoundException extends \DomainException
 {
     public static function forId(PasswordCredentialId $id): self
     {
-        return new self(\sprintf('No password credential carries the id "%s".', $id->toString()));
+        return new self(\sprintf('Password credential with ID "%s" not found.', $id->toString()));
     }
 }

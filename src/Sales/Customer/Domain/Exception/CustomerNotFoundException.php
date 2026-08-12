@@ -10,6 +10,6 @@ final class CustomerNotFoundException extends \DomainException
 {
     public static function forId(CustomerId $id): self
     {
-        return new self(\sprintf('Customer with ID "%s" does not exist.', $id->toString()));
+        return new self(\sprintf('Customer with ID "%s" not found.', $id->toString()));
     }
 }

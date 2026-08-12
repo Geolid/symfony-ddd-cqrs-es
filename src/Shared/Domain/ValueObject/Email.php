@@ -17,7 +17,7 @@ final readonly class Email
     {
         $value = strtolower(trim($value));
         Assert::notEmpty($value, 'An email address cannot be empty, %s given.');
-        Assert::email($value, 'An email address is expected, %s given.');
+        Assert::email($value, 'An email address must be valid, %s given.');
 
         $this->value = $value;
     }

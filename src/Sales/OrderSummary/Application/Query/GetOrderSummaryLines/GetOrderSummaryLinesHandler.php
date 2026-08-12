@@ -21,6 +21,6 @@ final readonly class GetOrderSummaryLinesHandler
     public function __invoke(GetOrderSummaryLines $query): array
     {
         /** @var list<OrderSummaryLineResult> */
-        return iterator_to_array($this->orderSummaryLineFinder->withOrder($query->orderId));
+        return iterator_to_array($this->orderSummaryLineFinder->byOrder($query->orderId));
     }
 }

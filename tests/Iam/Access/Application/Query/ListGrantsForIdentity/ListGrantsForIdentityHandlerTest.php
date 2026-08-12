@@ -6,6 +6,7 @@ namespace Iam\Tests\Access\Application\Query\ListGrantsForIdentity;
 
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -42,5 +43,19 @@ final class ListGrantsForIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame([], $result);
+    }
+
+    #[Test]
+    public function itListsNothingAfterTheIdentityIsErased(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        GrantTestFactory::new()->withIdentityId($identityId)->store();
+
+        // When
+        IdentityTestFactory::new()->withId($identityId)->erased()->store();
+
+        // Then
+        self::assertSame([], $this->ask(new ListGrantsForIdentity($identityId)));
     }
 }

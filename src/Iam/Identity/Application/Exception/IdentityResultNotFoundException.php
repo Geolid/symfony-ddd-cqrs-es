@@ -10,6 +10,6 @@ final class IdentityResultNotFoundException extends \RuntimeException implements
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('No identity carries the id "%s".', $id));
+        return new self(\sprintf('Identity with ID "%s" not found.', $id));
     }
 }

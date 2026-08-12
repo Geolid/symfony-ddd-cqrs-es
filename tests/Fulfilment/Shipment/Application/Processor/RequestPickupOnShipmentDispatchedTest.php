@@ -10,7 +10,6 @@ use Fulfilment\Shipment\Application\Gateway\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Processor\RequestPickupOnShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
@@ -50,13 +49,9 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
 
         // Then
         self::assertSame('buyer@example.com', $this->carrier->deliveryAddress);
-        self::assertSame(
-            DummyCarrierGateway::TRACKING_REFERENCE,
-            $this->service(ShipmentRepositoryInterface::class)
-                ->load(ShipmentId::fromString($shipment->id()->toString()))
-                ->trackingReference()
-                ?->toString(),
-        );
+        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        self::assertCount(1, $results);
+        self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
     }
 
     #[Test]

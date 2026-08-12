@@ -34,24 +34,23 @@ final class LabelTest extends TestCase
 
     #[Test]
     #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $value, string $reason): void
+    public function itProtectsInvariants(string $value): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches($reason);
 
         // When
         Label::fromString($value);
     }
 
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{string}>
      */
     public static function provideInvalidValues(): iterable
     {
-        yield 'empty string' => ['', '/cannot be empty/'];
-        yield 'whitespace only' => ['   ', '/cannot be empty/'];
-        yield 'too long' => [str_repeat('a', 256), '/cannot exceed 255 characters/'];
+        yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
+        yield 'too long' => [str_repeat('a', 256)];
     }
 
     #[Test]

@@ -17,7 +17,7 @@ interface ApiTokenCredentialFinderInterface extends CollectionFinderInterface
      */
     public function ofIdentifier(string $identifier): ApiTokenCredentialResult;
 
-    public function byIdentity(string $identityId): static;
+    public function byIdentity(string ...$identityIds): static;
 
     public function active(): static;
 }

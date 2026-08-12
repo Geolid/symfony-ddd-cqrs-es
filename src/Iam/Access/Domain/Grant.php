@@ -30,11 +30,6 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function isRevoked(): bool
-    {
-        return $this->revoked;
-    }
-
     public static function grant(GrantId $id, string $identityId, Permission $permission, \DateTimeImmutable $grantedAt): self
     {
         $self = new self();

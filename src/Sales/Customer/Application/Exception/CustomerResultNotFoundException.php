@@ -10,6 +10,6 @@ final class CustomerResultNotFoundException extends \RuntimeException implements
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('No customer found for id "%s".', $id));
+        return new self(\sprintf('Customer with ID "%s" not found.', $id));
     }
 }

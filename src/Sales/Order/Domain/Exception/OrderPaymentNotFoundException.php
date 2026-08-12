@@ -10,6 +10,6 @@ final class OrderPaymentNotFoundException extends \DomainException
 {
     public static function forId(OrderPaymentId $id): self
     {
-        return new self(\sprintf('OrderPayment with ID "%s" not found.', $id->toString()));
+        return new self(\sprintf('Order payment with ID "%s" not found.', $id->toString()));
     }
 }
