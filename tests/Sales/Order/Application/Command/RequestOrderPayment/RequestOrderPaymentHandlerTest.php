@@ -84,30 +84,22 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheReferenceIsAlreadyTaken(): void
     {
         // Given
-        $firstOrderId = Uuid::uuid7()->toString();
-        $this->dispatch(new RequestOrderPayment(
-            id: OrderPaymentId::forOrder($firstOrderId)->toString(),
-            orderId: $firstOrderId,
-            customerId: Uuid::uuid7()->toString(),
-            buyerAddress: 'buyer@example.com',
-            amountInCents: 4_200,
-            reference: 'GLBX-9F3K2M1P',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
-        ));
-        $secondOrderId = Uuid::uuid7()->toString();
+        $reference = 'GLBX-9F3K2M1P';
+        $this->service(UniqueValueRegistryInterface::class)->reserve(OrderPaymentUniqueValue::REFERENCE, $reference);
+        $orderId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(PaymentReferenceAlreadyTakenException::class);
 
         // When
         $this->dispatch(new RequestOrderPayment(
-            id: OrderPaymentId::forOrder($secondOrderId)->toString(),
-            orderId: $secondOrderId,
+            id: OrderPaymentId::forOrder($orderId)->toString(),
+            orderId: $orderId,
             customerId: Uuid::uuid7()->toString(),
             buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
-            reference: 'GLBX-9F3K2M1P',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            reference: $reference,
+            checkoutUrl: \sprintf('https://fake-checkout.test/?ref=%s', $reference),
         ));
     }
 }

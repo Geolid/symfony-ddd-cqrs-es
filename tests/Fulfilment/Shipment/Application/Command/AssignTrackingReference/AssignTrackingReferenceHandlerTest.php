@@ -62,14 +62,14 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenTheTrackingReferenceIsAlreadyTaken(): void
     {
         // Given
-        $first = ShipmentTestFactory::new()->dispatched()->store();
-        $second = ShipmentTestFactory::new()->dispatched()->store();
-        $this->dispatch(new AssignTrackingReference($first->id()->toString(), 'ACME-4Q7X2K9'));
+        $trackingReference = 'ACME-4Q7X2K9';
+        $this->service(UniqueValueRegistryInterface::class)->reserve(ShipmentUniqueValue::TRACKING_REFERENCE, $trackingReference);
+        $shipment = ShipmentTestFactory::new()->dispatched()->store();
 
         // Then
         $this->expectException(TrackingReferenceAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new AssignTrackingReference($second->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new AssignTrackingReference($shipment->id()->toString(), $trackingReference));
     }
 }
