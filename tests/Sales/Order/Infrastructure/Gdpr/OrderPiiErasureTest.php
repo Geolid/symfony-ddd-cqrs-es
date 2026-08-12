@@ -11,6 +11,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
+use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 use Support\AbstractIntegrationTestCase;
 
@@ -38,7 +39,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame('erased-address', $rehydrated->buyerAddress);
+        $sentinel = new ErasedFieldSentinel('erased-address-%s');
+        self::assertSame($sentinel($customerId), $rehydrated->buyerAddress);
     }
 }
 

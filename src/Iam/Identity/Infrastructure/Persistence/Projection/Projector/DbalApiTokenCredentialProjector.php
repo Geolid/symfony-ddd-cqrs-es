@@ -97,5 +97,6 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addUniqueIndex(['label', 'identity_id'], 'iam_identity_api_token_credential_label_identity_id_unique');
     }
 }
