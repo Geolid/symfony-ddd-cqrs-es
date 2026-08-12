@@ -6,7 +6,7 @@ namespace Shared\Infrastructure\Messaging;
 
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 
-trait UnwrapsHandlerFailedException
+trait UnwrapsMessengerExceptionTrait
 {
     private function unwrap(HandlerFailedException $e): \Throwable
     {
