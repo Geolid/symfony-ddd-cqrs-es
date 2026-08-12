@@ -57,5 +57,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addUniqueIndex(['email'], 'sales_customer_email_unique');
     }
 }
