@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Gateway\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Processor\RequestPickupOnShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
@@ -41,8 +43,7 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
         $shipment = ShipmentTestFactory::new()
             ->withCustomerAddress('buyer@example.com')
             ->dispatched()
-            ->create();
-        $this->store($shipment);
+            ->store();
 
         // When
         ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
@@ -59,17 +60,19 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itSkipsAShipmentWithoutAddressOnShipmentDispatched(): void
+    public function itCancelsAShipmentWithAnErasedCustomerOnShipmentDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->withCustomerAddress(null)->dispatched()->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()->withCustomerAddress('erased-address')->dispatched()->store();
 
         // When
         ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
 
         // Then
         self::assertNull($this->carrier->deliveryAddress);
+        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        self::assertCount(1, $results);
+        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
     }
 }
 

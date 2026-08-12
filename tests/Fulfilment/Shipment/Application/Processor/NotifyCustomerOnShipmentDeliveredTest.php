@@ -41,9 +41,9 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         $shipment = ShipmentTestFactory::new()
             ->withCustomerId($customerId)
             ->withCustomerAddress('buyer@example.com')
+            ->dispatched()
             ->delivered()
-            ->create();
-        $this->store($shipment);
+            ->store();
 
         // When
         ($this->processor)(new ShipmentDelivered($shipment->id()->toString(), self::DELIVERED_AT));
@@ -58,11 +58,14 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itSkipsAShipmentWithoutAddressOnShipmentDelivered(): void
+    public function itSkipsAShipmentWithAnErasedCustomerOnShipmentDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->withCustomerAddress(null)->delivered()->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()
+            ->withCustomerAddress('erased-address')
+            ->dispatched()
+            ->delivered()
+            ->store();
 
         // When
         ($this->processor)(new ShipmentDelivered($shipment->id()->toString(), self::DELIVERED_AT));

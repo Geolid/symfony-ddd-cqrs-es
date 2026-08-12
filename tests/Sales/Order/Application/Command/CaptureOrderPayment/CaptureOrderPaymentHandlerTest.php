@@ -16,8 +16,7 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itCapturesARequestedPayment(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->create();
-        $this->store($orderPayment);
+        $orderPayment = OrderPaymentTestFactory::new()->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
@@ -31,8 +30,7 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyCapturedPayment(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->captured()->create();
-        $this->store($orderPayment);
+        $orderPayment = OrderPaymentTestFactory::new()->captured()->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));

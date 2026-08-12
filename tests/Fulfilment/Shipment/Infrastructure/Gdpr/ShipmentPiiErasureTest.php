@@ -24,8 +24,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()
             ->withCustomerId($customerId)
             ->withCustomerAddress('buyer@example.com')
-            ->create();
-        $this->store($shipment);
+            ->store();
         $serialized = $this->serializedEventOf(
             ShipmentCreated::class,
             static fn (ShipmentCreated $event): bool => $event->id === $shipment->id()->toString(),
@@ -39,7 +38,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentCreated::class, $rehydrated);
-        self::assertNull($rehydrated->customerAddress);
+        self::assertSame('erased-address', $rehydrated->customerAddress);
     }
 }
 

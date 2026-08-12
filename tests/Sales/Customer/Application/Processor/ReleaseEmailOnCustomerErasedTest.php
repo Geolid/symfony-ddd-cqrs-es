@@ -29,8 +29,7 @@ final class ReleaseEmailOnCustomerErasedTest extends AbstractIntegrationTestCase
     public function itReleasesTheEmailOnCustomerErased(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
         $fingerprint = $customer->email()->fingerprint();
         $this->uniqueValues->reserve(CustomerUniqueValue::EMAIL, $fingerprint);
 

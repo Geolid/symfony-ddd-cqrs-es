@@ -34,8 +34,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withLogin('operator')
             ->withPassword('S3cr3t!')
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $result = $this->finder->ofLogin('operator');

@@ -19,10 +19,9 @@ final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractInte
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $this->store(ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->create());
-        $this->store(ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->create());
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
-        $this->store($other);
+        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
+        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredentialsForIdentity($identityId));

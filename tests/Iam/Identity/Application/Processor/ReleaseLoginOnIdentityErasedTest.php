@@ -32,8 +32,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()->withIdentityId($identityId)->withLogin('operator')->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = PasswordCredentialTestFactory::new()->withIdentityId($identityId)->withLogin('operator')->withHasher(new DummySecretHasher())->store();
         $fingerprint = $credential->login()->fingerprint();
         $this->uniqueValues->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
 

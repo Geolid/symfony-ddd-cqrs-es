@@ -9,6 +9,7 @@ enum ShipmentState: string
     case PENDING = 'pending';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
+    case CANCELLED = 'cancelled';
 
     public function isPending(): bool
     {
@@ -23,5 +24,10 @@ enum ShipmentState: string
     public function isDelivered(): bool
     {
         return self::DELIVERED === $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
     }
 }

@@ -20,8 +20,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->store();
 
         // When
         $this->dispatch(new RevokePermission($grant->id()->toString()));
@@ -48,8 +47,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyRevokedPermission(): void
     {
         // Given
-        $grant = GrantTestFactory::new()->revoked()->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->revoked()->store();
 
         // When
         $this->dispatch(new RevokePermission($grant->id()->toString()));

@@ -23,8 +23,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     {
         // Given
         $identifier = $this->generateIdentifier();
-        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new DummySecretHasher())->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
@@ -52,8 +51,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     public function itIgnoresAnAlreadyRevokedCredential(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->create();
-        $this->store($credential);
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));

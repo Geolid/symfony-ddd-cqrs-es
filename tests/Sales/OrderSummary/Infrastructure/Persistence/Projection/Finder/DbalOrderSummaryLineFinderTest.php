@@ -30,8 +30,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withLines([
             OrderLine::of('Widget', 2, Money::fromCents(1_000)),
             OrderLine::of('Gadget', 1, Money::fromCents(3_000)),
-        ])->create();
-        $this->store($order);
+        ])->store();
 
         // When
         $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));
@@ -64,11 +63,10 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()->withLines([
             OrderLine::of('Widget', 2, Money::fromCents(1_000)),
-        ])->create();
-        $this->store($order);
-        $this->store(OrderTestFactory::new()->withLines([
+        ])->store();
+        OrderTestFactory::new()->withLines([
             OrderLine::of('Gizmo', 5, Money::fromCents(2_000)),
-        ])->create());
+        ])->store();
 
         // When
         $lines = iterator_to_array($this->finder->withOrder($order->id()->toString()));

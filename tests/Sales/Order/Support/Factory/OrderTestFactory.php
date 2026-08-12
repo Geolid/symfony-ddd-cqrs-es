@@ -17,14 +17,19 @@ use Webmozart\Assert\Assert;
  */
 final class OrderTestFactory extends AbstractAggregateTestFactory
 {
-    public function withCustomerId(string $customerId): self
+    public function withId(string $id): self
     {
-        return static::new(array_merge($this->attributes, ['customerId' => $customerId]));
+        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
     }
 
-    public function withBuyerAddress(?string $buyerAddress): self
+    public function withCustomerId(string $customerId): self
     {
-        return static::new(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
+        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
+    }
+
+    public function withBuyerAddress(string $buyerAddress): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
     }
 
     /**
@@ -32,7 +37,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
      */
     public function withLines(array $lines): self
     {
-        return static::new(array_merge($this->attributes, ['lines' => $lines]));
+        return $this->withAttributes(array_merge($this->attributes, ['lines' => $lines]));
     }
 
     public function withTotalAmountInCents(int $totalAmountInCents): self
@@ -40,17 +45,17 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withLines([OrderLine::of('Assorted goods', 1, Money::fromCents($totalAmountInCents))]);
     }
 
-    public function placedAt(\DateTimeImmutable $placedAt): self
+    public function withPlacedAt(\DateTimeImmutable $placedAt): self
     {
-        return static::new(array_merge($this->attributes, ['placedAt' => $placedAt]));
+        return $this->withAttributes(array_merge($this->attributes, ['placedAt' => $placedAt]));
     }
 
-    public function cancelled(): self
+    public function cancelled(\DateTimeImmutable $cancelledAt = new \DateTimeImmutable('now +00:00')): self
     {
         Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
 
-        return static::new(array_merge($this->attributes, ['customerId' => $customerId]))
-            ->withModifier(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
+            ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
     }
 
     protected function defaults(): array
@@ -72,7 +77,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::nullOrStringNotEmpty($buyerAddress = $attributes['buyerAddress']);
+        Assert::stringNotEmpty($buyerAddress = $attributes['buyerAddress']);
         Assert::isList($lines = $attributes['lines']);
         Assert::allIsInstanceOf($lines, OrderLine::class);
         Assert::isInstanceOf($placedAt = $attributes['placedAt'], \DateTimeInterface::class);

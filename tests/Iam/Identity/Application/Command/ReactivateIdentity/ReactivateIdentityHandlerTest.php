@@ -19,8 +19,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itReactivatesASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
         $this->dispatch(new ReactivateIdentity($identity->id()->toString()));
@@ -48,8 +47,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnIdentityThatIsNotSuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $this->dispatch(new ReactivateIdentity($identity->id()->toString()));

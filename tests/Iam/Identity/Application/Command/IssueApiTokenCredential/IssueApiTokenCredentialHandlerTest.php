@@ -33,8 +33,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itIssuesAnApiTokenCredential(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $identifier = $this->generateIdentifier();
 
         // When
@@ -56,8 +55,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenTheLabelIsAlreadyTakenForTheIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $identityId = $identity->id()->toString();
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
@@ -86,8 +84,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itAcceptsTheSameLabelForADifferentIdentity(): void
     {
         // Given
-        $firstIdentity = IdentityTestFactory::new()->create();
-        $this->store($firstIdentity);
+        $firstIdentity = IdentityTestFactory::new()->store();
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
             identityId: $firstIdentity->id()->toString(),
@@ -97,8 +94,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
             expiresAt: new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM),
         ));
 
-        $secondIdentity = IdentityTestFactory::new()->create();
-        $this->store($secondIdentity);
+        $secondIdentity = IdentityTestFactory::new()->store();
         $identifier = $this->generateIdentifier();
 
         // When
@@ -137,8 +133,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenTheIdentityIsSuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // Then
         $this->expectException(IdentityNotActiveException::class);
@@ -158,8 +153,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenTheIdentityIsErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->erased()->store();
 
         // Then
         $this->expectException(IdentityNotActiveException::class);

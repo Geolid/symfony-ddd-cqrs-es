@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Application\Processor;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotification;
 use Fulfilment\Shipment\Application\Notifier\ShipmentDeliveredNotifierInterface;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
+use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -29,9 +30,10 @@ final readonly class NotifyCustomerOnShipmentDelivered
     public function __invoke(ShipmentDelivered $event): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
-        $address = $shipment->customerAddress();
 
-        if (null === $address) {
+        try {
+            $shipment->ensureCustomerNotErased();
+        } catch (ShipmentCustomerErasedException) {
             return;
         }
 
@@ -39,7 +41,7 @@ final readonly class NotifyCustomerOnShipmentDelivered
             shipmentId: $event->id,
             orderId: $shipment->orderId(),
             customerId: $shipment->customerId(),
-            customerAddress: $address,
+            customerAddress: $shipment->customerAddress(),
         ));
     }
 }

@@ -19,8 +19,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsTheAddressOnErasure(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
         $serialized = $this->serializedEventOf(
             CustomerRegistered::class,
             static fn (CustomerRegistered $event): bool => $event->id === $customer->id()->toString(),

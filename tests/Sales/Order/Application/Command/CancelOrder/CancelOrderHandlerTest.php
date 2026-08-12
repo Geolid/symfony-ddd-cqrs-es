@@ -33,8 +33,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
 
         // When
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
@@ -50,8 +49,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
 
         // When
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
@@ -78,8 +76,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheOrderBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->store();
 
         // Then
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
@@ -93,9 +90,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->create());
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
 
         // When
         $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
@@ -110,9 +106,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->create());
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
 
         // Then
         $this->expectException(OrderPaymentAlreadyCapturedException::class);

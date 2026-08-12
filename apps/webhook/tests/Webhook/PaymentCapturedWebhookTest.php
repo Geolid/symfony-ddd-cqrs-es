@@ -22,8 +22,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $orderPayment = OrderPaymentTestFactory::new()->withReference(self::REFERENCE)->create();
-        $this->store($orderPayment);
+        $orderPayment = OrderPaymentTestFactory::new()->withReference(self::REFERENCE)->store();
         $body = self::body(self::REFERENCE);
 
         // When

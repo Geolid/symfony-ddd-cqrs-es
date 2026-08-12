@@ -17,8 +17,8 @@ final readonly class OrderPaymentRequested implements DomainEventInterface
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[PersonalData(fallback: null)]
-        public ?string $buyerAddress,
+        #[PersonalData(fallback: 'erased-address')]
+        public string $buyerAddress,
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,

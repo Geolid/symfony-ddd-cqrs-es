@@ -57,8 +57,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheBuyerIsErased(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->store();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
@@ -89,10 +88,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
      */
     private function lines(): array
     {
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($cups);
-        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
-        $this->store($saucer);
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->store();
 
         return [
             ['productId' => $cups->id()->toString(), 'quantity' => 1],
@@ -102,14 +99,10 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function registeredCustomer(string $email): Customer
     {
-        $customer = CustomerTestFactory::new()->withEmail($email)->create();
-
-        $this->store($customer);
-
-        return $customer;
+        return CustomerTestFactory::new()->withEmail($email)->store();
     }
 
-    private function buyerAddressOf(string $id): ?string
+    private function buyerAddressOf(string $id): string
     {
         return $this->service(OrderRepositoryInterface::class)
             ->load(OrderId::fromString($id))

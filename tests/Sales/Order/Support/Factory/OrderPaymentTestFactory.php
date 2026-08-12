@@ -19,37 +19,42 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
 {
     public function withOrderId(string $orderId): self
     {
-        return static::new(array_merge($this->attributes, ['orderId' => $orderId]));
+        return $this->withAttributes(array_merge($this->attributes, ['orderId' => $orderId]));
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return static::new(array_merge($this->attributes, ['customerId' => $customerId]));
+        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
     }
 
-    public function withBuyerAddress(?string $buyerAddress): self
+    public function withBuyerAddress(string $buyerAddress): self
     {
-        return static::new(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
+        return $this->withAttributes(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
     }
 
     public function withAmountInCents(int $amountInCents): self
     {
-        return static::new(array_merge($this->attributes, ['amountInCents' => $amountInCents]));
+        return $this->withAttributes(array_merge($this->attributes, ['amountInCents' => $amountInCents]));
     }
 
     public function withReference(string $reference): self
     {
-        return static::new(array_merge($this->attributes, ['reference' => $reference]));
+        return $this->withAttributes(array_merge($this->attributes, ['reference' => $reference]));
     }
 
     public function withCheckoutUrl(string $checkoutUrl): self
     {
-        return static::new(array_merge($this->attributes, ['checkoutUrl' => $checkoutUrl]));
+        return $this->withAttributes(array_merge($this->attributes, ['checkoutUrl' => $checkoutUrl]));
     }
 
-    public function captured(): self
+    public function withRequestedAt(\DateTimeImmutable $requestedAt): self
     {
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['requestedAt' => $requestedAt]));
+    }
+
+    public function captured(\DateTimeImmutable $capturedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
     }
 
     protected function defaults(): array
@@ -69,7 +74,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($orderId = $attributes['orderId']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::nullOrStringNotEmpty($buyerAddress = $attributes['buyerAddress']);
+        Assert::stringNotEmpty($buyerAddress = $attributes['buyerAddress']);
         Assert::integer($amountInCents = $attributes['amountInCents']);
         Assert::stringNotEmpty($reference = $attributes['reference']);
         Assert::stringNotEmpty($checkoutUrl = $attributes['checkoutUrl']);

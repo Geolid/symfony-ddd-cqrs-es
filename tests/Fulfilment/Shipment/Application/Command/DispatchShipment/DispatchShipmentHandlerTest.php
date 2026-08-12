@@ -21,8 +21,7 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDispatchesAPendingShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()->store();
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id()->toString()));
@@ -39,8 +38,7 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheShipmentHasAlreadyLeft(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()->dispatched()->store();
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

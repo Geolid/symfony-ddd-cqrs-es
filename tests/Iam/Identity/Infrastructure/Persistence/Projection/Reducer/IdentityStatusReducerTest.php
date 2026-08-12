@@ -25,8 +25,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
     public function itReducesToActiveWhenNeverSuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $status = $this->reducer->statusFor($identity->id()->toString());
@@ -39,8 +38,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
     public function itReducesToSuspendedAfterIdentitySuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
         $status = $this->reducer->statusFor($identity->id()->toString());
@@ -53,8 +51,7 @@ final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
     public function itReducesToActiveAfterIdentityReactivated(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
         $identity->reactivate(new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 

@@ -24,8 +24,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withBuyerAddress('buyer@example.com')
-            ->create();
-        $this->store($order);
+            ->store();
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
             static fn (OrderPlaced $event): bool => $event->id === $order->id()->toString(),
@@ -39,7 +38,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertNull($rehydrated->buyerAddress);
+        self::assertSame('erased-address', $rehydrated->buyerAddress);
     }
 }
 

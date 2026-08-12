@@ -26,7 +26,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     private OrderPaymentId $id;
     private string $orderId;
     private string $customerId;
-    private ?string $buyerAddress;
+    private string $buyerAddress;
     private Money $amount;
     private PaymentReference $reference;
     private OrderPaymentState $status;
@@ -55,7 +55,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         OrderPaymentId $id,
         string $orderId,
         string $customerId,
-        ?string $buyerAddress,
+        string $buyerAddress,
         Money $amount,
         PaymentReference $reference,
         string $checkoutUrl,

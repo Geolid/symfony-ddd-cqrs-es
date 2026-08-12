@@ -16,12 +16,9 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
     public function itListsOnlyPendingShipments(): void
     {
         // Given
-        $pending = ShipmentTestFactory::new()->create();
-        $this->store(
-            $pending,
-            ...ShipmentTestFactory::new()->dispatched()->many(2)->createList(),
-            ...ShipmentTestFactory::new()->delivered()->many(2)->createList(),
-        );
+        $pending = ShipmentTestFactory::new()->store();
+        ShipmentTestFactory::new()->dispatched()->many(2)->store();
+        ShipmentTestFactory::new()->dispatched()->delivered()->many(2)->store();
 
         // When
         $results = iterator_to_array($this->ask(new ListPendingShipments()));

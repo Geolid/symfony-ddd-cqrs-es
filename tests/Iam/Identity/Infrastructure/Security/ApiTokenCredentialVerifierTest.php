@@ -35,8 +35,7 @@ final class ApiTokenCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $verified = $this->verifier->verify($identifier, 'S3cr3t!');
@@ -54,8 +53,7 @@ final class ApiTokenCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $verified = $this->verifier->verify($identifier, 'wrong');

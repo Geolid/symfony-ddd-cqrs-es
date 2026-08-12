@@ -25,8 +25,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itListsProducts(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
         $results = iterator_to_array($this->finder);
@@ -45,9 +44,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itListsProductsSortedByLabel(): void
     {
         // Given
-        $zebra = ProductTestFactory::new()->withLabel('Zebra mug')->create();
-        $apple = ProductTestFactory::new()->withLabel('Apple crate')->create();
-        $this->store($zebra, $apple);
+        ProductTestFactory::new()->withLabel('Zebra mug')->store();
+        ProductTestFactory::new()->withLabel('Apple crate')->store();
 
         // When
         $results = iterator_to_array($this->finder->sortedByLabel());
@@ -63,8 +61,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersProductsByDelisting(): void
     {
         // Given
-        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($listed, ProductTestFactory::new()->delisted()->create());
+        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        ProductTestFactory::new()->delisted()->store();
 
         // When
         $results = iterator_to_array($this->finder->withoutDelisted());

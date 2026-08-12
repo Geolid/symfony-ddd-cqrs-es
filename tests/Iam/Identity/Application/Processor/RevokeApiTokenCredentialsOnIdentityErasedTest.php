@@ -29,9 +29,8 @@ final class RevokeApiTokenCredentialsOnIdentityErasedTest extends AbstractIntegr
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $this->store(ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->create());
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
-        $this->store($other);
+        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
 
         // When
         ($this->processor)(new IdentityErased($identityId, '2026-01-02T00:00:00+00:00'));

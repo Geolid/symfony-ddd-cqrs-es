@@ -25,8 +25,7 @@ final class BuyerResolverTest extends AbstractIntegrationTestCase
     public function itResolvesTheAddressOfARegisteredCustomer(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
 
         // When
         $buyer = $this->resolver->resolveFor($customer->id()->toString());
@@ -41,8 +40,7 @@ final class BuyerResolverTest extends AbstractIntegrationTestCase
     public function itResolvesNothingForAnErasedCustomer(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->erased()->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->erased()->store();
 
         // When
         $buyer = $this->resolver->resolveFor($customer->id()->toString());

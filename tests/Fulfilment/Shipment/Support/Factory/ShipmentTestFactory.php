@@ -18,35 +18,49 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
 {
     public function withOrderId(string $orderId): self
     {
-        return static::new(array_merge($this->attributes, ['orderId' => $orderId]));
+        return $this->withAttributes(array_merge($this->attributes, ['orderId' => $orderId]));
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return static::new(array_merge($this->attributes, ['customerId' => $customerId]));
+        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
     }
 
-    public function withCustomerAddress(?string $customerAddress): self
+    public function withCustomerAddress(string $customerAddress): self
     {
-        return static::new(array_merge($this->attributes, ['customerAddress' => $customerAddress]));
+        return $this->withAttributes(array_merge($this->attributes, ['customerAddress' => $customerAddress]));
     }
 
-    public function dispatched(): self
+    public function withCreatedAt(\DateTimeImmutable $createdAt): self
     {
-        return $this->withModifier(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['createdAt' => $createdAt]));
+    }
+
+    public function dispatched(\DateTimeImmutable $dispatchedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt),
+        );
     }
 
     public function tracked(string $trackingReference): self
     {
-        return $this->dispatched()->withModifier(
+        return $this->withModifier(
             static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString($trackingReference)),
         );
     }
 
-    public function delivered(): self
+    public function delivered(\DateTimeImmutable $deliveredAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->dispatched()->withModifier(
-            static fn (Shipment $shipment) => $shipment->markDelivered(new \DateTimeImmutable('now +00:00')),
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->markDelivered($deliveredAt),
+        );
+    }
+
+    public function cancelled(\DateTimeImmutable $cancelledAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->cancel($cancelledAt),
         );
     }
 
@@ -64,7 +78,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($orderId = $attributes['orderId']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::nullOrStringNotEmpty($customerAddress = $attributes['customerAddress']);
+        Assert::stringNotEmpty($customerAddress = $attributes['customerAddress']);
         Assert::isInstanceOf($createdAt = $attributes['createdAt'], \DateTimeInterface::class);
 
         return Shipment::create(

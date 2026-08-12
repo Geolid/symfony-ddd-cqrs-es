@@ -89,12 +89,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $customer = CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-7@example.com')->create();
-        $this->store($customer);
-        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->cancelled()->withoutIncrementalIds()->create();
-        $this->store($order);
+        $identity = IdentityTestFactory::new()->store();
+        $customer = CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-7@example.com')->store();
+        $order = OrderTestFactory::new()->withCustomerId($customer->id()->toString())->cancelled()->withoutIncrementalIds()->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -227,17 +224,15 @@ final class OrderControllerTest extends AbstractWebTestCase
 
     private function registerCustomer(string $email): Identity
     {
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->create());
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();
 
         return $identity;
     }
 
     private function placeOrder(KernelBrowser $client): string
     {
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();

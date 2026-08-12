@@ -12,7 +12,7 @@ final readonly class RequestOrderPayment implements CommandInterface
         public string $id,
         public string $orderId,
         public string $customerId,
-        public ?string $buyerAddress,
+        public string $buyerAddress,
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,

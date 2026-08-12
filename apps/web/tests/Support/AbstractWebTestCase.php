@@ -63,11 +63,11 @@ abstract class AbstractWebTestCase extends WebTestCase
 
         // A lazy firewall re-resolves the user (refreshUser()) on any request that actually
         // touches security — a real PasswordCredential must exist or that refresh deauthenticates.
-        $this->store(PasswordCredentialTestFactory::new()
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withLogin($login)
             ->withHasher($this->service(SecretHasherInterface::class))
-            ->create());
+            ->store();
 
         $client->loginUser(new PasswordUser($identityId, $login, $grants));
     }

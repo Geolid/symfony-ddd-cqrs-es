@@ -20,15 +20,14 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
-            ->create());
-        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->create());
+            ->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->store();
 
         // When
         $crawler = $client->request('GET', '/login');
@@ -47,14 +46,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
-            ->create());
+            ->store();
 
         // When
         $crawler = $client->request('GET', '/login');
@@ -74,14 +72,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
-        $this->store(PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->suspended()->store();
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
-            ->create());
+            ->store();
 
         // When
         $crawler = $client->request('GET', '/login');
@@ -100,9 +97,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture.widget:read')->create());
+        $identity = IdentityTestFactory::new()->store();
+        GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture.widget:read')->store();
 
         // When
         $this->loginAs($client, $identity);
@@ -118,8 +114,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $this->loginAs($client, $identity);
 
         // When

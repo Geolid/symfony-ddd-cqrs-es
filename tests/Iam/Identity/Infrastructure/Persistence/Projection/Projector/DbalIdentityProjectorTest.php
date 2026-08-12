@@ -19,8 +19,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheIdentityOnIdentityRegistered(): void
     {
         // When
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // Then
         $row = $this->fetchRow($identity->id()->toString());
@@ -32,11 +31,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itUpdatesTheStatusOnIdentitySuspended(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->store();
 
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $identity->suspend(new \DateTimeImmutable('now +00:00'));
@@ -56,11 +53,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itUpdatesTheStatusOnIdentityReactivated(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->suspended()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->suspended()->store();
 
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
         $identity->reactivate(new \DateTimeImmutable('now +00:00'));
@@ -80,11 +75,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itUpdatesTheErasedAtOnIdentityErased(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->store();
 
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $identity->erase(new \DateTimeImmutable('now +00:00'));

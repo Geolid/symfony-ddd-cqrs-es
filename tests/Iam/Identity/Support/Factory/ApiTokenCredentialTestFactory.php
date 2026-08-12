@@ -17,39 +17,59 @@ use Webmozart\Assert\Assert;
  */
 final class ApiTokenCredentialTestFactory extends AbstractAggregateTestFactory
 {
+    public function withId(string $id): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+    }
+
     public function withIdentityId(string $identityId): self
     {
-        return static::new(array_merge($this->attributes, ['identityId' => $identityId]));
+        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]));
     }
 
     public function withIdentifier(string $identifier): self
     {
-        return static::new(array_merge($this->attributes, ['identifier' => $identifier]));
+        return $this->withAttributes(array_merge($this->attributes, ['identifier' => $identifier]));
     }
 
     public function withLabel(string $label): self
     {
-        return static::new(array_merge($this->attributes, ['label' => $label]));
+        return $this->withAttributes(array_merge($this->attributes, ['label' => $label]));
     }
 
     public function withSecret(string $secret): self
     {
-        return static::new(array_merge($this->attributes, ['secret' => $secret]));
+        return $this->withAttributes(array_merge($this->attributes, ['secret' => $secret]));
     }
 
-    public function revoked(): self
+    public function withIssuedAt(\DateTimeImmutable $issuedAt): self
     {
-        return $this->withModifier(static fn (ApiTokenCredential $credential) => $credential->revoke(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['issuedAt' => $issuedAt]));
     }
 
-    public function expired(): self
+    public function withExpiresAt(\DateTimeImmutable $expiresAt): self
     {
-        return static::new(array_merge($this->attributes, ['expiresAt' => new \DateTimeImmutable('-1 day +00:00')]));
+        return $this->withAttributes(array_merge($this->attributes, ['expiresAt' => $expiresAt]));
     }
 
     public function withHasher(SecretHasherInterface $hasher): self
     {
-        return static::new(array_merge($this->attributes, ['hasher' => $hasher]));
+        return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
+    }
+
+    public function revoked(\DateTimeImmutable $revokedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (ApiTokenCredential $credential) => $credential->revoke($revokedAt));
+    }
+
+    public function rehashed(?string $plainSecret = null, \DateTimeImmutable $rehashedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(function (ApiTokenCredential $credential) use ($plainSecret, $rehashedAt): void {
+            Assert::stringNotEmpty($secret = $plainSecret ?? $this->attributes['secret']);
+            Assert::isInstanceOf($hasher = $this->attributes['hasher'], SecretHasherInterface::class);
+
+            $credential->rehash($secret, $hasher, $rehashedAt);
+        });
     }
 
     protected function defaults(): array

@@ -44,8 +44,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itRequestsPaymentForAPlacedOrder(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->withTotalAmountInCents(4_200)->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->withTotalAmountInCents(4_200)->store();
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
@@ -76,9 +75,8 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenAPaymentHasAlreadyBeenRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $this->store($order);
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->create());
+        $order = OrderTestFactory::new()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
 
         // Then
         $this->expectException(OrderPaymentAlreadyRequestedException::class);
@@ -91,8 +89,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenTheOrderIsCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled()->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->cancelled()->store();
 
         // Then
         $this->expectException(OrderAlreadyCancelledException::class);

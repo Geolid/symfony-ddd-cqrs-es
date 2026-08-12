@@ -19,8 +19,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheCustomerOnCustomerRegistered(): void
     {
         // When
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
@@ -33,8 +32,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheRedactionOnCustomerErased(): void
     {
         // When
-        $customer = CustomerTestFactory::new()->erased()->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->erased()->store();
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());

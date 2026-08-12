@@ -31,8 +31,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
-            ->create();
-        $this->store($order);
+            ->store();
 
         // When
         $result = $this->finder->ofId($order->id()->toString());
