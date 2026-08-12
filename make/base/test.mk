@@ -18,5 +18,6 @@ mutation: ## Run mutation testing scoped to the diff (optional: make mutation co
 		--git-diff-lines \
 		--git-diff-base=origin/main \
 		--min-msi=100 \
+		--ignore-msi-with-no-mutations \
 		$(if $(coverage),--coverage=var/coverage --skip-initial-tests,)
 .PHONY: mutation

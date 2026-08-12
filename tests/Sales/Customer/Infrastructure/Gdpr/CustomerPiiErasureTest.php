@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 use Support\AbstractIntegrationTestCase;
 
@@ -33,6 +34,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerRegistered::class, $rehydrated);
-        self::assertSame('erased@erased.invalid', $rehydrated->email);
+        $sentinel = new ErasedFieldSentinel('erased-email-%s@customer.invalid');
+        self::assertSame($sentinel($customer->id()->toString()), $rehydrated->email);
     }
 }

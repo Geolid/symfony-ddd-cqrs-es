@@ -91,5 +91,6 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addUniqueIndex(['login'], 'iam_identity_password_credential_login_unique');
     }
 }
