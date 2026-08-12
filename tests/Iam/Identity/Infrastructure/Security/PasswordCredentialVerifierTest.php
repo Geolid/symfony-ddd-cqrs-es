@@ -33,8 +33,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $verified = $this->verifier->verify($identityId, 'S3cr3t!');
@@ -52,8 +51,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $verified = $this->verifier->verify($identityId, 'wrong');

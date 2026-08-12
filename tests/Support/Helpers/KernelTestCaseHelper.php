@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Support\PHPUnit;
+namespace Support\Helpers;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -27,7 +27,7 @@ final class KernelTestCaseHelper
      */
     public static function getContainer(string $class): Container
     {
-        if (!is_subclass_of($class, KernelTestCase::class)) {
+        if (!is_a($class, KernelTestCase::class, true)) {
             throw new \LogicException(\sprintf('Class "%s" must extend "%s".', $class, KernelTestCase::class));
         }
 
@@ -43,7 +43,7 @@ final class KernelTestCaseHelper
      */
     public static function ensureKernelShutdown(string $class): void
     {
-        if (!is_subclass_of($class, KernelTestCase::class)) {
+        if (!is_a($class, KernelTestCase::class, true)) {
             throw new \LogicException(\sprintf('Class "%s" must extend "%s".', $class, KernelTestCase::class));
         }
 
@@ -64,7 +64,7 @@ final class KernelTestCaseHelper
      */
     public static function bootKernel(string $class): KernelInterface
     {
-        if (!is_subclass_of($class, KernelTestCase::class)) {
+        if (!is_a($class, KernelTestCase::class, true)) {
             throw new \LogicException(\sprintf('Class "%s" must extend "%s".', $class, KernelTestCase::class));
         }
 

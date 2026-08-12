@@ -22,8 +22,7 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     {
         // When
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->store();
 
         // Then
         $row = $this->fetchRow($grant->id()->toString());
@@ -37,12 +36,10 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     public function itMarksTheGrantAsRevokedOnPermissionRevoked(): void
     {
         // Given
-        $other = GrantTestFactory::new()->create();
-        $this->store($other);
+        $other = GrantTestFactory::new()->store();
 
         // When
-        $grant = GrantTestFactory::new()->revoked()->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->revoked()->store();
 
         // Then
         $row = $this->fetchRow($grant->id()->toString());
@@ -58,10 +55,8 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheReactivationOnPermissionReactivated(): void
     {
         // Given
-        $other = GrantTestFactory::new()->revoked()->create();
-        $this->store($other);
-        $grant = GrantTestFactory::new()->revoked()->create();
-        $this->store($grant);
+        $other = GrantTestFactory::new()->revoked()->store();
+        $grant = GrantTestFactory::new()->revoked()->store();
 
         // When
         $grant->reactivate(new \DateTimeImmutable('now +00:00'));
@@ -82,10 +77,8 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $other = GrantTestFactory::new()->create();
-        $this->store($other);
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->create();
-        $this->store($grant);
+        $other = GrantTestFactory::new()->store();
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->store();
 
         // When
         $this->service(DbalGrantProjector::class)->onIdentityErased(

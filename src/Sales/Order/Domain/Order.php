@@ -27,7 +27,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private OrderId $id;
     private string $customerId;
-    private ?string $buyerAddress;
+    private string $buyerAddress;
     private Money $totalAmount;
     private OrderState $status;
 
@@ -36,7 +36,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function buyerAddress(): ?string
+    public function buyerAddress(): string
     {
         return $this->buyerAddress;
     }
@@ -54,7 +54,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public static function place(
         OrderId $id,
         string $customerId,
-        ?string $buyerAddress,
+        string $buyerAddress,
         array $lines,
         \DateTimeImmutable $placedAt,
     ): self {

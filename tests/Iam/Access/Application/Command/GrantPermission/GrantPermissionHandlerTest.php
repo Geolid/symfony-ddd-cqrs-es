@@ -45,8 +45,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->revoked()->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->revoked()->store();
 
         // When
         $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));
@@ -62,8 +61,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->create();
-        $this->store($grant);
+        $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->store();
 
         // When
         $this->dispatch(new GrantPermission($identityId, 'fixture.widget:read'));

@@ -16,27 +16,37 @@ use Webmozart\Assert\Assert;
  */
 final class ProductTestFactory extends AbstractAggregateTestFactory
 {
+    public function withId(string $id): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+    }
+
     public function withLabel(string $label): self
     {
-        return static::new(array_merge($this->attributes, ['label' => $label]));
+        return $this->withAttributes(array_merge($this->attributes, ['label' => $label]));
     }
 
     public function withUnitAmountInCents(int $unitAmountInCents): self
     {
-        return static::new(array_merge($this->attributes, ['unitAmountInCents' => $unitAmountInCents]));
+        return $this->withAttributes(array_merge($this->attributes, ['unitAmountInCents' => $unitAmountInCents]));
     }
 
-    public function repriced(int $unitAmountInCents): self
+    public function withListedAt(\DateTimeImmutable $listedAt): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['listedAt' => $listedAt]));
+    }
+
+    public function repriced(int $unitAmountInCents, \DateTimeImmutable $repricedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(static fn (Product $product) => $product->reprice(
             Money::fromCents($unitAmountInCents),
-            new \DateTimeImmutable('now +00:00'),
+            $repricedAt,
         ));
     }
 
-    public function delisted(): self
+    public function delisted(\DateTimeImmutable $delistedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Product $product) => $product->delist(new \DateTimeImmutable('now +00:00')));
+        return $this->withModifier(static fn (Product $product) => $product->delist($delistedAt));
     }
 
     protected function defaults(): array

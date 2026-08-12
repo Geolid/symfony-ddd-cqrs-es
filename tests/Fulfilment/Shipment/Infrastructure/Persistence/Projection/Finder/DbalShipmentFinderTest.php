@@ -27,8 +27,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itListsShipments(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()->dispatched()->tracked('ACME-4Q7X2K9')->store();
 
         // When
         $results = iterator_to_array($this->finder);
@@ -49,12 +48,9 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersShipmentsByStatus(): void
     {
         // Given
-        $pending = ShipmentTestFactory::new()->create();
-        $this->store(
-            $pending,
-            ...ShipmentTestFactory::new()->dispatched()->many(2)->createList(),
-            ...ShipmentTestFactory::new()->delivered()->many(2)->createList(),
-        );
+        $pending = ShipmentTestFactory::new()->store();
+        ShipmentTestFactory::new()->dispatched()->many(2)->store();
+        ShipmentTestFactory::new()->dispatched()->delivered()->many(2)->store();
 
         // When
         $results = iterator_to_array($this->finder->byStatus('pending'));
@@ -76,8 +72,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itGetsByTrackingReference(): void
     {
         // Given
-        $tracked = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
-        $this->store($tracked, ShipmentTestFactory::new()->tracked('ACME-OTHER')->create());
+        $tracked = ShipmentTestFactory::new()->dispatched()->tracked('ACME-4Q7X2K9')->store();
+        ShipmentTestFactory::new()->dispatched()->tracked('ACME-OTHER')->store();
 
         // When
         $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');

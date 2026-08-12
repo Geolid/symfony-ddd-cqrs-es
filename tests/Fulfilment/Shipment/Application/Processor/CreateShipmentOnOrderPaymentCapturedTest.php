@@ -63,15 +63,11 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
 
     private function placedOrder(): Order
     {
-        $order = OrderTestFactory::new()
+        return OrderTestFactory::new()
             ->withCustomerId(Uuid::uuid7()->toString())
             ->withBuyerAddress('buyer@example.com')
             ->withTotalAmountInCents(4_200)
-            ->create();
-
-        $this->store($order);
-
-        return $order;
+            ->store();
     }
 
     private function orderPaymentCaptured(Order $order): OrderPaymentCapturedIntegrationEvent
@@ -84,7 +80,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         );
     }
 
-    private function addressOf(Order $order): ?string
+    private function addressOf(Order $order): string
     {
         return $this->service(ShipmentRepositoryInterface::class)
             ->load(ShipmentId::forOrder($order->id()->toString()))

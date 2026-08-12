@@ -34,8 +34,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create();
-        $this->store($orderPayment);
+            ->store();
 
         // When
         $result = $this->finder->ofReference('GLBX-9F3K2M1P');
@@ -70,8 +69,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create();
-        $this->store($orderPayment);
+            ->store();
 
         // When
         $result = $this->finder->ofOrder($orderId);

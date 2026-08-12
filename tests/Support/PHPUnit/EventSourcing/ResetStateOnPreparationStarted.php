@@ -9,7 +9,7 @@ use Patchlevel\EventSourcingBundle\Subscription\StaticInMemorySubscriptionStoreF
 use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\Test\PreparationStarted;
 use PHPUnit\Event\Test\PreparationStartedSubscriber;
-use Support\PHPUnit\KernelTestCaseHelper;
+use Support\Helpers\KernelTestCaseHelper;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Application\Command\AssignTrackingReference;
+namespace Fulfilment\Tests\Shipment\Application\Command\CancelShipment;
 
-use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
+use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
@@ -14,34 +15,35 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
-final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
+final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itTracksADispatchedShipment(): void
+    public function itCancelsAPendingShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->store();
 
         // When
-        $this->dispatch(new AssignTrackingReference($shipment->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new CancelShipment($shipment->id()->toString()));
 
         // Then
         $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
         self::assertCount(1, $results);
-        self::assertSame('ACME-4Q7X2K9', $results[0]->trackingReference);
+        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
+        self::assertNotNull($results[0]->cancelledAt);
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentHasNotLeftYet(): void
+    public function itFailsWhenTheShipmentHasAlreadyBeenDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->dispatched()->delivered()->store();
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new AssignTrackingReference($shipment->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new CancelShipment($shipment->id()->toString()));
     }
 
     #[Test]
@@ -54,6 +56,6 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new AssignTrackingReference($id, 'ACME-4Q7X2K9'));
+        $this->dispatch(new CancelShipment($id));
     }
 }

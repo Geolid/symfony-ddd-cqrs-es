@@ -9,4 +9,5 @@ enum ShipmentStatus: string
     case PENDING = 'pending';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
+    case CANCELLED = 'cancelled';
 }

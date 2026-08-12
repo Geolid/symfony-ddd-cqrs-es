@@ -26,8 +26,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create();
-        $this->store($orderPayment);
+            ->store();
 
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());
@@ -44,8 +43,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheCaptureOnOrderPaymentCaptured(): void
     {
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->captured()->create();
-        $this->store($orderPayment);
+        $orderPayment = OrderPaymentTestFactory::new()->captured()->store();
 
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());

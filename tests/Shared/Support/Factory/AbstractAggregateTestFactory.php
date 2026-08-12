@@ -7,8 +7,11 @@ namespace Shared\Tests\Support\Factory;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Patchlevel\EventSourcing\Test\IncrementalRamseyUuidFactory;
 use Ramsey\Uuid\Uuid;
+use Support\Helpers\KernelTestCaseHelper;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Webmozart\Assert\Assert;
 
 /**
@@ -20,8 +23,6 @@ abstract class AbstractAggregateTestFactory
 {
     /** @var list<callable(T): void> */
     private array $modifiers = [];
-
-    private int $count = 1;
 
     private bool $useIncrementalIds = true;
 
@@ -47,34 +48,13 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
-     * @param array<string, mixed> $attributes
-     *
-     * @return T
+     * @return AggregateCollectionTestFactory<T>
      */
-    public static function createOne(array $attributes = []): AggregateRoot
-    {
-        return self::new($attributes)->create();
-    }
-
-    /**
-     * @param int<1, max>          $count
-     * @param array<string, mixed> $attributes
-     *
-     * @return list<T>
-     */
-    public static function createMany(int $count, array $attributes = []): array
-    {
-        return self::new($attributes)->many($count)->createList();
-    }
-
-    public function many(int $count): static
+    public function many(int $count): AggregateCollectionTestFactory
     {
         Assert::positiveInteger($count);
 
-        $clone = clone $this;
-        $clone->count = $count;
-
-        return $clone;
+        return new AggregateCollectionTestFactory($this, $count);
     }
 
     /**
@@ -92,11 +72,21 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
-     * @return list<T>
+     * @return T
      */
-    public function createList(): array
+    public function store(): AggregateRoot
     {
-        return array_map(fn () => $this->create(), range(1, $this->count));
+        $aggregate = $this->create();
+
+        // Kernel/container statics live on KernelTestCase itself, never redeclared by any
+        // subclass — this reaches whichever one the running test already booted.
+        $manager = KernelTestCaseHelper::getContainer(KernelTestCase::class)
+            ->get(RepositoryManager::class);
+        \assert($manager instanceof RepositoryManager);
+
+        $manager->get($aggregate::class)->save($aggregate);
+
+        return $aggregate;
     }
 
     public function withIncrementalIds(): static
@@ -131,6 +121,18 @@ abstract class AbstractAggregateTestFactory
      * @return T
      */
     abstract protected function build(array $attributes): AggregateRoot;
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    protected function withAttributes(array $attributes): static
+    {
+        $clone = static::new($attributes);
+        $clone->modifiers = $this->modifiers;
+        $clone->useIncrementalIds = $this->useIncrementalIds;
+
+        return $clone;
+    }
 
     /**
      * @param callable(T): void $modifier

@@ -19,8 +19,8 @@ final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInte
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[PersonalData(fallback: null)]
-        public ?string $buyerAddress,
+        #[PersonalData(fallback: 'erased-address')]
+        public string $buyerAddress,
         public array $lines,
         public int $totalAmountInCents,
         public string $placedAt,

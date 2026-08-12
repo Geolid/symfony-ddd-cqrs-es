@@ -15,8 +15,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itListsProducts(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
         $result = $this->ask(new ListProducts());
@@ -37,8 +36,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itListsProductsExcludingDelistedByDefault(): void
     {
         // Given
-        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($listed, ProductTestFactory::new()->withLabel('Saucer')->delisted()->create());
+        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
 
         // When
         $result = $this->ask(new ListProducts());
@@ -55,10 +54,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itListsDelistedProductsWhenAsked(): void
     {
         // Given
-        $this->store(
-            ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create(),
-            ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(990)->delisted()->create(),
-        );
+        ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(990)->delisted()->store();
 
         // When
         $result = $this->ask(new ListProducts(includeDelisted: true));
@@ -77,8 +74,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginatesProducts(): void
     {
         // Given
-        // Pagination math, not values — 5 arbitrary products, 2 per page, 3 pages.
-        $this->store(...ProductTestFactory::createMany(5));
+        ProductTestFactory::new()->many(5)->store();
 
         // When
         $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));

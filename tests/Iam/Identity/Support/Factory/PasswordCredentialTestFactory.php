@@ -19,22 +19,47 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 {
     public function withIdentityId(string $identityId): self
     {
-        return static::new(array_merge($this->attributes, ['identityId' => $identityId]));
+        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]));
     }
 
     public function withLogin(string $login): self
     {
-        return static::new(array_merge($this->attributes, ['login' => $login]));
+        return $this->withAttributes(array_merge($this->attributes, ['login' => $login]));
     }
 
     public function withPassword(string $password): self
     {
-        return static::new(array_merge($this->attributes, ['password' => $password]));
+        return $this->withAttributes(array_merge($this->attributes, ['password' => $password]));
+    }
+
+    public function withSetAt(\DateTimeImmutable $setAt): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['setAt' => $setAt]));
     }
 
     public function withHasher(SecretHasherInterface $hasher): self
     {
-        return static::new(array_merge($this->attributes, ['hasher' => $hasher]));
+        return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
+    }
+
+    public function changed(?string $plainPassword = null, \DateTimeImmutable $changedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(function (PasswordCredential $credential) use ($plainPassword, $changedAt): void {
+            Assert::stringNotEmpty($password = $plainPassword ?? $this->attributes['password']);
+            Assert::isInstanceOf($hasher = $this->attributes['hasher'], SecretHasherInterface::class);
+
+            $credential->change($password, $hasher, $changedAt);
+        });
+    }
+
+    public function rehashed(?string $plainPassword = null, \DateTimeImmutable $rehashedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(function (PasswordCredential $credential) use ($plainPassword, $rehashedAt): void {
+            Assert::stringNotEmpty($password = $plainPassword ?? $this->attributes['password']);
+            Assert::isInstanceOf($hasher = $this->attributes['hasher'], SecretHasherInterface::class);
+
+            $credential->rehash($password, $hasher, $rehashedAt);
+        });
     }
 
     protected function defaults(): array
@@ -53,7 +78,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::stringNotEmpty($login = $attributes['login']);
         Assert::stringNotEmpty($password = $attributes['password']);
         Assert::isInstanceOf($setAt = $attributes['setAt'], \DateTimeInterface::class);
-        Assert::keyExists($attributes, 'hasher', 'Missing hasher — call withHasher() before create().');
+        Assert::keyExists($attributes, 'hasher', 'Missing hasher — call withHasher() before create()/store().');
         Assert::isInstanceOf($hasher = $attributes['hasher'], SecretHasherInterface::class);
 
         return PasswordCredential::set(

@@ -28,8 +28,7 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
     public function itDispatchesEveryPendingShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
-        $this->store($shipment);
+        $shipment = ShipmentTestFactory::new()->store();
         $tester = $this->tester();
 
         // When
@@ -47,7 +46,7 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
     public function itFailsToRunWhileAlreadyRunningInAnotherProcess(): void
     {
         // Given
-        $this->store(ShipmentTestFactory::new()->create());
+        ShipmentTestFactory::new()->store();
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = (new LockFactory($store))->createLock('fulfilment:shipment:dispatch-pending');
         $lock->acquire();

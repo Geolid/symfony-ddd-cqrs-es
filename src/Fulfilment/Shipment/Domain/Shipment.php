@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain;
 
+use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
+use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
@@ -28,7 +30,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private ShipmentId $id;
     private string $orderId;
     private string $customerId;
-    private ?string $customerAddress;
+    private string $customerAddress;
     private ?TrackingReference $trackingReference;
     private ShipmentState $status;
 
@@ -47,9 +49,19 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $this->customerId;
     }
 
-    public function customerAddress(): ?string
+    public function customerAddress(): string
     {
         return $this->customerAddress;
+    }
+
+    /**
+     * @throws ShipmentCustomerErasedException
+     */
+    public function ensureCustomerNotErased(): void
+    {
+        if ('erased-address' === $this->customerAddress) {
+            throw ShipmentCustomerErasedException::forId($this->id);
+        }
     }
 
     public function trackingReference(): ?TrackingReference
@@ -61,7 +73,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ShipmentId $id,
         string $orderId,
         string $customerId,
-        ?string $customerAddress,
+        string $customerAddress,
         \DateTimeImmutable $createdAt,
     ): self {
         $self = new self();
@@ -125,6 +137,25 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function cancel(\DateTimeImmutable $cancelledAt): void
+    {
+        if ($this->status->isDelivered()) {
+            throw ShipmentInvalidTransitionException::cannotCancel($this->status);
+        }
+
+        if ($this->status->isCancelled()) {
+            return;
+        }
+
+        $this->recordThat(new ShipmentCancelled(
+            id: $this->id->toString(),
+            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     #[Apply]
     private function applyShipmentCreated(ShipmentCreated $event): void
     {
@@ -152,5 +183,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyShipmentDelivered(ShipmentDelivered $event): void
     {
         $this->status = ShipmentState::DELIVERED;
+    }
+
+    #[Apply]
+    private function applyShipmentCancelled(ShipmentCancelled $event): void
+    {
+        $this->status = ShipmentState::CANCELLED;
     }
 }

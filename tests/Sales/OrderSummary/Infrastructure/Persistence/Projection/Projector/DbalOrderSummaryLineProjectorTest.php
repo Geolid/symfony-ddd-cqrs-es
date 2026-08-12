@@ -20,14 +20,11 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
     #[Test]
     public function itProjectsEachLineOnOrderPlaced(): void
     {
-        // Given
+        // When
         $order = OrderTestFactory::new()->withLines([
             OrderLine::of('Widget', 2, Money::fromCents(1_000)),
             OrderLine::of('Gadget', 1, Money::fromCents(3_000)),
-        ])->create();
-
-        // When
-        $this->store($order);
+        ])->store();
 
         // Then
         $rows = $this->fetchRows($order->id()->toString());

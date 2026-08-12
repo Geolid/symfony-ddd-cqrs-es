@@ -17,8 +17,8 @@ final readonly class ShipmentCreated implements DomainEventInterface
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[PersonalData(fallback: null)]
-        public ?string $customerAddress,
+        #[PersonalData(fallback: 'erased-address')]
+        public string $customerAddress,
         public string $createdAt,
     ) {
     }

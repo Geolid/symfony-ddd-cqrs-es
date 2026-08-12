@@ -19,3 +19,9 @@ parameters:
             identifier: symfonyContainer.privateService
             paths:
                 - '**/ResetStateOnPreparationStarted.php'
+        -
+            # Same KernelTestCaseHelper indirection as above, reached from AbstractAggregateTestFactory::store().
+            message: '#^Service "Patchlevel\\EventSourcing\\Repository\\RepositoryManager" is private\.$#'
+            identifier: symfonyContainer.privateService
+            paths:
+                - '**/AbstractAggregateTestFactory.php'

@@ -18,17 +18,27 @@ final class GrantTestFactory extends AbstractAggregateTestFactory
 {
     public function withIdentityId(string $identityId): self
     {
-        return static::new(array_merge($this->attributes, ['identityId' => $identityId]));
+        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]));
     }
 
     public function withPermission(string $permission): self
     {
-        return static::new(array_merge($this->attributes, ['permission' => $permission]));
+        return $this->withAttributes(array_merge($this->attributes, ['permission' => $permission]));
     }
 
-    public function revoked(): self
+    public function withGrantedAt(\DateTimeImmutable $grantedAt): self
     {
-        return $this->withModifier(static fn (Grant $grant) => $grant->revoke(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['grantedAt' => $grantedAt]));
+    }
+
+    public function revoked(\DateTimeImmutable $revokedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Grant $grant) => $grant->revoke($revokedAt));
+    }
+
+    public function reactivated(\DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Grant $grant) => $grant->reactivate($reactivatedAt));
     }
 
     protected function defaults(): array

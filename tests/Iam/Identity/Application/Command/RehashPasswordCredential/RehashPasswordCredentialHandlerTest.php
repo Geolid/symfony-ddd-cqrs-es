@@ -36,8 +36,7 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
         $staleHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When
@@ -58,8 +57,7 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
             ->withIdentityId($identityId)
             ->withPassword('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
         $currentHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When

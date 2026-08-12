@@ -75,9 +75,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-3@example.com')->create());
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-3@example.com')->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -94,9 +93,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-4@example.com')->create());
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-4@example.com')->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -111,9 +109,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->store(CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-5@example.com')->create());
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-5@example.com')->store();
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When

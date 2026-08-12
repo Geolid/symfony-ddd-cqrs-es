@@ -49,15 +49,15 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function authenticatedClient(Identity $identity, string ...$permissions): Client
     {
         $apiKey = $this->generateApiKey();
-        $this->store(ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
-            ->create());
+            ->store();
 
         foreach ($permissions as $permission) {
-            $this->store(GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission($permission)->create());
+            GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission($permission)->store();
         }
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
@@ -71,11 +71,11 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function invalidApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->generateApiKey();
-        $this->store(ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withIdentifier($apiKey->identifier)
             ->withHasher($this->hasher)
-            ->create());
+            ->store();
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $this->generateApiKey()->secret));
     }
@@ -83,13 +83,13 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function revokedApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->generateApiKey();
-        $this->store(ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
             ->revoked()
-            ->create());
+            ->store();
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
     }
@@ -97,13 +97,13 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function expiredApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->generateApiKey();
-        $this->store(ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
-            ->expired()
-            ->create());
+            ->withExpiresAt(new \DateTimeImmutable('-1 day +00:00'))
+            ->store();
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
     }

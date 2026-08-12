@@ -38,8 +38,7 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
         $staleHash = $this->finder->ofIdentifier($identifier)->hash;
 
         // When
@@ -60,8 +59,7 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher($this->hasher)
-            ->create();
-        $this->store($credential);
+            ->store();
         $currentHash = $this->finder->ofIdentifier($identifier)->hash;
 
         // When

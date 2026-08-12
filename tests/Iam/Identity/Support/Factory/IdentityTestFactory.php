@@ -14,19 +14,29 @@ use Webmozart\Assert\Assert;
  */
 final class IdentityTestFactory extends AbstractAggregateTestFactory
 {
-    public function suspended(): self
+    public function withId(string $id): self
     {
-        return $this->withModifier(static fn (Identity $identity) => $identity->suspend(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
     }
 
-    public function erased(): self
+    public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withModifier(static fn (Identity $identity) => $identity->erase(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
     }
 
-    public function registeredAt(\DateTimeImmutable $registeredAt): self
+    public function suspended(\DateTimeImmutable $suspendedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return static::new(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
+        return $this->withModifier(static fn (Identity $identity) => $identity->suspend($suspendedAt));
+    }
+
+    public function reactivated(\DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Identity $identity) => $identity->reactivate($reactivatedAt));
+    }
+
+    public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Identity $identity) => $identity->erase($erasedAt));
     }
 
     protected function defaults(): array

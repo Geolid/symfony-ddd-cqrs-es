@@ -30,8 +30,7 @@ final class ReleaseLabelOnApiTokenCredentialRevokedTest extends AbstractIntegrat
     public function itReleasesTheLabelOnApiTokenCredentialRevoked(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withLabel('CI pipeline')->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = ApiTokenCredentialTestFactory::new()->withLabel('CI pipeline')->withHasher(new DummySecretHasher())->store();
         $fingerprint = $credential->label()->fingerprintFor($credential->identityId()->toString());
         $this->uniqueValues->reserve(ApiTokenCredentialUniqueValue::LABEL, $fingerprint);
 

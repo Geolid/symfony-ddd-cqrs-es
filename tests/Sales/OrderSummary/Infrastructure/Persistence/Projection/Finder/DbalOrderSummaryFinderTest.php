@@ -29,15 +29,13 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
-        $this->store($order);
-        $orderPayment = OrderPaymentTestFactory::new()
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->store();
+        OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
-            ->create();
-        $this->store($orderPayment);
+            ->store();
 
         // When
         $result = $this->finder->ofOrder($order->id()->toString());
@@ -72,9 +70,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->create();
-        $this->store($order);
-        $this->store(OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create());
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->store();
+        OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->store();
 
         // When
         $results = iterator_to_array($this->finder->withCustomer($customerId));
@@ -91,11 +88,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersOrderSummariesByStatus(): void
     {
         // Given
-        foreach (OrderTestFactory::createMany(2) as $placed) {
-            $this->store($placed);
-        }
-        $cancelled = OrderTestFactory::new()->cancelled()->create();
-        $this->store($cancelled);
+        OrderTestFactory::new()->many(2)->store();
+        $cancelled = OrderTestFactory::new()->cancelled()->store();
 
         // When
         $results = iterator_to_array($this->finder->withStatus('cancelled'));

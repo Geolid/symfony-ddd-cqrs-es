@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
+use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Gateway\CarrierGatewayInterface;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -34,15 +36,18 @@ final readonly class RequestPickupOnShipmentDispatched
     public function __invoke(ShipmentDispatched $event): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
-        $address = $shipment->customerAddress();
 
-        if (null === $address) {
+        try {
+            $shipment->ensureCustomerNotErased();
+        } catch (ShipmentCustomerErasedException) {
+            $this->commandBus->dispatch(new CancelShipment($event->id));
+
             return;
         }
 
         $this->commandBus->dispatch(new AssignTrackingReference(
             id: $event->id,
-            trackingReference: $this->carrier->requestPickup($event->id, $address),
+            trackingReference: $this->carrier->requestPickup($event->id, $shipment->customerAddress()),
         ));
     }
 }

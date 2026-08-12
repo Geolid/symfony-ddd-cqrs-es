@@ -21,8 +21,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // When
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -37,8 +36,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheCancellationOnOrderCancelled(): void
     {
         // When
-        $order = OrderTestFactory::new()->cancelled()->create();
-        $this->store($order);
+        $order = OrderTestFactory::new()->cancelled()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());

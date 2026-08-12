@@ -29,8 +29,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itSetsAPasswordCredentialForAnActiveIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
@@ -44,8 +43,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itChangesAnExistingPasswordCredential(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
 
         // When
@@ -60,12 +58,10 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheLoginIsAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
 
-        $other = IdentityTestFactory::new()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->store();
 
         // Then
         $this->expectException(LoginAlreadyTakenException::class);
@@ -88,8 +84,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheIdentityIsSuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // Then
         $this->expectException(IdentityNotActiveException::class);
@@ -102,8 +97,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheIdentityIsErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->erased()->store();
 
         // Then
         $this->expectException(IdentityNotActiveException::class);

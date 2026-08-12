@@ -18,8 +18,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itErasesTheIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $this->dispatch(new EraseIdentity($identity->id()->toString()));
@@ -33,8 +32,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyErasedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->erased()->store();
 
         // When
         $this->dispatch(new EraseIdentity($identity->id()->toString()));

@@ -17,17 +17,22 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return static::new(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
     }
 
     public function withEmail(string $email): self
     {
-        return static::new(array_merge($this->attributes, ['email' => $email]));
+        return $this->withAttributes(array_merge($this->attributes, ['email' => $email]));
     }
 
-    public function erased(): self
+    public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withModifier(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('now +00:00')));
+        return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
+    }
+
+    public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Customer $customer) => $customer->erase($erasedAt));
     }
 
     protected function defaults(): array

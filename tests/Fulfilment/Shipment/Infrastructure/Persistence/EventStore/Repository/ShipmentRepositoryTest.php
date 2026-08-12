@@ -27,7 +27,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->tracked('ACME-4Q7X2K9')->create();
+        $shipment = ShipmentTestFactory::new()->dispatched()->tracked('ACME-4Q7X2K9')->create();
 
         // When
         $this->repository->save($shipment);

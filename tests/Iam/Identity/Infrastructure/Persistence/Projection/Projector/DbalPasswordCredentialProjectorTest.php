@@ -23,8 +23,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheCredentialOnPasswordCredentialSet(): void
     {
         // When
-        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->store();
 
         // Then
         $row = $this->fetchRow($credential->id()->toString());
@@ -36,8 +35,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheNewHashOnPasswordCredentialChanged(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
         $hashBeforeChange = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($hashBeforeChange);
 
@@ -56,15 +54,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheIdentityStatusOnPasswordCredentialSet(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // Then
         $row = $this->fetchRow($credential->id()->toString());
@@ -76,21 +72,17 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itUpdatesTheIdentityStatusOnIdentitySuspended(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($otherCredential);
+            ->store();
 
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $identity->suspend(new \DateTimeImmutable('now +00:00'));
@@ -110,21 +102,17 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itUpdatesTheIdentityStatusOnIdentityReactivated(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->suspended()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->suspended()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($otherCredential);
+            ->store();
 
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $identity->reactivate(new \DateTimeImmutable('now +00:00'));
@@ -144,13 +132,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheNewHashOnPasswordCredentialRehashed(): void
     {
         // Given
-        $other = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
-        $this->store($other);
+        $other = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
         $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherHashBeforeRehash);
 
-        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->create();
-        $this->store($credential);
+        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
         $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($hashBeforeRehash);
 
@@ -172,21 +158,17 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheErasureOnIdentityErased(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $this->store($other);
+        $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($otherCredential);
+            ->store();
 
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withHasher(new DummySecretHasher())
-            ->create();
-        $this->store($credential);
+            ->store();
 
         // When
         $identity->erase(new \DateTimeImmutable('now +00:00'));

@@ -26,8 +26,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
 
         // When
         $result = $this->finder->ofId($customer->id()->toString());

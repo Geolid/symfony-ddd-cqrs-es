@@ -16,8 +16,8 @@ final readonly class OrderPaymentCapturedIntegrationEvent implements Integration
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[PersonalData(fallback: null)]
-        public ?string $buyerAddress,
+        #[PersonalData(fallback: 'erased-address')]
+        public string $buyerAddress,
         public string $capturedAt,
     ) {
     }

@@ -19,8 +19,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheProductOnProductListed(): void
     {
         // When
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // Then
         $row = $this->fetchRow($product->id()->toString());
@@ -33,12 +32,10 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsTheNewPriceOnProductRepriced(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withUnitAmountInCents(500)->create();
-        $this->store($other);
+        $other = ProductTestFactory::new()->withUnitAmountInCents(500)->store();
 
         // When
-        $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(1_950)->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(1_950)->store();
 
         // Then
         $row = $this->fetchRow($product->id()->toString());
@@ -54,8 +51,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itMarksTheProductAsDelistedOnProductDelisted(): void
     {
         // When
-        $product = ProductTestFactory::new()->delisted()->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->delisted()->store();
 
         // Then
         $row = $this->fetchRow($product->id()->toString());

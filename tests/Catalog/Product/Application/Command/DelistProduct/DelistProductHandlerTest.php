@@ -18,8 +18,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itDelistsAProduct(): void
     {
         // Given
-        $product = ProductTestFactory::new()->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->store();
 
         // When
         $this->dispatch(new DelistProduct($product->id()->toString()));
@@ -46,8 +45,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyDelistedProduct(): void
     {
         // Given
-        $product = ProductTestFactory::new()->delisted()->create();
-        $this->store($product);
+        $product = ProductTestFactory::new()->delisted()->store();
 
         // When
         $this->dispatch(new DelistProduct($product->id()->toString()));

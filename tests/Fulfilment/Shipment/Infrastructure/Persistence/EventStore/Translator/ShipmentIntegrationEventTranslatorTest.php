@@ -39,7 +39,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->delivered()->create();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->dispatched()->delivered()->create();
 
         // When
         $this->store($shipment);
@@ -59,7 +59,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->tracked('ACME-4Q7X2K9')->create();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->dispatched()->tracked('ACME-4Q7X2K9')->create();
 
         // When
         $this->store($shipment);

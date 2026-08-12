@@ -8,6 +8,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
@@ -70,6 +71,19 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(ShipmentCancelled::class)]
+    public function onShipmentCancelled(ShipmentCancelled $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentState::CANCELLED->value,
+                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
     #[Subscribe(OrderCancelledIntegrationEvent::class)]
     public function onOrderCancelled(OrderCancelledIntegrationEvent $event): void
     {
@@ -93,6 +107,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('created_at', Types::DATETIME_MUTABLE);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('order_cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

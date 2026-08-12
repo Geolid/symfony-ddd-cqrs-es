@@ -18,8 +18,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itRedactsTheAddress(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->store();
 
         // When
         $this->dispatch(new EraseCustomer($customer->id()->toString()));
@@ -34,8 +33,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyErasedCustomer(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->erased()->create();
-        $this->store($customer);
+        $customer = CustomerTestFactory::new()->erased()->store();
 
         // When
         $this->dispatch(new EraseCustomer($customer->id()->toString()));
