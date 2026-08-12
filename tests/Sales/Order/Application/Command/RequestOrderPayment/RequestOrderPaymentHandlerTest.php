@@ -11,6 +11,7 @@ use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
@@ -56,15 +57,14 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $this->dispatch(new RequestOrderPayment(
-            id: $id,
-            orderId: $orderId,
-            customerId: $customerId,
-            buyerAddress: 'buyer@example.com',
-            amountInCents: 4_200,
-            reference: 'GLBX-9F3K2M1P',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
-        ));
+        OrderPaymentTestFactory::new()
+            ->withOrderId($orderId)
+            ->withCustomerId($customerId)
+            ->withBuyerAddress('buyer@example.com')
+            ->withAmountInCents(4_200)
+            ->withReference('GLBX-9F3K2M1P')
+            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->store();
 
         // When
         $this->dispatch(new RequestOrderPayment(

@@ -12,36 +12,45 @@ use PHPUnit\Framework\TestCase;
 final class LoginTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value, string $expected): void
     {
-        // When
-        $login = Login::fromString('operator');
-
-        // Then
-        self::assertSame('operator', $login->toString());
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        // Given
-        $value = str_pad('operator', 50, 'operator');
-
         // When
         $login = Login::fromString($value);
 
         // Then
-        self::assertSame($value, $login->toString());
+        self::assertSame($expected, $login->toString());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'login' => ['operator', 'operator'];
+        yield 'maximum length' => [str_pad('operator', 50, 'operator'), str_pad('operator', 50, 'operator')];
+        yield 'surrounding whitespace' => ['  operator  ', 'operator'];
     }
 
     #[Test]
-    public function itTrims(): void
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
     {
-        // When
-        $login = Login::fromString('  operator  ');
-
         // Then
-        self::assertSame('operator', $login->toString());
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Login::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
+        yield 'too long' => [str_pad('operator', 51, 'operator')];
     }
 
     #[Test]
@@ -72,26 +81,5 @@ final class LoginTest extends TestCase
 
         // Then
         self::assertSame(hash('sha256', 'operator'), $fingerprint);
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $value): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        Login::fromString($value);
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function provideInvalidValues(): iterable
-    {
-        yield 'empty string' => [''];
-        yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_pad('operator', 51, 'operator')];
     }
 }

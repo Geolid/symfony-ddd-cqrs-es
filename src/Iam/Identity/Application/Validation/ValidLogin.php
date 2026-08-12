@@ -16,6 +16,7 @@ final class ValidLogin extends Compound
     {
         return [
             new Assert\NotBlank(normalizer: 'trim'),
+            new Assert\Type('string'),
             new Assert\Length(max: 50),
             new ValidValueObject(Login::class, method: 'fromString'),
         ];

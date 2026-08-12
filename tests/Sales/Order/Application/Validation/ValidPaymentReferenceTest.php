@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Application\Validation;
+namespace Sales\Tests\Order\Application\Validation;
 
-use Fulfilment\Shipment\Application\Validation\ValidTrackingReference;
-use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Application\Validation\ValidPaymentReference;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
 /**
- * @extends CompoundConstraintTestCase<ValidTrackingReference>
+ * @extends CompoundConstraintTestCase<ValidPaymentReference>
  */
-final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
+final class ValidPaymentReferenceTest extends CompoundConstraintTestCase
 {
     #[Test]
     public function itAccepts(): void
     {
         // When
-        $this->validateValue('ACME-1234567890');
+        $this->validateValue('GLBX-9F3K2M1P');
 
         // Then
         $this->assertNoViolation();
@@ -33,10 +33,10 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
      */
     #[Test]
     #[DataProvider('provideRefusedValues')]
-    public function itRefuses(mixed $trackingReference, array $rules): void
+    public function itRefuses(mixed $reference, array $rules): void
     {
         // When
-        $this->validateValue($trackingReference);
+        $this->validateValue($reference);
 
         // Then
         $this->assertViolationsCount(\count($rules));
@@ -49,17 +49,17 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
-        yield 'longer than the carrier can issue' => [str_repeat('A', 65), [self::valueObject()]];
+        yield 'longer than the provider can issue' => [str_repeat('A', 65), [self::valueObject()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
     }
 
-    protected function createCompound(): ValidTrackingReference
+    protected function createCompound(): ValidPaymentReference
     {
-        return new ValidTrackingReference();
+        return new ValidPaymentReference();
     }
 
     private static function valueObject(): ValidValueObject
     {
-        return new ValidValueObject(TrackingReference::class);
+        return new ValidValueObject(PaymentReference::class);
     }
 }

@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidMoneyTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsAnAmountInCents(): void
+    public function itAccepts(): void
     {
         // When
         $this->validateValue(2_500);
@@ -32,8 +32,8 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedAmounts')]
-    public function itRefusesAnAmount(mixed $amount, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $amount, array $rules): void
     {
         // When
         $this->validateValue($amount);
@@ -46,7 +46,7 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedAmounts(): iterable
+    public static function provideRefusedValues(): iterable
     {
         yield 'missing' => [null, [new Assert\NotNull()]];
         yield 'not a whole number' => [19.99, [new Assert\Type('int'), self::valueObject()]];

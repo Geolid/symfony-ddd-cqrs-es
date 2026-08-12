@@ -12,41 +12,23 @@ use Sales\Order\Domain\ValueObject\PaymentReference;
 final class PaymentReferenceTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
-        // When
-        $reference = PaymentReference::fromString('GLBX-9F3K2M1P');
-
-        // Then
-        self::assertSame('GLBX-9F3K2M1P', $reference->toString());
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $value = 'GLBX-9F3K2M1P';
-
-        // When
-        $a = PaymentReference::fromString($value);
-        $b = PaymentReference::fromString($value);
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(PaymentReference::fromString('GLBX-OTHER')));
-    }
-
-    #[Test]
-    public function itAcceptsAReferenceAtTheMaximumLength(): void
-    {
-        // Given
-        $value = str_repeat('A', 64);
-
         // When
         $reference = PaymentReference::fromString($value);
 
         // Then
         self::assertSame($value, $reference->toString());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'reference' => ['GLBX-9F3K2M1P'];
+        yield 'maximum length' => [str_repeat('A', 64)];
     }
 
     #[Test]
@@ -67,5 +49,20 @@ final class PaymentReferenceTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'longer than the provider can issue' => [str_repeat('A', 65)];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $value = 'GLBX-9F3K2M1P';
+
+        // When
+        $a = PaymentReference::fromString($value);
+        $b = PaymentReference::fromString($value);
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(PaymentReference::fromString('GLBX-OTHER')));
     }
 }

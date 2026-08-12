@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -53,7 +54,11 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId)->toString();
-        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'buyer@example.com'));
+        ShipmentTestFactory::new()
+            ->withOrderId($orderId)
+            ->withCustomerId($customerId)
+            ->withCustomerAddress('buyer@example.com')
+            ->store();
 
         // When
         $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'someone.else@example.com'));

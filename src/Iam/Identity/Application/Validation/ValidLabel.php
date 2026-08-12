@@ -16,6 +16,7 @@ final class ValidLabel extends Compound
     {
         return [
             new Assert\NotBlank(normalizer: 'trim'),
+            new Assert\Type('string'),
             new Assert\Length(max: 255),
             new ValidValueObject(Label::class, method: 'fromString'),
         ];

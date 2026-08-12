@@ -9,9 +9,14 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -32,11 +37,11 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
+        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
-        self::assertSame('quentin', $result->login);
+        self::assertSame('operator', $result->login);
     }
 
     #[Test]
@@ -44,30 +49,32 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withLogin('operator')
+            ->withHasher($this->service(SecretHasherInterface::class))
+            ->store();
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'An0therS3cr3t!'));
+        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
-        self::assertSame('quentin', $result->login);
+        self::assertSame('operator', $result->login);
     }
 
     #[Test]
     public function itFailsWhenTheLoginIsAlreadyTaken(): void
     {
         // Given
+        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, Login::fromString('operator')->fingerprint());
         $identity = IdentityTestFactory::new()->store();
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
-
-        $other = IdentityTestFactory::new()->store();
 
         // Then
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($other->id()->toString(), 'quentin', 'An0therS3cr3t!'));
+        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
     }
 
     #[Test]
@@ -77,7 +84,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential(IdentityId::generate()->toString(), 'quentin', 'S3cr3t!'));
+        $this->dispatch(new SetPasswordCredential(IdentityId::generate()->toString(), 'operator', 'S3cr3t!'));
     }
 
     #[Test]
@@ -90,7 +97,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
+        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
     }
 
     #[Test]
@@ -103,6 +110,6 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'quentin', 'S3cr3t!'));
+        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
     }
 }

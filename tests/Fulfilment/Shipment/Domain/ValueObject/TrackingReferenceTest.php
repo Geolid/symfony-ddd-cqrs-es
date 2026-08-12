@@ -12,39 +12,23 @@ use PHPUnit\Framework\TestCase;
 final class TrackingReferenceTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
-        // When
-        $reference = TrackingReference::fromString('ACME-4Q7X2K9');
-
-        // Then
-        self::assertSame('ACME-4Q7X2K9', $reference->toString());
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $a = TrackingReference::fromString('ACME-4Q7X2K9');
-        $b = TrackingReference::fromString('ACME-4Q7X2K9');
-        $other = TrackingReference::fromString('ACME-OTHER');
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals($other));
-    }
-
-    #[Test]
-    public function itAcceptsAReferenceAtTheMaximumLength(): void
-    {
-        // Given
-        $value = str_repeat('A', 64);
-
         // When
         $reference = TrackingReference::fromString($value);
 
         // Then
         self::assertSame($value, $reference->toString());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'reference' => ['ACME-4Q7X2K9'];
+        yield 'maximum length' => [str_repeat('A', 64)];
     }
 
     #[Test]
@@ -65,5 +49,18 @@ final class TrackingReferenceTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'longer than the carrier can issue' => [str_repeat('A', 65)];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $a = TrackingReference::fromString('ACME-4Q7X2K9');
+        $b = TrackingReference::fromString('ACME-4Q7X2K9');
+        $other = TrackingReference::fromString('ACME-OTHER');
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals($other));
     }
 }

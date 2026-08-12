@@ -19,31 +19,31 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidLabelTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsALabel(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAccepts(string $label): void
     {
         // When
-        $this->validateValue('Espresso cups, set of 6');
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        // When
-        $this->validateValue(str_repeat('a', 255));
+        $this->validateValue($label);
 
         // Then
         $this->assertNoViolation();
     }
 
     /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'label' => ['Espresso cups, set of 6'];
+        yield 'maximum length' => [str_repeat('a', 255)];
+    }
+
+    /**
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedLabels')]
-    public function itRefusesALabel(mixed $label, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $label, array $rules): void
     {
         // When
         $this->validateValue($label);
@@ -56,10 +56,11 @@ final class ValidLabelTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedLabels(): iterable
+    public static function provideRefusedValues(): iterable
     {
-        yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'empty string' => ['', [self::notBlank()]];
+        yield 'whitespace only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
         yield 'too long' => [str_repeat('a', 256), [new Assert\Length(max: 255), self::valueObject()]];
     }
 

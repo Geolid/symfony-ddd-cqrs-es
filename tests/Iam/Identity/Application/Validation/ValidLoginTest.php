@@ -19,31 +19,31 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidLoginTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAcceptsALogin(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAccepts(string $login): void
     {
         // When
-        $this->validateValue('operator');
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
-    {
-        // When
-        $this->validateValue(str_pad('operator', 50, 'operator'));
+        $this->validateValue($login);
 
         // Then
         $this->assertNoViolation();
     }
 
     /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'login' => ['operator'];
+        yield 'maximum length' => [str_pad('operator', 50, 'operator')];
+    }
+
+    /**
      * @param list<Constraint> $rules
      */
     #[Test]
-    #[DataProvider('provideRefusedLogins')]
-    public function itRefusesALogin(mixed $login, array $rules): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $login, array $rules): void
     {
         // When
         $this->validateValue($login);
@@ -56,10 +56,11 @@ final class ValidLoginTest extends CompoundConstraintTestCase
     /**
      * @return iterable<string, array{mixed, list<Constraint>}>
      */
-    public static function provideRefusedLogins(): iterable
+    public static function provideRefusedValues(): iterable
     {
-        yield 'nothing' => ['', [self::notBlank()]];
-        yield 'blanks only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'empty string' => ['', [self::notBlank()]];
+        yield 'whitespace only' => ['   ', [self::notBlank(), self::valueObject()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
         yield 'too long' => [str_pad('operator', 51, 'operator'), [new Assert\Length(max: 50), self::valueObject()]];
     }
 

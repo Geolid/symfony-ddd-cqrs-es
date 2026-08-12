@@ -13,52 +13,25 @@ use Shared\Domain\ValueObject\Money;
 final class OrderLineTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $label, string $expectedLabel): void
     {
         // When
-        $line = OrderLine::of('Saucer', 3, Money::fromCents(83));
+        $line = OrderLine::of($label, 3, Money::fromCents(83));
 
         // Then
-        self::assertSame('Saucer', $line->label);
+        self::assertSame($expectedLabel, $line->label);
         self::assertSame(3, $line->quantity);
         self::assertSame(83, $line->unitAmount->toCents());
     }
 
-    #[Test]
-    public function itNormalizes(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideAcceptedValues(): iterable
     {
-        // When
-        $line = OrderLine::of('  Saucer  ', 3, Money::fromCents(83));
-
-        // Then
-        self::assertSame('Saucer', $line->label);
-    }
-
-    #[Test]
-    public function itTotalsTheUnitAmountOverTheQuantity(): void
-    {
-        // When
-        $total = OrderLine::of('Saucer', 3, Money::fromCents(83))->total();
-
-        // Then
-        self::assertSame(249, $total->toCents());
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $a = OrderLine::of('Saucer', 3, Money::fromCents(83));
-        $b = OrderLine::of('  Saucer  ', 3, Money::fromCents(83));
-        $other = OrderLine::of('Saucer', 4, Money::fromCents(83));
-
-        // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
-
-        // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        yield 'line' => ['Saucer', 'Saucer'];
+        yield 'surrounding whitespace' => ['  Saucer  ', 'Saucer'];
     }
 
     #[Test]
@@ -81,5 +54,32 @@ final class OrderLineTest extends TestCase
         yield 'whitespace only label' => ['   ', 1];
         yield 'zero quantity' => ['Saucer', 0];
         yield 'negative quantity' => ['Saucer', -1];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $a = OrderLine::of('Saucer', 3, Money::fromCents(83));
+        $b = OrderLine::of('  Saucer  ', 3, Money::fromCents(83));
+        $other = OrderLine::of('Saucer', 4, Money::fromCents(83));
+
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
+    }
+
+    #[Test]
+    public function itTotalsTheUnitAmountOverTheQuantity(): void
+    {
+        // When
+        $total = OrderLine::of('Saucer', 3, Money::fromCents(83))->total();
+
+        // Then
+        self::assertSame(249, $total->toCents());
     }
 }

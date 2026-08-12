@@ -12,50 +12,24 @@ use PHPUnit\Framework\TestCase;
 final class LabelTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value, string $expected): void
     {
         // When
-        $label = Label::fromString('Espresso cups, set of 6');
+        $label = Label::fromString($value);
 
         // Then
-        self::assertSame('Espresso cups, set of 6', $label->toString());
+        self::assertSame($expected, $label->toString());
     }
 
-    #[Test]
-    public function itAcceptsTheMaximumLength(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideAcceptedValues(): iterable
     {
-        // When
-        $label = Label::fromString(str_repeat('a', 255));
-
-        // Then
-        self::assertSame(str_repeat('a', 255), $label->toString());
-    }
-
-    #[Test]
-    public function itNormalizes(): void
-    {
-        // When
-        $label = Label::fromString('  Espresso cups, set of 6  ');
-
-        // Then
-        self::assertSame('Espresso cups, set of 6', $label->toString());
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $a = Label::fromString('Espresso cups, set of 6');
-        $b = Label::fromString('  Espresso cups, set of 6  ');
-        $other = Label::fromString('Wireless mouse');
-
-        // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
-
-        // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        yield 'label' => ['Espresso cups, set of 6', 'Espresso cups, set of 6'];
+        yield 'maximum length' => [str_repeat('a', 255), str_repeat('a', 255)];
+        yield 'surrounding whitespace' => ['  Espresso cups, set of 6  ', 'Espresso cups, set of 6'];
     }
 
     #[Test]
@@ -78,5 +52,22 @@ final class LabelTest extends TestCase
         yield 'empty string' => ['', '/cannot be empty/'];
         yield 'whitespace only' => ['   ', '/cannot be empty/'];
         yield 'too long' => [str_repeat('a', 256), '/cannot exceed 255 characters/'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $a = Label::fromString('Espresso cups, set of 6');
+        $b = Label::fromString('  Espresso cups, set of 6  ');
+        $other = Label::fromString('Wireless mouse');
+
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
     }
 }
