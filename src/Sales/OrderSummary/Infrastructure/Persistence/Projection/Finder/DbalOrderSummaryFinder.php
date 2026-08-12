@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
@@ -36,22 +35,22 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
         return $this->mapRow($row);
     }
 
-    public function byCustomer(string ...$customerIds): static
+    public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerIds) {
-                $qb->andWhere($qb->expr()->in('customer_id', ':customerIds'))
-                    ->setParameter('customerIds', $customerIds, ArrayParameterType::STRING);
+            static function (QueryBuilder $qb) use ($customerId) {
+                $qb->andWhere('customer_id = :customerId')
+                    ->setParameter('customerId', $customerId);
             },
         );
     }
 
-    public function byStatus(string ...$values): static
+    public function byStatus(string $status): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($values) {
-                $qb->andWhere($qb->expr()->in('status', ':statuses'))
-                    ->setParameter('statuses', $values, ArrayParameterType::STRING);
+            static function (QueryBuilder $qb) use ($status) {
+                $qb->andWhere('status = :status')
+                    ->setParameter('status', $status);
             },
         );
     }

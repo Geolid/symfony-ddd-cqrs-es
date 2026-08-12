@@ -11,5 +11,5 @@ use Shared\Application\Finder\CollectionFinderInterface;
  */
 interface GrantFinderInterface extends CollectionFinderInterface
 {
-    public function byIdentity(string ...$identityIds): static;
+    public function byIdentity(string $identityId): static;
 }

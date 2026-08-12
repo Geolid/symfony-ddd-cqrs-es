@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineResult;
@@ -18,12 +17,12 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
  */
 final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder implements OrderSummaryLineFinderInterface
 {
-    public function byOrder(string ...$orderIds): static
+    public function byOrder(string $orderId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($orderIds) {
-                $qb->andWhere($qb->expr()->in('order_id', ':orderIds'))
-                    ->setParameter('orderIds', $orderIds, ArrayParameterType::STRING);
+            static function (QueryBuilder $qb) use ($orderId) {
+                $qb->andWhere('order_id = :orderId')
+                    ->setParameter('orderId', $orderId);
             },
         );
     }

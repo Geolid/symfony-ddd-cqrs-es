@@ -17,9 +17,9 @@ interface OrderSummaryFinderInterface extends PaginatedCollectionFinderInterface
      */
     public function ofOrder(string $orderId): OrderSummaryResult;
 
-    public function byCustomer(string ...$customerIds): static;
+    public function byCustomer(string $customerId): static;
 
-    public function byStatus(string ...$values): static;
+    public function byStatus(string $status): static;
 
     public function sortedByPlacedAt(): static;
 }
