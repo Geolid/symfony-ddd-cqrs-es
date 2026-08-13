@@ -10,7 +10,7 @@ use Sales\Order\Application\Buyer\BuyerResolverInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class BuyerResolverTest extends AbstractIntegrationTestCase
+final class StreamBuyerResolverTest extends AbstractIntegrationTestCase
 {
     private BuyerResolverInterface $resolver;
 

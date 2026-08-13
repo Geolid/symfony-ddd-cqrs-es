@@ -16,7 +16,7 @@ use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\ValueObject\IdentityState;
-use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
+use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\StreamIdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -28,7 +28,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
 
     public function __construct(
         Connection $connection,
-        private IdentityStatusReducer $identityStatusReducer,
+        private StreamIdentityStatusReducer $identityStatusReducer,
     ) {
         parent::__construct($connection);
     }

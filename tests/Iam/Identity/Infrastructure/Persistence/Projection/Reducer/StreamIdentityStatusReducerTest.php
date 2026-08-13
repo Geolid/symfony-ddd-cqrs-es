@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Reducer;
 
 use Iam\Identity\Application\Enum\IdentityStatus;
-use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
+use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\StreamIdentityStatusReducer;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
-final class IdentityStatusReducerTest extends AbstractIntegrationTestCase
+final class StreamIdentityStatusReducerTest extends AbstractIntegrationTestCase
 {
-    private IdentityStatusReducer $reducer;
+    private StreamIdentityStatusReducer $reducer;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->reducer = $this->service(IdentityStatusReducer::class);
+        $this->reducer = $this->service(StreamIdentityStatusReducer::class);
     }
 
     #[Test]

@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Product\ProductResolverInterface;
 use Support\AbstractIntegrationTestCase;
 
-final class ProductResolverTest extends AbstractIntegrationTestCase
+final class StreamProductResolverTest extends AbstractIntegrationTestCase
 {
     private ProductResolverInterface $resolver;
 

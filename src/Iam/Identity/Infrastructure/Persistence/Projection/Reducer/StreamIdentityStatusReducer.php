@@ -12,7 +12,7 @@ use Patchlevel\EventSourcing\Store\Criteria\Criteria;
 use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 
-final readonly class IdentityStatusReducer
+final readonly class StreamIdentityStatusReducer
 {
     public function __construct(private Store $store)
     {
