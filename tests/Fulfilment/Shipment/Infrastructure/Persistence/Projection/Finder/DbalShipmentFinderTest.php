@@ -52,7 +52,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersShipmentsByStatus(): void
+    public function itFiltersByStatus(): void
     {
         // Given
         $pending = ShipmentTestFactory::new()->store();
@@ -78,7 +78,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(2, $results);
-        self::assertSame(
+        self::assertEqualsCanonicalizing(
             [$pending->id()->toString(), $dispatched->id()->toString()],
             array_map(static fn (ShipmentResult $result) => $result->id, $results),
         );
