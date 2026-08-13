@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Application\Gateway;
+namespace Fulfilment\Shipment\Application\Carrier;
 
 interface CarrierGatewayInterface
 {

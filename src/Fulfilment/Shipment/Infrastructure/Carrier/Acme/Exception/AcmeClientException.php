@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Gateway\Acme\Exception;
+namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception;
 
 final class AcmeClientException extends \RuntimeException
 {

@@ -12,7 +12,7 @@ use PHPat\Test\PHPat;
 final class GatewayTest
 {
     #[TestRule]
-    public function rawHttpClientStaysInSharedGateway(): Rule
+    public function rawHttpClientStaysInVendorClient(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
@@ -22,11 +22,14 @@ final class GatewayTest
                 ),
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
                 Selector::Not(Selector::withFilepath('#/tests/#', true)),
-                Selector::Not(Selector::withFilepath('#/Shared/Infrastructure/Gateway/#', true)),
+                Selector::Not(Selector::AllOf(
+                    Selector::classname('#Client$#', true),
+                    Selector::withFilepath('#/Infrastructure/#', true),
+                )),
             ))
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname('Symfony\Contracts\HttpClient\HttpClientInterface'))
-            ->because('A vendor is reached through its scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface scatters both.');
+            ->because('A vendor is reached through its scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface elsewhere scatters both.');
     }
 }

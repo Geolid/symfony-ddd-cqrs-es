@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Gateway\Globex;
+namespace Sales\Order\Infrastructure\Payment\Globex;
 
-use Sales\Order\Application\Gateway\PaymentGatewayInterface;
-use Sales\Order\Application\Gateway\PaymentSession;
-use Shared\Infrastructure\Gateway\Globex\Exception\GlobexClientException;
-use Shared\Infrastructure\Gateway\Globex\GlobexClient;
+use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentSession;
+use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Gateway\Acme;
+namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
-use Shared\Infrastructure\Gateway\Acme\Exception\AcmeClientException;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Gateway\Globex;
+namespace Sales\Tests\Order\Infrastructure\Payment\Globex;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Infrastructure\Gateway\Globex\GlobexPaymentGateway;
-use Shared\Infrastructure\Gateway\Globex\Exception\GlobexClientException;
-use Shared\Infrastructure\Gateway\Globex\GlobexClient;
+use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
+use Sales\Order\Infrastructure\Payment\Globex\GlobexClient;
+use Sales\Order\Infrastructure\Payment\Globex\GlobexPaymentGateway;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
