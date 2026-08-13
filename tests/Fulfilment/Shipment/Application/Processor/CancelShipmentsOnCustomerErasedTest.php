@@ -54,8 +54,11 @@ final class CancelShipmentsOnCustomerErasedTest extends AbstractIntegrationTestC
     #[Test]
     public function itDoesNothingWhenNoShipmentsExistForTheCustomer(): void
     {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+
         // When
-        ($this->processor)(new CustomerErasedIntegrationEvent(Uuid::uuid7()->toString(), self::ERASED_AT));
+        ($this->processor)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
 
         // Then
         self::expectNotToPerformAssertions();

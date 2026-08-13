@@ -44,8 +44,11 @@ final class CancelShipmentsForCustomerHandlerTest extends AbstractIntegrationTes
     #[Test]
     public function itIgnoresACustomerWithNoShipments(): void
     {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+
         // When
-        $this->dispatch(new CancelShipmentsForCustomer(Uuid::uuid7()->toString()));
+        $this->dispatch(new CancelShipmentsForCustomer($customerId));
 
         // Then
         self::expectNotToPerformAssertions();

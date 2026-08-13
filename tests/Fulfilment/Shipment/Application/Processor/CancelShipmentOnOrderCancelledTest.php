@@ -45,8 +45,11 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     #[Test]
     public function itDoesNothingWhenNoShipmentExistsForTheOrder(): void
     {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
         // When
-        ($this->processor)(new OrderCancelledIntegrationEvent(Uuid::uuid7()->toString(), self::CANCELLED_AT));
+        ($this->processor)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
 
         // Then
         self::expectNotToPerformAssertions();

@@ -56,7 +56,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $pending = ShipmentTestFactory::new()->store();
-        ShipmentTestFactory::new()->dispatched()->many(2)->store();
+        $dispatched = ShipmentTestFactory::new()->dispatched()->store();
         ShipmentTestFactory::new()->dispatched()->delivered()->many(2)->store();
 
         // When
@@ -72,15 +72,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->createdAt);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-    }
-
-    #[Test]
-    public function itFiltersShipmentsByMultipleStatuses(): void
-    {
-        // Given
-        $pending = ShipmentTestFactory::new()->store();
-        $dispatched = ShipmentTestFactory::new()->dispatched()->store();
-        ShipmentTestFactory::new()->dispatched()->delivered()->many(2)->store();
 
         // When
         $results = iterator_to_array($this->finder->byStatus('pending', 'dispatched'));
