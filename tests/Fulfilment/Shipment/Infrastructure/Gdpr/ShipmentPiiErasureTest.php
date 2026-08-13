@@ -11,6 +11,7 @@ use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
+use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
 use Support\AbstractIntegrationTestCase;
 
@@ -38,7 +39,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentCreated::class, $rehydrated);
-        self::assertSame('erased-address', $rehydrated->customerAddress);
+        $sentinel = new ErasedFieldSentinel('erased-address-%s');
+        self::assertSame($sentinel($customerId), $rehydrated->customerAddress);
     }
 }
 

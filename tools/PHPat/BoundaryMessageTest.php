@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tools\PHPat;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Patchlevel\Hydrator\Attribute\DataSubjectId;
-use Patchlevel\Hydrator\Attribute\PersonalData;
-use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId as SensitiveDataSubjectId;
+use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
@@ -75,14 +73,12 @@ final class BoundaryMessageTest
                 ->classes(
                     Selector::classname($eventInterface),
                     Selector::classname(Event::class),
-                    Selector::classname(PersonalData::class),
-                    Selector::classname(DataSubjectId::class),
                     Selector::classname(SensitiveData::class),
-                    Selector::classname(SensitiveDataSubjectId::class),
+                    Selector::classname(DataSubjectId::class),
                     Selector::classname(ErasedFieldSentinel::class),
                     Selector::classname(DataSubjectErasureInterface::class),
                 )
-                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[PersonalData]/#[SensitiveData], #[DataSubjectId], the erasure fallback sentinel) and, if it erases personal data, the DataSubjectErasureInterface marker — nothing else, or a VO/vendor type couples both sides to internals.');
+                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[SensitiveData], #[DataSubjectId], the erasure fallback sentinel) and, if it erases personal data, the DataSubjectErasureInterface marker — nothing else, or a VO/vendor type couples both sides to internals.');
         }
     }
 }

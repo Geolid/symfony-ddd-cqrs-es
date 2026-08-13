@@ -12,7 +12,6 @@ deptrac:
       collectors:
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(Aggregate|Attribute)\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\Subscription\\RunMode$#' }
-        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\Attribute\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\Extension\\Cryptography\\Attribute\\.*#' }
         - { type: classNameRegex, value: '#^Psr\\Clock\\.*#' }
         - { type: classNameRegex, value: '#^Ramsey\\Uuid\\.*#' }

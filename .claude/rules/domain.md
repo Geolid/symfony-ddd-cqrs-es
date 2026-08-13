@@ -12,7 +12,7 @@ paths:
 - An event's persisted shape evolves via an upcaster — never retroactively (breaks replay of existing streams).
 - Aggregate: private constructor; creation is a named static factory that only does `new self()` + `recordThat()`; state is mutated exclusively inside `#[Apply]` methods.
 - `recordThat()` carries primitives only (a VO is serialized via `toString()`/`format('c')`); `#[Apply]` rebuilds each VO through its named constructor (`fromString()`, `::from()`...).
-- An event field carrying personal data is tagged `#[PersonalData(fallback: ...)]`, plus one `#[DataSubjectId]` field on the same event — otherwise personal data sits in clear text in an immutable event store forever.
+- An event field carrying personal data is tagged `#[SensitiveData(fallbackCallable: ...)]`, plus one `#[DataSubjectId]` field on the same event — otherwise personal data sits in clear text in an immutable event store forever.
 - Autowiring only loads `Domain/Repository/` and `Domain/Service/` — a concrete class anywhere else in `Domain/` is silently never registered as a service.
 
 **NEVER**
