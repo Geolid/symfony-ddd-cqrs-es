@@ -62,5 +62,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addIndex(['customer_id'], 'sales_order_customer_id_idx');
     }
 }

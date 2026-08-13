@@ -85,7 +85,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersShipmentsByCustomer(): void
+    public function itFiltersByCustomer(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

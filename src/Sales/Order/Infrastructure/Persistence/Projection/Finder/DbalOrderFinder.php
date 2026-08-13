@@ -10,14 +10,14 @@ use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<OrderResult>
+ * @extends AbstractDbalCollectionFinder<OrderResult>
  *
  * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, cancelled_at: string|null}
  */
-final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
+final class DbalOrderFinder extends AbstractDbalCollectionFinder implements OrderFinderInterface
 {
     public function ofId(string $id): OrderResult
     {
@@ -33,6 +33,16 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
         }
 
         return $this->mapRow($row);
+    }
+
+    public function byCustomer(string $customerId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($customerId) {
+                $qb->andWhere('customer_id = :customerId')
+                    ->setParameter('customerId', $customerId);
+            },
+        );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
