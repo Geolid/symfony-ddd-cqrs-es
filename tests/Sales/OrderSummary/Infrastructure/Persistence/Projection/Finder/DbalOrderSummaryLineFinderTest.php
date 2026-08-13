@@ -7,8 +7,10 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\AbstractIntegrationTestCase;
 
@@ -28,11 +30,11 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->withLines([
-            OrderLine::of('Widget', 2, Money::fromCents(1_000)),
-            OrderLine::of('Gadget', 1, Money::fromCents(3_000)),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
         ])->store();
         OrderTestFactory::new()->withLines([
-            OrderLine::of('Gizmo', 5, Money::fromCents(2_000)),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gizmo'), Money::fromCents(2_000)), 5),
         ])->store();
 
         // When

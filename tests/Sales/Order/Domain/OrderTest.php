@@ -14,10 +14,15 @@ use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
 final class OrderTest extends AggregateRootTestCase
 {
+    private const string CUPS_ID = '01977b1e-0000-7000-8000-000000000001';
+    private const string SAUCER_ID = '01977b1e-0000-7000-8000-000000000002';
+
     #[Test]
     public function itPlacesDerivingItsTotalFromItsLines(): void
     {
@@ -97,19 +102,19 @@ final class OrderTest extends AggregateRootTestCase
     private static function lines(): array
     {
         return [
-            OrderLine::of('Espresso cups, set of 6', 1, Money::fromCents(1_750)),
-            OrderLine::of('Saucer', 3, Money::fromCents(83)),
+            OrderLine::of(Product::of(self::CUPS_ID, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
+            OrderLine::of(Product::of(self::SAUCER_ID, Label::fromString('Saucer'), Money::fromCents(83)), 3),
         ];
     }
 
     /**
-     * @return list<array{label: string, quantity: int, unitAmountInCents: int}>
+     * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
      */
     private static function primitiveLines(): array
     {
         return [
-            ['label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
-            ['label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
+            ['productId' => self::CUPS_ID, 'label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
+            ['productId' => self::SAUCER_ID, 'label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
         ];
     }
 }

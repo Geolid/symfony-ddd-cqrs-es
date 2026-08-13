@@ -12,8 +12,7 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\ProductChangedException;
-use Sales\Order\Application\Exception\ProductNotAvailableException;
+use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -74,7 +73,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $customer = $this->registeredCustomer('buyer@example.com');
 
         // Then
-        $this->expectException(ProductNotAvailableException::class);
+        $this->expectException(OutdatedOrderException::class);
 
         // When
         $this->dispatch(new PlaceOrder(
@@ -92,7 +91,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // Then
-        $this->expectException(ProductChangedException::class);
+        $this->expectException(OutdatedOrderException::class);
 
         // When
         $this->dispatch(new PlaceOrder(

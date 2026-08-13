@@ -7,13 +7,13 @@ namespace Catalog\Product\Application\Command\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
-use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
 #[AsCommandHandler]

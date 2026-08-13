@@ -7,13 +7,13 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Projector;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalProductAvailabilityProjector;
+use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalListedProductProjector;
 use Support\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{label: string, unit_amount_in_cents: int|string}
  */
-final class DbalProductAvailabilityProjectorTest extends AbstractIntegrationTestCase
+final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itProjectsANewProductOnProductListed(): void
@@ -32,6 +32,7 @@ final class DbalProductAvailabilityProjectorTest extends AbstractIntegrationTest
     public function itProjectsTheNewPriceOnProductRepriced(): void
     {
         // Given
+        $other = ProductTestFactory::new()->withUnitAmountInCents(83)->store();
         $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(2_000)->create();
 
         // When
@@ -41,12 +42,17 @@ final class DbalProductAvailabilityProjectorTest extends AbstractIntegrationTest
         $row = $this->fetchRow($product->id()->toString());
         self::assertNotFalse($row);
         self::assertSame(2_000, (int) $row['unit_amount_in_cents']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(83, (int) $otherRow['unit_amount_in_cents']);
     }
 
     #[Test]
     public function itRemovesTheProductOnProductDelisted(): void
     {
         // Given
+        $other = ProductTestFactory::new()->store();
         $product = ProductTestFactory::new()->delisted()->create();
 
         // When
@@ -54,6 +60,7 @@ final class DbalProductAvailabilityProjectorTest extends AbstractIntegrationTest
 
         // Then
         self::assertFalse($this->fetchRow($product->id()->toString()));
+        self::assertNotFalse($this->fetchRow($other->id()->toString()));
     }
 
     /**
@@ -65,7 +72,7 @@ final class DbalProductAvailabilityProjectorTest extends AbstractIntegrationTest
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
                 'SELECT label, unit_amount_in_cents FROM %s WHERE product_id = :productId',
-                DbalProductAvailabilityProjector::TABLE,
+                DbalListedProductProjector::TABLE,
             ),
             ['productId' => $productId],
         );

@@ -8,6 +8,8 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
@@ -42,7 +44,10 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 
     public function withTotalAmountInCents(int $totalAmountInCents): self
     {
-        return $this->withLines([OrderLine::of('Assorted goods', 1, Money::fromCents($totalAmountInCents))]);
+        return $this->withLines([OrderLine::of(
+            Product::of(Uuid::uuid7()->toString(), Label::fromString('Assorted goods'), Money::fromCents($totalAmountInCents)),
+            1,
+        )]);
     }
 
     public function withPlacedAt(\DateTimeImmutable $placedAt): self
@@ -65,9 +70,8 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             'customerId' => Uuid::uuid7()->toString(),
             'buyerAddress' => self::faker()->safeEmail(),
             'lines' => [OrderLine::of(
-                self::faker()->sentence(3),
+                Product::of(Uuid::uuid7()->toString(), Label::fromString(self::faker()->sentence(3)), Money::fromCents(self::faker()->numberBetween(500, 5_000))),
                 self::faker()->numberBetween(1, 5),
-                Money::fromCents(self::faker()->numberBetween(500, 5_000)),
             )],
             'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];

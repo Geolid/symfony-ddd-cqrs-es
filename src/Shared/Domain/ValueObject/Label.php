@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Product\Domain\ValueObject;
+namespace Shared\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
@@ -13,8 +13,8 @@ final readonly class Label
     private function __construct(string $value)
     {
         $value = trim($value);
-        Assert::notEmpty($value, 'A product label cannot be empty, %s given.');
-        Assert::maxLength($value, 255, 'A product label cannot exceed %2$d characters, %s given.');
+        Assert::notEmpty($value, 'A label cannot be empty, %s given.');
+        Assert::maxLength($value, 255, 'A label cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

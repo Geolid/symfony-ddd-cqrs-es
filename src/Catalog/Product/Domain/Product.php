@@ -7,7 +7,6 @@ namespace Catalog\Product\Domain;
 use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
-use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -15,6 +14,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('catalog.product.product')]

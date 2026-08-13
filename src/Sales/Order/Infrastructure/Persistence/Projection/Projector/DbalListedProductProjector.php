@@ -15,10 +15,10 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.product_availability')]
-final readonly class DbalProductAvailabilityProjector extends AbstractDbalProjector
+#[Projector('sales.order.listed_products')]
+final readonly class DbalListedProductProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'sales_order_product_availability';
+    public const string TABLE = 'sales_order_listed_products';
 
     #[Subscribe(ProductListedIntegrationEvent::class)]
     public function onProductListed(ProductListedIntegrationEvent $event): void

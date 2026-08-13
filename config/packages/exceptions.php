@@ -28,9 +28,8 @@ use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
-use Sales\Order\Application\Exception\ProductChangedException;
-use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -74,8 +73,7 @@ return static function (ContainerConfigurator $container): void {
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             CustomerResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            ProductNotAvailableException::class => ['log_level' => 'info', 'status_code' => 422],
-            ProductChangedException::class => ['log_level' => 'info', 'status_code' => 422],
+            OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],

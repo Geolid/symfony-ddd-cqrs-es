@@ -10,8 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
-use Sales\Order\Application\Exception\ProductChangedException;
-use Sales\Order\Application\Exception\ProductNotAvailableException;
+use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
@@ -101,9 +100,11 @@ final class OrderController extends AbstractController
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
         $productPricesInCents = [];
+        $currentCatalog = [];
         foreach ($products->items as $product) {
             $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitAmountInCents / 100, 2))] = $product->id;
             $productPricesInCents[$product->id] = $product->unitAmountInCents;
+            $currentCatalog[$product->id] = ['label' => $product->label, 'unitAmountInCents' => $product->unitAmountInCents];
         }
 
         $formData = new PlaceOrderFormData();
@@ -115,16 +116,25 @@ final class OrderController extends AbstractController
 
         $session = $request->getSession();
         if ($request->isMethod('GET')) {
-            $session->set(self::CATALOG_SNAPSHOT_SESSION_KEY, array_combine(
-                array_map(static fn (ProductResult $product): string => $product->id, $products->items),
-                array_map(static fn (ProductResult $product): array => ['label' => $product->label, 'unitAmountInCents' => $product->unitAmountInCents], $products->items),
-            ));
+            $session->set(self::CATALOG_SNAPSHOT_SESSION_KEY, $currentCatalog);
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $id = Uuid::uuid7()->toString();
             /** @var array<string, array{label: string, unitAmountInCents: int}> $catalogSnapshot */
             $catalogSnapshot = $session->get(self::CATALOG_SNAPSHOT_SESSION_KEY, []);
+
+            $hasCompleteSnapshot = [] === array_filter(
+                $formData->lines,
+                static fn (OrderLineFormData $line): bool => !isset($catalogSnapshot[(string) $line->productId]),
+            );
+
+            if (!$hasCompleteSnapshot) {
+                $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
+
+                return $this->redirectToRoute('sales_order_place');
+            }
+
+            $id = Uuid::uuid7()->toString();
 
             try {
                 $this->commandBus->dispatch(new PlaceOrder(
@@ -133,7 +143,7 @@ final class OrderController extends AbstractController
                     lines: array_values(array_map(
                         static function (OrderLineFormData $line) use ($catalogSnapshot): array {
                             $productId = (string) $line->productId;
-                            $product = $catalogSnapshot[$productId] ?? throw ProductNotAvailableException::forId($productId);
+                            $product = $catalogSnapshot[$productId];
 
                             return [
                                 'productId' => $productId,
@@ -145,7 +155,7 @@ final class OrderController extends AbstractController
                         $formData->lines,
                     )),
                 ));
-            } catch (ProductNotAvailableException|ProductChangedException) {
+            } catch (OutdatedOrderException) {
                 $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
 
                 return $this->redirectToRoute('sales_order_place');

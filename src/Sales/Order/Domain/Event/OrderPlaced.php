@@ -14,7 +14,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderPlaced implements DomainEventInterface
 {
     /**
-     * @param list<array{label: string, quantity: int, unitAmountInCents: int}> $lines
+     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}> $lines
      */
     public function __construct(
         public string $id,

@@ -6,9 +6,12 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Persistence\Projection\Project
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryLineProjector;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\AbstractIntegrationTestCase;
 
@@ -22,8 +25,8 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
     {
         // When
         $order = OrderTestFactory::new()->withLines([
-            OrderLine::of('Widget', 2, Money::fromCents(1_000)),
-            OrderLine::of('Gadget', 1, Money::fromCents(3_000)),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
         ])->store();
 
         // Then

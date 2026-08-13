@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Api\Input;
 
 use ApiPlatform\Metadata\ApiProperty;
-use Catalog\Product\Application\Validation\ValidLabel;
+use Shared\Application\Validation\ValidLabel;
 use Shared\Application\Validation\ValidMoney;
 
 final readonly class ListProductForSaleInput

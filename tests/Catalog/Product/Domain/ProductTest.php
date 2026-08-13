@@ -8,10 +8,10 @@ use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\Event\ProductListed;
 use Catalog\Product\Domain\Event\ProductRepriced;
 use Catalog\Product\Domain\Product;
-use Catalog\Product\Domain\ValueObject\Label;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
 final class ProductTest extends AggregateRootTestCase

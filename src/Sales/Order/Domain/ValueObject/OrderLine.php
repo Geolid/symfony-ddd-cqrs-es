@@ -9,37 +9,31 @@ use Webmozart\Assert\Assert;
 
 final readonly class OrderLine
 {
-    public string $label;
+    public Product $product;
 
     public int $quantity;
 
-    public Money $unitAmount;
-
-    private function __construct(string $label, int $quantity, Money $unitAmount)
+    private function __construct(Product $product, int $quantity)
     {
-        $label = trim($label);
-        Assert::stringNotEmpty($label, 'An order line label cannot be empty, %s given.');
         Assert::positiveInteger($quantity, 'An order line quantity must be positive, %s given.');
 
-        $this->label = $label;
+        $this->product = $product;
         $this->quantity = $quantity;
-        $this->unitAmount = $unitAmount;
     }
 
-    public static function of(string $label, int $quantity, Money $unitAmount): self
+    public static function of(Product $product, int $quantity): self
     {
-        return new self($label, $quantity, $unitAmount);
+        return new self($product, $quantity);
     }
 
     public function total(): Money
     {
-        return $this->unitAmount->times($this->quantity);
+        return $this->product->price->times($this->quantity);
     }
 
     public function equals(self $other): bool
     {
-        return $this->label === $other->label
-            && $this->quantity === $other->quantity
-            && $this->unitAmount->equals($other->unitAmount);
+        return $this->product->equals($other->product)
+            && $this->quantity === $other->quantity;
     }
 }
