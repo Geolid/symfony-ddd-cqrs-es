@@ -16,7 +16,6 @@ use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
-use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -26,10 +25,8 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
 {
     public const string TABLE = 'iam_identity_api_token_credential';
 
-    public function __construct(
-        Connection $connection,
-        private IdentityStatusReducer $identityStatusReducer,
-    ) {
+    public function __construct(Connection $connection)
+    {
         parent::__construct($connection);
     }
 
@@ -44,7 +41,8 @@ final readonly class DbalApiTokenCredentialProjector extends AbstractDbalProject
             'hash' => $event->secretHash,
             'revoked' => 0,
             'expires_at' => new \DateTimeImmutable($event->expiresAt)->format('Y-m-d H:i:s'),
-            'identity_status' => $this->identityStatusReducer->statusFor($event->identityId)->value,
+            // Issuance is guarded same-BC before this event is ever recorded — the identity is active by construction.
+            'identity_status' => IdentityState::ACTIVE->value,
         ]);
     }
 

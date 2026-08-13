@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Resolver;
+namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\StreamResolver;
 
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Product\ProductResolverInterface;
 use Support\AbstractIntegrationTestCase;
 
-final class ProductResolverTest extends AbstractIntegrationTestCase
+final class StreamProductResolverTest extends AbstractIntegrationTestCase
 {
     private ProductResolverInterface $resolver;
 

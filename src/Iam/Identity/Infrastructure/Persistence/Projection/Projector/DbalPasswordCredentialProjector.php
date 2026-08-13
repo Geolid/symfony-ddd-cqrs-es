@@ -16,7 +16,6 @@ use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
 use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\ValueObject\IdentityState;
-use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\IdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -26,10 +25,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
 {
     public const string TABLE = 'iam_identity_password_credential';
 
-    public function __construct(
-        Connection $connection,
-        private IdentityStatusReducer $identityStatusReducer,
-    ) {
+    public function __construct(Connection $connection)
+    {
         parent::__construct($connection);
     }
 
@@ -41,7 +38,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
             'identity_id' => $event->identityId,
             'login' => $event->login,
             'hash' => $event->hash,
-            'identity_status' => $this->identityStatusReducer->statusFor($event->identityId)->value,
+            // Set is guarded same-BC before this event is ever recorded — the identity is active by construction.
+            'identity_status' => IdentityState::ACTIVE->value,
         ]);
     }
 

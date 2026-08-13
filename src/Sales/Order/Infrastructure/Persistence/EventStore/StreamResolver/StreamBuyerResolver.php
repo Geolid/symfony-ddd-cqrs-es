@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Persistence\EventStore\Resolver;
+namespace Sales\Order\Infrastructure\Persistence\EventStore\StreamResolver;
 
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Message\Reducer;
@@ -15,7 +15,7 @@ use Sales\Order\Application\Buyer\Buyer;
 use Sales\Order\Application\Buyer\BuyerResolverInterface;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 
-final readonly class BuyerResolver implements BuyerResolverInterface
+final readonly class StreamBuyerResolver implements BuyerResolverInterface
 {
     public function __construct(private Store $store)
     {

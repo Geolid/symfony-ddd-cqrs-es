@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Persistence\EventStore\Resolver;
+namespace Sales\Order\Infrastructure\Persistence\EventStore\StreamResolver;
 
 use Catalog\Product\Application\Event\ProductDelistedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductListedIntegrationEvent;
@@ -16,7 +16,7 @@ use Sales\Order\Application\Product\Product;
 use Sales\Order\Application\Product\ProductResolverInterface;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 
-final readonly class ProductResolver implements ProductResolverInterface
+final readonly class StreamProductResolver implements ProductResolverInterface
 {
     public function __construct(private Store $store)
     {

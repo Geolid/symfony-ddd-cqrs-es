@@ -13,7 +13,7 @@ paths:
 - Output: `progressStart`/`progressAdvance`/`progressFinish` plus a per-status count, summarized in a final `$io->success()`.
 
 **NEVER**
-- Dispatch a Command whose only purpose is to make another BC react — persist through the Repository directly and let the real Domain Event fire (e.g. `OrderPlaced`); cross-BC fan-out (Processor, Reducer) then reacts exactly as it would outside a demo.
+- Dispatch a Command whose only purpose is to make another BC react — persist through the Repository directly and let the real Domain Event fire (e.g. `OrderPlaced`); cross-BC fan-out (Processor, StreamReducer) then reacts exactly as it would outside a demo.
 
 ### Conventions
 - `demo/console` is a dedicated entrypoint hardcoding `new Kernel('demo', ...)`.
