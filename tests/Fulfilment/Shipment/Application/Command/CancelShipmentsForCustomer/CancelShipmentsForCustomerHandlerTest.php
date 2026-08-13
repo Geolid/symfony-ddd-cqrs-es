@@ -46,11 +46,13 @@ final class CancelShipmentsForCustomerHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
+        $other = ShipmentTestFactory::new()->store();
 
         // When
         $this->dispatch(new CancelShipmentsForCustomer($customerId));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId())));
+        self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
     }
 }

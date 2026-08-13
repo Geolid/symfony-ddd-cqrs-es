@@ -56,11 +56,13 @@ final class CancelShipmentsOnCustomerErasedTest extends AbstractIntegrationTestC
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
+        $other = ShipmentTestFactory::new()->store();
 
         // When
         ($this->processor)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId())));
+        self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
     }
 }
