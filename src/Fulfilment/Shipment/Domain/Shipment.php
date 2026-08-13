@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain;
 
+use Fulfilment\Shipment\Domain\Event\ShipmentCancellationRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
@@ -132,9 +133,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
         if ($this->status->isCancelled()) {
@@ -142,7 +140,13 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!$this->status->isCancellable()) {
-            throw ShipmentInvalidTransitionException::cannotCancel($this->status);
+            $this->recordThat(new ShipmentCancellationRejected(
+                id: $this->id->toString(),
+                status: $this->status->value,
+                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
         }
 
         $this->recordThat(new ShipmentCancelled(
@@ -184,5 +188,10 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyShipmentCancelled(ShipmentCancelled $event): void
     {
         $this->status = ShipmentState::CANCELLED;
+    }
+
+    #[Apply]
+    private function applyShipmentCancellationRejected(ShipmentCancellationRejected $event): void
+    {
     }
 }

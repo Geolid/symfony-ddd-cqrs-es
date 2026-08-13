@@ -41,6 +41,6 @@ enum ShipmentState: string
      */
     private static function cancellableStates(): array
     {
-        return [self::PENDING, self::DISPATCHED];
+        return [self::PENDING];
     }
 }

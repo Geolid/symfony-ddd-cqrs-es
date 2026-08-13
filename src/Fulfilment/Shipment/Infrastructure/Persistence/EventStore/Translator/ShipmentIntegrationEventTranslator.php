@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Persistence\EventStore\Translator;
 
+use Fulfilment\Shipment\Application\Event\ShipmentCancelledIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
+use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
@@ -61,6 +63,24 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),
                 deliveredAt: $event->deliveredAt,
+            ),
+        );
+    }
+
+    /**
+     * @throws ShipmentNotFoundException
+     */
+    #[Subscribe(ShipmentCancelled::class)]
+    public function onShipmentCancelled(ShipmentCancelled $event): void
+    {
+        $shipment = $this->repository->load(ShipmentId::fromString($event->id));
+
+        $this->append(
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
+            new ShipmentCancelledIntegrationEvent(
+                shipmentId: $event->id,
+                orderId: $shipment->orderId(),
+                cancelledAt: $event->cancelledAt,
             ),
         );
     }
