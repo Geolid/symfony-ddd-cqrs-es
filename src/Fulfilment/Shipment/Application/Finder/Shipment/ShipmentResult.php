@@ -18,7 +18,6 @@ final readonly class ShipmentResult implements ResultInterface
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
-        public ?\DateTimeImmutable $orderCancelledAt,
     ) {
     }
 }

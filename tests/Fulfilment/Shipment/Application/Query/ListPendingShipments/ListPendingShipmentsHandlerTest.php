@@ -32,6 +32,5 @@ final class ListPendingShipmentsHandlerTest extends AbstractIntegrationTestCase
         self::assertNotNull($results[0]->createdAt);
         self::assertNull($results[0]->dispatchedAt);
         self::assertNull($results[0]->deliveredAt);
-        self::assertNull($results[0]->orderCancelledAt);
     }
 }

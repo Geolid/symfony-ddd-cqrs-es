@@ -9,7 +9,6 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
@@ -55,12 +54,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ShipmentCustomerErasedException
+     * @throws ShipmentCancelledException
      */
-    public function ensureCustomerNotErased(): void
+    public function ensureNotCancelled(): void
     {
-        if ('erased-address' === $this->customerAddress) {
-            throw ShipmentCustomerErasedException::forId($this->id);
+        if ($this->status->isCancelled()) {
+            throw ShipmentCancelledException::forId($this->id);
         }
     }
 
@@ -137,12 +136,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if ($this->status->isDelivered()) {
-            throw ShipmentInvalidTransitionException::cannotCancel($this->status);
-        }
-
         if ($this->status->isCancelled()) {
             return;
+        }
+
+        if (!$this->status->isCancellable()) {
+            throw ShipmentInvalidTransitionException::cannotCancel($this->status);
         }
 
         $this->recordThat(new ShipmentCancelled(

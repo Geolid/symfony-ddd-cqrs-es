@@ -6,9 +6,8 @@ namespace Fulfilment\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
-use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -38,10 +37,8 @@ final readonly class RequestPickupOnShipmentDispatched
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
         try {
-            $shipment->ensureCustomerNotErased();
-        } catch (ShipmentCustomerErasedException) {
-            $this->commandBus->dispatch(new CancelShipment($event->id));
-
+            $shipment->ensureNotCancelled();
+        } catch (ShipmentCancelledException) {
             return;
         }
 

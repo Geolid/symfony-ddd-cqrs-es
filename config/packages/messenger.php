@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
@@ -23,6 +24,7 @@ return static function (ContainerConfigurator $container): void {
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
             ],
             'routing' => [
+                CancelShipment::class => 'async',
                 CreateShipment::class => 'async',
                 DispatchShipment::class => 'async',
                 RevokeApiTokenCredential::class => 'async',

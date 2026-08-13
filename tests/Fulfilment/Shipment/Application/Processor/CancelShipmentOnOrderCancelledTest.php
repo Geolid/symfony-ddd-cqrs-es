@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fulfilment\Tests\Shipment\Application\Processor;
+
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Processor\CancelShipmentOnOrderCancelled;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Support\AbstractIntegrationTestCase;
+
+final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCase
+{
+    private const string CANCELLED_AT = '2026-01-02T00:00:00+00:00';
+
+    private CancelShipmentOnOrderCancelled $processor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->processor = $this->service(CancelShipmentOnOrderCancelled::class);
+    }
+
+    #[Test]
+    public function itCancelsTheShipmentOnOrderCancelled(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->store();
+
+        // When
+        ($this->processor)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
+
+        // Then
+        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId())));
+        self::assertCount(1, $results);
+        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
+    }
+
+    #[Test]
+    public function itDoesNothingWhenNoShipmentExistsForTheOrder(): void
+    {
+        // When
+        ($this->processor)(new OrderCancelledIntegrationEvent(Uuid::uuid7()->toString(), self::CANCELLED_AT));
+
+        // Then
+        self::expectNotToPerformAssertions();
+    }
+}

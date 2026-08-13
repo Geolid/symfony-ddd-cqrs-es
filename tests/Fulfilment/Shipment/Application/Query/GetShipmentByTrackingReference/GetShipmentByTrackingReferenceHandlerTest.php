@@ -31,7 +31,6 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
         self::assertNotNull($result->createdAt);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-        self::assertNull($result->orderCancelledAt);
     }
 
     #[Test]
