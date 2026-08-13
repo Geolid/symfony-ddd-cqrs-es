@@ -37,7 +37,7 @@ final class CancelShipmentsForCustomerHandlerTest extends AbstractIntegrationTes
         self::assertSame(ShipmentStatus::CANCELLED, $statusesById[$dispatched->id()->toString()]);
         self::assertSame(ShipmentStatus::DELIVERED, $statusesById[$delivered->id()->toString()]);
 
-        $otherResults = array_values(iterator_to_array($finder->byCustomer($other->customerId())));
+        $otherResults = iterator_to_array($finder->byCustomer($other->customerId()), false);
         self::assertSame(ShipmentStatus::PENDING, $otherResults[0]->status);
     }
 
@@ -52,7 +52,7 @@ final class CancelShipmentsForCustomerHandlerTest extends AbstractIntegrationTes
         $this->dispatch(new CancelShipmentsForCustomer($customerId));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId())));
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId()), false);
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
     }
 }

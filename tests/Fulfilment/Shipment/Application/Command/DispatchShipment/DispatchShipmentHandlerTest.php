@@ -27,7 +27,7 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new DispatchShipment($shipment->id()->toString()));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame(ShipmentStatus::DISPATCHED, $results[0]->status);
         self::assertNotNull($results[0]->dispatchedAt);

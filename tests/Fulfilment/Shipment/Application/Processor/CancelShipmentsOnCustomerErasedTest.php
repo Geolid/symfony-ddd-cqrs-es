@@ -47,7 +47,7 @@ final class CancelShipmentsOnCustomerErasedTest extends AbstractIntegrationTestC
         self::assertSame(ShipmentStatus::CANCELLED, $statusesById[$pending->id()->toString()]);
         self::assertSame(ShipmentStatus::DELIVERED, $statusesById[$delivered->id()->toString()]);
 
-        $otherResults = array_values(iterator_to_array($finder->byCustomer($other->customerId())));
+        $otherResults = iterator_to_array($finder->byCustomer($other->customerId()), false);
         self::assertSame(ShipmentStatus::PENDING, $otherResults[0]->status);
     }
 
@@ -62,7 +62,7 @@ final class CancelShipmentsOnCustomerErasedTest extends AbstractIntegrationTestC
         ($this->processor)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId())));
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($other->customerId()), false);
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
     }
 }
