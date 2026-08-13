@@ -36,7 +36,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CreateShipment($id, $orderId, Uuid::uuid7()->toString(), 'buyer@example.com'));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame($id, $results[0]->id);
         self::assertSame($orderId, $results[0]->orderId);
