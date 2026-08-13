@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\EventStore\Translator;
 
+use Fulfilment\Shipment\Application\Event\ShipmentCancelledIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
@@ -73,5 +74,24 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         self::assertSame($shipment->id()->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
         self::assertSame('ACME-4Q7X2K9', $event->trackingReference);
+    }
+
+    #[Test]
+    public function itPublishesTheCancellationOnShipmentCancelled(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->cancelled()->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        self::assertCount(1, $published);
+        $event = $published[0];
+        self::assertInstanceOf(ShipmentCancelledIntegrationEvent::class, $event);
+        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($orderId, $event->orderId);
     }
 }

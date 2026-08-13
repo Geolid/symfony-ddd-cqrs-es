@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\Command\CancelShipment;
 use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
@@ -34,16 +33,18 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentHasAlreadyBeenDelivered(): void
+    public function itRejectsCancellationOfAnAlreadyDeliveredShipment(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->dispatched()->delivered()->store();
 
-        // Then
-        $this->expectException(ShipmentInvalidTransitionException::class);
-
         // When
         $this->dispatch(new CancelShipment($shipment->id()->toString()));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertCount(1, $results);
+        self::assertSame(ShipmentStatus::DELIVERED, $results[0]->status);
     }
 
     #[Test]

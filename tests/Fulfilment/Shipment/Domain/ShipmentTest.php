@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Domain;
 
+use Fulfilment\Shipment\Domain\Event\ShipmentCancellationRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -135,7 +136,7 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCancelsDispatched(): void
+    public function itRejectsCancellationOfADispatched(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -148,7 +149,7 @@ final class ShipmentTest extends AggregateRootTestCase
                 new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DISPATCHED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -168,12 +169,13 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCancelADelivered(): void
+    public function itRejectsCancellationOfADelivered(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
 
         $this
             ->given(
@@ -181,40 +183,8 @@ final class ShipmentTest extends AggregateRootTestCase
                 new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->cancel(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
-            ->expectsException(ShipmentInvalidTransitionException::class);
-    }
-
-    #[Test]
-    public function itEnsuresNotCancelled(): void
-    {
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)))
-            ->when(static function (Shipment $shipment): void {
-                $shipment->ensureNotCancelled();
-            })
-            ->then();
-    }
-
-    #[Test]
-    public function itCannotEnsureNotCancelled(): void
-    {
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-
-        $this
-            ->given(
-                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
-            )
-            ->when(static function (Shipment $shipment): void {
-                $shipment->ensureNotCancelled();
-            })
-            ->expectsException(ShipmentCancelledException::class);
+            ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
 
     protected function aggregateClass(): string
