@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Infrastructure\Gateway\Acme;
+namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipment\Application\Gateway\CarrierGatewayInterface;
-use Shared\Infrastructure\Gateway\Acme\AcmeClient;
-use Shared\Infrastructure\Gateway\Acme\Exception\AcmeClientException;
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {

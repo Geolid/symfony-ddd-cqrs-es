@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Infrastructure\Gateway\Acme;
+namespace Fulfilment\Tests\Shipment\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipment\Infrastructure\Gateway\Acme\AcmeCarrierGateway;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeCarrierGateway;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeClient;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\Gateway\Acme\AcmeClient;
-use Shared\Infrastructure\Gateway\Acme\Exception\AcmeClientException;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;

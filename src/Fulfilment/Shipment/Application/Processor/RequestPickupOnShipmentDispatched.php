@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Processor;
 
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
 use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
-use Fulfilment\Shipment\Application\Gateway\CarrierGatewayInterface;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Exception\ShipmentCustomerErasedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Gateway\Globex;
+namespace Sales\Order\Infrastructure\Payment\Globex;
 
-use Shared\Infrastructure\Gateway\Globex\Exception\GlobexClientException;
+use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
