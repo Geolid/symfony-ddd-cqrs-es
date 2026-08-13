@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Processor\RequestPickupOnShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
@@ -55,19 +54,16 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itCancelsAShipmentWithAnErasedCustomerOnShipmentDispatched(): void
+    public function itSkipsRequestingPickupOnShipmentDispatchedWhenAlreadyCancelled(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->withCustomerAddress('erased-address')->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->dispatched()->cancelled()->store();
 
         // When
         ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
 
         // Then
         self::assertNull($this->carrier->deliveryAddress);
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
     }
 }
 

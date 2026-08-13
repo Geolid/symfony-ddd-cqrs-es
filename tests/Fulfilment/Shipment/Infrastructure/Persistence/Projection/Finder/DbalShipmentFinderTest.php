@@ -29,8 +29,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itListsShipments(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->store();
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id()->toString())
             ->dispatched()
@@ -38,8 +37,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
-        $this->store($order);
         $results = iterator_to_array($this->finder);
 
         // Then
@@ -52,15 +49,14 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-        self::assertNotNull($result->orderCancelledAt);
     }
 
     #[Test]
-    public function itFiltersShipmentsByStatus(): void
+    public function itFiltersByStatus(): void
     {
         // Given
         $pending = ShipmentTestFactory::new()->store();
-        ShipmentTestFactory::new()->dispatched()->many(2)->store();
+        $dispatched = ShipmentTestFactory::new()->dispatched()->store();
         ShipmentTestFactory::new()->dispatched()->delivered()->many(2)->store();
 
         // When
@@ -76,7 +72,32 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->createdAt);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-        self::assertNull($result->orderCancelledAt);
+
+        // When
+        $results = iterator_to_array($this->finder->byStatus('pending', 'dispatched'));
+
+        // Then
+        self::assertCount(2, $results);
+        self::assertEqualsCanonicalizing(
+            [$pending->id()->toString(), $dispatched->id()->toString()],
+            array_map(static fn (ShipmentResult $result) => $result->id, $results),
+        );
+    }
+
+    #[Test]
+    public function itFiltersByCustomer(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withCustomerId($customerId)->store();
+        ShipmentTestFactory::new()->store();
+
+        // When
+        $results = iterator_to_array($this->finder->byCustomer($customerId));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($shipment->id()->toString(), $results[0]->id);
     }
 
     #[Test]
@@ -96,7 +117,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-        self::assertNull($result->orderCancelledAt);
     }
 
     #[Test]

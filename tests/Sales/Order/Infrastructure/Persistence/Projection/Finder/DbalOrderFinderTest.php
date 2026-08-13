@@ -53,4 +53,20 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());
     }
+
+    #[Test]
+    public function itFiltersByCustomer(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        OrderTestFactory::new()->store();
+
+        // When
+        $results = iterator_to_array($this->finder->byCustomer($customerId), false);
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($order->id()->toString(), $results[0]->id);
+    }
 }

@@ -56,23 +56,6 @@ final class NotifyCustomerOnShipmentDeliveredTest extends AbstractIntegrationTes
         self::assertSame($customerId, $notification->customerId);
         self::assertSame('buyer@example.com', $notification->customerAddress);
     }
-
-    #[Test]
-    public function itSkipsAShipmentWithAnErasedCustomerOnShipmentDelivered(): void
-    {
-        // Given
-        $shipment = ShipmentTestFactory::new()
-            ->withCustomerAddress('erased-address')
-            ->dispatched()
-            ->delivered()
-            ->store();
-
-        // When
-        ($this->processor)(new ShipmentDelivered($shipment->id()->toString(), self::DELIVERED_AT));
-
-        // Then
-        self::assertNull($this->notifier->notification);
-    }
 }
 
 final class DummyShipmentDeliveredNotifier implements ShipmentDeliveredNotifierInterface

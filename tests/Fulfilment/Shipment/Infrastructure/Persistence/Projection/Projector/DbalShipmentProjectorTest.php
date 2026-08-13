@@ -13,7 +13,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{status: string, tracking_reference: ?string, cancelled_at: ?string, order_cancelled_at: ?string}
+ * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, cancelled_at: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -21,14 +21,16 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsANewShipmentOnShipmentCreated(): void
     {
         // Given
+        $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->withCustomerId($customerId)->store();
 
         // Then
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
+        self::assertSame($customerId, $row['customer_id']);
         self::assertSame('pending', $row['status']);
     }
 
@@ -74,24 +76,6 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($otherRow['cancelled_at']);
     }
 
-    #[Test]
-    public function itProjectsALaterCancellationOnOrderCancelled(): void
-    {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->store();
-
-        // When
-        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
-        $this->store($order);
-
-        // Then
-        $row = $this->fetchRow($shipment->id()->toString());
-        self::assertNotFalse($row);
-        self::assertNotNull($row['order_cancelled_at']);
-    }
-
     /**
      * @return Row|false
      */
@@ -100,7 +84,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT status, tracking_reference, cancelled_at, order_cancelled_at FROM %s WHERE id = :id',
+                'SELECT customer_id, status, tracking_reference, cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],
