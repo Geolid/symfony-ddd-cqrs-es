@@ -9,6 +9,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 
 #[AsCommandHandler]
 final readonly class CancelOrdersForCustomerHandler
@@ -20,6 +21,10 @@ final readonly class CancelOrdersForCustomerHandler
     ) {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function __invoke(CancelOrdersForCustomer $command): void
     {
         foreach ($this->orderFinder->byCustomer($command->customerId) as $order) {

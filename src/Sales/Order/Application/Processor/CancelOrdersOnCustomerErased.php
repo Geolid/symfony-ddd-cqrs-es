@@ -8,6 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Order\Application\Command\CancelOrdersForCustomer\CancelOrdersForCustomer;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Processor\Processor;
 
 #[Processor('sales.order.cancel_orders_on_customer_erased')]
@@ -17,6 +18,10 @@ final readonly class CancelOrdersOnCustomerErased
     {
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     #[Subscribe(CustomerErasedIntegrationEvent::class)]
     public function __invoke(CustomerErasedIntegrationEvent $event): void
     {

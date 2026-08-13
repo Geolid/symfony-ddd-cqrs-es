@@ -7,6 +7,7 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
@@ -53,6 +54,7 @@ return static function (ContainerConfigurator $container): void {
             ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
