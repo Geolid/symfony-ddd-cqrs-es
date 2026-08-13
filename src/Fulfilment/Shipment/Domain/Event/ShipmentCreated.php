@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Patchlevel\Hydrator\Attribute\DataSubjectId;
-use Patchlevel\Hydrator\Attribute\PersonalData;
+use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
+use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
+use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
 #[Event('fulfilment.shipment.created')]
 final readonly class ShipmentCreated implements DomainEventInterface
@@ -17,7 +18,7 @@ final readonly class ShipmentCreated implements DomainEventInterface
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[PersonalData(fallback: 'erased-address')]
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-address-%s'))]
         public string $customerAddress,
         public string $createdAt,
     ) {
