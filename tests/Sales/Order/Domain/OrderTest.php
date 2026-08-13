@@ -20,20 +20,18 @@ use Shared\Domain\ValueObject\Money;
 
 final class OrderTest extends AggregateRootTestCase
 {
-    private const string CUPS_ID = '01977b1e-0000-7000-8000-000000000001';
-    private const string SAUCER_ID = '01977b1e-0000-7000-8000-000000000002';
-
     #[Test]
     public function itPlacesDerivingItsTotalFromItsLines(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
+        $lines = self::lines();
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, $customerId, 'buyer@example.com', self::lines(), $placedAt))
-            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn () => Order::place($id, $customerId, 'buyer@example.com', $lines, $placedAt))
+            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines($lines), 1_999, $placedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -57,7 +55,7 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
+            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
@@ -72,7 +70,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)),
+                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -86,7 +84,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
+            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
             ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
@@ -102,19 +100,26 @@ final class OrderTest extends AggregateRootTestCase
     private static function lines(): array
     {
         return [
-            OrderLine::of(Product::of(self::CUPS_ID, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
-            OrderLine::of(Product::of(self::SAUCER_ID, Label::fromString('Saucer'), Money::fromCents(83)), 3),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83)), 3),
         ];
     }
 
     /**
+     * @param list<OrderLine> $lines
+     *
      * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
      */
-    private static function primitiveLines(): array
+    private static function primitiveLines(array $lines): array
     {
-        return [
-            ['productId' => self::CUPS_ID, 'label' => 'Espresso cups, set of 6', 'quantity' => 1, 'unitAmountInCents' => 1_750],
-            ['productId' => self::SAUCER_ID, 'label' => 'Saucer', 'quantity' => 3, 'unitAmountInCents' => 83],
-        ];
+        return array_map(
+            static fn (OrderLine $line): array => [
+                'productId' => $line->product->id,
+                'label' => $line->product->label->toString(),
+                'quantity' => $line->quantity,
+                'unitAmountInCents' => $line->product->price->toCents(),
+            ],
+            $lines,
+        );
     }
 }
