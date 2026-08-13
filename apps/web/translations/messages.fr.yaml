@@ -85,6 +85,7 @@ sales:
         flash:
             cancelled: Commande annulée.
             cannot_cancel_paid: Le paiement de cette commande a déjà été capturé, elle ne peut plus être annulée.
+            catalog_changed: Les prix ou la disponibilité des produits ont changé depuis le chargement de cette page — merci de vérifier votre commande.
     customer:
         register:
             title: S'inscrire

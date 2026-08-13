@@ -10,6 +10,8 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
+use Sales\Order\Application\Exception\ProductChangedException;
+use Sales\Order\Application\Exception\ProductNotAvailableException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
@@ -40,6 +42,8 @@ use Web\Security\Voter\OrderVoter;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class OrderController extends AbstractController
 {
+    private const string CATALOG_SNAPSHOT_SESSION_KEY = 'sales_order.place.catalog_snapshot';
+
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
@@ -109,20 +113,43 @@ final class OrderController extends AbstractController
         ]);
         $form->handleRequest($request);
 
+        $session = $request->getSession();
+        if ($request->isMethod('GET')) {
+            $session->set(self::CATALOG_SNAPSHOT_SESSION_KEY, array_combine(
+                array_map(static fn (ProductResult $product): string => $product->id, $products->items),
+                array_map(static fn (ProductResult $product): array => ['label' => $product->label, 'unitAmountInCents' => $product->unitAmountInCents], $products->items),
+            ));
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $id = Uuid::uuid7()->toString();
+            /** @var array<string, array{label: string, unitAmountInCents: int}> $catalogSnapshot */
+            $catalogSnapshot = $session->get(self::CATALOG_SNAPSHOT_SESSION_KEY, []);
 
-            $this->commandBus->dispatch(new PlaceOrder(
-                id: $id,
-                customerId: $user->identityId(),
-                lines: array_values(array_map(
-                    static fn (OrderLineFormData $line): array => [
-                        'productId' => (string) $line->productId,
-                        'quantity' => (int) $line->quantity,
-                    ],
-                    $formData->lines,
-                )),
-            ));
+            try {
+                $this->commandBus->dispatch(new PlaceOrder(
+                    id: $id,
+                    customerId: $user->identityId(),
+                    lines: array_values(array_map(
+                        static function (OrderLineFormData $line) use ($catalogSnapshot): array {
+                            $productId = (string) $line->productId;
+                            $product = $catalogSnapshot[$productId] ?? throw ProductNotAvailableException::forId($productId);
+
+                            return [
+                                'productId' => $productId,
+                                'quantity' => (int) $line->quantity,
+                                'label' => $product['label'],
+                                'unitAmountInCents' => $product['unitAmountInCents'],
+                            ];
+                        },
+                        $formData->lines,
+                    )),
+                ));
+            } catch (ProductNotAvailableException|ProductChangedException) {
+                $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
+
+                return $this->redirectToRoute('sales_order_place');
+            }
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }

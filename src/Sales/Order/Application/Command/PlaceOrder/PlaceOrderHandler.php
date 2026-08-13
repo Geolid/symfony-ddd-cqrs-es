@@ -7,8 +7,9 @@ namespace Sales\Order\Application\Command\PlaceOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Buyer\BuyerResolverInterface;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Exception\ProductChangedException;
 use Sales\Order\Application\Exception\ProductNotAvailableException;
-use Sales\Order\Application\Product\ProductResolverInterface;
+use Sales\Order\Application\Finder\Product\ProductAvailabilityFinderInterface;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -23,7 +24,7 @@ final readonly class PlaceOrderHandler
     public function __construct(
         private OrderRepositoryInterface $repository,
         private BuyerResolverInterface $buyerResolver,
-        private ProductResolverInterface $productResolver,
+        private ProductAvailabilityFinderInterface $productFinder,
         private ClockInterface $clock,
     ) {
     }
@@ -31,6 +32,7 @@ final readonly class PlaceOrderHandler
     /**
      * @throws BuyerNotRegisteredException
      * @throws ProductNotAvailableException
+     * @throws ProductChangedException
      * @throws OrderWithoutLineException
      */
     public function __invoke(PlaceOrder $command): void
@@ -44,13 +46,12 @@ final readonly class PlaceOrderHandler
             buyerAddress: $buyer->address,
             lines: array_map(
                 function (array $line): OrderLine {
-                    $product = $this->productResolver->resolveFor($line['productId'])
-                        ?? throw ProductNotAvailableException::forId($line['productId']);
+                    $this->productFinder->ensureAvailable($line['productId'], $line['label'], $line['unitAmountInCents']);
 
                     return OrderLine::of(
-                        $product->label,
+                        $line['label'],
                         $line['quantity'],
-                        Money::fromCents($product->unitAmountInCents),
+                        Money::fromCents($line['unitAmountInCents']),
                     );
                 },
                 $command->lines,
