@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Persistence\EventStore\StreamResolver;
+namespace Sales\Order\Infrastructure\Persistence\EventStore\Resolver;
 
 use Catalog\Product\Application\Event\ProductDelistedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductListedIntegrationEvent;

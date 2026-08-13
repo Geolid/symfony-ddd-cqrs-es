@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\StreamResolver;
+namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Resolver;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Persistence\EventStore\StreamResolver;
+namespace Sales\Order\Infrastructure\Persistence\EventStore\Resolver;
 
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Message\Reducer;
