@@ -52,19 +52,6 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
         self::assertCount(1, $results);
         self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
     }
-
-    #[Test]
-    public function itSkipsRequestingPickupOnShipmentDispatchedWhenAlreadyCancelled(): void
-    {
-        // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->cancelled()->store();
-
-        // When
-        ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
-
-        // Then
-        self::assertNull($this->carrier->deliveryAddress);
-    }
 }
 
 final class DummyCarrierGateway implements CarrierGatewayInterface

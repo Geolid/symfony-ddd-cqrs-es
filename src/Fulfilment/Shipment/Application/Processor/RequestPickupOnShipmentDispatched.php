@@ -7,7 +7,6 @@ namespace Fulfilment\Shipment\Application\Processor;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -35,12 +34,6 @@ final readonly class RequestPickupOnShipmentDispatched
     public function __invoke(ShipmentDispatched $event): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
-
-        try {
-            $shipment->ensureNotCancelled();
-        } catch (ShipmentCancelledException) {
-            return;
-        }
 
         $this->commandBus->dispatch(new AssignTrackingReference(
             id: $event->id,

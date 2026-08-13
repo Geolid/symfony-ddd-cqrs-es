@@ -10,7 +10,6 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
@@ -53,16 +52,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public function customerAddress(): string
     {
         return $this->customerAddress;
-    }
-
-    /**
-     * @throws ShipmentCancelledException
-     */
-    public function ensureNotCancelled(): void
-    {
-        if ($this->status->isCancelled()) {
-            throw ShipmentCancelledException::forId($this->id);
-        }
     }
 
     public static function create(

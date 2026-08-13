@@ -10,7 +10,6 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\Exception\ShipmentCancelledException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -186,38 +185,6 @@ final class ShipmentTest extends AggregateRootTestCase
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
             ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
-    }
-
-    #[Test]
-    public function itEnsuresNotCancelled(): void
-    {
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)))
-            ->when(static function (Shipment $shipment): void {
-                $shipment->ensureNotCancelled();
-            })
-            ->then();
-    }
-
-    #[Test]
-    public function itCannotEnsureNotCancelled(): void
-    {
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-
-        $this
-            ->given(
-                new ShipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'buyer@example.com', $createdAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
-            )
-            ->when(static function (Shipment $shipment): void {
-                $shipment->ensureNotCancelled();
-            })
-            ->expectsException(ShipmentCancelledException::class);
     }
 
     protected function aggregateClass(): string
