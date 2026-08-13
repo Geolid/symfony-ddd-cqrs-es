@@ -20,10 +20,10 @@ final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCa
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $placed = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
         $paid = OrderTestFactory::new()->withCustomerId($customerId)->store();
         OrderPaymentTestFactory::new()->withOrderId($paid->id()->toString())->withCustomerId($customerId)->captured()->store();
+        $placed = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $otherCustomerId = Uuid::uuid7()->toString();
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
 

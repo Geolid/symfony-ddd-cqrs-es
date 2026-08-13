@@ -31,16 +31,16 @@ enum ShipmentState: string
         return self::CANCELLED === $this;
     }
 
-    /**
-     * @return list<self>
-     */
-    public static function cancellableStates(): array
-    {
-        return [self::PENDING, self::DISPATCHED];
-    }
-
     public function isCancellable(): bool
     {
         return \in_array($this, self::cancellableStates(), true);
+    }
+
+    /**
+     * @return list<self>
+     */
+    private static function cancellableStates(): array
+    {
+        return [self::PENDING, self::DISPATCHED];
     }
 }
