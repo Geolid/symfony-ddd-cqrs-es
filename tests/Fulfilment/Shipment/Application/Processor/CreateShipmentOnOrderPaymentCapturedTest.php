@@ -39,7 +39,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
-        $results = array_values(iterator_to_array($this->shipmentFinder));
+        $results = iterator_to_array($this->shipmentFinder, false);
         self::assertCount(1, $results);
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);

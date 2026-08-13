@@ -29,7 +29,7 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
         $this->dispatch(new AssignTrackingReference($shipment->id()->toString(), 'ACME-4Q7X2K9'));
 
         // Then
-        $results = array_values(iterator_to_array($this->service(ShipmentFinderInterface::class)));
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame('ACME-4Q7X2K9', $results[0]->trackingReference);
     }

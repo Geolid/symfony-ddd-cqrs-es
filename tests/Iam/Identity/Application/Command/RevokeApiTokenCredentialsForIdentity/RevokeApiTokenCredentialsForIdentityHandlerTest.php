@@ -35,10 +35,13 @@ final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractInte
     #[Test]
     public function itIgnoresAnIdentityWithNoCredentials(): void
     {
+        // Given
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+
         // When
         $this->dispatch(new RevokeApiTokenCredentialsForIdentity(Uuid::uuid7()->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId()->toString())->active());
     }
 }
