@@ -44,10 +44,13 @@ final class RevokeApiTokenCredentialsOnIdentityErasedTest extends AbstractIntegr
     #[Test]
     public function itDoesNothingWhenNoCredentialsExistForTheIdentity(): void
     {
+        // Given
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+
         // When
         ($this->processor)(new IdentityErased(Uuid::uuid7()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        self::expectNotToPerformAssertions();
+        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId()->toString())->active());
     }
 }
