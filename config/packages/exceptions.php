@@ -3,40 +3,30 @@
 declare(strict_types=1);
 
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
-use Catalog\Product\Application\Exception\ProductResultNotFoundException;
-use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
-use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
-use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
-use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
-use Sales\Customer\Domain\Exception\CustomerNotFoundException;
+use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
+use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
-use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Exception\ResultNotFoundException;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
@@ -45,40 +35,28 @@ return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
             // Catalog
-            ProductNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
-            ProductResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Fulfilment
-            ShipmentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
-            GrantNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            ApiTokenCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             ApiTokenCredentialResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            IdentityNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             IdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
-            IdentityResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
-            PasswordCredentialNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             PasswordCredentialResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Sales
-            AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
-            CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            CustomerResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            CustomerEmailAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            OrderPaymentNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -87,6 +65,8 @@ return static function (ContainerConfigurator $container): void {
             OrderSummaryResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Shared
+            AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 

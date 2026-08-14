@@ -6,6 +6,7 @@ namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
+use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {
@@ -18,11 +19,17 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     /**
      * @throws AcmeClientException
      */
-    public function requestPickup(string $shipmentId, string $deliveryAddress): string
+    public function requestPickup(string $shipmentId, PostalAddress $deliveryAddress): string
     {
         $response = $this->acmeClient->post(self::PICKUP_PATH, [
             'reference' => $shipmentId,
-            'destination' => $deliveryAddress,
+            'destination' => [
+                'firstName' => $deliveryAddress->fullName->firstName,
+                'lastName' => $deliveryAddress->fullName->lastName,
+                'street' => $deliveryAddress->address->street,
+                'postalCode' => $deliveryAddress->address->postalCode,
+                'city' => $deliveryAddress->address->city,
+            ],
         ]);
 
         $trackingReference = $response['trackingNumber'] ?? null;

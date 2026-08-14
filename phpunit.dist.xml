@@ -82,7 +82,7 @@
             <clover outputFile="var/coverage/clover.xml"/>
             <cobertura outputFile="var/coverage/cobertura.xml"/>
             <xml outputDirectory="var/coverage/coverage-xml"/>
-            <text outputFile="php://stdout"/>
+            <text outputFile="php://stdout" showOnlySummary="true" />
         </report>
     </coverage>
 

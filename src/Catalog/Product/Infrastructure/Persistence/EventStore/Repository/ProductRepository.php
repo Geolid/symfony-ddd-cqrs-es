@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Infrastructure\Persistence\EventStore\Repository;
 
-use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class ProductRepository implements ProductRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class ProductRepository implements ProductRepositoryInterface
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw ProductNotFoundException::forId($id);
+            throw AggregateNotFoundException::forId(Product::class, $id->toString());
         }
     }
 

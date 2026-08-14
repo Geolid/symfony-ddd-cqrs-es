@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\EventStore\Repository;
 
 use Iam\Identity\Domain\ApiTokenCredential;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class ApiTokenCredentialRepository implements ApiTokenCredentialRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class ApiTokenCredentialRepository implements ApiTokenCredentialR
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw ApiTokenCredentialNotFoundException::forId($id);
+            throw AggregateNotFoundException::forId(ApiTokenCredential::class, $id->toString());
         }
     }
 

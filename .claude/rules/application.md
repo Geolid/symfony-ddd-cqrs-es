@@ -34,6 +34,7 @@ paths:
 - A Query's class documents its return contract: `@implements QueryInterface<TResult>` (otherwise `ask()` only returns `mixed`). Its return shape is one of: `ListResult<X>` (paginated), `StreamResult<X>` (streamed, for volume), `list<X>` (all), `?XResult` (one or none), `XResult` (exactly one).
 - A Command/Query name referencing another aggregate names the concept (`By<Concept>`, `For<Concept>`), never its carrier field (`By<Concept>Id`) — the constructor argument itself stays `<concept>Id`.
 - A Service holds pure logic (zero I/O) or extracts steps of a use case: inject it as the concrete class plus bound scalars. An interface is reserved for an actual I/O boundary (substitution/stub in tests).
+- A presence/freshness check against a Read Model (a Finder/Result field null, a claimed value vs. its current counterpart) is an applicative pre-condition, not a Domain rule — it stays inline in the Handler, throwing its Application exception directly. It never gets wrapped in a Domain Service/Domain exception pair for the sole purpose of relocating the `if`: a Domain Service earns its place by owning a Write Model invariant (an Aggregate's own nullary invariant guard) or by holding logic a Value Object's own comparison already expresses — not by re-hosting a null check or a bare `$vo->equals()` call read off a Result.
 
 ## Tests
 

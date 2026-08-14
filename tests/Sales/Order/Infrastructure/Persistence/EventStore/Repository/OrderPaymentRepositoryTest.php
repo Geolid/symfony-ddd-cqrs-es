@@ -6,10 +6,10 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
@@ -46,7 +46,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(OrderPaymentNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->repository->load($id);

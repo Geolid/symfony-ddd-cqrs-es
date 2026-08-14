@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderRepositoryTest extends AbstractIntegrationTestCase
@@ -26,7 +26,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsASavedOrder(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->create();
+        $order = OrderTestFactory::new()->create();
 
         // When
         $this->repository->save($order);
@@ -34,7 +34,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $order->id();
         self::assertTrue($this->repository->has($id));
-        self::assertSame('buyer@example.com', $this->repository->load($id)->buyerAddress());
+        self::assertTrue($order->shippingAddress()->equals($this->repository->load($id)->shippingAddress()));
     }
 
     #[Test]
@@ -45,7 +45,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(OrderNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->repository->load($id);

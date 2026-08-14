@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Command\RepriceProduct;
 
-use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\ValueObject\Money;
 
 #[AsCommandHandler]
@@ -21,7 +21,7 @@ final readonly class RepriceProductHandler
     }
 
     /**
-     * @throws ProductNotFoundException
+     * @throws AggregateNotFoundException
      */
     public function __invoke(RepriceProduct $command): void
     {

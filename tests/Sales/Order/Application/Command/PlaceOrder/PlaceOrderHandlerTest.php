@@ -5,18 +5,24 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Enum\OrderStatus;
+use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
 final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +43,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($customer->id()->toString(), $result->customerId);
         self::assertSame(1_999, $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
-        self::assertSame('buyer@example.com', $this->buyerAddressOf($id));
+        $order = $this->orderOf($id);
+        self::assertSame('12 rue des Lilas', $order->shippingAddress()->address->street);
+        self::assertSame('8 avenue Foch', $order->billingAddress()->address->street);
     }
 
     #[Test]
@@ -64,6 +72,37 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+    }
+
+    #[Test]
+    #[DataProvider('provideIncompleteAddresses')]
+    public function itFailsWhenTheBuyerHasNotCompletedTheirAddresses(bool $withShippingAddress, bool $withBillingAddress): void
+    {
+        // Given
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com');
+        if ($withShippingAddress) {
+            $customer = $customer->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')));
+        }
+        if ($withBillingAddress) {
+            $customer = $customer->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')));
+        }
+        $customer = $customer->store();
+
+        // Then
+        $this->expectException(BuyerAddressesNotCompletedException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+    }
+
+    /**
+     * @return iterable<string, array{bool, bool}>
+     */
+    public static function provideIncompleteAddresses(): iterable
+    {
+        yield 'neither address set' => [false, false];
+        yield 'only shipping address set' => [true, false];
+        yield 'only billing address set' => [false, true];
     }
 
     #[Test]
@@ -117,13 +156,15 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function registeredCustomer(string $email): Customer
     {
-        return CustomerTestFactory::new()->withEmail($email)->store();
+        return CustomerTestFactory::new()
+            ->withEmail($email)
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->store();
     }
 
-    private function buyerAddressOf(string $id): string
+    private function orderOf(string $id): Order
     {
-        return $this->service(OrderRepositoryInterface::class)
-            ->load(OrderId::fromString($id))
-            ->buyerAddress();
+        return $this->service(OrderRepositoryInterface::class)->load(OrderId::fromString($id));
     }
 }

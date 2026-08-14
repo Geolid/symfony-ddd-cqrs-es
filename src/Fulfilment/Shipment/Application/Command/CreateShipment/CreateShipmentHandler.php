@@ -9,6 +9,9 @@ use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 
 #[AsCommandHandler]
 final readonly class CreateShipmentHandler
@@ -31,7 +34,10 @@ final readonly class CreateShipmentHandler
             id: $id,
             orderId: $command->orderId,
             customerId: $command->customerId,
-            customerAddress: $command->customerAddress,
+            shippingAddress: PostalAddress::of(
+                FullName::of($command->shippingAddress['firstName'], $command->shippingAddress['lastName']),
+                Address::of($command->shippingAddress['street'], $command->shippingAddress['postalCode'], $command->shippingAddress['city']),
+            ),
             createdAt: $this->clock->now(),
         );
 

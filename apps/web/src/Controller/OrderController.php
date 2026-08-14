@@ -9,6 +9,7 @@ use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
+use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
@@ -30,7 +31,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Web\Controller\Criteria\OrderCriteria;
+use Web\Controller\QueryString\ListQueryString;
 use Web\Exception\MissingCatalogSnapshotException;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
@@ -60,12 +61,12 @@ final class OrderController extends AbstractController
         #[CurrentUser]
         PasswordUser $user,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
-        OrderCriteria $criteria = new OrderCriteria(),
+        ListQueryString $queryString = new ListQueryString(),
     ): Response {
         $orders = $this->queryBus->ask(new ListOrderSummaries(
             customerId: $user->identityId(),
-            page: $criteria->page,
-            itemsPerPage: $criteria->itemsPerPage,
+            page: $queryString->page,
+            itemsPerPage: $queryString->itemsPerPage,
             sortedByPlacedAt: true,
         ));
 
@@ -136,6 +137,8 @@ final class OrderController extends AbstractController
                     customerId: $user->identityId(),
                     lines: $this->catalogSnapshot->resolveLines($lines),
                 ));
+            } catch (BuyerAddressesNotCompletedException) {
+                return $this->redirectToRoute('checkout_address_complete', ['return_to' => 'sales_order_place']);
             } catch (OutdatedOrderException|MissingCatalogSnapshotException) {
                 $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
 

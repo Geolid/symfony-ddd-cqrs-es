@@ -1,0 +1,34 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'sales.customer.checkout_addresses.title'|trans }}{% endblock %}
+
+{% block heading %}
+    <hgroup>
+        <h1>{{ 'sales.customer.checkout_addresses.title'|trans }}</h1>
+        <p>{{ 'sales.customer.checkout_addresses.subtitle'|trans }}</p>
+    </hgroup>
+{% endblock %}
+
+{% block content %}
+    {{ form_start(form, {attr: {'data-testid': 'checkout-addresses-form'}}) }}
+
+    <fieldset>
+        <legend>{{ 'sales.customer.checkout_addresses.legend_shipping'|trans }}</legend>
+        {{ form_widget(form.shipping) }}
+    </fieldset>
+
+    {{ form_row(form.sameAsShipping) }}
+
+    <fieldset>
+        <legend>{{ 'sales.customer.checkout_addresses.legend_billing'|trans }}</legend>
+        {{ form_widget(form.billing) }}
+    </fieldset>
+
+    <div class="form-actions-end">
+        <button type="submit">
+            {{ 'sales.customer.checkout_addresses.button_submit'|trans }}
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+{% endblock %}

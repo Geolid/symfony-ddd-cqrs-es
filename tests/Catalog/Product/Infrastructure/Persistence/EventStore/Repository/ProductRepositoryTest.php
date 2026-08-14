@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Product\Infrastructure\Persistence\EventStore\Repository;
 
-use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class ProductRepositoryTest extends AbstractIntegrationTestCase
@@ -45,7 +45,7 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(ProductNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->repository->load($id);

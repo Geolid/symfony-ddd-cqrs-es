@@ -13,12 +13,21 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 #[Event('sales.order.integration.payment_captured')]
 final readonly class OrderPaymentCapturedIntegrationEvent implements IntegrationEventInterface
 {
+    /**
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress
+     */
     public function __construct(
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-address-%s'))]
-        public string $buyerAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
+            'postalCode' => '00000',
+            'city' => 'erased',
+        ]))]
+        public array $shippingAddress,
         public string $capturedAt,
     ) {
     }

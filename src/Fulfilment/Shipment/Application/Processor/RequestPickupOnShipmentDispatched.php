@@ -7,13 +7,13 @@ namespace Fulfilment\Shipment\Application\Processor;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTrackingReference;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Processor\Processor;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[Processor('fulfilment.shipment.request_pickup_on_shipment_dispatched')]
 final readonly class RequestPickupOnShipmentDispatched
@@ -26,7 +26,7 @@ final readonly class RequestPickupOnShipmentDispatched
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -37,7 +37,7 @@ final readonly class RequestPickupOnShipmentDispatched
 
         $this->commandBus->dispatch(new AssignTrackingReference(
             id: $event->id,
-            trackingReference: $this->carrier->requestPickup($event->id, $shipment->customerAddress()),
+            trackingReference: $this->carrier->requestPickup($event->id, $shipment->shippingAddress()),
         ));
     }
 }

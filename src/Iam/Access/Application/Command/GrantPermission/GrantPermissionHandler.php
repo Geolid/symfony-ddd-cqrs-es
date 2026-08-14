@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Command\GrantPermission;
 
-use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Access\Domain\ValueObject\Permission;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class GrantPermissionHandler
@@ -22,7 +22,7 @@ final readonly class GrantPermissionHandler
     }
 
     /**
-     * @throws GrantNotFoundException
+     * @throws AggregateNotFoundException
      */
     public function __invoke(GrantPermission $command): void
     {

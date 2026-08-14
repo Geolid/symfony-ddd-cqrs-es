@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Access\Infrastructure\Persistence\EventStore\Repository;
 
-use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class GrantRepository implements GrantRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class GrantRepository implements GrantRepositoryInterface
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw GrantNotFoundException::forId($id);
+            throw AggregateNotFoundException::forId(Grant::class, $id->toString());
         }
     }
 

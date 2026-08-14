@@ -6,7 +6,7 @@ namespace Sales\Tests\Customer\Application\Command\RegisterCustomer;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
-use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
+use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
@@ -40,7 +40,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer@example.com')->fingerprint());
 
         // Then
-        $this->expectException(AddressAlreadyRegisteredException::class);
+        $this->expectException(CustomerEmailAlreadyRegisteredException::class);
 
         // When
         $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'BUYER@example.com'));

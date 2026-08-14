@@ -93,6 +93,19 @@ sales:
             label_email: Email
             label_password: Mot de passe
             button_submit: S'inscrire
+        checkout_addresses:
+            title: Complétez vos adresses
+            subtitle: Renseignez votre adresse de livraison et de facturation avant votre première commande.
+            legend_shipping: Adresse de livraison
+            legend_billing: Adresse de facturation
+            label_same_as_shipping: Adresse de facturation identique à l'adresse de livraison
+            button_submit: Valider
+            address:
+                label_first_name: Prénom
+                label_last_name: Nom
+                label_street: Rue
+                label_postal_code: Code postal
+                label_city: Ville
         profile:
             title: Profil
             subtitle: Gérez vos paramètres de sécurité et vos données personnelles.
@@ -107,6 +120,6 @@ sales:
         flash:
             registered: Compte créé — merci de vous connecter.
             erased: Votre compte a été effacé.
-            address_taken: Cette adresse est déjà enregistrée.
+            email_taken: Cet email est déjà enregistré.
             login_taken: Cet identifiant est déjà pris.
             password_changed: Mot de passe changé.

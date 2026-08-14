@@ -14,14 +14,31 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderPlaced implements DomainEventInterface
 {
     /**
-     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}> $lines
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $billingAddress
+     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>         $lines
      */
     public function __construct(
+        #[DataSubjectId(name: 'billing_retention')]
         public string $id,
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-address-%s'))]
-        public string $buyerAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
+            'postalCode' => '00000',
+            'city' => 'erased',
+        ]))]
+        public array $shippingAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
+            'postalCode' => '00000',
+            'city' => 'erased',
+        ]), subjectIdName: 'billing_retention')]
+        public array $billingAddress,
         public array $lines,
         public int $totalAmountInCents,
         public string $placedAt,

@@ -16,7 +16,7 @@ final readonly class CustomerRegistered implements DomainEventInterface
     public function __construct(
         #[DataSubjectId]
         public string $id,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-email-%s@customer.invalid'))]
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('%s@erased.invalid'))]
         public string $email,
         public string $registeredAt,
     ) {

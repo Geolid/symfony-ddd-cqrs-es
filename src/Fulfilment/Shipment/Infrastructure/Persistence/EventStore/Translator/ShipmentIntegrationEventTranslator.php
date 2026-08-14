@@ -12,11 +12,11 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Store\Store;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
@@ -32,7 +32,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      */
     #[Subscribe(ShipmentDispatched::class)]
     public function onShipmentDispatched(ShipmentDispatched $event): void
@@ -50,7 +50,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      */
     #[Subscribe(ShipmentDelivered::class)]
     public function onShipmentDelivered(ShipmentDelivered $event): void
@@ -68,7 +68,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      */
     #[Subscribe(ShipmentCancelled::class)]
     public function onShipmentCancelled(ShipmentCancelled $event): void
@@ -86,7 +86,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      */
     #[Subscribe(TrackingReferenceAssigned::class)]
     public function onTrackingReferenceAssigned(TrackingReferenceAssigned $event): void

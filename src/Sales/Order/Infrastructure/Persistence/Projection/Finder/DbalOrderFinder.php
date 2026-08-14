@@ -6,10 +6,11 @@ namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Enum\OrderStatus;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
+use Sales\Order\Domain\Order;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
@@ -29,7 +30,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             ->fetchAssociative();
 
         if (false === $row) {
-            throw OrderResultNotFoundException::forId($id);
+            throw ResultNotFoundException::forId(Order::class, $id);
         }
 
         return $this->mapRow($row);
@@ -41,6 +42,16 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             static function (QueryBuilder $qb) use ($customerId) {
                 $qb->andWhere('customer_id = :customerId')
                     ->setParameter('customerId', $customerId);
+            },
+        );
+    }
+
+    public function placedBefore(string $cutoff): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cutoff) {
+                $qb->andWhere('placed_at < :cutoff')
+                    ->setParameter('cutoff', new \DateTimeImmutable($cutoff)->format('Y-m-d H:i:s'));
             },
         );
     }

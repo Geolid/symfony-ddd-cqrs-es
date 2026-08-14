@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
@@ -16,7 +17,8 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itCapturesARequestedPayment(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
@@ -30,7 +32,8 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnAlreadyCapturedPayment(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->captured()->store();
+        $order = OrderTestFactory::new()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));

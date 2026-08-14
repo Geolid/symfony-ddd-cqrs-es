@@ -17,7 +17,7 @@ final readonly class PasswordCredentialSet implements DomainEventInterface
         public string $id,
         #[DataSubjectId]
         public string $identityId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-login-%s'))]
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-%s'))]
         public string $login,
         public string $hash,
         public string $setAt,

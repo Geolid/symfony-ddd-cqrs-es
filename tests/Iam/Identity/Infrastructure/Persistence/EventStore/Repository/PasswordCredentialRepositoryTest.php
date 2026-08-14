@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\EventStore\Repository;
 
-use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
@@ -47,7 +47,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(PasswordCredentialNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->repository->load($id);

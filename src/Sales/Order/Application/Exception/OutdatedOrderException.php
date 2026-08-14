@@ -8,11 +8,10 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class OutdatedOrderException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forReason(string $reason, \Throwable $previous): self
+    public static function forId(string $productId): self
     {
         return new self(
-            message: \sprintf('The order could not be placed: %s', $reason),
-            previous: $previous,
+            message: \sprintf('Product with ID "%s" is no longer available at the claimed price.', $productId),
         );
     }
 }

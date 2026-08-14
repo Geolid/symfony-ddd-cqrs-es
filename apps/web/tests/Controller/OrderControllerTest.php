@@ -15,6 +15,9 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -99,6 +102,30 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseStatusCodeSame(409);
+    }
+
+    #[Test]
+    public function itRedirectsToTheCheckoutAddressFormWhenAddressesAreIncomplete(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-9@example.com')->store();
+        $this->loginAs($client, $identity);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // When
+        $crawler = $client->request('GET', '/sales/orders/place');
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+        ]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
     }
 
     #[Test]
@@ -225,7 +252,12 @@ final class OrderControllerTest extends AbstractWebTestCase
     private function registerCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();
+        CustomerTestFactory::new()
+            ->withId($identity->id()->toString())
+            ->withEmail($email)
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->store();
 
         return $identity;
     }

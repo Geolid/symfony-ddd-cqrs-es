@@ -7,10 +7,10 @@ namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +37,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $id = IdentityId::generate()->toString();
 
         // Then
-        $this->expectException(IdentityNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->dispatch(new SuspendIdentity($id));

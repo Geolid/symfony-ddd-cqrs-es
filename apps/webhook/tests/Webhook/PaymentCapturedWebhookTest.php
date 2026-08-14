@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 use Webhook\Webhook\PaymentCapturedParser;
@@ -22,7 +23,8 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $orderPayment = OrderPaymentTestFactory::new()->withReference(self::REFERENCE)->store();
+        $order = OrderTestFactory::new()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference(self::REFERENCE)->store();
         $body = self::body(self::REFERENCE);
 
         // When

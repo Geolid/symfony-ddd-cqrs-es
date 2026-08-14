@@ -8,6 +8,9 @@ use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -26,9 +29,9 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
     }
 
-    public function withCustomerAddress(string $customerAddress): self
+    public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['customerAddress' => $customerAddress]));
+        return $this->withAttributes(array_merge($this->attributes, ['shippingAddress' => $shippingAddress]));
     }
 
     public function withCreatedAt(\DateTimeImmutable $createdAt): self
@@ -69,7 +72,10 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         return [
             'orderId' => Uuid::uuid7()->toString(),
             'customerId' => Uuid::uuid7()->toString(),
-            'customerAddress' => self::faker()->safeEmail(),
+            'shippingAddress' => PostalAddress::of(
+                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+            ),
             'createdAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }
@@ -78,14 +84,14 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($orderId = $attributes['orderId']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::stringNotEmpty($customerAddress = $attributes['customerAddress']);
+        Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
         Assert::isInstanceOf($createdAt = $attributes['createdAt'], \DateTimeInterface::class);
 
         return Shipment::create(
             ShipmentId::forOrder($orderId),
             $orderId,
             $customerId,
-            $customerAddress,
+            $shippingAddress,
             \DateTimeImmutable::createFromInterface($createdAt),
         );
     }

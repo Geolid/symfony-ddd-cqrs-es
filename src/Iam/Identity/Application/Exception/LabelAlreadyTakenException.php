@@ -8,8 +8,11 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class LabelAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forFingerprint(string $fingerprint): self
+    public static function forFingerprint(string $fingerprint, \Throwable $previous): self
     {
-        return new self(\sprintf('The label fingerprinted "%s" is already used by another key for this identity.', $fingerprint));
+        return new self(
+            message: \sprintf('The label fingerprinted "%s" is already used by another key for this identity.', $fingerprint),
+            previous: $previous,
+        );
     }
 }

@@ -12,6 +12,9 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
 final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -33,7 +36,12 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         $id = ShipmentId::forOrder($orderId)->toString();
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, Uuid::uuid7()->toString(), 'buyer@example.com'));
+        $this->dispatch(new CreateShipment(
+            $id,
+            $orderId,
+            Uuid::uuid7()->toString(),
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+        ));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -41,10 +49,8 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($id, $results[0]->id);
         self::assertSame($orderId, $results[0]->orderId);
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
-        self::assertSame(
-            'buyer@example.com',
-            $this->repository->load(ShipmentId::fromString($id))->customerAddress(),
-        );
+        $shipment = $this->repository->load(ShipmentId::fromString($id));
+        self::assertSame('12 rue des Lilas', $shipment->shippingAddress()->address->street);
     }
 
     #[Test]
@@ -57,16 +63,21 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
         ShipmentTestFactory::new()
             ->withOrderId($orderId)
             ->withCustomerId($customerId)
-            ->withCustomerAddress('buyer@example.com')
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
             ->store();
 
         // When
-        $this->dispatch(new CreateShipment($id, $orderId, $customerId, 'someone.else@example.com'));
+        $this->dispatch(new CreateShipment(
+            $id,
+            $orderId,
+            $customerId,
+            ['firstName' => 'Someone', 'lastName' => 'Else', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+        ));
 
         // Then
         self::assertSame(
-            'buyer@example.com',
-            $this->repository->load(ShipmentId::fromString($id))->customerAddress(),
+            '12 rue des Lilas',
+            $this->repository->load(ShipmentId::fromString($id))->shippingAddress()->address->street,
         );
     }
 }

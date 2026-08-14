@@ -9,8 +9,11 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -29,9 +32,14 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
     }
 
-    public function withBuyerAddress(string $buyerAddress): self
+    public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
+        return $this->withAttributes(array_merge($this->attributes, ['shippingAddress' => $shippingAddress]));
+    }
+
+    public function withBillingAddress(PostalAddress $billingAddress): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['billingAddress' => $billingAddress]));
     }
 
     /**
@@ -63,12 +71,24 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
     }
 
+    public function billingAddressErased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->eraseBillingAddress($erasedAt));
+    }
+
     protected function defaults(): array
     {
         return [
             'id' => OrderId::generate()->toString(),
             'customerId' => Uuid::uuid7()->toString(),
-            'buyerAddress' => self::faker()->safeEmail(),
+            'shippingAddress' => PostalAddress::of(
+                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+            ),
+            'billingAddress' => PostalAddress::of(
+                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+            ),
             'lines' => [OrderLine::of(
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(self::faker()->sentence(3)), Money::fromCents(self::faker()->numberBetween(500, 5_000))),
                 self::faker()->numberBetween(1, 5),
@@ -81,7 +101,8 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         Assert::stringNotEmpty($id = $attributes['id']);
         Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::stringNotEmpty($buyerAddress = $attributes['buyerAddress']);
+        Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
+        Assert::isInstanceOf($billingAddress = $attributes['billingAddress'], PostalAddress::class);
         Assert::isList($lines = $attributes['lines']);
         Assert::allIsInstanceOf($lines, OrderLine::class);
         Assert::isInstanceOf($placedAt = $attributes['placedAt'], \DateTimeInterface::class);
@@ -89,7 +110,8 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return Order::place(
             OrderId::fromString($id),
             $customerId,
-            $buyerAddress,
+            $shippingAddress,
+            $billingAddress,
             $lines,
             \DateTimeImmutable::createFromInterface($placedAt),
         );
