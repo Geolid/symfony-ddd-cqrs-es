@@ -7,62 +7,59 @@ namespace Sales\Tests\Order\Domain\ValueObject;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
 final class OrderLineTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideAcceptedValues')]
-    public function itCreates(string $label, string $expectedLabel): void
+    public function itCreates(): void
     {
+        // Given
+        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
+
         // When
-        $line = OrderLine::of($label, 3, Money::fromCents(83));
+        $line = OrderLine::of($product, 3);
 
         // Then
-        self::assertSame($expectedLabel, $line->label);
+        self::assertTrue($product->equals($line->product));
         self::assertSame(3, $line->quantity);
-        self::assertSame(83, $line->unitAmount->toCents());
-    }
-
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function provideAcceptedValues(): iterable
-    {
-        yield 'line' => ['Saucer', 'Saucer'];
-        yield 'surrounding whitespace' => ['  Saucer  ', 'Saucer'];
     }
 
     #[Test]
     #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $label, int $quantity): void
+    public function itProtectsInvariants(int $quantity): void
     {
+        // Given
+        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
+
         // Then
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        OrderLine::of($label, $quantity, Money::fromCents(83));
+        OrderLine::of($product, $quantity);
     }
 
     /**
-     * @return iterable<string, array{string, int}>
+     * @return iterable<string, array{int}>
      */
     public static function provideInvalidValues(): iterable
     {
-        yield 'empty label' => ['', 1];
-        yield 'whitespace only label' => ['   ', 1];
-        yield 'zero quantity' => ['Saucer', 0];
-        yield 'negative quantity' => ['Saucer', -1];
+        yield 'zero quantity' => [0];
+        yield 'negative quantity' => [-1];
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
         // Given
-        $a = OrderLine::of('Saucer', 3, Money::fromCents(83));
-        $b = OrderLine::of('  Saucer  ', 3, Money::fromCents(83));
-        $other = OrderLine::of('Saucer', 4, Money::fromCents(83));
+        $id = Uuid::uuid7()->toString();
+        $a = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 3);
+        $b = OrderLine::of(Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83)), 3);
+        $other = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 4);
 
         // When
         $equalResult = $a->equals($b);
@@ -76,8 +73,11 @@ final class OrderLineTest extends TestCase
     #[Test]
     public function itTotalsTheUnitAmountOverTheQuantity(): void
     {
+        // Given
+        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
+
         // When
-        $total = OrderLine::of('Saucer', 3, Money::fromCents(83))->total();
+        $total = OrderLine::of($product, 3)->total();
 
         // Then
         self::assertSame(249, $total->toCents());

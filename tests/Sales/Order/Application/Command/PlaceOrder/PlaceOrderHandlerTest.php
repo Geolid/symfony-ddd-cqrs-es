@@ -12,7 +12,7 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\ProductNotAvailableException;
+use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -73,18 +73,36 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $customer = $this->registeredCustomer('buyer@example.com');
 
         // Then
-        $this->expectException(ProductNotAvailableException::class);
+        $this->expectException(OutdatedOrderException::class);
 
         // When
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
             $customer->id()->toString(),
-            [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1]],
+            [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
+        ));
+    }
+
+    #[Test]
+    public function itFailsWhenAProductHasChangedSinceItWasDisplayed(): void
+    {
+        // Given
+        $customer = $this->registeredCustomer('buyer@example.com');
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // Then
+        $this->expectException(OutdatedOrderException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(
+            OrderId::generate()->toString(),
+            $customer->id()->toString(),
+            [['productId' => $cups->id()->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
         ));
     }
 
     /**
-     * @return list<array{productId: string, quantity: int}>
+     * @return list<array{productId: string, quantity: int, label: string, unitAmountInCents: int}>
      */
     private function lines(): array
     {
@@ -92,8 +110,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->store();
 
         return [
-            ['productId' => $cups->id()->toString(), 'quantity' => 1],
-            ['productId' => $saucer->id()->toString(), 'quantity' => 3],
+            ['productId' => $cups->id()->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_750],
+            ['productId' => $saucer->id()->toString(), 'quantity' => 3, 'label' => 'Saucer', 'unitAmountInCents' => 83],
         ];
     }
 

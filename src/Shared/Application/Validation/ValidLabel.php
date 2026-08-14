@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Product\Application\Validation;
+namespace Shared\Application\Validation;
 
-use Catalog\Product\Domain\ValueObject\Label;
-use Shared\Application\Validation\ValidValueObject;
+use Shared\Domain\ValueObject\Label;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\Compound;
 

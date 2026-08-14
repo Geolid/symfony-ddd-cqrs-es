@@ -10,6 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
+use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
@@ -30,11 +31,13 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\OrderCriteria;
+use Web\Exception\MissingCatalogSnapshotException;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 use Web\Security\PasswordUser;
 use Web\Security\Voter\OrderVoter;
+use Web\Session\CatalogSnapshot;
 
 #[Route('/sales/orders')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -45,6 +48,7 @@ final class OrderController extends AbstractController
         private readonly QueryBusInterface $queryBus,
         private readonly OrderPaymentRequesterInterface $orderPaymentRequester,
         private readonly TranslatorInterface $translator,
+        private readonly CatalogSnapshot $catalogSnapshot,
     ) {
     }
 
@@ -97,9 +101,11 @@ final class OrderController extends AbstractController
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
         $productPricesInCents = [];
+        $currentCatalog = [];
         foreach ($products->items as $product) {
             $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitAmountInCents / 100, 2))] = $product->id;
             $productPricesInCents[$product->id] = $product->unitAmountInCents;
+            $currentCatalog[$product->id] = ['label' => $product->label, 'unitAmountInCents' => $product->unitAmountInCents];
         }
 
         $formData = new PlaceOrderFormData();
@@ -109,20 +115,32 @@ final class OrderController extends AbstractController
         ]);
         $form->handleRequest($request);
 
+        if ($request->isMethod('GET')) {
+            $this->catalogSnapshot->store($currentCatalog);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            $lines = array_map(
+                static fn (OrderLineFormData $line): array => [
+                    'productId' => (string) $line->productId,
+                    'quantity' => (int) $line->quantity,
+                ],
+                $formData->lines,
+            );
+
             $id = Uuid::uuid7()->toString();
 
-            $this->commandBus->dispatch(new PlaceOrder(
-                id: $id,
-                customerId: $user->identityId(),
-                lines: array_values(array_map(
-                    static fn (OrderLineFormData $line): array => [
-                        'productId' => (string) $line->productId,
-                        'quantity' => (int) $line->quantity,
-                    ],
-                    $formData->lines,
-                )),
-            ));
+            try {
+                $this->commandBus->dispatch(new PlaceOrder(
+                    id: $id,
+                    customerId: $user->identityId(),
+                    lines: $this->catalogSnapshot->resolveLines($lines),
+                ));
+            } catch (OutdatedOrderException|MissingCatalogSnapshotException) {
+                $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
+
+                return $this->redirectToRoute('sales_order_place');
+            }
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);
         }

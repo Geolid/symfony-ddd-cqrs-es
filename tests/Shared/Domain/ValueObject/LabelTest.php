@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Tests\Product\Domain\ValueObject;
+namespace Shared\Tests\Domain\ValueObject;
 
-use Catalog\Product\Domain\ValueObject\Label;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Shared\Domain\ValueObject\Label;
 
 final class LabelTest extends TestCase
 {

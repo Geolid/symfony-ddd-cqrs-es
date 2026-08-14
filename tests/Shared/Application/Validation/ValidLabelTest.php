@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Tests\Product\Application\Validation;
+namespace Shared\Tests\Application\Validation;
 
-use Catalog\Product\Application\Validation\ValidLabel;
-use Catalog\Product\Domain\ValueObject\Label;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Validation\ValidLabel;
 use Shared\Application\Validation\ValidValueObject;
+use Shared\Domain\ValueObject\Label;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;

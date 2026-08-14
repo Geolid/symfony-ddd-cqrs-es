@@ -7,8 +7,10 @@ namespace Sales\Tests\OrderSummary\Application\Query\GetOrderSummaryLines;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
+use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\AbstractIntegrationTestCase;
 
@@ -19,7 +21,7 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()
-            ->withLines([OrderLine::of('Widget', 2, Money::fromCents(1_500))])
+            ->withLines([OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_500)), 2)])
             ->store();
 
         // When

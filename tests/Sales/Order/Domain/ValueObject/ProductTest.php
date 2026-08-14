@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Tests\Order\Domain\ValueObject;
+
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
+
+final class ProductTest extends TestCase
+{
+    #[Test]
+    public function itCreates(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+        $label = Label::fromString('Saucer');
+
+        // When
+        $product = Product::of($id, $label, Money::fromCents(1_750));
+
+        // Then
+        self::assertSame($id, $product->id);
+        self::assertTrue($label->equals($product->label));
+        self::assertSame(1_750, $product->price->toCents());
+    }
+
+    #[Test]
+    public function itProtectsInvariants(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Product::of('', Label::fromString('Saucer'), Money::fromCents(1_750));
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
+        $b = Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83));
+        $differentId = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
+        $differentLabel = Product::of($id, Label::fromString('Plate'), Money::fromCents(83));
+        $differentPrice = Product::of($id, Label::fromString('Saucer'), Money::fromCents(90));
+
+        // When
+        $equalResult = $a->equals($b);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($a->equals($differentId));
+        self::assertFalse($a->equals($differentLabel));
+        self::assertFalse($a->equals($differentPrice));
+    }
+}
