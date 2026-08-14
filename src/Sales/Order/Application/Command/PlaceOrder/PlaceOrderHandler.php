@@ -18,8 +18,11 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\PostalAddress;
 
 #[AsCommandHandler]
 final readonly class PlaceOrderHandler

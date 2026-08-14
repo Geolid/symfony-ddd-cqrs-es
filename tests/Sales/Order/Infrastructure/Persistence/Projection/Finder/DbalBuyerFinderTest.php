@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Repository\CustomerAddressesRepositoryInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Order\Application\Finder\Buyer\BuyerResult;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
@@ -45,6 +46,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofId($customer->id()->toString());
 
         // Then
+        self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($customer->id()->toString(), $result->customerId);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
@@ -66,6 +68,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofId($customer->id()->toString());
 
         // Then
+        self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($customer->id()->toString(), $result->customerId);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
@@ -87,6 +90,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofId($customer->id()->toString());
 
         // Then
+        self::assertInstanceOf(BuyerResult::class, $result);
         self::assertNotNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
     }

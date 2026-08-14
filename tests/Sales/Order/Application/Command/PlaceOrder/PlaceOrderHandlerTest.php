@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
