@@ -12,7 +12,6 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\CommandBusInterface;
@@ -21,7 +20,6 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 final readonly class OrderPaymentRequestingService implements OrderPaymentRequesterInterface
 {
     public function __construct(
-        private OrderRepositoryInterface $orderRepository,
         private OrderFinderInterface $orderFinder,
         private OrderPaymentFinderInterface $orderPaymentFinder,
         private PaymentGatewayInterface $paymentGateway,
@@ -48,15 +46,11 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
             throw OrderPaymentAlreadyRequestedException::forOrderId($orderId);
         }
 
-        $order = $this->orderRepository->load(OrderId::fromString($orderId));
-
         $session = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents, $returnUrl);
 
         $this->commandBus->dispatch(new RequestOrderPayment(
             id: OrderPaymentId::forOrder($orderId)->toString(),
             orderId: $orderId,
-            customerId: $result->customerId,
-            buyerAddress: $order->buyerAddress(),
             amountInCents: $result->totalAmountInCents,
             reference: $session->reference,
             checkoutUrl: $session->checkoutUrl,

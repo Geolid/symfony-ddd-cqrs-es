@@ -20,7 +20,6 @@ final class OrderPaymentTest extends AggregateRootTestCase
     public function itIsRequestedForAnOrder(): void
     {
         $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId);
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
@@ -29,53 +28,40 @@ final class OrderPaymentTest extends AggregateRootTestCase
             ->when(static fn () => OrderPayment::request(
                 $id,
                 $orderId,
-                $customerId,
-                'buyer@example.com',
                 Money::fromCents(4_200),
                 PaymentReference::fromString('GLBX-9F3K2M1P'),
                 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
                 $requestedAt,
             ))
-            ->then(new OrderPaymentRequested(
-                $id->toString(),
-                $orderId,
-                $customerId,
-                'buyer@example.com',
-                4_200,
-                'GLBX-9F3K2M1P',
-                'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
-                $requestedAt->format(\DateTimeInterface::ATOM),
-            ));
+            ->then(self::orderPaymentRequested($id->toString(), $orderId, $requestedAt));
     }
 
     #[Test]
     public function itIsCapturedOnceRequested(): void
     {
         $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPaymentRequested($id, $orderId, $customerId, 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $requestedAt->format(\DateTimeInterface::ATOM)))
+            ->given(self::orderPaymentRequested($id, $orderId, $requestedAt))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt))
-            ->then(new OrderPaymentCaptured($id, $orderId, $customerId, 'buyer@example.com', $capturedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
     public function itDoesNotCaptureAnAlreadyCapturedPayment(): void
     {
         $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(
-                new OrderPaymentRequested($id, $orderId, $customerId, 'buyer@example.com', 4_200, 'GLBX-9F3K2M1P', 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $requestedAt->format(\DateTimeInterface::ATOM)),
-                new OrderPaymentCaptured($id, $orderId, $customerId, 'buyer@example.com', $capturedAt->format(\DateTimeInterface::ATOM)),
+                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -84,5 +70,17 @@ final class OrderPaymentTest extends AggregateRootTestCase
     protected function aggregateClass(): string
     {
         return OrderPayment::class;
+    }
+
+    private static function orderPaymentRequested(string $id, string $orderId, \DateTimeImmutable $requestedAt): OrderPaymentRequested
+    {
+        return new OrderPaymentRequested(
+            $id,
+            $orderId,
+            4_200,
+            'GLBX-9F3K2M1P',
+            'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            $requestedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

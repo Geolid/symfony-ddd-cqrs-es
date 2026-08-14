@@ -7,11 +7,14 @@ namespace Web\Controller;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Command\SetCustomerBillingAddress\SetCustomerBillingAddress;
+use Sales\Customer\Application\Command\SetCustomerShippingAddress\SetCustomerShippingAddress;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
+use Sales\Order\Application\Query\GetBuyer\GetBuyer;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
@@ -32,6 +35,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\OrderCriteria;
 use Web\Exception\MissingCatalogSnapshotException;
+use Web\Form\CompleteAddressesType;
+use Web\Form\FormData\CompleteAddressesFormData;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
@@ -97,6 +102,12 @@ final class OrderController extends AbstractController
     #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
     public function place(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
+        $buyer = $this->queryBus->ask(new GetBuyer($user->identityId()));
+
+        if (null === $buyer || !$buyer->hasCompletedAddresses()) {
+            return $this->completeAddresses($request, $user);
+        }
+
         /** @var ListResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
@@ -190,5 +201,39 @@ final class OrderController extends AbstractController
         $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    private function completeAddresses(Request $request, PasswordUser $user): Response
+    {
+        $formData = new CompleteAddressesFormData();
+        $form = $this->createForm(CompleteAddressesType::class, $formData);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->commandBus->dispatch(new SetCustomerShippingAddress(
+                customerId: $user->identityId(),
+                firstName: (string) $formData->firstName,
+                lastName: (string) $formData->lastName,
+                street: (string) $formData->street,
+                postalCode: (string) $formData->postalCode,
+                city: (string) $formData->city,
+            ));
+            $this->commandBus->dispatch(new SetCustomerBillingAddress(
+                customerId: $user->identityId(),
+                firstName: (string) $formData->billingFirstName,
+                lastName: (string) $formData->billingLastName,
+                street: (string) $formData->billingStreet,
+                postalCode: (string) $formData->billingPostalCode,
+                city: (string) $formData->billingCity,
+            ));
+
+            return $this->redirectToRoute('sales_order_place');
+        }
+
+        return $this->render('sales/order/complete_addresses.html.twig', ['form' => $form]);
     }
 }

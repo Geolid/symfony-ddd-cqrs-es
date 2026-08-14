@@ -15,8 +15,11 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\PostalAddress;
 
 final class OrderTest extends AggregateRootTestCase
 {
@@ -30,8 +33,24 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, $customerId, 'buyer@example.com', $lines, $placedAt))
-            ->then(new OrderPlaced($id->toString(), $customerId, 'buyer@example.com', self::primitiveLines($lines), 1_999, $placedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn () => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $placedAt))
+            ->then(new OrderPlaced(
+                $id->toString(),
+                $customerId,
+                'Ada',
+                'Lovelace',
+                '12 rue des Lilas',
+                '75001',
+                'Paris',
+                'Ada',
+                'Lovelace',
+                '8 avenue Foch',
+                '75116',
+                'Paris',
+                self::primitiveLines($lines),
+                1_999,
+                $placedAt->format(\DateTimeInterface::ATOM),
+            ));
     }
 
     #[Test]
@@ -42,7 +61,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), 'buyer@example.com', [], $placedAt))
+            ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -55,7 +74,7 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
@@ -70,7 +89,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                new OrderPlaced($id, $customerId, 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)),
+                self::orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -84,7 +103,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new OrderPlaced($id, Uuid::uuid7()->toString(), 'buyer@example.com', self::primitiveLines(self::lines()), 1_999, $placedAt->format(\DateTimeInterface::ATOM)))
+            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
             ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
@@ -120,6 +139,37 @@ final class OrderTest extends AggregateRootTestCase
                 'unitAmountInCents' => $line->product->price->toCents(),
             ],
             $lines,
+        );
+    }
+
+    private static function shippingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
+    }
+
+    private static function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris'));
+    }
+
+    private static function orderPlaced(string $id, string $customerId, \DateTimeImmutable $placedAt): OrderPlaced
+    {
+        return new OrderPlaced(
+            $id,
+            $customerId,
+            'Ada',
+            'Lovelace',
+            '12 rue des Lilas',
+            '75001',
+            'Paris',
+            'Ada',
+            'Lovelace',
+            '8 avenue Foch',
+            '75116',
+            'Paris',
+            self::primitiveLines(self::lines()),
+            1_999,
+            $placedAt->format(\DateTimeInterface::ATOM),
         );
     }
 }

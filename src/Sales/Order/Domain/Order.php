@@ -17,7 +17,10 @@ use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('sales.order.order')]
 final class Order implements AggregateRoot, AggregateRootMetadataAware
@@ -27,7 +30,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private OrderId $id;
     private string $customerId;
-    private string $buyerAddress;
+    private PostalAddress $shippingAddress;
+    private PostalAddress $billingAddress;
     private OrderState $status;
 
     public function id(): OrderId
@@ -35,9 +39,19 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function buyerAddress(): string
+    public function customerId(): string
     {
-        return $this->buyerAddress;
+        return $this->customerId;
+    }
+
+    public function shippingAddress(): PostalAddress
+    {
+        return $this->shippingAddress;
+    }
+
+    public function billingAddress(): PostalAddress
+    {
+        return $this->billingAddress;
     }
 
     /**
@@ -48,7 +62,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public static function place(
         OrderId $id,
         string $customerId,
-        string $buyerAddress,
+        PostalAddress $shippingAddress,
+        PostalAddress $billingAddress,
         array $lines,
         \DateTimeImmutable $placedAt,
     ): self {
@@ -66,7 +81,16 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
             customerId: $customerId,
-            buyerAddress: $buyerAddress,
+            shippingFirstName: $shippingAddress->fullName->firstName,
+            shippingLastName: $shippingAddress->fullName->lastName,
+            shippingStreet: $shippingAddress->address->street,
+            shippingPostalCode: $shippingAddress->address->postalCode,
+            shippingCity: $shippingAddress->address->city,
+            billingFirstName: $billingAddress->fullName->firstName,
+            billingLastName: $billingAddress->fullName->lastName,
+            billingStreet: $billingAddress->address->street,
+            billingPostalCode: $billingAddress->address->postalCode,
+            billingCity: $billingAddress->address->city,
             lines: array_values(array_map(
                 static fn (OrderLine $line): array => [
                     'productId' => $line->product->id,
@@ -107,7 +131,14 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = OrderId::fromString($event->id);
         $this->customerId = $event->customerId;
-        $this->buyerAddress = $event->buyerAddress;
+        $this->shippingAddress = PostalAddress::of(
+            FullName::of($event->shippingFirstName, $event->shippingLastName),
+            Address::of($event->shippingStreet, $event->shippingPostalCode, $event->shippingCity),
+        );
+        $this->billingAddress = PostalAddress::of(
+            FullName::of($event->billingFirstName, $event->billingLastName),
+            Address::of($event->billingStreet, $event->billingPostalCode, $event->billingCity),
+        );
         $this->status = OrderState::PLACED;
     }
 

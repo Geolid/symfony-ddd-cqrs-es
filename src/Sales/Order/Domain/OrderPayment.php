@@ -25,8 +25,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private OrderPaymentId $id;
     private string $orderId;
-    private string $customerId;
-    private string $buyerAddress;
     private OrderPaymentState $status;
 
     public function id(): OrderPaymentId
@@ -42,8 +40,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     public static function request(
         OrderPaymentId $id,
         string $orderId,
-        string $customerId,
-        string $buyerAddress,
         Money $amount,
         PaymentReference $reference,
         string $checkoutUrl,
@@ -53,8 +49,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPaymentRequested(
             id: $id->toString(),
             orderId: $orderId,
-            customerId: $customerId,
-            buyerAddress: $buyerAddress,
             amountInCents: $amount->toCents(),
             reference: $reference->toString(),
             checkoutUrl: $checkoutUrl,
@@ -73,8 +67,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new OrderPaymentCaptured(
             id: $this->id->toString(),
             orderId: $this->orderId,
-            customerId: $this->customerId,
-            buyerAddress: $this->buyerAddress,
             capturedAt: $capturedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -84,8 +76,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = OrderPaymentId::fromString($event->id);
         $this->orderId = $event->orderId;
-        $this->customerId = $event->customerId;
-        $this->buyerAddress = $event->buyerAddress;
         $this->status = OrderPaymentState::REQUESTED;
     }
 

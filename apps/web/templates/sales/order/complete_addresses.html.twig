@@ -1,0 +1,40 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'sales.order.complete_addresses.title'|trans }}{% endblock %}
+
+{% block heading %}
+    <hgroup>
+        <h1>{{ 'sales.order.complete_addresses.title'|trans }}</h1>
+        <p>{{ 'sales.order.complete_addresses.subtitle'|trans }}</p>
+    </hgroup>
+{% endblock %}
+
+{% block content %}
+    {{ form_start(form, {attr: {'data-testid': 'complete-addresses-form'}}) }}
+
+    <fieldset>
+        <legend>{{ 'sales.order.complete_addresses.legend_shipping'|trans }}</legend>
+        {{ form_row(form.firstName) }}
+        {{ form_row(form.lastName) }}
+        {{ form_row(form.street) }}
+        {{ form_row(form.postalCode) }}
+        {{ form_row(form.city) }}
+    </fieldset>
+
+    <fieldset>
+        <legend>{{ 'sales.order.complete_addresses.legend_billing'|trans }}</legend>
+        {{ form_row(form.billingFirstName) }}
+        {{ form_row(form.billingLastName) }}
+        {{ form_row(form.billingStreet) }}
+        {{ form_row(form.billingPostalCode) }}
+        {{ form_row(form.billingCity) }}
+    </fieldset>
+
+    <div class="form-actions-end">
+        <button type="submit">
+            {{ 'sales.order.complete_addresses.button_submit'|trans }}
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+{% endblock %}

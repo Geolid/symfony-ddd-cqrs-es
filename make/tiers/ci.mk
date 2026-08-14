@@ -7,7 +7,8 @@ ci.build: composer-validate vendor assets ## CI — validate, install dependenci
 ci.static: warmup security static ## CI — warmup then run static analysis
 .PHONY: ci.static
 
-ci.coverage: coverage ## CI — run test suite with coverage
+ci.coverage: ## CI — run test suite with coverage
+	@$(MAKE) test coverage=1
 .PHONY: ci.coverage
 
 ci.mutation: ## CI — run mutation testing

@@ -13,7 +13,6 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -32,7 +31,6 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
 
         $this->paymentGateway = new DummyPaymentGateway();
         $this->service = new OrderPaymentRequestingService(
-            $this->service(OrderRepositoryInterface::class),
             $this->service(OrderFinderInterface::class),
             $this->service(OrderPaymentFinderInterface::class),
             $this->paymentGateway,
@@ -44,7 +42,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itRequestsPaymentForAPlacedOrder(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withBuyerAddress('buyer@example.com')->withTotalAmountInCents(4_200)->store();
+        $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->store();
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');

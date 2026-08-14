@@ -107,6 +107,6 @@ sales:
         flash:
             registered: Account created — please log in.
             erased: Your account has been erased.
-            address_taken: This address is already registered.
+            email_taken: This email is already registered.
             login_taken: This login is already taken.
             password_changed: Password changed.

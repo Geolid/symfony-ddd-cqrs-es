@@ -20,9 +20,10 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
-use Sales\Customer\Application\Exception\AddressAlreadyRegisteredException;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
+use Sales\Customer\Application\Exception\EmailAlreadyRegisteredException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
+use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
@@ -69,10 +70,11 @@ return static function (ContainerConfigurator $container): void {
             PasswordCredentialResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Sales
-            AddressAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
+            EmailAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             CustomerNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             CustomerResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],

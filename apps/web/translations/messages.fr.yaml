@@ -69,6 +69,22 @@ sales:
             button_remove_line: Supprimer le produit
             label_estimated_total: 'Total estimé :'
             button_submit: Passer la commande
+        complete_addresses:
+            title: Complétez vos adresses
+            subtitle: Renseignez votre adresse de livraison et de facturation avant votre première commande.
+            legend_shipping: Adresse de livraison
+            legend_billing: Adresse de facturation
+            label_first_name: Prénom
+            label_last_name: Nom
+            label_street: Rue
+            label_postal_code: Code postal
+            label_city: Ville
+            label_billing_first_name: Prénom
+            label_billing_last_name: Nom
+            label_billing_street: Rue
+            label_billing_postal_code: Code postal
+            label_billing_city: Ville
+            button_submit: Valider
         status_view:
             badge:
                 placed: Passée
@@ -107,6 +123,6 @@ sales:
         flash:
             registered: Compte créé — merci de vous connecter.
             erased: Votre compte a été effacé.
-            address_taken: Cette adresse est déjà enregistrée.
+            email_taken: Cet email est déjà enregistré.
             login_taken: Cet identifiant est déjà pris.
             password_changed: Mot de passe changé.

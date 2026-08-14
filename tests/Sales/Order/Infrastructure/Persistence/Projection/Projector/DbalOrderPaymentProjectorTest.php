@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
@@ -42,8 +43,11 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itProjectsTheCaptureOnOrderPaymentCaptured(): void
     {
+        // Given
+        $order = OrderTestFactory::new()->store();
+
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
 
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());

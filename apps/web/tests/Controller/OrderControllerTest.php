@@ -8,6 +8,8 @@ use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Customer\Application\Command\SetCustomerBillingAddress\SetCustomerBillingAddress;
+use Sales\Customer\Application\Command\SetCustomerShippingAddress\SetCustomerShippingAddress;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -226,6 +228,24 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         $identity = IdentityTestFactory::new()->store();
         CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();
+
+        $commandBus = $this->service(CommandBusInterface::class);
+        $commandBus->dispatch(new SetCustomerShippingAddress(
+            customerId: $identity->id()->toString(),
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            street: '12 rue des Lilas',
+            postalCode: '75001',
+            city: 'Paris',
+        ));
+        $commandBus->dispatch(new SetCustomerBillingAddress(
+            customerId: $identity->id()->toString(),
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            street: '8 avenue Foch',
+            postalCode: '75116',
+            city: 'Paris',
+        ));
 
         return $identity;
     }

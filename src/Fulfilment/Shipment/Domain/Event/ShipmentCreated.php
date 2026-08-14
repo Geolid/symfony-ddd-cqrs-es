@@ -18,8 +18,16 @@ final readonly class ShipmentCreated implements DomainEventInterface
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-address-%s'))]
-        public string $customerAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
+        public string $shippingFirstName,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
+        public string $shippingLastName,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
+        public string $shippingStreet,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('00000'))]
+        public string $shippingPostalCode,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
+        public string $shippingCity,
         public string $createdAt,
     ) {
     }

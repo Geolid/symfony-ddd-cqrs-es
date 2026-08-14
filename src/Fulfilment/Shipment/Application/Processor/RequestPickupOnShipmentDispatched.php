@@ -37,7 +37,7 @@ final readonly class RequestPickupOnShipmentDispatched
 
         $this->commandBus->dispatch(new AssignTrackingReference(
             id: $event->id,
-            trackingReference: $this->carrier->requestPickup($event->id, $shipment->customerAddress()),
+            trackingReference: $this->carrier->requestPickup($event->id, $shipment->shippingAddress()),
         ));
     }
 }

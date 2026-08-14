@@ -38,8 +38,6 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestOrderPayment(
             id: $id,
             orderId: $orderId,
-            customerId: Uuid::uuid7()->toString(),
-            buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
             checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
@@ -57,12 +55,9 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         OrderPaymentTestFactory::new()
             ->withOrderId($orderId)
-            ->withCustomerId($customerId)
-            ->withBuyerAddress('buyer@example.com')
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
@@ -72,8 +67,6 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestOrderPayment(
             id: $id,
             orderId: $orderId,
-            customerId: $customerId,
-            buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: 'GLBX-OTHER',
             checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-OTHER',
@@ -100,8 +93,6 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestOrderPayment(
             id: OrderPaymentId::forOrder($orderId)->toString(),
             orderId: $orderId,
-            customerId: Uuid::uuid7()->toString(),
-            buyerAddress: 'buyer@example.com',
             amountInCents: 4_200,
             reference: $reference,
             checkoutUrl: \sprintf('https://fake-checkout.test/?ref=%s', $reference),

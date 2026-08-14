@@ -20,6 +20,9 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('fulfilment.shipment.shipment')]
 final class Shipment implements AggregateRoot, AggregateRootMetadataAware
@@ -30,7 +33,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private ShipmentId $id;
     private string $orderId;
     private string $customerId;
-    private string $customerAddress;
+    private PostalAddress $shippingAddress;
     private ?TrackingReference $trackingReference;
     private ShipmentState $status;
 
@@ -49,16 +52,16 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $this->customerId;
     }
 
-    public function customerAddress(): string
+    public function shippingAddress(): PostalAddress
     {
-        return $this->customerAddress;
+        return $this->shippingAddress;
     }
 
     public static function create(
         ShipmentId $id,
         string $orderId,
         string $customerId,
-        string $customerAddress,
+        PostalAddress $shippingAddress,
         \DateTimeImmutable $createdAt,
     ): self {
         $self = new self();
@@ -66,7 +69,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             orderId: $orderId,
             customerId: $customerId,
-            customerAddress: $customerAddress,
+            shippingFirstName: $shippingAddress->fullName->firstName,
+            shippingLastName: $shippingAddress->fullName->lastName,
+            shippingStreet: $shippingAddress->address->street,
+            shippingPostalCode: $shippingAddress->address->postalCode,
+            shippingCity: $shippingAddress->address->city,
             createdAt: $createdAt->format(\DateTimeInterface::ATOM),
         ));
 
@@ -150,7 +157,10 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->id = ShipmentId::fromString($event->id);
         $this->orderId = $event->orderId;
         $this->customerId = $event->customerId;
-        $this->customerAddress = $event->customerAddress;
+        $this->shippingAddress = PostalAddress::of(
+            FullName::of($event->shippingFirstName, $event->shippingLastName),
+            Address::of($event->shippingStreet, $event->shippingPostalCode, $event->shippingCity),
+        );
         $this->trackingReference = null;
         $this->status = ShipmentState::PENDING;
     }

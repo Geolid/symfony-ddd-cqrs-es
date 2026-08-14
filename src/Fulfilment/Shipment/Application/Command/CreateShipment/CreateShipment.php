@@ -12,7 +12,11 @@ final readonly class CreateShipment implements CommandInterface
         public string $id,
         public string $orderId,
         public string $customerId,
-        public string $customerAddress,
+        public string $shippingFirstName,
+        public string $shippingLastName,
+        public string $shippingStreet,
+        public string $shippingPostalCode,
+        public string $shippingCity,
     ) {
     }
 }

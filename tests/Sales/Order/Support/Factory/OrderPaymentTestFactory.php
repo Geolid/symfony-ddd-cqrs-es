@@ -22,16 +22,6 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['orderId' => $orderId]));
     }
 
-    public function withCustomerId(string $customerId): self
-    {
-        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
-    }
-
-    public function withBuyerAddress(string $buyerAddress): self
-    {
-        return $this->withAttributes(array_merge($this->attributes, ['buyerAddress' => $buyerAddress]));
-    }
-
     public function withAmountInCents(int $amountInCents): self
     {
         return $this->withAttributes(array_merge($this->attributes, ['amountInCents' => $amountInCents]));
@@ -61,8 +51,6 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'orderId' => Uuid::uuid7()->toString(),
-            'customerId' => Uuid::uuid7()->toString(),
-            'buyerAddress' => self::faker()->safeEmail(),
             'amountInCents' => self::faker()->numberBetween(500, 5_000),
             'reference' => 'GLBX-'.self::faker()->bothify('????????'),
             'checkoutUrl' => 'https://fake-checkout.test/?ref='.self::faker()->bothify('????????'),
@@ -73,8 +61,6 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     protected function build(array $attributes): OrderPayment
     {
         Assert::stringNotEmpty($orderId = $attributes['orderId']);
-        Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::stringNotEmpty($buyerAddress = $attributes['buyerAddress']);
         Assert::integer($amountInCents = $attributes['amountInCents']);
         Assert::stringNotEmpty($reference = $attributes['reference']);
         Assert::stringNotEmpty($checkoutUrl = $attributes['checkoutUrl']);
@@ -83,8 +69,6 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return OrderPayment::request(
             OrderPaymentId::forOrder($orderId),
             $orderId,
-            $customerId,
-            $buyerAddress,
             Money::fromCents($amountInCents),
             PaymentReference::fromString($reference),
             $checkoutUrl,

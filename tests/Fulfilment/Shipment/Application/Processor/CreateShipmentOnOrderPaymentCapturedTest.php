@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
+use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -44,7 +45,8 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
-        self::assertSame('buyer@example.com', $this->addressOf($order));
+        $shipment = $this->shipmentOf($order);
+        self::assertSame('12 rue des Lilas', $shipment->shippingAddress()->address->street);
     }
 
     #[Test]
@@ -65,7 +67,6 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
     {
         return OrderTestFactory::new()
             ->withCustomerId(Uuid::uuid7()->toString())
-            ->withBuyerAddress('buyer@example.com')
             ->withTotalAmountInCents(4_200)
             ->store();
     }
@@ -75,15 +76,18 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         return new OrderPaymentCapturedIntegrationEvent(
             orderId: $order->id()->toString(),
             customerId: Uuid::uuid7()->toString(),
-            buyerAddress: 'buyer@example.com',
+            shippingFirstName: 'Ada',
+            shippingLastName: 'Lovelace',
+            shippingStreet: '12 rue des Lilas',
+            shippingPostalCode: '75001',
+            shippingCity: 'Paris',
             capturedAt: '2026-01-01T00:00:00+00:00',
         );
     }
 
-    private function addressOf(Order $order): string
+    private function shipmentOf(Order $order): Shipment
     {
         return $this->service(ShipmentRepositoryInterface::class)
-            ->load(ShipmentId::forOrder($order->id()->toString()))
-            ->customerAddress();
+            ->load(ShipmentId::forOrder($order->id()->toString()));
     }
 }

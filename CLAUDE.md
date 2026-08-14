@@ -11,16 +11,17 @@ e-commerce flow: customers, orders, shipping, catalog, identity.
 ## Commands (Make = Docker proxy)
 
 ```bash
-make help                               # list all targets
-make sh cmd="<cmd>"                     # shell into the app container
-make cc                                 # Cache clear + warmup
-make test [filter=<x>] [suite=<x>]      # PHPUnit
-make stan.src / stan.<dm>               # PHPStan
-make deptrac-bc / -layers / -dm         # architecture isolation checks
-make cs-php-fix / -twig-fix [file=<x>]  # Linter auto-fix (whole repo if file omitted)
-make static                             # Lint + CS + Deptrac + Stan
-make qa                                 # static + tests + mutation testing
-make assets                             # Install DM assets
+make help                                       # list all targets
+make sh cmd="<cmd>"                             # shell into the app container
+make cc                                         # Cache clear + warmup
+make test [coverage=1] [filter=<x>] [suite=<x>] # PHPUnit (ParaTest)
+make mutation [coverage=1]                      # Infection mutation testing (scoped to diff)
+make stan.src / stan.<dm>                       # PHPStan
+make deptrac-bc / -layers / -dm                 # architecture isolation checks
+make cs-php-fix / -twig-fix [file=<x>]          # Linter auto-fix (whole repo if file omitted)
+make static                                     # Lint + CS + Deptrac + Stan
+make qa                                         # static + tests + mutation testing
+make assets                                     # Install DM assets
 ```
 
 ## Structure (Monorepo)

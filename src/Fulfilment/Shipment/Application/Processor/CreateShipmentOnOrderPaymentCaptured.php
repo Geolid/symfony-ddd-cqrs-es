@@ -30,7 +30,11 @@ final readonly class CreateShipmentOnOrderPaymentCaptured
             id: ShipmentId::forOrder($event->orderId)->toString(),
             orderId: $event->orderId,
             customerId: $event->customerId,
-            customerAddress: $event->buyerAddress,
+            shippingFirstName: $event->shippingFirstName,
+            shippingLastName: $event->shippingLastName,
+            shippingStreet: $event->shippingStreet,
+            shippingPostalCode: $event->shippingPostalCode,
+            shippingCity: $event->shippingCity,
         ));
     }
 }
