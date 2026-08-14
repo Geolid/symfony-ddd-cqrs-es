@@ -51,35 +51,42 @@ final readonly class PlaceOrderHandler
             static fn (ListedProductResult $result): string => $result->productId,
         ));
 
-        $lines = array_map(
-            function (array $line) use ($currentProducts): OrderLine {
-                $currentResult = $currentProducts[$line['productId']] ?? null;
-                $current = null !== $currentResult
-                    ? Product::of($currentResult->productId, Label::fromString($currentResult->label), Money::fromCents($currentResult->unitAmountInCents))
-                    : null;
-                $claimed = Product::of($line['productId'], Label::fromString($line['label']), Money::fromCents($line['unitAmountInCents']));
-
-                try {
-                    $this->orderLineOffer->ensureStillValid($claimed, $current);
-                } catch (OutdatedOrderLineException $e) {
-                    throw OutdatedOrderException::forReason($e->getMessage(), $e);
-                }
-
-                \assert(null !== $current);
-
-                return OrderLine::of($current, $line['quantity']);
-            },
-            $command->lines,
-        );
-
         $order = Order::place(
             id: OrderId::fromString($command->id),
             customerId: $buyer->id,
             buyerAddress: $buyer->address,
-            lines: $lines,
+            lines: array_map(
+                fn (array $line): OrderLine => $this->resolveLine($line, $currentProducts),
+                $command->lines,
+            ),
             placedAt: $this->clock->now(),
         );
 
         $this->repository->save($order);
+    }
+
+    /**
+     * @param array{productId: string, label: string, unitAmountInCents: int, quantity: int} $line
+     * @param array<string, ListedProductResult>                                             $currentProducts
+     *
+     * @throws OutdatedOrderException
+     */
+    private function resolveLine(array $line, array $currentProducts): OrderLine
+    {
+        $currentResult = $currentProducts[$line['productId']] ?? null;
+        $current = null !== $currentResult
+            ? Product::of($currentResult->productId, Label::fromString($currentResult->label), Money::fromCents($currentResult->unitAmountInCents))
+            : null;
+        $claimed = Product::of($line['productId'], Label::fromString($line['label']), Money::fromCents($line['unitAmountInCents']));
+
+        try {
+            $this->orderLineOffer->ensureStillValid($claimed, $current);
+        } catch (OutdatedOrderLineException $e) {
+            throw OutdatedOrderException::forReason($e->getMessage(), $e);
+        }
+
+        \assert(null !== $current);
+
+        return OrderLine::of($current, $line['quantity']);
     }
 }
