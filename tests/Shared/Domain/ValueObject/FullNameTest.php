@@ -53,14 +53,17 @@ final class FullNameTest extends TestCase
         // Given
         $a = FullName::of('Ada', 'Lovelace');
         $b = FullName::of('  Ada  ', '  Lovelace  ');
-        $other = FullName::of('Grace', 'Hopper');
+        $differentFirstName = FullName::of('Grace', 'Lovelace');
+        $differentLastName = FullName::of('Ada', 'Hopper');
 
         // When
         $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $differentFirstNameResult = $a->equals($differentFirstName);
+        $differentLastNameResult = $a->equals($differentLastName);
 
         // Then
         self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertFalse($differentFirstNameResult);
+        self::assertFalse($differentLastNameResult);
     }
 }

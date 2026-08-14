@@ -8,7 +8,9 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
@@ -37,8 +39,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame('Erased', $rehydrated->shippingStreet);
-        self::assertNotSame('Erased', $rehydrated->billingStreet);
+        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+        self::assertNotSame('Erased', $rehydrated->billingAddress['street']);
     }
 
     #[Test]
@@ -59,8 +61,40 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame('Erased', $rehydrated->billingStreet);
-        self::assertNotSame('Erased', $rehydrated->shippingStreet);
+        self::assertSame(self::erasedAddress(), $rehydrated->billingAddress);
+        self::assertNotSame('Erased', $rehydrated->shippingAddress['street']);
+    }
+
+    #[Test]
+    public function itCryptoShredsThePaymentCapturedIntegrationEventsShippingAddressOnCustomerErasure(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->create();
+        $this->store($orderPayment);
+        $serialized = $this->serializedEventOf(
+            OrderPaymentCapturedIntegrationEvent::class,
+            static fn (OrderPaymentCapturedIntegrationEvent $event): bool => $event->orderId === $order->id()->toString(),
+        );
+
+        // When
+        $this->service(DataSubjectEraser::class)->onEvent(
+            Message::create(new DummyDataSubjectErased($customerId)),
+        );
+
+        // Then
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $rehydrated);
+        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private static function erasedAddress(): array
+    {
+        return ['firstName' => 'Erased', 'lastName' => 'Erased', 'street' => 'Erased', 'postalCode' => '00000', 'city' => 'Erased'];
     }
 }
 

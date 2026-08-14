@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
@@ -37,16 +38,8 @@ final class OrderTest extends AggregateRootTestCase
             ->then(new OrderPlaced(
                 $id->toString(),
                 $customerId,
-                'Ada',
-                'Lovelace',
-                '12 rue des Lilas',
-                '75001',
-                'Paris',
-                'Ada',
-                'Lovelace',
-                '8 avenue Foch',
-                '75116',
-                'Paris',
+                self::primitiveShippingAddress(),
+                self::primitiveBillingAddress(),
                 self::primitiveLines($lines),
                 1_999,
                 $placedAt->format(\DateTimeInterface::ATOM),
@@ -108,6 +101,37 @@ final class OrderTest extends AggregateRootTestCase
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
+    #[Test]
+    public function itErasesTheBillingAddress(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->eraseBillingAddress($erasedAt))
+            ->then(new OrderBillingAddressErased($id, $erasedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotReeraseAnAlreadyErasedBillingAddress(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderBillingAddressErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->eraseBillingAddress(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
+    }
+
     protected function aggregateClass(): string
     {
         return Order::class;
@@ -157,19 +181,27 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderPlaced(
             $id,
             $customerId,
-            'Ada',
-            'Lovelace',
-            '12 rue des Lilas',
-            '75001',
-            'Paris',
-            'Ada',
-            'Lovelace',
-            '8 avenue Foch',
-            '75116',
-            'Paris',
+            self::primitiveShippingAddress(),
+            self::primitiveBillingAddress(),
             self::primitiveLines(self::lines()),
             1_999,
             $placedAt->format(\DateTimeInterface::ATOM),
         );
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private static function primitiveShippingAddress(): array
+    {
+        return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'];
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private static function primitiveBillingAddress(): array
+    {
+        return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'];
     }
 }

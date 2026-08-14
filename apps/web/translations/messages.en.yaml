@@ -93,6 +93,19 @@ sales:
             label_email: Email
             label_password: Password
             button_submit: Register
+        checkout_addresses:
+            title: Complete your addresses
+            subtitle: Enter your shipping and billing address before your first order.
+            legend_shipping: Shipping address
+            legend_billing: Billing address
+            label_same_as_shipping: Billing address same as shipping address
+            button_submit: Submit
+            address:
+                label_first_name: First name
+                label_last_name: Last name
+                label_street: Street
+                label_postal_code: Postal code
+                label_city: City
         profile:
             title: Profile
             subtitle: Manage your security settings and personal data.

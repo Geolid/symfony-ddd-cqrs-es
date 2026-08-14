@@ -8,6 +8,9 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalBuyerProjector;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -69,16 +72,17 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
     {
         return new BuyerResult(
             customerId: $row['customer_id'],
-            shippingFirstName: $row['shipping_first_name'],
-            shippingLastName: $row['shipping_last_name'],
-            shippingStreet: $row['shipping_street'],
-            shippingPostalCode: $row['shipping_postal_code'],
-            shippingCity: $row['shipping_city'],
-            billingFirstName: $row['billing_first_name'],
-            billingLastName: $row['billing_last_name'],
-            billingStreet: $row['billing_street'],
-            billingPostalCode: $row['billing_postal_code'],
-            billingCity: $row['billing_city'],
+            shippingAddress: $this->postalAddressOf($row['shipping_first_name'], $row['shipping_last_name'], $row['shipping_street'], $row['shipping_postal_code'], $row['shipping_city']),
+            billingAddress: $this->postalAddressOf($row['billing_first_name'], $row['billing_last_name'], $row['billing_street'], $row['billing_postal_code'], $row['billing_city']),
         );
+    }
+
+    private function postalAddressOf(?string $firstName, ?string $lastName, ?string $street, ?string $postalCode, ?string $city): ?PostalAddress
+    {
+        if (null === $firstName || null === $lastName || null === $street || null === $postalCode || null === $city) {
+            return null;
+        }
+
+        return PostalAddress::of(FullName::of($firstName, $lastName), Address::of($street, $postalCode, $city));
     }
 }

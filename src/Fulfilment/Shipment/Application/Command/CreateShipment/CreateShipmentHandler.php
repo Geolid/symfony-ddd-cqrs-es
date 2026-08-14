@@ -35,8 +35,8 @@ final readonly class CreateShipmentHandler
             orderId: $command->orderId,
             customerId: $command->customerId,
             shippingAddress: PostalAddress::of(
-                FullName::of($command->shippingFirstName, $command->shippingLastName),
-                Address::of($command->shippingStreet, $command->shippingPostalCode, $command->shippingCity),
+                FullName::of($command->shippingAddress['firstName'], $command->shippingAddress['lastName']),
+                Address::of($command->shippingAddress['street'], $command->shippingAddress['postalCode'], $command->shippingAddress['city']),
             ),
             createdAt: $this->clock->now(),
         );

@@ -20,8 +20,10 @@ final class ValueObjectValidator extends ConstraintValidator
             return;
         }
 
+        $args = \is_array($value) ? $value : [$value];
+
         try {
-            ($constraint->class)::{$constraint->method}($value);
+            ($constraint->class)::{$constraint->method}(...$args);
         } catch (\InvalidArgumentException|\TypeError|\ValueError $e) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ reason }}', $e->getMessage())

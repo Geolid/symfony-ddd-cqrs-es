@@ -105,6 +105,13 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $event);
         self::assertSame($order->id()->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
-        self::assertSame($order->shippingAddress()->address->street, $event->shippingStreet);
+        $shippingAddress = $order->shippingAddress();
+        self::assertSame([
+            'firstName' => $shippingAddress->fullName->firstName,
+            'lastName' => $shippingAddress->fullName->lastName,
+            'street' => $shippingAddress->address->street,
+            'postalCode' => $shippingAddress->address->postalCode,
+            'city' => $shippingAddress->address->city,
+        ], $event->shippingAddress);
     }
 }

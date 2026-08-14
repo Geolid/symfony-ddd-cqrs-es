@@ -10,6 +10,8 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 
 interface CustomerAddressesRepositoryInterface
 {
+    public function has(CustomerId $id): bool;
+
     /**
      * @throws CustomerNotFoundException
      */

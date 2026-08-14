@@ -21,6 +21,7 @@ final class AddressTest extends TestCase
         self::assertSame('12 rue des Lilas', $address->street);
         self::assertSame('75001', $address->postalCode);
         self::assertSame('Paris', $address->city);
+        self::assertSame('12 rue des Lilas, 75001 Paris', $address->toString());
     }
 
     #[Test]
@@ -53,14 +54,20 @@ final class AddressTest extends TestCase
         // Given
         $a = Address::of('12 rue des Lilas', '75001', 'Paris');
         $b = Address::of('  12 rue des Lilas  ', '  75001  ', '  Paris  ');
-        $other = Address::of('8 avenue Foch', '75116', 'Paris');
+        $differentStreet = Address::of('8 avenue Foch', '75001', 'Paris');
+        $differentPostalCode = Address::of('12 rue des Lilas', '75116', 'Paris');
+        $differentCity = Address::of('12 rue des Lilas', '75001', 'Lyon');
 
         // When
         $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $differentStreetResult = $a->equals($differentStreet);
+        $differentPostalCodeResult = $a->equals($differentPostalCode);
+        $differentCityResult = $a->equals($differentCity);
 
         // Then
         self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertFalse($differentStreetResult);
+        self::assertFalse($differentPostalCodeResult);
+        self::assertFalse($differentCityResult);
     }
 }

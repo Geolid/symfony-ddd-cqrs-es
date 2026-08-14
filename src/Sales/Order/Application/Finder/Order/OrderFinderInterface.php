@@ -18,4 +18,6 @@ interface OrderFinderInterface extends CollectionFinderInterface
     public function ofId(string $id): OrderResult;
 
     public function byCustomer(string $customerId): static;
+
+    public function placedBefore(string $cutoff): static;
 }

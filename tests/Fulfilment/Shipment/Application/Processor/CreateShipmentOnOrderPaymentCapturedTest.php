@@ -76,11 +76,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         return new OrderPaymentCapturedIntegrationEvent(
             orderId: $order->id()->toString(),
             customerId: Uuid::uuid7()->toString(),
-            shippingFirstName: 'Ada',
-            shippingLastName: 'Lovelace',
-            shippingStreet: '12 rue des Lilas',
-            shippingPostalCode: '75001',
-            shippingCity: 'Paris',
+            shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             capturedAt: '2026-01-01T00:00:00+00:00',
         );
     }

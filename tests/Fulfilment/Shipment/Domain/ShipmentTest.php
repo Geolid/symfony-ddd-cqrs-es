@@ -206,11 +206,7 @@ final class ShipmentTest extends AggregateRootTestCase
             $id,
             $orderId,
             $customerId,
-            'Ada',
-            'Lovelace',
-            '12 rue des Lilas',
-            '75001',
-            'Paris',
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             $createdAt->format(\DateTimeInterface::ATOM),
         );
     }

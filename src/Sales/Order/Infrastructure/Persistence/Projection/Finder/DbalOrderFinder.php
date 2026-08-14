@@ -45,6 +45,16 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
         );
     }
 
+    public function placedBefore(string $cutoff): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cutoff) {
+                $qb->andWhere('placed_at < :cutoff')
+                    ->setParameter('cutoff', new \DateTimeImmutable($cutoff)->format('Y-m-d H:i:s'));
+            },
+        );
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'cancelled_at')

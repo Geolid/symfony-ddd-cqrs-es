@@ -23,13 +23,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     {
         $response = $this->acmeClient->post(self::PICKUP_PATH, [
             'reference' => $shipmentId,
-            'destination' => \sprintf(
-                '%s, %s, %s %s',
-                $deliveryAddress->fullName->toString(),
-                $deliveryAddress->address->street,
-                $deliveryAddress->address->postalCode,
-                $deliveryAddress->address->city,
-            ),
+            'destination' => \sprintf('%s, %s', $deliveryAddress->fullName->toString(), $deliveryAddress->toString()),
         ]);
 
         $trackingReference = $response['trackingNumber'] ?? null;

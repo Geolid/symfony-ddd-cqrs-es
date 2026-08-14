@@ -87,11 +87,13 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
             new OrderPaymentCapturedIntegrationEvent(
                 orderId: $event->orderId,
                 customerId: $order->customerId(),
-                shippingFirstName: $shippingAddress->fullName->firstName,
-                shippingLastName: $shippingAddress->fullName->lastName,
-                shippingStreet: $shippingAddress->address->street,
-                shippingPostalCode: $shippingAddress->address->postalCode,
-                shippingCity: $shippingAddress->address->city,
+                shippingAddress: [
+                    'firstName' => $shippingAddress->fullName->firstName,
+                    'lastName' => $shippingAddress->fullName->lastName,
+                    'street' => $shippingAddress->address->street,
+                    'postalCode' => $shippingAddress->address->postalCode,
+                    'city' => $shippingAddress->address->city,
+                ],
                 capturedAt: $event->capturedAt,
             ),
         );

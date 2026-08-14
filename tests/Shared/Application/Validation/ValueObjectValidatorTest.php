@@ -84,6 +84,29 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
+    public function itSpreadsAnArrayValueIntoTheValueObjectsConstructor(): void
+    {
+        // When
+        $this->validator->validate(['left', 'right'], new ValidValueObject(DummyPair::class, method: 'of'));
+
+        // Then
+        $this->assertNoViolation();
+    }
+
+    #[Test]
+    public function itReportsWhyTheValueObjectRefusedASpreadArrayValue(): void
+    {
+        // When
+        $this->validator->validate(['same', 'same'], new ValidValueObject(DummyPair::class, method: 'of'));
+
+        // Then
+        $this->buildViolation('Domain validation failed: {{ reason }}')
+            ->setParameter('{{ reason }}', 'Refused a matching pair.')
+            ->setCode(ValidValueObject::DOMAIN_VALIDATION_ERROR)
+            ->assertRaised();
+    }
+
+    #[Test]
     public function itFailsOnAConstraintItDoesNotValidate(): void
     {
         // Then
@@ -113,5 +136,21 @@ final readonly class DummyValue
             'out-of-range' => throw new \ValueError('Outside the accepted range.'),
             default => new self(),
         };
+    }
+}
+
+final readonly class DummyPair
+{
+    private function __construct()
+    {
+    }
+
+    public static function of(string $a, string $b): self
+    {
+        if ($a === $b) {
+            throw new \InvalidArgumentException('Refused a matching pair.');
+        }
+
+        return new self();
     }
 }

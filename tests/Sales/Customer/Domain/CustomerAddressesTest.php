@@ -30,17 +30,13 @@ final class CustomerAddressesTest extends AggregateRootTestCase
             ->when(static fn (CustomerAddresses $customerAddresses) => $customerAddresses->setShippingAddress($shippingAddress, $setAt))
             ->then(new CustomerShippingAddressSet(
                 id: $id,
-                firstName: 'Ada',
-                lastName: 'Lovelace',
-                street: '12 rue des Lilas',
-                postalCode: '75001',
-                city: 'Paris',
+                address: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
                 setAt: $setAt->format(\DateTimeInterface::ATOM),
             ));
     }
 
     #[Test]
-    public function itDoesNotResetAnIdenticalShippingAddress(): void
+    public function itDoesNotSetAnIdenticalShippingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -49,7 +45,7 @@ final class CustomerAddressesTest extends AggregateRootTestCase
         $this
             ->given(
                 new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
-                new CustomerShippingAddressSet($id, 'Ada', 'Lovelace', '12 rue des Lilas', '75001', 'Paris', $registeredAt->format(\DateTimeInterface::ATOM)),
+                new CustomerShippingAddressSet($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'], $registeredAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (CustomerAddresses $customerAddresses) => $customerAddresses->setShippingAddress($shippingAddress, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -68,17 +64,13 @@ final class CustomerAddressesTest extends AggregateRootTestCase
             ->when(static fn (CustomerAddresses $customerAddresses) => $customerAddresses->setBillingAddress($billingAddress, $setAt))
             ->then(new CustomerBillingAddressSet(
                 id: $id,
-                firstName: 'Ada',
-                lastName: 'Lovelace',
-                street: '8 avenue Foch',
-                postalCode: '75116',
-                city: 'Paris',
+                address: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
                 setAt: $setAt->format(\DateTimeInterface::ATOM),
             ));
     }
 
     #[Test]
-    public function itDoesNotResetAnIdenticalBillingAddress(): void
+    public function itDoesNotSetAnIdenticalBillingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -87,7 +79,7 @@ final class CustomerAddressesTest extends AggregateRootTestCase
         $this
             ->given(
                 new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
-                new CustomerBillingAddressSet($id, 'Ada', 'Lovelace', '8 avenue Foch', '75116', 'Paris', $registeredAt->format(\DateTimeInterface::ATOM)),
+                new CustomerBillingAddressSet($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'], $registeredAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (CustomerAddresses $customerAddresses) => $customerAddresses->setBillingAddress($billingAddress, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();

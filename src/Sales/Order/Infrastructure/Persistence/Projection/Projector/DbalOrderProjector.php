@@ -9,6 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\ValueObject\OrderState;
@@ -43,6 +44,12 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             ],
             ['id' => $event->id],
         );
+    }
+
+    #[Subscribe(OrderBillingAddressErased::class)]
+    public function onOrderBillingAddressErased(OrderBillingAddressErased $event): void
+    {
+        $this->connection->delete(self::TABLE, ['id' => $event->id]);
     }
 
     /**

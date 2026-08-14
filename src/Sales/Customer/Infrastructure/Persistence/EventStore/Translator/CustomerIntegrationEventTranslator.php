@@ -40,11 +40,7 @@ final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('sales.customer', $event->id),
             new CustomerShippingAddressSetIntegrationEvent(
                 customerId: $event->id,
-                firstName: $event->firstName,
-                lastName: $event->lastName,
-                street: $event->street,
-                postalCode: $event->postalCode,
-                city: $event->city,
+                address: $event->address,
                 setAt: $event->setAt,
             ),
         );
@@ -57,11 +53,7 @@ final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('sales.customer', $event->id),
             new CustomerBillingAddressSetIntegrationEvent(
                 customerId: $event->id,
-                firstName: $event->firstName,
-                lastName: $event->lastName,
-                street: $event->street,
-                postalCode: $event->postalCode,
-                city: $event->city,
+                address: $event->address,
                 setAt: $event->setAt,
             ),
         );

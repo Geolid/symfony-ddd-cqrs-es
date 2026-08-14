@@ -69,4 +69,20 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         self::assertSame($order->id()->toString(), $results[0]->id);
     }
+
+    #[Test]
+    public function itFiltersOrdersPlacedBeforeACutoff(): void
+    {
+        // Given
+        $cutoff = '2026-01-01T00:00:00+00:00';
+        $expired = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->store();
+        OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->store();
+
+        // When
+        $results = iterator_to_array($this->finder->placedBefore($cutoff), false);
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($expired->id()->toString(), $results[0]->id);
+    }
 }

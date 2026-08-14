@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Event\CustomerBillingAddressSet;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
+use Sales\Customer\Domain\Event\CustomerShippingAddressSet;
 use Sales\Customer\Domain\Repository\CustomerAddressesRepositoryInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
@@ -44,6 +45,33 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itCryptoShredsTheShippingAddressOnErasure(): void
+    {
+        // Given
+        $customer = CustomerTestFactory::new()->store();
+        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
+        $customerAddresses->setShippingAddress(
+            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
+            new \DateTimeImmutable('now +00:00'),
+        );
+        $this->store($customerAddresses);
+        $serialized = $this->serializedEventOf(
+            CustomerShippingAddressSet::class,
+            static fn (CustomerShippingAddressSet $event): bool => $event->id === $customer->id()->toString(),
+        );
+
+        // When
+        $this->service(DataSubjectEraser::class)->onEvent(
+            Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
+        );
+
+        // Then
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(CustomerShippingAddressSet::class, $rehydrated);
+        self::assertSame(self::erasedAddress(), $rehydrated->address);
+    }
+
+    #[Test]
     public function itCryptoShredsTheBillingAddressOnErasure(): void
     {
         // Given
@@ -67,7 +95,14 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerBillingAddressSet::class, $rehydrated);
-        self::assertSame('Erased', $rehydrated->street);
-        self::assertSame('00000', $rehydrated->postalCode);
+        self::assertSame(self::erasedAddress(), $rehydrated->address);
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private static function erasedAddress(): array
+    {
+        return ['firstName' => 'Erased', 'lastName' => 'Erased', 'street' => 'Erased', 'postalCode' => '00000', 'city' => 'Erased'];
     }
 }

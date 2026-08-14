@@ -42,4 +42,9 @@ final readonly class Address
             && $this->postalCode === $other->postalCode
             && $this->city === $other->city;
     }
+
+    public function toString(): string
+    {
+        return \sprintf('%s, %s %s', $this->street, $this->postalCode, $this->city);
+    }
 }

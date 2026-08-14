@@ -14,33 +14,31 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderPlaced implements DomainEventInterface
 {
     /**
-     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}> $lines
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $billingAddress
+     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>         $lines
      */
     public function __construct(
         #[DataSubjectId(name: 'billing_retention')]
         public string $id,
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $shippingFirstName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $shippingLastName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $shippingStreet,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('00000'))]
-        public string $shippingPostalCode,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $shippingCity,
-        #[SensitiveData(subjectIdName: 'billing_retention', fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $billingFirstName,
-        #[SensitiveData(subjectIdName: 'billing_retention', fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $billingLastName,
-        #[SensitiveData(subjectIdName: 'billing_retention', fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $billingStreet,
-        #[SensitiveData(subjectIdName: 'billing_retention', fallbackCallable: new ErasedFieldSentinel('00000'))]
-        public string $billingPostalCode,
-        #[SensitiveData(subjectIdName: 'billing_retention', fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $billingCity,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'Erased',
+            'lastName' => 'Erased',
+            'street' => 'Erased',
+            'postalCode' => '00000',
+            'city' => 'Erased',
+        ]))]
+        public array $shippingAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'Erased',
+            'lastName' => 'Erased',
+            'street' => 'Erased',
+            'postalCode' => '00000',
+            'city' => 'Erased',
+        ]), subjectIdName: 'billing_retention')]
+        public array $billingAddress,
         public array $lines,
         public int $totalAmountInCents,
         public string $placedAt,

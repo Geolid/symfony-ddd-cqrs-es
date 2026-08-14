@@ -74,7 +74,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[1];
         self::assertInstanceOf(CustomerShippingAddressSetIntegrationEvent::class, $event);
         self::assertSame($customer->id()->toString(), $event->customerId);
-        self::assertSame('12 rue des Lilas', $event->street);
+        self::assertSame('12 rue des Lilas', $event->address['street']);
     }
 
     #[Test]
@@ -97,6 +97,6 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $event = $published[1];
         self::assertInstanceOf(CustomerBillingAddressSetIntegrationEvent::class, $event);
         self::assertSame($customer->id()->toString(), $event->customerId);
-        self::assertSame('8 avenue Foch', $event->street);
+        self::assertSame('8 avenue Foch', $event->address['street']);
     }
 }

@@ -10,6 +10,8 @@ use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
+    $container->parameters()->set('sales.billing_retention_days', 3650);
+
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 

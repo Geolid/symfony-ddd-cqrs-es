@@ -26,4 +26,9 @@ final readonly class PostalAddress
         return $this->fullName->equals($other->fullName)
             && $this->address->equals($other->address);
     }
+
+    public function toString(): string
+    {
+        return $this->address->toString();
+    }
 }

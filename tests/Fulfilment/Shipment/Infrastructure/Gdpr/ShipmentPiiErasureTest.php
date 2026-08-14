@@ -37,7 +37,10 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentCreated::class, $rehydrated);
-        self::assertSame('Erased', $rehydrated->shippingStreet);
+        self::assertSame(
+            ['firstName' => 'Erased', 'lastName' => 'Erased', 'street' => 'Erased', 'postalCode' => '00000', 'city' => 'Erased'],
+            $rehydrated->shippingAddress,
+        );
     }
 }
 

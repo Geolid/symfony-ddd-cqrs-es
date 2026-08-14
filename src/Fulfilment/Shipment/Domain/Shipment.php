@@ -69,11 +69,13 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             orderId: $orderId,
             customerId: $customerId,
-            shippingFirstName: $shippingAddress->fullName->firstName,
-            shippingLastName: $shippingAddress->fullName->lastName,
-            shippingStreet: $shippingAddress->address->street,
-            shippingPostalCode: $shippingAddress->address->postalCode,
-            shippingCity: $shippingAddress->address->city,
+            shippingAddress: [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
             createdAt: $createdAt->format(\DateTimeInterface::ATOM),
         ));
 
@@ -158,8 +160,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->orderId = $event->orderId;
         $this->customerId = $event->customerId;
         $this->shippingAddress = PostalAddress::of(
-            FullName::of($event->shippingFirstName, $event->shippingLastName),
-            Address::of($event->shippingStreet, $event->shippingPostalCode, $event->shippingCity),
+            FullName::of($event->shippingAddress['firstName'], $event->shippingAddress['lastName']),
+            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
         );
         $this->trackingReference = null;
         $this->status = ShipmentState::PENDING;

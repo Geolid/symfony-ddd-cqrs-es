@@ -45,6 +45,16 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['cancelled_at']);
     }
 
+    #[Test]
+    public function itProjectsTheErasureOnOrderBillingAddressErased(): void
+    {
+        // When
+        $order = OrderTestFactory::new()->billingAddressErased()->store();
+
+        // Then
+        self::assertFalse($this->fetchRow($order->id()->toString()));
+    }
+
     /**
      * @return Row|false
      */

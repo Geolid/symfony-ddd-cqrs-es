@@ -55,11 +55,13 @@ final class CustomerAddresses implements AggregateRoot, AggregateRootMetadataAwa
 
         $this->recordThat(new CustomerShippingAddressSet(
             id: $this->id->toString(),
-            firstName: $shippingAddress->fullName->firstName,
-            lastName: $shippingAddress->fullName->lastName,
-            street: $shippingAddress->address->street,
-            postalCode: $shippingAddress->address->postalCode,
-            city: $shippingAddress->address->city,
+            address: [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
             setAt: $setAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -72,11 +74,13 @@ final class CustomerAddresses implements AggregateRoot, AggregateRootMetadataAwa
 
         $this->recordThat(new CustomerBillingAddressSet(
             id: $this->id->toString(),
-            firstName: $billingAddress->fullName->firstName,
-            lastName: $billingAddress->fullName->lastName,
-            street: $billingAddress->address->street,
-            postalCode: $billingAddress->address->postalCode,
-            city: $billingAddress->address->city,
+            address: [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+            ],
             setAt: $setAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -91,8 +95,8 @@ final class CustomerAddresses implements AggregateRoot, AggregateRootMetadataAwa
     private function applyCustomerShippingAddressSet(CustomerShippingAddressSet $event): void
     {
         $this->shippingAddress = PostalAddress::of(
-            FullName::of($event->firstName, $event->lastName),
-            Address::of($event->street, $event->postalCode, $event->city),
+            FullName::of($event->address['firstName'], $event->address['lastName']),
+            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city']),
         );
     }
 
@@ -100,8 +104,8 @@ final class CustomerAddresses implements AggregateRoot, AggregateRootMetadataAwa
     private function applyCustomerBillingAddressSet(CustomerBillingAddressSet $event): void
     {
         $this->billingAddress = PostalAddress::of(
-            FullName::of($event->firstName, $event->lastName),
-            Address::of($event->street, $event->postalCode, $event->city),
+            FullName::of($event->address['firstName'], $event->address['lastName']),
+            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city']),
         );
     }
 }

@@ -13,19 +13,20 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 #[Event('sales.customer.billing_address_set')]
 final readonly class CustomerBillingAddressSet implements DomainEventInterface
 {
+    /**
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
+     */
     public function __construct(
         #[DataSubjectId]
         public string $id,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $firstName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $lastName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $street,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('00000'))]
-        public string $postalCode,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $city,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'firstName' => 'Erased',
+            'lastName' => 'Erased',
+            'street' => 'Erased',
+            'postalCode' => '00000',
+            'city' => 'Erased',
+        ]))]
+        public array $address,
         public string $setAt,
     ) {
     }

@@ -35,11 +35,11 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'shipping_first_name' => $event->firstName,
-                'shipping_last_name' => $event->lastName,
-                'shipping_street' => $event->street,
-                'shipping_postal_code' => $event->postalCode,
-                'shipping_city' => $event->city,
+                'shipping_first_name' => $event->address['firstName'],
+                'shipping_last_name' => $event->address['lastName'],
+                'shipping_street' => $event->address['street'],
+                'shipping_postal_code' => $event->address['postalCode'],
+                'shipping_city' => $event->address['city'],
             ],
             ['customer_id' => $event->customerId],
         );
@@ -51,11 +51,11 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'billing_first_name' => $event->firstName,
-                'billing_last_name' => $event->lastName,
-                'billing_street' => $event->street,
-                'billing_postal_code' => $event->postalCode,
-                'billing_city' => $event->city,
+                'billing_first_name' => $event->address['firstName'],
+                'billing_last_name' => $event->address['lastName'],
+                'billing_street' => $event->address['street'],
+                'billing_postal_code' => $event->address['postalCode'],
+                'billing_city' => $event->address['city'],
             ],
             ['customer_id' => $event->customerId],
         );

@@ -40,11 +40,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
             $id,
             $orderId,
             Uuid::uuid7()->toString(),
-            'Ada',
-            'Lovelace',
-            '12 rue des Lilas',
-            '75001',
-            'Paris',
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
         ));
 
         // Then
@@ -75,11 +71,7 @@ final class CreateShipmentHandlerTest extends AbstractIntegrationTestCase
             $id,
             $orderId,
             $customerId,
-            'Someone',
-            'Else',
-            '8 avenue Foch',
-            '75116',
-            'Paris',
+            ['firstName' => 'Someone', 'lastName' => 'Else', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
         ));
 
         // Then

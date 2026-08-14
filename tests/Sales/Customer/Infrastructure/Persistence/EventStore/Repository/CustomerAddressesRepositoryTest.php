@@ -35,6 +35,7 @@ final class CustomerAddressesRepositoryTest extends AbstractIntegrationTestCase
         $customerAddresses = $this->repository->load($customer->id());
 
         // Then
+        self::assertTrue($this->repository->has($customer->id()));
         self::assertNull($customerAddresses->shippingAddress());
         self::assertNull($customerAddresses->billingAddress());
     }
@@ -66,6 +67,7 @@ final class CustomerAddressesRepositoryTest extends AbstractIntegrationTestCase
         $id = CustomerId::generate();
 
         // Then
+        self::assertFalse($this->repository->has($id));
         $this->expectException(CustomerNotFoundException::class);
 
         // When

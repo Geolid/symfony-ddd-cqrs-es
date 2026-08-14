@@ -104,6 +104,30 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itRedirectsToTheCheckoutAddressFormWhenAddressesAreIncomplete(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-9@example.com')->store();
+        $this->loginAs($client, $identity);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // When
+        $crawler = $client->request('GET', '/sales/orders/place');
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+        ]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
+    }
+
+    #[Test]
     public function itRefusesAnonymousAccess(): void
     {
         // Given

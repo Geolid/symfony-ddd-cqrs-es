@@ -25,6 +25,7 @@ final class PostalAddressTest extends TestCase
         // Then
         self::assertTrue($fullName->equals($postalAddress->fullName));
         self::assertTrue($address->equals($postalAddress->address));
+        self::assertSame('12 rue des Lilas, 75001 Paris', $postalAddress->toString());
     }
 
     #[Test]

@@ -71,6 +71,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
     }
 
+    public function billingAddressErased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->eraseBillingAddress($erasedAt));
+    }
+
     protected function defaults(): array
     {
         return [

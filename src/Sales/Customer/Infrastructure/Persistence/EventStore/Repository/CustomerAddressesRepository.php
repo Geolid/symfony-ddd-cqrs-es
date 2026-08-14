@@ -23,6 +23,11 @@ final readonly class CustomerAddressesRepository implements CustomerAddressesRep
     ) {
     }
 
+    public function has(CustomerId $id): bool
+    {
+        return $this->repository->has($id);
+    }
+
     public function load(CustomerId $id): CustomerAddresses
     {
         try {
