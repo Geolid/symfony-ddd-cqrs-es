@@ -29,9 +29,9 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private CustomerId $id;
     private Email $email;
-    private bool $erased;
     private ?PostalAddress $shippingAddress = null;
     private ?PostalAddress $billingAddress = null;
+    private bool $erased;
 
     public function id(): CustomerId
     {
