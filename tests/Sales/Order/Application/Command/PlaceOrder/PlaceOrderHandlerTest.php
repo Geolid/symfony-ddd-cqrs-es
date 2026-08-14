@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\Repository\CustomerAddressesRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Enum\OrderStatus;
@@ -80,21 +79,14 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheBuyerHasNotCompletedTheirAddresses(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $customerAddresses->setShippingAddress(
-                PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
-                new \DateTimeImmutable('now +00:00'),
-            );
+            $customer = $customer->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')));
         }
         if ($withBillingAddress) {
-            $customerAddresses->setBillingAddress(
-                PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')),
-                new \DateTimeImmutable('now +00:00'),
-            );
+            $customer = $customer->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')));
         }
-        $this->store($customerAddresses);
+        $customer = $customer->store();
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
@@ -164,19 +156,11 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function registeredCustomer(string $email): Customer
     {
-        $customer = CustomerTestFactory::new()->withEmail($email)->store();
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
-        $customerAddresses->setShippingAddress(
-            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
-            new \DateTimeImmutable('now +00:00'),
-        );
-        $customerAddresses->setBillingAddress(
-            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')),
-            new \DateTimeImmutable('now +00:00'),
-        );
-        $this->store($customerAddresses);
-
-        return $customer;
+        return CustomerTestFactory::new()
+            ->withEmail($email)
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->store();
     }
 
     private function orderOf(string $id): Order

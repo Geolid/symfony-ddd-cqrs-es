@@ -7,6 +7,7 @@ use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
+use Sales\Order\Application\Command\EraseOrderBillingAddress\EraseOrderBillingAddress;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
 use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -29,6 +30,7 @@ return static function (ContainerConfigurator $container): void {
                 CancelShipment::class => 'async',
                 CreateShipment::class => 'async',
                 DispatchShipment::class => 'async',
+                EraseOrderBillingAddress::class => 'async',
                 RevokeApiTokenCredential::class => 'async',
             ],
         ],

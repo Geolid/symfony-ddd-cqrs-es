@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Customer\Application\Command\SetCustomerShippingAddress;
+namespace Sales\Customer\Application\Command\RegisterCustomerShippingAddress;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class SetCustomerShippingAddress implements CommandInterface
+final readonly class RegisterCustomerShippingAddress implements CommandInterface
 {
     public function __construct(
         public string $customerId,

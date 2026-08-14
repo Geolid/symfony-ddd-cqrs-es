@@ -44,7 +44,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsOnlyTheBillingAddressOnBillingRetentionExpiry(): void
+    public function itCryptoShredsTheBillingAddressOnBillingRetentionExpiry(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -66,7 +66,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsThePaymentCapturedIntegrationEventsShippingAddressOnCustomerErasure(): void
+    public function itCryptoShredsThePaymentCapturedShippingAddressOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

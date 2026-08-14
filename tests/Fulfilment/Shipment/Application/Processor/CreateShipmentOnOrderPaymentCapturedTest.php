@@ -60,7 +60,7 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
         ($this->processor)($this->orderPaymentCaptured($order));
 
         // Then
-        self::assertCount(1, iterator_to_array($this->shipmentFinder));
+        self::assertCount(1, $this->shipmentFinder);
     }
 
     private function placedOrder(): Order

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Web\Controller\Criteria;
+namespace Web\Controller\QueryString;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class OrderCriteria
+final readonly class ListQueryString
 {
     public function __construct(
         #[Assert\Positive]

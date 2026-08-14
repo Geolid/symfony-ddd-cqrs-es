@@ -18,21 +18,31 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
 {
     #[Test]
-    public function itAcceptsAValueItsValueObjectAccepts(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAcceptsWhenTheValueObjectConstructsSuccessfully(mixed $value, ValidValueObject $constraint): void
     {
         // When
-        $this->validator->validate('acceptable', new ValidValueObject(DummyValue::class));
+        $this->validator->validate($value, $constraint);
 
         // Then
         $this->assertNoViolation();
     }
 
+    /**
+     * @return iterable<string, array{mixed, ValidValueObject}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'a scalar value' => ['acceptable', new ValidValueObject(DummyValue::class)];
+        yield 'an array spread into the constructor' => [['left', 'right'], new ValidValueObject(DummyPair::class, method: 'of')];
+    }
+
     #[Test]
     #[DataProvider('provideRefusals')]
-    public function itReportsWhyTheValueObjectRefusedTheValue(string $value, string $reason): void
+    public function itReportsWhyTheValueObjectRefusedTheValue(mixed $value, ValidValueObject $constraint, string $reason): void
     {
         // When
-        $this->validator->validate($value, new ValidValueObject(DummyValue::class));
+        $this->validator->validate($value, $constraint);
 
         // Then
         $this->buildViolation('Domain validation failed: {{ reason }}')
@@ -42,13 +52,14 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     }
 
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{mixed, ValidValueObject, string}>
      */
     public static function provideRefusals(): iterable
     {
-        yield 'a value the invariants reject' => ['refused', 'Refused by the value object.'];
-        yield 'a value of the wrong type' => ['mistyped', 'Expected a different type.'];
-        yield 'a value outside the accepted range' => ['out-of-range', 'Outside the accepted range.'];
+        yield 'a value the invariants reject' => ['refused', new ValidValueObject(DummyValue::class), 'Refused by the value object.'];
+        yield 'a value of the wrong type' => ['mistyped', new ValidValueObject(DummyValue::class), 'Expected a different type.'];
+        yield 'a value outside the accepted range' => ['out-of-range', new ValidValueObject(DummyValue::class), 'Outside the accepted range.'];
+        yield 'a spread array value' => [['same', 'same'], new ValidValueObject(DummyPair::class, method: 'of'), 'Refused a matching pair.'];
     }
 
     #[Test]
@@ -81,29 +92,6 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
         // Then
         self::assertSame(['registration'], $constraint->groups);
         self::assertSame('severity', $constraint->payload);
-    }
-
-    #[Test]
-    public function itSpreadsAnArrayValueIntoTheValueObjectsConstructor(): void
-    {
-        // When
-        $this->validator->validate(['left', 'right'], new ValidValueObject(DummyPair::class, method: 'of'));
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itReportsWhyTheValueObjectRefusedASpreadArrayValue(): void
-    {
-        // When
-        $this->validator->validate(['same', 'same'], new ValidValueObject(DummyPair::class, method: 'of'));
-
-        // Then
-        $this->buildViolation('Domain validation failed: {{ reason }}')
-            ->setParameter('{{ reason }}', 'Refused a matching pair.')
-            ->setCode(ValidValueObject::DOMAIN_VALIDATION_ERROR)
-            ->assertRaised();
     }
 
     #[Test]

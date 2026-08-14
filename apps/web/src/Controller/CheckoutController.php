@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
-use Sales\Customer\Application\Command\SetCustomerBillingAddress\SetCustomerBillingAddress;
-use Sales\Customer\Application\Command\SetCustomerShippingAddress\SetCustomerShippingAddress;
+use Sales\Customer\Application\Command\RegisterCustomerBillingAddress\RegisterCustomerBillingAddress;
+use Sales\Customer\Application\Command\RegisterCustomerShippingAddress\RegisterCustomerShippingAddress;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Web\Controller\QueryString\CompleteAddressQueryString;
 use Web\Form\CheckoutAddressesType;
 use Web\Form\FormData\CheckoutAddressesFormData;
 use Web\Security\PasswordUser;
@@ -23,8 +24,6 @@ use Web\Security\PasswordUser;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class CheckoutController extends AbstractController
 {
-    private const array ALLOWED_RETURN_ROUTES = ['sales_order_place'];
-
     public function __construct(private readonly CommandBusInterface $commandBus)
     {
     }
@@ -34,16 +33,19 @@ final class CheckoutController extends AbstractController
      * @throws \DomainException
      */
     #[Route('/address', name: 'checkout_address_complete', methods: ['GET', 'POST'])]
-    public function completeAddress(Request $request, #[CurrentUser] PasswordUser $user, #[MapQueryParameter] ?string $returnTo = null): Response
-    {
-        $returnRoute = \in_array($returnTo, self::ALLOWED_RETURN_ROUTES, true) ? $returnTo : self::ALLOWED_RETURN_ROUTES[0];
-
+    public function completeAddress(
+        Request $request,
+        #[CurrentUser]
+        PasswordUser $user,
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
+        CompleteAddressQueryString $queryString = new CompleteAddressQueryString(),
+    ): Response {
         $formData = new CheckoutAddressesFormData();
         $form = $this->createForm(CheckoutAddressesType::class, $formData);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->commandBus->dispatch(new SetCustomerShippingAddress(
+            $this->commandBus->dispatch(new RegisterCustomerShippingAddress(
                 customerId: $user->identityId(),
                 firstName: (string) $formData->shipping->fullName->firstName,
                 lastName: (string) $formData->shipping->fullName->lastName,
@@ -51,7 +53,7 @@ final class CheckoutController extends AbstractController
                 postalCode: (string) $formData->shipping->address->postalCode,
                 city: (string) $formData->shipping->address->city,
             ));
-            $this->commandBus->dispatch(new SetCustomerBillingAddress(
+            $this->commandBus->dispatch(new RegisterCustomerBillingAddress(
                 customerId: $user->identityId(),
                 firstName: (string) $formData->billing->fullName->firstName,
                 lastName: (string) $formData->billing->fullName->lastName,
@@ -60,7 +62,7 @@ final class CheckoutController extends AbstractController
                 city: (string) $formData->billing->address->city,
             ));
 
-            return $this->redirectToRoute($returnRoute);
+            return $this->redirectToRoute($queryString->returnTo);
         }
 
         return $this->render('checkout/address.html.twig', ['form' => $form]);

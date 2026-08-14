@@ -9,10 +9,10 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Customer\Application\Event\CustomerBillingAddressSetIntegrationEvent;
+use Sales\Customer\Application\Event\CustomerBillingAddressRegisteredIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
-use Sales\Customer\Application\Event\CustomerShippingAddressSetIntegrationEvent;
+use Sales\Customer\Application\Event\CustomerShippingAddressRegisteredIntegrationEvent;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
@@ -29,8 +29,8 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         ]);
     }
 
-    #[Subscribe(CustomerShippingAddressSetIntegrationEvent::class)]
-    public function onCustomerShippingAddressSet(CustomerShippingAddressSetIntegrationEvent $event): void
+    #[Subscribe(CustomerShippingAddressRegisteredIntegrationEvent::class)]
+    public function onCustomerShippingAddressRegistered(CustomerShippingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
@@ -45,8 +45,8 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(CustomerBillingAddressSetIntegrationEvent::class)]
-    public function onCustomerBillingAddressSet(CustomerBillingAddressSetIntegrationEvent $event): void
+    #[Subscribe(CustomerBillingAddressRegisteredIntegrationEvent::class)]
+    public function onCustomerBillingAddressRegistered(CustomerBillingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,

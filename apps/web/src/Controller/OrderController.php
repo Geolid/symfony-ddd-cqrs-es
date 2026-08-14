@@ -31,7 +31,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Web\Controller\Criteria\OrderCriteria;
+use Web\Controller\QueryString\ListQueryString;
 use Web\Exception\MissingCatalogSnapshotException;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
@@ -61,12 +61,12 @@ final class OrderController extends AbstractController
         #[CurrentUser]
         PasswordUser $user,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
-        OrderCriteria $criteria = new OrderCriteria(),
+        ListQueryString $queryString = new ListQueryString(),
     ): Response {
         $orders = $this->queryBus->ask(new ListOrderSummaries(
             customerId: $user->identityId(),
-            page: $criteria->page,
-            itemsPerPage: $criteria->itemsPerPage,
+            page: $queryString->page,
+            itemsPerPage: $queryString->itemsPerPage,
             sortedByPlacedAt: true,
         ));
 

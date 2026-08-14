@@ -8,8 +8,6 @@ use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Application\Command\SetCustomerBillingAddress\SetCustomerBillingAddress;
-use Sales\Customer\Application\Command\SetCustomerShippingAddress\SetCustomerShippingAddress;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -17,6 +15,9 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -251,25 +252,12 @@ final class OrderControllerTest extends AbstractWebTestCase
     private function registerCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();
-
-        $commandBus = $this->service(CommandBusInterface::class);
-        $commandBus->dispatch(new SetCustomerShippingAddress(
-            customerId: $identity->id()->toString(),
-            firstName: 'Ada',
-            lastName: 'Lovelace',
-            street: '12 rue des Lilas',
-            postalCode: '75001',
-            city: 'Paris',
-        ));
-        $commandBus->dispatch(new SetCustomerBillingAddress(
-            customerId: $identity->id()->toString(),
-            firstName: 'Ada',
-            lastName: 'Lovelace',
-            street: '8 avenue Foch',
-            postalCode: '75116',
-            city: 'Paris',
-        ));
+        CustomerTestFactory::new()
+            ->withId($identity->id()->toString())
+            ->withEmail($email)
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->store();
 
         return $identity;
     }

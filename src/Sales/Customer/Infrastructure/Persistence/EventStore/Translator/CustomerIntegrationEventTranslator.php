@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Sales\Customer\Infrastructure\Persistence\EventStore\Translator;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Customer\Application\Event\CustomerBillingAddressSetIntegrationEvent;
+use Sales\Customer\Application\Event\CustomerBillingAddressRegisteredIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
-use Sales\Customer\Application\Event\CustomerShippingAddressSetIntegrationEvent;
-use Sales\Customer\Domain\Event\CustomerBillingAddressSet;
+use Sales\Customer\Application\Event\CustomerShippingAddressRegisteredIntegrationEvent;
+use Sales\Customer\Domain\Event\CustomerBillingAddressRegistered;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
-use Sales\Customer\Domain\Event\CustomerShippingAddressSet;
+use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
@@ -33,12 +33,12 @@ final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrat
         );
     }
 
-    #[Subscribe(CustomerShippingAddressSet::class)]
-    public function onCustomerShippingAddressSet(CustomerShippingAddressSet $event): void
+    #[Subscribe(CustomerShippingAddressRegistered::class)]
+    public function onCustomerShippingAddressRegistered(CustomerShippingAddressRegistered $event): void
     {
         $this->append(
             IntegrationStreamId::build('sales.customer', $event->id),
-            new CustomerShippingAddressSetIntegrationEvent(
+            new CustomerShippingAddressRegisteredIntegrationEvent(
                 customerId: $event->id,
                 address: $event->address,
                 setAt: $event->setAt,
@@ -46,12 +46,12 @@ final readonly class CustomerIntegrationEventTranslator extends AbstractIntegrat
         );
     }
 
-    #[Subscribe(CustomerBillingAddressSet::class)]
-    public function onCustomerBillingAddressSet(CustomerBillingAddressSet $event): void
+    #[Subscribe(CustomerBillingAddressRegistered::class)]
+    public function onCustomerBillingAddressRegistered(CustomerBillingAddressRegistered $event): void
     {
         $this->append(
             IntegrationStreamId::build('sales.customer', $event->id),
-            new CustomerBillingAddressSetIntegrationEvent(
+            new CustomerBillingAddressRegisteredIntegrationEvent(
                 customerId: $event->id,
                 address: $event->address,
                 setAt: $event->setAt,

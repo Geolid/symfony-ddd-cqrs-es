@@ -33,6 +33,7 @@ paths:
 - A reference to another Bounded Context's identity inside an aggregate is a plain `string`, never a local VO duplicating that BC's concept (it can't enforce that BC's invariants and would drift).
 - Erasure of personal data is crypto-shredding: a Domain Event implementing the `DataSubjectErasureInterface` marker drops the subject's encryption key — this implicitly covers every past event for that subject, without rewriting the store. A projection that materializes personal data in clear text is not covered by the key drop — it must redact on erasure (a targeted update) or be rebuilt by replay.
 - A cipher key is held per subject id for the whole store, so personal data carried into another BC on an Integration Event falls with the same drop as long as the receiving event repeats that `#[DataSubjectId]` value — nothing to erase downstream, no coordination between Bounded Contexts.
+- An Aggregate's getter serves another Domain/Application consumer already holding it through its own Repository for a write-side reason (a sibling invariant guard, an outbound port call, an Integration Event's construction) — never a Delivery Mechanism or its test reading business state for a display/read purpose, which goes through a Finder instead, even right after driving a write through that same Aggregate.
 
 ## Tests
 

@@ -31,6 +31,7 @@ final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCa
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
         $order = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
+        $other = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->store();
         $tester = $this->tester();
 
         // When
@@ -39,7 +40,8 @@ final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCa
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('1 order(s) purged.', $tester->getDisplay());
-        self::assertCount(0, iterator_to_array($this->orderFinder->byCustomer($order->customerId())));
+        self::assertCount(0, $this->orderFinder->byCustomer($order->customerId()));
+        self::assertCount(1, $this->orderFinder->byCustomer($other->customerId()));
     }
 
     #[Test]

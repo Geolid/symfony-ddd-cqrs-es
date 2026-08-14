@@ -7,6 +7,7 @@ namespace Sales\Tests\Customer\Support\Factory;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -28,6 +29,20 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
         return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
+    }
+
+    public function withShippingAddress(PostalAddress $shippingAddress, \DateTimeImmutable $registeredAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $registeredAt),
+        );
+    }
+
+    public function withBillingAddress(PostalAddress $billingAddress, \DateTimeImmutable $registeredAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $registeredAt),
+        );
     }
 
     public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self

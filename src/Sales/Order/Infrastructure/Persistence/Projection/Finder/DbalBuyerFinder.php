@@ -69,27 +69,36 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
     {
         return new BuyerResult(
             customerId: $row['customer_id'],
-            shippingAddress: $this->postalAddressOf($row['shipping_first_name'], $row['shipping_last_name'], $row['shipping_street'], $row['shipping_postal_code'], $row['shipping_city']),
-            billingAddress: $this->postalAddressOf($row['billing_first_name'], $row['billing_last_name'], $row['billing_street'], $row['billing_postal_code'], $row['billing_city']),
+            shippingAddress: $this->extractPostalAddress($row, 'shipping_'),
+            billingAddress: $this->extractPostalAddress($row, 'billing_'),
         );
     }
 
     /**
+     * @param array<string, string|null> $row
+     *
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}|null
      */
-    private function postalAddressOf(?string $firstName, ?string $lastName, ?string $street, ?string $postalCode, ?string $city): ?array
+    private function extractPostalAddress(array $row, string $prefix): ?array
     {
-        if (null === $firstName) {
+        // The 5 columns of one group (shipping or billing) are always written together by
+        // DbalBuyerProjector's single update() call, never partially.
+        if (!isset(
+            $row[$prefix.'first_name'],
+            $row[$prefix.'last_name'],
+            $row[$prefix.'street'],
+            $row[$prefix.'postal_code'],
+            $row[$prefix.'city'],
+        )) {
             return null;
         }
 
-        // The 5 columns of one group (shipping or billing) are always written together by
-        // DbalBuyerProjector's single update() call, never partially — checking the first stands for all five.
-        \assert(null !== $lastName);
-        \assert(null !== $street);
-        \assert(null !== $postalCode);
-        \assert(null !== $city);
-
-        return ['firstName' => $firstName, 'lastName' => $lastName, 'street' => $street, 'postalCode' => $postalCode, 'city' => $city];
+        return [
+            'firstName' => (string) $row[$prefix.'first_name'],
+            'lastName' => (string) $row[$prefix.'last_name'],
+            'street' => (string) $row[$prefix.'street'],
+            'postalCode' => (string) $row[$prefix.'postal_code'],
+            'city' => (string) $row[$prefix.'city'],
+        ];
     }
 }

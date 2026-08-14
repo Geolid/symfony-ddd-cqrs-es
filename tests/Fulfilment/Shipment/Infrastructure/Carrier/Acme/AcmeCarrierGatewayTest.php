@@ -34,7 +34,16 @@ final class AcmeCarrierGatewayTest extends TestCase
         self::assertSame('ACME-4Q7X2K9', $trackingReference);
         self::assertSame('https://carrier.acme.test/pickups', $response->getRequestUrl());
         self::assertSame(
-            ['reference' => $shipmentId, 'destination' => 'Ada Lovelace, 12 rue des Lilas, 75001 Paris'],
+            [
+                'reference' => $shipmentId,
+                'destination' => [
+                    'firstName' => 'Ada',
+                    'lastName' => 'Lovelace',
+                    'street' => '12 rue des Lilas',
+                    'postalCode' => '75001',
+                    'city' => 'Paris',
+                ],
+            ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
         );
     }

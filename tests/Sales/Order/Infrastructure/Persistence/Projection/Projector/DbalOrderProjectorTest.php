@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -28,7 +29,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
         self::assertSame(2_500, (int) $row['total_amount_in_cents']);
-        self::assertSame('placed', $row['status']);
+        self::assertSame(OrderStatus::PLACED->value, $row['status']);
         self::assertNull($row['cancelled_at']);
     }
 
@@ -41,18 +42,26 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('cancelled', $row['status']);
+        self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
     }
 
     #[Test]
     public function itProjectsTheErasureOnOrderBillingAddressErased(): void
     {
+        // Given
+        $other = OrderTestFactory::new()->store();
+
         // When
         $order = OrderTestFactory::new()->billingAddressErased()->store();
 
         // Then
         self::assertFalse($this->fetchRow($order->id()->toString()));
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame($other->customerId(), $otherRow['customer_id']);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
 
     /**

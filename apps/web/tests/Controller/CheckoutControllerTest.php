@@ -7,8 +7,7 @@ namespace Web\Tests\Controller;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Domain\Repository\CustomerAddressesRepositoryInterface;
-use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -43,9 +42,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/sales/orders/place');
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load(CustomerId::fromString($identity->id()->toString()));
-        self::assertSame('12 rue des Lilas', $customerAddresses->shippingAddress()?->address->street);
-        self::assertSame('8 avenue Foch', $customerAddresses->billingAddress()?->address->street);
+        $buyer = $this->service(BuyerFinderInterface::class)->ofId($identity->id()->toString());
+        self::assertNotNull($buyer);
+        self::assertNotNull($buyer->shippingAddress);
+        self::assertNotNull($buyer->billingAddress);
+        self::assertSame('12 rue des Lilas', $buyer->shippingAddress['street']);
+        self::assertSame('8 avenue Foch', $buyer->billingAddress['street']);
     }
 
     #[Test]
@@ -60,22 +62,38 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->submitAddresses($client, '/checkout/address', sameAsShipping: true);
 
         // Then
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load(CustomerId::fromString($identity->id()->toString()));
-        self::assertSame('12 rue des Lilas', $customerAddresses->billingAddress()?->address->street);
+        $buyer = $this->service(BuyerFinderInterface::class)->ofId($identity->id()->toString());
+        self::assertNotNull($buyer);
+        self::assertNotNull($buyer->billingAddress);
+        self::assertSame('12 rue des Lilas', $buyer->billingAddress['street']);
     }
 
     #[Test]
-    public function itIgnoresAnUnknownReturnToRoute(): void
+    public function itSetsBothAddressesAndRedirectsToTheExplicitReturnRoute(): void
     {
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->registerCustomer('buyer-4@example.com'));
 
         // When
-        $this->submitAddresses($client, '/checkout/address?return_to=security_login');
+        $this->submitAddresses($client, '/checkout/address?return_to=sales_order_place');
 
         // Then
         self::assertResponseRedirects('/sales/orders/place');
+    }
+
+    #[Test]
+    public function itRefusesAnUnknownReturnToRoute(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
+
+        // When
+        $client->request('GET', '/checkout/address?return_to=security_login');
+
+        // Then
+        self::assertResponseStatusCodeSame(422);
     }
 
     #[Test]

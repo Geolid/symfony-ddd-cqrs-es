@@ -29,6 +29,6 @@ final readonly class PostalAddress
 
     public function toString(): string
     {
-        return $this->address->toString();
+        return \sprintf('%s, %s', $this->fullName->toString(), $this->address->toString());
     }
 }

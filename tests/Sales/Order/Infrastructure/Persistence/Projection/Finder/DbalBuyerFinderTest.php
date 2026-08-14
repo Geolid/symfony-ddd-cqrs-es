@@ -6,7 +6,6 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Domain\Repository\CustomerAddressesRepositoryInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -27,20 +26,13 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerWithBothAddressesCompleted(): void
+    public function itFindsABuyerByItsId(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->store();
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
-        $customerAddresses->setShippingAddress(
-            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
-            new \DateTimeImmutable('now +00:00'),
-        );
-        $customerAddresses->setBillingAddress(
-            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')),
-            new \DateTimeImmutable('now +00:00'),
-        );
-        $this->store($customerAddresses);
+        $customer = CustomerTestFactory::new()
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->store();
 
         // When
         $result = $this->finder->ofId($customer->id()->toString());
@@ -59,7 +51,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerWithNoAddressCompleted(): void
+    public function itFindsABuyerWithNoAddressYet(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->store();
@@ -75,16 +67,12 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerWithOnlyTheShippingAddressCompleted(): void
+    public function itFindsABuyerWithOnlyAShippingAddress(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->store();
-        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
-        $customerAddresses->setShippingAddress(
-            PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
-            new \DateTimeImmutable('now +00:00'),
-        );
-        $this->store($customerAddresses);
+        $customer = CustomerTestFactory::new()
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->store();
 
         // When
         $result = $this->finder->ofId($customer->id()->toString());
