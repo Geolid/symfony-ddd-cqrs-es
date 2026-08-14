@@ -31,23 +31,24 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Web\Controller\Criteria\OrderCriteria;
+use Web\Exception\MissingCatalogSnapshotException;
 use Web\Form\FormData\OrderLineFormData;
 use Web\Form\FormData\PlaceOrderFormData;
 use Web\Form\PlaceOrderType;
 use Web\Security\PasswordUser;
 use Web\Security\Voter\OrderVoter;
+use Web\Session\CatalogSnapshot;
 
 #[Route('/sales/orders')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class OrderController extends AbstractController
 {
-    private const string CATALOG_SNAPSHOT_SESSION_KEY = 'sales_order.place.catalog_snapshot';
-
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
         private readonly OrderPaymentRequesterInterface $orderPaymentRequester,
         private readonly TranslatorInterface $translator,
+        private readonly CatalogSnapshot $catalogSnapshot,
     ) {
     }
 
@@ -114,25 +115,18 @@ final class OrderController extends AbstractController
         ]);
         $form->handleRequest($request);
 
-        $session = $request->getSession();
         if ($request->isMethod('GET')) {
-            $session->set(self::CATALOG_SNAPSHOT_SESSION_KEY, $currentCatalog);
+            $this->catalogSnapshot->store($currentCatalog);
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var array<string, array{label: string, unitAmountInCents: int}> $catalogSnapshot */
-            $catalogSnapshot = $session->get(self::CATALOG_SNAPSHOT_SESSION_KEY, []);
-
-            $hasCompleteSnapshot = [] === array_filter(
+            $lines = array_map(
+                static fn (OrderLineFormData $line): array => [
+                    'productId' => (string) $line->productId,
+                    'quantity' => (int) $line->quantity,
+                ],
                 $formData->lines,
-                static fn (OrderLineFormData $line): bool => !isset($catalogSnapshot[(string) $line->productId]),
             );
-
-            if (!$hasCompleteSnapshot) {
-                $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
-
-                return $this->redirectToRoute('sales_order_place');
-            }
 
             $id = Uuid::uuid7()->toString();
 
@@ -140,22 +134,9 @@ final class OrderController extends AbstractController
                 $this->commandBus->dispatch(new PlaceOrder(
                     id: $id,
                     customerId: $user->identityId(),
-                    lines: array_values(array_map(
-                        static function (OrderLineFormData $line) use ($catalogSnapshot): array {
-                            $productId = (string) $line->productId;
-                            $product = $catalogSnapshot[$productId];
-
-                            return [
-                                'productId' => $productId,
-                                'quantity' => (int) $line->quantity,
-                                'label' => $product['label'],
-                                'unitAmountInCents' => $product['unitAmountInCents'],
-                            ];
-                        },
-                        $formData->lines,
-                    )),
+                    lines: $this->catalogSnapshot->resolveLines($lines),
                 ));
-            } catch (OutdatedOrderException) {
+            } catch (OutdatedOrderException|MissingCatalogSnapshotException) {
                 $this->addFlash('error', $this->translator->trans('sales.order.flash.catalog_changed'));
 
                 return $this->redirectToRoute('sales_order_place');
