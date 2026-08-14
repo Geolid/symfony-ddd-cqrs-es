@@ -53,6 +53,19 @@ final class ErasedFieldSentinelTest extends TestCase
     }
 
     #[Test]
+    public function itDerivesTheFallbackFromTheFirst8CharactersOfTheSubjectIdHash(): void
+    {
+        // Given
+        $sentinel = new ErasedFieldSentinel('erased-email-%s@customer.invalid');
+
+        // When
+        $result = $sentinel('10000000-7000-0000-0000-000000000001');
+
+        // Then
+        self::assertSame('erased-email-f0704062@customer.invalid', $result);
+    }
+
+    #[Test]
     public function itResolvesANestedSentinelWithinAnArrayFallback(): void
     {
         // Given

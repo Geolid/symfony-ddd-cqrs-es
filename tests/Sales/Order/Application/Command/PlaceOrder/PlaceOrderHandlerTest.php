@@ -75,16 +75,41 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheBuyerHasNotCompletedTheirAddresses(): void
+    #[DataProvider('provideIncompleteAddresses')]
+    public function itFailsWhenTheBuyerHasNotCompletedTheirAddresses(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
+        $customerAddresses = $this->service(CustomerAddressesRepositoryInterface::class)->load($customer->id());
+        if ($withShippingAddress) {
+            $customerAddresses->setShippingAddress(
+                PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')),
+                new \DateTimeImmutable('now +00:00'),
+            );
+        }
+        if ($withBillingAddress) {
+            $customerAddresses->setBillingAddress(
+                PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')),
+                new \DateTimeImmutable('now +00:00'),
+            );
+        }
+        $this->store($customerAddresses);
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
         $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+    }
+
+    /**
+     * @return iterable<string, array{bool, bool}>
+     */
+    public static function provideIncompleteAddresses(): iterable
+    {
+        yield 'neither address set' => [false, false];
+        yield 'only shipping address set' => [true, false];
+        yield 'only billing address set' => [false, true];
     }
 
     #[Test]

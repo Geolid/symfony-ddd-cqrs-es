@@ -8,9 +8,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalBuyerProjector;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
-use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -77,12 +74,22 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
         );
     }
 
-    private function postalAddressOf(?string $firstName, ?string $lastName, ?string $street, ?string $postalCode, ?string $city): ?PostalAddress
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}|null
+     */
+    private function postalAddressOf(?string $firstName, ?string $lastName, ?string $street, ?string $postalCode, ?string $city): ?array
     {
-        if (null === $firstName || null === $lastName || null === $street || null === $postalCode || null === $city) {
+        if (null === $firstName) {
             return null;
         }
 
-        return PostalAddress::of(FullName::of($firstName, $lastName), Address::of($street, $postalCode, $city));
+        // The 5 columns of one group (shipping or billing) are always written together by
+        // DbalBuyerProjector's single update() call, never partially — checking the first stands for all five.
+        \assert(null !== $lastName);
+        \assert(null !== $street);
+        \assert(null !== $postalCode);
+        \assert(null !== $city);
+
+        return ['firstName' => $firstName, 'lastName' => $lastName, 'street' => $street, 'postalCode' => $postalCode, 'city' => $city];
     }
 }

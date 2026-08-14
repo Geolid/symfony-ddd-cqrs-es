@@ -51,6 +51,18 @@ final class ValidAddressTest extends CompoundConstraintTestCase
         yield 'empty city' => [['street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => '']];
         yield 'street too long' => [['street' => str_repeat('a', 256), 'postalCode' => '75001', 'city' => 'Paris']];
         yield 'postal code too long' => [['street' => '12 rue des Lilas', 'postalCode' => str_repeat('1', 21), 'city' => 'Paris']];
+        yield 'city too long' => [['street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => str_repeat('a', 256)]];
+    }
+
+    #[Test]
+    public function itRefusesWhenAFieldIsMissing(): void
+    {
+        // When
+        $this->validateValue(['street' => '12 rue des Lilas', 'postalCode' => '75001']);
+
+        // Then
+        $this->assertViolationsCount(1);
+        $this->assertViolationsRaisedByCompound([self::collection()]);
     }
 
     protected function createCompound(): ValidAddress

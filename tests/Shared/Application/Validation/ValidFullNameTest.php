@@ -52,6 +52,17 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
         yield 'last name too long' => [['firstName' => 'Ada', 'lastName' => str_repeat('a', 256)]];
     }
 
+    #[Test]
+    public function itRefusesWhenAFieldIsMissing(): void
+    {
+        // When
+        $this->validateValue(['firstName' => 'Ada']);
+
+        // Then
+        $this->assertViolationsCount(1);
+        $this->assertViolationsRaisedByCompound([self::collection()]);
+    }
+
     protected function createCompound(): ValidFullName
     {
         return new ValidFullName();

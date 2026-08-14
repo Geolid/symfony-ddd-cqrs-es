@@ -57,8 +57,8 @@ final readonly class PlaceOrderHandler
         $order = Order::place(
             id: OrderId::fromString($command->id),
             customerId: $buyer->customerId,
-            shippingAddress: $buyer->shippingAddress,
-            billingAddress: $buyer->billingAddress,
+            shippingAddress: self::postalAddressOf($buyer->shippingAddress),
+            billingAddress: self::postalAddressOf($buyer->billingAddress),
             lines: array_map(
                 fn (array $line): OrderLine => $this->resolveLine($line, $currentProducts),
                 $command->lines,
@@ -67,6 +67,17 @@ final readonly class PlaceOrderHandler
         );
 
         $this->repository->save($order);
+    }
+
+    /**
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
+     */
+    private static function postalAddressOf(array $address): PostalAddress
+    {
+        return PostalAddress::of(
+            FullName::of($address['firstName'], $address['lastName']),
+            Address::of($address['street'], $address['postalCode'], $address['city']),
+        );
     }
 
     /**
