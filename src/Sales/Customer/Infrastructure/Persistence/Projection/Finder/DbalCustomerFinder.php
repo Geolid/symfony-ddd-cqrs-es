@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Sales\Customer\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Finder\Customer\CustomerResult;
+use Sales\Customer\Domain\Customer;
 use Sales\Customer\Infrastructure\Persistence\Projection\Projector\DbalCustomerProjector;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -28,7 +29,7 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
             ->fetchAssociative();
 
         if (false === $row) {
-            throw CustomerResultNotFoundException::forId($id);
+            throw ResultNotFoundException::forId(Customer::class, $id);
         }
 
         return $this->mapRow($row);

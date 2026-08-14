@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Exception;
+namespace Sales\Customer\Application\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class LoginAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class CustomerEmailAlreadyRegisteredException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forFingerprint(string $fingerprint, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('The login fingerprinted "%s" is already registered.', $fingerprint),
+            message: \sprintf('An email with fingerprint "%s" is already registered.', $fingerprint),
             previous: $previous,
         );
     }

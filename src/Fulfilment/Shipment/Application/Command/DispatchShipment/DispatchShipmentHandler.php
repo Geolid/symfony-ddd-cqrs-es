@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Command\DispatchShipment;
 
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class DispatchShipmentHandler
@@ -21,7 +21,7 @@ final readonly class DispatchShipmentHandler
     }
 
     /**
-     * @throws ShipmentNotFoundException
+     * @throws AggregateNotFoundException
      * @throws ShipmentInvalidTransitionException
      */
     public function __invoke(DispatchShipment $command): void

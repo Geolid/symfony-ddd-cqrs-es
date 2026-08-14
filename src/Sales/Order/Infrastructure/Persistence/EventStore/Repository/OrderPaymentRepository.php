@@ -6,10 +6,10 @@ namespace Sales\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
-use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class OrderPaymentRepository implements OrderPaymentRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class OrderPaymentRepository implements OrderPaymentRepositoryInt
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw OrderPaymentNotFoundException::forId($id);
+            throw AggregateNotFoundException::forId(OrderPayment::class, $id->toString());
         }
     }
 

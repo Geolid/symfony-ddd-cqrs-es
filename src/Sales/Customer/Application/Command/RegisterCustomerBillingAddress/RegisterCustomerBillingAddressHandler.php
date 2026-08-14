@@ -6,10 +6,10 @@ namespace Sales\Customer\Application\Command\RegisterCustomerBillingAddress;
 
 use Psr\Clock\ClockInterface;
 use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
-use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -24,7 +24,7 @@ final readonly class RegisterCustomerBillingAddressHandler
     }
 
     /**
-     * @throws CustomerNotFoundException
+     * @throws AggregateNotFoundException
      * @throws CustomerAlreadyErasedException
      */
     public function __invoke(RegisterCustomerBillingAddress $command): void

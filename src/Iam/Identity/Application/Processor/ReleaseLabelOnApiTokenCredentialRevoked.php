@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Processor;
 
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Processor\Processor;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[Processor('iam.identity.release_label_on_api_token_credential_revoked', sync: true)]
@@ -23,7 +23,7 @@ final readonly class ReleaseLabelOnApiTokenCredentialRevoked
     }
 
     /**
-     * @throws ApiTokenCredentialNotFoundException
+     * @throws AggregateNotFoundException
      */
     #[Subscribe(ApiTokenCredentialRevoked::class)]
     public function __invoke(ApiTokenCredentialRevoked $event): void

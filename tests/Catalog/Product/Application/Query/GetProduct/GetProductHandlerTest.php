@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Product\Application\Query\GetProduct;
 
-use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class GetProductHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +37,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         $id = ProductId::generate()->toString();
 
         // Then
-        $this->expectException(ProductResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->ask(new GetProduct($id));

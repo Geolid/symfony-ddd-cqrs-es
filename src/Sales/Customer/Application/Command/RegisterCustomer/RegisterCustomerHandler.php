@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Command\RegisterCustomer;
 
 use Psr\Clock\ClockInterface;
-use Sales\Customer\Application\Exception\EmailAlreadyRegisteredException;
+use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
@@ -26,7 +26,7 @@ final readonly class RegisterCustomerHandler
     }
 
     /**
-     * @throws EmailAlreadyRegisteredException
+     * @throws CustomerEmailAlreadyRegisteredException
      */
     public function __invoke(RegisterCustomer $command): void
     {
@@ -35,8 +35,8 @@ final readonly class RegisterCustomerHandler
 
         try {
             $this->uniqueValues->reserve(CustomerUniqueValue::EMAIL, $fingerprint);
-        } catch (UniqueValueAlreadyTakenException) {
-            throw EmailAlreadyRegisteredException::forFingerprint($fingerprint);
+        } catch (UniqueValueAlreadyTakenException $e) {
+            throw CustomerEmailAlreadyRegisteredException::forFingerprint($fingerprint, $e);
         }
 
         $customer = Customer::register(

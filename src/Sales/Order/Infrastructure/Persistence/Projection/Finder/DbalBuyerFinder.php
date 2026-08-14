@@ -81,8 +81,6 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
      */
     private function extractPostalAddress(array $row, string $prefix): ?array
     {
-        // The 5 columns of one group (shipping or billing) are always written together by
-        // DbalBuyerProjector's single update() call, never partially.
         if (!isset(
             $row[$prefix.'first_name'],
             $row[$prefix.'last_name'],
@@ -94,11 +92,11 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
         }
 
         return [
-            'firstName' => (string) $row[$prefix.'first_name'],
-            'lastName' => (string) $row[$prefix.'last_name'],
-            'street' => (string) $row[$prefix.'street'],
-            'postalCode' => (string) $row[$prefix.'postal_code'],
-            'city' => (string) $row[$prefix.'city'],
+            'firstName' => $row[$prefix.'first_name'],
+            'lastName' => $row[$prefix.'last_name'],
+            'street' => $row[$prefix.'street'],
+            'postalCode' => $row[$prefix.'postal_code'],
+            'city' => $row[$prefix.'city'],
         ];
     }
 }

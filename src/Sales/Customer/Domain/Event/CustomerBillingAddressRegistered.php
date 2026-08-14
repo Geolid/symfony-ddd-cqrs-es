@@ -20,11 +20,11 @@ final readonly class CustomerBillingAddressRegistered implements DomainEventInte
         #[DataSubjectId]
         public string $id,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'Erased',
-            'lastName' => 'Erased',
-            'street' => 'Erased',
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
             'postalCode' => '00000',
-            'city' => 'Erased',
+            'city' => 'erased',
         ]))]
         public array $address,
         public string $setAt,

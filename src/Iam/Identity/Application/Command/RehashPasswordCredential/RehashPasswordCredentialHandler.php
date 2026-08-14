@@ -6,12 +6,12 @@ namespace Iam\Identity\Application\Command\RehashPasswordCredential;
 
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class RehashPasswordCredentialHandler
@@ -26,7 +26,7 @@ final readonly class RehashPasswordCredentialHandler
 
     /**
      * @throws PasswordCredentialResultNotFoundException
-     * @throws PasswordCredentialNotFoundException
+     * @throws AggregateNotFoundException
      */
     public function __invoke(RehashPasswordCredential $command): void
     {

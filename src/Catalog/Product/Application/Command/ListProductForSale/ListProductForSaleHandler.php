@@ -35,8 +35,8 @@ final readonly class ListProductForSaleHandler
 
         try {
             $this->uniqueValues->reserve(ProductUniqueValue::LABEL, $label->toString());
-        } catch (UniqueValueAlreadyTakenException) {
-            throw ProductLabelAlreadyTakenException::forLabel($label->toString());
+        } catch (UniqueValueAlreadyTakenException $e) {
+            throw ProductLabelAlreadyTakenException::forLabel($label->toString(), $e);
         }
 
         $product = Product::list(

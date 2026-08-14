@@ -7,10 +7,10 @@ namespace Sales\Tests\Order\Application\Command\EraseOrderBillingAddress;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\EraseOrderBillingAddress\EraseOrderBillingAddress;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Shared\Application\Exception\ResultNotFoundException;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseOrderBillingAddressHandlerTest extends AbstractIntegrationTestCase
@@ -22,7 +22,7 @@ final class EraseOrderBillingAddressHandlerTest extends AbstractIntegrationTestC
         $order = OrderTestFactory::new()->store();
 
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->dispatch(new EraseOrderBillingAddress($order->id()->toString()));
@@ -33,7 +33,7 @@ final class EraseOrderBillingAddressHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
         // Then
-        $this->expectException(OrderNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->dispatch(new EraseOrderBillingAddress(Uuid::uuid7()->toString()));

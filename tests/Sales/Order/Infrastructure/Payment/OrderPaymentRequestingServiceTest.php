@@ -7,7 +7,6 @@ namespace Sales\Tests\Order\Infrastructure\Payment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
@@ -17,6 +16,7 @@ use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCase
@@ -63,7 +63,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');

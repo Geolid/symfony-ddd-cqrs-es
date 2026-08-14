@@ -6,12 +6,12 @@ namespace Iam\Tests\Identity\Application\Command\RevokeApiTokenCredential;
 
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -41,7 +41,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
         $id = ApiTokenCredentialId::generate()->toString();
 
         // Then
-        $this->expectException(ApiTokenCredentialNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($id));

@@ -40,7 +40,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
-        self::assertNotSame('Erased', $rehydrated->billingAddress['street']);
+        self::assertNotSame('erased', $rehydrated->billingAddress['street']);
     }
 
     #[Test]
@@ -62,7 +62,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame(self::erasedAddress(), $rehydrated->billingAddress);
-        self::assertNotSame('Erased', $rehydrated->shippingAddress['street']);
+        self::assertNotSame('erased', $rehydrated->shippingAddress['street']);
     }
 
     #[Test]
@@ -94,7 +94,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
      */
     private static function erasedAddress(): array
     {
-        return ['firstName' => 'Erased', 'lastName' => 'Erased', 'street' => 'Erased', 'postalCode' => '00000', 'city' => 'Erased'];
+        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
     }
 }
 

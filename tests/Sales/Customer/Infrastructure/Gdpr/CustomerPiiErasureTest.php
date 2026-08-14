@@ -39,7 +39,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerRegistered::class, $rehydrated);
-        $sentinel = new ErasedFieldSentinel('erased-email-%s@customer.invalid');
+        $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
         self::assertSame($sentinel($customer->id()->toString()), $rehydrated->email);
     }
 
@@ -94,6 +94,6 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
      */
     private static function erasedAddress(): array
     {
-        return ['firstName' => 'Erased', 'lastName' => 'Erased', 'street' => 'Erased', 'postalCode' => '00000', 'city' => 'Erased'];
+        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
     }
 }

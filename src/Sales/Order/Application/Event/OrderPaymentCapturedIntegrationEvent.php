@@ -21,11 +21,11 @@ final readonly class OrderPaymentCapturedIntegrationEvent implements Integration
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'Erased',
-            'lastName' => 'Erased',
-            'street' => 'Erased',
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
             'postalCode' => '00000',
-            'city' => 'Erased',
+            'city' => 'erased',
         ]))]
         public array $shippingAddress,
         public string $capturedAt,

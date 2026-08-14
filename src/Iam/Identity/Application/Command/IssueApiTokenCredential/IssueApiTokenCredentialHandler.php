@@ -7,7 +7,6 @@ namespace Iam\Identity\Application\Command\IssueApiTokenCredential;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Domain\ApiTokenCredential;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
@@ -17,6 +16,7 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Label;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
@@ -33,7 +33,7 @@ final readonly class IssueApiTokenCredentialHandler
     }
 
     /**
-     * @throws IdentityNotFoundException
+     * @throws AggregateNotFoundException
      * @throws IdentityNotActiveException
      * @throws LabelAlreadyTakenException
      */
@@ -47,8 +47,8 @@ final readonly class IssueApiTokenCredentialHandler
 
         try {
             $this->uniqueValues->reserve(ApiTokenCredentialUniqueValue::LABEL, $fingerprint);
-        } catch (UniqueValueAlreadyTakenException) {
-            throw LabelAlreadyTakenException::forFingerprint($fingerprint);
+        } catch (UniqueValueAlreadyTakenException $e) {
+            throw LabelAlreadyTakenException::forFingerprint($fingerprint, $e);
         }
 
         $credential = ApiTokenCredential::issue(

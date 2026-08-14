@@ -10,7 +10,7 @@ use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
-use Sales\Customer\Application\Exception\EmailAlreadyRegisteredException;
+use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -67,7 +67,7 @@ final class CustomerController extends AbstractController
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.login_taken'));
 
                 return $this->render('sales/customer/register.html.twig', ['form' => $form]);
-            } catch (EmailAlreadyRegisteredException) {
+            } catch (CustomerEmailAlreadyRegisteredException) {
                 $this->commandBus->dispatch(new EraseIdentity($id));
                 $this->addFlash('error', $this->translator->trans('sales.customer.flash.email_taken'));
 

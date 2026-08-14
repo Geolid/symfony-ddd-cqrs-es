@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CaptureOrderPayment;
 
 use Psr\Clock\ClockInterface;
-use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class CaptureOrderPaymentHandler
@@ -20,7 +20,7 @@ final readonly class CaptureOrderPaymentHandler
     }
 
     /**
-     * @throws OrderPaymentNotFoundException
+     * @throws AggregateNotFoundException
      */
     public function __invoke(CaptureOrderPayment $command): void
     {

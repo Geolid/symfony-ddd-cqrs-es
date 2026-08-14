@@ -24,19 +24,19 @@ final readonly class OrderPlaced implements DomainEventInterface
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'Erased',
-            'lastName' => 'Erased',
-            'street' => 'Erased',
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
             'postalCode' => '00000',
-            'city' => 'Erased',
+            'city' => 'erased',
         ]))]
         public array $shippingAddress,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'Erased',
-            'lastName' => 'Erased',
-            'street' => 'Erased',
+            'firstName' => 'erased',
+            'lastName' => 'erased',
+            'street' => 'erased',
             'postalCode' => '00000',
-            'city' => 'Erased',
+            'city' => 'erased',
         ]), subjectIdName: 'billing_retention')]
         public array $billingAddress,
         public array $lines,

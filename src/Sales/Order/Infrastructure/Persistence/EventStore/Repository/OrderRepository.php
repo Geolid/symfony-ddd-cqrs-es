@@ -6,10 +6,10 @@ namespace Sales\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
-use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class OrderRepository implements OrderRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class OrderRepository implements OrderRepositoryInterface
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw OrderNotFoundException::forId($id);
+            throw AggregateNotFoundException::forId(Order::class, $id->toString());
         }
     }
 

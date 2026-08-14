@@ -7,10 +7,10 @@ namespace Iam\Tests\Identity\Application\Command\ReactivateIdentity;
 use Iam\Identity\Application\Command\ReactivateIdentity\ReactivateIdentity;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +37,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $id = IdentityId::generate()->toString();
 
         // Then
-        $this->expectException(IdentityNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->dispatch(new ReactivateIdentity($id));

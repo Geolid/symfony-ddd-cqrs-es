@@ -6,10 +6,11 @@ namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Enum\IdentityStatus;
-use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
+use Iam\Identity\Domain\Identity;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -29,7 +30,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
             ->fetchAssociative();
 
         if (false === $row) {
-            throw IdentityResultNotFoundException::forId($id);
+            throw ResultNotFoundException::forId(Identity::class, $id);
         }
 
         return $this->mapRow($row);

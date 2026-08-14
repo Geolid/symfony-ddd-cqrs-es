@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class SuspendIdentityHandler
@@ -21,7 +21,7 @@ final readonly class SuspendIdentityHandler
     }
 
     /**
-     * @throws IdentityNotFoundException
+     * @throws AggregateNotFoundException
      * @throws IdentityAlreadyErasedException
      */
     public function __invoke(SuspendIdentity $command): void

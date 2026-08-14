@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\EventStore\Repository;
 
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
@@ -46,7 +46,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(ShipmentNotFoundException::class);
+        $this->expectException(AggregateNotFoundException::class);
 
         // When
         $this->repository->load($id);

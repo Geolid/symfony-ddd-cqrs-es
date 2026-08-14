@@ -39,8 +39,8 @@ final readonly class RequestOrderPaymentHandler
 
         try {
             $this->uniqueValues->reserve(OrderPaymentUniqueValue::REFERENCE, $command->reference);
-        } catch (UniqueValueAlreadyTakenException) {
-            throw PaymentReferenceAlreadyTakenException::forReference($command->reference);
+        } catch (UniqueValueAlreadyTakenException $e) {
+            throw PaymentReferenceAlreadyTakenException::forReference($command->reference, $e);
         }
 
         $orderPayment = OrderPayment::request(
