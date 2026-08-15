@@ -41,10 +41,10 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $this->submitAddresses($client, '/checkout/address');
+        $this->submitAddresses($client, $this->path('checkout_address_complete'));
 
         // Then
-        self::assertResponseRedirects('/sales/orders/place');
+        self::assertResponseRedirects($this->path('sales_order_place'));
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
         self::assertSame(
@@ -66,7 +66,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $this->submitAddresses($client, '/checkout/address', sameAsShipping: true);
+        $this->submitAddresses($client, $this->path('checkout_address_complete'), sameAsShipping: true);
 
         // Then
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
@@ -90,10 +90,10 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $this->submitAddresses($client, '/checkout/address?return_to=sales_order_place');
+        $this->submitAddresses($client, $this->path('checkout_address_complete', ['return_to' => 'sales_order_place']));
 
         // Then
-        self::assertResponseRedirects('/sales/orders/place');
+        self::assertResponseRedirects($this->path('sales_order_place'));
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
         self::assertSame(
@@ -114,7 +114,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $this->createCustomer('buyer-5@example.com'));
 
         // When
-        $client->request('GET', '/checkout/address?return_to=security_login');
+        $client->request('GET', $this->path('checkout_address_complete', ['return_to' => 'security_login']));
 
         // Then
         self::assertResponseStatusCodeSame(422);
@@ -127,10 +127,10 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $client->request('GET', '/checkout/address');
+        $client->request('GET', $this->path('checkout_address_complete'));
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
     }
 
     /**

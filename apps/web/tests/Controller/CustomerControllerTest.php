@@ -59,7 +59,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->registerCustomer($client, 'buyer-1', 'buyer-1@example.com', 'correct horse battery staple');
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.registered');
 
@@ -76,7 +76,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer-2@example.com')->fingerprint());
 
         // When
-        $crawler = $client->request('GET', '/sales/customers/register');
+        $crawler = $client->request('GET', $this->path('sales_customer_register'));
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
@@ -115,7 +115,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $crawler = $client->request('GET', '/sales/customers/register');
+        $crawler = $client->request('GET', $this->path('sales_customer_register'));
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
@@ -142,7 +142,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another Password!42');
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.registered');
 
@@ -161,12 +161,12 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $client->request('POST', '/sales/customers/erase', [
+        $client->request('POST', $this->path('sales_customer_erase'), [
             '_token' => $this->csrfToken($client, 'erase-customer'),
         ]);
 
         // Then
-        self::assertResponseRedirects('/logout');
+        self::assertResponseRedirects($this->path('_logout_main'));
         $session = $client->getRequest()->getSession();
         \assert($session instanceof FlashBagAwareSessionInterface);
         self::assertSame(['sales.customer.flash.erased'], $session->getFlashBag()->get('success'));
@@ -185,7 +185,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $client->request('POST', '/sales/customers/erase', ['_token' => 'invalid']);
+        $client->request('POST', $this->path('sales_customer_erase'), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
@@ -229,14 +229,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When
-        $crawler = $client->request('GET', '/sales/customers/profile');
+        $crawler = $client->request('GET', $this->path('sales_customer_profile'));
         $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([\sprintf('%s[password]', $prefix) => 'A Brand New Password!42']);
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/sales/orders');
+        self::assertResponseRedirects($this->path('sales_order_list'));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
@@ -246,7 +246,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
     private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void
     {
-        $crawler = $client->request('GET', '/sales/customers/register');
+        $crawler = $client->request('GET', $this->path('sales_customer_register'));
         $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([

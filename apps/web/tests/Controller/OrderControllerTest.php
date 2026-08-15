@@ -58,10 +58,10 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $client->request('GET', '/sales/orders');
+        $client->request('GET', $this->path('sales_order_list'));
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
     }
 
     #[Test]
@@ -96,7 +96,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $this->createCustomer('intruder@example.com'));
 
         // When
-        $client->request('GET', \sprintf('/sales/orders/%s', $order->id()->toString()));
+        $client->request('GET', $this->path('sales_order_show', ['id' => $order->id()->toString()]));
 
         // Then
         self::assertResponseStatusCodeSame(403);
@@ -137,7 +137,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
-        $crawler = $client->request('GET', '/sales/orders/place');
+        $crawler = $client->request('GET', $this->path('sales_order_place'));
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
@@ -167,7 +167,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
-        $crawler = $client->request('GET', '/sales/orders/place');
+        $crawler = $client->request('GET', $this->path('sales_order_place'));
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
@@ -177,7 +177,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
+        self::assertResponseRedirects($this->path('checkout_address_complete', ['return_to' => 'sales_order_place']));
         self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id()->toString()));
     }
 
@@ -189,7 +189,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $identity = $this->createCustomer('buyer-11@example.com');
         $this->loginAs($client, $identity);
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        $crawler = $client->request('GET', '/sales/orders/place');
+        $crawler = $client->request('GET', $this->path('sales_order_place'));
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();
         $prefix = $form->getName();
         $form->setValues([
@@ -202,7 +202,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/sales/orders/place');
+        self::assertResponseRedirects($this->path('sales_order_place'));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.catalog_changed');
         self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id()->toString()));
@@ -231,7 +231,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
+        $client->request('GET', $this->path('sales_order_pay', ['id' => $id]));
 
         // Then
         self::assertResponseRedirects(self::CHECKOUT_URL);
@@ -256,7 +256,7 @@ final class OrderControllerTest extends AbstractWebTestCase
             ->store();
 
         // When
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
+        $client->request('GET', $this->path('sales_order_pay', ['id' => $order->id()->toString()]));
 
         // Then
         self::assertResponseRedirects('https://checkout.test/session/already-requested');
@@ -275,7 +275,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
+        $client->request('GET', $this->path('sales_order_pay', ['id' => $order->id()->toString()]));
 
         // Then
         self::assertResponseStatusCodeSame(409);
@@ -291,12 +291,12 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
-        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+        $client->request('POST', $this->path('sales_order_cancel', ['id' => $id]), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
         // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancellation_requested');
 
@@ -317,12 +317,12 @@ final class OrderControllerTest extends AbstractWebTestCase
         $commandBus->dispatch(new DispatchOrder($id));
 
         // When
-        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+        $client->request('POST', $this->path('sales_order_cancel', ['id' => $id]), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
         // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
         $client->followRedirect();
         // CancelOrder is dispatched async — the Controller can't know the outcome at
         // redirect time, so the same "requested" flash shows even on a silent no-op.
@@ -342,7 +342,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
-        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
+        $client->request('POST', $this->path('sales_order_cancel', ['id' => $id]), ['_token' => 'invalid']);
 
         // Then
         self::assertResponseStatusCodeSame(400);
@@ -358,7 +358,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $this->createCustomer('intruder-cancel@example.com'));
 
         // When
-        $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
+        $client->request('POST', $this->path('sales_order_cancel', ['id' => $id]), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
 
