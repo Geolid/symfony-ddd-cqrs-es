@@ -23,7 +23,6 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -223,6 +222,10 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
+        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
+            json_encode(['chargeReference' => 'GLBX-TEST-REF', 'checkoutUrl' => self::CHECKOUT_URL], \JSON_THROW_ON_ERROR),
+            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
+        )));
         $identity = $this->createCustomer('buyer-3@example.com');
         $this->loginAs($client, $identity);
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
@@ -361,18 +364,6 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseStatusCodeSame(403);
-    }
-
-    protected static function browser(): KernelBrowser
-    {
-        $client = parent::browser();
-
-        self::getContainer()->set('globex.client', new MockHttpClient(new MockResponse(
-            json_encode(['chargeReference' => 'GLBX-TEST-REF', 'checkoutUrl' => self::CHECKOUT_URL], \JSON_THROW_ON_ERROR),
-            ['http_code' => 200, 'response_headers' => ['content-type' => 'application/json']],
-        )));
-
-        return $client;
     }
 
     private function createCustomer(string $email): Identity
