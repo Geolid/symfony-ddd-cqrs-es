@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Query\GetShipmentByTrackingReference;
 
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference\GetShipmentByTrackingReference;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +37,7 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
     public function itFailsWhenNoShipmentCarriesThatReference(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
         $this->ask(new GetShipmentByTrackingReference('ACME-NEVER-ISSUED'));

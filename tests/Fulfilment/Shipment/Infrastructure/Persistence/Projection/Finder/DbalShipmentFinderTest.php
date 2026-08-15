@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Finder;
 
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
@@ -123,7 +123,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownTrackingReference(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
         $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');

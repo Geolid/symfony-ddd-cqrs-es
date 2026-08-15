@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Shared\Application\Exception\ResultNotFoundException;
 
 final readonly class ApiTokenCredentialVerifier implements ApiTokenCredentialVerifierInterface
 {
@@ -18,7 +18,7 @@ final readonly class ApiTokenCredentialVerifier implements ApiTokenCredentialVer
     }
 
     /**
-     * @throws ResultNotFoundException
+     * @throws ApiTokenCredentialResultNotFoundException
      */
     public function verify(string $identifier, #[\SensitiveParameter] string $plainSecret): bool
     {

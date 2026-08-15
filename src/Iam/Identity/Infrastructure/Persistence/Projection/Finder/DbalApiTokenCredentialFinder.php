@@ -6,11 +6,10 @@ namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
-use Iam\Identity\Domain\ApiTokenCredential;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
-use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
@@ -49,7 +48,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalCollectionFinder im
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::for(ApiTokenCredential::class, compact('identifier'));
+            throw ApiTokenCredentialResultNotFoundException::forIdentifier($identifier);
         }
 
         return $this->mapRow($row);

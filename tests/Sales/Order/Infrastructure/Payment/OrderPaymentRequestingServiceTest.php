@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Payment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
@@ -16,7 +17,6 @@ use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCase
@@ -53,7 +53,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
 
-        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($order->id()->toString());
+        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
         self::assertNotNull($orderPayment);
         self::assertSame(DummyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
         self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
@@ -63,7 +63,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(OrderResultNotFoundException::class);
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');

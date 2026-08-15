@@ -8,12 +8,12 @@ use Fulfilment\Shipment\Application\Command\AssignTrackingReference\AssignTracki
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueValue;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
@@ -54,7 +54,7 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(ShipmentNotFoundException::class);
 
         // When
         $this->dispatch(new AssignTrackingReference($id, 'ACME-4Q7X2K9'));

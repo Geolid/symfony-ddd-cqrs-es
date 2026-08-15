@@ -7,9 +7,9 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Enum\OrderStatus;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalOrderFinderTest extends AbstractIntegrationTestCase
@@ -48,7 +48,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownOrder(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(OrderResultNotFoundException::class);
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());

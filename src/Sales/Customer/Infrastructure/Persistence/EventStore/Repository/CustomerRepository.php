@@ -7,9 +7,9 @@ namespace Sales\Customer\Infrastructure\Persistence\EventStore\Repository;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class CustomerRepository implements CustomerRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class CustomerRepository implements CustomerRepositoryInterface
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw AggregateNotFoundException::forId(Customer::class, $id->toString());
+            throw CustomerNotFoundException::forId($id->toString());
         }
     }
 

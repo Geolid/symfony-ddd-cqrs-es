@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\OrderPayment;
 
-use Shared\Application\Exception\ResultNotFoundException;
+use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Shared\Application\Finder\FinderInterface;
 
 interface OrderPaymentFinderInterface extends FinderInterface
 {
     /**
-     * @throws ResultNotFoundException
+     * @throws OrderPaymentResultNotFoundException
      */
     public function ofReference(string $reference): OrderPaymentResult;
 
-    public function ofOrder(string $orderId): ?OrderPaymentResult;
+    public function ofOrderOrNull(string $orderId): ?OrderPaymentResult;
 }

@@ -6,12 +6,12 @@ namespace Fulfilment\Shipment\Application\Command\AssignTrackingReference;
 
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueValue;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
@@ -25,7 +25,7 @@ final readonly class AssignTrackingReferenceHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws ShipmentNotFoundException
      * @throws ShipmentInvalidTransitionException
      * @throws TrackingReferenceAlreadyTakenException
      */

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\PasswordCredential;
 
-use Shared\Application\Exception\ResultNotFoundException;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Shared\Application\Finder\FinderInterface;
 
 interface PasswordCredentialFinderInterface extends FinderInterface
 {
     /**
-     * @throws ResultNotFoundException
+     * @throws PasswordCredentialResultNotFoundException
      */
     public function ofLogin(string $login): PasswordCredentialResult;
 
     /**
-     * @throws ResultNotFoundException
+     * @throws PasswordCredentialResultNotFoundException
      */
     public function ofIdentityId(string $identityId): PasswordCredentialResult;
 }

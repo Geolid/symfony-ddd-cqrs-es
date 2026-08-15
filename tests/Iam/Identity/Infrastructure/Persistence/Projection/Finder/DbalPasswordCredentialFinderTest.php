@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
@@ -51,7 +51,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownLogin(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
         $this->finder->ofLogin('unknown@example.com');
@@ -84,7 +84,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownIdentityId(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
         $this->finder->ofIdentityId(IdentityId::generate()->toString());

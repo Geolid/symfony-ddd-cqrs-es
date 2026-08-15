@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Infrastructure\Persistence\Projection\Finder;
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
-use Catalog\Product\Domain\Product;
 use Catalog\Product\Infrastructure\Persistence\Projection\Projector\DbalProductProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
@@ -29,7 +28,7 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::for(Product::class, compact('id'));
+            throw ProductResultNotFoundException::forId($id);
         }
 
         return $this->mapRow($row);

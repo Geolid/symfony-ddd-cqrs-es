@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
@@ -47,7 +47,7 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownIdentifier(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(ApiTokenCredentialResultNotFoundException::class);
 
         // When
         $this->finder->ofIdentifier('key_unknown');

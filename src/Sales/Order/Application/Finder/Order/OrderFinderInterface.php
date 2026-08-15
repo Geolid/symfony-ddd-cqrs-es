@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Order;
 
-use Shared\Application\Exception\ResultNotFoundException;
+use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
@@ -13,7 +13,7 @@ use Shared\Application\Finder\CollectionFinderInterface;
 interface OrderFinderInterface extends CollectionFinderInterface
 {
     /**
-     * @throws ResultNotFoundException
+     * @throws OrderResultNotFoundException
      */
     public function ofId(string $id): OrderResult;
 

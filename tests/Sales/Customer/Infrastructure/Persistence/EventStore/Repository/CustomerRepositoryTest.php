@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Customer\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -57,7 +57,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(CustomerNotFoundException::class);
 
         // When
         $this->repository->load($id);

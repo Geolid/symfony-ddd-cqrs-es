@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Security\PasswordCredentialVerifierInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Shared\Application\Exception\ResultNotFoundException;
 
 final readonly class PasswordCredentialVerifier implements PasswordCredentialVerifierInterface
 {
@@ -18,7 +18,7 @@ final readonly class PasswordCredentialVerifier implements PasswordCredentialVer
     }
 
     /**
-     * @throws ResultNotFoundException
+     * @throws PasswordCredentialResultNotFoundException
      */
     public function verify(string $identityId, #[\SensitiveParameter] string $plainSecret): bool
     {

@@ -8,6 +8,7 @@ use Iam\Identity\Application\Command\DefinePasswordCredential\DefinePasswordCred
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -15,7 +16,6 @@ use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
@@ -81,7 +81,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenTheIdentityDoesNotExist(): void
     {
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new DefinePasswordCredential(IdentityId::generate()->toString(), 'operator', 'S3cr3t!'));

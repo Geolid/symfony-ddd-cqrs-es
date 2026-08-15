@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Query\GetApiTokenCredentialByIdentifier;
 
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetApiTokenCredentialByIdentifier\GetApiTokenCredentialByIdentifier;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class GetApiTokenCredentialByIdentifierHandlerTest extends AbstractIntegrationTestCase
@@ -35,7 +35,7 @@ final class GetApiTokenCredentialByIdentifierHandlerTest extends AbstractIntegra
     public function itFailsWhenTheIdentifierIsUnknown(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(ApiTokenCredentialResultNotFoundException::class);
 
         // When
         $this->ask(new GetApiTokenCredentialByIdentifier('key_unknown'));

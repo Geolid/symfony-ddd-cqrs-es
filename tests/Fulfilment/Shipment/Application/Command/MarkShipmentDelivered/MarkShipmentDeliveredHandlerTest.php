@@ -8,11 +8,11 @@ use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDe
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
@@ -53,7 +53,7 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(ShipmentNotFoundException::class);
 
         // When
         $this->dispatch(new MarkShipmentDelivered($id));

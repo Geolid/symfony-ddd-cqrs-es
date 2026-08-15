@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\ApiTokenCredential;
 
-use Shared\Application\Exception\ResultNotFoundException;
+use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
@@ -13,7 +13,7 @@ use Shared\Application\Finder\CollectionFinderInterface;
 interface ApiTokenCredentialFinderInterface extends CollectionFinderInterface
 {
     /**
-     * @throws ResultNotFoundException
+     * @throws ApiTokenCredentialResultNotFoundException
      */
     public function ofIdentifier(string $identifier): ApiTokenCredentialResult;
 

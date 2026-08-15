@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Persistence\EventStore\Repository;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class ShipmentRepository implements ShipmentRepositoryInterface
@@ -33,7 +33,7 @@ final readonly class ShipmentRepository implements ShipmentRepositoryInterface
         try {
             return $this->repository->load($id);
         } catch (AggregateNotFound) {
-            throw AggregateNotFoundException::forId(Shipment::class, $id->toString());
+            throw ShipmentNotFoundException::forId($id->toString());
         }
     }
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Query\GetPasswordCredentialByLogin;
 
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationTestCase
@@ -34,7 +34,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
     public function itFailsWhenTheLoginIsUnknown(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
         $this->ask(new GetPasswordCredentialByLogin('unknown'));

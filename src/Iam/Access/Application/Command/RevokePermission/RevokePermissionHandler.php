@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Command\RevokePermission;
 
+use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class RevokePermissionHandler
@@ -20,7 +20,7 @@ final readonly class RevokePermissionHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws GrantNotFoundException
      */
     public function __invoke(RevokePermission $command): void
     {

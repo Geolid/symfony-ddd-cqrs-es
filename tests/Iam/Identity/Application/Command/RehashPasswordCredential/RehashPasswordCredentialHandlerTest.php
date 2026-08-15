@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\RehashPasswordCredential;
 
 use Iam\Identity\Application\Command\RehashPasswordCredential\RehashPasswordCredential;
+use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -75,7 +75,7 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identityId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
         $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));

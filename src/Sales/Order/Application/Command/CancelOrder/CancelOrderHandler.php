@@ -7,12 +7,13 @@ namespace Sales\Order\Application\Command\CancelOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class CancelOrderHandler
@@ -25,7 +26,8 @@ final readonly class CancelOrderHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws OrderNotFoundException
+     * @throws OrderPaymentNotFoundException
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderPaymentAlreadyCapturedException
      */

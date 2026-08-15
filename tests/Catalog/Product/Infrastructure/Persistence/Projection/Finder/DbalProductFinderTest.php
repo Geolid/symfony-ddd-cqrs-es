@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Product\Infrastructure\Persistence\Projection\Finder;
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalProductFinderTest extends AbstractIntegrationTestCase
@@ -79,7 +79,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknown(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(ProductResultNotFoundException::class);
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());

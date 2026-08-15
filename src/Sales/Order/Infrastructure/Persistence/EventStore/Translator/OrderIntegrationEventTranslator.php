@@ -14,9 +14,9 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Shared\Infrastructure\Persistence\EventStore\Translator\AbstractIntegrationEventTranslator;
 use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
@@ -74,7 +74,7 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws OrderNotFoundException
      */
     #[Subscribe(OrderPaymentCaptured::class)]
     public function onOrderPaymentCaptured(OrderPaymentCaptured $event): void

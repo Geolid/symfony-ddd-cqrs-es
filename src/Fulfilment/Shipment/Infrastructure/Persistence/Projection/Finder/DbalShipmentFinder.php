@@ -7,11 +7,10 @@ namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
-use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
@@ -31,7 +30,7 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::for(Shipment::class, compact('trackingReference'));
+            throw ShipmentResultNotFoundException::forTrackingReference($trackingReference);
         }
 
         return $this->mapRow($row);
