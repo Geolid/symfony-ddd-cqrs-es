@@ -73,7 +73,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-2', 'buyer-2@example.com', 'correct horse battery staple');
+        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer-2@example.com')->fingerprint());
 
         // When
         $crawler = $client->request('GET', '/sales/customers/register');
