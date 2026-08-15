@@ -14,7 +14,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<CustomerResult>
  *
- * @phpstan-type Row array{id: string, email: string|null, registered_at: string, erased_at: string|null}
+ * @phpstan-type Row array{id: string, email: string|null, registered_at: string}
  */
 final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
@@ -36,7 +36,7 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'email', 'registered_at', 'erased_at')
+        $qb->select('id', 'email', 'registered_at')
             ->from(DbalCustomerProjector::TABLE);
     }
 
@@ -49,7 +49,6 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
             id: $row['id'],
             email: $row['email'],
             registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
-            erasedAt: null !== $row['erased_at'] ? new \DateTimeImmutable($row['erased_at'], new \DateTimeZone('UTC')) : null,
         );
     }
 }

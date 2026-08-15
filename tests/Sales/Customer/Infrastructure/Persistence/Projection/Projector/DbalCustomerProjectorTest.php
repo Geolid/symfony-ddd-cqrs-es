@@ -11,7 +11,7 @@ use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{email: ?string, erased_at: ?string}
+ * @phpstan-type Row array{email: ?string}
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -25,20 +25,23 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($customer->id()->toString());
         self::assertNotFalse($row);
         self::assertSame('buyer@example.com', $row['email']);
-        self::assertNull($row['erased_at']);
     }
 
     #[Test]
-    public function itProjectsTheRedactionOnCustomerErased(): void
+    public function itDeletesOnCustomerErased(): void
     {
+        // Given
+        $other = CustomerTestFactory::new()->withEmail('other@example.com')->store();
+
         // When
         $customer = CustomerTestFactory::new()->erased()->store();
 
         // Then
-        $row = $this->fetchRow($customer->id()->toString());
-        self::assertNotFalse($row);
-        self::assertNull($row['email']);
-        self::assertNotNull($row['erased_at']);
+        self::assertFalse($this->fetchRow($customer->id()->toString()));
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame('other@example.com', $otherRow['email']);
     }
 
     /**
@@ -48,7 +51,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT email, erased_at FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
+            \sprintf('SELECT email FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
             ['id' => $id],
         );
     }

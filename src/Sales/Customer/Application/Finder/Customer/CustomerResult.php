@@ -12,7 +12,6 @@ final readonly class CustomerResult implements ResultInterface
         public string $id,
         public ?string $email,
         public \DateTimeImmutable $registeredAt,
-        public ?\DateTimeImmutable $erasedAt,
     ) {
     }
 }
