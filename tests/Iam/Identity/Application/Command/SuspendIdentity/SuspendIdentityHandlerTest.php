@@ -22,7 +22,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id()->toString()));
+        $this->dispatch(new SuspendIdentity($identity->id()->toString(), 'Suspected fraudulent activity'));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
@@ -40,7 +40,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity($id));
+        $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
     }
 
     #[Test]
@@ -50,7 +50,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id()->toString()));
+        $this->dispatch(new SuspendIdentity($identity->id()->toString(), 'Suspected fraudulent activity'));
 
         // Then
         self::expectNotToPerformAssertions();

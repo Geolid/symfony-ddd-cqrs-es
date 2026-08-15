@@ -12,6 +12,7 @@ final readonly class IdentitySuspended implements DomainEventInterface
 {
     public function __construct(
         public string $id,
+        public string $reason,
         public string $suspendedAt,
     ) {
     }
