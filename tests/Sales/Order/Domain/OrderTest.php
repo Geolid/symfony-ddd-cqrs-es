@@ -13,6 +13,7 @@ use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
@@ -238,6 +239,36 @@ final class OrderTest extends AggregateRootTestCase
             ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
             ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
+    }
+
+    #[Test]
+    public function itEnsuresNotCancelled(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->ensureNotCancelled())
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotEnsureNotCancelledWhenCancelled(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->ensureNotCancelled())
+            ->expectsException(OrderAlreadyCancelledException::class);
     }
 
     #[Test]

@@ -7,9 +7,9 @@ namespace Sales\Tests\Order\Application\Command\RequestOrderPayment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -44,8 +44,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $result = $this->finder->ofOrderOrNull($orderId);
-        self::assertNotNull($result);
+        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
@@ -73,8 +72,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $result = $this->finder->ofOrderOrNull($orderId);
-        self::assertNotNull($result);
+        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
     }
 

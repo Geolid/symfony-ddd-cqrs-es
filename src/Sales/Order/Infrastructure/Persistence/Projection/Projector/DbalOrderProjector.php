@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\Enum\OrderStatus;
+use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;

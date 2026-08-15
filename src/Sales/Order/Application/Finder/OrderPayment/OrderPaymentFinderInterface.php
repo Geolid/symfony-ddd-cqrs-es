@@ -13,6 +13,4 @@ interface OrderPaymentFinderInterface extends FinderInterface
      * @throws OrderPaymentResultNotFoundException
      */
     public function ofReference(string $reference): OrderPaymentResult;
-
-    public function ofOrderOrNull(string $orderId): ?OrderPaymentResult;
 }

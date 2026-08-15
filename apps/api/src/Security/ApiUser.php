@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 final readonly class ApiUser implements UserInterface

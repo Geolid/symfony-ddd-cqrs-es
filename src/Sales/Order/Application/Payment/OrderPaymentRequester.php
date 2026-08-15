@@ -2,27 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Payment;
+namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
-use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
-use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final readonly class OrderPaymentRequestingService implements OrderPaymentRequesterInterface
+final readonly class OrderPaymentRequester implements OrderPaymentRequesterInterface
 {
     public function __construct(
-        private OrderFinderInterface $orderFinder,
-        private OrderPaymentFinderInterface $orderPaymentFinder,
+        private OrderPaymentRepositoryInterface $orderPaymentRepository,
         private OrderRepositoryInterface $orderRepository,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
@@ -30,7 +26,7 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
     }
 
     /**
-     * @throws OrderResultNotFoundException
+     * @throws OrderNotFoundException
      * @throws OrderAlreadyCancelledException
      * @throws OrderPaymentAlreadyRequestedException
      * @throws ApplicationExceptionInterface
@@ -38,24 +34,21 @@ final readonly class OrderPaymentRequestingService implements OrderPaymentReques
      */
     public function requestFor(string $orderId, string $returnUrl): string
     {
-        $result = $this->orderFinder->ofId($orderId);
+        $order = $this->orderRepository->load(OrderId::fromString($orderId));
+        $order->ensureNotCancelled();
 
-        if ($result->status->isCancelled()) {
-            throw OrderAlreadyCancelledException::forId(OrderId::fromString($orderId));
-        }
+        $orderPaymentId = OrderPaymentId::forOrder($orderId);
 
-        if (null !== $this->orderPaymentFinder->ofOrderOrNull($orderId)) {
+        if ($this->orderPaymentRepository->has($orderPaymentId)) {
             throw OrderPaymentAlreadyRequestedException::forOrderId($orderId);
         }
 
-        $order = $this->orderRepository->load(OrderId::fromString($orderId));
-
-        $session = $this->paymentGateway->requestPayment($orderId, $result->totalAmountInCents, $returnUrl, $order->billingAddress());
+        $session = $this->paymentGateway->requestPayment($orderId, $order->totalAmountInCents(), $returnUrl, $order->billingAddress());
 
         $this->commandBus->dispatch(new RequestOrderPayment(
-            id: OrderPaymentId::forOrder($orderId)->toString(),
+            id: $orderPaymentId->toString(),
             orderId: $orderId,
-            amountInCents: $result->totalAmountInCents,
+            amountInCents: $order->totalAmountInCents(),
             reference: $session->reference,
             checkoutUrl: $session->checkoutUrl,
         ));

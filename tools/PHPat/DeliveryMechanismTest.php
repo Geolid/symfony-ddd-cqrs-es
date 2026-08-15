@@ -33,12 +33,13 @@ final class DeliveryMechanismTest
                 Selector::implements(ResultInterface::class),
                 Selector::classname(ApplicationExceptionInterface::class),
                 Selector::implements(ApplicationExceptionInterface::class),
+                Selector::extends(\DomainException::class),
                 Selector::extends(Compound::class),
                 Selector::implements(DrivingPortOutcomeInterface::class),
-                Selector::AllOf(Selector::isEnum(), Selector::withFilepath('#/Application/Enum/#', true)),
+                Selector::AllOf(Selector::isEnum(), Selector::withFilepath('#/Application/Status/#', true)),
                 Selector::Not($this->projectCode()),
             )
-            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and their outcomes, its Command/Query/Result/Exception vocabulary, its validation compounds, and its Application/Enum vocabulary.');
+            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and their outcomes, its Command/Query/Result/Exception vocabulary, its validation compounds, its Application/Status <X>Status vocabulary, and \DomainException — a business failure bubbling from the aggregate that owns it, generic or concrete alike.');
     }
 
     #[TestRule]

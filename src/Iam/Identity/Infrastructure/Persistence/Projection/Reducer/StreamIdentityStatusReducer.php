@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Reducer;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Patchlevel\EventSourcing\Message\Reducer;

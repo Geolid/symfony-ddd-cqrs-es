@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Twig;
 
-use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 

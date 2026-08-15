@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Reducer;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\StreamIdentityStatusReducer;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;

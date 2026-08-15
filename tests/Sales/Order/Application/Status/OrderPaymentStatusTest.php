@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Enum;
+namespace Sales\Tests\Order\Application\Status;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 
 final class OrderPaymentStatusTest extends TestCase
 {

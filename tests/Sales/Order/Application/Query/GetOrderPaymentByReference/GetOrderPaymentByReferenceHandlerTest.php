@@ -6,9 +6,9 @@ namespace Sales\Tests\Order\Application\Query\GetOrderPaymentByReference;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
 

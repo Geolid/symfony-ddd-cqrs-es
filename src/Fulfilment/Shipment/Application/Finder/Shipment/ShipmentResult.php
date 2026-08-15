@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Shared\Application\Result\ResultInterface;
 
 final readonly class ShipmentResult implements ResultInterface

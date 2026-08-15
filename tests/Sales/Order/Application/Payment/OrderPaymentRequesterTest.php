@@ -2,39 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Payment;
+namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
-use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
+use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
-use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
-final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCase
+final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 {
     private DummyPaymentGateway $paymentGateway;
 
-    private OrderPaymentRequestingService $service;
+    private OrderPaymentRequester $service;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->paymentGateway = new DummyPaymentGateway();
-        $this->service = new OrderPaymentRequestingService(
-            $this->service(OrderFinderInterface::class),
-            $this->service(OrderPaymentFinderInterface::class),
+        $this->service = new OrderPaymentRequester(
+            $this->service(OrderPaymentRepositoryInterface::class),
             $this->service(OrderRepositoryInterface::class),
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
@@ -74,8 +73,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
             ],
         );
 
-        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
-        self::assertNotNull($orderPayment);
+        $orderPayment = $this->ask(new GetOrderPaymentByReference(DummyPaymentGateway::CHARGE_REFERENCE));
         self::assertSame(DummyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
         self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
     }
@@ -84,7 +82,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(OrderNotFoundException::class);
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');

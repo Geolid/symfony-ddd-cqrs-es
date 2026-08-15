@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\OrderPayment;
 
-use Sales\Order\Application\Enum\OrderPaymentStatus;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Shared\Application\Result\ResultInterface;
 
 final readonly class OrderPaymentResult implements ResultInterface
