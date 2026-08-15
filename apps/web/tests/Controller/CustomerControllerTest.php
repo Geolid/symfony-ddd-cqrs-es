@@ -14,7 +14,7 @@ use Web\Tests\Support\AbstractWebTestCase;
 final class CustomerControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    #[DataProvider('provideLocalizedPath')]
+    #[DataProvider('provideLocalizedRegisterPath')]
     public function itShowsTheRegisterForm(string $locale, string $path): void
     {
         // Given
@@ -32,10 +32,38 @@ final class CustomerControllerTest extends AbstractWebTestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideLocalizedPath(): iterable
+    public static function provideLocalizedRegisterPath(): iterable
     {
         yield 'en' => ['en', '/sales/customers/register'];
         yield 'fr' => ['fr', '/ventes/clients/inscription'];
+    }
+
+    #[Test]
+    #[DataProvider('provideLocalizedProfilePath')]
+    public function itShowsTheProfileForm(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-locale@example.com')->store();
+        $this->loginAs($client, $identity);
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorExists('[data-testid="change-password-form"]');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedProfilePath(): iterable
+    {
+        yield 'en' => ['en', '/sales/customers/profile'];
+        yield 'fr' => ['fr', '/ventes/clients/profil'];
     }
 
     #[Test]

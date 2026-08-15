@@ -29,7 +29,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
 
     #[Test]
-    #[DataProvider('provideLocalizedPath')]
+    #[DataProvider('provideLocalizedOrderPrefix')]
     public function itShowsTheOrderList(string $locale, string $path): void
     {
         // Given
@@ -44,10 +44,53 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSame($locale, $client->getRequest()->getLocale());
     }
 
+    #[Test]
+    #[DataProvider('provideLocalizedPlacePath')]
+    public function itShowsThePlaceOrderForm(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-locale-place@example.com'));
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorExists('[data-testid="place-order-form"]');
+    }
+
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideLocalizedPath(): iterable
+    public static function provideLocalizedPlacePath(): iterable
+    {
+        yield 'en' => ['en', '/sales/orders/place'];
+        yield 'fr' => ['fr', '/ventes/commandes/commander'];
+    }
+
+    #[Test]
+    #[DataProvider('provideLocalizedOrderPrefix')]
+    public function itShowsTheOrderDetail(string $locale, string $prefix): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-locale-show@example.com'));
+        $id = $this->placeOrder($client);
+
+        // When
+        $client->request('GET', \sprintf('%s/%s', $prefix, $id));
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedOrderPrefix(): iterable
     {
         yield 'en' => ['en', '/sales/orders'];
         yield 'fr' => ['fr', '/ventes/commandes'];
