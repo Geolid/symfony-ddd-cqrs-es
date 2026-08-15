@@ -9,6 +9,7 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -61,6 +62,25 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
         self::assertSame('operator', $result->login);
+    }
+
+    #[Test]
+    public function itFailsWhenTheNewPasswordMatchesTheCurrentOne(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withLogin('operator')
+            ->withPassword('S3cr3t!')
+            ->withHasher($this->service(SecretHasherInterface::class))
+            ->store();
+
+        // Then
+        $this->expectException(PasswordUnchangedException::class);
+
+        // When
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
     }
 
     #[Test]

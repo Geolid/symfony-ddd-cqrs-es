@@ -8,6 +8,7 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
@@ -38,6 +39,7 @@ final readonly class DefinePasswordCredentialHandler
      * @throws PasswordCredentialNotFoundException
      * @throws IdentityNotActiveException
      * @throws LoginAlreadyTakenException
+     * @throws PasswordUnchangedException
      */
     public function __invoke(DefinePasswordCredential $command): void
     {

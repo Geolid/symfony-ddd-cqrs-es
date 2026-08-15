@@ -7,6 +7,7 @@ namespace Iam\Identity\Domain;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialDefined;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -26,6 +27,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     #[Id]
     private PasswordCredentialId $id;
     private Login $login;
+    private string $hash;
 
     public function id(): PasswordCredentialId
     {
@@ -41,6 +43,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         PasswordCredentialId $id,
         IdentityId $identityId,
         Login $login,
+        #[\SensitiveParameter]
         string $plainPassword,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $definedAt,
@@ -57,8 +60,15 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         return $self;
     }
 
-    public function change(string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $changedAt): void
+    /**
+     * @throws PasswordUnchangedException
+     */
+    public function change(#[\SensitiveParameter] string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $changedAt): void
     {
+        if ($hasher->verify($this->hash, $plainPassword)) {
+            throw PasswordUnchangedException::forId($this->id);
+        }
+
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id->toString(),
             hash: $hasher->hash($plainPassword),
@@ -66,7 +76,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         ));
     }
 
-    public function rehash(string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
+    public function rehash(#[\SensitiveParameter] string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
     {
         $this->recordThat(new PasswordCredentialRehashed(
             id: $this->id->toString(),
@@ -80,15 +90,18 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     {
         $this->id = PasswordCredentialId::fromString($event->id);
         $this->login = Login::fromString($event->login);
+        $this->hash = $event->hash;
     }
 
     #[Apply]
     private function applyPasswordCredentialChanged(PasswordCredentialChanged $event): void
     {
+        $this->hash = $event->hash;
     }
 
     #[Apply]
     private function applyPasswordCredentialRehashed(PasswordCredentialRehashed $event): void
     {
+        $this->hash = $event->hash;
     }
 }

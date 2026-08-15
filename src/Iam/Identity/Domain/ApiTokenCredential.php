@@ -49,6 +49,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         IdentityId $identityId,
         string $identifier,
         Label $label,
+        #[\SensitiveParameter]
         string $plainSecret,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $issuedAt,
@@ -80,7 +81,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
         ));
     }
 
-    public function rehash(string $plainSecret, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
+    public function rehash(#[\SensitiveParameter] string $plainSecret, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
     {
         $this->recordThat(new ApiTokenCredentialRehashed(
             id: $this->id->toString(),

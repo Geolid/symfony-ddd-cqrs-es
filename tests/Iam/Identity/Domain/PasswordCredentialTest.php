@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Domain;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialDefined;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -53,6 +54,20 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->given(new PasswordCredentialDefined($id, $identityId, 'operator', $this->hasher->hash('OldS3cr3t!'), $definedAt->format(\DateTimeInterface::ATOM)))
             ->when(fn (PasswordCredential $credential) => $credential->change('NewS3cr3t!', $this->hasher, $changedAt))
             ->then(new PasswordCredentialChanged($id, $this->hasher->hash('NewS3cr3t!'), $changedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotChangeToTheSamePassword(): void
+    {
+        $identityId = IdentityId::generate()->toString();
+        $id = PasswordCredentialId::forIdentity($identityId)->toString();
+        $definedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $changedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(new PasswordCredentialDefined($id, $identityId, 'operator', $this->hasher->hash('S3cr3t!'), $definedAt->format(\DateTimeInterface::ATOM)))
+            ->when(fn (PasswordCredential $credential) => $credential->change('S3cr3t!', $this->hasher, $changedAt))
+            ->expectsException(PasswordUnchangedException::class);
     }
 
     #[Test]
