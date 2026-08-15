@@ -10,6 +10,6 @@ final class OrderResultNotFoundException extends ResultNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Order not found for criteria %s.', json_encode(['id' => $id], \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)));
+        return new self(\sprintf('Order with ID "%s" not found.', $id));
     }
 }

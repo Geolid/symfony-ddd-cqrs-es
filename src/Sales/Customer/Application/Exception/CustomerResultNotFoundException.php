@@ -10,6 +10,6 @@ final class CustomerResultNotFoundException extends ResultNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Customer not found for criteria %s.', json_encode(['id' => $id], \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)));
+        return new self(\sprintf('Customer with ID "%s" not found.', $id));
     }
 }

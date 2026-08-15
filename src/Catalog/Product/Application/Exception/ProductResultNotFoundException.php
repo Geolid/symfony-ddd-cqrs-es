@@ -10,6 +10,6 @@ final class ProductResultNotFoundException extends ResultNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Product not found for criteria %s.', json_encode(['id' => $id], \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)));
+        return new self(\sprintf('Product with ID "%s" not found.', $id));
     }
 }
