@@ -53,6 +53,17 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
     }
 
     #[Test]
+    public function itDoesNotStopAtTheFirstInvalidField(): void
+    {
+        // When
+        $this->validateValue(['firstName' => '', 'lastName' => str_repeat('a', 256)]);
+
+        // Then
+        $this->assertViolationsCount(2);
+        $this->assertViolationsRaisedByCompound([self::collection()]);
+    }
+
+    #[Test]
     public function itRefusesWhenAFieldIsMissing(): void
     {
         // When

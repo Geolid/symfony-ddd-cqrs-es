@@ -55,6 +55,17 @@ final class ValidAddressTest extends CompoundConstraintTestCase
     }
 
     #[Test]
+    public function itDoesNotStopAtTheFirstInvalidField(): void
+    {
+        // When
+        $this->validateValue(['street' => '', 'postalCode' => '75001', 'city' => str_repeat('a', 256)]);
+
+        // Then
+        $this->assertViolationsCount(2);
+        $this->assertViolationsRaisedByCompound([self::collection()]);
+    }
+
+    #[Test]
     public function itRefusesWhenAFieldIsMissing(): void
     {
         // When

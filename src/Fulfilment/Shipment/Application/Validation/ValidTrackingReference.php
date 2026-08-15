@@ -17,6 +17,7 @@ final class ValidTrackingReference extends Compound
         return [
             new Assert\NotBlank(normalizer: 'trim'),
             new Assert\Type('string'),
+            new Assert\Length(max: 64),
             new ValidValueObject(TrackingReference::class),
         ];
     }
