@@ -6,9 +6,9 @@ namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
@@ -18,7 +18,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 final readonly class OrderPaymentRequester implements OrderPaymentRequesterInterface
 {
     public function __construct(
-        private OrderPaymentFinderInterface $orderPaymentFinder,
+        private OrderPaymentRepositoryInterface $orderPaymentRepository,
         private OrderRepositoryInterface $orderRepository,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
@@ -37,14 +37,16 @@ final readonly class OrderPaymentRequester implements OrderPaymentRequesterInter
         $order = $this->orderRepository->load(OrderId::fromString($orderId));
         $order->ensureNotCancelled();
 
-        if (null !== $this->orderPaymentFinder->ofOrderOrNull($orderId)) {
+        $orderPaymentId = OrderPaymentId::forOrder($orderId);
+
+        if ($this->orderPaymentRepository->has($orderPaymentId)) {
             throw OrderPaymentAlreadyRequestedException::forOrderId($orderId);
         }
 
         $session = $this->paymentGateway->requestPayment($orderId, $order->totalAmountInCents(), $returnUrl, $order->billingAddress());
 
         $this->commandBus->dispatch(new RequestOrderPayment(
-            id: OrderPaymentId::forOrder($orderId)->toString(),
+            id: $orderPaymentId->toString(),
             orderId: $orderId,
             amountInCents: $order->totalAmountInCents(),
             reference: $session->reference,

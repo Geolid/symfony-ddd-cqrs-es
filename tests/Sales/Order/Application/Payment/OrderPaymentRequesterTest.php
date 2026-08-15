@@ -13,6 +13,7 @@ use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -32,7 +33,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 
         $this->paymentGateway = new DummyPaymentGateway();
         $this->service = new OrderPaymentRequester(
-            $this->service(OrderPaymentFinderInterface::class),
+            $this->service(OrderPaymentRepositoryInterface::class),
             $this->service(OrderRepositoryInterface::class),
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
