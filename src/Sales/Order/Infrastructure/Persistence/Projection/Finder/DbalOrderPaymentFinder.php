@@ -35,18 +35,6 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         return $this->mapRow($row);
     }
 
-    public function ofOrderOrNull(string $orderId): ?OrderPaymentResult
-    {
-        /** @var Row|false $row */
-        $row = $this->query()
-            ->andWhere('order_id = :orderId')
-            ->setParameter('orderId', $orderId)
-            ->executeQuery()
-            ->fetchAssociative();
-
-        return false !== $row ? $this->mapRow($row) : null;
-    }
-
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refunded_at')

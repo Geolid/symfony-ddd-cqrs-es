@@ -31,14 +31,13 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        OrderPaymentTestFactory::new()->withOrderId($orderId)->store();
+        OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->store();
 
         // When
         ($this->processor)($this->orderCancelled($orderId));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($orderId);
-        self::assertNotNull($result);
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
         self::assertSame(OrderPaymentStatus::CANCELLED, $result->status);
     }
 

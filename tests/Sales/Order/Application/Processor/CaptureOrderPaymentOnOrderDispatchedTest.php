@@ -29,14 +29,13 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
 
         // When
         ($this->processor)(new OrderDispatched($order->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
-        self::assertNotNull($result);
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
         self::assertSame(OrderPaymentStatus::CAPTURED, $result->status);
     }
 }

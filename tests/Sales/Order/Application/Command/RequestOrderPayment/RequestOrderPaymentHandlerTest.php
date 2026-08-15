@@ -44,8 +44,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $result = $this->finder->ofOrderOrNull($orderId);
-        self::assertNotNull($result);
+        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
@@ -73,8 +72,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $result = $this->finder->ofOrderOrNull($orderId);
-        self::assertNotNull($result);
+        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
     }
 

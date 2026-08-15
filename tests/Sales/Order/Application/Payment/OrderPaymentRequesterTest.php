@@ -7,10 +7,10 @@ namespace Sales\Tests\Order\Application\Payment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
+use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
@@ -73,8 +73,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
             ],
         );
 
-        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
-        self::assertNotNull($orderPayment);
+        $orderPayment = $this->ask(new GetOrderPaymentByReference(DummyPaymentGateway::CHARGE_REFERENCE));
         self::assertSame(DummyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
         self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
     }
