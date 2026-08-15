@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 use Patchlevel\EventSourcingAdminBundle\PatchlevelEventSourcingAdminBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 

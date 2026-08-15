@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 use Nelmio\ApiDocBundle\NelmioApiDocBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 use DAMA\DoctrineTestBundle\DAMADoctrineTestBundle;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Patchlevel\EventSourcingBundle\PatchlevelEventSourcingBundle;
