@@ -7,8 +7,10 @@ namespace Iam\Tests\Identity\Application\Command\RehashPasswordCredential;
 use Iam\Identity\Application\Command\RehashPasswordCredential\RehashPasswordCredential;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -34,18 +36,19 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identityId = Uuid::uuid7()->toString();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
-            ->withPassword('S3cr3t!')
+            ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher(new DummySecretHasher())
+            ->withPolicy(new DummyPasswordPolicy())
             ->store();
         $staleHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When
-        $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));
+        $this->dispatch(new RehashPasswordCredential($identityId, 'MyStr0ngP@ssw0rd123!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identityId);
         self::assertNotSame($staleHash, $result->hash);
-        self::assertTrue($this->hasher->verify($result->hash, 'S3cr3t!'));
+        self::assertTrue($this->hasher->verify($result->hash, 'MyStr0ngP@ssw0rd123!'));
     }
 
     #[Test]
@@ -55,13 +58,14 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identityId = Uuid::uuid7()->toString();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
-            ->withPassword('S3cr3t!')
+            ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->hasher)
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
         $currentHash = $this->finder->ofIdentityId($identityId)->hash;
 
         // When
-        $this->dispatch(new RehashPasswordCredential($identityId, 'S3cr3t!'));
+        $this->dispatch(new RehashPasswordCredential($identityId, 'MyStr0ngP@ssw0rd123!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identityId);

@@ -7,11 +7,14 @@ namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -25,7 +28,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheCredentialOnPasswordCredentialDefined(): void
     {
         // When
-        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->store();
+        $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())->store();
 
         // Then
         $row = $this->fetchRow($credential->id()->toString());
@@ -37,13 +40,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheNewHashOnPasswordCredentialChanged(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())->store();
         $hashBeforeChange = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($hashBeforeChange);
 
         // When
         $reloaded = $this->service(PasswordCredentialRepositoryInterface::class)->load($credential->id());
-        $reloaded->change('a new correct horse battery staple', $this->service(SecretHasherInterface::class), new \DateTimeImmutable('now +00:00'));
+        $reloaded->change(Password::fromString('a new correct horse battery staple'), $this->service(PasswordPolicyInterface::class), $this->service(SecretHasherInterface::class), new \DateTimeImmutable('now +00:00'));
         $this->store($reloaded);
 
         // Then
@@ -61,7 +64,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // When
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // Then
@@ -77,13 +80,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When
@@ -107,13 +110,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $other = IdentityTestFactory::new()->suspended()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->suspended()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When
@@ -134,11 +137,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheNewHashOnPasswordCredentialRehashed(): void
     {
         // Given
-        $other = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $other = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())->store();
         $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherHashBeforeRehash);
 
-        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $credential = PasswordCredentialTestFactory::new()->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())->store();
         $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($hashBeforeRehash);
 
@@ -163,13 +166,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When

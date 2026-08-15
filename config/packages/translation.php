@@ -6,8 +6,11 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
+        'default_locale' => 'en',
+        'enabled_locales' => ['en', 'fr'],
         'translator' => [
-            'paths' => ['%kernel.project_dir%/apps/web/translations'],
+            'default_path' => '%kernel.project_dir%/ui/translations',
+            'fallbacks' => ['en'],
         ],
     ]);
 };

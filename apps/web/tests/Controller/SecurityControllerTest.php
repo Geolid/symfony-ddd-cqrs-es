@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -26,6 +27,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
         CustomerTestFactory::new()->withId($identity->id()->toString())->store();
 
@@ -52,6 +54,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
 
         // When
@@ -78,6 +81,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
 
         // When

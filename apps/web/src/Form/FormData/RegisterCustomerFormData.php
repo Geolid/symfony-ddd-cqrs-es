@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Web\Form\FormData;
 
 use Iam\Identity\Application\Validation\ValidLogin;
+use Iam\Identity\Application\Validation\ValidPassword;
 use Shared\Application\Validation\ValidEmail;
-use Symfony\Component\Validator\Constraints as Assert;
 
 final class RegisterCustomerFormData
 {
@@ -16,7 +16,6 @@ final class RegisterCustomerFormData
     #[ValidEmail]
     public ?string $email = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 8)]
+    #[ValidPassword]
     public ?string $password = null;
 }

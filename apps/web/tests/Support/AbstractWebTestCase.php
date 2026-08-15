@@ -6,6 +6,7 @@ namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -58,7 +59,9 @@ abstract class AbstractWebTestCase extends WebTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withLogin($login)
+            ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
 
         $client->loginUser($this->service(PasswordUserProvider::class)->loadUserByIdentifier($login));

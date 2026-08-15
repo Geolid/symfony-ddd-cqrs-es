@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\PasswordCredential;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
@@ -42,13 +44,20 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
     }
 
+    public function withPolicy(PasswordPolicyInterface $policy): self
+    {
+        return $this->withAttributes(array_merge($this->attributes, ['policy' => $policy]));
+    }
+
     public function changed(?string $plainPassword = null, \DateTimeImmutable $changedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(function (PasswordCredential $credential) use ($plainPassword, $changedAt): void {
             Assert::stringNotEmpty($password = $plainPassword ?? $this->attributes['password']);
             Assert::isInstanceOf($hasher = $this->attributes['hasher'], SecretHasherInterface::class);
+            Assert::keyExists($this->attributes, 'policy', 'Missing policy — call withPolicy() before create()/store().');
+            Assert::isInstanceOf($policy = $this->attributes['policy'], PasswordPolicyInterface::class);
 
-            $credential->change($password, $hasher, $changedAt);
+            $credential->change(Password::fromString($password), $policy, $hasher, $changedAt);
         });
     }
 
@@ -67,7 +76,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         return [
             'identityId' => IdentityId::generate()->toString(),
             'login' => self::faker()->unique()->userName(),
-            'password' => self::faker()->password(),
+            'password' => self::faker()->password(12, 20),
             'setAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
     }
@@ -80,12 +89,15 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::isInstanceOf($setAt = $attributes['setAt'], \DateTimeInterface::class);
         Assert::keyExists($attributes, 'hasher', 'Missing hasher — call withHasher() before create()/store().');
         Assert::isInstanceOf($hasher = $attributes['hasher'], SecretHasherInterface::class);
+        Assert::keyExists($attributes, 'policy', 'Missing policy — call withPolicy() before create()/store().');
+        Assert::isInstanceOf($policy = $attributes['policy'], PasswordPolicyInterface::class);
 
         return PasswordCredential::define(
             PasswordCredentialId::forIdentity($identityId),
             IdentityId::fromString($identityId),
             Login::fromString($login),
-            $password,
+            Password::fromString($password),
+            $policy,
             $hasher,
             \DateTimeImmutable::createFromInterface($setAt),
         );

@@ -92,6 +92,7 @@ sales:
             label_login: Identifiant
             label_email: Email
             label_password: Mot de passe
+            label_password_confirm: Confirmer le mot de passe
             button_submit: S'inscrire
         checkout_addresses:
             title: Complétez vos adresses

@@ -1,0 +1,1 @@
+iam.access.permission.invalid_format: 'Une permission doit être formatée "<subdomain>.<bc>:<action>".'
