@@ -32,6 +32,23 @@ final class PasswordTest extends TestCase
     }
 
     #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $a = Password::fromString('MyStr0ngP@ssw0rd123!');
+        $b = Password::fromString('MyStr0ngP@ssw0rd123!');
+        $other = Password::fromString('AnotherStr0ngP@ssw0rd!');
+
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
+    }
+
+    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
