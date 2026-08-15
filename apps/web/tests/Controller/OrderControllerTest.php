@@ -8,10 +8,10 @@ use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
+use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
+use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
@@ -159,16 +159,15 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToCancelAnOrderAlreadyCaptured(): void
+    public function itIgnoresCancellingAnOrderAlreadyDispatched(): void
     {
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
         $id = $this->placeOrder($client);
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
-        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($id);
-        self::assertNotNull($payment);
-        $this->service(CommandBusInterface::class)->dispatch(new CaptureOrderPayment($payment->id));
+        $commandBus = $this->service(CommandBusInterface::class);
+        $commandBus->dispatch(new ConfirmOrder($id));
+        $commandBus->dispatch(new DispatchOrder($id));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -177,11 +176,9 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-        $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-error"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertSame(OrderStatus::PLACED, $order->status);
+        self::assertSame(OrderStatus::DISPATCHED, $order->status);
     }
 
     #[Test]

@@ -18,6 +18,8 @@ paths:
 - Suffix a variable with `Mock`/`Stub` — use the short class name (`$repository`) or the constructor argument's name when several dependencies share a type.
 - Use a literal value that doesn't match the real field's format — a UUID-typed id gets a fake UUID (e.g. `Uuid::uuid7()->toString()`), not an arbitrary string.
 - Hardcode another BC's vocabulary as a literal — use a generic/fake value instead.
+- Wrap a Value Object's own `equals()` call in `assertTrue`/`assertFalse` as a shortcut for comparing structured data, when the test's actual subject is that data surviving a round-trip or crossing a boundary correctly (not the VO's own `equals()` implementation) — on failure it only reports `false` was not `true`, with no indication of which field diverged. Compare a primitive array of every field on both sides through `assertSame` instead, so a mismatch shows which one. `assertTrue($vo->equals($other))` stays correct where the VO's own `equals()` behavior genuinely is the test's subject (a dedicated equality test for that VO).
+- Assert a closed vocabulary through the enum foreign to the layer under test — a Domain aggregate test (`given()`/`when()`/`then()`, a transition's guard) compares against `<X>State`; an Application/Infrastructure/DM test (a Finder `Result`, a Projector row, a webhook/API response) compares against `<X>Status` — the two never substitute for each other even where their case values currently coincide.
 
 ## Conventions
 

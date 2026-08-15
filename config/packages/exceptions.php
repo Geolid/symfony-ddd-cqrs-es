@@ -12,7 +12,6 @@ use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
@@ -51,7 +50,6 @@ return static function (ContainerConfigurator $container): void {
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderPaymentAlreadyCapturedException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderSummaryResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

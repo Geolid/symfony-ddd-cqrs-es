@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Webhook\Tests\OpenApi;
 
 use PHPUnit\Framework\Attributes\Test;
-use Webhook\Webhook\PaymentCapturedParser;
+use Webhook\Webhook\PaymentAuthorizedParser;
 
-final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenApiDocumentationTestCase
+final class PaymentAuthorizedOpenApiDocumentationTest extends AbstractWebhookOpenApiDocumentationTestCase
 {
     #[Test]
-    public function itDocumentsTheCaptureEndpoint(): void
+    public function itDocumentsTheAuthorizationEndpoint(): void
     {
         // Given
         $client = self::createClient();
@@ -22,7 +22,7 @@ final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenA
         $operation = self::operation($client->getResponse());
 
         self::assertSame(['Webhook'], self::toArray($operation['tags']));
-        self::assertSame('Report an order payment as captured.', $operation['summary']);
+        self::assertSame('Report an order payment as authorized.', $operation['summary']);
         self::assertSame([202, 400, 401, 404, 422], array_keys(self::toArray($operation['responses'])));
     }
 
@@ -39,7 +39,7 @@ final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenA
         $operation = self::operation($client->getResponse());
         $schema = self::toArray(self::toArray(self::toArray($operation['requestBody'])['content'])['application/json'])['schema'];
 
-        self::assertSame(['$ref' => '#/components/schemas/PaymentCapturedPayload'], self::toArray($schema));
+        self::assertSame(['$ref' => '#/components/schemas/PaymentAuthorizedPayload'], self::toArray($schema));
     }
 
     #[Test]
@@ -53,11 +53,11 @@ final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenA
 
         // Then
         $schemas = self::toArray(self::toArray(self::decodeSpec($client->getResponse())['components'])['schemas']);
-        $schema = self::toArray($schemas['PaymentCapturedPayload']);
+        $schema = self::toArray($schemas['PaymentAuthorizedPayload']);
 
         self::assertSame([
             'paymentReference' => [
-                "The payment provider's own reference for the captured charge.",
+                "The payment provider's own reference for the authorized charge.",
                 'GLBX-9F3K2M1P',
             ],
         ], self::describeProperties($schema));
@@ -83,11 +83,11 @@ final class PaymentCapturedOpenApiDocumentationTest extends AbstractWebhookOpenA
 
     protected static function path(): string
     {
-        return \sprintf('/webhooks/%s', PaymentCapturedParser::EVENT_TYPE);
+        return \sprintf('/webhooks/%s', PaymentAuthorizedParser::EVENT_TYPE);
     }
 
     protected static function signatureHeaderName(): string
     {
-        return PaymentCapturedParser::SIGNATURE_HEADER;
+        return PaymentAuthorizedParser::SIGNATURE_HEADER;
     }
 }

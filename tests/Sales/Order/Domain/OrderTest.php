@@ -9,6 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
+use Sales\Order\Domain\Event\OrderCompleted;
+use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -86,6 +89,142 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itCancelsWhenConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
+            ->then(new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotCancelWhenDispatched(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itIsConfirmedWhenPlaced(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
+            ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotConfirmAnAlreadyConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itIsDispatchedWhenConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->dispatch($dispatchedAt))
+            ->then(new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotDispatchWhenNotConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->dispatch(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itIsCompletedWhenDispatched(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $completedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete($completedAt))
+            ->then(new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotCompleteWhenNotDispatched(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 

@@ -19,7 +19,7 @@ if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
         'ignore_errors' => true,
     ]]);
 
-    @file_get_contents('http://nginx/webhook/webhooks/payment-captured', false, $context);
+    @file_get_contents('http://nginx/webhook/webhooks/payment-authorized', false, $context);
     $statusLine = http_get_last_response_headers()[0] ?? '';
 
     if (!preg_match('/\s(2\d\d)\s/', $statusLine)) {

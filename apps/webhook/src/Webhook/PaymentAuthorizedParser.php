@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Webhook\Webhook;
 
 /**
- * @extends AbstractSignedRequestParser<PaymentCapturedPayload>
+ * @extends AbstractSignedRequestParser<PaymentAuthorizedPayload>
  */
-final class PaymentCapturedParser extends AbstractSignedRequestParser
+final class PaymentAuthorizedParser extends AbstractSignedRequestParser
 {
-    public const string EVENT_TYPE = 'payment-captured';
+    public const string EVENT_TYPE = 'payment-authorized';
 
     public const string SIGNATURE_HEADER = 'X-Payment-Signature';
 
@@ -20,7 +20,7 @@ final class PaymentCapturedParser extends AbstractSignedRequestParser
 
     protected function payloadClass(): string
     {
-        return PaymentCapturedPayload::class;
+        return PaymentAuthorizedPayload::class;
     }
 
     protected function eventType(): string

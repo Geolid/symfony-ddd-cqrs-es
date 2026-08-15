@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Enum\OrderStatus;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -99,20 +98,5 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($order->id()->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
-    }
-
-    #[Test]
-    public function itFailsWhenThePaymentHasAlreadyBeenCaptured(): void
-    {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
-
-        // Then
-        $this->expectException(OrderPaymentAlreadyCapturedException::class);
-
-        // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
     }
 }

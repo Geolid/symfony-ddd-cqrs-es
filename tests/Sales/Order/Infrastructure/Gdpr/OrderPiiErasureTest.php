@@ -8,6 +8,7 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -71,7 +72,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->create();
         $this->store($orderPayment);
         $serialized = $this->serializedEventOf(
             OrderPaymentCapturedIntegrationEvent::class,
@@ -86,6 +87,29 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $rehydrated);
+        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+    }
+
+    #[Test]
+    public function itCryptoShredsTheOrderConfirmedShippingAddressOnCustomerErasure(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->create();
+        $this->store($order);
+        $serialized = $this->serializedEventOf(
+            OrderConfirmedIntegrationEvent::class,
+            static fn (OrderConfirmedIntegrationEvent $event): bool => $event->orderId === $order->id()->toString(),
+        );
+
+        // When
+        ($this->service(DataSubjectEraser::class))(
+            Message::create(new DummyDataSubjectErased($customerId)),
+        );
+
+        // Then
+        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $rehydrated);
         self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
     }
 

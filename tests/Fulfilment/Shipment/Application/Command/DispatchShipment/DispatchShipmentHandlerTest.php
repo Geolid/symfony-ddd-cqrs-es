@@ -18,10 +18,10 @@ use Support\AbstractIntegrationTestCase;
 final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDispatchesAPendingShipment(): void
+    public function itDispatchesAManifestedShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->store();
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id()->toString()));
@@ -38,7 +38,20 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheShipmentHasAlreadyLeft(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->dispatched()->store();
+
+        // Then
+        $this->expectException(ShipmentInvalidTransitionException::class);
+
+        // When
+        $this->dispatch(new DispatchShipment($shipment->id()->toString()));
+    }
+
+    #[Test]
+    public function itFailsWhenTheShipmentIsNotYetManifested(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->store();
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

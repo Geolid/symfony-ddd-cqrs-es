@@ -67,7 +67,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -85,7 +85,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -101,7 +101,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->tracked('ACME-4Q7X2K9')->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->tracked('ACME-4Q7X2K9')->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -116,7 +116,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->delivered()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -132,7 +132,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
         OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
-        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->store();
 
         // When
         $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
@@ -157,7 +157,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
 
         // Then
         $row = $this->fetchRow($untouchedOrder->id()->toString());

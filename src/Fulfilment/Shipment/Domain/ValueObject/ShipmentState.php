@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Domain\ValueObject;
 enum ShipmentState: string
 {
     case PENDING = 'pending';
+    case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
@@ -14,6 +15,11 @@ enum ShipmentState: string
     public function isPending(): bool
     {
         return self::PENDING === $this;
+    }
+
+    public function isManifested(): bool
+    {
+        return self::MANIFESTED === $this;
     }
 
     public function isDispatched(): bool
@@ -41,6 +47,6 @@ enum ShipmentState: string
      */
     private static function cancellableStates(): array
     {
-        return [self::PENDING];
+        return [self::PENDING, self::MANIFESTED];
     }
 }

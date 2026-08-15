@@ -11,6 +11,9 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexClient;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexPaymentGateway;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -28,7 +31,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         ]);
 
         // When
-        $session = self::gateway($response)->requestPayment($orderId, 4_200, 'https://web.test/sales/orders');
+        $session = self::gateway($response)->requestPayment($orderId, 4_200, 'https://web.test/sales/orders', self::billingAddress());
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
@@ -39,6 +42,13 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'reference' => $orderId,
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
+                'billingAddress' => [
+                    'firstName' => 'Ada',
+                    'lastName' => 'Lovelace',
+                    'street' => '12 rue des Lilas',
+                    'postalCode' => '75001',
+                    'city' => 'Paris',
+                ],
             ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
         );
@@ -52,7 +62,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders');
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', self::billingAddress());
     }
 
     /**
@@ -72,7 +82,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(GlobexClientException::class);
 
         // When
-        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders');
+        self::gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', self::billingAddress());
     }
 
     /**
@@ -89,6 +99,60 @@ final class GlobexPaymentGatewayTest extends TestCase
         yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];
     }
 
+    #[Test]
+    public function itVoidsACharge(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'voided']);
+
+        // When
+        self::gateway($response)->void('GLBX-9F3K2M1P');
+
+        // Then
+        self::assertSame('https://payments.globex.test/void', $response->getRequestUrl());
+        self::assertSame(
+            ['reference' => 'GLBX-9F3K2M1P'],
+            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+        );
+    }
+
+    #[Test]
+    public function itThrowsWhenVoidingOnAProviderItCannotReach(): void
+    {
+        // Then
+        $this->expectException(GlobexClientException::class);
+
+        // When
+        self::gateway(static fn () => throw new TransportException('Connection refused'))->void('GLBX-9F3K2M1P');
+    }
+
+    #[Test]
+    public function itRefundsACharge(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'refunding']);
+
+        // When
+        self::gateway($response)->refund('GLBX-9F3K2M1P');
+
+        // Then
+        self::assertSame('https://payments.globex.test/refund', $response->getRequestUrl());
+        self::assertSame(
+            ['reference' => 'GLBX-9F3K2M1P'],
+            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+        );
+    }
+
+    #[Test]
+    public function itThrowsWhenRefundingOnAProviderItCannotReach(): void
+    {
+        // Then
+        $this->expectException(GlobexClientException::class);
+
+        // When
+        self::gateway(static fn () => throw new TransportException('Connection refused'))->refund('GLBX-9F3K2M1P');
+    }
+
     private static function gateway(callable|MockResponse $response): GlobexPaymentGateway
     {
         return new GlobexPaymentGateway(new GlobexClient(new MockHttpClient($response, 'https://payments.globex.test')));
@@ -102,6 +166,14 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'http_code' => $statusCode,
                 'response_headers' => ['content-type' => 'application/json'],
             ],
+        );
+    }
+
+    private static function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(
+            FullName::of('Ada', 'Lovelace'),
+            Address::of('12 rue des Lilas', '75001', 'Paris'),
         );
     }
 }

@@ -13,8 +13,10 @@ use OpenApi\Annotations as OA;
 use Symfony\Component\TypeInfo\Type;
 use Webhook\Webhook\CarrierDeliveryParser;
 use Webhook\Webhook\CarrierDeliveryPayload;
-use Webhook\Webhook\PaymentCapturedParser;
-use Webhook\Webhook\PaymentCapturedPayload;
+use Webhook\Webhook\PaymentAuthorizedParser;
+use Webhook\Webhook\PaymentAuthorizedPayload;
+use Webhook\Webhook\PaymentFailedParser;
+use Webhook\Webhook\PaymentFailedPayload;
 
 final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareInterface
 {
@@ -32,10 +34,16 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
             'signatureHeader' => CarrierDeliveryParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No shipment matches the given shipmentId.'],
         ],
-        '/webhooks/'.PaymentCapturedParser::EVENT_TYPE => [
-            'summary' => 'Report an order payment as captured.',
-            'payload' => PaymentCapturedPayload::class,
-            'signatureHeader' => PaymentCapturedParser::SIGNATURE_HEADER,
+        '/webhooks/'.PaymentAuthorizedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment as authorized.',
+            'payload' => PaymentAuthorizedPayload::class,
+            'signatureHeader' => PaymentAuthorizedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No payment matches the given reference.'],
+        ],
+        '/webhooks/'.PaymentFailedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment as failed.',
+            'payload' => PaymentFailedPayload::class,
+            'signatureHeader' => PaymentFailedParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No payment matches the given reference.'],
         ],
     ];

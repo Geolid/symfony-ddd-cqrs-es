@@ -19,8 +19,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {
-    private const string DISPATCHED_AT = '2026-01-02T00:00:00+00:00';
-
     private DummyCarrierGateway $carrier;
 
     private RequestPickupOnShipmentDispatched $processor;
@@ -44,15 +42,31 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
         $shipment = ShipmentTestFactory::new()
             ->withShippingAddress($shippingAddress)
+            ->manifested()
             ->dispatched()
             ->store();
 
         // When
-        ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
+        ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);
-        self::assertTrue($shippingAddress->equals($this->carrier->deliveryAddress));
+        self::assertSame(
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+            [
+                'firstName' => $this->carrier->deliveryAddress->fullName->firstName,
+                'lastName' => $this->carrier->deliveryAddress->fullName->lastName,
+                'street' => $this->carrier->deliveryAddress->address->street,
+                'postalCode' => $this->carrier->deliveryAddress->address->postalCode,
+                'city' => $this->carrier->deliveryAddress->address->city,
+            ],
+        );
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);

@@ -9,10 +9,13 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
+use Sales\Order\Domain\Event\OrderCompleted;
+use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
@@ -28,7 +31,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             'id' => $event->id,
             'customer_id' => $event->customerId,
             'total_amount_in_cents' => $event->totalAmountInCents,
-            'status' => OrderState::PLACED->value,
+            'status' => OrderStatus::PLACED->value,
             'placed_at' => new \DateTimeImmutable($event->placedAt)->format('Y-m-d H:i:s'),
         ]);
     }
@@ -39,8 +42,47 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderState::CANCELLED->value,
+                'status' => OrderStatus::CANCELLED->value,
                 'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderConfirmed::class)]
+    public function onOrderConfirmed(OrderConfirmed $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::CONFIRMED->value,
+                'confirmed_at' => new \DateTimeImmutable($event->confirmedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderDispatched::class)]
+    public function onOrderDispatched(OrderDispatched $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::DISPATCHED->value,
+                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderCompleted::class)]
+    public function onOrderCompleted(OrderCompleted $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::COMPLETED->value,
+                'completed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -63,6 +105,9 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('confirmed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

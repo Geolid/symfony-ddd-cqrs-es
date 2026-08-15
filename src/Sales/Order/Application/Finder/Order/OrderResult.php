@@ -15,6 +15,9 @@ final readonly class OrderResult implements ResultInterface
         public int $totalAmountInCents,
         public OrderStatus $status,
         public \DateTimeImmutable $placedAt,
+        public ?\DateTimeImmutable $confirmedAt,
+        public ?\DateTimeImmutable $dispatchedAt,
+        public ?\DateTimeImmutable $completedAt,
         public ?\DateTimeImmutable $cancelledAt,
     ) {
     }

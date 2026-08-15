@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webhook\Webhook\CarrierDeliveryParser;
-use Webhook\Webhook\PaymentCapturedParser;
+use Webhook\Webhook\PaymentAuthorizedParser;
+use Webhook\Webhook\PaymentFailedParser;
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
@@ -14,8 +15,12 @@ return static function (ContainerConfigurator $container): void {
                     'service' => CarrierDeliveryParser::class,
                     'secret' => '%env(CARRIER_WEBHOOK_SECRET)%',
                 ],
-                PaymentCapturedParser::EVENT_TYPE => [
-                    'service' => PaymentCapturedParser::class,
+                PaymentAuthorizedParser::EVENT_TYPE => [
+                    'service' => PaymentAuthorizedParser::class,
+                    'secret' => '%env(PAYMENT_WEBHOOK_SECRET)%',
+                ],
+                PaymentFailedParser::EVENT_TYPE => [
+                    'service' => PaymentFailedParser::class,
                     'secret' => '%env(PAYMENT_WEBHOOK_SECRET)%',
                 ],
             ],

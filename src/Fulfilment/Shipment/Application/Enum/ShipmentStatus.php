@@ -7,6 +7,7 @@ namespace Fulfilment\Shipment\Application\Enum;
 enum ShipmentStatus: string
 {
     case PENDING = 'pending';
+    case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';

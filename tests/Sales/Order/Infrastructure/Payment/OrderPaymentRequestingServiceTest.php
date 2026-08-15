@@ -13,10 +13,12 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCase
@@ -33,6 +35,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         $this->service = new OrderPaymentRequestingService(
             $this->service(OrderFinderInterface::class),
             $this->service(OrderPaymentFinderInterface::class),
+            $this->service(OrderRepositoryInterface::class),
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
         );
@@ -52,6 +55,24 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
+        self::assertNotNull($this->paymentGateway->billingAddress);
+        $billingAddress = $order->billingAddress();
+        self::assertSame(
+            [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+            ],
+            [
+                'firstName' => $this->paymentGateway->billingAddress->fullName->firstName,
+                'lastName' => $this->paymentGateway->billingAddress->fullName->lastName,
+                'street' => $this->paymentGateway->billingAddress->address->street,
+                'postalCode' => $this->paymentGateway->billingAddress->address->postalCode,
+                'city' => $this->paymentGateway->billingAddress->address->city,
+            ],
+        );
 
         $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
         self::assertNotNull($orderPayment);
@@ -109,12 +130,23 @@ final class DummyPaymentGateway implements PaymentGatewayInterface
 
     public ?string $returnUrl = null;
 
-    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl): PaymentSession
+    public ?PostalAddress $billingAddress = null;
+
+    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
     {
         $this->orderId = $orderId;
         $this->amountInCents = $amountInCents;
         $this->returnUrl = $returnUrl;
+        $this->billingAddress = $billingAddress;
 
         return new PaymentSession(self::CHARGE_REFERENCE, self::CHECKOUT_URL);
+    }
+
+    public function void(string $reference): void
+    {
+    }
+
+    public function refund(string $reference): void
+    {
     }
 }

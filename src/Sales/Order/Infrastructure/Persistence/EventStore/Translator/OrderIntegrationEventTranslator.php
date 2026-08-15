@@ -7,10 +7,12 @@ namespace Sales\Order\Infrastructure\Persistence\EventStore\Translator;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Store\Store;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderCancelled;
+use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPlaced;
@@ -69,6 +71,32 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
             new OrderCancelledIntegrationEvent(
                 orderId: $event->id,
                 cancelledAt: $event->cancelledAt,
+            ),
+        );
+    }
+
+    /**
+     * @throws OrderNotFoundException
+     */
+    #[Subscribe(OrderConfirmed::class)]
+    public function onOrderConfirmed(OrderConfirmed $event): void
+    {
+        $order = $this->orderRepository->load(OrderId::fromString($event->id));
+        $shippingAddress = $order->shippingAddress();
+
+        $this->append(
+            IntegrationStreamId::build('sales.order', $event->id),
+            new OrderConfirmedIntegrationEvent(
+                orderId: $event->id,
+                customerId: $order->customerId(),
+                shippingAddress: [
+                    'firstName' => $shippingAddress->fullName->firstName,
+                    'lastName' => $shippingAddress->fullName->lastName,
+                    'street' => $shippingAddress->address->street,
+                    'postalCode' => $shippingAddress->address->postalCode,
+                    'city' => $shippingAddress->address->city,
+                ],
+                confirmedAt: $event->confirmedAt,
             ),
         );
     }

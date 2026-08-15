@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
@@ -39,16 +40,61 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDispatchesPending(): void
+    public function itIsManifestedWhenPending(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->when(static fn (Shipment $shipment) => $shipment->manifest($manifestedAt))
+            ->then(new ShipmentManifested($id, $manifestedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotManifestAnAlreadyManifestedShipment(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentManifested($id, $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->manifest(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDispatchesManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentManifested($id, $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
             ->then(new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotDispatchAShipmentNotYetManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->when(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
     #[Test]
@@ -134,6 +180,23 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given(self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
+            ->then(new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCancelsManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentCreated($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentManifested($id, $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
             ->then(new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }

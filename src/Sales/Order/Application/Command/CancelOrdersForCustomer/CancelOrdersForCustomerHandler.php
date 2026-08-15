@@ -6,7 +6,6 @@ namespace Sales\Order\Application\Command\CancelOrdersForCustomer;
 
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -16,7 +15,6 @@ final readonly class CancelOrdersForCustomerHandler
 {
     public function __construct(
         private OrderFinderInterface $orderFinder,
-        private OrderPaymentFinderInterface $orderPaymentFinder,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -29,10 +27,6 @@ final readonly class CancelOrdersForCustomerHandler
     {
         foreach ($this->orderFinder->byCustomer($command->customerId) as $order) {
             if ($order->status->isCancelled()) {
-                continue;
-            }
-
-            if ($this->orderPaymentFinder->ofOrderOrNull($order->id)?->status->isCaptured()) {
                 continue;
             }
 

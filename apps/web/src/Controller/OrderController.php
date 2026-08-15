@@ -10,7 +10,6 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
@@ -182,15 +181,9 @@ final class OrderController extends AbstractController
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
-        try {
-            $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
-        } catch (OrderPaymentAlreadyCapturedException) {
-            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_paid'));
+        $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
 
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-        }
-
-        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
+        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancellation_requested'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
     }

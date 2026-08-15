@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Translator;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
@@ -58,6 +59,33 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
+    public function itPublishesTheConfirmationOnOrderConfirmed(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        self::assertCount(2, $published);
+        $event = $published[1];
+        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $event);
+        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($customerId, $event->customerId);
+        $shippingAddress = $order->shippingAddress();
+        self::assertSame([
+            'firstName' => $shippingAddress->fullName->firstName,
+            'lastName' => $shippingAddress->fullName->lastName,
+            'street' => $shippingAddress->address->street,
+            'postalCode' => $shippingAddress->address->postalCode,
+            'city' => $shippingAddress->address->city,
+        ], $event->shippingAddress);
+    }
+
+    #[Test]
     public function itPublishesTheRequestOnOrderPaymentRequested(): void
     {
         // Given
@@ -91,6 +119,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
+            ->authorized()
             ->captured()
             ->create();
 

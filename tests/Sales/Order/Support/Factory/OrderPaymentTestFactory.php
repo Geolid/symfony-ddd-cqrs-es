@@ -42,9 +42,29 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['requestedAt' => $requestedAt]));
     }
 
+    public function authorized(\DateTimeImmutable $authorizedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt));
+    }
+
+    public function failed(\DateTimeImmutable $failedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt));
+    }
+
     public function captured(\DateTimeImmutable $capturedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
+    }
+
+    public function cancelled(\DateTimeImmutable $cancelledAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
+    }
+
+    public function refunded(\DateTimeImmutable $refundedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->refund($refundedAt));
     }
 
     protected function defaults(): array

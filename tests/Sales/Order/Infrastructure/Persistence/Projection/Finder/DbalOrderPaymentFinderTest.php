@@ -11,6 +11,7 @@ use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
@@ -28,12 +29,20 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itGetsAnOrderPaymentByItsReference(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->store();
+        $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
+        $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
+        $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
+        $refundedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
         $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($orderId)
+            ->withOrderId($order->id()->toString())
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->withRequestedAt($requestedAt)
+            ->authorized($authorizedAt)
+            ->captured($capturedAt)
+            ->refunded($refundedAt)
             ->store();
 
         // When
@@ -41,12 +50,17 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($orderPayment->id()->toString(), $result->id);
-        self::assertSame($orderId, $result->orderId);
+        self::assertSame($order->id()->toString(), $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
-        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
-        self::assertNull($result->capturedAt);
+        self::assertSame(OrderPaymentStatus::REFUNDING, $result->status);
+        self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
+        self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
+        self::assertNull($result->failedAt);
+        self::assertNull($result->cancelledAt);
+        self::assertSame($refundedAt->format('Y-m-d H:i:s'), $result->refundedAt?->format('Y-m-d H:i:s'));
     }
 
     #[Test]
@@ -63,26 +77,39 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itFindsAnOrderPaymentByItsOrder(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->store();
+        $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
+        $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
+        $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
+        $refundedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
         $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($orderId)
+            ->withOrderId($order->id()->toString())
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->withRequestedAt($requestedAt)
+            ->authorized($authorizedAt)
+            ->captured($capturedAt)
+            ->refunded($refundedAt)
             ->store();
 
         // When
-        $result = $this->finder->ofOrderOrNull($orderId);
+        $result = $this->finder->ofOrderOrNull($order->id()->toString());
 
         // Then
         self::assertInstanceOf(OrderPaymentResult::class, $result);
         self::assertSame($orderPayment->id()->toString(), $result->id);
-        self::assertSame($orderId, $result->orderId);
+        self::assertSame($order->id()->toString(), $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
-        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
-        self::assertNull($result->capturedAt);
+        self::assertSame(OrderPaymentStatus::REFUNDING, $result->status);
+        self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
+        self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
+        self::assertNull($result->failedAt);
+        self::assertNull($result->cancelledAt);
+        self::assertSame($refundedAt->format('Y-m-d H:i:s'), $result->refundedAt?->format('Y-m-d H:i:s'));
     }
 
     #[Test]

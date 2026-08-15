@@ -13,7 +13,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, cancelled_at: ?string}
+ * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, completed_at: ?string, cancelled_at: ?string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,6 +30,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($customerId, $row['customer_id']);
         self::assertSame(2_500, (int) $row['total_amount_in_cents']);
         self::assertSame(OrderStatus::PLACED->value, $row['status']);
+        self::assertNull($row['confirmed_at']);
+        self::assertNull($row['dispatched_at']);
+        self::assertNull($row['completed_at']);
         self::assertNull($row['cancelled_at']);
     }
 
@@ -44,6 +47,46 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
+    }
+
+    #[Test]
+    public function itProjectsTheConfirmationOnOrderConfirmed(): void
+    {
+        // Given
+        $other = OrderTestFactory::new()->store();
+
+        // When
+        $order = OrderTestFactory::new()->confirmed()->store();
+
+        // Then
+        $row = $this->fetchRow($order->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
+        self::assertNotNull($row['confirmed_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+    }
+
+    #[Test]
+    public function itProjectsTheDispatchOnOrderDispatched(): void
+    {
+        // Given
+        $other = OrderTestFactory::new()->confirmed()->store();
+
+        // When
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
+
+        // Then
+        $row = $this->fetchRow($order->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::DISPATCHED->value, $row['status']);
+        self::assertNotNull($row['dispatched_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::CONFIRMED->value, $otherRow['status']);
     }
 
     #[Test]
@@ -64,6 +107,26 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
 
+    #[Test]
+    public function itProjectsTheCompletionOnOrderCompleted(): void
+    {
+        // Given
+        $other = OrderTestFactory::new()->store();
+
+        // When
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->store();
+
+        // Then
+        $row = $this->fetchRow($order->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::COMPLETED->value, $row['status']);
+        self::assertNotNull($row['completed_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+    }
+
     /**
      * @return Row|false
      */
@@ -72,7 +135,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, status, cancelled_at FROM %s WHERE id = :id',
+                'SELECT customer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, completed_at, cancelled_at FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

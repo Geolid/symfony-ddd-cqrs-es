@@ -37,7 +37,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
             ->withReference('GLBX-ABC12345')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->store();
-        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->dispatched()->tracked('ACME-4Q7X2K9')->store();
+        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->tracked('ACME-4Q7X2K9')->store();
 
         // When
         $result = $this->finder->ofOrder($order->id()->toString());

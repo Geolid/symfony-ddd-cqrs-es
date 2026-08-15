@@ -83,8 +83,7 @@ sales:
                 shipped: Shipped
                 delivered: Delivered
         flash:
-            cancelled: Order cancelled.
-            cannot_cancel_paid: Payment for this order has already been captured, it can no longer be cancelled.
+            cancellation_requested: Cancellation requested.
             catalog_changed: Prices or product availability changed since you loaded this page — please review your order.
     customer:
         register:
