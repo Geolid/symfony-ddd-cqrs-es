@@ -21,7 +21,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-1@example.com'));
 
         // When
         $client->request('GET', $path);
@@ -33,11 +33,11 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itSetsAddressesAndRedirectsToTheDefaultReturnRoute(): void
+    public function itRegistersAddressesAndRedirectsToTheDefaultReturnRoute(): void
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-2@example.com');
+        $identity = $this->createCustomer('buyer-2@example.com');
         $this->loginAs($client, $identity);
 
         // When
@@ -47,18 +47,22 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/sales/orders/place');
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
-        self::assertNotNull($buyer->shippingAddress);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame('12 rue des Lilas', $buyer->shippingAddress['street']);
-        self::assertSame('8 avenue Foch', $buyer->billingAddress['street']);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
-    public function itCopiesTheShippingAddressToBillingWhenSameAsShippingIsChecked(): void
+    public function itUsesTheSameAddressForBilling(): void
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-3@example.com');
+        $identity = $this->createCustomer('buyer-3@example.com');
         $this->loginAs($client, $identity);
 
         // When
@@ -67,22 +71,39 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         // Then
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame('12 rue des Lilas', $buyer->billingAddress['street']);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
-    public function itSetsAddressesAndRedirectsToTheExplicitReturnRoute(): void
+    public function itRegistersAddressesAndRedirectsToTheExplicitReturnRoute(): void
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-4@example.com'));
+        $identity = $this->createCustomer('buyer-4@example.com');
+        $this->loginAs($client, $identity);
 
         // When
         $this->submitAddresses($client, '/checkout/address?return_to=sales_order_place');
 
         // Then
         self::assertResponseRedirects('/sales/orders/place');
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
+        self::assertNotNull($buyer);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
@@ -90,7 +111,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-5@example.com'));
 
         // When
         $client->request('GET', '/checkout/address?return_to=security_login');
@@ -149,7 +170,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $client->submit($form);
     }
 
-    private function registerCustomer(string $email): Identity
+    private function createCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
         CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();

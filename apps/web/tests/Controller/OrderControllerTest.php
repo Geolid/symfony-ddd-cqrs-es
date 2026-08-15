@@ -13,8 +13,11 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\Address;
@@ -35,7 +38,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-locale@example.com');
+        $identity = $this->createCustomer('buyer-locale@example.com');
         $this->loginAs($client, $identity);
         OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withTotalAmountInCents(1_750)->withoutIncrementalIds()->store();
 
@@ -46,6 +49,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseIsSuccessful();
         self::assertSame($locale, $client->getRequest()->getLocale());
         self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+        self::assertSelectorExists('[data-status="placed"]');
     }
 
     #[Test]
@@ -67,9 +71,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-locale-show@example.com');
+        $identity = $this->createCustomer('buyer-locale-show@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store();
+        $order = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withTotalAmountInCents(1_750)->withoutIncrementalIds()->store();
 
         // When
         $client->request('GET', \sprintf('%s/%s', $path, $order->id()->toString()));
@@ -77,6 +81,10 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseIsSuccessful();
         self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorTextContains('[data-testid="order-line"]', 'Assorted goods');
+        self::assertSelectorTextContains('[data-testid="order-line"]', 'x1');
+        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+        self::assertSelectorExists('[data-testid="pay-button"]');
     }
 
     #[Test]
@@ -84,9 +92,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $owner = $this->registerCustomer('owner@example.com');
+        $owner = $this->createCustomer('owner@example.com');
         $order = OrderTestFactory::new()->withCustomerId($owner->id()->toString())->withoutIncrementalIds()->store();
-        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
+        $this->loginAs($client, $this->createCustomer('intruder@example.com'));
 
         // When
         $client->request('GET', \sprintf('/sales/orders/%s', $order->id()->toString()));
@@ -110,7 +118,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-locale-place@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-locale-place@example.com'));
 
         // When
         $client->request('GET', $path);
@@ -126,7 +134,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-1@example.com'));
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
@@ -141,7 +149,12 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects();
-        self::assertMatchesRegularExpression('#^/sales/orders/[0-9a-f-]{36}$#', (string) $client->getResponse()->headers->get('Location'));
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#^/sales/orders/[0-9a-f-]{36}$#', $location);
+
+        $order = $this->service(OrderFinderInterface::class)->ofId(basename($location));
+        self::assertSame(1_750, $order->totalAmountInCents);
+        self::assertSame(OrderStatus::PLACED, $order->status);
     }
 
     #[Test]
@@ -166,6 +179,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
+        self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id()->toString()));
     }
 
     #[Test]
@@ -173,7 +187,8 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-11@example.com'));
+        $identity = $this->createCustomer('buyer-11@example.com');
+        $this->loginAs($client, $identity);
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
         $crawler = $client->request('GET', '/sales/orders/place');
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();
@@ -190,7 +205,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects('/sales/orders/place');
         $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-error"]');
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.catalog_changed');
+        self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id()->toString()));
     }
 
     /**
@@ -207,7 +223,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-3@example.com');
+        $identity = $this->createCustomer('buyer-3@example.com');
         $this->loginAs($client, $identity);
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
@@ -216,6 +232,10 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(self::CHECKOUT_URL);
+        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-TEST-REF');
+        self::assertSame($id, $orderPayment->orderId);
+        self::assertSame(self::CHECKOUT_URL, $orderPayment->checkoutUrl);
+        self::assertSame(OrderPaymentStatus::REQUESTED, $orderPayment->status);
     }
 
     #[Test]
@@ -223,16 +243,22 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-8@example.com');
+        $identity = $this->createCustomer('buyer-8@example.com');
         $this->loginAs($client, $identity);
-        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
+        $order = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store();
+        OrderPaymentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->withReference('GLBX-EXISTING-REF')
+            ->withCheckoutUrl('https://checkout.test/session/already-requested')
+            ->store();
 
         // When
-        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
+        $client->request('GET', \sprintf('/sales/orders/%s/checkout', $order->id()->toString()));
 
         // Then
-        self::assertResponseRedirects(self::CHECKOUT_URL);
+        self::assertResponseRedirects('https://checkout.test/session/already-requested');
+        $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-EXISTING-REF');
+        self::assertSame('https://checkout.test/session/already-requested', $orderPayment->checkoutUrl);
     }
 
     #[Test]
@@ -257,7 +283,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-4@example.com');
+        $identity = $this->createCustomer('buyer-4@example.com');
         $this->loginAs($client, $identity);
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
@@ -269,7 +295,10 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
         $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancellation_requested');
+
+        $order = $this->service(OrderFinderInterface::class)->ofId($id);
+        self::assertSame(OrderStatus::CANCELLED, $order->status);
     }
 
     #[Test]
@@ -277,7 +306,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-5@example.com');
+        $identity = $this->createCustomer('buyer-5@example.com');
         $this->loginAs($client, $identity);
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
         $commandBus = $this->service(CommandBusInterface::class);
@@ -294,7 +323,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->followRedirect();
         // CancelOrder is dispatched async — the Controller can't know the outcome at
         // redirect time, so the same "requested" flash shows even on a silent no-op.
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancellation_requested');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame(OrderStatus::DISPATCHED, $order->status);
@@ -305,7 +334,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-6@example.com');
+        $identity = $this->createCustomer('buyer-6@example.com');
         $this->loginAs($client, $identity);
         $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
@@ -321,9 +350,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $owner = $this->registerCustomer('owner-cancel@example.com');
+        $owner = $this->createCustomer('owner-cancel@example.com');
         $id = OrderTestFactory::new()->withCustomerId($owner->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
-        $this->loginAs($client, $this->registerCustomer('intruder-cancel@example.com'));
+        $this->loginAs($client, $this->createCustomer('intruder-cancel@example.com'));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -346,7 +375,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         return $client;
     }
 
-    private function registerCustomer(string $email): Identity
+    private function createCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
         CustomerTestFactory::new()

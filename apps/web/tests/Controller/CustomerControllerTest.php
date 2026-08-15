@@ -4,10 +4,20 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
+use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Email;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -40,7 +50,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRegistersAndLetsThemLogIn(): void
+    public function itRegisters(): void
     {
         // Given
         $client = self::browser();
@@ -51,10 +61,11 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects('/login');
         $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.registered');
 
-        $this->logIn($client, 'buyer-1', 'correct horse battery staple');
-        self::assertResponseRedirects('/sales/orders');
+        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofLogin('buyer-1');
+        $customer = $this->service(CustomerFinderInterface::class)->ofId($credential->identityId);
+        self::assertSame('buyer-1@example.com', $customer->email);
     }
 
     #[Test]
@@ -78,7 +89,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('[data-testid="flash-error"]');
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.customer.flash.email_taken');
+        self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(PasswordCredentialUniqueValue::LOGIN, Login::fromString('buyer-2-retry')->fingerprint()));
     }
 
     #[Test]
@@ -86,14 +98,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-10', 'buyer-10@example.com', 'correct horse battery staple');
+        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, Login::fromString('buyer-10')->fingerprint());
 
         // When
         $this->registerCustomer($client, 'buyer-10', 'buyer-10-other@example.com', 'another password entirely');
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('[data-testid="flash-error"]');
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.customer.flash.login_taken');
     }
 
     #[Test]
@@ -123,16 +135,20 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->registerCustomer($client, 'buyer-6-taken', 'buyer-6@example.com', 'correct horse battery staple');
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
+        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer-6@example.com')->fingerprint());
 
         // When
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another Password!42');
 
         // Then
         self::assertResponseRedirects('/login');
         $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.registered');
+
+        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofLogin('buyer-6-retry');
+        $customer = $this->service(CustomerFinderInterface::class)->ofId($credential->identityId);
+        self::assertSame('buyer-6-again@example.com', $customer->email);
     }
 
     #[Test]
@@ -153,7 +169,10 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/logout');
         $session = $client->getRequest()->getSession();
         \assert($session instanceof FlashBagAwareSessionInterface);
-        self::assertTrue($session->getFlashBag()->has('success'));
+        self::assertSame(['sales.customer.flash.erased'], $session->getFlashBag()->get('success'));
+
+        self::expectException(IdentityResultNotFoundException::class);
+        $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
     }
 
     #[Test]
@@ -219,11 +238,10 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects('/sales/orders');
         $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-success"]');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
-        $client->request('GET', '/logout');
-        $this->logIn($client, 'buyer-5@example.com', 'A Brand New Password!42');
-        self::assertResponseRedirects('/sales/orders');
+        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id()->toString());
+        self::assertTrue($this->service(SecretHasherInterface::class)->verify($credential->hash, 'A Brand New Password!42'));
     }
 
     private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void
