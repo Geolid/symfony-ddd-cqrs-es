@@ -33,7 +33,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itSetsBothAddressesAndRedirectsToTheDefaultReturnRoute(): void
+    public function itSetsAddressesAndRedirectsToTheDefaultReturnRoute(): void
     {
         // Given
         $client = self::browser();
@@ -72,7 +72,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itSetsBothAddressesAndRedirectsToTheExplicitReturnRoute(): void
+    public function itSetsAddressesAndRedirectsToTheExplicitReturnRoute(): void
     {
         // Given
         $client = self::browser();

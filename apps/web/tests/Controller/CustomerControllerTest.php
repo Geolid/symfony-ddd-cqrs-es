@@ -67,7 +67,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRegistersACustomerAndLetsThemLogIn(): void
+    public function itRegistersAndLetsThemLogIn(): void
     {
         // Given
         $client = self::browser();
@@ -85,7 +85,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToRegisterAnAddressAlreadyRegistered(): void
+    public function itRefusesToRegisterAnAlreadyRegisteredEmail(): void
     {
         // Given
         $client = self::browser();
@@ -148,7 +148,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itErasesTheLoggedInCustomer(): void
+    public function itErases(): void
     {
         // Given
         $client = self::browser();
@@ -182,7 +182,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itChangesTheLoggedInCustomersPassword(): void
+    public function itChangesThePassword(): void
     {
         // Given
         $client = self::browser();

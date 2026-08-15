@@ -97,7 +97,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itPlacesAnOrderAndRedirectsToItsDetail(): void
+    public function itPlacesAndRedirectsToItsDetail(): void
     {
         // Given
         $client = self::browser();
@@ -111,7 +111,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itShowsThePlacedOrderInTheList(): void
+    public function itShowsTheOrderTotalInTheList(): void
     {
         // Given
         $client = self::browser();
