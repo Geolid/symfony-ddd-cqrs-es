@@ -12,8 +12,6 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
     private const string CHARGES_PATH = '/charges';
-    private const string VOID_PATH = '/void';
-    private const string REFUND_PATH = '/refund';
 
     public function __construct(private GlobexClient $globexClient)
     {
@@ -56,7 +54,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function void(string $reference): void
     {
-        $this->globexClient->post(self::VOID_PATH, ['reference' => $reference]);
+        $this->globexClient->post('/void', ['reference' => $reference]);
     }
 
     /**
@@ -64,6 +62,6 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function refund(string $reference): void
     {
-        $this->globexClient->post(self::REFUND_PATH, ['reference' => $reference]);
+        $this->globexClient->post('/refund', ['reference' => $reference]);
     }
 }

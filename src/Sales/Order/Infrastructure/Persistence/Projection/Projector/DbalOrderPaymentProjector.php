@@ -44,7 +44,10 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderPaymentStatus::AUTHORIZED->value],
+            [
+                'status' => OrderPaymentStatus::AUTHORIZED->value,
+                'authorized_at' => new \DateTimeImmutable($event->authorizedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -54,7 +57,10 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderPaymentStatus::FAILED->value],
+            [
+                'status' => OrderPaymentStatus::FAILED->value,
+                'failed_at' => new \DateTimeImmutable($event->failedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -77,7 +83,10 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderPaymentStatus::CANCELLED->value],
+            [
+                'status' => OrderPaymentStatus::CANCELLED->value,
+                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -87,7 +96,10 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderPaymentStatus::CANCELLED->value],
+            [
+                'status' => OrderPaymentStatus::CANCELLED->value,
+                'cancelled_at' => new \DateTimeImmutable($event->voidedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -97,7 +109,10 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderPaymentStatus::REFUNDING->value],
+            [
+                'status' => OrderPaymentStatus::REFUNDING->value,
+                'refunded_at' => new \DateTimeImmutable($event->refundedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -115,7 +130,11 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $table->addColumn('checkout_url', Types::STRING, ['length' => 2048]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('requested_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('authorized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('captured_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('failed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refunded_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

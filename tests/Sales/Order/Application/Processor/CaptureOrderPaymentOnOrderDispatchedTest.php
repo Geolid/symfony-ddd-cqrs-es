@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegrationTestCase
 {
-    private const string DISPATCHED_AT = '2026-01-02T00:00:00+00:00';
-
     private CaptureOrderPaymentOnOrderDispatched $processor;
 
     protected function setUp(): void
@@ -34,7 +32,7 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
         OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->store();
 
         // When
-        ($this->processor)(new OrderDispatched($order->id()->toString(), self::DISPATCHED_AT));
+        ($this->processor)(new OrderDispatched($order->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());

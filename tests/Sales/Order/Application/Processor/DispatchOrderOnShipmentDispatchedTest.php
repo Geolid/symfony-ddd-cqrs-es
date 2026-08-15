@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {
-    private const string DISPATCHED_AT = '2026-01-02T00:00:00+00:00';
-
     private DispatchOrderOnShipmentDispatched $processor;
 
     protected function setUp(): void
@@ -33,7 +31,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
         $order = OrderTestFactory::new()->confirmed()->store();
 
         // When
-        ($this->processor)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id()->toString(), self::DISPATCHED_AT));
+        ($this->processor)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());

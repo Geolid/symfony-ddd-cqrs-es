@@ -15,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<OrderResult>
  *
- * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, cancelled_at: string|null}
+ * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, confirmed_at: string|null, dispatched_at: string|null, completed_at: string|null, cancelled_at: string|null}
  */
 final class DbalOrderFinder extends AbstractDbalCollectionFinder implements OrderFinderInterface
 {
@@ -57,7 +57,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'cancelled_at')
+        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'confirmed_at', 'dispatched_at', 'completed_at', 'cancelled_at')
             ->from(DbalOrderProjector::TABLE);
     }
 
@@ -72,6 +72,9 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             totalAmountInCents: (int) $row['total_amount_in_cents'],
             status: OrderStatus::from($row['status']),
             placedAt: new \DateTimeImmutable($row['placed_at'], new \DateTimeZone('UTC')),
+            confirmedAt: null !== $row['confirmed_at'] ? new \DateTimeImmutable($row['confirmed_at'], new \DateTimeZone('UTC')) : null,
+            dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,
+            completedAt: null !== $row['completed_at'] ? new \DateTimeImmutable($row['completed_at'], new \DateTimeZone('UTC')) : null,
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
         );
     }

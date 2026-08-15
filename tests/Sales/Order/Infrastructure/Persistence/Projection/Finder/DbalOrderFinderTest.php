@@ -28,9 +28,17 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
+        $completedAt = new \DateTimeImmutable('2026-01-05T11:00:00+00:00');
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
+            ->withPlacedAt($placedAt)
+            ->confirmed($confirmedAt)
+            ->dispatched($dispatchedAt)
+            ->completed($completedAt)
             ->store();
 
         // When
@@ -40,7 +48,11 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id()->toString(), $result->id);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
-        self::assertSame(OrderStatus::PLACED, $result->status);
+        self::assertSame(OrderStatus::COMPLETED, $result->status);
+        self::assertSame($placedAt->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
+        self::assertSame($confirmedAt->format('Y-m-d H:i:s'), $result->confirmedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($dispatchedAt->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->completedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
     }
 

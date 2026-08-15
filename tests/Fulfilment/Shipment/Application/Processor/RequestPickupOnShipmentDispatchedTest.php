@@ -19,8 +19,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {
-    private const string DISPATCHED_AT = '2026-01-02T00:00:00+00:00';
-
     private DummyCarrierGateway $carrier;
 
     private RequestPickupOnShipmentDispatched $processor;
@@ -49,7 +47,7 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
             ->store();
 
         // When
-        ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), self::DISPATCHED_AT));
+        ($this->processor)(new ShipmentDispatched($shipment->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);

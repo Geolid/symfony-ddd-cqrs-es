@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends AbstractIntegrationTestCase
 {
-    private const string REFUNDED_AT = '2026-01-02T00:00:00+00:00';
-
     private RefundOrderPaymentOnOrderPaymentRefundRequested $processor;
 
     private DummyRefundingPaymentGateway $paymentGateway;
@@ -38,7 +36,7 @@ final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends Abstract
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderPaymentRefundRequested(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, self::REFUNDED_AT));
+        ($this->processor)(new OrderPaymentRefundRequested(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertSame($reference, $this->paymentGateway->refundedReference);

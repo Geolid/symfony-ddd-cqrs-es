@@ -54,7 +54,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderStatus::CONFIRMED->value],
+            [
+                'status' => OrderStatus::CONFIRMED->value,
+                'confirmed_at' => new \DateTimeImmutable($event->confirmedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -64,7 +67,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderStatus::DISPATCHED->value],
+            [
+                'status' => OrderStatus::DISPATCHED->value,
+                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -74,7 +80,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => OrderStatus::COMPLETED->value],
+            [
+                'status' => OrderStatus::COMPLETED->value,
+                'completed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
+            ],
             ['id' => $event->id],
         );
     }
@@ -96,6 +105,9 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('confirmed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

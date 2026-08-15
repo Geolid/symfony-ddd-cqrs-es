@@ -17,7 +17,11 @@ final readonly class OrderPaymentResult implements ResultInterface
         public string $checkoutUrl,
         public OrderPaymentStatus $status,
         public \DateTimeImmutable $requestedAt,
+        public ?\DateTimeImmutable $authorizedAt,
         public ?\DateTimeImmutable $capturedAt,
+        public ?\DateTimeImmutable $failedAt,
+        public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $refundedAt,
     ) {
     }
 }

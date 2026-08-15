@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegrationTestCase
 {
-    private const string AUTHORIZED_AT = '2026-01-02T00:00:00+00:00';
-
     private ConfirmOrderOnOrderPaymentAuthorized $processor;
 
     protected function setUp(): void
@@ -33,7 +31,7 @@ final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegration
         $order = OrderTestFactory::new()->store();
 
         // When
-        ($this->processor)(new OrderPaymentAuthorized(Uuid::uuid7()->toString(), $order->id()->toString(), self::AUTHORIZED_AT));
+        ($this->processor)(new OrderPaymentAuthorized(Uuid::uuid7()->toString(), $order->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
