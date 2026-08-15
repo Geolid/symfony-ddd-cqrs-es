@@ -33,7 +33,6 @@ final class ProductResourceTest extends AbstractApiTestCase
             'id' => $product->id()->toString(),
             'label' => 'Wireless mouse',
             'unitAmountInCents' => 2_999,
-            'delisted' => false,
         ]);
     }
 
@@ -68,23 +67,6 @@ final class ProductResourceTest extends AbstractApiTestCase
         self::assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         self::assertMatchesResourceCollectionJsonSchema(ProductResource::class);
         self::assertJsonContains(['totalItems' => 1]);
-    }
-
-    #[Test]
-    public function itReturnsTheProductsIncludingDelistedOnes(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
-        ProductTestFactory::new()->withLabel('Wireless mouse')->store();
-        ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->store();
-
-        // When
-        $client->request('GET', '/v1/catalog/products?includeDelisted=true');
-
-        // Then
-        self::assertResponseIsSuccessful();
-        self::assertJsonContains(['totalItems' => 2]);
     }
 
     #[Test]
@@ -202,7 +184,6 @@ final class ProductResourceTest extends AbstractApiTestCase
         self::assertJsonContains([
             'label' => 'Wireless mouse',
             'unitAmountInCents' => 2_999,
-            'delisted' => false,
         ]);
         self::assertNotEmpty($response->toArray()['id']);
     }
@@ -340,7 +321,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id()->toString()));
-        self::assertJsonContains(['delisted' => true]);
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
     #[Test]

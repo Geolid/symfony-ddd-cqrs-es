@@ -24,10 +24,11 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsProducts(): void
+    public function itLists(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
 
         // When
         $results = iterator_to_array($this->finder);
@@ -39,11 +40,10 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
-        self::assertFalse($result->delisted);
     }
 
     #[Test]
-    public function itListsProductsSortedByLabel(): void
+    public function itListsSortedByLabel(): void
     {
         // Given
         ProductTestFactory::new()->withLabel('Zebra mug')->store();
@@ -72,7 +72,6 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
-        self::assertFalse($result->delisted);
     }
 
     #[Test]
@@ -83,25 +82,5 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());
-    }
-
-    #[Test]
-    public function itFiltersProductsByDelisting(): void
-    {
-        // Given
-        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->delisted()->store();
-
-        // When
-        $results = iterator_to_array($this->finder->withoutDelisted());
-
-        // Then
-        self::assertSame(2, \count($this->finder));
-        self::assertCount(1, $results);
-        $result = $results[0];
-        self::assertSame($listed->id()->toString(), $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
-        self::assertFalse($result->delisted);
     }
 }

@@ -16,7 +16,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use Catalog\Product\Application\Finder\Product\ProductResult;
@@ -31,12 +30,6 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
             ),
             security: "is_granted('catalog.product:read')",
             provider: ProductCollectionProvider::class,
-            parameters: [
-                'includeDelisted' => new QueryParameter(
-                    schema: ['type' => 'boolean', 'example' => false],
-                    description: 'Whether delisted products are included in the collection.',
-                ),
-            ],
         ),
         new Get(
             uriTemplate: '/products/{id}',
@@ -109,8 +102,6 @@ final class ProductResource
         public ?string $label = null,
         #[ApiProperty(description: 'The unit price of the product, in cents.', example: 2_999)]
         public ?int $unitAmountInCents = null,
-        #[ApiProperty(description: 'Whether the product has been delisted.', example: false)]
-        public ?bool $delisted = null,
     ) {
     }
 
@@ -120,7 +111,6 @@ final class ProductResource
             id: $result->id,
             label: $result->label,
             unitAmountInCents: $result->unitAmountInCents,
-            delisted: $result->delisted,
         );
     }
 }

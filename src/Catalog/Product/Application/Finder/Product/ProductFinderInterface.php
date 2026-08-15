@@ -17,7 +17,5 @@ interface ProductFinderInterface extends PaginatedCollectionFinderInterface
      */
     public function ofId(string $id): ProductResult;
 
-    public function withoutDelisted(): static;
-
     public function sortedByLabel(): static;
 }

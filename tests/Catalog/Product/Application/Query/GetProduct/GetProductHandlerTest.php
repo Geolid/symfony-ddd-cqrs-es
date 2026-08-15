@@ -14,7 +14,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetProductHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsAProductById(): void
+    public function itGetsById(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
@@ -27,7 +27,6 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
-        self::assertFalse($result->delisted);
     }
 
     #[Test]

@@ -11,12 +11,12 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{label: string, unit_amount_in_cents: int, delisted: int}
+ * @phpstan-type Row array{label: string, unit_amount_in_cents: int}
  */
 final class DbalProductProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheProductOnProductListed(): void
+    public function itProjectsOnProductListed(): void
     {
         // When
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
@@ -48,15 +48,13 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itMarksTheProductAsDelistedOnProductDelisted(): void
+    public function itDeletesOnProductDelisted(): void
     {
         // When
         $product = ProductTestFactory::new()->delisted()->store();
 
         // Then
-        $row = $this->fetchRow($product->id()->toString());
-        self::assertNotFalse($row);
-        self::assertSame(1, (int) $row['delisted']);
+        self::assertFalse($this->fetchRow($product->id()->toString()));
     }
 
     /**
@@ -66,7 +64,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT label, unit_amount_in_cents, delisted FROM %s WHERE id = :id', DbalProductProjector::TABLE),
+            \sprintf('SELECT label, unit_amount_in_cents FROM %s WHERE id = :id', DbalProductProjector::TABLE),
             ['id' => $id],
         );
     }
