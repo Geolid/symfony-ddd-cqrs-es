@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class CustomerControllerTest extends AbstractWebTestCase
@@ -81,6 +82,21 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itRefusesToRegisterAnAlreadyRegisteredLogin(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->registerCustomer($client, 'buyer-10', 'buyer-10@example.com', 'correct horse battery staple');
+
+        // When
+        $this->registerCustomer($client, 'buyer-10', 'buyer-10-other@example.com', 'another password entirely');
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="flash-error"]');
+    }
+
+    #[Test]
     public function itRefusesAMismatchedPasswordConfirmation(): void
     {
         // Given
@@ -135,6 +151,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/logout');
+        $session = $client->getRequest()->getSession();
+        \assert($session instanceof FlashBagAwareSessionInterface);
+        self::assertTrue($session->getFlashBag()->has('success'));
     }
 
     #[Test]

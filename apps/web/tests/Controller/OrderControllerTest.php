@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -167,6 +168,31 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
     }
 
+    #[Test]
+    public function itFlagsAnOutdatedCatalogWhenThePriceChanged(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-11@example.com'));
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $crawler = $client->request('GET', '/sales/orders/place');
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+        ]);
+        $this->service(CommandBusInterface::class)->dispatch(new RepriceProduct($product->id()->toString(), 2_000));
+
+        // When
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects('/sales/orders/place');
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-error"]');
+    }
+
     /**
      * @return iterable<string, array{string, string}>
      */
@@ -242,6 +268,8 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        $client->followRedirect();
+        self::assertSelectorExists('[data-testid="flash-success"]');
     }
 
     #[Test]
