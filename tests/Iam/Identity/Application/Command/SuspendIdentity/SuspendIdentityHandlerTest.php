@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
-use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;

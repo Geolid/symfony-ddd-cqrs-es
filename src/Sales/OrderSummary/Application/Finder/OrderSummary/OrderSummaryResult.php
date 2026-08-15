@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Application\Finder\OrderSummary;
 
-use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Shared\Application\Result\ResultInterface;
 
 final readonly class OrderSummaryResult implements ResultInterface

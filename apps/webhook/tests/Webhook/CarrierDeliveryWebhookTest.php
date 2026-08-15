@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Webhook\Tests\Webhook;
 
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

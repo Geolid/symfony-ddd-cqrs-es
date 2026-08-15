@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Query\ListPendingShipments;
 
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 

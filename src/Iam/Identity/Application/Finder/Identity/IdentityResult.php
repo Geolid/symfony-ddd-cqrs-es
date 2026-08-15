@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\Identity;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Shared\Application\Result\ResultInterface;
 
 final readonly class IdentityResult implements ResultInterface

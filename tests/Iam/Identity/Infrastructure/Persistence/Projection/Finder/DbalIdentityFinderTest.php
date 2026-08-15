@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

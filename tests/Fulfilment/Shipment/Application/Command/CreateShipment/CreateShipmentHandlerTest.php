@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\CreateShipment;
 
 use Fulfilment\Shipment\Application\Command\CreateShipment\CreateShipment;
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;

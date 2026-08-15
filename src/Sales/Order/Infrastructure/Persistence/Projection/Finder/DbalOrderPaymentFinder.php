@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 

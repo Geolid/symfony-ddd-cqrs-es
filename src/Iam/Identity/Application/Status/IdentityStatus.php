@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Enum;
+namespace Iam\Identity\Application\Status;
 
 enum IdentityStatus: string
 {

@@ -6,9 +6,9 @@ namespace Sales\Tests\Order\Application\Processor;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Processor\CancelOrderPaymentOnOrderCancelled;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;

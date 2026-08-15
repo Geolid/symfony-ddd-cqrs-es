@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;

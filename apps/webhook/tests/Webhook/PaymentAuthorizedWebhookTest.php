@@ -6,8 +6,8 @@ namespace Webhook\Tests\Webhook;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Enum\OrderPaymentStatus;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\HttpFoundation\Response;

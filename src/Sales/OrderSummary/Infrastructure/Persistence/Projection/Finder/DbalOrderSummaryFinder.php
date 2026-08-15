@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\OrderSummary\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\OrderSummary\Application\Enum\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 

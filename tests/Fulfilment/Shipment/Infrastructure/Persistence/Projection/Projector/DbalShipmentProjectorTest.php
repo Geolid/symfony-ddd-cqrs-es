@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;

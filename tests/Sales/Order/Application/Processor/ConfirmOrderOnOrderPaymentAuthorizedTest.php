@@ -6,9 +6,9 @@ namespace Sales\Tests\Order\Application\Processor;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Processor\ConfirmOrderOnOrderPaymentAuthorized;
+use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;

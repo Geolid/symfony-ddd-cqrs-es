@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 

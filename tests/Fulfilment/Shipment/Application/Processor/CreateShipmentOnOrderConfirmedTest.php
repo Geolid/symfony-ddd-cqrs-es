@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
-use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderConfirmed;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;

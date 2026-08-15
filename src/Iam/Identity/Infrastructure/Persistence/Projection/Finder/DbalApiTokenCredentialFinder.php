@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialResult;
+use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 

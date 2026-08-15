@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Enum;
+namespace Iam\Tests\Identity\Application\Status;
 
-use Iam\Identity\Application\Enum\IdentityStatus;
+use Iam\Identity\Application\Status\IdentityStatus;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
