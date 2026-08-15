@@ -30,11 +30,18 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itDeletesOnCustomerErased(): void
     {
+        // Given
+        $other = CustomerTestFactory::new()->withEmail('other@example.com')->store();
+
         // When
         $customer = CustomerTestFactory::new()->erased()->store();
 
         // Then
         self::assertFalse($this->fetchRow($customer->id()->toString()));
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame('other@example.com', $otherRow['email']);
     }
 
     /**
