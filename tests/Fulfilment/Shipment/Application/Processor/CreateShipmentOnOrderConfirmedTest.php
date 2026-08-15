@@ -45,8 +45,17 @@ final class CreateShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCa
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
         self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
-        $shipment = $this->shipmentOf($order);
-        self::assertSame('12 rue des Lilas', $shipment->shippingAddress()->address->street);
+        $shippingAddress = $this->shipmentOf($order)->shippingAddress();
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+        );
     }
 
     #[Test]
