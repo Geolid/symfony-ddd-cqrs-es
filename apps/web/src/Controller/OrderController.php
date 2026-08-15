@@ -183,7 +183,7 @@ final class OrderController extends AbstractController
 
         $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
 
-        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
+        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancellation_requested'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
     }
