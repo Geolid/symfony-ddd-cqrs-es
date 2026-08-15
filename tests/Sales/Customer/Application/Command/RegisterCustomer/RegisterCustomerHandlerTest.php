@@ -30,7 +30,6 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
         $result = $this->service(CustomerFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
         self::assertSame('buyer@example.com', $result->email);
-        self::assertNull($result->erasedAt);
     }
 
     #[Test]

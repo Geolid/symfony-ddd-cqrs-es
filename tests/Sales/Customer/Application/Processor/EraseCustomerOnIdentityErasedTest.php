@@ -30,13 +30,12 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
         $id = Uuid::uuid7()->toString();
         CustomerTestFactory::new()->withId($id)->withEmail('buyer@example.com')->store();
 
+        // Then
+        $this->expectException(CustomerResultNotFoundException::class);
+
         // When
         ($this->processor)(new IdentityErasedIntegrationEvent($id, '2026-01-02T00:00:00+00:00'));
-
-        // Then
-        $result = $this->service(CustomerFinderInterface::class)->ofId($id);
-        self::assertNull($result->email);
-        self::assertNotNull($result->erasedAt);
+        $this->service(CustomerFinderInterface::class)->ofId($id);
     }
 
     #[Test]
