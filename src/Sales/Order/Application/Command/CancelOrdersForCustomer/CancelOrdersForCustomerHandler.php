@@ -26,10 +26,6 @@ final readonly class CancelOrdersForCustomerHandler
     public function __invoke(CancelOrdersForCustomer $command): void
     {
         foreach ($this->orderFinder->byCustomer($command->customerId) as $order) {
-            if ($order->status->isCancelled()) {
-                continue;
-            }
-
             $this->commandBus->dispatch(new CancelOrder($order->id, $command->customerId));
         }
     }
