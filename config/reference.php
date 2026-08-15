@@ -137,6 +137,13 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     enable_static_query_cache?: bool|Param, // Default: true
  *     connection_keys?: list<mixed>,
  * }
+ * @psalm-type DebugConfig = array{
+ *     max_items?: int|Param, // Max number of displayed items past the first level, -1 means no limit. // Default: 2500
+ *     min_depth?: int|Param, // Minimum tree depth to clone all the items, 1 is default. // Default: 1
+ *     max_string_length?: int|Param, // Max length of displayed strings, -1 means no limit. // Default: -1
+ *     dump_destination?: scalar|Param|null, // A stream URL where dumps should be written to. // Default: null
+ *     theme?: "dark"|"light"|Param, // Changes the color of the dump() output when rendered directly on the templating. "dark" (default) or "light". // Default: "dark"
+ * }
  * @psalm-type DoctrineConfig = array{
  *     dbal?: array{
  *         default_connection?: scalar|Param|null,
@@ -326,137 +333,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         resolve_target_entities?: array<string, scalar|Param|null>,
  *         ...<string, mixed>
  *     },
- * }
- * @psalm-type PatchlevelEventSourcingConfig = array{
- *     connection?: array{
- *         service?: scalar|Param|null, // Default: null
- *         url?: scalar|Param|null, // Default: null
- *         provide_dedicated_connection?: bool|Param, // Default: false
- *     },
- *     store?: array{
- *         type?: "dbal_aggregate"|"dbal_stream"|"in_memory"|"custom"|Param, // Default: "dbal_aggregate"
- *         service?: scalar|Param|null, // Default: null
- *         merge_orm_schema?: bool|Param, // Default: false
- *         options?: list<mixed>,
- *         read_only?: bool|Param, // Default: false
- *         migrate_to_new_store?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             type?: "dbal_aggregate"|"dbal_stream"|"in_memory"|"custom"|Param,
- *             service?: scalar|Param|null, // Default: null
- *             options?: list<mixed>,
- *             translators?: list<scalar|Param|null>,
- *         },
- *     },
- *     event_bus?: bool|array{
- *         enabled?: bool|Param, // Default: false
- *         type?: "default"|"symfony"|"psr14"|"custom"|Param, // Default: "default"
- *         service?: scalar|Param|null, // Default: null
- *     },
- *     events?: list<scalar|Param|null>,
- *     aggregates?: list<scalar|Param|null>,
- *     headers?: list<scalar|Param|null>,
- *     clock?: array{
- *         freeze?: scalar|Param|null, // Default: null
- *         service?: scalar|Param|null, // Default: null
- *     },
- *     migration?: array{
- *         namespace?: scalar|Param|null, // Default: "EventSourcingMigrations"
- *         path?: scalar|Param|null, // Default: "%kernel.project_dir%/migrations"
- *     },
- *     snapshot_stores?: array<string, array{ // Default: []
- *         type?: "psr6"|"psr16"|"custom"|Param, // Default: "psr6"
- *         service?: scalar|Param|null,
- *     }>,
- *     subscription?: array{
- *         store?: array{
- *             type?: "dbal"|"in_memory"|"static_in_memory"|"custom"|Param, // Default: "dbal"
- *             service?: scalar|Param|null, // Default: null
- *             options?: array{
- *                 table_name?: scalar|Param|null, // Default: "subscriptions"
- *             },
- *         },
- *         retry_strategy?: array{ // Deprecated: The "retry_strategy" option is deprecated and will be removed in 4.0. Use "patchlevel_event_sourcing.subscription.retry_strategies" instead.
- *             base_delay?: int|Param, // Default: 5
- *             delay_factor?: int|Param, // Default: 2
- *             max_attempts?: int|Param, // Default: 5
- *         },
- *         retry_strategies?: array<string, array{ // Default: {"default":{"type":"clock_based","options":{"base_delay":5,"delay_factor":2,"max_attempts":5}},"no_retry":{"type":"no_retry"}}
- *             type?: "clock_based"|"no_retry"|"custom"|Param,
- *             service?: scalar|Param|null,
- *             options?: list<mixed>,
- *         }>,
- *         default_retry_strategy?: scalar|Param|null, // Default: "default"
- *         catch_up?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             limit?: int|Param, // Default: null
- *         },
- *         throw_on_error?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *         },
- *         run_after_aggregate_save?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             ids?: list<scalar|Param|null>,
- *             groups?: list<scalar|Param|null>,
- *             limit?: int|Param, // Default: null
- *         },
- *         auto_setup?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             ids?: list<scalar|Param|null>,
- *             groups?: list<scalar|Param|null>,
- *             exclude_url?: scalar|Param|null, // Default: "^/_(wdt|profiler|error)"
- *         },
- *         rebuild_after_file_change?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             cache_pool?: scalar|Param|null, // Default: "cache.app"
- *             exclude_url?: scalar|Param|null, // Default: "^/_(wdt|profiler|error)"
- *         },
- *         gap_detection?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             retries_in_ms?: list<scalar|Param|null>,
- *             detection_window?: scalar|Param|null, // Default: "PT5M"
- *         },
- *     },
- *     cryptography?: bool|array{
- *         enabled?: bool|Param, // Default: false
- *         algorithm?: scalar|Param|null, // Default: "aes256"
- *         use_encrypted_field_name?: bool|Param, // Default: false
- *         fallback_to_field_name?: bool|Param, // Default: false
- *     },
- *     command_bus?: bool|array{
- *         enabled?: bool|Param, // Default: false
- *         service?: scalar|Param|null,
- *         register_aggregate_handlers?: bool|Param, // Default: true
- *         instant_retry?: array{
- *             default_max_retries?: int|Param, // Default: 3
- *             default_exceptions?: list<scalar|Param|null>,
- *         },
- *     },
- *     query_bus?: bool|array{
- *         enabled?: bool|Param, // Default: false
- *         service?: scalar|Param|null,
- *     },
- *     aggregate_handlers?: bool|array{ // Deprecated: The "aggregate_handlers" option is deprecated and will be removed in 4.0. Use "patchlevel_event_sourcing.command_bus" instead.
- *         enabled?: bool|Param, // Default: false
- *         bus?: scalar|Param|null, // Default: null
- *     },
- *     hydrator?: bool|array{
- *         enabled?: bool|Param, // Default: false
- *         default_lazy?: bool|Param, // Default: false
- *         cryptography?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *             algorithm?: scalar|Param|null, // Default: "aes-128-gcm"
- *         },
- *         lifecycle?: bool|array{
- *             enabled?: bool|Param, // Default: false
- *         },
- *     },
- * }
- * @psalm-type DebugConfig = array{
- *     max_items?: int|Param, // Max number of displayed items past the first level, -1 means no limit. // Default: 2500
- *     min_depth?: int|Param, // Minimum tree depth to clone all the items, 1 is default. // Default: 1
- *     max_string_length?: int|Param, // Max length of displayed strings, -1 means no limit. // Default: -1
- *     dump_destination?: scalar|Param|null, // A stream URL where dumps should be written to. // Default: null
- *     theme?: "dark"|"light"|Param, // Changes the color of the dump() output when rendered directly on the templating. "dark" (default) or "light". // Default: "dark"
  * }
  * @psalm-type FrameworkConfig = array{
  *     secret?: scalar|Param|null,
@@ -1173,6 +1049,130 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     }>,
  * }
+ * @psalm-type PatchlevelEventSourcingConfig = array{
+ *     connection?: array{
+ *         service?: scalar|Param|null, // Default: null
+ *         url?: scalar|Param|null, // Default: null
+ *         provide_dedicated_connection?: bool|Param, // Default: false
+ *     },
+ *     store?: array{
+ *         type?: "dbal_aggregate"|"dbal_stream"|"in_memory"|"custom"|Param, // Default: "dbal_aggregate"
+ *         service?: scalar|Param|null, // Default: null
+ *         merge_orm_schema?: bool|Param, // Default: false
+ *         options?: list<mixed>,
+ *         read_only?: bool|Param, // Default: false
+ *         migrate_to_new_store?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             type?: "dbal_aggregate"|"dbal_stream"|"in_memory"|"custom"|Param,
+ *             service?: scalar|Param|null, // Default: null
+ *             options?: list<mixed>,
+ *             translators?: list<scalar|Param|null>,
+ *         },
+ *     },
+ *     event_bus?: bool|array{
+ *         enabled?: bool|Param, // Default: false
+ *         type?: "default"|"symfony"|"psr14"|"custom"|Param, // Default: "default"
+ *         service?: scalar|Param|null, // Default: null
+ *     },
+ *     events?: list<scalar|Param|null>,
+ *     aggregates?: list<scalar|Param|null>,
+ *     headers?: list<scalar|Param|null>,
+ *     clock?: array{
+ *         freeze?: scalar|Param|null, // Default: null
+ *         service?: scalar|Param|null, // Default: null
+ *     },
+ *     migration?: array{
+ *         namespace?: scalar|Param|null, // Default: "EventSourcingMigrations"
+ *         path?: scalar|Param|null, // Default: "%kernel.project_dir%/migrations"
+ *     },
+ *     snapshot_stores?: array<string, array{ // Default: []
+ *         type?: "psr6"|"psr16"|"custom"|Param, // Default: "psr6"
+ *         service?: scalar|Param|null,
+ *     }>,
+ *     subscription?: array{
+ *         store?: array{
+ *             type?: "dbal"|"in_memory"|"static_in_memory"|"custom"|Param, // Default: "dbal"
+ *             service?: scalar|Param|null, // Default: null
+ *             options?: array{
+ *                 table_name?: scalar|Param|null, // Default: "subscriptions"
+ *             },
+ *         },
+ *         retry_strategy?: array{ // Deprecated: The "retry_strategy" option is deprecated and will be removed in 4.0. Use "patchlevel_event_sourcing.subscription.retry_strategies" instead.
+ *             base_delay?: int|Param, // Default: 5
+ *             delay_factor?: int|Param, // Default: 2
+ *             max_attempts?: int|Param, // Default: 5
+ *         },
+ *         retry_strategies?: array<string, array{ // Default: {"default":{"type":"clock_based","options":{"base_delay":5,"delay_factor":2,"max_attempts":5}},"no_retry":{"type":"no_retry"}}
+ *             type?: "clock_based"|"no_retry"|"custom"|Param,
+ *             service?: scalar|Param|null,
+ *             options?: list<mixed>,
+ *         }>,
+ *         default_retry_strategy?: scalar|Param|null, // Default: "default"
+ *         catch_up?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             limit?: int|Param, // Default: null
+ *         },
+ *         throw_on_error?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *         },
+ *         run_after_aggregate_save?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             ids?: list<scalar|Param|null>,
+ *             groups?: list<scalar|Param|null>,
+ *             limit?: int|Param, // Default: null
+ *         },
+ *         auto_setup?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             ids?: list<scalar|Param|null>,
+ *             groups?: list<scalar|Param|null>,
+ *             exclude_url?: scalar|Param|null, // Default: "^/_(wdt|profiler|error)"
+ *         },
+ *         rebuild_after_file_change?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             cache_pool?: scalar|Param|null, // Default: "cache.app"
+ *             exclude_url?: scalar|Param|null, // Default: "^/_(wdt|profiler|error)"
+ *         },
+ *         gap_detection?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             retries_in_ms?: list<scalar|Param|null>,
+ *             detection_window?: scalar|Param|null, // Default: "PT5M"
+ *         },
+ *     },
+ *     cryptography?: bool|array{
+ *         enabled?: bool|Param, // Default: false
+ *         algorithm?: scalar|Param|null, // Default: "aes256"
+ *         use_encrypted_field_name?: bool|Param, // Default: false
+ *         fallback_to_field_name?: bool|Param, // Default: false
+ *     },
+ *     command_bus?: bool|array{
+ *         enabled?: bool|Param, // Default: false
+ *         service?: scalar|Param|null,
+ *         register_aggregate_handlers?: bool|Param, // Default: true
+ *         instant_retry?: array{
+ *             default_max_retries?: int|Param, // Default: 3
+ *             default_exceptions?: list<scalar|Param|null>,
+ *         },
+ *     },
+ *     query_bus?: bool|array{
+ *         enabled?: bool|Param, // Default: false
+ *         service?: scalar|Param|null,
+ *     },
+ *     aggregate_handlers?: bool|array{ // Deprecated: The "aggregate_handlers" option is deprecated and will be removed in 4.0. Use "patchlevel_event_sourcing.command_bus" instead.
+ *         enabled?: bool|Param, // Default: false
+ *         bus?: scalar|Param|null, // Default: null
+ *     },
+ *     hydrator?: bool|array{
+ *         enabled?: bool|Param, // Default: false
+ *         default_lazy?: bool|Param, // Default: false
+ *         cryptography?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             algorithm?: scalar|Param|null, // Default: "aes-128-gcm"
+ *         },
+ *         lifecycle?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *         },
+ *     },
+ * }
  * @psalm-type SentryConfig = array{
  *     dsn?: scalar|Param|null, // If this value is not provided, the SDK will try to read it from the SENTRY_DSN environment variable. If that variable also does not exist, the SDK will not send any events.
  *     register_error_listener?: bool|Param, // Default: true
@@ -1256,6 +1256,9 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             excluded_commands?: list<scalar|Param|null>,
  *         },
  *     },
+ * }
+ * @psalm-type PatchlevelEventSourcingAdminConfig = array{
+ *     enabled?: scalar|Param|null, // Default: false
  * }
  * @psalm-type SecurityConfig = array{
  *     access_denied_url?: scalar|Param|null, // Default: null
@@ -1544,9 +1547,9 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             lifetime?: int|Param, // Default: 31536000
  *             path?: scalar|Param|null, // Default: "/"
  *             domain?: scalar|Param|null, // Default: null
- *             secure?: true|false|"auto"|Param, // Default: null
+ *             secure?: true|false|"auto"|Param, // Default: false
  *             httponly?: bool|Param, // Default: true
- *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: "lax"
+ *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: null
  *             always_remember_me?: bool|Param, // Default: false
  *             remember_me_parameter?: scalar|Param|null, // Default: "_remember_me"
  *         },
@@ -1599,81 +1602,35 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         html_to_text_converter?: scalar|Param|null, // A service implementing the "Symfony\Component\Mime\HtmlToTextConverter\HtmlToTextConverterInterface". // Default: null
  *     },
  * }
- * @psalm-type WebProfilerConfig = array{
- *     toolbar?: bool|array{ // Profiler toolbar configuration
- *         enabled?: bool|Param, // Default: false
- *         ajax_replace?: bool|Param, // Replace toolbar on AJAX requests // Default: false
- *     },
- *     intercept_redirects?: bool|Param, // Default: false
- *     excluded_ajax_paths?: scalar|Param|null, // Default: "^/((index|app(_[\\w]+)?)\\.php/)?_wdt"
- * }
- * @psalm-type StimulusConfig = array{
- *     controller_paths?: list<scalar|Param|null>,
- *     controllers_json?: scalar|Param|null, // Default: "%kernel.project_dir%/assets/controllers.json"
- * }
- * @psalm-type TwigComponentConfig = array{
- *     defaults?: array<string, Param|string|array{ // Default: []
- *         template_directory?: scalar|Param|null, // Default: "components"
- *         name_prefix?: scalar|Param|null, // Default: ""
- *     }>,
- *     anonymous_template_directory?: scalar|Param|null, // Defaults to `components`
- *     profiler?: bool|array{ // Enables the profiler for Twig Component
- *         enabled?: bool|Param, // Default: "%kernel.debug%"
- *         collect_components?: bool|Param, // Collect components instances // Default: true
- *     },
- * }
- * @psalm-type UxIconsConfig = array{
- *     icon_dir?: scalar|Param|null, // The local directory where icons are stored. // Default: "%kernel.project_dir%/assets/icons"
- *     default_icon_attributes?: array<string, scalar|Param|null>,
- *     icon_sets?: array<string, array{ // the icon set prefix (e.g. "acme") // Default: []
- *         path?: scalar|Param|null, // The local icon set directory path. (cannot be used with 'alias')
- *         alias?: scalar|Param|null, // The remote icon set identifier. (cannot be used with 'path')
- *         icon_attributes?: array<string, scalar|Param|null>,
- *         suffixes?: array<string, array{ // The suffix name (e.g. "solid", "20-solid") // Default: []
- *             icon_attributes?: array<string, scalar|Param|null>,
- *         }>,
- *     }>,
- *     aliases?: array<string, string|Param>,
- *     iconify?: bool|array{ // Configuration for the remote icon service.
- *         enabled?: bool|Param, // Default: true
- *         on_demand?: bool|Param, // Whether to download icons "on demand". // Default: true
- *         auto_lock?: bool|Param, // Persist "on demand" icons to the local icon directory (see "icon_dir"). Recommended in dev only. Requires "on_demand" to be enabled. // Default: false
- *         endpoint?: scalar|Param|null, // The endpoint for the Iconify icons API. // Default: "https://api.iconify.design"
- *     },
- *     ignore_not_found?: bool|Param, // Ignore error when an icon is not found. Set to 'true' to fail silently. // Default: false
- * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
  *     services?: ServicesConfig,
  *     doctrine?: DoctrineConfig,
- *     patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *     framework?: FrameworkConfig,
  *     monolog?: MonologConfig,
+ *     patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
+ *     patchlevel_event_sourcing_admin?: PatchlevelEventSourcingAdminConfig,
  *     security?: SecurityConfig,
  *     twig?: TwigConfig,
- *     web_profiler?: WebProfilerConfig,
- *     stimulus?: StimulusConfig,
- *     twig_component?: TwigComponentConfig,
- *     ux_icons?: UxIconsConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
- *         doctrine?: DoctrineConfig,
- *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *         debug?: DebugConfig,
+ *         doctrine?: DoctrineConfig,
  *         framework?: FrameworkConfig,
  *         monolog?: MonologConfig,
+ *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
  *         doctrine?: DoctrineConfig,
- *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *         framework?: FrameworkConfig,
  *         monolog?: MonologConfig,
+ *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *         sentry?: SentryConfig,
  *     },
  *     "when@test"?: array{
@@ -1681,11 +1638,11 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         parameters?: ParametersConfig,
  *         services?: ServicesConfig,
  *         dama_doctrine_test?: DamaDoctrineTestConfig,
- *         doctrine?: DoctrineConfig,
- *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *         debug?: DebugConfig,
+ *         doctrine?: DoctrineConfig,
  *         framework?: FrameworkConfig,
  *         monolog?: MonologConfig,
+ *         patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
