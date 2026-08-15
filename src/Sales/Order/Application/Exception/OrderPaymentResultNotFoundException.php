@@ -10,6 +10,6 @@ final class OrderPaymentResultNotFoundException extends ResultNotFoundException
 {
     public static function forReference(string $reference): self
     {
-        return new self(\sprintf('Order payment referenced "%s" not found.', $reference));
+        return new self(\sprintf('OrderPayment referenced "%s" not found.', $reference));
     }
 }

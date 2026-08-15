@@ -10,6 +10,6 @@ final class ApiTokenCredentialResultNotFoundException extends ResultNotFoundExce
 {
     public static function forIdentifier(string $identifier): self
     {
-        return new self(\sprintf('API token credential identified by "%s" not found.', $identifier));
+        return new self(\sprintf('ApiTokenCredential identified by "%s" not found.', $identifier));
     }
 }
