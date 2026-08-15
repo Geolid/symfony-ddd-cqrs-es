@@ -56,13 +56,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
         CustomerTestFactory::new()->withId($identity->id()->toString())->store();
 
         // When
-        $crawler = $client->request('GET', '/login');
+        $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/sales/orders');
+        self::assertResponseRedirects($this->path('sales_order_list'));
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="nav-logout"]');
     }
@@ -82,13 +82,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->store();
 
         // When
-        $crawler = $client->request('GET', '/login');
+        $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'wrong password']);
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="login-error"]');
         self::assertSelectorExists('[data-testid="nav-login"]');
@@ -109,13 +109,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->store();
 
         // When
-        $crawler = $client->request('GET', '/login');
+        $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects('/login');
+        self::assertResponseRedirects($this->path('security_login'));
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="login-error"]');
     }
@@ -129,7 +129,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $identity);
 
         // When
-        $client->request('GET', '/logout');
+        $client->request('GET', $this->path('_logout_main'));
 
         // Then
         $client->followRedirect();

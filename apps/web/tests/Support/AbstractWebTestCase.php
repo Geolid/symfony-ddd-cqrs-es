@@ -15,6 +15,7 @@ use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Web\Security\PasswordUserProvider;
 
 abstract class AbstractWebTestCase extends WebTestCase
@@ -38,9 +39,17 @@ abstract class AbstractWebTestCase extends WebTestCase
         return $client;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
+    protected function path(string $route, array $params = []): string
+    {
+        return $this->service(UrlGeneratorInterface::class)->generate($route, $params);
+    }
+
     protected function logIn(KernelBrowser $client, string $login, string $password): void
     {
-        $crawler = $client->request('GET', '/login');
+        $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
         $form->setValues(['login' => $login, 'password' => $password]);
         $client->submit($form);
