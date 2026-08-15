@@ -16,6 +16,7 @@ use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -36,6 +37,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private string $customerId;
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;
+    private int $totalAmountInCents;
     private OrderState $status;
     private bool $billingAddressErased;
 
@@ -57,6 +59,21 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public function billingAddress(): PostalAddress
     {
         return $this->billingAddress;
+    }
+
+    public function totalAmountInCents(): int
+    {
+        return $this->totalAmountInCents;
+    }
+
+    /**
+     * @throws OrderAlreadyCancelledException
+     */
+    public function ensureNotCancelled(): void
+    {
+        if ($this->status->isCancelled()) {
+            throw OrderAlreadyCancelledException::forId($this->id);
+        }
     }
 
     /**
@@ -196,6 +213,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             FullName::of($event->billingAddress['firstName'], $event->billingAddress['lastName']),
             Address::of($event->billingAddress['street'], $event->billingAddress['postalCode'], $event->billingAddress['city']),
         );
+        $this->totalAmountInCents = $event->totalAmountInCents;
         $this->status = OrderState::PLACED;
         $this->billingAddressErased = false;
     }

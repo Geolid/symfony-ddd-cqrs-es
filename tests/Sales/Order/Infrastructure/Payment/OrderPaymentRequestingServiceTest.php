@@ -7,12 +7,11 @@ namespace Sales\Tests\Order\Infrastructure\Payment;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
-use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -33,7 +32,6 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
 
         $this->paymentGateway = new DummyPaymentGateway();
         $this->service = new OrderPaymentRequestingService(
-            $this->service(OrderFinderInterface::class),
             $this->service(OrderPaymentFinderInterface::class),
             $this->service(OrderRepositoryInterface::class),
             $this->paymentGateway,
@@ -84,7 +82,7 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
     public function itFailsWhenTheOrderDoesNotExist(): void
     {
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(OrderNotFoundException::class);
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');
