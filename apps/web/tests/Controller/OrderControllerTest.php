@@ -34,7 +34,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-locale@example.com'));
+        $identity = $this->registerCustomer('buyer-locale@example.com');
+        $this->loginAs($client, $identity);
+        OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withTotalAmountInCents(1_750)->withoutIncrementalIds()->store();
 
         // When
         $client->request('GET', $path);
@@ -42,6 +44,63 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseIsSuccessful();
         self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
+    }
+
+    #[Test]
+    public function itRefusesAnonymousAccessToTheList(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', '/sales/orders');
+
+        // Then
+        self::assertResponseRedirects('/login');
+    }
+
+    #[Test]
+    #[DataProvider('provideLocalizedOrdersPath')]
+    public function itShowsOrderDetail(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = $this->registerCustomer('buyer-locale-show@example.com');
+        $this->loginAs($client, $identity);
+        $order = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store();
+
+        // When
+        $client->request('GET', \sprintf('%s/%s', $path, $order->id()->toString()));
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+    }
+
+    #[Test]
+    public function itRefusesToShowAnotherCustomersOrder(): void
+    {
+        // Given
+        $client = self::browser();
+        $owner = $this->registerCustomer('owner@example.com');
+        $order = OrderTestFactory::new()->withCustomerId($owner->id()->toString())->withoutIncrementalIds()->store();
+        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
+
+        // When
+        $client->request('GET', \sprintf('/sales/orders/%s', $order->id()->toString()));
+
+        // Then
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedOrdersPath(): iterable
+    {
+        yield 'en' => ['en', '/sales/orders'];
+        yield 'fr' => ['fr', '/ventes/commandes'];
     }
 
     #[Test]
@@ -61,6 +120,53 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSelectorExists('[data-testid="place-order-form"]');
     }
 
+    #[Test]
+    public function itPlacesAndRedirectsToItsDetail(): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // When
+        $crawler = $client->request('GET', '/sales/orders/place');
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+        ]);
+        $client->submit($form);
+
+        // Then
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#^/sales/orders/[0-9a-f-]{36}$#', $location);
+    }
+
+    #[Test]
+    public function itRedirectsToTheCheckoutAddressFormWhenAddressesAreIncomplete(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->store();
+        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-9@example.com')->store();
+        $this->loginAs($client, $identity);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // When
+        $crawler = $client->request('GET', '/sales/orders/place');
+        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
+            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
+        ]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
+    }
+
     /**
      * @return iterable<string, array{string, string}>
      */
@@ -71,67 +177,13 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    #[DataProvider('provideLocalizedOrdersPath')]
-    public function itShowsOrderDetail(string $locale, string $path): void
-    {
-        // Given
-        $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-locale-show@example.com'));
-        $id = $this->placeOrder($client);
-
-        // When
-        $client->request('GET', \sprintf('%s/%s', $path, $id));
-
-        // Then
-        self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
-    }
-
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function provideLocalizedOrdersPath(): iterable
-    {
-        yield 'en' => ['en', '/sales/orders'];
-        yield 'fr' => ['fr', '/ventes/commandes'];
-    }
-
-    #[Test]
-    public function itPlacesAndRedirectsToItsDetail(): void
-    {
-        // Given
-        $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
-
-        // When
-        $id = $this->placeOrder($client);
-
-        // Then
-        self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-    }
-
-    #[Test]
-    public function itShowsTheOrderTotalInTheList(): void
-    {
-        // Given
-        $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-2@example.com'));
-        $this->placeOrder($client);
-
-        // When
-        $client->request('GET', '/sales/orders');
-
-        // Then
-        self::assertSelectorTextContains('[data-testid="order-total"]', '17.50');
-    }
-
-    #[Test]
     public function itPaysForAPlacedOrder(): void
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-3@example.com'));
-        $id = $this->placeOrder($client);
+        $identity = $this->registerCustomer('buyer-3@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
         $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
@@ -145,8 +197,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-8@example.com'));
-        $id = $this->placeOrder($client);
+        $identity = $this->registerCustomer('buyer-8@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
         $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
 
         // When
@@ -174,49 +227,13 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRedirectsToTheCheckoutAddressFormWhenAddressesAreIncomplete(): void
-    {
-        // Given
-        $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-9@example.com')->store();
-        $this->loginAs($client, $identity);
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-
-        // When
-        $crawler = $client->request('GET', '/sales/orders/place');
-        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
-        $prefix = $form->getName();
-        $form->setValues([
-            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
-            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
-        ]);
-        $client->submit($form);
-
-        // Then
-        self::assertResponseRedirects('/checkout/address?return_to=sales_order_place');
-    }
-
-    #[Test]
-    public function itRefusesAnonymousAccess(): void
-    {
-        // Given
-        $client = self::browser();
-
-        // When
-        $client->request('GET', '/sales/orders');
-
-        // Then
-        self::assertResponseRedirects('/login');
-    }
-
-    #[Test]
     public function itCancelsAPlacedOrder(): void
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-4@example.com'));
-        $id = $this->placeOrder($client);
+        $identity = $this->registerCustomer('buyer-4@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
@@ -232,8 +249,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
-        $id = $this->placeOrder($client);
+        $identity = $this->registerCustomer('buyer-5@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
         $commandBus = $this->service(CommandBusInterface::class);
         $commandBus->dispatch(new ConfirmOrder($id));
         $commandBus->dispatch(new DispatchOrder($id));
@@ -255,8 +273,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-6@example.com'));
-        $id = $this->placeOrder($client);
+        $identity = $this->registerCustomer('buyer-6@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), ['_token' => 'invalid']);
@@ -270,34 +289,14 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('owner@example.com'));
-        $id = $this->placeOrder($client);
-
-        $client->request('GET', '/logout');
-        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
+        $owner = $this->registerCustomer('owner-cancel@example.com');
+        $id = OrderTestFactory::new()->withCustomerId($owner->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
+        $this->loginAs($client, $this->registerCustomer('intruder-cancel@example.com'));
 
         // When
         $client->request('POST', \sprintf('/sales/orders/%s/cancel', $id), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
         ]);
-
-        // Then
-        self::assertResponseStatusCodeSame(403);
-    }
-
-    #[Test]
-    public function itRefusesToShowAnotherCustomersOrder(): void
-    {
-        // Given
-        $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('owner@example.com'));
-        $id = $this->placeOrder($client);
-
-        $client->request('GET', '/logout');
-        $this->loginAs($client, $this->registerCustomer('intruder@example.com'));
-
-        // When
-        $client->request('GET', \sprintf('/sales/orders/%s', $id));
 
         // Then
         self::assertResponseStatusCodeSame(403);
@@ -326,28 +325,5 @@ final class OrderControllerTest extends AbstractWebTestCase
             ->store();
 
         return $identity;
-    }
-
-    private function placeOrder(KernelBrowser $client): string
-    {
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-
-        $crawler = $client->request('GET', '/sales/orders/place');
-        $form = $crawler->filter('[data-testid="place-order-form"]')->form();
-        $prefix = $form->getName();
-
-        $form->setValues([
-            \sprintf('%s[lines][0][productId]', $prefix) => $product->id()->toString(),
-            \sprintf('%s[lines][0][quantity]', $prefix) => '1',
-        ]);
-
-        $client->submit($form);
-
-        $location = (string) $client->getResponse()->headers->get('Location');
-        if (1 !== preg_match('#/sales/orders/([0-9a-f-]{36})$#', $location, $matches)) {
-            self::fail(\sprintf('Placing the order did not redirect to its detail page: "%s".', $location));
-        }
-
-        return $matches[1];
     }
 }
