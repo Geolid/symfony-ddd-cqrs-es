@@ -27,7 +27,6 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
             'id' => $event->id,
             'label' => $event->label,
             'unit_amount_in_cents' => $event->unitAmountInCents,
-            'delisted' => 0,
         ]);
     }
 
@@ -44,7 +43,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
     #[Subscribe(ProductDelisted::class)]
     public function onProductDelisted(ProductDelisted $event): void
     {
-        $this->connection->update(self::TABLE, ['delisted' => 1], ['id' => $event->id]);
+        $this->connection->delete(self::TABLE, ['id' => $event->id]);
     }
 
     /**
@@ -56,7 +55,6 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('label', Types::STRING, ['length' => 255]);
         $table->addColumn('unit_amount_in_cents', Types::INTEGER);
-        $table->addColumn('delisted', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

@@ -12,10 +12,11 @@ use Support\AbstractIntegrationTestCase;
 final class ListProductsHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsProducts(): void
+    public function itLists(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
 
         // When
         $result = $this->ask(new ListProducts());
@@ -25,7 +26,6 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id()->toString(), $result->items[0]->id);
         self::assertSame('Espresso cups, set of 6', $result->items[0]->label);
         self::assertSame(1_750, $result->items[0]->unitAmountInCents);
-        self::assertFalse($result->items[0]->delisted);
         self::assertSame(1, $result->pagination->totalItems);
         self::assertSame(1, $result->pagination->currentPage);
         self::assertSame(20, $result->pagination->itemsPerPage);
@@ -33,45 +33,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsProductsExcludingDelistedByDefault(): void
-    {
-        // Given
-        $listed = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
-
-        // When
-        $result = $this->ask(new ListProducts());
-
-        // Then
-        self::assertCount(1, $result->items);
-        self::assertSame($listed->id()->toString(), $result->items[0]->id);
-        self::assertSame('Espresso cups, set of 6', $result->items[0]->label);
-        self::assertSame(1_750, $result->items[0]->unitAmountInCents);
-        self::assertFalse($result->items[0]->delisted);
-    }
-
-    #[Test]
-    public function itListsDelistedProductsWhenAsked(): void
-    {
-        // Given
-        ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(990)->delisted()->store();
-
-        // When
-        $result = $this->ask(new ListProducts(includeDelisted: true));
-
-        // Then
-        self::assertCount(2, $result->items);
-        self::assertSame('Espresso cups, set of 6', $result->items[0]->label);
-        self::assertSame(1_750, $result->items[0]->unitAmountInCents);
-        self::assertFalse($result->items[0]->delisted);
-        self::assertSame('Saucer', $result->items[1]->label);
-        self::assertSame(990, $result->items[1]->unitAmountInCents);
-        self::assertTrue($result->items[1]->delisted);
-    }
-
-    #[Test]
-    public function itPaginatesProducts(): void
+    public function itPaginates(): void
     {
         // Given
         ProductTestFactory::new()->many(5)->store();

@@ -14,7 +14,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<ProductResult>
  *
- * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string, delisted: string|int}
+ * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string}
  */
 final class DbalProductFinder extends AbstractDbalCollectionFinder implements ProductFinderInterface
 {
@@ -34,13 +34,6 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
         return $this->mapRow($row);
     }
 
-    public function withoutDelisted(): static
-    {
-        return $this->filter(static function (QueryBuilder $qb): void {
-            $qb->andWhere('delisted = 0');
-        });
-    }
-
     public function sortedByLabel(): static
     {
         return $this->filter(static function (QueryBuilder $qb): void {
@@ -50,7 +43,7 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'label', 'unit_amount_in_cents', 'delisted')
+        $qb->select('id', 'label', 'unit_amount_in_cents')
             ->from(DbalProductProjector::TABLE);
     }
 
@@ -63,7 +56,6 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
             id: $row['id'],
             label: $row['label'],
             unitAmountInCents: (int) $row['unit_amount_in_cents'],
-            delisted: (bool) $row['delisted'],
         );
     }
 }

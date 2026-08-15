@@ -31,13 +31,9 @@ final readonly class ProductCollectionProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
-        /** @var array{includeDelisted?: string, ...} $filters */
-        $filters = $context['filters'] ?? [];
-
         $result = $this->queryBus->ask(new ListProducts(
             page: (int) $this->pagination->getPage($context),
             itemsPerPage: (int) $this->pagination->getLimit($operation, $context),
-            includeDelisted: filter_var($filters['includeDelisted'] ?? false, \FILTER_VALIDATE_BOOL),
         ));
 
         return new TraversablePaginator(

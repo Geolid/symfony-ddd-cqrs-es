@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
@@ -15,17 +16,17 @@ use Support\AbstractIntegrationTestCase;
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDelistsAProduct(): void
+    public function itDelists(): void
     {
         // Given
         $product = ProductTestFactory::new()->store();
 
+        // Then
+        $this->expectException(ProductResultNotFoundException::class);
+
         // When
         $this->dispatch(new DelistProduct($product->id()->toString()));
-
-        // Then
-        $result = $this->service(ProductFinderInterface::class)->ofId($product->id()->toString());
-        self::assertTrue($result->delisted);
+        $this->service(ProductFinderInterface::class)->ofId($product->id()->toString());
     }
 
     #[Test]
@@ -42,7 +43,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyDelistedProduct(): void
+    public function itIgnoresAnAlreadyDelisted(): void
     {
         // Given
         $product = ProductTestFactory::new()->delisted()->store();
