@@ -64,6 +64,25 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
 
+    #[Test]
+    public function itProjectsTheCompletionOnOrderCompleted(): void
+    {
+        // Given
+        $other = OrderTestFactory::new()->store();
+
+        // When
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->store();
+
+        // Then
+        $row = $this->fetchRow($order->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::COMPLETED->value, $row['status']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+    }
+
     /**
      * @return Row|false
      */

@@ -73,8 +73,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
                 reference: $this->reference->toString(),
                 voidedAt: $authorizedAt->format(\DateTimeInterface::ATOM),
             ));
-
-            return;
         }
 
         if (!$this->status->isRequested()) {
@@ -133,8 +131,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
                 reference: $this->reference->toString(),
                 voidedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
             ));
-
-            return;
         }
 
         if ($this->status->isCaptured()) {

@@ -57,6 +57,25 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['captured_at']);
     }
 
+    #[Test]
+    public function itProjectsTheFailureOnOrderPaymentFailed(): void
+    {
+        // Given
+        $other = OrderPaymentTestFactory::new()->store();
+
+        // When
+        $orderPayment = OrderPaymentTestFactory::new()->failed()->store();
+
+        // Then
+        $row = $this->fetchRow($orderPayment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderPaymentStatus::FAILED->value, $row['status']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
+    }
+
     /**
      * @return Row|false
      */
