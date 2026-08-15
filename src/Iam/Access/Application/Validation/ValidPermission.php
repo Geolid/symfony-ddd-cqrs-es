@@ -17,7 +17,7 @@ final class ValidPermission extends Compound
         return [
             new Assert\NotBlank(normalizer: 'trim'),
             new Assert\Type('string'),
-            new Assert\Regex(pattern: Permission::PATTERN, message: 'A permission must be formatted "<subdomain>.<bc>:<action>".'),
+            new Assert\Regex(pattern: Permission::PATTERN, message: 'iam.access.permission.invalid_format'),
             new Assert\Length(max: 64),
             new ValidValueObject(Permission::class),
         ];

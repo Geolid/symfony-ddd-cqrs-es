@@ -6,20 +6,19 @@ namespace Iam\Identity\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
-final readonly class Reason
+final readonly class Password
 {
     private string $value;
 
-    private function __construct(string $value)
+    private function __construct(#[\SensitiveParameter] string $value)
     {
-        $value = trim($value);
-        Assert::notEmpty($value, 'A reason cannot be empty, %s given.');
-        Assert::maxLength($value, 255, 'A reason cannot exceed %2$d characters, %s given.');
+        Assert::minLength($value, 12, 'A password must be at least %2$d characters.');
+        Assert::maxLength($value, 4096, 'A password cannot exceed %2$d characters.');
 
         $this->value = $value;
     }
 
-    public static function fromString(string $value): self
+    public static function fromString(#[\SensitiveParameter] string $value): self
     {
         return new self($value);
     }

@@ -7,8 +7,11 @@ use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenExcep
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Domain\Exception\CompromisedPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
+use Iam\Identity\Domain\Exception\WeakPasswordException;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -41,6 +44,9 @@ return static function (ContainerConfigurator $container): void {
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            PasswordUnchangedException::class => ['log_level' => 'info', 'status_code' => 422],
+            WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
+            CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
             // Sales
             CustomerEmailAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],

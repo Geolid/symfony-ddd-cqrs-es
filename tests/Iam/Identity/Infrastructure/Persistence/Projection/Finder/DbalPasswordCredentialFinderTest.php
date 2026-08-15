@@ -9,6 +9,7 @@ use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -32,8 +33,9 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withLogin('operator')
-            ->withPassword('S3cr3t!')
+            ->withPassword('S3cr3tPassw0rd!')
             ->withHasher(new DummySecretHasher())
+            ->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When
@@ -43,7 +45,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($credential->id()->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('operator', $result->login);
-        self::assertSame('hashed:S3cr3t!', $result->hash);
+        self::assertSame('hashed:S3cr3tPassw0rd!', $result->hash);
         self::assertSame(IdentityStatus::ACTIVE, $result->identityStatus);
     }
 
@@ -65,8 +67,9 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withLogin('operator')
-            ->withPassword('S3cr3t!')
+            ->withPassword('S3cr3tPassw0rd!')
             ->withHasher(new DummySecretHasher())
+            ->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When
@@ -76,7 +79,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($credential->id()->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('operator', $result->login);
-        self::assertSame('hashed:S3cr3t!', $result->hash);
+        self::assertSame('hashed:S3cr3tPassw0rd!', $result->hash);
         self::assertSame(IdentityStatus::ACTIVE, $result->identityStatus);
     }
 

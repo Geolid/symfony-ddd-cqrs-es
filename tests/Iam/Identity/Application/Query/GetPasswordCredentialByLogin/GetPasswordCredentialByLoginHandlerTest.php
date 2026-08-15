@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Application\Query\GetPasswordCredentialByLogin;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -20,6 +21,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         $credential = PasswordCredentialTestFactory::new()
             ->withLogin('operator')
             ->withHasher(new DummySecretHasher())
+            ->withPolicy(new DummyPasswordPolicy())
             ->store();
 
         // When

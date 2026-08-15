@@ -7,9 +7,14 @@ namespace Iam\Identity\Domain;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
 use Iam\Identity\Domain\Event\PasswordCredentialDefined;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
+use Iam\Identity\Domain\Exception\CompromisedPasswordException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
+use Iam\Identity\Domain\Exception\WeakPasswordException;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -26,6 +31,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     #[Id]
     private PasswordCredentialId $id;
     private Login $login;
+    private string $hash;
 
     public function id(): PasswordCredentialId
     {
@@ -37,36 +43,67 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         return $this->login;
     }
 
+    /**
+     * @throws WeakPasswordException
+     * @throws CompromisedPasswordException
+     */
     public static function define(
         PasswordCredentialId $id,
         IdentityId $identityId,
         Login $login,
-        string $plainPassword,
+        #[\SensitiveParameter]
+        Password $password,
+        PasswordPolicyInterface $policy,
         SecretHasherInterface $hasher,
         \DateTimeImmutable $definedAt,
     ): self {
+        if (!$policy->isStrongEnough($password)) {
+            throw WeakPasswordException::forIdentity($identityId);
+        }
+
+        if ($policy->isCompromised($password)) {
+            throw CompromisedPasswordException::forIdentity($identityId);
+        }
+
         $self = new self();
         $self->recordThat(new PasswordCredentialDefined(
             id: $id->toString(),
             identityId: $identityId->toString(),
             login: $login->toString(),
-            hash: $hasher->hash($plainPassword),
+            hash: $hasher->hash($password->toString()),
             setAt: $definedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
     }
 
-    public function change(string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $changedAt): void
+    /**
+     * @throws WeakPasswordException
+     * @throws CompromisedPasswordException
+     * @throws PasswordUnchangedException
+     */
+    public function change(#[\SensitiveParameter] Password $password, PasswordPolicyInterface $policy, SecretHasherInterface $hasher, \DateTimeImmutable $changedAt): void
     {
+        if (!$policy->isStrongEnough($password)) {
+            throw WeakPasswordException::forCredential($this->id);
+        }
+
+        if ($policy->isCompromised($password)) {
+            throw CompromisedPasswordException::forCredential($this->id);
+        }
+
+        if ($hasher->verify($this->hash, $password->toString())) {
+            throw PasswordUnchangedException::forId($this->id);
+        }
+
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id->toString(),
-            hash: $hasher->hash($plainPassword),
+            hash: $hasher->hash($password->toString()),
             changedAt: $changedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
-    public function rehash(string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
+    public function rehash(#[\SensitiveParameter] string $plainPassword, SecretHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
     {
         $this->recordThat(new PasswordCredentialRehashed(
             id: $this->id->toString(),
@@ -80,15 +117,18 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     {
         $this->id = PasswordCredentialId::fromString($event->id);
         $this->login = Login::fromString($event->login);
+        $this->hash = $event->hash;
     }
 
     #[Apply]
     private function applyPasswordCredentialChanged(PasswordCredentialChanged $event): void
     {
+        $this->hash = $event->hash;
     }
 
     #[Apply]
     private function applyPasswordCredentialRehashed(PasswordCredentialRehashed $event): void
     {
+        $this->hash = $event->hash;
     }
 }

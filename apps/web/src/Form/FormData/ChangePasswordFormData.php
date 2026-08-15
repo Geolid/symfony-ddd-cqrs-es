@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Symfony\Component\Validator\Constraints as Assert;
+use Iam\Identity\Application\Validation\ValidPassword;
 
 final class ChangePasswordFormData
 {
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 8)]
+    #[ValidPassword]
     public ?string $password = null;
 }

@@ -8,6 +8,7 @@ use Iam\Identity\Application\Processor\ReleaseLoginOnIdentityErased;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -32,7 +33,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()->withIdentityId($identityId)->withLogin('operator')->withHasher(new DummySecretHasher())->store();
+        $credential = PasswordCredentialTestFactory::new()->withIdentityId($identityId)->withLogin('operator')->withHasher(new DummySecretHasher())->withPolicy(new DummyPasswordPolicy())->store();
         $fingerprint = $credential->login()->fingerprint();
         $this->uniqueValues->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
 

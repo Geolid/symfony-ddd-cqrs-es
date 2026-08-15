@@ -83,6 +83,6 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('permission[0]:', $tester->getDisplay());
+        self::assertStringContainsString('permission[0]: iam.access.permission.invalid_format', $tester->getDisplay());
     }
 }

@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\DefinePasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
+use Iam\Identity\Domain\Exception\CompromisedPasswordException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
+use Iam\Identity\Domain\Exception\WeakPasswordException;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
+use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Psr\Clock\ClockInterface;
@@ -28,6 +33,7 @@ final readonly class DefinePasswordCredentialHandler
         private IdentityRepositoryInterface $identities,
         private PasswordCredentialRepositoryInterface $repository,
         private UniqueValueRegistryInterface $uniqueValues,
+        private PasswordPolicyInterface $policy,
         private SecretHasherInterface $hasher,
         private ClockInterface $clock,
     ) {
@@ -38,6 +44,9 @@ final readonly class DefinePasswordCredentialHandler
      * @throws PasswordCredentialNotFoundException
      * @throws IdentityNotActiveException
      * @throws LoginAlreadyTakenException
+     * @throws WeakPasswordException
+     * @throws CompromisedPasswordException
+     * @throws PasswordUnchangedException
      */
     public function __invoke(DefinePasswordCredential $command): void
     {
@@ -45,10 +54,11 @@ final readonly class DefinePasswordCredentialHandler
         $this->identities->load($identityId)->ensureActive();
 
         $id = PasswordCredentialId::forIdentity($identityId->toString());
+        $password = Password::fromString($command->password);
 
         if ($this->repository->has($id)) {
             $credential = $this->repository->load($id);
-            $credential->change($command->password, $this->hasher, $this->clock->now());
+            $credential->change($password, $this->policy, $this->hasher, $this->clock->now());
         } else {
             $login = Login::fromString($command->login);
             $fingerprint = $login->fingerprint();
@@ -63,7 +73,8 @@ final readonly class DefinePasswordCredentialHandler
                 id: $id,
                 identityId: $identityId,
                 login: $login,
-                plainPassword: $command->password,
+                password: $password,
+                policy: $this->policy,
                 hasher: $this->hasher,
                 definedAt: $this->clock->now(),
             );

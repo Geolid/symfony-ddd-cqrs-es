@@ -44,13 +44,36 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $form->setValues([
             \sprintf('%s[login]', $prefix) => 'buyer-2-retry',
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
-            \sprintf('%s[password]', $prefix) => 'another password entirely',
+            \sprintf('%s[password][first]', $prefix) => 'another password entirely',
+            \sprintf('%s[password][second]', $prefix) => 'another password entirely',
         ]);
         $client->submit($form);
 
         // Then
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-testid="flash-error"]');
+    }
+
+    #[Test]
+    public function itRefusesAMismatchedPasswordConfirmation(): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $crawler = $client->request('GET', '/sales/customers/register');
+        $form = $crawler->filter('[data-testid="register-customer-form"]')->form();
+        $prefix = $form->getName();
+        $form->setValues([
+            \sprintf('%s[login]', $prefix) => 'buyer-7',
+            \sprintf('%s[email]', $prefix) => 'buyer-7@example.com',
+            \sprintf('%s[password][first]', $prefix) => 'correct horse battery staple',
+            \sprintf('%s[password][second]', $prefix) => 'a different password entirely',
+        ]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseStatusCodeSame(422);
     }
 
     #[Test]
@@ -62,7 +85,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
 
         // When
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another password');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another Password!42');
 
         // Then
         self::assertResponseRedirects('/login');
@@ -117,7 +140,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $crawler = $client->request('GET', '/sales/customers/profile');
         $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
-        $form->setValues([\sprintf('%s[password]', $prefix) => 'a brand new password']);
+        $form->setValues([\sprintf('%s[password]', $prefix) => 'A Brand New Password!42']);
         $client->submit($form);
 
         // Then
@@ -126,7 +149,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertSelectorExists('[data-testid="flash-success"]');
 
         $client->request('GET', '/logout');
-        $this->logIn($client, 'buyer-5@example.com', 'a brand new password');
+        $this->logIn($client, 'buyer-5@example.com', 'A Brand New Password!42');
         self::assertResponseRedirects('/sales/orders');
     }
 
@@ -138,7 +161,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $form->setValues([
             \sprintf('%s[login]', $prefix) => $login,
             \sprintf('%s[email]', $prefix) => $email,
-            \sprintf('%s[password]', $prefix) => $password,
+            \sprintf('%s[password][first]', $prefix) => $password,
+            \sprintf('%s[password][second]', $prefix) => $password,
         ]);
         $client->submit($form);
     }

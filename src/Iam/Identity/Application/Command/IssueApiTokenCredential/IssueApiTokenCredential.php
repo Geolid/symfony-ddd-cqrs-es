@@ -12,6 +12,7 @@ final readonly class IssueApiTokenCredential implements CommandInterface
         public string $id,
         public string $identityId,
         public string $identifier,
+        #[\SensitiveParameter]
         public string $secret,
         public string $label,
         public string $expiresAt,

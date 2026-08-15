@@ -77,6 +77,6 @@ final class ValidPermissionTest extends CompoundConstraintTestCase
 
     private static function regex(): Assert\Regex
     {
-        return new Assert\Regex(pattern: Permission::PATTERN, message: 'A permission must be formatted "<subdomain>.<bc>:<action>".');
+        return new Assert\Regex(pattern: Permission::PATTERN, message: 'iam.access.permission.invalid_format');
     }
 }

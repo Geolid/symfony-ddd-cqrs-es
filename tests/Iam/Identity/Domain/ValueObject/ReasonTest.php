@@ -33,6 +33,23 @@ final class ReasonTest extends TestCase
     }
 
     #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $a = Reason::fromString('Suspected fraudulent activity');
+        $b = Reason::fromString('  Suspected fraudulent activity  ');
+        $other = Reason::fromString('Requested by the account holder');
+
+        // When
+        $equalResult = $a->equals($b);
+        $differentResult = $a->equals($other);
+
+        // Then
+        self::assertTrue($equalResult);
+        self::assertFalse($differentResult);
+    }
+
+    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {

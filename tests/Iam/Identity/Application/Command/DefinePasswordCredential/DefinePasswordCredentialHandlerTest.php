@@ -9,6 +9,9 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordUnchangedException;
+use Iam\Identity\Domain\Exception\WeakPasswordException;
+use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -37,7 +40,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
@@ -52,15 +55,50 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
             ->withLogin('operator')
+            ->withPassword('OldStr0ngP@ssw0rd123!')
             ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
         self::assertSame('operator', $result->login);
+    }
+
+    #[Test]
+    public function itFailsWhenTheNewPasswordMatchesTheCurrentOne(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id()->toString())
+            ->withLogin('operator')
+            ->withPassword('MyStr0ngP@ssw0rd123!')
+            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->store();
+
+        // Then
+        $this->expectException(PasswordUnchangedException::class);
+
+        // When
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
+    }
+
+    #[Test]
+    public function itFailsWhenTheNewPasswordIsTooWeak(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+
+        // Then
+        $this->expectException(WeakPasswordException::class);
+
+        // When
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'passwordpassword'));
     }
 
     #[Test]
@@ -74,7 +112,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
     }
 
     #[Test]
@@ -84,7 +122,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential(IdentityId::generate()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential(IdentityId::generate()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 
     #[Test]
@@ -97,7 +135,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 
     #[Test]
@@ -110,6 +148,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 }
