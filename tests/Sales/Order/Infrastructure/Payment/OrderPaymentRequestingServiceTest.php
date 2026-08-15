@@ -56,7 +56,23 @@ final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCas
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
         self::assertNotNull($this->paymentGateway->billingAddress);
-        self::assertTrue($order->billingAddress()->equals($this->paymentGateway->billingAddress));
+        $billingAddress = $order->billingAddress();
+        self::assertSame(
+            [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+            ],
+            [
+                'firstName' => $this->paymentGateway->billingAddress->fullName->firstName,
+                'lastName' => $this->paymentGateway->billingAddress->fullName->lastName,
+                'street' => $this->paymentGateway->billingAddress->address->street,
+                'postalCode' => $this->paymentGateway->billingAddress->address->postalCode,
+                'city' => $this->paymentGateway->billingAddress->address->city,
+            ],
+        );
 
         $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($order->id()->toString());
         self::assertNotNull($orderPayment);

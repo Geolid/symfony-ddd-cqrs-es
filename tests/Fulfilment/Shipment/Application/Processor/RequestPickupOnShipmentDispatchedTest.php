@@ -53,7 +53,22 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);
-        self::assertTrue($shippingAddress->equals($this->carrier->deliveryAddress));
+        self::assertSame(
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+            [
+                'firstName' => $this->carrier->deliveryAddress->fullName->firstName,
+                'lastName' => $this->carrier->deliveryAddress->fullName->lastName,
+                'street' => $this->carrier->deliveryAddress->address->street,
+                'postalCode' => $this->carrier->deliveryAddress->address->postalCode,
+                'city' => $this->carrier->deliveryAddress->address->city,
+            ],
+        );
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
