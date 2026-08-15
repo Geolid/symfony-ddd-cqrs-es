@@ -17,7 +17,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 {
     #[Test]
     #[DataProvider('provideLocalizedPath')]
-    public function itShowsTheAddressForm(string $locale, string $path): void
+    public function itShowsAddress(string $locale, string $path): void
     {
         // Given
         $client = self::browser();

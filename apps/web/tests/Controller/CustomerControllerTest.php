@@ -15,7 +15,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 {
     #[Test]
     #[DataProvider('provideLocalizedRegisterPath')]
-    public function itShowsTheRegisterForm(string $locale, string $path): void
+    public function itShowsRegister(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
@@ -40,7 +40,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
     #[Test]
     #[DataProvider('provideLocalizedProfilePath')]
-    public function itShowsTheProfileForm(string $locale, string $path): void
+    public function itShowsProfile(string $locale, string $path): void
     {
         // Given
         $client = self::browser();

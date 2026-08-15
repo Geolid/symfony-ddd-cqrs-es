@@ -29,8 +29,8 @@ final class OrderControllerTest extends AbstractWebTestCase
     private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
 
     #[Test]
-    #[DataProvider('provideLocalizedOrderPrefix')]
-    public function itShowsTheOrderList(string $locale, string $path): void
+    #[DataProvider('provideLocalizedOrdersPath')]
+    public function itShowsOrderList(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
@@ -46,7 +46,7 @@ final class OrderControllerTest extends AbstractWebTestCase
 
     #[Test]
     #[DataProvider('provideLocalizedPlacePath')]
-    public function itShowsThePlaceOrderForm(string $locale, string $path): void
+    public function itShowsPlaceOrder(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
@@ -71,8 +71,8 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    #[DataProvider('provideLocalizedOrderPrefix')]
-    public function itShowsTheOrderDetail(string $locale, string $prefix): void
+    #[DataProvider('provideLocalizedOrdersPath')]
+    public function itShowsOrderDetail(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
@@ -80,7 +80,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $id = $this->placeOrder($client);
 
         // When
-        $client->request('GET', \sprintf('%s/%s', $prefix, $id));
+        $client->request('GET', \sprintf('%s/%s', $path, $id));
 
         // Then
         self::assertResponseIsSuccessful();
@@ -90,7 +90,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideLocalizedOrderPrefix(): iterable
+    public static function provideLocalizedOrdersPath(): iterable
     {
         yield 'en' => ['en', '/sales/orders'];
         yield 'fr' => ['fr', '/ventes/commandes'];

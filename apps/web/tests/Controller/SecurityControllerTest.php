@@ -19,7 +19,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
 {
     #[Test]
     #[DataProvider('provideLocalizedPath')]
-    public function itShowsTheLoginForm(string $locale, string $path): void
+    public function itShowsLogin(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
