@@ -182,7 +182,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itChangesThePassword(): void
+    public function itChangesPassword(): void
     {
         // Given
         $client = self::browser();

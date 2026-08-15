@@ -144,7 +144,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRedirectsToTheCheckoutAddressFormWhenAddressesAreIncomplete(): void
+    public function itRedirectsToCheckoutAddressFormWhenAddressesAreIncomplete(): void
     {
         // Given
         $client = self::browser();
