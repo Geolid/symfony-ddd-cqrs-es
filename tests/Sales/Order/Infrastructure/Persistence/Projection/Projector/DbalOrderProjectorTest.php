@@ -52,6 +52,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itProjectsTheConfirmationOnOrderConfirmed(): void
     {
+        // Given
+        $other = OrderTestFactory::new()->store();
+
         // When
         $order = OrderTestFactory::new()->confirmed()->store();
 
@@ -60,11 +63,18 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
 
     #[Test]
     public function itProjectsTheDispatchOnOrderDispatched(): void
     {
+        // Given
+        $other = OrderTestFactory::new()->confirmed()->store();
+
         // When
         $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
 
@@ -73,6 +83,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::DISPATCHED->value, $row['status']);
         self::assertNotNull($row['dispatched_at']);
+
+        $otherRow = $this->fetchRow($other->id()->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::CONFIRMED->value, $otherRow['status']);
     }
 
     #[Test]

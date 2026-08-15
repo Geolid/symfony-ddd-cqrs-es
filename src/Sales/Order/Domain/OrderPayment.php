@@ -120,8 +120,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
                 orderId: $this->orderId,
                 cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
             ));
-
-            return;
         }
 
         if ($this->status->isAuthorized()) {
