@@ -43,7 +43,7 @@ final readonly class PlaceOrderHandler
      */
     public function __invoke(PlaceOrder $command): void
     {
-        $buyer = $this->buyerFinder->ofId($command->customerId)
+        $buyer = $this->buyerFinder->ofIdOrNull($command->customerId)
             ?? throw BuyerNotRegisteredException::forId($command->customerId);
 
         if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {

@@ -35,7 +35,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofId($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id()->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
@@ -57,7 +57,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()->store();
 
         // When
-        $result = $this->finder->ofId($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id()->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
@@ -75,7 +75,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofId($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id()->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
@@ -87,7 +87,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsNoBuyerForAnUnknownCustomer(): void
     {
         // When
-        $result = $this->finder->ofId(Uuid::uuid7()->toString());
+        $result = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);

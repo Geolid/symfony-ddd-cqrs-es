@@ -32,7 +32,7 @@ final readonly class CancelOrdersForCustomerHandler
                 continue;
             }
 
-            if ($this->orderPaymentFinder->ofOrder($order->id)?->status->isCaptured()) {
+            if ($this->orderPaymentFinder->ofOrderOrNull($order->id)?->status->isCaptured()) {
                 continue;
             }
 
