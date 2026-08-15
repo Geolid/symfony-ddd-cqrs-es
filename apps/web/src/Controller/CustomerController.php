@@ -30,7 +30,7 @@ use Web\Form\FormData\RegisterCustomerFormData;
 use Web\Form\RegisterCustomerType;
 use Web\Security\PasswordUser;
 
-#[Route('/sales/customers')]
+#[Route(path: ['en' => '/sales/customers', 'fr' => '/ventes/clients'])]
 final class CustomerController extends AbstractController
 {
     public function __construct(
@@ -45,7 +45,7 @@ final class CustomerController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/register', name: 'sales_customer_register', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/register', 'fr' => '/inscription'], name: 'sales_customer_register', methods: ['GET', 'POST'])]
     public function register(Request $request): Response
     {
         $formData = new RegisterCustomerFormData();
@@ -90,7 +90,7 @@ final class CustomerController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/erase', name: 'sales_customer_erase', methods: ['POST'])]
+    #[Route(path: ['en' => '/erase', 'fr' => '/suppression'], name: 'sales_customer_erase', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function erase(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
@@ -109,7 +109,7 @@ final class CustomerController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/profile', name: 'sales_customer_profile', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/profile', 'fr' => '/profil'], name: 'sales_customer_profile', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function profile(Request $request, #[CurrentUser] PasswordUser $user): Response
     {

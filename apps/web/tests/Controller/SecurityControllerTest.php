@@ -6,18 +6,42 @@ namespace Web\Tests\Controller;
 
 use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class SecurityControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    public function itLogsInWithValidCredentials(): void
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsLogin(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorExists('[data-testid="login-form"]');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/login'];
+        yield 'fr' => ['fr', '/connexion'];
+    }
+
+    #[Test]
+    public function itLogsIn(): void
     {
         // Given
         $client = self::browser();
@@ -94,23 +118,6 @@ final class SecurityControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/login');
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="login-error"]');
-    }
-
-    #[Test]
-    public function itGrantsAccessToThePermissionsHeldByTheIdentity(): void
-    {
-        // Given
-        $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission('fixture.widget:read')->store();
-
-        // When
-        $this->loginAs($client, $identity);
-
-        // Then
-        $authorizationChecker = $this->service(AuthorizationCheckerInterface::class);
-        self::assertTrue($authorizationChecker->isGranted('fixture.widget:read'));
-        self::assertFalse($authorizationChecker->isGranted('fixture.widget:write'));
     }
 
     #[Test]

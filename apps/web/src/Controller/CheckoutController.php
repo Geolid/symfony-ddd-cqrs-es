@@ -20,7 +20,7 @@ use Web\Form\CheckoutAddressesType;
 use Web\Form\FormData\CheckoutAddressesFormData;
 use Web\Security\PasswordUser;
 
-#[Route('/checkout')]
+#[Route(path: ['en' => '/checkout', 'fr' => '/finalisation'])]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class CheckoutController extends AbstractController
 {
@@ -32,7 +32,7 @@ final class CheckoutController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/address', name: 'checkout_address_complete', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/address', 'fr' => '/adresse'], name: 'checkout_address_complete', methods: ['GET', 'POST'])]
     public function completeAddress(
         Request $request,
         #[CurrentUser]

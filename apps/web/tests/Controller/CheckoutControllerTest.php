@@ -6,6 +6,7 @@ namespace Web\Tests\Controller;
 
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -15,26 +16,28 @@ use Web\Tests\Support\AbstractWebTestCase;
 final class CheckoutControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    public function itShowsTheAddressForm(): void
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsAddress(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-1@example.com'));
 
         // When
-        $client->request('GET', '/checkout/address');
+        $client->request('GET', $path);
 
         // Then
         self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
         self::assertSelectorExists('[data-testid="checkout-addresses-form"]');
     }
 
     #[Test]
-    public function itSetsBothAddressesAndRedirectsToTheDefaultReturnRoute(): void
+    public function itRegistersAddressesAndRedirectsToTheDefaultReturnRoute(): void
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-2@example.com');
+        $identity = $this->createCustomer('buyer-2@example.com');
         $this->loginAs($client, $identity);
 
         // When
@@ -44,18 +47,22 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects('/sales/orders/place');
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
-        self::assertNotNull($buyer->shippingAddress);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame('12 rue des Lilas', $buyer->shippingAddress['street']);
-        self::assertSame('8 avenue Foch', $buyer->billingAddress['street']);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
-    public function itCopiesTheShippingAddressToBillingWhenSameAsShippingIsChecked(): void
+    public function itUsesTheSameAddressForBilling(): void
     {
         // Given
         $client = self::browser();
-        $identity = $this->registerCustomer('buyer-3@example.com');
+        $identity = $this->createCustomer('buyer-3@example.com');
         $this->loginAs($client, $identity);
 
         // When
@@ -64,22 +71,39 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         // Then
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame('12 rue des Lilas', $buyer->billingAddress['street']);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
-    public function itSetsBothAddressesAndRedirectsToTheExplicitReturnRoute(): void
+    public function itRegistersAddressesAndRedirectsToTheExplicitReturnRoute(): void
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-4@example.com'));
+        $identity = $this->createCustomer('buyer-4@example.com');
+        $this->loginAs($client, $identity);
 
         // When
         $this->submitAddresses($client, '/checkout/address?return_to=sales_order_place');
 
         // Then
         self::assertResponseRedirects('/sales/orders/place');
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
+        self::assertNotNull($buyer);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $buyer->shippingAddress,
+        );
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            $buyer->billingAddress,
+        );
     }
 
     #[Test]
@@ -87,7 +111,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
+        $this->loginAs($client, $this->createCustomer('buyer-5@example.com'));
 
         // When
         $client->request('GET', '/checkout/address?return_to=security_login');
@@ -107,6 +131,15 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/login');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/checkout/address'];
+        yield 'fr' => ['fr', '/finalisation/adresse'];
     }
 
     private function submitAddresses(KernelBrowser $client, string $uri, bool $sameAsShipping = false): void
@@ -137,7 +170,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $client->submit($form);
     }
 
-    private function registerCustomer(string $email): Identity
+    private function createCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
         CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();

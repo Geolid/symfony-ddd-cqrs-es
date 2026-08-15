@@ -11,7 +11,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class SecurityController extends AbstractController
 {
-    #[Route('/login', name: 'security_login', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/login', 'fr' => '/connexion'], name: 'security_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         return $this->render('security/login.html.twig', [
