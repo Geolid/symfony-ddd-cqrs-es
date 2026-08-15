@@ -140,8 +140,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->submit($form);
 
         // Then
-        $location = (string) $client->getResponse()->headers->get('Location');
-        self::assertMatchesRegularExpression('#^/sales/orders/[0-9a-f-]{36}$#', $location);
+        self::assertResponseRedirects();
+        self::assertMatchesRegularExpression('#^/sales/orders/[0-9a-f-]{36}$#', (string) $client->getResponse()->headers->get('Location'));
     }
 
     #[Test]
