@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDeletesTheCustomer(): void
+    public function itErases(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->store();
