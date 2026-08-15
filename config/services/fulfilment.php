@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
+use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderConfirmed;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -14,6 +14,6 @@ return static function (ContainerConfigurator $container): void {
 
     if ('test' === $container->env()) {
         // Fetched directly by type; must be public for that.
-        $services->get(CreateShipmentOnOrderPaymentCaptured::class)->public();
+        $services->get(CreateShipmentOnOrderConfirmed::class)->public();
     }
 };

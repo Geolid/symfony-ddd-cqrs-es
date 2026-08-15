@@ -61,7 +61,7 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 |---|---|
 | `apps/api` | JSON HTTP (API Platform) for orders and shipments |
 | `apps/web` | A small Twig backoffice (register a customer, place and cancel an order, list shipments, erase a customer) |
-| `apps/cli` | Console commands (bootstrap, `fulfilment:shipment:dispatch-pending`) |
+| `apps/cli` | Console commands (bootstrap, `fulfilment:shipment:manifest-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
 A Delivery Mechanism only ever depends on a BC's Open Host Service — its `#[AsDrivingPort]`

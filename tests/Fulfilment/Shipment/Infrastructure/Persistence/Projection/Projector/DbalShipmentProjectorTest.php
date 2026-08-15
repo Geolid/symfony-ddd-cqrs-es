@@ -44,6 +44,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // When
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id()->toString())
+            ->manifested()
             ->dispatched()
             ->tracked('ACME-4Q7X2K9')
             ->store();

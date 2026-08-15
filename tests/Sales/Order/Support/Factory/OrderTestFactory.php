@@ -71,6 +71,21 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
     }
 
+    public function confirmed(\DateTimeImmutable $confirmedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->confirm($confirmedAt));
+    }
+
+    public function dispatched(\DateTimeImmutable $dispatchedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
+    }
+
+    public function completed(\DateTimeImmutable $completedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->complete($completedAt));
+    }
+
     public function billingAddressErased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(static fn (Order $order) => $order->eraseBillingAddress($erasedAt));

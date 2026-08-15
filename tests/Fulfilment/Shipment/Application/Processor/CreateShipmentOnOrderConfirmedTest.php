@@ -6,38 +6,38 @@ namespace Fulfilment\Tests\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderPaymentCaptured;
+use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderConfirmed;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
+use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Domain\Order;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegrationTestCase
+final class CreateShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
 {
-    private CreateShipmentOnOrderPaymentCaptured $processor;
+    private CreateShipmentOnOrderConfirmed $processor;
     private ShipmentFinderInterface $shipmentFinder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CreateShipmentOnOrderPaymentCaptured::class);
+        $this->processor = $this->service(CreateShipmentOnOrderConfirmed::class);
         $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
     }
 
     #[Test]
-    public function itOpensAShipmentOnOrderPaymentCaptured(): void
+    public function itOpensAShipmentOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();
 
         // When
-        ($this->processor)($this->orderPaymentCaptured($order));
+        ($this->processor)($this->orderConfirmed($order));
 
         // Then
         $results = iterator_to_array($this->shipmentFinder, false);
@@ -50,14 +50,14 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
     }
 
     #[Test]
-    public function itOpensASingleShipmentWhenReplayedOnOrderPaymentCaptured(): void
+    public function itOpensASingleShipmentWhenReplayedOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();
-        ($this->processor)($this->orderPaymentCaptured($order));
+        ($this->processor)($this->orderConfirmed($order));
 
         // When
-        ($this->processor)($this->orderPaymentCaptured($order));
+        ($this->processor)($this->orderConfirmed($order));
 
         // Then
         self::assertCount(1, $this->shipmentFinder);
@@ -71,13 +71,13 @@ final class CreateShipmentOnOrderPaymentCapturedTest extends AbstractIntegration
             ->store();
     }
 
-    private function orderPaymentCaptured(Order $order): OrderPaymentCapturedIntegrationEvent
+    private function orderConfirmed(Order $order): OrderConfirmedIntegrationEvent
     {
-        return new OrderPaymentCapturedIntegrationEvent(
+        return new OrderConfirmedIntegrationEvent(
             orderId: $order->id()->toString(),
             customerId: Uuid::uuid7()->toString(),
             shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            capturedAt: '2026-01-01T00:00:00+00:00',
+            confirmedAt: '2026-01-01T00:00:00+00:00',
         );
     }
 

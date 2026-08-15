@@ -8,12 +8,13 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -30,9 +31,19 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             'id' => $event->id,
             'order_id' => $event->orderId,
             'customer_id' => $event->customerId,
-            'status' => ShipmentState::PENDING->value,
+            'status' => ShipmentStatus::PENDING->value,
             'created_at' => new \DateTimeImmutable($event->createdAt)->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    #[Subscribe(ShipmentManifested::class)]
+    public function onShipmentManifested(ShipmentManifested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => ShipmentStatus::MANIFESTED->value],
+            ['id' => $event->id],
+        );
     }
 
     #[Subscribe(ShipmentDispatched::class)]
@@ -41,7 +52,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => ShipmentState::DISPATCHED->value,
+                'status' => ShipmentStatus::DISPATCHED->value,
                 'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
@@ -64,7 +75,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => ShipmentState::DELIVERED->value,
+                'status' => ShipmentStatus::DELIVERED->value,
                 'delivered_at' => new \DateTimeImmutable($event->deliveredAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
@@ -77,7 +88,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => ShipmentState::CANCELLED->value,
+                'status' => ShipmentStatus::CANCELLED->value,
                 'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],

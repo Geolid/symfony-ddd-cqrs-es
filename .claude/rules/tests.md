@@ -18,6 +18,7 @@ paths:
 - Suffix a variable with `Mock`/`Stub` — use the short class name (`$repository`) or the constructor argument's name when several dependencies share a type.
 - Use a literal value that doesn't match the real field's format — a UUID-typed id gets a fake UUID (e.g. `Uuid::uuid7()->toString()`), not an arbitrary string.
 - Hardcode another BC's vocabulary as a literal — use a generic/fake value instead.
+- Assert a closed vocabulary through the enum foreign to the layer under test — a Domain aggregate test (`given()`/`when()`/`then()`, a transition's guard) compares against `<X>State`; an Application/Infrastructure/DM test (a Finder `Result`, a Projector row, a webhook/API response) compares against `<X>Status` — the two never substitute for each other even where their case values currently coincide.
 
 ## Conventions
 

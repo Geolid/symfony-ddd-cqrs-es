@@ -39,6 +39,13 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['createdAt' => $createdAt]));
     }
 
+    public function manifested(\DateTimeImmutable $manifestedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->manifest($manifestedAt),
+        );
+    }
+
     public function dispatched(\DateTimeImmutable $dispatchedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(

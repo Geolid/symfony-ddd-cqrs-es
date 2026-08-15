@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
-use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
+use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -15,9 +15,9 @@ use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(name: 'fulfilment:shipment:dispatch-pending', description: 'Dispatch every Shipment still pending carrier pickup')]
+#[AsCommand(name: 'fulfilment:shipment:manifest-pending', description: 'Manifest every Shipment still pending carrier pickup')]
 #[AsCronTask('0 0 * * *')]
-final class DispatchPendingShipmentsCommand
+final class ManifestPendingShipmentsCommand
 {
     use LockableTrait;
 
@@ -44,11 +44,11 @@ final class DispatchPendingShipmentsCommand
             $total = \count($pending);
 
             foreach ($pending as $shipment) {
-                $this->commandBus->dispatch(new DispatchShipment($shipment->id));
-                $io->writeln(\sprintf('Dispatched shipment %s (order %s)', $shipment->id, $shipment->orderId));
+                $this->commandBus->dispatch(new ManifestShipment($shipment->id));
+                $io->writeln(\sprintf('Manifested shipment %s (order %s)', $shipment->id, $shipment->orderId));
             }
 
-            $io->success(\sprintf('%d shipment(s) dispatched.', $total));
+            $io->success(\sprintf('%d shipment(s) manifested.', $total));
         } finally {
             $this->release();
         }

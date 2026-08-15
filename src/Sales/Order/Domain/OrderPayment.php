@@ -10,8 +10,13 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Sales\Order\Domain\Event\OrderPaymentAuthorized;
+use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
+use Sales\Order\Domain\Event\OrderPaymentFailed;
+use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
+use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentState;
 use Sales\Order\Domain\ValueObject\PaymentReference;
@@ -25,6 +30,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private OrderPaymentId $id;
     private string $orderId;
+    private PaymentReference $reference;
     private OrderPaymentState $status;
 
     public function id(): OrderPaymentId
@@ -58,9 +64,46 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function capture(\DateTimeImmutable $capturedAt): void
+    public function authorize(\DateTimeImmutable $authorizedAt): void
+    {
+        if ($this->status->isCancelled()) {
+            $this->recordThat(new OrderPaymentVoided(
+                id: $this->id->toString(),
+                orderId: $this->orderId,
+                reference: $this->reference->toString(),
+                voidedAt: $authorizedAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
+        }
+
+        if (!$this->status->isRequested()) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaymentAuthorized(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
+            authorizedAt: $authorizedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function fail(\DateTimeImmutable $failedAt): void
     {
         if (!$this->status->isRequested()) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaymentFailed(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
+            failedAt: $failedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function capture(\DateTimeImmutable $capturedAt): void
+    {
+        if (!$this->status->isAuthorized()) {
             return;
         }
 
@@ -71,17 +114,90 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function cancel(\DateTimeImmutable $cancelledAt): void
+    {
+        if ($this->status->isRequested()) {
+            $this->recordThat(new OrderPaymentCancelled(
+                id: $this->id->toString(),
+                orderId: $this->orderId,
+                cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
+        }
+
+        if ($this->status->isAuthorized()) {
+            $this->recordThat(new OrderPaymentVoided(
+                id: $this->id->toString(),
+                orderId: $this->orderId,
+                reference: $this->reference->toString(),
+                voidedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
+        }
+
+        if ($this->status->isCaptured()) {
+            $this->refund($cancelledAt);
+        }
+    }
+
+    public function refund(\DateTimeImmutable $refundedAt): void
+    {
+        if (!$this->status->isCaptured()) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaymentRefundRequested(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
+            reference: $this->reference->toString(),
+            refundedAt: $refundedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     #[Apply]
     private function applyOrderPaymentRequested(OrderPaymentRequested $event): void
     {
         $this->id = OrderPaymentId::fromString($event->id);
         $this->orderId = $event->orderId;
+        $this->reference = PaymentReference::fromString($event->reference);
         $this->status = OrderPaymentState::REQUESTED;
+    }
+
+    #[Apply]
+    private function applyOrderPaymentAuthorized(OrderPaymentAuthorized $event): void
+    {
+        $this->status = OrderPaymentState::AUTHORIZED;
+    }
+
+    #[Apply]
+    private function applyOrderPaymentFailed(OrderPaymentFailed $event): void
+    {
+        $this->status = OrderPaymentState::FAILED;
     }
 
     #[Apply]
     private function applyOrderPaymentCaptured(OrderPaymentCaptured $event): void
     {
         $this->status = OrderPaymentState::CAPTURED;
+    }
+
+    #[Apply]
+    private function applyOrderPaymentCancelled(OrderPaymentCancelled $event): void
+    {
+        $this->status = OrderPaymentState::CANCELLED;
+    }
+
+    #[Apply]
+    private function applyOrderPaymentVoided(OrderPaymentVoided $event): void
+    {
+        $this->status = OrderPaymentState::CANCELLED;
+    }
+
+    #[Apply]
+    private function applyOrderPaymentRefundRequested(OrderPaymentRefundRequested $event): void
+    {
+        $this->status = OrderPaymentState::REFUNDING;
     }
 }

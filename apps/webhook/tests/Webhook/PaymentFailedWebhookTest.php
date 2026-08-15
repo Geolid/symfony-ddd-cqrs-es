@@ -12,14 +12,14 @@ use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
-use Webhook\Webhook\PaymentCapturedParser;
+use Webhook\Webhook\PaymentFailedParser;
 
-final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
+final class PaymentFailedWebhookTest extends AbstractWebhookTestCase
 {
     private const string REFERENCE = 'GLBX-9F3K2M1P';
 
     #[Test]
-    public function itAcceptsAPaymentCapture(): void
+    public function itAcceptsAPaymentFailure(): void
     {
         // Given
         $client = self::createClient();
@@ -32,12 +32,12 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(OrderPaymentStatus::CAPTURED, $this->statusOf($orderPayment->id()->toString()));
+        self::assertSame(OrderPaymentStatus::FAILED, $this->statusOf($orderPayment->id()->toString()));
     }
 
     #[Test]
     #[DataProvider('provideBadSignatures')]
-    public function itRejectsAnUnsignedCapture(?string $signature): void
+    public function itRejectsAnUnsignedFailure(?string $signature): void
     {
         // Given
         $client = self::createClient();
@@ -61,7 +61,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
 
     #[Test]
     #[DataProvider('provideBadPayloads')]
-    public function itFailsToAcceptAMalformedCapture(string $body): void
+    public function itFailsToAcceptAMalformedFailure(string $body): void
     {
         // Given
         $client = self::createClient();
@@ -111,7 +111,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
     }
 
     #[Test]
-    public function itFailsToAcceptAnUnknownCapture(): void
+    public function itFailsToAcceptAnUnknownFailure(): void
     {
         // Given
         $client = self::createClient();
@@ -126,7 +126,7 @@ final class PaymentCapturedWebhookTest extends AbstractWebhookTestCase
 
     private static function path(): string
     {
-        return \sprintf('/webhooks/%s', PaymentCapturedParser::EVENT_TYPE);
+        return \sprintf('/webhooks/%s', PaymentFailedParser::EVENT_TYPE);
     }
 
     /**

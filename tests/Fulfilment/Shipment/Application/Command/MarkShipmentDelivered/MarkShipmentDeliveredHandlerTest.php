@@ -21,7 +21,7 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
     public function itMarksADispatchedShipmentAsDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->dispatched()->store();
 
         // When
         $this->dispatch(new MarkShipmentDelivered($shipment->id()->toString()));

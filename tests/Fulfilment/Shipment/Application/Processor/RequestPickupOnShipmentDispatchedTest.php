@@ -44,6 +44,7 @@ final class RequestPickupOnShipmentDispatchedTest extends AbstractIntegrationTes
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
         $shipment = ShipmentTestFactory::new()
             ->withShippingAddress($shippingAddress)
+            ->manifested()
             ->dispatched()
             ->store();
 

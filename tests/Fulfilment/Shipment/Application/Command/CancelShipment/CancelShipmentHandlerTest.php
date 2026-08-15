@@ -36,7 +36,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsCancellationOfAnAlreadyDeliveredShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->dispatched()->delivered()->store();
 
         // When
         $this->dispatch(new CancelShipment($shipment->id()->toString()));

@@ -21,8 +21,8 @@ final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCa
         // Given
         $customerId = Uuid::uuid7()->toString();
         $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
-        $paid = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($paid->id()->toString())->captured()->store();
+        $withCapturedPayment = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        OrderPaymentTestFactory::new()->withOrderId($withCapturedPayment->id()->toString())->authorized()->captured()->store();
         $placed = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $otherCustomerId = Uuid::uuid7()->toString();
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
@@ -38,7 +38,7 @@ final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCa
         }
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$placed->id()->toString()]);
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$alreadyCancelled->id()->toString()]);
-        self::assertSame(OrderStatus::PLACED, $statusesById[$paid->id()->toString()]);
+        self::assertSame(OrderStatus::CANCELLED, $statusesById[$withCapturedPayment->id()->toString()]);
 
         $otherResults = iterator_to_array($finder->byCustomer($otherCustomerId), false);
         self::assertSame(OrderStatus::PLACED, $otherResults[0]->status);

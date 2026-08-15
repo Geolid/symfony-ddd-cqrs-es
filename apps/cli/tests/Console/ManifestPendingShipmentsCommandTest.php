@@ -13,7 +13,7 @@ use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Lock\Store\SemaphoreStore;
 
-final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
+final class ManifestPendingShipmentsCommandTest extends AbstractCliTestCase
 {
     private ShipmentFinderInterface $shipmentFinder;
 
@@ -25,20 +25,20 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itDispatchesEveryPendingShipment(): void
+    public function itManifestsEveryPendingShipment(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->store();
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'fulfilment:shipment:dispatch-pending']);
+        $tester->run(['command' => 'fulfilment:shipment:manifest-pending']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 shipment(s) dispatched.', $tester->getDisplay());
+        self::assertStringContainsString('1 shipment(s) manifested.', $tester->getDisplay());
 
-        $results = iterator_to_array($this->shipmentFinder->byStatus('dispatched'));
+        $results = iterator_to_array($this->shipmentFinder->byStatus('manifested'));
         self::assertCount(1, $results);
     }
 
@@ -48,19 +48,19 @@ final class DispatchPendingShipmentsCommandTest extends AbstractCliTestCase
         // Given
         ShipmentTestFactory::new()->store();
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
-        $lock = (new LockFactory($store))->createLock('fulfilment:shipment:dispatch-pending');
+        $lock = (new LockFactory($store))->createLock('fulfilment:shipment:manifest-pending');
         $lock->acquire();
         $tester = $this->tester();
 
         try {
             // When
-            $tester->run(['command' => 'fulfilment:shipment:dispatch-pending']);
+            $tester->run(['command' => 'fulfilment:shipment:manifest-pending']);
 
             // Then
             self::assertSame(Command::SUCCESS, $tester->getStatusCode());
             self::assertStringContainsString('already running in another process', $tester->getDisplay());
 
-            $results = iterator_to_array($this->shipmentFinder->byStatus('dispatched'));
+            $results = iterator_to_array($this->shipmentFinder->byStatus('manifested'));
             self::assertCount(0, $results);
         } finally {
             $lock->release();

@@ -12,6 +12,9 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Order\Domain\Event\OrderBillingAddressErased;
 use Sales\Order\Domain\Event\OrderCancelled;
+use Sales\Order\Domain\Event\OrderCompleted;
+use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -122,13 +125,49 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
         }
 
-        if ($this->status->isCancelled()) {
+        if (!$this->status->isCancellable()) {
             return;
         }
 
         $this->recordThat(new OrderCancelled(
             id: $this->id->toString(),
             cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function confirm(\DateTimeImmutable $confirmedAt): void
+    {
+        if (!$this->status->isPlaced()) {
+            return;
+        }
+
+        $this->recordThat(new OrderConfirmed(
+            id: $this->id->toString(),
+            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function dispatch(\DateTimeImmutable $dispatchedAt): void
+    {
+        if (!$this->status->isConfirmed()) {
+            return;
+        }
+
+        $this->recordThat(new OrderDispatched(
+            id: $this->id->toString(),
+            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function complete(\DateTimeImmutable $completedAt): void
+    {
+        if (!$this->status->isDispatched()) {
+            return;
+        }
+
+        $this->recordThat(new OrderCompleted(
+            id: $this->id->toString(),
+            completedAt: $completedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -165,6 +204,24 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyOrderCancelled(OrderCancelled $event): void
     {
         $this->status = OrderState::CANCELLED;
+    }
+
+    #[Apply]
+    private function applyOrderConfirmed(OrderConfirmed $event): void
+    {
+        $this->status = OrderState::CONFIRMED;
+    }
+
+    #[Apply]
+    private function applyOrderDispatched(OrderDispatched $event): void
+    {
+        $this->status = OrderState::DISPATCHED;
+    }
+
+    #[Apply]
+    private function applyOrderCompleted(OrderCompleted $event): void
+    {
+        $this->status = OrderState::COMPLETED;
     }
 
     #[Apply]

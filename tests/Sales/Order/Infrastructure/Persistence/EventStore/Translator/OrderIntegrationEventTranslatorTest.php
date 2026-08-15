@@ -91,6 +91,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
+            ->authorized()
             ->captured()
             ->create();
 

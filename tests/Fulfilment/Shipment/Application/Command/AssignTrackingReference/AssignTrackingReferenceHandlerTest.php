@@ -23,7 +23,7 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
     public function itTracksADispatchedShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->dispatched()->store();
 
         // When
         $this->dispatch(new AssignTrackingReference($shipment->id()->toString(), 'ACME-4Q7X2K9'));
@@ -66,7 +66,7 @@ final class AssignTrackingReferenceHandlerTest extends AbstractIntegrationTestCa
         // Given
         $trackingReference = 'ACME-4Q7X2K9';
         $this->service(UniqueValueRegistryInterface::class)->reserve(ShipmentUniqueValue::TRACKING_REFERENCE, $trackingReference);
-        $shipment = ShipmentTestFactory::new()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->manifested()->dispatched()->store();
 
         // Then
         $this->expectException(TrackingReferenceAlreadyTakenException::class);

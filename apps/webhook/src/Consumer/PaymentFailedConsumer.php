@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Webhook\Consumer;
 
-use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
+use Sales\Order\Application\Command\FailOrderPayment\FailOrderPayment;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -12,10 +12,10 @@ use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
 use Symfony\Component\RemoteEvent\Consumer\ConsumerInterface;
 use Symfony\Component\RemoteEvent\RemoteEvent;
-use Webhook\Webhook\PaymentCapturedParser;
+use Webhook\Webhook\PaymentFailedParser;
 
-#[AsRemoteEventConsumer(PaymentCapturedParser::EVENT_TYPE)]
-final readonly class PaymentCapturedConsumer implements ConsumerInterface
+#[AsRemoteEventConsumer(PaymentFailedParser::EVENT_TYPE)]
+final readonly class PaymentFailedConsumer implements ConsumerInterface
 {
     public function __construct(
         private QueryBusInterface $queryBus,
@@ -33,6 +33,6 @@ final readonly class PaymentCapturedConsumer implements ConsumerInterface
 
         $orderPayment = $this->queryBus->ask(new GetOrderPaymentByReference($payload['paymentReference']));
 
-        $this->commandBus->dispatch(new CaptureOrderPayment($orderPayment->id));
+        $this->commandBus->dispatch(new FailOrderPayment($orderPayment->id));
     }
 }

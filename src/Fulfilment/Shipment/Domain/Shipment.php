@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -82,12 +83,24 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
+    public function manifest(\DateTimeImmutable $manifestedAt): void
+    {
+        if (!$this->status->isPending()) {
+            return;
+        }
+
+        $this->recordThat(new ShipmentManifested(
+            id: $this->id->toString(),
+            manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     /**
      * @throws ShipmentInvalidTransitionException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->status->isPending()) {
+        if (!$this->status->isManifested()) {
             throw ShipmentInvalidTransitionException::cannotDispatch($this->status);
         }
 
@@ -165,6 +178,12 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         );
         $this->trackingReference = null;
         $this->status = ShipmentState::PENDING;
+    }
+
+    #[Apply]
+    private function applyShipmentManifested(ShipmentManifested $event): void
+    {
+        $this->status = ShipmentState::MANIFESTED;
     }
 
     #[Apply]

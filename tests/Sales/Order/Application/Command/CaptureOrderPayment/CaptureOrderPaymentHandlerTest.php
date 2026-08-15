@@ -14,11 +14,11 @@ use Support\AbstractIntegrationTestCase;
 final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCapturesARequestedPayment(): void
+    public function itCapturesAnAuthorizedPayment(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
@@ -33,7 +33,7 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));

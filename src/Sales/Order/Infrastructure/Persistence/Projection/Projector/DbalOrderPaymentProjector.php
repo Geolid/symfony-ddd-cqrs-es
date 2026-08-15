@@ -9,9 +9,14 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Sales\Order\Application\Enum\OrderPaymentStatus;
+use Sales\Order\Domain\Event\OrderPaymentAuthorized;
+use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
+use Sales\Order\Domain\Event\OrderPaymentFailed;
+use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
-use Sales\Order\Domain\ValueObject\OrderPaymentState;
+use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
@@ -29,9 +34,29 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             'amount_in_cents' => $event->amountInCents,
             'reference' => $event->reference,
             'checkout_url' => $event->checkoutUrl,
-            'status' => OrderPaymentState::REQUESTED->value,
+            'status' => OrderPaymentStatus::REQUESTED->value,
             'requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    #[Subscribe(OrderPaymentAuthorized::class)]
+    public function onOrderPaymentAuthorized(OrderPaymentAuthorized $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => OrderPaymentStatus::AUTHORIZED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentFailed::class)]
+    public function onOrderPaymentFailed(OrderPaymentFailed $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => OrderPaymentStatus::FAILED->value],
+            ['id' => $event->id],
+        );
     }
 
     #[Subscribe(OrderPaymentCaptured::class)]
@@ -40,9 +65,39 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderPaymentState::CAPTURED->value,
+                'status' => OrderPaymentStatus::CAPTURED->value,
                 'captured_at' => new \DateTimeImmutable($event->capturedAt)->format('Y-m-d H:i:s'),
             ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentCancelled::class)]
+    public function onOrderPaymentCancelled(OrderPaymentCancelled $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => OrderPaymentStatus::CANCELLED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentVoided::class)]
+    public function onOrderPaymentVoided(OrderPaymentVoided $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => OrderPaymentStatus::CANCELLED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentRefundRequested::class)]
+    public function onOrderPaymentRefundRequested(OrderPaymentRefundRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => OrderPaymentStatus::REFUNDING->value],
             ['id' => $event->id],
         );
     }

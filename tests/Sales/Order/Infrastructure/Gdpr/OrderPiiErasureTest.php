@@ -71,7 +71,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->captured()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->create();
         $this->store($orderPayment);
         $serialized = $this->serializedEventOf(
             OrderPaymentCapturedIntegrationEvent::class,
