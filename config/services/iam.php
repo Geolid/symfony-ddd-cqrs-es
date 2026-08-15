@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Iam\Identity\Application\Credential\ApiTokenIssuer;
+use Iam\Identity\Application\Credential\ApiTokenIssuerInterface;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
@@ -36,6 +38,7 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(ApiTokenCredentialFinderInterface::class, DbalApiTokenCredentialFinder::class)->public();
         $services->alias(ApiTokenCredentialVerifierInterface::class, ApiTokenCredentialVerifier::class)->public();
         $services->alias(ApiTokenGeneratorInterface::class, ApiTokenGenerator::class)->public();
+        $services->alias(ApiTokenIssuerInterface::class, ApiTokenIssuer::class)->public();
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
         $services->alias(PasswordCredentialFinderInterface::class, DbalPasswordCredentialFinder::class)->public();
         $services->alias(PasswordCredentialVerifierInterface::class, PasswordCredentialVerifier::class)->public();
