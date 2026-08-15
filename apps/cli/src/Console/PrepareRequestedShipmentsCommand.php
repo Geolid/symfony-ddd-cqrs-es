@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
-use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
-use Fulfilment\Shipment\Application\Query\ListPendingShipments\ListPendingShipments;
+use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
+use Fulfilment\Shipment\Application\Query\ListRequestedShipments\ListRequestedShipments;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -13,11 +13,9 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(name: 'fulfilment:shipment:manifest-pending', description: 'Manifest every Shipment still pending carrier pickup')]
-#[AsCronTask('0 0 * * *')]
-final class ManifestPendingShipmentsCommand
+#[AsCommand(name: 'fulfilment:shipment:prepare-requested', description: 'Mark every requested Shipment as prepared, once its parcel has been packed')]
+final class PrepareRequestedShipmentsCommand
 {
     use LockableTrait;
 
@@ -40,15 +38,15 @@ final class ManifestPendingShipmentsCommand
         }
 
         try {
-            $pending = $this->queryBus->ask(new ListPendingShipments());
-            $total = \count($pending);
+            $requested = $this->queryBus->ask(new ListRequestedShipments());
+            $total = \count($requested);
 
-            foreach ($pending as $shipment) {
-                $this->commandBus->dispatch(new ManifestShipment($shipment->id));
-                $io->writeln(\sprintf('Manifested shipment %s (order %s)', $shipment->id, $shipment->orderId));
+            foreach ($requested as $shipment) {
+                $this->commandBus->dispatch(new PrepareShipment($shipment->id));
+                $io->writeln(\sprintf('Prepared shipment %s (order %s)', $shipment->id, $shipment->orderId));
             }
 
-            $io->success(\sprintf('%d shipment(s) manifested.', $total));
+            $io->success(\sprintf('%d shipment(s) prepared.', $total));
         } finally {
             $this->release();
         }

@@ -12,6 +12,7 @@ final readonly class ShipmentManifested implements DomainEventInterface
 {
     public function __construct(
         public string $id,
+        public string $trackingReference,
         public string $manifestedAt,
     ) {
     }

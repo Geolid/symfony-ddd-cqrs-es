@@ -6,11 +6,12 @@ namespace Fulfilment\Shipment\Domain;
 
 use Fulfilment\Shipment\Domain\Event\ShipmentCancellationRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
-use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
-use Fulfilment\Shipment\Domain\Event\TrackingReferenceAssigned;
+use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
+use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
@@ -58,7 +59,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $this->shippingAddress;
     }
 
-    public static function create(
+    public static function request(
         ShipmentId $id,
         string $orderId,
         string $customerId,
@@ -66,7 +67,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         \DateTimeImmutable $createdAt,
     ): self {
         $self = new self();
-        $self->recordThat(new ShipmentCreated(
+        $self->recordThat(new ShipmentRequested(
             id: $id->toString(),
             orderId: $orderId,
             customerId: $customerId,
@@ -83,14 +84,41 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function manifest(\DateTimeImmutable $manifestedAt): void
+    public function prepare(\DateTimeImmutable $preparedAt): void
     {
-        if (!$this->status->isPending()) {
+        if (!$this->status->isRequested()) {
             return;
+        }
+
+        $this->recordThat(new ShipmentPrepared(
+            id: $this->id->toString(),
+            preparedAt: $preparedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentAlreadyTrackedException
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function manifest(TrackingReference $trackingReference, \DateTimeImmutable $manifestedAt): void
+    {
+        if ($this->status->isManifested()) {
+            \assert(null !== $this->trackingReference);
+
+            if ($this->trackingReference->equals($trackingReference)) {
+                return;
+            }
+
+            throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->toString());
+        }
+
+        if (!$this->status->isPrepared()) {
+            throw ShipmentInvalidTransitionException::cannotManifest($this->status);
         }
 
         $this->recordThat(new ShipmentManifested(
             id: $this->id->toString(),
+            trackingReference: $trackingReference->toString(),
             manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -113,29 +141,10 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws ShipmentInvalidTransitionException
      */
-    public function assignTrackingReference(TrackingReference $trackingReference): void
+    public function deliver(\DateTimeImmutable $deliveredAt): void
     {
         if (!$this->status->isDispatched()) {
-            throw ShipmentInvalidTransitionException::cannotAssignTrackingReference($this->status);
-        }
-
-        if (null !== $this->trackingReference) {
-            throw ShipmentInvalidTransitionException::cannotReassignTrackingReference($this->trackingReference->toString());
-        }
-
-        $this->recordThat(new TrackingReferenceAssigned(
-            id: $this->id->toString(),
-            trackingReference: $trackingReference->toString(),
-        ));
-    }
-
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function markDelivered(\DateTimeImmutable $deliveredAt): void
-    {
-        if (!$this->status->isDispatched()) {
-            throw ShipmentInvalidTransitionException::cannotMarkDelivered($this->status);
+            throw ShipmentInvalidTransitionException::cannotDeliver($this->status);
         }
 
         $this->recordThat(new ShipmentDelivered(
@@ -167,7 +176,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyShipmentCreated(ShipmentCreated $event): void
+    private function applyShipmentRequested(ShipmentRequested $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
         $this->orderId = $event->orderId;
@@ -177,12 +186,19 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
         );
         $this->trackingReference = null;
-        $this->status = ShipmentState::PENDING;
+        $this->status = ShipmentState::REQUESTED;
+    }
+
+    #[Apply]
+    private function applyShipmentPrepared(ShipmentPrepared $event): void
+    {
+        $this->status = ShipmentState::PREPARED;
     }
 
     #[Apply]
     private function applyShipmentManifested(ShipmentManifested $event): void
     {
+        $this->trackingReference = TrackingReference::fromString($event->trackingReference);
         $this->status = ShipmentState::MANIFESTED;
     }
 
@@ -190,12 +206,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyShipmentDispatched(ShipmentDispatched $event): void
     {
         $this->status = ShipmentState::DISPATCHED;
-    }
-
-    #[Apply]
-    private function applyTrackingReferenceAssigned(TrackingReferenceAssigned $event): void
-    {
-        $this->trackingReference = TrackingReference::fromString($event->trackingReference);
     }
 
     #[Apply]

@@ -6,7 +6,8 @@ namespace Fulfilment\Shipment\Application\Status;
 
 enum ShipmentStatus: string
 {
-    case PENDING = 'pending';
+    case REQUESTED = 'requested';
+    case PREPARED = 'prepared';
     case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';

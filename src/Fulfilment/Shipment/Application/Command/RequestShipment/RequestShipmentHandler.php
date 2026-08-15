@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Application\Command\CreateShipment;
+namespace Fulfilment\Shipment\Application\Command\RequestShipment;
 
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
@@ -14,7 +14,7 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[AsCommandHandler]
-final readonly class CreateShipmentHandler
+final readonly class RequestShipmentHandler
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
@@ -22,7 +22,7 @@ final readonly class CreateShipmentHandler
     ) {
     }
 
-    public function __invoke(CreateShipment $command): void
+    public function __invoke(RequestShipment $command): void
     {
         $id = ShipmentId::fromString($command->id);
 
@@ -30,7 +30,7 @@ final readonly class CreateShipmentHandler
             return;
         }
 
-        $shipment = Shipment::create(
+        $shipment = Shipment::request(
             id: $id,
             orderId: $command->orderId,
             customerId: $command->customerId,

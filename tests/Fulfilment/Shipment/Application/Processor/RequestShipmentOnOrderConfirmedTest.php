@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Processor\CreateShipmentOnOrderConfirmed;
+use Fulfilment\Shipment\Application\Processor\RequestShipmentOnOrderConfirmed;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
@@ -17,21 +17,21 @@ use Sales\Order\Domain\Order;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class CreateShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
+final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
 {
-    private CreateShipmentOnOrderConfirmed $processor;
+    private RequestShipmentOnOrderConfirmed $processor;
     private ShipmentFinderInterface $shipmentFinder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CreateShipmentOnOrderConfirmed::class);
+        $this->processor = $this->service(RequestShipmentOnOrderConfirmed::class);
         $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
     }
 
     #[Test]
-    public function itOpensAShipmentOnOrderConfirmed(): void
+    public function itRequestsAShipmentOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();
@@ -44,7 +44,7 @@ final class CreateShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCa
         self::assertCount(1, $results);
         self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
         self::assertSame($order->id()->toString(), $results[0]->orderId);
-        self::assertSame(ShipmentStatus::PENDING, $results[0]->status);
+        self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
         $shippingAddress = $this->shipmentOf($order)->shippingAddress();
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
@@ -59,7 +59,7 @@ final class CreateShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCa
     }
 
     #[Test]
-    public function itOpensASingleShipmentWhenReplayedOnOrderConfirmed(): void
+    public function itRequestsASingleShipmentWhenReplayedOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();

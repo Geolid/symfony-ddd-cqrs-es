@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
@@ -36,6 +37,7 @@ return static function (ContainerConfigurator $container): void {
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Fulfilment
+            ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 

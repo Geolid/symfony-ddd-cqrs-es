@@ -10,8 +10,8 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('fulfilment.shipment.created')]
-final readonly class ShipmentCreated implements DomainEventInterface
+#[Event('fulfilment.shipment.requested')]
+final readonly class ShipmentRequested implements DomainEventInterface
 {
     /**
      * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress

@@ -35,7 +35,7 @@ final class OrderSummaryStatusTransformerTest extends TestCase
         yield 'placed, no payment yet' => ['placed', null, null, OrderSummaryStatus::PLACED];
         yield 'payment requested' => ['placed', 'requested', null, OrderSummaryStatus::PAYMENT_PENDING];
         yield 'captured, no shipment yet' => ['placed', 'captured', null, OrderSummaryStatus::PREPARING];
-        yield 'captured, shipment pending' => ['placed', 'captured', 'pending', OrderSummaryStatus::PREPARING];
+        yield 'captured, shipment manifested' => ['placed', 'captured', 'manifested', OrderSummaryStatus::PREPARING];
         yield 'captured, shipment dispatched' => ['placed', 'captured', 'dispatched', OrderSummaryStatus::DISPATCHED];
         yield 'captured, shipment delivered' => ['placed', 'captured', 'delivered', OrderSummaryStatus::DELIVERED];
     }

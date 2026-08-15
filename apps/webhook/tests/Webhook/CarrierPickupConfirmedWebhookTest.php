@@ -12,18 +12,18 @@ use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 
-final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
+final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
 {
-    private const string PATH = '/webhooks/carrier-delivery';
+    private const string PATH = '/webhooks/carrier-pickup-confirmed';
 
     private const string TRACKING_REFERENCE = 'ACME-4Q7X2K9';
 
     #[Test]
-    public function itAcceptsACarrierDelivery(): void
+    public function itAcceptsACarrierPickupConfirmation(): void
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested(self::TRACKING_REFERENCE)->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested(self::TRACKING_REFERENCE)->store();
         $body = self::body(self::TRACKING_REFERENCE);
 
         // When
@@ -31,12 +31,12 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(ShipmentStatus::DELIVERED, $this->statusOf($shipment->id()->toString()));
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->statusOf($shipment->id()->toString()));
     }
 
     #[Test]
     #[DataProvider('provideBadSignatures')]
-    public function itRejectsAnUnsignedDelivery(?string $signature): void
+    public function itRejectsAnUnsignedPickupConfirmation(?string $signature): void
     {
         // Given
         $client = self::createClient();
@@ -60,7 +60,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
     #[Test]
     #[DataProvider('provideBadPayloads')]
-    public function itFailsToAcceptAMalformedDelivery(string $body): void
+    public function itFailsToAcceptAMalformedPickupConfirmation(string $body): void
     {
         // Given
         $client = self::createClient();
@@ -110,7 +110,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     }
 
     #[Test]
-    public function itFailsToAcceptAnUntrackedDelivery(): void
+    public function itFailsToAcceptAnUntrackedPickupConfirmation(): void
     {
         // Given
         $client = self::createClient();

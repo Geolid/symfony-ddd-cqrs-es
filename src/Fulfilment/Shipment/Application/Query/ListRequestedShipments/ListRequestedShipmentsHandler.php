@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Application\Query\ListPendingShipments;
+namespace Fulfilment\Shipment\Application\Query\ListRequestedShipments;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
@@ -11,7 +11,7 @@ use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
 #[AsQueryHandler]
-final readonly class ListPendingShipmentsHandler
+final readonly class ListRequestedShipmentsHandler
 {
     public function __construct(private ShipmentFinderInterface $shipmentFinder)
     {
@@ -20,8 +20,8 @@ final readonly class ListPendingShipmentsHandler
     /**
      * @return StreamResult<ShipmentResult>
      */
-    public function __invoke(ListPendingShipments $query): StreamResult
+    public function __invoke(ListRequestedShipments $query): StreamResult
     {
-        return new StreamResult($this->shipmentFinder->byStatus(ShipmentStatus::PENDING->value));
+        return new StreamResult($this->shipmentFinder->byStatus(ShipmentStatus::REQUESTED->value));
     }
 }

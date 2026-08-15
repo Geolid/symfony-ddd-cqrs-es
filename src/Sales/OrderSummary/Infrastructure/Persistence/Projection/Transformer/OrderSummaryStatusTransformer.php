@@ -21,7 +21,7 @@ final readonly class OrderSummaryStatusTransformer
             null => OrderSummaryStatus::PLACED,
             'requested' => OrderSummaryStatus::PAYMENT_PENDING,
             default => match ($shipmentStatus) {
-                null, 'pending' => OrderSummaryStatus::PREPARING,
+                null, 'requested', 'prepared', 'manifested' => OrderSummaryStatus::PREPARING,
                 'dispatched' => OrderSummaryStatus::DISPATCHED,
                 default => OrderSummaryStatus::DELIVERED,
             },

@@ -39,10 +39,19 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['createdAt' => $createdAt]));
     }
 
-    public function manifested(\DateTimeImmutable $manifestedAt = new \DateTimeImmutable('now +00:00')): self
+    public function prepared(\DateTimeImmutable $preparedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->manifest($manifestedAt),
+            static fn (Shipment $shipment) => $shipment->prepare($preparedAt),
+        );
+    }
+
+    public function manifested(
+        string $trackingReference = 'ACME-4Q7X2K9',
+        \DateTimeImmutable $manifestedAt = new \DateTimeImmutable('now +00:00'),
+    ): self {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString($trackingReference), $manifestedAt),
         );
     }
 
@@ -53,17 +62,10 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         );
     }
 
-    public function tracked(string $trackingReference): self
-    {
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->assignTrackingReference(TrackingReference::fromString($trackingReference)),
-        );
-    }
-
     public function delivered(\DateTimeImmutable $deliveredAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->markDelivered($deliveredAt),
+            static fn (Shipment $shipment) => $shipment->deliver($deliveredAt),
         );
     }
 
@@ -94,7 +96,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
         Assert::isInstanceOf($createdAt = $attributes['createdAt'], \DateTimeInterface::class);
 
-        return Shipment::create(
+        return Shipment::request(
             ShipmentId::forOrder($orderId),
             $orderId,
             $customerId,

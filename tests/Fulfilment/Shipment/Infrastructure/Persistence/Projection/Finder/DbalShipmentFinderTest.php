@@ -32,9 +32,9 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id()->toString())
-            ->manifested()
+            ->prepared()
+            ->manifested('ACME-4Q7X2K9')
             ->dispatched()
-            ->tracked('ACME-4Q7X2K9')
             ->store();
 
         // When
@@ -56,31 +56,31 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
-        $pending = ShipmentTestFactory::new()->store();
-        $dispatched = ShipmentTestFactory::new()->manifested()->dispatched()->store();
-        ShipmentTestFactory::new()->manifested()->dispatched()->delivered()->many(2)->store();
+        $manifested = ShipmentTestFactory::new()->prepared()->manifested()->store();
+        $dispatched = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
+        ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->many(2)->store();
 
         // When
-        $results = iterator_to_array($this->finder->byStatus('pending'));
+        $results = iterator_to_array($this->finder->byStatus('manifested'));
 
         // Then
         self::assertCount(1, $results);
         $result = $results[0];
-        self::assertSame($pending->id()->toString(), $result->id);
-        self::assertSame($pending->orderId(), $result->orderId);
-        self::assertSame(ShipmentStatus::PENDING, $result->status);
-        self::assertNull($result->trackingReference);
+        self::assertSame($manifested->id()->toString(), $result->id);
+        self::assertSame($manifested->orderId(), $result->orderId);
+        self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
+        self::assertNotNull($result->trackingReference);
         self::assertNotNull($result->createdAt);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus('pending', 'dispatched'));
+        $results = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
 
         // Then
         self::assertCount(2, $results);
         self::assertEqualsCanonicalizing(
-            [$pending->id()->toString(), $dispatched->id()->toString()],
+            [$manifested->id()->toString(), $dispatched->id()->toString()],
             array_map(static fn (ShipmentResult $result) => $result->id, $results),
         );
     }
@@ -105,8 +105,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itGetsByTrackingReference(): void
     {
         // Given
-        $tracked = ShipmentTestFactory::new()->manifested()->dispatched()->tracked('ACME-4Q7X2K9')->store();
-        ShipmentTestFactory::new()->manifested()->dispatched()->tracked('ACME-OTHER')->store();
+        $tracked = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
+        ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->store();
 
         // When
         $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
