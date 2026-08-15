@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -96,7 +97,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
             ->store();
 
         // When
-        $identity->suspend(new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 
         // Then

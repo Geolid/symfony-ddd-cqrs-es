@@ -12,6 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\IdentityState;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -27,7 +28,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     private IdentityId $id;
     private IdentityState $status;
-    private bool $erased;
 
     public function id(): IdentityId
     {
@@ -48,9 +48,9 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws IdentityAlreadyErasedException
      */
-    public function suspend(\DateTimeImmutable $suspendedAt): void
+    public function suspend(Reason $reason, \DateTimeImmutable $suspendedAt): void
     {
-        if ($this->erased) {
+        if ($this->status->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
@@ -60,6 +60,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentitySuspended(
             id: $this->id->toString(),
+            reason: $reason->toString(),
             suspendedAt: $suspendedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -69,7 +70,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function reactivate(\DateTimeImmutable $reactivatedAt): void
     {
-        if ($this->erased) {
+        if ($this->status->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
@@ -88,14 +89,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function ensureActive(): void
     {
-        if ($this->erased || $this->status->isSuspended()) {
+        if (!$this->status->isActive()) {
             throw IdentityNotActiveException::forId($this->id);
         }
     }
 
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if ($this->erased) {
+        if ($this->status->isErased()) {
             return;
         }
 
@@ -110,13 +111,12 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = IdentityId::fromString($event->id);
         $this->status = IdentityState::ACTIVE;
-        $this->erased = false;
     }
 
     #[Apply]
     private function applyIdentityErased(IdentityErased $event): void
     {
-        $this->erased = true;
+        $this->status = IdentityState::ERASED;
     }
 
     #[Apply]

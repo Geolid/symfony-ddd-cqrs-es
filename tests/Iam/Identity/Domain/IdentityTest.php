@@ -12,6 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -38,8 +39,8 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
-            ->when(static fn (Identity $identity) => $identity->suspend($suspendedAt))
-            ->then(new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt))
+            ->then(new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -52,9 +53,9 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Manual request'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 
@@ -70,7 +71,7 @@ final class IdentityTest extends AggregateRootTestCase
                 new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
                 new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -85,7 +86,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate($reactivatedAt))
             ->then(new IdentityReactivated($id, $reactivatedAt->format(\DateTimeInterface::ATOM)));
@@ -114,7 +115,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
                 new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
@@ -143,7 +144,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Identity $identity) => $identity->ensureActive())
             ->expectsException(IdentityNotActiveException::class);

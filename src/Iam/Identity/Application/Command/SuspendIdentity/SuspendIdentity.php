@@ -8,7 +8,9 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class SuspendIdentity implements CommandInterface
 {
-    public function __construct(public string $id)
-    {
+    public function __construct(
+        public string $id,
+        public string $reason,
+    ) {
     }
 }

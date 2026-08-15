@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
@@ -86,7 +87,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
             ->store();
 
         // When
-        $identity->suspend(new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 
         // Then

@@ -6,6 +6,7 @@ namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;
 
@@ -24,9 +25,9 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
     }
 
-    public function suspended(\DateTimeImmutable $suspendedAt = new \DateTimeImmutable('now +00:00')): self
+    public function suspended(string $reason = 'Suspected fraudulent activity', \DateTimeImmutable $suspendedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Identity $identity) => $identity->suspend($suspendedAt));
+        return $this->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
     }
 
     public function reactivated(\DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
