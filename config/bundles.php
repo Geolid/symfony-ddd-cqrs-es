@@ -12,10 +12,10 @@ use Symfony\Bundle\MonologBundle\MonologBundle;
 
 return [
     DAMADoctrineTestBundle::class => ['test' => true],
-    DoctrineBundle::class => ['all' => true],
-    PatchlevelEventSourcingBundle::class => ['all' => true],
     DebugBundle::class => ['dev' => true, 'test' => true],
+    DoctrineBundle::class => ['all' => true],
     FrameworkBundle::class => ['all' => true],
     MonologBundle::class => ['all' => true],
+    PatchlevelEventSourcingBundle::class => ['all' => true],
     SentryBundle::class => ['prod' => true],
 ];

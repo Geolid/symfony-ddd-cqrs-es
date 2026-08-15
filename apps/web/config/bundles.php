@@ -11,9 +11,9 @@ use Symfony\UX\TwigComponent\TwigComponentBundle;
 
 return [
     SecurityBundle::class => ['all' => true],
-    TwigBundle::class => ['all' => true],
-    WebProfilerBundle::class => ['dev' => true],
     StimulusBundle::class => ['all' => true],
+    TwigBundle::class => ['all' => true],
     TwigComponentBundle::class => ['all' => true],
     UXIconsBundle::class => ['all' => true],
+    WebProfilerBundle::class => ['dev' => true],
 ];
