@@ -43,7 +43,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itLogsInWithValidCredentials(): void
+    public function itLogsIn(): void
     {
         // Given
         $client = self::browser();
