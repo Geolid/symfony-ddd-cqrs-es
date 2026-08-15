@@ -34,7 +34,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
         OrderPaymentTestFactory::new()->withOrderId($orderId)->store();
 
         // When
-        ($this->processor)(new OrderCancelled($orderId, self::CANCELLED_AT));
+        ($this->processor)($this->orderCancelled($orderId));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($orderId);
@@ -49,9 +49,14 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderCancelled($orderId, self::CANCELLED_AT));
+        ($this->processor)($this->orderCancelled($orderId));
 
         // Then
         self::expectNotToPerformAssertions();
+    }
+
+    private function orderCancelled(string $orderId): OrderCancelled
+    {
+        return new OrderCancelled($orderId, self::CANCELLED_AT);
     }
 }
