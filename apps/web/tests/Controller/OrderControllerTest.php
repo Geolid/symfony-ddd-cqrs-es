@@ -7,6 +7,7 @@ namespace Web\Tests\Controller;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
@@ -26,6 +27,31 @@ use Web\Tests\Support\AbstractWebTestCase;
 final class OrderControllerTest extends AbstractWebTestCase
 {
     private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
+
+    #[Test]
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsTheOrderList(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+        $this->loginAs($client, $this->registerCustomer('buyer-locale@example.com'));
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/sales/orders'];
+        yield 'fr' => ['fr', '/ventes/commandes'];
+    }
 
     #[Test]
     public function itPlacesAnOrderAndRedirectsToItsDetail(): void

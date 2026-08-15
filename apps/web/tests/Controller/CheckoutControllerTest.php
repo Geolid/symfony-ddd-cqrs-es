@@ -6,6 +6,7 @@ namespace Web\Tests\Controller;
 
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -15,17 +16,19 @@ use Web\Tests\Support\AbstractWebTestCase;
 final class CheckoutControllerTest extends AbstractWebTestCase
 {
     #[Test]
-    public function itShowsTheAddressForm(): void
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsTheAddressForm(string $locale, string $path): void
     {
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->registerCustomer('buyer-1@example.com'));
 
         // When
-        $client->request('GET', '/checkout/address');
+        $client->request('GET', $path);
 
         // Then
         self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
         self::assertSelectorExists('[data-testid="checkout-addresses-form"]');
     }
 
@@ -107,6 +110,15 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/login');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/checkout/address'];
+        yield 'fr' => ['fr', '/finalisation/adresse'];
     }
 
     private function submitAddresses(KernelBrowser $client, string $uri, bool $sameAsShipping = false): void

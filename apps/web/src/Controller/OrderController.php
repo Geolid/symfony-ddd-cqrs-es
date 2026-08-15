@@ -39,7 +39,7 @@ use Web\Security\PasswordUser;
 use Web\Security\Voter\OrderVoter;
 use Web\Session\CatalogSnapshot;
 
-#[Route('/sales/orders')]
+#[Route(path: ['en' => '/sales/orders', 'fr' => '/ventes/commandes'])]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class OrderController extends AbstractController
 {
@@ -94,7 +94,7 @@ final class OrderController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/place', name: 'sales_order_place', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/place', 'fr' => '/commander'], name: 'sales_order_place', methods: ['GET', 'POST'])]
     public function place(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         /** @var ListResult<ProductResult> $products */
@@ -154,7 +154,7 @@ final class OrderController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/{id}/checkout', name: 'sales_order_pay', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
+    #[Route(path: ['en' => '/{id}/checkout', 'fr' => '/{id}/paiement'], name: 'sales_order_pay', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
     public function pay(string $id): Response
     {
         $summary = $this->queryBus->ask(new GetOrderSummary($id));
@@ -174,7 +174,7 @@ final class OrderController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route('/{id}/cancel', name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
+    #[Route(path: ['en' => '/{id}/cancel', 'fr' => '/{id}/annuler'], name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
     public function cancel(Request $request, string $id, #[CurrentUser] PasswordUser $user): Response
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {

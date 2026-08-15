@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -12,6 +13,31 @@ use Web\Tests\Support\AbstractWebTestCase;
 
 final class CustomerControllerTest extends AbstractWebTestCase
 {
+    #[Test]
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsTheRegisterForm(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorExists('[data-testid="register-customer-form"]');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/sales/customers/register'];
+        yield 'fr' => ['fr', '/ventes/clients/inscription'];
+    }
+
     #[Test]
     public function itRegistersACustomerAndLetsThemLogIn(): void
     {

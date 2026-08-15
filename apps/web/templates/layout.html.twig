@@ -10,7 +10,14 @@
     <header class="container">
         <nav>
             <ul><li><strong>{{ 'layout.title'|trans }}</strong></li></ul>
+            {% set route = app.request.attributes.get('_route') %}
+            {% set route_params = app.request.attributes.get('_route_params')|default({}) %}
             <ul>
+                <li>
+                    <a href="{{ path(route, route_params|merge({_locale: 'en'})) }}" data-testid="nav-locale-en"{{ app.request.locale == 'en' ? ' aria-current="true"' }}>EN</a>
+                    /
+                    <a href="{{ path(route, route_params|merge({_locale: 'fr'})) }}" data-testid="nav-locale-fr"{{ app.request.locale == 'fr' ? ' aria-current="true"' }}>FR</a>
+                </li>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     <li>
                         <details class="dropdown">

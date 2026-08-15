@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -16,6 +17,31 @@ use Web\Tests\Support\AbstractWebTestCase;
 
 final class SecurityControllerTest extends AbstractWebTestCase
 {
+    #[Test]
+    #[DataProvider('provideLocalizedPath')]
+    public function itShowsTheLoginForm(string $locale, string $path): void
+    {
+        // Given
+        $client = self::browser();
+
+        // When
+        $client->request('GET', $path);
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertSame($locale, $client->getRequest()->getLocale());
+        self::assertSelectorExists('[data-testid="login-form"]');
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLocalizedPath(): iterable
+    {
+        yield 'en' => ['en', '/login'];
+        yield 'fr' => ['fr', '/connexion'];
+    }
+
     #[Test]
     public function itLogsInWithValidCredentials(): void
     {
