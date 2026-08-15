@@ -7,6 +7,7 @@ namespace Sales\Tests\Customer\Application\Processor;
 use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Processor\EraseCustomerOnIdentityErased;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
