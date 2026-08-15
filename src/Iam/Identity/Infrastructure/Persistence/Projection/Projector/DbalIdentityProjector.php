@@ -47,11 +47,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     #[Subscribe(IdentityErased::class)]
     public function onIdentityErased(IdentityErased $event): void
     {
-        $this->connection->update(
-            self::TABLE,
-            ['erased_at' => new \DateTimeImmutable($event->erasedAt)->format('Y-m-d H:i:s')],
-            ['id' => $event->id],
-        );
+        $this->connection->delete(self::TABLE, ['id' => $event->id]);
     }
 
     /**
@@ -63,7 +59,6 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('registered_at', Types::DATETIME_MUTABLE);
-        $table->addColumn('erased_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

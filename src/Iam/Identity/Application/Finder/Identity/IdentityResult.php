@@ -13,7 +13,6 @@ final readonly class IdentityResult implements ResultInterface
         public string $id,
         public IdentityStatus $status,
         public \DateTimeImmutable $registeredAt,
-        public ?\DateTimeImmutable $erasedAt,
     ) {
     }
 }
