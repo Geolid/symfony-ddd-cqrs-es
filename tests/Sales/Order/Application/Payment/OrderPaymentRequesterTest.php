@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Payment\OrderPaymentRequestingService;
+use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
@@ -20,18 +20,18 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
-final class OrderPaymentRequestingServiceTest extends AbstractIntegrationTestCase
+final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 {
     private DummyPaymentGateway $paymentGateway;
 
-    private OrderPaymentRequestingService $service;
+    private OrderPaymentRequester $service;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->paymentGateway = new DummyPaymentGateway();
-        $this->service = new OrderPaymentRequestingService(
+        $this->service = new OrderPaymentRequester(
             $this->service(OrderPaymentFinderInterface::class),
             $this->service(OrderRepositoryInterface::class),
             $this->paymentGateway,

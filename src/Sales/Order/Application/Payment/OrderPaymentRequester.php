@@ -15,7 +15,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final readonly class OrderPaymentRequestingService implements OrderPaymentRequesterInterface
+final readonly class OrderPaymentRequester implements OrderPaymentRequesterInterface
 {
     public function __construct(
         private OrderPaymentFinderInterface $orderPaymentFinder,
