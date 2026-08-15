@@ -41,6 +41,7 @@ paths:
 #### Naming
 - Repository: success `it*`, failure `itThrowsOn*`.
 - Projector: `itProjects*On*` for every reaction, whether it inserts a new row or mutates an already-projected one (no dedicated failure shape).
+- Translator: `itPublishes*On*` for every reaction (no dedicated failure shape) — names the cross-BC effect (an Integration Event becomes visible on the shared stream), not the class's own mechanism.
 - Finder: an exact lookup that throws when absent is `itGets*`, failure `itThrowsOn*`; one that stays nullable is `itFinds*` for both outcomes — absence is a valid result there, not a failure, so it never takes the `itThrowsOn*`/`itFailsWhen*` shape. A collection read (iterate/filter/paginate) is `itLists*`/`itFilters*By*`/`itPaginates*` — `itGets*`/`itFinds*` are reserved for a single-shot lookup, never a collection scan.
 
 #### Structure
