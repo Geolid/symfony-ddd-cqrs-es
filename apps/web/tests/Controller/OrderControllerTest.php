@@ -48,7 +48,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesAnonymousAccessToTheList(): void
+    public function itRefusesAnonymousAccess(): void
     {
         // Given
         $client = self::browser();
