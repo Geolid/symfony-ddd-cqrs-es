@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Payment;
+namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
-use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;

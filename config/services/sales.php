@@ -6,7 +6,7 @@ use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Infrastructure\Persistence\Projection\Finder\DbalCustomerFinder;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
-use Sales\Order\Infrastructure\Payment\OrderPaymentRequestingService;
+use Sales\Order\Application\Payment\OrderPaymentRequestingService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
