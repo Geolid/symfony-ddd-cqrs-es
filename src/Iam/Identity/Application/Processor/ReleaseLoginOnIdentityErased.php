@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Processor;
 
 use Iam\Identity\Domain\Event\IdentityErased;
+use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Processor\Processor;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[Processor('iam.identity.release_login_on_identity_erased', sync: true)]
@@ -23,7 +23,7 @@ final readonly class ReleaseLoginOnIdentityErased
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws PasswordCredentialNotFoundException
      */
     #[Subscribe(IdentityErased::class)]
     public function __invoke(IdentityErased $event): void

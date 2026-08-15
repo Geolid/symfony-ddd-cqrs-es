@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Product\Infrastructure\Persistence\Projection\Finder;
 
+use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalProductFinderTest extends AbstractIntegrationTestCase
@@ -55,6 +57,32 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
             ['Apple crate', 'Zebra mug'],
             array_map(static fn (ProductResult $result): string => $result->label, $results),
         );
+    }
+
+    #[Test]
+    public function itGetsById(): void
+    {
+        // Given
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+
+        // When
+        $result = $this->finder->ofId($product->id()->toString());
+
+        // Then
+        self::assertSame($product->id()->toString(), $result->id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertFalse($result->delisted);
+    }
+
+    #[Test]
+    public function itThrowsOnAnUnknown(): void
+    {
+        // Then
+        $this->expectException(ProductResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]

@@ -6,9 +6,9 @@ namespace Sales\Tests\Customer\Infrastructure\Persistence\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
@@ -41,7 +41,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknown(): void
     {
         // Then
-        $this->expectException(ResultNotFoundException::class);
+        $this->expectException(CustomerResultNotFoundException::class);
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());

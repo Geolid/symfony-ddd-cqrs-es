@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
+use Symfony\Bundle\SecurityBundle\SecurityBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
+
 return [
-    ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
-    Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
-    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    ApiPlatformBundle::class => ['all' => true],
+    SecurityBundle::class => ['all' => true],
+    TwigBundle::class => ['all' => true],
 ];

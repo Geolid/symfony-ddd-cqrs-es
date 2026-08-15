@@ -14,5 +14,5 @@ interface OrderPaymentFinderInterface extends FinderInterface
      */
     public function ofReference(string $reference): OrderPaymentResult;
 
-    public function ofOrder(string $orderId): ?OrderPaymentResult;
+    public function ofOrderOrNull(string $orderId): ?OrderPaymentResult;
 }

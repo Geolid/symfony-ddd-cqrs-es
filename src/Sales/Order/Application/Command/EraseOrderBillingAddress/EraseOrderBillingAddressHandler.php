@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\EraseOrderBillingAddress;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class EraseOrderBillingAddressHandler
@@ -20,7 +20,7 @@ final readonly class EraseOrderBillingAddressHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws OrderNotFoundException
      */
     public function __invoke(EraseOrderBillingAddress $command): void
     {

@@ -166,7 +166,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $this->loginAs($client, $this->registerCustomer('buyer-5@example.com'));
         $id = $this->placeOrder($client);
         $client->request('GET', \sprintf('/sales/orders/%s/checkout', $id));
-        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrder($id);
+        $payment = $this->service(OrderPaymentFinderInterface::class)->ofOrderOrNull($id);
         self::assertNotNull($payment);
         $this->service(CommandBusInterface::class)->dispatch(new CaptureOrderPayment($payment->id));
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain;
 
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
+use Iam\Identity\Domain\Event\PasswordCredentialDefined;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
-use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -37,21 +37,21 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         return $this->login;
     }
 
-    public static function set(
+    public static function define(
         PasswordCredentialId $id,
         IdentityId $identityId,
         Login $login,
         string $plainPassword,
         SecretHasherInterface $hasher,
-        \DateTimeImmutable $setAt,
+        \DateTimeImmutable $definedAt,
     ): self {
         $self = new self();
-        $self->recordThat(new PasswordCredentialSet(
+        $self->recordThat(new PasswordCredentialDefined(
             id: $id->toString(),
             identityId: $identityId->toString(),
             login: $login->toString(),
             hash: $hasher->hash($plainPassword),
-            setAt: $setAt->format(\DateTimeInterface::ATOM),
+            setAt: $definedAt->format(\DateTimeInterface::ATOM),
         ));
 
         return $self;
@@ -76,7 +76,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     #[Apply]
-    private function applyPasswordCredentialSet(PasswordCredentialSet $event): void
+    private function applyPasswordCredentialDefined(PasswordCredentialDefined $event): void
     {
         $this->id = PasswordCredentialId::fromString($event->id);
         $this->login = Login::fromString($event->login);

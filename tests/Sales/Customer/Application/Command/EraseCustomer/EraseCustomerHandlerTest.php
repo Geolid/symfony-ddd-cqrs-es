@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -49,7 +49,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(CustomerNotFoundException::class);
 
         // When
         $this->dispatch(new EraseCustomer($id));

@@ -72,7 +72,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofOrder($orderId);
+        $result = $this->finder->ofOrderOrNull($orderId);
 
         // Then
         self::assertInstanceOf(OrderPaymentResult::class, $result);
@@ -89,7 +89,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itFindsNoPaymentForAnOrderThatNeverRequestedOne(): void
     {
         // When
-        $result = $this->finder->ofOrder(Uuid::uuid7()->toString());
+        $result = $this->finder->ofOrderOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);

@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-$finder = (new PhpCsFixer\Finder())
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
+
+$finder = (new Finder())
     ->in([
         __DIR__.'/apps',
         __DIR__.'/bootstrap',
@@ -16,13 +20,21 @@ $finder = (new PhpCsFixer\Finder())
     ->notPath('reference.php')
     ->append([__FILE__]);
 
-return (new PhpCsFixer\Config())
+return (new Config())
     ->setFinder($finder)
     ->setRiskyAllowed(true)
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'declare_strict_types' => true,
+        'fully_qualified_strict_types' => [
+            'import_symbols' => true,
+        ],
+        'global_namespace_import' => [
+            'import_classes' => false,
+            'import_constants' => false,
+            'import_functions' => false,
+        ],
         'method_argument_space' => [
             'on_multiline' => 'ensure_fully_multiline',
             'attribute_placement' => 'standalone',
@@ -69,5 +81,5 @@ return (new PhpCsFixer\Config())
             'elements' => ['arguments', 'arrays', 'match', 'parameters'],
         ],
     ])
-    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
+    ->setParallelConfig(ParallelConfigFactory::detect())
     ->setCacheFile(__DIR__.'/var/.php-cs-fixer.cache');

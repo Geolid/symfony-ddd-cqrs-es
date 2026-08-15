@@ -6,11 +6,11 @@ namespace Iam\Tests\Access\Application\Command\RevokePermission;
 
 use Iam\Access\Application\Command\RevokePermission\RevokePermission;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
+use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\ValueObject\GrantId;
 use Iam\Tests\Access\Support\Factory\GrantTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
@@ -37,7 +37,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
         $id = GrantId::forIdentityAndPermission(Uuid::uuid7()->toString(), 'fixture.widget:read')->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(GrantNotFoundException::class);
 
         // When
         $this->dispatch(new RevokePermission($id));

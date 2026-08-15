@@ -8,6 +8,7 @@ use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCreden
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -15,7 +16,6 @@ use Iam\Identity\Domain\ValueObject\Label;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
@@ -111,7 +111,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenTheIdentityDoesNotExist(): void
     {
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new IssueApiTokenCredential(

@@ -6,10 +6,10 @@ namespace Catalog\Tests\Product\Application\Command\DelistProduct;
 
 use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
+use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
@@ -35,7 +35,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $id = ProductId::generate()->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(ProductNotFoundException::class);
 
         // When
         $this->dispatch(new DelistProduct($id));

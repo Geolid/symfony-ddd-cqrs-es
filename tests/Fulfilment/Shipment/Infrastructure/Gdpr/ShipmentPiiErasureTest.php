@@ -30,7 +30,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new DummyDataSubjectErased($customerId)),
         );
 

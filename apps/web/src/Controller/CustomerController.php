@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use Iam\Identity\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
@@ -60,7 +60,7 @@ final class CustomerController extends AbstractController
             $this->commandBus->dispatch(new RegisterIdentity($id));
 
             try {
-                $this->commandBus->dispatch(new SetPasswordCredential($id, $login, (string) $formData->password));
+                $this->commandBus->dispatch(new DefinePasswordCredential($id, $login, (string) $formData->password));
                 $this->commandBus->dispatch(new RegisterCustomer(id: $id, email: $email));
             } catch (LoginAlreadyTakenException) {
                 $this->commandBus->dispatch(new EraseIdentity($id));
@@ -118,7 +118,7 @@ final class CustomerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->commandBus->dispatch(new SetPasswordCredential(
+            $this->commandBus->dispatch(new DefinePasswordCredential(
                 $user->identityId(),
                 $user->getUserIdentifier(),
                 (string) $formData->password,

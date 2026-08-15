@@ -35,7 +35,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         return $this->mapRow($row);
     }
 
-    public function ofOrder(string $orderId): ?OrderPaymentResult
+    public function ofOrderOrNull(string $orderId): ?OrderPaymentResult
     {
         /** @var Row|false $row */
         $row = $this->query()

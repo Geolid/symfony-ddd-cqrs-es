@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Persistence\EventStore\Repository;
 
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class IdentityRepositoryTest extends AbstractIntegrationTestCase
@@ -45,7 +45,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->repository->load($id);

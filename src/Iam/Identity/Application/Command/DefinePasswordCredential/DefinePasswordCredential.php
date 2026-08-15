@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\SetPasswordCredential;
+namespace Iam\Identity\Application\Command\DefinePasswordCredential;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class SetPasswordCredential implements CommandInterface
+final readonly class DefinePasswordCredential implements CommandInterface
 {
     public function __construct(
         public string $identityId,

@@ -13,8 +13,8 @@ use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Event\PasswordCredentialChanged;
+use Iam\Identity\Domain\Event\PasswordCredentialDefined;
 use Iam\Identity\Domain\Event\PasswordCredentialRehashed;
-use Iam\Identity\Domain\Event\PasswordCredentialSet;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Infrastructure\Persistence\Projection\Reducer\StreamIdentityStatusReducer;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -33,8 +33,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         parent::__construct($connection);
     }
 
-    #[Subscribe(PasswordCredentialSet::class)]
-    public function onPasswordCredentialSet(PasswordCredentialSet $event): void
+    #[Subscribe(PasswordCredentialDefined::class)]
+    public function onPasswordCredentialDefined(PasswordCredentialDefined $event): void
     {
         $this->connection->insert(self::TABLE, [
             'id' => $event->id,

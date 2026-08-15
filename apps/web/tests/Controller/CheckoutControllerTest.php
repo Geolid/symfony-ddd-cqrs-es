@@ -42,7 +42,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects('/sales/orders/place');
-        $buyer = $this->service(BuyerFinderInterface::class)->ofId($identity->id()->toString());
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
         self::assertNotNull($buyer->shippingAddress);
         self::assertNotNull($buyer->billingAddress);
@@ -62,7 +62,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->submitAddresses($client, '/checkout/address', sameAsShipping: true);
 
         // Then
-        $buyer = $this->service(BuyerFinderInterface::class)->ofId($identity->id()->toString());
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
         self::assertNotNull($buyer);
         self::assertNotNull($buyer->billingAddress);
         self::assertSame('12 rue des Lilas', $buyer->billingAddress['street']);

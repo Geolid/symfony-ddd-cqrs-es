@@ -8,5 +8,5 @@ use Shared\Application\Finder\FinderInterface;
 
 interface BuyerFinderInterface extends FinderInterface
 {
-    public function ofId(string $customerId): ?BuyerResult;
+    public function ofIdOrNull(string $customerId): ?BuyerResult;
 }

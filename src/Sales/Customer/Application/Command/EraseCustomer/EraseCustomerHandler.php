@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Command\EraseCustomer;
 
 use Psr\Clock\ClockInterface;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class EraseCustomerHandler
@@ -20,7 +20,7 @@ final readonly class EraseCustomerHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws CustomerNotFoundException
      */
     public function __invoke(EraseCustomer $command): void
     {

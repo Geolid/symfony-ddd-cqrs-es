@@ -6,12 +6,12 @@ namespace Iam\Identity\Application\Command\RehashApiTokenCredential;
 
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
+use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class RehashApiTokenCredentialHandler
@@ -26,7 +26,7 @@ final readonly class RehashApiTokenCredentialHandler
 
     /**
      * @throws ApiTokenCredentialResultNotFoundException
-     * @throws AggregateNotFoundException
+     * @throws ApiTokenCredentialNotFoundException
      */
     public function __invoke(RehashApiTokenCredential $command): void
     {

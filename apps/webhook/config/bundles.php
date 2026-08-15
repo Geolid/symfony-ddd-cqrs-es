@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Nelmio\ApiDocBundle\NelmioApiDocBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
+
 return [
-    Nelmio\ApiDocBundle\NelmioApiDocBundle::class => ['all' => true],
-    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    NelmioApiDocBundle::class => ['all' => true],
+    TwigBundle::class => ['all' => true],
 ];

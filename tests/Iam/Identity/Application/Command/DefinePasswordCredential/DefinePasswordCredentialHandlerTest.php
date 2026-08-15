@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\SetPasswordCredential;
+namespace Iam\Tests\Identity\Application\Command\DefinePasswordCredential;
 
-use Iam\Identity\Application\Command\SetPasswordCredential\SetPasswordCredential;
+use Iam\Identity\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
@@ -15,11 +16,10 @@ use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
-final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
+final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestCase
 {
     private PasswordCredentialFinderInterface $finder;
 
@@ -31,13 +31,13 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSetsAPasswordCredentialForAnActiveIdentity(): void
+    public function itDefinesAPasswordCredentialForAnActiveIdentity(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
@@ -56,7 +56,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
 
         // Then
         $result = $this->finder->ofIdentityId($identity->id()->toString());
@@ -74,17 +74,17 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewS3cr3t!'));
     }
 
     #[Test]
     public function itFailsWhenTheIdentityDoesNotExist(): void
     {
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential(IdentityId::generate()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential(IdentityId::generate()->toString(), 'operator', 'S3cr3t!'));
     }
 
     #[Test]
@@ -97,7 +97,7 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
     }
 
     #[Test]
@@ -110,6 +110,6 @@ final class SetPasswordCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new SetPasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'S3cr3t!'));
     }
 }

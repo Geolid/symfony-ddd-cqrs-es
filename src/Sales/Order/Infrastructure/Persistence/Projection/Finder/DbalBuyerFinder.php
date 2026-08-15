@@ -29,7 +29,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInterface
 {
-    public function ofId(string $customerId): ?BuyerResult
+    public function ofIdOrNull(string $customerId): ?BuyerResult
     {
         /** @var Row|false $row */
         $row = $this->query()

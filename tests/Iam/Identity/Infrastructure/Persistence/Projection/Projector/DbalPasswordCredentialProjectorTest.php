@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
@@ -20,7 +21,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheCredentialOnPasswordCredentialSet(): void
+    public function itProjectsTheCredentialOnPasswordCredentialDefined(): void
     {
         // When
         $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new DummySecretHasher())->store();
@@ -51,7 +52,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itProjectsTheIdentityStatusOnPasswordCredentialSet(): void
+    public function itProjectsTheIdentityStatusOnPasswordCredentialDefined(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->store();
@@ -65,7 +66,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('suspended', $row['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
     }
 
     #[Test]
@@ -91,11 +92,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('suspended', $row['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
 
         $otherRow = $this->fetchRow($otherCredential->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('active', $otherRow['identity_status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['identity_status']);
     }
 
     #[Test]
@@ -121,11 +122,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('active', $row['identity_status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $row['identity_status']);
 
         $otherRow = $this->fetchRow($otherCredential->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('suspended', $otherRow['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['identity_status']);
     }
 
     #[Test]

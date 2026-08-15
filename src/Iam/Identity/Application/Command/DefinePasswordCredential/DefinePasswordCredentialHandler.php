@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\SetPasswordCredential;
+namespace Iam\Identity\Application\Command\DefinePasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
@@ -16,12 +18,11 @@ use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[AsCommandHandler]
-final readonly class SetPasswordCredentialHandler
+final readonly class DefinePasswordCredentialHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $identities,
@@ -33,11 +34,12 @@ final readonly class SetPasswordCredentialHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws IdentityNotFoundException
+     * @throws PasswordCredentialNotFoundException
      * @throws IdentityNotActiveException
      * @throws LoginAlreadyTakenException
      */
-    public function __invoke(SetPasswordCredential $command): void
+    public function __invoke(DefinePasswordCredential $command): void
     {
         $identityId = IdentityId::fromString($command->identityId);
         $this->identities->load($identityId)->ensureActive();
@@ -57,13 +59,13 @@ final readonly class SetPasswordCredentialHandler
                 throw LoginAlreadyTakenException::forFingerprint($fingerprint, $e);
             }
 
-            $credential = PasswordCredential::set(
+            $credential = PasswordCredential::define(
                 id: $id,
                 identityId: $identityId,
                 login: $login,
                 plainPassword: $command->password,
                 hasher: $this->hasher,
-                setAt: $this->clock->now(),
+                definedAt: $this->clock->now(),
             );
         }
 

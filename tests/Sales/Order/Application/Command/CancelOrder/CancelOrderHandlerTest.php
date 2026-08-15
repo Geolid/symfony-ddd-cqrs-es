@@ -11,10 +11,10 @@ use Sales\Order\Application\Enum\OrderStatus;
 use Sales\Order\Application\Exception\OrderPaymentAlreadyCapturedException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
@@ -66,7 +66,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(OrderNotFoundException::class);
 
         // When
         $this->dispatch(new CancelOrder($id, $customerId));

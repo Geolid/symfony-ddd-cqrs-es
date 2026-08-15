@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Exception;
 
-use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Exception\ResultNotFoundException;
 
-final class ShipmentResultNotFoundException extends \RuntimeException implements ApplicationExceptionInterface
+final class ShipmentResultNotFoundException extends ResultNotFoundException
 {
     public static function forTrackingReference(string $trackingReference): self
     {

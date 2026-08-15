@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Exception;
 
-use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Exception\ResultNotFoundException;
 
-final class ApiTokenCredentialResultNotFoundException extends \RuntimeException implements ApplicationExceptionInterface
+final class ApiTokenCredentialResultNotFoundException extends ResultNotFoundException
 {
     public static function forIdentifier(string $identifier): self
     {
-        return new self(\sprintf('API token credential identified by "%s" not found.', $identifier));
+        return new self(\sprintf('ApiTokenCredential identified by "%s" not found.', $identifier));
     }
 }

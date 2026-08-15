@@ -2,11 +2,18 @@
 
 declare(strict_types=1);
 
+use Symfony\Bundle\SecurityBundle\SecurityBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
+use Symfony\UX\Icons\UXIconsBundle;
+use Symfony\UX\StimulusBundle\StimulusBundle;
+use Symfony\UX\TwigComponent\TwigComponentBundle;
+
 return [
-    Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
-    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
-    Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true],
-    Symfony\UX\StimulusBundle\StimulusBundle::class => ['all' => true],
-    Symfony\UX\TwigComponent\TwigComponentBundle::class => ['all' => true],
-    Symfony\UX\Icons\UXIconsBundle::class => ['all' => true],
+    SecurityBundle::class => ['all' => true],
+    TwigBundle::class => ['all' => true],
+    WebProfilerBundle::class => ['dev' => true],
+    StimulusBundle::class => ['all' => true],
+    TwigComponentBundle::class => ['all' => true],
+    UXIconsBundle::class => ['all' => true],
 ];

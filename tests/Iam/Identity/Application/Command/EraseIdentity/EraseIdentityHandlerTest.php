@@ -6,10 +6,10 @@ namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -48,7 +48,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new EraseIdentity($id));

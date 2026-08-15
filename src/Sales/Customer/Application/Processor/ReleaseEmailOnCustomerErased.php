@@ -6,11 +6,11 @@ namespace Sales\Customer\Application\Processor;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Domain\Event\CustomerErased;
+use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
 use Shared\Application\Processor\Processor;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[Processor('sales.customer.release_email_on_customer_erased', sync: true)]
@@ -23,7 +23,7 @@ final readonly class ReleaseEmailOnCustomerErased
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws CustomerNotFoundException
      */
     #[Subscribe(CustomerErased::class)]
     public function __invoke(CustomerErased $event): void

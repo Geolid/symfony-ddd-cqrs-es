@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Command\DelistProduct;
 
+use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
-use Shared\Domain\Exception\AggregateNotFoundException;
 
 #[AsCommandHandler]
 final readonly class DelistProductHandler
@@ -20,7 +20,7 @@ final readonly class DelistProductHandler
     }
 
     /**
-     * @throws AggregateNotFoundException
+     * @throws ProductNotFoundException
      */
     public function __invoke(DelistProduct $command): void
     {

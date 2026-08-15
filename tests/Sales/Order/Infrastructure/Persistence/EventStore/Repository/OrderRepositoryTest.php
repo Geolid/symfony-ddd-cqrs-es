@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Repository;
 
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Domain\Exception\AggregateNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderRepositoryTest extends AbstractIntegrationTestCase
@@ -45,7 +45,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->repository->has($id));
-        $this->expectException(AggregateNotFoundException::class);
+        $this->expectException(OrderNotFoundException::class);
 
         // When
         $this->repository->load($id);
