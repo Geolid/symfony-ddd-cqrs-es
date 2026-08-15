@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Validation;
 
 use Fulfilment\Shipment\Application\Validation\ValidTrackingReference;
-use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -49,17 +47,12 @@ final class ValidTrackingReferenceTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
-        yield 'longer than the carrier can issue' => [str_repeat('A', 65), [self::valueObject()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), self::valueObject()]];
+        yield 'longer than the carrier can issue' => [str_repeat('A', 65), [new Assert\Length(max: 64)]];
+        yield 'not a string' => [42, [new Assert\Type('string')]];
     }
 
     protected function createCompound(): ValidTrackingReference
     {
         return new ValidTrackingReference();
-    }
-
-    private static function valueObject(): ValidValueObject
-    {
-        return new ValidValueObject(TrackingReference::class);
     }
 }

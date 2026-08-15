@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Validation;
 
 use Catalog\Product\Application\Validation\ValidProductId;
-use Catalog\Product\Domain\ValueObject\ProductId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -50,18 +48,13 @@ final class ValidProductIdTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank()]];
-        yield 'whitespace only' => ['   ', [new Assert\Uuid(strict: false), self::valueObject()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(strict: false), self::valueObject()]];
-        yield 'out of the UUID format' => ['not-a-uuid', [new Assert\Uuid(strict: false), self::valueObject()]];
+        yield 'whitespace only' => ['   ', [new Assert\Uuid(strict: false)]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(strict: false)]];
+        yield 'out of the UUID format' => ['not-a-uuid', [new Assert\Uuid(strict: false)]];
     }
 
     protected function createCompound(): ValidProductId
     {
         return new ValidProductId();
-    }
-
-    private static function valueObject(): ValidValueObject
-    {
-        return new ValidValueObject(ProductId::class, method: 'fromString');
     }
 }

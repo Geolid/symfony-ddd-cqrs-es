@@ -49,8 +49,7 @@ final class ValidPermissionsTest extends CompoundConstraintTestCase
     {
         yield 'no permission at all' => [[], [new Assert\Count(min: 1)], 1];
         yield 'a countable that is not an array' => [new \ArrayObject(['fixture.widget:read']), [new Assert\Type('array')], 1];
-        // A malformed permission trips both the format Regex and the closing ValidValueObject net inside the nested ValidPermission compound.
-        yield 'a malformed permission' => [['fixture.widget'], [self::permissionShape()], 2];
+        yield 'a malformed permission' => [['fixture.widget'], [self::permissionShape()], 1];
     }
 
     protected function createCompound(): ValidPermissions

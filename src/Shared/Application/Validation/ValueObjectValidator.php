@@ -20,6 +20,12 @@ final class ValueObjectValidator extends ConstraintValidator
             return;
         }
 
+        foreach ($this->context->getViolations() as $violation) {
+            if ($violation->getPropertyPath() === $this->context->getPropertyPath()) {
+                return;
+            }
+        }
+
         $args = \is_array($value) ? $value : [$value];
 
         try {

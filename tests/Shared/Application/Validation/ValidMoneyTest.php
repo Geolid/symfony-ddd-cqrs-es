@@ -7,8 +7,6 @@ namespace Shared\Tests\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidMoney;
-use Shared\Application\Validation\ValidValueObject;
-use Shared\Domain\ValueObject\Money;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -49,17 +47,12 @@ final class ValidMoneyTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'missing' => [null, [new Assert\NotNull()]];
-        yield 'not a whole number' => [19.99, [new Assert\Type('int'), self::valueObject()]];
-        yield 'negative' => [-1, [new Assert\PositiveOrZero(), self::valueObject()]];
+        yield 'not a whole number' => [19.99, [new Assert\Type('int')]];
+        yield 'negative' => [-1, [new Assert\PositiveOrZero()]];
     }
 
     protected function createCompound(): ValidMoney
     {
         return new ValidMoney();
-    }
-
-    private static function valueObject(): ValidValueObject
-    {
-        return new ValidValueObject(Money::class, method: 'fromCents');
     }
 }

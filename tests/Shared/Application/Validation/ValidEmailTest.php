@@ -7,8 +7,6 @@ namespace Shared\Tests\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidEmail;
-use Shared\Application\Validation\ValidValueObject;
-use Shared\Domain\ValueObject\Email;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -49,10 +47,10 @@ final class ValidEmailTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [self::notBlank()]];
-        yield 'whitespace only' => ['   ', [self::notBlank(), new Assert\Email(), self::valueObject()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Email(), self::valueObject()]];
-        yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email(), self::valueObject()]];
-        yield 'too long' => ['buyer@'.rtrim(str_repeat('example.com.', 22), '.'), [new Assert\Length(max: 255), self::valueObject()]];
+        yield 'whitespace only' => ['   ', [self::notBlank(), new Assert\Email()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Email()]];
+        yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email()]];
+        yield 'too long' => ['buyer@'.rtrim(str_repeat('example.com.', 22), '.'), [new Assert\Length(max: 255)]];
     }
 
     protected function createCompound(): ValidEmail
@@ -63,10 +61,5 @@ final class ValidEmailTest extends CompoundConstraintTestCase
     private static function notBlank(): Assert\NotBlank
     {
         return new Assert\NotBlank(normalizer: 'trim');
-    }
-
-    private static function valueObject(): ValidValueObject
-    {
-        return new ValidValueObject(Email::class, method: 'fromString');
     }
 }
