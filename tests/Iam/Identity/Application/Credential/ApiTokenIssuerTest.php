@@ -37,7 +37,7 @@ final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIssuesAnApiTokenCredentialAndReturnsTheGeneratedKey(): void
+    public function itIssuesAnApiTokenCredential(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
