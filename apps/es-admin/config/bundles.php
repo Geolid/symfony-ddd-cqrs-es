@@ -1,8 +1,10 @@
 <?php
 
 declare(strict_types=1);
+use Patchlevel\EventSourcingAdminBundle\PatchlevelEventSourcingAdminBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
 
 return [
-    Patchlevel\EventSourcingAdminBundle\PatchlevelEventSourcingAdminBundle::class => ['dev' => true, 'demo' => true],
-    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    PatchlevelEventSourcingAdminBundle::class => ['dev' => true, 'demo' => true],
+    TwigBundle::class => ['all' => true],
 ];

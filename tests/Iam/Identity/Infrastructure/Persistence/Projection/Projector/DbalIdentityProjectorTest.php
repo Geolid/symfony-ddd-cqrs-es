@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityProjector;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,7 +25,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('active', $row['status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
     }
 
     #[Test]
@@ -42,11 +43,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('suspended', $row['status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('active', $otherRow['status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['status']);
     }
 
     #[Test]
@@ -64,11 +65,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('active', $row['status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('suspended', $otherRow['status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['status']);
     }
 
     #[Test]

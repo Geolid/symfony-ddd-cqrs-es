@@ -7,10 +7,10 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Enum\OrderPaymentStatus;
-use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
@@ -53,7 +53,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownReference(): void
     {
         // Then
-        $this->expectException(OrderPaymentResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->finder->ofReference('GLBX-NEVER-ISSUED');

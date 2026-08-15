@@ -6,10 +6,11 @@ namespace Iam\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Identity\Application\Enum\IdentityStatus;
-use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
+use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -29,7 +30,7 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
             ->fetchAssociative();
 
         if (false === $row) {
-            throw PasswordCredentialResultNotFoundException::forLogin($login);
+            throw ResultNotFoundException::for(PasswordCredential::class, compact('login'));
         }
 
         return $this->mapRow($row);
@@ -45,7 +46,7 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
             ->fetchAssociative();
 
         if (false === $row) {
-            throw PasswordCredentialResultNotFoundException::forIdentityId($identityId);
+            throw ResultNotFoundException::for(PasswordCredential::class, compact('identityId'));
         }
 
         return $this->mapRow($row);

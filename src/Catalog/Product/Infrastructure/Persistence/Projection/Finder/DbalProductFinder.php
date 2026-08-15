@@ -29,7 +29,7 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::forId(Product::class, $id);
+            throw ResultNotFoundException::for(Product::class, compact('id'));
         }
 
         return $this->mapRow($row);

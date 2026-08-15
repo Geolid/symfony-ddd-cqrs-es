@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Iam\Identity\Application\Enum\IdentityStatus;
-use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
@@ -51,9 +51,42 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itThrowsOnAnUnknownLogin(): void
     {
         // Then
-        $this->expectException(PasswordCredentialResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->finder->ofLogin('unknown@example.com');
+    }
+
+    #[Test]
+    public function itGetsByIdentityId(): void
+    {
+        // Given
+        $identityId = IdentityId::generate()->toString();
+        $credential = PasswordCredentialTestFactory::new()
+            ->withIdentityId($identityId)
+            ->withLogin('operator')
+            ->withPassword('S3cr3t!')
+            ->withHasher(new DummySecretHasher())
+            ->store();
+
+        // When
+        $result = $this->finder->ofIdentityId($identityId);
+
+        // Then
+        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($identityId, $result->identityId);
+        self::assertSame('operator', $result->login);
+        self::assertSame('hashed:S3cr3t!', $result->hash);
+        self::assertSame(IdentityStatus::ACTIVE, $result->identityStatus);
+    }
+
+    #[Test]
+    public function itThrowsOnAnUnknownIdentityId(): void
+    {
+        // Then
+        $this->expectException(ResultNotFoundException::class);
+
+        // When
+        $this->finder->ofIdentityId(IdentityId::generate()->toString());
     }
 }

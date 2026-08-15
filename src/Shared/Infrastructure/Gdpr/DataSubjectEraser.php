@@ -18,7 +18,7 @@ final readonly class DataSubjectEraser
     }
 
     #[Subscribe(Subscribe::ALL)]
-    public function onEvent(Message $message): void
+    public function __invoke(Message $message): void
     {
         $event = $message->event();
 

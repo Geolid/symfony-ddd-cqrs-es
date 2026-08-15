@@ -29,7 +29,7 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::forId(Customer::class, $id);
+            throw ResultNotFoundException::for(Customer::class, compact('id'));
         }
 
         return $this->mapRow($row);

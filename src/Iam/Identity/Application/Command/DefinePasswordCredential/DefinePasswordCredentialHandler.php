@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\SetPasswordCredential;
+namespace Iam\Identity\Application\Command\DefinePasswordCredential;
 
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
@@ -21,7 +21,7 @@ use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 
 #[AsCommandHandler]
-final readonly class SetPasswordCredentialHandler
+final readonly class DefinePasswordCredentialHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $identities,
@@ -37,7 +37,7 @@ final readonly class SetPasswordCredentialHandler
      * @throws IdentityNotActiveException
      * @throws LoginAlreadyTakenException
      */
-    public function __invoke(SetPasswordCredential $command): void
+    public function __invoke(DefinePasswordCredential $command): void
     {
         $identityId = IdentityId::fromString($command->identityId);
         $this->identities->load($identityId)->ensureActive();
@@ -57,13 +57,13 @@ final readonly class SetPasswordCredentialHandler
                 throw LoginAlreadyTakenException::forFingerprint($fingerprint, $e);
             }
 
-            $credential = PasswordCredential::set(
+            $credential = PasswordCredential::define(
                 id: $id,
                 identityId: $identityId,
                 login: $login,
                 plainPassword: $command->password,
                 hasher: $this->hasher,
-                setAt: $this->clock->now(),
+                definedAt: $this->clock->now(),
             );
         }
 

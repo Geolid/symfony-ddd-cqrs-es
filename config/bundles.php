@@ -1,13 +1,20 @@
 <?php
 
 declare(strict_types=1);
+use DAMA\DoctrineTestBundle\DAMADoctrineTestBundle;
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Patchlevel\EventSourcingBundle\PatchlevelEventSourcingBundle;
+use Sentry\SentryBundle\SentryBundle;
+use Symfony\Bundle\DebugBundle\DebugBundle;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\MonologBundle\MonologBundle;
 
 return [
-    DAMA\DoctrineTestBundle\DAMADoctrineTestBundle::class => ['test' => true],
-    Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
-    Patchlevel\EventSourcingBundle\PatchlevelEventSourcingBundle::class => ['all' => true],
-    Symfony\Bundle\DebugBundle\DebugBundle::class => ['dev' => true, 'test' => true],
-    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
-    Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
-    Sentry\SentryBundle\SentryBundle::class => ['prod' => true],
+    DAMADoctrineTestBundle::class => ['test' => true],
+    DoctrineBundle::class => ['all' => true],
+    PatchlevelEventSourcingBundle::class => ['all' => true],
+    DebugBundle::class => ['dev' => true, 'test' => true],
+    FrameworkBundle::class => ['all' => true],
+    MonologBundle::class => ['all' => true],
+    SentryBundle::class => ['prod' => true],
 ];

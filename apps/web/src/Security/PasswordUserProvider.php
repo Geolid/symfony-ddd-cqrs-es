@@ -6,9 +6,9 @@ namespace Web\Security;
 
 use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
-use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -32,7 +32,7 @@ final readonly class PasswordUserProvider implements UserProviderInterface
     {
         try {
             $credential = $this->queryBus->ask(new GetPasswordCredentialByLogin($identifier));
-        } catch (PasswordCredentialResultNotFoundException $e) {
+        } catch (ResultNotFoundException $e) {
             throw new UserNotFoundException($e->getMessage(), 0, $e);
         }
 

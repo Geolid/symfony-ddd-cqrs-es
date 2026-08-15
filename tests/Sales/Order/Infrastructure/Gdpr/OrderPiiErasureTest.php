@@ -32,7 +32,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new DummyDataSubjectErased($customerId)),
         );
 
@@ -54,7 +54,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new DummyDataSubjectErased($order->id()->toString())),
         );
 
@@ -79,7 +79,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new DummyDataSubjectErased($customerId)),
         );
 

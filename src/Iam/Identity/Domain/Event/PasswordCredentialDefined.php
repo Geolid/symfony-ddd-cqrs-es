@@ -10,8 +10,8 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('iam.identity.password_credential_set')]
-final readonly class PasswordCredentialSet implements DomainEventInterface
+#[Event('iam.identity.password_credential_defined')]
+final readonly class PasswordCredentialDefined implements DomainEventInterface
 {
     public function __construct(
         public string $id,

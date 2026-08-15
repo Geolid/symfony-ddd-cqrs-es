@@ -32,7 +32,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
@@ -56,7 +56,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
@@ -79,7 +79,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(DataSubjectEraser::class)->onEvent(
+        ($this->service(DataSubjectEraser::class))(
             Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
         );
 

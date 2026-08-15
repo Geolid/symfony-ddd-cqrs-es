@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
-use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Application\Finder\CollectionFinderInterface;
 
 /**
@@ -13,7 +13,7 @@ use Shared\Application\Finder\CollectionFinderInterface;
 interface ShipmentFinderInterface extends CollectionFinderInterface
 {
     /**
-     * @throws ShipmentResultNotFoundException
+     * @throws ResultNotFoundException
      */
     public function ofTrackingReference(string $trackingReference): ShipmentResult;
 

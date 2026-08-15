@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Query\GetPasswordCredentialByLogin;
 
-use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialResult;
+use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Application\Query\AsQueryHandler;
 
 #[AsQueryHandler]
@@ -17,7 +17,7 @@ final readonly class GetPasswordCredentialByLoginHandler
     }
 
     /**
-     * @throws PasswordCredentialResultNotFoundException
+     * @throws ResultNotFoundException
      */
     public function __invoke(GetPasswordCredentialByLogin $query): PasswordCredentialResult
     {

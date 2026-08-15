@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Iam\Identity\Application\Enum\IdentityStatus;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
@@ -75,7 +76,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('suspended', $row['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
     }
 
     #[Test]
@@ -101,11 +102,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('suspended', $row['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
 
         $otherRow = $this->fetchRow($otherCredential->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('active', $otherRow['identity_status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['identity_status']);
     }
 
     #[Test]
@@ -131,11 +132,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('active', $row['identity_status']);
+        self::assertSame(IdentityStatus::ACTIVE->value, $row['identity_status']);
 
         $otherRow = $this->fetchRow($otherCredential->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('suspended', $otherRow['identity_status']);
+        self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['identity_status']);
     }
 
     #[Test]

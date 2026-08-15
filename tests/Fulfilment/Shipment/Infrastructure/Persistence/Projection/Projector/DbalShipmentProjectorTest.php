@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Persistence\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Fulfilment\Shipment\Application\Enum\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -31,7 +32,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
-        self::assertSame('pending', $row['status']);
+        self::assertSame(ShipmentStatus::PENDING->value, $row['status']);
     }
 
     #[Test]
@@ -50,7 +51,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('dispatched', $row['status']);
+        self::assertSame(ShipmentStatus::DISPATCHED->value, $row['status']);
         self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
     }
 
@@ -67,12 +68,12 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame('cancelled', $row['status']);
+        self::assertSame(ShipmentStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
 
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('pending', $otherRow['status']);
+        self::assertSame(ShipmentStatus::PENDING->value, $otherRow['status']);
         self::assertNull($otherRow['cancelled_at']);
     }
 

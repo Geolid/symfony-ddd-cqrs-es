@@ -30,7 +30,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::forId(Identity::class, $id);
+            throw ResultNotFoundException::for(Identity::class, compact('id'));
         }
 
         return $this->mapRow($row);

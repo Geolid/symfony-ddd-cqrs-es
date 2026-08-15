@@ -30,7 +30,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             ->fetchAssociative();
 
         if (false === $row) {
-            throw ResultNotFoundException::forId(Order::class, $id);
+            throw ResultNotFoundException::for(Order::class, compact('id'));
         }
 
         return $this->mapRow($row);

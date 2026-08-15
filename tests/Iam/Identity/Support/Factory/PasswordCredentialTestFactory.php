@@ -81,7 +81,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::keyExists($attributes, 'hasher', 'Missing hasher — call withHasher() before create()/store().');
         Assert::isInstanceOf($hasher = $attributes['hasher'], SecretHasherInterface::class);
 
-        return PasswordCredential::set(
+        return PasswordCredential::define(
             PasswordCredentialId::forIdentity($identityId),
             IdentityId::fromString($identityId),
             Login::fromString($login),

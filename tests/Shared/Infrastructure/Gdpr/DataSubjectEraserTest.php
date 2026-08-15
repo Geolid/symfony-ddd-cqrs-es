@@ -37,7 +37,7 @@ final class DataSubjectEraserTest extends TestCase
         $event = new DummyErasure($subjectId);
 
         // When
-        new DataSubjectEraser($this->cipherKeyStore)->onEvent(Message::create($event));
+        (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
 
         // Then
         self::assertSame([$subjectId], $this->dropped);
@@ -50,7 +50,7 @@ final class DataSubjectEraserTest extends TestCase
         $event = new DummyFact();
 
         // When
-        new DataSubjectEraser($this->cipherKeyStore)->onEvent(Message::create($event));
+        (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
 
         // Then
         self::assertSame([], $this->dropped);

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\RehashApiTokenCredential;
 
 use Iam\Identity\Application\Command\RehashApiTokenCredential\RehashApiTokenCredential;
-use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Exception\ResultNotFoundException;
 use Support\AbstractIntegrationTestCase;
 
 final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -77,7 +77,7 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
         $identifier = 'key_unknown';
 
         // Then
-        $this->expectException(ApiTokenCredentialResultNotFoundException::class);
+        $this->expectException(ResultNotFoundException::class);
 
         // When
         $this->dispatch(new RehashApiTokenCredential($identifier, 'S3cr3t!'));
