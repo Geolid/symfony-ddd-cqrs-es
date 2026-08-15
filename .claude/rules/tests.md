@@ -9,7 +9,7 @@ paths:
 **ALWAYS**
 - Test methods carry the `#[Test]` attribute.
 - Code is organized in three blocks separated by blank lines: `// Given`, `// When`, `// Then`. For an exception test, `// Then` (`expectException()`) comes before `// When`.
-- A `service(<X>::class)` resolution called identically across two or more methods of the same test class is hoisted to a property, resolved once in `setUp()` — `setUp()` re-runs fresh per test, so this changes nothing about isolation, only removes the repetition. Exception: a Web test case, where `setUp()` runs before the test method's own `self::browser()`/`createClient()` call — resolving a service that early boots the kernel out of order (`LogicException: Booting the kernel before calling createClient()...`), so the repeated resolution stays inline there.
+- An identical construction (a `service(<X>::class)` resolution, a constraint instance reused across data sets) repeated across two or more call sites in the same test class is hoisted once instead of repeated — a property resolved in `setUp()` when the call sites are instance methods, a `private static` helper when they're static (a data provider). Exception: a Web test case, where `setUp()` runs before the test method's own `self::browser()`/`createClient()` call — resolving a service that early boots the kernel out of order (`LogicException: Booting the kernel before calling createClient()...`), so the repeated resolution stays inline there.
 - Success and failure cases for the same behavior are grouped together, success first.
 
 **NEVER**
