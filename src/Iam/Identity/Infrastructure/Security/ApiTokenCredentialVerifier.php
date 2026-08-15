@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
+use Iam\Identity\Application\Credential\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 
 final readonly class ApiTokenCredentialVerifier implements ApiTokenCredentialVerifierInterface

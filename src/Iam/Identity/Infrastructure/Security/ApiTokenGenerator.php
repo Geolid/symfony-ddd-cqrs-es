@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Security;
 
-use Iam\Identity\Application\Security\ApiTokenGeneratorInterface;
-use Iam\Identity\Application\Security\GeneratedApiToken;
+use Iam\Identity\Application\Credential\ApiTokenGeneratorInterface;
+use Iam\Identity\Application\Credential\GeneratedApiToken;
 
 final class ApiTokenGenerator implements ApiTokenGeneratorInterface
 {
