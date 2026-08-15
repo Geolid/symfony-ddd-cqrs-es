@@ -27,7 +27,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->store();
+        $identity = IdentityTestFactory::new()->store();
 
         // When
         $result = $this->finder->ofId($identity->id()->toString());
@@ -35,7 +35,6 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($identity->id()->toString(), $result->id);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
-        self::assertNotNull($result->erasedAt);
     }
 
     #[Test]

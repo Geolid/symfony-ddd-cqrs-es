@@ -15,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<IdentityResult>
  *
- * @phpstan-type Row array{id: string, status: string, registered_at: string, erased_at: ?string}
+ * @phpstan-type Row array{id: string, status: string, registered_at: string}
  */
 final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
 {
@@ -37,7 +37,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'status', 'registered_at', 'erased_at')->from(DbalIdentityProjector::TABLE);
+        $qb->select('id', 'status', 'registered_at')->from(DbalIdentityProjector::TABLE);
     }
 
     /**
@@ -49,7 +49,6 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
             id: $row['id'],
             status: IdentityStatus::from($row['status']),
             registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
-            erasedAt: null !== $row['erased_at'] ? new \DateTimeImmutable($row['erased_at'], new \DateTimeZone('UTC')) : null,
         );
     }
 }
