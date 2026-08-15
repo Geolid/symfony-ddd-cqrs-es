@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Credential;
 
+use Iam\Identity\Application\Credential\ApiTokenGeneratorInterface;
 use Iam\Identity\Application\Credential\ApiTokenIssuer;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
-use Iam\Identity\Application\Security\ApiTokenGeneratorInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;

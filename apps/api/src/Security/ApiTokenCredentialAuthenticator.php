@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Security\ApiTokenCredentialVerifierInterface;
+use Iam\Identity\Application\Credential\ApiTokenCredentialVerifierInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

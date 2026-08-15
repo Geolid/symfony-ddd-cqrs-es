@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Identity\Application\Security\PasswordCredentialVerifierInterface;
+use Iam\Identity\Application\Credential\PasswordCredentialVerifierInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

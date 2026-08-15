@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Credential;
 
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
-use Iam\Identity\Application\Security\GeneratedApiToken;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Shared\Application\Port\AsDrivingPort;

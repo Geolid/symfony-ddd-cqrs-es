@@ -6,8 +6,6 @@ namespace Iam\Identity\Application\Credential;
 
 use Iam\Identity\Application\Command\IssueApiTokenCredential\IssueApiTokenCredential;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
-use Iam\Identity\Application\Security\ApiTokenGeneratorInterface;
-use Iam\Identity\Application\Security\GeneratedApiToken;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Ramsey\Uuid\Uuid;
