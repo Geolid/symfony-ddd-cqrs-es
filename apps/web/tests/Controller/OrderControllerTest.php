@@ -263,6 +263,10 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
+        $client->followRedirect();
+        // CancelOrder is dispatched async — the Controller can't know the outcome at
+        // redirect time, so the same "requested" flash shows even on a silent no-op.
+        self::assertSelectorExists('[data-testid="flash-success"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame(OrderStatus::DISPATCHED, $order->status);
