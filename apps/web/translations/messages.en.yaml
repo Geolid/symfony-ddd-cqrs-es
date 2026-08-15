@@ -84,7 +84,6 @@ sales:
                 delivered: Delivered
         flash:
             cancelled: Order cancelled.
-            cannot_cancel_dispatched: This order has already been confirmed for dispatch, it can no longer be cancelled.
             catalog_changed: Prices or product availability changed since you loaded this page — please review your order.
     customer:
         register:

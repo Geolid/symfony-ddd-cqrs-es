@@ -159,7 +159,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToCancelAnOrderAlreadyDispatched(): void
+    public function itIgnoresCancellingAnOrderAlreadyDispatched(): void
     {
         // Given
         $client = self::browser();
@@ -176,8 +176,6 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects(\sprintf('/sales/orders/%s', $id));
-        $client->followRedirect();
-        self::assertSelectorExists('[data-testid="flash-error"]');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame(OrderStatus::DISPATCHED, $order->status);

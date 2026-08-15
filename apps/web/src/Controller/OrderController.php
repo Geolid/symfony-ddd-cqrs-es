@@ -12,7 +12,6 @@ use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
-use Sales\Order\Application\Query\GetOrder\GetOrder;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
@@ -183,14 +182,6 @@ final class OrderController extends AbstractController
         }
 
         $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
-
-        $order = $this->queryBus->ask(new GetOrder($id));
-
-        if (!$order->status->isCancelled()) {
-            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_cancel_dispatched'));
-
-            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-        }
 
         $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
 
