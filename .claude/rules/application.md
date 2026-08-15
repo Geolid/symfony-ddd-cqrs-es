@@ -44,6 +44,6 @@ paths:
 - A validation compound is exercised through `CompoundConstraintTestCase`, one data set per refused value, naming the rules it trips — the assertion compares the whole ordered list, so a rule dropped from the compound makes its data set fail. A value that trips the closing `ValidValueObject` alone is a missing `Assert`: the message the client gets is the Value Object's, not the field's.
 
 #### Naming
-- Command Handler: success `it*`, failure `itFailsWhen*`.
+- Command Handler: success `it*`, failure `itFailsWhen*` — a no-op success (idempotent re-dispatch, nothing left to do) is `itIgnores*`, never `itDoesNot*` (that shape stays reserved for a Domain Aggregate test asserting the same no-op through an absent event).
 - Query Handler: success `itGets*` / `itLists*` / `itLists*By*` / `itPaginates*`, failure `itFailsWhen*`.
 - Side effect (`#[Processor]`): `it*On*` (no dedicated failure shape).
