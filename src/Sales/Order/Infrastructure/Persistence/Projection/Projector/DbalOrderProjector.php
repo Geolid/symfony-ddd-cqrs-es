@@ -10,7 +10,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Status\OrderStatus;
-use Sales\Order\Domain\Event\OrderBillingAddressErased;
+use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
@@ -88,10 +88,14 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(OrderBillingAddressErased::class)]
-    public function onOrderBillingAddressErased(OrderBillingAddressErased $event): void
+    #[Subscribe(OrderAnonymized::class)]
+    public function onOrderAnonymized(OrderAnonymized $event): void
     {
-        $this->connection->delete(self::TABLE, ['id' => $event->id]);
+        $this->connection->update(
+            self::TABLE,
+            ['anonymized_at' => new \DateTimeImmutable($event->anonymizedAt)->format('Y-m-d H:i:s')],
+            ['id' => $event->id],
+        );
     }
 
     /**
@@ -109,6 +113,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('anonymized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

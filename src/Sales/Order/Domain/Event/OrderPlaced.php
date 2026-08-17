@@ -19,7 +19,7 @@ final readonly class OrderPlaced implements DomainEventInterface
      * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>         $lines
      */
     public function __construct(
-        #[DataSubjectId(name: 'billing_retention')]
+        #[DataSubjectId(name: 'sales_order_retention')]
         public string $id,
         #[DataSubjectId]
         public string $customerId,
@@ -37,7 +37,7 @@ final readonly class OrderPlaced implements DomainEventInterface
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
-        ]), subjectIdName: 'billing_retention')]
+        ]), subjectIdName: 'sales_order_retention')]
         public array $billingAddress,
         public array $lines,
         public int $totalAmountInCents,

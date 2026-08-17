@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Psr\Clock\ClockInterface;
-use Sales\Order\Application\Command\EraseOrderBillingAddress\EraseOrderBillingAddress;
-use Sales\Order\Application\Query\ListOrdersWithExpiredBillingRetention\ListOrdersWithExpiredBillingRetention;
+use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
+use Sales\Order\Application\Query\ListOrdersPastRetentionPeriod\ListOrdersPastRetentionPeriod;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -17,9 +17,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(name: 'sales:order:purge-expired-billing-address', description: 'Erase the billing address of every Order past its retention period')]
+#[AsCommand(name: 'sales:order:anonymize-expired', description: 'Anonymize every Order past its sales retention period')]
 #[AsCronTask('0 0 * * *')]
-final class PurgeExpiredOrderBillingAddressCommand
+final class AnonymizeExpiredOrdersCommand
 {
     use LockableTrait;
 
@@ -27,8 +27,8 @@ final class PurgeExpiredOrderBillingAddressCommand
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
         private readonly ClockInterface $clock,
-        #[Autowire(param: 'sales.billing_retention_days')]
-        private readonly int $billingRetentionDays,
+        #[Autowire(param: 'sales.retention_days')]
+        private readonly int $retentionDays,
     ) {
     }
 
@@ -45,16 +45,16 @@ final class PurgeExpiredOrderBillingAddressCommand
         }
 
         try {
-            $cutoff = $this->clock->now()->modify(\sprintf('-%d days', $this->billingRetentionDays))->format(\DateTimeInterface::ATOM);
-            $expired = $this->queryBus->ask(new ListOrdersWithExpiredBillingRetention($cutoff));
+            $cutoff = $this->clock->now()->modify(\sprintf('-%d days', $this->retentionDays))->format(\DateTimeInterface::ATOM);
+            $expired = $this->queryBus->ask(new ListOrdersPastRetentionPeriod($cutoff));
             $total = \count($expired);
 
             foreach ($expired as $order) {
-                $this->commandBus->dispatch(new EraseOrderBillingAddress($order->id));
-                $io->writeln(\sprintf('Erased billing address for order %s', $order->id));
+                $this->commandBus->dispatch(new AnonymizeExpiredOrder($order->id));
+                $io->writeln(\sprintf('Anonymized order %s', $order->id));
             }
 
-            $io->success(\sprintf('%d order(s) purged.', $total));
+            $io->success(\sprintf('%d order(s) anonymized.', $total));
         } finally {
             $this->release();
         }

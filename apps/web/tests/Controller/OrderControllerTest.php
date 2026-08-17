@@ -25,6 +25,7 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Lock\LockFactory;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class OrderControllerTest extends AbstractWebTestCase
@@ -265,6 +266,29 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
+    public function itShowsAPaymentInProgressPageWhenARequestIsAlreadyInFlight(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = $this->createCustomer('buyer-10@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->withoutIncrementalIds()->store()->id()->toString();
+        $lock = $this->service(LockFactory::class)->createLock(\sprintf('sales.order.payment_request.%s', $id));
+        $lock->acquire();
+
+        try {
+            // When
+            $client->request('GET', $this->path('sales_order_pay', ['id' => $id]));
+
+            // Then
+            self::assertResponseStatusCodeSame(409);
+            self::assertSelectorTextContains('[data-testid="payment-in-progress-message"]', 'sales.order.payment_in_progress.message');
+        } finally {
+            $lock->release();
+        }
+    }
+
+    #[Test]
     public function itRefusesToPayForACancelledOrder(): void
     {
         // Given
@@ -278,7 +302,9 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->request('GET', $this->path('sales_order_pay', ['id' => $order->id()->toString()]));
 
         // Then
-        self::assertResponseStatusCodeSame(409);
+        self::assertResponseRedirects($this->path('sales_order_show', ['id' => $order->id()->toString()]));
+        $client->followRedirect();
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.cannot_pay_cancelled');
     }
 
     #[Test]
@@ -298,14 +324,14 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
         $client->followRedirect();
-        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancellation_requested');
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancelled');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame(OrderStatus::CANCELLED, $order->status);
     }
 
     #[Test]
-    public function itIgnoresCancellingAnOrderAlreadyDispatched(): void
+    public function itRefusesToCancelADispatchedOrder(): void
     {
         // Given
         $client = self::browser();
@@ -324,9 +350,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Then
         self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
         $client->followRedirect();
-        // CancelOrder is dispatched async — the Controller can't know the outcome at
-        // redirect time, so the same "requested" flash shows even on a silent no-op.
-        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.cancellation_requested');
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.not_cancellable');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame(OrderStatus::DISPATCHED, $order->status);

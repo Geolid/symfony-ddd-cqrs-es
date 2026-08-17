@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Query\ListOrdersWithExpiredBillingRetention;
+namespace Sales\Order\Application\Query\ListOrdersPastRetentionPeriod;
 
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
@@ -10,7 +10,7 @@ use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
 #[AsQueryHandler]
-final readonly class ListOrdersWithExpiredBillingRetentionHandler
+final readonly class ListOrdersPastRetentionPeriodHandler
 {
     public function __construct(private OrderFinderInterface $orderFinder)
     {
@@ -19,7 +19,7 @@ final readonly class ListOrdersWithExpiredBillingRetentionHandler
     /**
      * @return StreamResult<OrderResult>
      */
-    public function __invoke(ListOrdersWithExpiredBillingRetention $query): StreamResult
+    public function __invoke(ListOrdersPastRetentionPeriod $query): StreamResult
     {
         return new StreamResult($this->orderFinder->placedBefore($query->cutoff));
     }

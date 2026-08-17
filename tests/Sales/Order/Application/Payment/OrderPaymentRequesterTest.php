@@ -6,7 +6,6 @@ namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
@@ -89,17 +88,18 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAPaymentHasAlreadyBeenRequested(): void
+    public function itReturnsTheExistingCheckoutUrlWhenAPaymentHasAlreadyBeenRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
-
-        // Then
-        $this->expectException(OrderPaymentAlreadyRequestedException::class);
+        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->store();
 
         // When
-        $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
+        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
+
+        // Then
+        self::assertSame('https://fake-checkout.test/?ref=existing', $checkoutUrl);
+        self::assertNull($this->paymentGateway->orderId);
     }
 
     #[Test]

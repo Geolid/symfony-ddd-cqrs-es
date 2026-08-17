@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\Event\OrderBillingAddressErased;
+use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
@@ -15,6 +15,7 @@ use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -112,7 +113,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCancelWhenDispatched(): void
+    public function itCannotCancelWhenDispatched(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -127,7 +128,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
-            ->then();
+            ->expectsException(OrderNotCancellableException::class);
     }
 
     #[Test]
@@ -272,33 +273,33 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErasesTheBillingAddress(): void
+    public function itAnonymizes(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $anonymizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(self::orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->eraseBillingAddress($erasedAt))
-            ->then(new OrderBillingAddressErased($id, $erasedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (Order $order) => $order->anonymize($anonymizedAt))
+            ->then(new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
-    public function itDoesNotReeraseAnAlreadyErasedBillingAddress(): void
+    public function itDoesNotReanonymizeAnAlreadyAnonymized(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $anonymizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(
                 self::orderPlaced($id, $customerId, $placedAt),
-                new OrderBillingAddressErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+                new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->eraseBillingAddress(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 

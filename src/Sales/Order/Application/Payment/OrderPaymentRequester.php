@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
@@ -28,7 +27,6 @@ final readonly class OrderPaymentRequester implements OrderPaymentRequesterInter
     /**
      * @throws OrderNotFoundException
      * @throws OrderAlreadyCancelledException
-     * @throws OrderPaymentAlreadyRequestedException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -40,7 +38,7 @@ final readonly class OrderPaymentRequester implements OrderPaymentRequesterInter
         $orderPaymentId = OrderPaymentId::forOrder($orderId);
 
         if ($this->orderPaymentRepository->has($orderPaymentId)) {
-            throw OrderPaymentAlreadyRequestedException::forOrderId($orderId);
+            return $this->orderPaymentRepository->load($orderPaymentId)->checkoutUrl();
         }
 
         $session = $this->paymentGateway->requestPayment($orderId, $order->totalAmountInCents(), $returnUrl, $order->billingAddress());

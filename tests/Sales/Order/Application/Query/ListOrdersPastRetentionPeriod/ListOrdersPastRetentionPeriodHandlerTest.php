@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Query\ListOrdersWithExpiredBillingRetention;
+namespace Sales\Tests\Order\Application\Query\ListOrdersPastRetentionPeriod;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Query\ListOrdersWithExpiredBillingRetention\ListOrdersWithExpiredBillingRetention;
+use Sales\Order\Application\Query\ListOrdersPastRetentionPeriod\ListOrdersPastRetentionPeriod;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class ListOrdersWithExpiredBillingRetentionHandlerTest extends AbstractIntegrationTestCase
+final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itListsOrdersPlacedBeforeTheGivenCutoff(): void
@@ -19,7 +19,7 @@ final class ListOrdersWithExpiredBillingRetentionHandlerTest extends AbstractInt
         OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->store();
 
         // When
-        $results = iterator_to_array($this->ask(new ListOrdersWithExpiredBillingRetention('2020-01-01T00:00:00+00:00')), false);
+        $results = iterator_to_array($this->ask(new ListOrdersPastRetentionPeriod('2020-01-01T00:00:00+00:00')), false);
 
         // Then
         self::assertCount(1, $results);

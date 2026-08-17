@@ -6,12 +6,12 @@ namespace Sales\Order\Application\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class OrderPaymentAlreadyRequestedException extends \RuntimeException implements ApplicationExceptionInterface
+final class OrderPaymentRequestInProgressException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forOrderId(string $orderId, ?\Throwable $previous = null): self
     {
         return new self(
-            message: \sprintf('The payment for order "%s" has already been requested.', $orderId),
+            message: \sprintf('A payment request for order "%s" is already in progress.', $orderId),
             previous: $previous,
         );
     }

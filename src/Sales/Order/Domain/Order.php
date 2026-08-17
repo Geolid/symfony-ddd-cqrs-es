@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Sales\Order\Domain\Event\OrderBillingAddressErased;
+use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
@@ -18,6 +18,7 @@ use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
@@ -39,7 +40,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private PostalAddress $billingAddress;
     private int $totalAmountInCents;
     private OrderState $state;
-    private bool $billingAddressErased;
+    private ?\DateTimeImmutable $anonymizedAt;
 
     public function id(): OrderId
     {
@@ -135,6 +136,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws OrderBelongsToAnotherCustomerException
+     * @throws OrderNotCancellableException
      */
     public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
     {
@@ -142,8 +144,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
         }
 
-        if (!$this->state->isCancellable()) {
+        if ($this->state->isCancelled()) {
             return;
+        }
+
+        if (!$this->state->isCancellable()) {
+            throw OrderNotCancellableException::forId($this->id);
         }
 
         $this->recordThat(new OrderCancelled(
@@ -188,15 +194,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function eraseBillingAddress(\DateTimeImmutable $erasedAt): void
+    public function anonymize(\DateTimeImmutable $anonymizedAt): void
     {
-        if ($this->billingAddressErased) {
+        if (null !== $this->anonymizedAt) {
             return;
         }
 
-        $this->recordThat(new OrderBillingAddressErased(
+        $this->recordThat(new OrderAnonymized(
             id: $this->id->toString(),
-            erasedAt: $erasedAt->format(\DateTimeInterface::ATOM),
+            anonymizedAt: $anonymizedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -215,7 +221,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         );
         $this->totalAmountInCents = $event->totalAmountInCents;
         $this->state = OrderState::PLACED;
-        $this->billingAddressErased = false;
+        $this->anonymizedAt = null;
     }
 
     #[Apply]
@@ -243,8 +249,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyOrderBillingAddressErased(OrderBillingAddressErased $event): void
+    private function applyOrderAnonymized(OrderAnonymized $event): void
     {
-        $this->billingAddressErased = true;
+        $this->anonymizedAt = new \DateTimeImmutable($event->anonymizedAt);
     }
 }

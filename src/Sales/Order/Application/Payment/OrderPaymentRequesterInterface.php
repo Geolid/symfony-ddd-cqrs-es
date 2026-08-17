@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Payment;
 
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Shared\Application\Port\AsDrivingPort;
@@ -17,7 +17,7 @@ interface OrderPaymentRequesterInterface
      *
      * @throws OrderNotFoundException
      * @throws OrderAlreadyCancelledException
-     * @throws OrderPaymentAlreadyRequestedException
+     * @throws OrderPaymentRequestInProgressException
      */
     public function requestFor(string $orderId, string $returnUrl): string;
 }

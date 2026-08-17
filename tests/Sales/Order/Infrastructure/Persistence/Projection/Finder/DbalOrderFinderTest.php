@@ -32,6 +32,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $confirmedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
         $completedAt = new \DateTimeImmutable('2026-01-05T11:00:00+00:00');
+        $anonymizedAt = new \DateTimeImmutable('2026-01-06T12:00:00+00:00');
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
@@ -39,6 +40,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
             ->confirmed($confirmedAt)
             ->dispatched($dispatchedAt)
             ->completed($completedAt)
+            ->anonymized($anonymizedAt)
             ->store();
 
         // When
@@ -54,6 +56,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($dispatchedAt->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
         self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->completedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
+        self::assertSame($anonymizedAt->format('Y-m-d H:i:s'), $result->anonymizedAt?->format('Y-m-d H:i:s'));
     }
 
     #[Test]

@@ -6,7 +6,7 @@ namespace Sales\Order\Application\Processor;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
-use Sales\Order\Application\Command\CancelOrdersForCustomer\CancelOrdersForCustomer;
+use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Processor\Processor;
@@ -25,6 +25,6 @@ final readonly class CancelOrdersOnCustomerErased
     #[Subscribe(CustomerErasedIntegrationEvent::class)]
     public function __invoke(CustomerErasedIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new CancelOrdersForCustomer($event->customerId));
+        $this->commandBus->dispatch(new CancelOrphanedOrdersOfCustomer($event->customerId));
     }
 }

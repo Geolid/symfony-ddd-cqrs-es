@@ -8,12 +8,12 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
-#[Event('sales.order.billing_address_erased')]
-final readonly class OrderBillingAddressErased implements DomainEventInterface, DataSubjectErasureInterface
+#[Event('sales.order.anonymized')]
+final readonly class OrderAnonymized implements DomainEventInterface, DataSubjectErasureInterface
 {
     public function __construct(
         public string $id,
-        public string $erasedAt,
+        public string $anonymizedAt,
     ) {
     }
 

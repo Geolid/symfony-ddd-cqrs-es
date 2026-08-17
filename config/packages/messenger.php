@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
-use Sales\Order\Application\Command\CancelOrder\CancelOrder;
-use Sales\Order\Application\Command\EraseOrderBillingAddress\EraseOrderBillingAddress;
+use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
+use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
 use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -24,8 +24,8 @@ return static function (ContainerConfigurator $container): void {
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
             ],
             'routing' => [
-                CancelOrder::class => 'async',
-                EraseOrderBillingAddress::class => 'async',
+                AnonymizeExpiredOrder::class => 'async',
+                CancelOrphanedOrder::class => 'async',
                 PrepareShipment::class => 'async',
                 RevokeApiTokenCredential::class => 'async',
             ],

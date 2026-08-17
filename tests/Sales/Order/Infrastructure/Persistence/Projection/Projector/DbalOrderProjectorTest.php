@@ -13,7 +13,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, completed_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, completed_at: ?string, cancelled_at: ?string, anonymized_at: ?string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -34,6 +34,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($row['dispatched_at']);
         self::assertNull($row['completed_at']);
         self::assertNull($row['cancelled_at']);
+        self::assertNull($row['anonymized_at']);
     }
 
     #[Test]
@@ -90,21 +91,16 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheErasureOnOrderBillingAddressErased(): void
+    public function itProjectsTheAnonymizationOnOrderAnonymized(): void
     {
-        // Given
-        $other = OrderTestFactory::new()->store();
-
         // When
-        $order = OrderTestFactory::new()->billingAddressErased()->store();
+        $order = OrderTestFactory::new()->anonymized()->store();
 
         // Then
-        self::assertFalse($this->fetchRow($order->id()->toString()));
-
-        $otherRow = $this->fetchRow($other->id()->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame($other->customerId(), $otherRow['customer_id']);
-        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+        $row = $this->fetchRow($order->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::PLACED->value, $row['status']);
+        self::assertNotNull($row['anonymized_at']);
     }
 
     #[Test]
@@ -135,7 +131,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, completed_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT customer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, completed_at, cancelled_at, anonymized_at FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

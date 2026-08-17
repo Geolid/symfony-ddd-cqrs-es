@@ -32,10 +32,16 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     private string $orderId;
     private PaymentReference $reference;
     private OrderPaymentState $state;
+    private string $checkoutUrl;
 
     public function id(): OrderPaymentId
     {
         return $this->id;
+    }
+
+    public function checkoutUrl(): string
+    {
+        return $this->checkoutUrl;
     }
 
     public static function request(
@@ -151,6 +157,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $this->id = OrderPaymentId::fromString($event->id);
         $this->orderId = $event->orderId;
         $this->reference = PaymentReference::fromString($event->reference);
+        $this->checkoutUrl = $event->checkoutUrl;
         $this->state = OrderPaymentState::REQUESTED;
     }
 

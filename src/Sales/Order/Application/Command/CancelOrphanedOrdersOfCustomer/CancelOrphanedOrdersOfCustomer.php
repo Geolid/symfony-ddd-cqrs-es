@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Command\CancelOrdersForCustomer;
+namespace Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class CancelOrdersForCustomer implements CommandInterface
+final readonly class CancelOrphanedOrdersOfCustomer implements CommandInterface
 {
     public function __construct(public string $customerId)
     {
