@@ -17,10 +17,13 @@ return static function (ContainerConfigurator $container): void {
 
     SubdomainServiceLoader::load($services, 'Sales');
 
+    // 2 implementations exist (itself + its decorator) — autowire is ambiguous without this.
+    $orderPaymentRequesterAlias = $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequester::class);
+
     if ('test' === $container->env()) {
         // Not otherwise referenced by a service definition; alias+public here or the
         // test container's compiler prunes it.
         $services->alias(CustomerFinderInterface::class, DbalCustomerFinder::class)->public();
-        $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequester::class)->public();
+        $orderPaymentRequesterAlias->public();
     }
 };

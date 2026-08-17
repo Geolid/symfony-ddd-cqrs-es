@@ -14,7 +14,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'fulfilment:shipment:prepare-requested', description: 'Mark every requested Shipment as prepared, once its parcel has been packed')]
+#[AsCommand(name: 'fulfilment:shipment:prepare-requested', description: 'Prepare every requested Shipment once its parcel has been packed')]
 final class PrepareRequestedShipmentsCommand
 {
     use LockableTrait;

@@ -6,7 +6,7 @@ namespace Sales\Tests\Customer\Support\Factory;
 
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Shared\Domain\ValueObject\Email;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
 use Webmozart\Assert\Assert;

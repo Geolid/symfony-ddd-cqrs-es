@@ -10,13 +10,14 @@ use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderI
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
-use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueKey;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Label;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -25,11 +26,14 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
 
     private ApiTokenCredentialFinderInterface $finder;
 
+    private UniqueValueRegistryInterface $uniqueValues;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(ApiTokenCredentialFinderInterface::class);
+        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
     #[Test]
@@ -60,9 +64,10 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // Given
         $identity = IdentityTestFactory::new()->store();
         $identityId = $identity->id()->toString();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(
-            ApiTokenCredentialUniqueValue::LABEL,
-            Label::fromString('CI pipeline')->fingerprintFor($identityId),
+        $this->uniqueValues->reserve(
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $identityId),
+            'CI pipeline',
+            Uuid::uuid7()->toString(),
         );
 
         // Then
@@ -84,9 +89,10 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     {
         // Given
         $firstIdentity = IdentityTestFactory::new()->store();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(
-            ApiTokenCredentialUniqueValue::LABEL,
-            Label::fromString('CI pipeline')->fingerprintFor($firstIdentity->id()->toString()),
+        $this->uniqueValues->reserve(
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $firstIdentity->id()->toString()),
+            'CI pipeline',
+            Uuid::uuid7()->toString(),
         );
 
         $secondIdentity = IdentityTestFactory::new()->store();

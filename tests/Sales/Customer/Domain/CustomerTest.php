@@ -13,8 +13,8 @@ use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
 use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 

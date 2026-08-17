@@ -25,10 +25,11 @@ final class PrepareRequestedShipmentsCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itPreparesEveryRequestedShipment(): void
+    public function itPreparesRequestedShipments(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->store();
+        $alreadyPrepared = ShipmentTestFactory::new()->prepared()->store();
         $tester = $this->tester();
 
         // When
@@ -37,9 +38,10 @@ final class PrepareRequestedShipmentsCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('1 shipment(s) prepared.', $tester->getDisplay());
-        $results = iterator_to_array($this->shipmentFinder->byStatus('prepared'));
-        self::assertCount(1, $results);
-        self::assertSame($shipment->id()->toString(), $results[0]->id);
+        self::assertCount(0, $this->shipmentFinder->byStatus('requested'));
+        $ids = array_column(iterator_to_array($this->shipmentFinder->byStatus('prepared'), false), 'id');
+        self::assertContains($shipment->id()->toString(), $ids);
+        self::assertContains($alreadyPrepared->id()->toString(), $ids);
     }
 
     #[Test]

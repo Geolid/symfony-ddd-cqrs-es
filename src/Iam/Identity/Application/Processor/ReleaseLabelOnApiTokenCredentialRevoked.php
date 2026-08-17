@@ -8,10 +8,11 @@ use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
-use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueKey;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Processor\Processor;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[Processor('iam.identity.release_label_on_api_token_credential_revoked', sync: true)]
 final readonly class ReleaseLabelOnApiTokenCredentialRevoked
@@ -30,7 +31,10 @@ final readonly class ReleaseLabelOnApiTokenCredentialRevoked
     {
         $credential = $this->repository->load(ApiTokenCredentialId::fromString($event->id));
 
-        $fingerprint = $credential->label()->fingerprintFor($credential->identityId()->toString());
-        $this->uniqueValues->release(ApiTokenCredentialUniqueValue::LABEL, $fingerprint);
+        $this->uniqueValues->release(
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId()->toString()),
+            $credential->label()->toString(),
+            $credential->id()->toString(),
+        );
     }
 }

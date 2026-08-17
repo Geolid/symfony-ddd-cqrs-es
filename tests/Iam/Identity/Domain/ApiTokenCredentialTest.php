@@ -11,10 +11,10 @@ use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Label;
 use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Label;
 
 final class ApiTokenCredentialTest extends AggregateRootTestCase
 {

@@ -8,16 +8,16 @@ use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Iam\Identity\Domain\ValueObject\Login;
-use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\UniqueKey;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Web\Tests\Support\AbstractWebTestCase;
@@ -73,7 +73,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer-2@example.com')->fingerprint());
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer-2@example.com', Uuid::uuid7()->toString());
 
         // When
         $crawler = $client->request('GET', $this->path('sales_customer_register'));
@@ -88,9 +88,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client->submit($form);
 
         // Then
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.customer.flash.email_taken');
-        self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(PasswordCredentialUniqueValue::LOGIN, Login::fromString('buyer-2-retry')->fingerprint()));
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('[data-testid="register-customer-form"]', 'already in use');
     }
 
     #[Test]
@@ -98,14 +97,14 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, Login::fromString('buyer-10')->fingerprint());
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'buyer-10', Uuid::uuid7()->toString());
 
         // When
         $this->registerCustomer($client, 'buyer-10', 'buyer-10-other@example.com', 'another password entirely');
 
         // Then
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.customer.flash.login_taken');
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('[data-testid="register-customer-form"]', 'already in use');
     }
 
     #[Test]
@@ -135,7 +134,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer-6@example.com')->fingerprint());
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer-6@example.com', Uuid::uuid7()->toString());
 
         // When
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');

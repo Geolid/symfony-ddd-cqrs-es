@@ -8,9 +8,11 @@ use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
+use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
@@ -36,7 +38,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheLabelIsAlreadyTaken(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(ProductUniqueValue::LABEL, 'Espresso cups, set of 6');
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', Uuid::uuid7()->toString());
 
         // Then
         $this->expectException(ProductLabelAlreadyTakenException::class);

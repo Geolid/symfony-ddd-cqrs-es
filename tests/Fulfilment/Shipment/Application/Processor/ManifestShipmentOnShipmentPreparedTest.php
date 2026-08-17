@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Processor;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Processor\ManifestShipmentOnShipmentPrepared;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueValue;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -55,23 +52,6 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         self::assertCount(1, $results);
         self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);
         self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
-    }
-
-    #[Test]
-    public function itFailsWhenTheTrackingReferenceIsAlreadyTaken(): void
-    {
-        // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(
-            ShipmentUniqueValue::TRACKING_REFERENCE,
-            DummyCarrierGateway::TRACKING_REFERENCE,
-        );
-        $shipment = ShipmentTestFactory::new()->prepared()->store();
-
-        // Then
-        $this->expectException(TrackingReferenceAlreadyTakenException::class);
-
-        // When
-        ($this->processor)(new ShipmentPrepared($shipment->id()->toString(), '2026-01-02T00:00:00+00:00'));
     }
 }
 

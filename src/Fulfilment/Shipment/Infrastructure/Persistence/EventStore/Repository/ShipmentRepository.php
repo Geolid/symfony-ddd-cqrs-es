@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Persistence\EventStore\Repository;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +41,10 @@ final readonly class ShipmentRepository implements ShipmentRepositoryInterface
 
     public function save(Shipment $shipment): void
     {
-        $this->repository->save($shipment);
+        try {
+            $this->repository->save($shipment);
+        } catch (AggregateAlreadyExists) {
+            throw ShipmentAlreadyExistsException::forId($shipment->id()->toString());
+        }
     }
 }

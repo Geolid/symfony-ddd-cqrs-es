@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Application\Command\MarkShipmentDelivered;
+namespace Fulfilment\Tests\Shipment\Application\Command\DeliverShipment;
 
-use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
+use Fulfilment\Shipment\Application\Command\DeliverShipment\DeliverShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
@@ -15,16 +15,16 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
-final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
+final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itMarksADispatchedShipmentAsDelivered(): void
+    public function itDeliversADispatchedShipment(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
 
         // When
-        $this->dispatch(new MarkShipmentDelivered($shipment->id()->toString()));
+        $this->dispatch(new DeliverShipment($shipment->id()->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -43,7 +43,7 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new MarkShipmentDelivered($shipment->id()->toString()));
+        $this->dispatch(new DeliverShipment($shipment->id()->toString()));
     }
 
     #[Test]
@@ -56,6 +56,6 @@ final class MarkShipmentDeliveredHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new MarkShipmentDelivered($id));
+        $this->dispatch(new DeliverShipment($id));
     }
 }

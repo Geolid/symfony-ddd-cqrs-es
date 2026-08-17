@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Command\RequestShipment;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -41,6 +42,10 @@ final readonly class RequestShipmentHandler
             createdAt: $this->clock->now(),
         );
 
-        $this->repository->save($shipment);
+        try {
+            $this->repository->save($shipment);
+        } catch (ShipmentAlreadyExistsException) {
+            return;
+        }
     }
 }

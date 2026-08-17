@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Persistence\EventStore\Repository;
 
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
+use Sales\Order\Domain\Exception\OrderPaymentAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
@@ -39,6 +41,10 @@ final readonly class OrderPaymentRepository implements OrderPaymentRepositoryInt
 
     public function save(OrderPayment $orderPayment): void
     {
-        $this->repository->save($orderPayment);
+        try {
+            $this->repository->save($orderPayment);
+        } catch (AggregateAlreadyExists) {
+            throw OrderPaymentAlreadyExistsException::forId($orderPayment->id()->toString());
+        }
     }
 }

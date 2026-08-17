@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CancelOrderPayment;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderPaymentAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
@@ -21,6 +22,7 @@ final readonly class CancelOrderPaymentHandler
 
     /**
      * @throws OrderPaymentNotFoundException
+     * @throws OrderPaymentAlreadyExistsException
      */
     public function __invoke(CancelOrderPayment $command): void
     {

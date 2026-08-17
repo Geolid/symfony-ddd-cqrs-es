@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Domain\ValueObject;
+namespace Sales\Tests\Customer\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shared\Domain\ValueObject\Email;
+use Sales\Customer\Domain\ValueObject\Email;
 
 final class EmailTest extends TestCase
 {
@@ -69,18 +69,5 @@ final class EmailTest extends TestCase
         // Then
         self::assertTrue($equalResult);
         self::assertFalse($differentResult);
-    }
-
-    #[Test]
-    public function itFingerprints(): void
-    {
-        // Given
-        $email = Email::fromString('  Buyer@Example.COM  ');
-
-        // When
-        $fingerprint = $email->fingerprint();
-
-        // Then
-        self::assertSame(hash('sha256', 'buyer@example.com'), $fingerprint);
     }
 }

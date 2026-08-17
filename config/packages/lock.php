@@ -6,6 +6,6 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
-        'lock' => '%env(LOCK_DSN)%',
+        'lock' => '%env(resolve:LOCK_DSN)%',
     ]);
 };

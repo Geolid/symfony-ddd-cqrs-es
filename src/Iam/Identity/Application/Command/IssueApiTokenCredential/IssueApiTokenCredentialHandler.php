@@ -12,13 +12,14 @@ use Iam\Identity\Domain\Repository\ApiTokenCredentialRepositoryInterface;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
-use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueKey;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Label;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class IssueApiTokenCredentialHandler
@@ -43,12 +44,16 @@ final readonly class IssueApiTokenCredentialHandler
         $this->identities->load($identityId)->ensureActive();
 
         $label = Label::fromString($command->label);
-        $fingerprint = $label->fingerprintFor($command->identityId);
 
         try {
-            $this->uniqueValues->reserve(ApiTokenCredentialUniqueValue::LABEL, $fingerprint);
+            $this->uniqueValues->reserve(
+                UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $command->identityId),
+                $label->toString(),
+                $command->id,
+                $command->identityId,
+            );
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw LabelAlreadyTakenException::forFingerprint($fingerprint, $e);
+            throw LabelAlreadyTakenException::forLabel($label->toString(), $e);
         }
 
         $credential = ApiTokenCredential::issue(

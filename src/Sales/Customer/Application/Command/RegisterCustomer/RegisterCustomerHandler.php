@@ -9,11 +9,12 @@ use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
+use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class RegisterCustomerHandler
@@ -31,12 +32,11 @@ final readonly class RegisterCustomerHandler
     public function __invoke(RegisterCustomer $command): void
     {
         $email = Email::fromString($command->email);
-        $fingerprint = $email->fingerprint();
 
         try {
-            $this->uniqueValues->reserve(CustomerUniqueValue::EMAIL, $fingerprint);
+            $this->uniqueValues->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $email->toString(), $command->id, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw CustomerEmailAlreadyRegisteredException::forFingerprint($fingerprint, $e);
+            throw CustomerEmailAlreadyRegisteredException::forEmail($email->toString(), $e);
         }
 
         $customer = Customer::register(

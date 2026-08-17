@@ -8,13 +8,14 @@ use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
+use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class ListProductForSaleHandler
@@ -34,7 +35,7 @@ final readonly class ListProductForSaleHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueValues->reserve(ProductUniqueValue::LABEL, $label->toString());
+            $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $label->toString(), $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
             throw ProductLabelAlreadyTakenException::forLabel($label->toString(), $e);
         }

@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\ValueObject;
 
-use Shared\Domain\FingerprintTrait;
 use Webmozart\Assert\Assert;
 
 final readonly class Login
 {
-    use FingerprintTrait;
-
     private string $value;
 
     private function __construct(string $value)

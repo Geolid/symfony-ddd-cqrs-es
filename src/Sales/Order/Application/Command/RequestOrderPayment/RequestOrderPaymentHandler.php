@@ -6,15 +6,17 @@ namespace Sales\Order\Application\Command\RequestOrderPayment;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
+use Sales\Order\Domain\Exception\OrderPaymentAlreadyExistsException;
 use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
+use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class RequestOrderPaymentHandler
@@ -33,12 +35,14 @@ final readonly class RequestOrderPaymentHandler
     {
         $id = OrderPaymentId::fromString($command->id);
 
+        // Fast path for a sequential retry; a concurrent one still races past this
+        // check (TOCTOU) — save()'s own uniqueness guard below closes that gap.
         if ($this->repository->has($id)) {
             return;
         }
 
         try {
-            $this->uniqueValues->reserve(OrderPaymentUniqueValue::REFERENCE, $command->reference);
+            $this->uniqueValues->reserve(UniqueKey::for(OrderPaymentUniqueKey::REFERENCE), $command->reference, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
             throw PaymentReferenceAlreadyTakenException::forReference($command->reference, $e);
         }
@@ -52,6 +56,10 @@ final readonly class RequestOrderPaymentHandler
             requestedAt: $this->clock->now(),
         );
 
-        $this->repository->save($orderPayment);
+        try {
+            $this->repository->save($orderPayment);
+        } catch (OrderPaymentAlreadyExistsException) {
+            return;
+        }
     }
 }

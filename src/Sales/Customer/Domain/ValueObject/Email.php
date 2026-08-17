@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Domain\ValueObject;
+namespace Sales\Customer\Domain\ValueObject;
 
-use Shared\Domain\FingerprintTrait;
 use Webmozart\Assert\Assert;
 
 final readonly class Email
 {
-    use FingerprintTrait;
-
     private string $value;
 
     private function __construct(string $value)

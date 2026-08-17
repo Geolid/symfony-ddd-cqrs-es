@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Application\Validation;
+namespace Sales\Tests\Customer\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Validation\ValidEmail;
+use Sales\Customer\Application\Validation\ValidEmail;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;

@@ -6,6 +6,7 @@ namespace Iam\Identity\Application\Command\RehashPasswordCredential;
 
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Identity\Domain\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
@@ -27,6 +28,7 @@ final readonly class RehashPasswordCredentialHandler
     /**
      * @throws PasswordCredentialResultNotFoundException
      * @throws PasswordCredentialNotFoundException
+     * @throws PasswordCredentialAlreadyExistsException
      */
     public function __invoke(RehashPasswordCredential $command): void
     {
