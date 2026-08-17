@@ -27,7 +27,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     private IdentityId $id;
-    private IdentityState $status;
+    private IdentityState $state;
 
     public function id(): IdentityId
     {
@@ -50,11 +50,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function suspend(Reason $reason, \DateTimeImmutable $suspendedAt): void
     {
-        if ($this->status->isErased()) {
+        if ($this->state->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->status->isSuspended()) {
+        if ($this->state->isSuspended()) {
             return;
         }
 
@@ -70,11 +70,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function reactivate(\DateTimeImmutable $reactivatedAt): void
     {
-        if ($this->status->isErased()) {
+        if ($this->state->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->status->isActive()) {
+        if ($this->state->isActive()) {
             return;
         }
 
@@ -89,14 +89,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function ensureActive(): void
     {
-        if (!$this->status->isActive()) {
+        if (!$this->state->isActive()) {
             throw IdentityNotActiveException::forId($this->id);
         }
     }
 
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if ($this->status->isErased()) {
+        if ($this->state->isErased()) {
             return;
         }
 
@@ -110,24 +110,24 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyIdentityRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
-        $this->status = IdentityState::ACTIVE;
+        $this->state = IdentityState::ACTIVE;
     }
 
     #[Apply]
     private function applyIdentityErased(IdentityErased $event): void
     {
-        $this->status = IdentityState::ERASED;
+        $this->state = IdentityState::ERASED;
     }
 
     #[Apply]
     private function applyIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->status = IdentityState::SUSPENDED;
+        $this->state = IdentityState::SUSPENDED;
     }
 
     #[Apply]
     private function applyIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->status = IdentityState::ACTIVE;
+        $this->state = IdentityState::ACTIVE;
     }
 }
