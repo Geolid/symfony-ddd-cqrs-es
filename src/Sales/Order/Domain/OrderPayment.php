@@ -38,11 +38,6 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         return $this->id;
     }
 
-    public function status(): OrderPaymentState
-    {
-        return $this->state;
-    }
-
     public static function request(
         OrderPaymentId $id,
         string $orderId,
