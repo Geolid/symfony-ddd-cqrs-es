@@ -10,13 +10,14 @@ use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueKey;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Label;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
@@ -85,8 +86,9 @@ final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
         $identityId = $identity->id()->toString();
         $this->service(UniqueValueRegistryInterface::class)->reserve(
-            ApiTokenCredentialUniqueValue::LABEL,
-            Label::fromString('CI pipeline')->fingerprintFor($identityId),
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $identityId),
+            'CI pipeline',
+            Uuid::uuid7()->toString(),
         );
 
         // Then
