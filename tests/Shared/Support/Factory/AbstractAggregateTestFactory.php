@@ -8,7 +8,6 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
-use Patchlevel\EventSourcing\Test\IncrementalRamseyUuidFactory;
 use Ramsey\Uuid\Uuid;
 use Support\Helpers\KernelTestCaseHelper;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -26,7 +25,7 @@ abstract class AbstractAggregateTestFactory
 
     private bool $useIncrementalIds = true;
 
-    private static ?IncrementalRamseyUuidFactory $incrementalFactory = null;
+    private static ?StrictIncrementalUuidFactory $incrementalFactory = null;
 
     /** @var array<string, Generator> */
     private static array $fakers = [];
@@ -175,7 +174,7 @@ abstract class AbstractAggregateTestFactory
     private function wrapWithIncrementalIds(callable $callback): mixed
     {
         $original = Uuid::getFactory();
-        self::$incrementalFactory ??= new IncrementalRamseyUuidFactory();
+        self::$incrementalFactory ??= new StrictIncrementalUuidFactory();
 
         Uuid::setFactory(self::$incrementalFactory);
 

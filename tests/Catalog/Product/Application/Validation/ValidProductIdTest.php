@@ -48,9 +48,9 @@ final class ValidProductIdTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank()]];
-        yield 'whitespace only' => ['   ', [new Assert\Uuid(strict: false)]];
-        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid(strict: false)]];
-        yield 'out of the UUID format' => ['not-a-uuid', [new Assert\Uuid(strict: false)]];
+        yield 'whitespace only' => ['   ', [new Assert\Uuid()]];
+        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Uuid()]];
+        yield 'out of the UUID format' => ['not-a-uuid', [new Assert\Uuid()]];
     }
 
     protected function createCompound(): ValidProductId

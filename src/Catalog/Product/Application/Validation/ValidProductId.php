@@ -17,7 +17,7 @@ final class ValidProductId extends Compound
         return [
             new Assert\NotBlank(),
             new Assert\Type('string'),
-            new Assert\Uuid(strict: false),
+            new Assert\Uuid(),
             new ValidValueObject(ProductId::class, method: 'fromString'),
         ];
     }
