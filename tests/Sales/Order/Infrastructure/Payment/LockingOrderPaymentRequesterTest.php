@@ -47,7 +47,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
         // A plain second call would pass even without an explicit release: the Lock object's
         // own destructor releases it as soon as it goes out of scope, regardless. Retaining it
         // here rules that out — only an explicit release() keeps `isAcquired()` truthful.
-        $lockFactory = new RetainingLockFactory(new InMemoryStore());
+        $lockFactory = new DummyLockFactory(new InMemoryStore());
         $requester = new LockingOrderPaymentRequester($this->inner, $lockFactory);
 
         // When
@@ -115,7 +115,7 @@ final class DummyOrderPaymentRequester implements OrderPaymentRequesterInterface
     }
 }
 
-final class RetainingLockFactory extends LockFactory
+final class DummyLockFactory extends LockFactory
 {
     /** @var list<SharedLockInterface> */
     public array $createdLocks = [];
