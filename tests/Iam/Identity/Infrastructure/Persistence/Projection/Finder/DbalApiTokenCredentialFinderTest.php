@@ -6,8 +6,8 @@ namespace Iam\Tests\Identity\Infrastructure\Persistence\Projection\Finder;
 
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -30,7 +30,7 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentifier('key_operator')
             ->withLabel('Operator key')
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // When
@@ -60,11 +60,11 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
         $identityId = Uuid::uuid7()->toString();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identityId)
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
         ApiTokenCredentialTestFactory::new()
             ->withIdentityId(Uuid::uuid7()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // When
@@ -79,8 +79,8 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFiltersActive(): void
     {
         // Given
-        $active = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
-        ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->store();
+        $active = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
+        ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->revoked()->store();
 
         // When
         $results = iterator_to_array($this->finder->active());

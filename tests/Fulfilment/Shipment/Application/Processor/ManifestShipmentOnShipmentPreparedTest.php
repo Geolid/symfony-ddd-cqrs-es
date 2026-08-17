@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 
 final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTestCase
 {
-    private DummyCarrierGateway $carrier;
+    private SpyCarrierGateway $carrier;
 
     private ManifestShipmentOnShipmentPrepared $processor;
 
@@ -26,7 +26,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
     {
         parent::setUp();
 
-        $this->carrier = new DummyCarrierGateway();
+        $this->carrier = new SpyCarrierGateway();
         self::getContainer()->set(CarrierGatewayInterface::class, $this->carrier);
 
         $this->processor = $this->service(ManifestShipmentOnShipmentPrepared::class);
@@ -51,11 +51,11 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);
-        self::assertSame(DummyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
+        self::assertSame(SpyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
     }
 }
 
-final class DummyCarrierGateway implements CarrierGatewayInterface
+final class SpyCarrierGateway implements CarrierGatewayInterface
 {
     public const string TRACKING_REFERENCE = 'ACME-4Q7X2K9';
 

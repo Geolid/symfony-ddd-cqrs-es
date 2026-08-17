@@ -11,7 +11,7 @@ use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Label;
@@ -24,7 +24,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->hasher = new DummySecretHasher();
+        $this->hasher = new FakeSecretHasher();
     }
 
     #[Test]

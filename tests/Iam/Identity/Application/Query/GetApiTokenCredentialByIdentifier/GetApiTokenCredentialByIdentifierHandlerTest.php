@@ -6,8 +6,8 @@ namespace Iam\Tests\Identity\Application\Query\GetApiTokenCredentialByIdentifier
 
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetApiTokenCredentialByIdentifier\GetApiTokenCredentialByIdentifier;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -20,7 +20,7 @@ final class GetApiTokenCredentialByIdentifierHandlerTest extends AbstractIntegra
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentifier('key_operator')
             ->withLabel('Operator key')
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // When

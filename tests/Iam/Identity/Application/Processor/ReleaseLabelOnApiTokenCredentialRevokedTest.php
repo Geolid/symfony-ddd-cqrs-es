@@ -7,8 +7,8 @@ namespace Iam\Tests\Identity\Application\Processor;
 use Iam\Identity\Application\Processor\ReleaseLabelOnApiTokenCredentialRevoked;
 use Iam\Identity\Domain\Event\ApiTokenCredentialRevoked;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialUniqueKey;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\UniqueKey;
@@ -31,7 +31,7 @@ final class ReleaseLabelOnApiTokenCredentialRevokedTest extends AbstractIntegrat
     public function itReleasesTheLabelOnApiTokenCredentialRevoked(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withLabel('CI pipeline')->withHasher(new DummySecretHasher())->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withLabel('CI pipeline')->withHasher(new FakeSecretHasher())->store();
         $key = UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId()->toString());
         $this->uniqueValues->reserve($key, $credential->label()->toString(), $credential->id()->toString());
 

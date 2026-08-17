@@ -43,7 +43,7 @@ final class PaymentAuthorizedOpenApiDocumentationTest extends AbstractWebhookOpe
     }
 
     #[Test]
-    public function itDocumentsEveryPayloadFieldWithDescriptionAndExample(): void
+    public function itDocumentsPayloadFieldsWithDescriptionAndExample(): void
     {
         // Given
         $client = self::createClient();

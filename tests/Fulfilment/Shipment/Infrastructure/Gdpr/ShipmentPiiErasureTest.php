@@ -10,8 +10,8 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Tests\Support\Doubles\StubDataSubjectErased;
 use Support\AbstractIntegrationTestCase;
 
 final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
@@ -31,7 +31,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new DummyDataSubjectErased($customerId)),
+            Message::create(new StubDataSubjectErased($customerId)),
         );
 
         // Then
@@ -41,17 +41,5 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
             ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'],
             $rehydrated->shippingAddress,
         );
-    }
-}
-
-final readonly class DummyDataSubjectErased implements DataSubjectErasureInterface
-{
-    public function __construct(private string $customerId)
-    {
-    }
-
-    public function subjectId(): string
-    {
-        return $this->customerId;
     }
 }

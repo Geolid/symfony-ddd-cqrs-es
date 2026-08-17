@@ -13,8 +13,8 @@ use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Tests\Support\Doubles\StubDataSubjectErased;
 use Support\AbstractIntegrationTestCase;
 
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
@@ -34,7 +34,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new DummyDataSubjectErased($customerId)),
+            Message::create(new StubDataSubjectErased($customerId)),
         );
 
         // Then
@@ -56,7 +56,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new DummyDataSubjectErased($order->id()->toString())),
+            Message::create(new StubDataSubjectErased($order->id()->toString())),
         );
 
         // Then
@@ -81,7 +81,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new DummyDataSubjectErased($customerId)),
+            Message::create(new StubDataSubjectErased($customerId)),
         );
 
         // Then
@@ -104,7 +104,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new DummyDataSubjectErased($customerId)),
+            Message::create(new StubDataSubjectErased($customerId)),
         );
 
         // Then
@@ -119,17 +119,5 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     private static function erasedAddress(): array
     {
         return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
-    }
-}
-
-final readonly class DummyDataSubjectErased implements DataSubjectErasureInterface
-{
-    public function __construct(private string $customerId)
-    {
-    }
-
-    public function subjectId(): string
-    {
-        return $this->customerId;
     }
 }

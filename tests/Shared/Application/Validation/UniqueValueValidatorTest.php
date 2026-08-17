@@ -8,9 +8,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Tests\Support\Doubles\FakeUniqueValueRegistry;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -21,7 +20,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 {
-    private DummyUniqueValueRegistry $registry;
+    private FakeUniqueValueRegistry $registry;
 
     #[Test]
     public function itAcceptsAValueNobodyReserved(): void
@@ -187,7 +186,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 
     protected function createValidator(): UniqueValueValidator
     {
-        $this->registry = new DummyUniqueValueRegistry();
+        $this->registry = new FakeUniqueValueRegistry();
 
         return new UniqueValueValidator($this->registry);
     }
@@ -209,45 +208,5 @@ final readonly class DummyEditedObjectWithNonStringId
 {
     public function __construct(public int $id)
     {
-    }
-}
-
-final class DummyUniqueValueRegistry implements UniqueValueRegistryInterface
-{
-    /** @var array<string, string> */
-    private array $reserved = [];
-
-    public function reserve(UniqueKey $key, string $value, string $ownerId, ?string $subjectId = null): void
-    {
-        if ($this->exists($key, $value)) {
-            throw UniqueValueAlreadyTakenException::forValue($key, $value);
-        }
-
-        $this->reserved[self::normalize($key, $value)] = $ownerId;
-    }
-
-    public function release(UniqueKey $key, string $value, string $ownerId): void
-    {
-        unset($this->reserved[self::normalize($key, $value)]);
-    }
-
-    public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
-    {
-        $existingOwnerId = $this->reserved[self::normalize($key, $value)] ?? null;
-
-        if (null === $existingOwnerId) {
-            return false;
-        }
-
-        return $existingOwnerId !== $excludeOwnerId;
-    }
-
-    public function releaseAllForSubject(string $subjectId): void
-    {
-    }
-
-    private static function normalize(UniqueKey $key, string $value): string
-    {
-        return \sprintf('%s:%s', $key->toString(), $value);
     }
 }

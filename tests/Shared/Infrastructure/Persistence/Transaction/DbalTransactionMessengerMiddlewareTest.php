@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Support\AbstractIntegrationTestCase;
-use Support\Stub\DummyMessage;
-use Support\Stub\DummyNextMiddleware;
-use Support\Stub\DummyStack;
+use Support\Doubles\DummyMessage;
+use Support\Doubles\StubNextMiddleware;
+use Support\Doubles\StubStack;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
@@ -37,7 +37,7 @@ final class DbalTransactionMessengerMiddlewareTest extends AbstractIntegrationTe
     {
         // Given
         $value = Uuid::uuid7()->toString();
-        $stack = new DummyStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new DummyNextMiddleware()));
+        $stack = new StubStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new StubNextMiddleware()));
 
         // When
         $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
@@ -52,7 +52,7 @@ final class DbalTransactionMessengerMiddlewareTest extends AbstractIntegrationTe
         // Given
         $value = Uuid::uuid7()->toString();
         $failure = new \RuntimeException('Handler blew up.');
-        $stack = new DummyStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new DummyNextMiddleware($failure)));
+        $stack = new StubStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new StubNextMiddleware($failure)));
 
         // Then
         $this->expectExceptionObject($failure);

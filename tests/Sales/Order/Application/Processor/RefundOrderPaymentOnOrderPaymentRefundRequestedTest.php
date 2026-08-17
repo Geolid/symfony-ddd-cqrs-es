@@ -17,13 +17,13 @@ final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends Abstract
 {
     private RefundOrderPaymentOnOrderPaymentRefundRequested $processor;
 
-    private DummyRefundingPaymentGateway $paymentGateway;
+    private SpyRefundingPaymentGateway $paymentGateway;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->paymentGateway = new DummyRefundingPaymentGateway();
+        $this->paymentGateway = new SpyRefundingPaymentGateway();
         self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
 
         $this->processor = $this->service(RefundOrderPaymentOnOrderPaymentRefundRequested::class);
@@ -43,7 +43,7 @@ final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends Abstract
     }
 }
 
-final class DummyRefundingPaymentGateway implements PaymentGatewayInterface
+final class SpyRefundingPaymentGateway implements PaymentGatewayInterface
 {
     public ?string $refundedReference = null;
 

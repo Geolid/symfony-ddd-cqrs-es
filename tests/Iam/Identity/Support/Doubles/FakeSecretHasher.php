@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Support\Stub;
+namespace Iam\Tests\Identity\Support\Doubles;
 
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 
-final class DummySecretHasher implements SecretHasherInterface
+final class FakeSecretHasher implements SecretHasherInterface
 {
     public function hash(string $secret): string
     {

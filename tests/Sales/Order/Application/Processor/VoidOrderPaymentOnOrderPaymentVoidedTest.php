@@ -17,13 +17,13 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
 {
     private VoidOrderPaymentOnOrderPaymentVoided $processor;
 
-    private DummyVoidingPaymentGateway $paymentGateway;
+    private SpyVoidingPaymentGateway $paymentGateway;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->paymentGateway = new DummyVoidingPaymentGateway();
+        $this->paymentGateway = new SpyVoidingPaymentGateway();
         self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
 
         $this->processor = $this->service(VoidOrderPaymentOnOrderPaymentVoided::class);
@@ -43,7 +43,7 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
     }
 }
 
-final class DummyVoidingPaymentGateway implements PaymentGatewayInterface
+final class SpyVoidingPaymentGateway implements PaymentGatewayInterface
 {
     public ?string $voidedReference = null;
 

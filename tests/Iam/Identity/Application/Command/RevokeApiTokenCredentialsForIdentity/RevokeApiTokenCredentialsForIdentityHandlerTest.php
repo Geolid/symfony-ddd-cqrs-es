@@ -6,8 +6,8 @@ namespace Iam\Tests\Identity\Application\Command\RevokeApiTokenCredentialsForIde
 
 use Iam\Identity\Application\Command\RevokeApiTokenCredentialsForIdentity\RevokeApiTokenCredentialsForIdentity;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itRevokesEveryActiveCredentialOfTheIdentity(): void
+    public function itRevokesActiveCredentialsOfTheIdentity(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
-        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new FakeSecretHasher())->store();
+        ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new FakeSecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredentialsForIdentity($identityId));
@@ -36,7 +36,7 @@ final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractInte
     public function itIgnoresAnIdentityWithNoCredentials(): void
     {
         // Given
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredentialsForIdentity(Uuid::uuid7()->toString()));

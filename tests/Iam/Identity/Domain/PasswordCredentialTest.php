@@ -17,8 +17,8 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
-use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
+use Iam\Tests\Identity\Support\Doubles\StubPasswordPolicy;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -31,8 +31,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->hasher = new DummySecretHasher();
-        $this->policy = new DummyPasswordPolicy();
+        $this->hasher = new FakeSecretHasher();
+        $this->policy = new StubPasswordPolicy();
     }
 
     #[Test]
@@ -83,7 +83,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = IdentityId::generate();
         $id = PasswordCredentialId::forIdentity($identityId->toString());
         $login = Login::fromString('operator');
-        $policy = new DummyPasswordPolicy(strongEnough: false);
+        $policy = new StubPasswordPolicy(strongEnough: false);
 
         $this
             ->given()
@@ -97,7 +97,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = IdentityId::generate();
         $id = PasswordCredentialId::forIdentity($identityId->toString());
         $login = Login::fromString('operator');
-        $policy = new DummyPasswordPolicy(compromised: true);
+        $policy = new StubPasswordPolicy(compromised: true);
 
         $this
             ->given()
@@ -111,7 +111,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = IdentityId::generate()->toString();
         $id = PasswordCredentialId::forIdentity($identityId)->toString();
         $definedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $policy = new DummyPasswordPolicy(strongEnough: false);
+        $policy = new StubPasswordPolicy(strongEnough: false);
 
         $this
             ->given(new PasswordCredentialDefined($id, $identityId, 'operator', $this->hasher->hash('MyStr0ngP@ssw0rd123!'), $definedAt->format(\DateTimeInterface::ATOM)))
@@ -125,7 +125,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = IdentityId::generate()->toString();
         $id = PasswordCredentialId::forIdentity($identityId)->toString();
         $definedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $policy = new DummyPasswordPolicy(compromised: true);
+        $policy = new StubPasswordPolicy(compromised: true);
 
         $this
             ->given(new PasswordCredentialDefined($id, $identityId, 'operator', $this->hasher->hash('MyStr0ngP@ssw0rd123!'), $definedAt->format(\DateTimeInterface::ATOM)))

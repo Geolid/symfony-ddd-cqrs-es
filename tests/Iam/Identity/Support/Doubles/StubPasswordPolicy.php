@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Support\Stub;
+namespace Iam\Tests\Identity\Support\Doubles;
 
 use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\ValueObject\Password;
 
-final class DummyPasswordPolicy implements PasswordPolicyInterface
+final class StubPasswordPolicy implements PasswordPolicyInterface
 {
     public function __construct(
         private readonly bool $strongEnough = true,

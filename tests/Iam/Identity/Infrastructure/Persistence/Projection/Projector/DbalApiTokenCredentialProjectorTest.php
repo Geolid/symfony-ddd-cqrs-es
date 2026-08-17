@@ -10,9 +10,9 @@ use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalApiTokenCredentialProjector;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -31,7 +31,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
             ->withIdentityId($identityId)
             ->withIdentifier('key_abc123')
             ->withLabel('CI pipeline')
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // Then
@@ -47,10 +47,10 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     public function itMarksTheCredentialAsRevokedOnApiTokenCredentialRevoked(): void
     {
         // Given
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
 
         // When
-        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->revoked()->store();
 
         // Then
         $row = $this->fetchRow($credential->id()->toString());
@@ -71,7 +71,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // When
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // Then
@@ -87,13 +87,13 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $other = IdentityTestFactory::new()->store();
         $otherCredential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // When
@@ -117,13 +117,13 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $other = IdentityTestFactory::new()->suspended()->store();
         $otherCredential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($other->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         $identity = IdentityTestFactory::new()->suspended()->store();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentityId($identity->id()->toString())
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
 
         // When
@@ -144,16 +144,16 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsTheNewHashOnApiTokenCredentialRehashed(): void
     {
         // Given
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
         $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherHashBeforeRehash);
 
-        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
         $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
         self::assertNotFalse($hashBeforeRehash);
 
         // When
-        $credential->rehash('a new correct horse battery staple', new DummySecretHasher(), new \DateTimeImmutable('now +00:00'));
+        $credential->rehash('a new correct horse battery staple', new FakeSecretHasher(), new \DateTimeImmutable('now +00:00'));
         $this->store($credential);
 
         // Then
@@ -171,8 +171,8 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $other = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->store();
-        $credential = ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new DummySecretHasher())->store();
+        $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withIdentityId($identityId)->withHasher(new FakeSecretHasher())->store();
 
         // When
         $this->service(DbalApiTokenCredentialProjector::class)->onIdentityErased(

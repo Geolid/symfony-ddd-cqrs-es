@@ -9,9 +9,9 @@ use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
+use Iam\Tests\Identity\Support\Doubles\StubPasswordPolicy;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -32,13 +32,14 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itRehashesAnOutdatedPasswordCredential(): void
     {
-        // Given — DummySecretHasher's format never matches the real hasher, so it always looks outdated.
+        // Given
+        // FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
         $identityId = Uuid::uuid7()->toString();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('MyStr0ngP@ssw0rd123!')
-            ->withHasher(new DummySecretHasher())
-            ->withPolicy(new DummyPasswordPolicy())
+            ->withHasher(new FakeSecretHasher())
+            ->withPolicy(new StubPasswordPolicy())
             ->store();
         $staleHash = $this->finder->ofIdentityId($identityId)->hash;
 
