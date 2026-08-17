@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Webhook\Consumer;
 
-use Fulfilment\Shipment\Application\Command\MarkShipmentDelivered\MarkShipmentDelivered;
+use Fulfilment\Shipment\Application\Command\DeliverShipment\DeliverShipment;
 use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference\GetShipmentByTrackingReference;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -33,6 +33,6 @@ final readonly class CarrierDeliveryConsumer implements ConsumerInterface
 
         $shipment = $this->queryBus->ask(new GetShipmentByTrackingReference($payload['trackingReference']));
 
-        $this->commandBus->dispatch(new MarkShipmentDelivered($shipment->id));
+        $this->commandBus->dispatch(new DeliverShipment($shipment->id));
     }
 }

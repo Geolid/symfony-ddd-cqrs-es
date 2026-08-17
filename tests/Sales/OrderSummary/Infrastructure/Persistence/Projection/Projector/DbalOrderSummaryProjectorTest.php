@@ -85,7 +85,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -95,13 +95,13 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheTrackingReferenceOnShipmentTrackingReferenceAssigned(): void
+    public function itProjectsTheTrackingReferenceOnShipmentManifested(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->tracked('ACME-4Q7X2K9')->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -116,7 +116,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->delivered()->store();
 
         // Then
         $row = $this->fetchRow($order->id()->toString());
@@ -132,7 +132,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
         OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
-        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->manifested()->dispatched()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->store();
 
         // When
         $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));

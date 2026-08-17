@@ -15,10 +15,15 @@ final class ValidUniqueValue extends Constraint
         self::DOMAIN_UNIQUE_CONSTRAINT => 'DOMAIN_UNIQUE_CONSTRAINT',
     ];
 
-    public string $message = 'Value "{{ value }}" is already in use for {{ type }}.';
+    public string $message = 'Value "{{ value }}" is already in use for {{ key }}.';
 
+    /**
+     * @param list<string> $scope
+     */
     public function __construct(
-        public \BackedEnum $type,
+        public \BackedEnum $key,
+        public array $scope = [],
+        public ?string $excludeOwnerIdPropertyPath = null,
         mixed $options = null,
         ?array $groups = null,
         mixed $payload = null,

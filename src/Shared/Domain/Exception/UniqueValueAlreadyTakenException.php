@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Domain\Exception;
 
+use Shared\Domain\ValueObject\UniqueKey;
+
 final class UniqueValueAlreadyTakenException extends \DomainException
 {
     private function __construct(string $message)
@@ -11,8 +13,8 @@ final class UniqueValueAlreadyTakenException extends \DomainException
         parent::__construct($message);
     }
 
-    public static function forValue(\BackedEnum $type, string $value): self
+    public static function forValue(UniqueKey $key, string $value): self
     {
-        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $type->value));
+        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $key->toString()));
     }
 }

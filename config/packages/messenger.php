@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
+use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
 use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\EraseOrderBillingAddress\EraseOrderBillingAddress;
@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $container): void {
             'routing' => [
                 CancelOrder::class => 'async',
                 EraseOrderBillingAddress::class => 'async',
-                ManifestShipment::class => 'async',
+                PrepareShipment::class => 'async',
                 RevokeApiTokenCredential::class => 'async',
             ],
         ],

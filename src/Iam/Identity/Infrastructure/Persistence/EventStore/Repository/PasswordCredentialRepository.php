@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Infrastructure\Persistence\EventStore\Repository;
 
+use Iam\Identity\Domain\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\PasswordCredential;
 use Iam\Identity\Domain\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +41,10 @@ final readonly class PasswordCredentialRepository implements PasswordCredentialR
 
     public function save(PasswordCredential $passwordCredential): void
     {
-        $this->repository->save($passwordCredential);
+        try {
+            $this->repository->save($passwordCredential);
+        } catch (AggregateAlreadyExists) {
+            throw PasswordCredentialAlreadyExistsException::forId($passwordCredential->id()->toString());
+        }
     }
 }

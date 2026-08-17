@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Domain\Repository;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -17,5 +18,8 @@ interface ShipmentRepositoryInterface
      */
     public function load(ShipmentId $id): Shipment;
 
+    /**
+     * @throws ShipmentAlreadyExistsException
+     */
     public function save(Shipment $shipment): void;
 }

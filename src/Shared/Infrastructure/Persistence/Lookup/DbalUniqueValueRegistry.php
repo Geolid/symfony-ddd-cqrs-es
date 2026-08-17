@@ -13,6 +13,7 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Schema\DoctrineSchemaConfigurator;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInterface, DoctrineSchemaConfigurator
@@ -25,37 +26,54 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     ) {
     }
 
-    public function reserve(\BackedEnum $type, string $value): void
+    public function reserve(UniqueKey $key, string $value, string $ownerId, ?string $subjectId = null): void
     {
+        $keyType = $key->toString();
+
         try {
             $this->connection->insert(self::TABLE, [
-                'key_type' => $type->value,
+                'key_type' => $keyType,
                 'key_value' => $value,
+                'owner_id' => $ownerId,
+                'subject_id' => $subjectId,
             ]);
         } catch (UniqueConstraintViolationException) {
-            throw UniqueValueAlreadyTakenException::forValue($type, $value);
+            if ($this->exists($key, $value, $ownerId)) {
+                throw UniqueValueAlreadyTakenException::forValue($key, $value);
+            }
         }
     }
 
-    public function release(\BackedEnum $type, string $value): void
+    public function release(UniqueKey $key, string $value, string $ownerId): void
     {
         $this->connection->delete(self::TABLE, [
-            'key_type' => $type->value,
+            'key_type' => $key->toString(),
             'key_value' => $value,
+            'owner_id' => $ownerId,
         ]);
     }
 
-    public function exists(\BackedEnum $type, string $value): bool
+    public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
     {
-        $result = $this->connection->fetchOne(
-            \sprintf('SELECT 1 FROM %s WHERE key_type = :type AND key_value = :value', self::TABLE),
-            [
-                'type' => $type->value,
-                'value' => $value,
-            ],
-        );
+        $qb = $this->connection->createQueryBuilder()
+            ->select('1')
+            ->from(self::TABLE)
+            ->where('key_type = :type')
+            ->andWhere('key_value = :value')
+            ->setParameter('type', $key->toString())
+            ->setParameter('value', $value);
 
-        return false !== $result;
+        if (null !== $excludeOwnerId) {
+            $qb->andWhere('owner_id != :excludeOwnerId')
+                ->setParameter('excludeOwnerId', $excludeOwnerId);
+        }
+
+        return false !== $qb->fetchOne();
+    }
+
+    public function releaseAllForSubject(string $subjectId): void
+    {
+        $this->connection->delete(self::TABLE, ['subject_id' => $subjectId]);
     }
 
     /**
@@ -64,8 +82,10 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     public function configureSchema(Schema $schema, Connection $connection): void
     {
         $table = $schema->createTable(self::TABLE);
-        $table->addColumn('key_type', Types::STRING, ['length' => 50]);
+        $table->addColumn('key_type', Types::STRING, ['length' => 255]);
         $table->addColumn('key_value', Types::STRING, ['length' => 255]);
+        $table->addColumn('owner_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('subject_id', Types::STRING, ['length' => 36, 'notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(
@@ -74,5 +94,6 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
                 )
                 ->create(),
         );
+        $table->addIndex(['subject_id']);
     }
 }

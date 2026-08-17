@@ -6,10 +6,11 @@ namespace Catalog\Tests\Product\Application\Processor;
 
 use Catalog\Product\Application\Processor\ReleaseLabelOnProductDelisted;
 use Catalog\Product\Domain\Event\ProductDelisted;
-use Catalog\Product\Domain\ValueObject\ProductUniqueValue;
+use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCase
@@ -30,12 +31,12 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->store();
-        $this->uniqueValues->reserve(ProductUniqueValue::LABEL, $product->label()->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label()->toString(), $product->id()->toString());
 
         // When
         ($this->processor)(new ProductDelisted($product->id()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(ProductUniqueValue::LABEL, $product->label()->toString()));
+        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label()->toString()));
     }
 }

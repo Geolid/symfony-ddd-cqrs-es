@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Console\Input;
 
 use Iam\Access\Application\Validation\ValidPermissions;
-use Iam\Identity\Application\Validation\ValidLabel;
+use Shared\Application\Validation\ValidLabel;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Validator\Constraints as Assert;
 

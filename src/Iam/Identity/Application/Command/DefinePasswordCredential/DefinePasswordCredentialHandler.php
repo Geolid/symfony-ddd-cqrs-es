@@ -8,6 +8,7 @@ use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
 use Iam\Identity\Domain\Exception\CompromisedPasswordException;
 use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Identity\Domain\Exception\PasswordCredentialNotFoundException;
 use Iam\Identity\Domain\Exception\PasswordUnchangedException;
 use Iam\Identity\Domain\Exception\WeakPasswordException;
@@ -20,11 +21,12 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Login;
 use Iam\Identity\Domain\ValueObject\Password;
 use Iam\Identity\Domain\ValueObject\PasswordCredentialId;
-use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class DefinePasswordCredentialHandler
@@ -61,12 +63,11 @@ final readonly class DefinePasswordCredentialHandler
             $credential->change($password, $this->policy, $this->hasher, $this->clock->now());
         } else {
             $login = Login::fromString($command->login);
-            $fingerprint = $login->fingerprint();
 
             try {
-                $this->uniqueValues->reserve(PasswordCredentialUniqueValue::LOGIN, $fingerprint);
+                $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->toString(), $id->toString(), $identityId->toString());
             } catch (UniqueValueAlreadyTakenException $e) {
-                throw LoginAlreadyTakenException::forFingerprint($fingerprint, $e);
+                throw LoginAlreadyTakenException::forLogin($login->toString(), $e);
             }
 
             $credential = PasswordCredential::define(
@@ -80,6 +81,10 @@ final readonly class DefinePasswordCredentialHandler
             );
         }
 
-        $this->repository->save($credential);
+        try {
+            $this->repository->save($credential);
+        } catch (PasswordCredentialAlreadyExistsException) {
+            return;
+        }
     }
 }

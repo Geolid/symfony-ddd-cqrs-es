@@ -8,10 +8,10 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class LoginAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forFingerprint(string $fingerprint, \Throwable $previous): self
+    public static function forLogin(string $login, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('The login fingerprinted "%s" is already registered.', $fingerprint),
+            message: \sprintf('The login "%s" is already registered.', $login),
             previous: $previous,
         );
     }

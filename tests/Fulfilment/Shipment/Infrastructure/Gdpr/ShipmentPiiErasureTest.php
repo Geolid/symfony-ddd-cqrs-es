@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Gdpr;
 
-use Fulfilment\Shipment\Domain\Event\ShipmentCreated;
+use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
@@ -25,8 +25,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
             ->withCustomerId($customerId)
             ->store();
         $serialized = $this->serializedEventOf(
-            ShipmentCreated::class,
-            static fn (ShipmentCreated $event): bool => $event->id === $shipment->id()->toString(),
+            ShipmentRequested::class,
+            static fn (ShipmentRequested $event): bool => $event->id === $shipment->id()->toString(),
         );
 
         // When
@@ -36,7 +36,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
-        self::assertInstanceOf(ShipmentCreated::class, $rehydrated);
+        self::assertInstanceOf(ShipmentRequested::class, $rehydrated);
         self::assertSame(
             ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'],
             $rehydrated->shippingAddress,

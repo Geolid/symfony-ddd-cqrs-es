@@ -11,7 +11,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
-use Fulfilment\Shipment\Application\Event\ShipmentTrackingReferenceAssignedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentManifestedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
@@ -82,8 +82,8 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         ], shipmentStatus: 'dispatched');
     }
 
-    #[Subscribe(ShipmentTrackingReferenceAssignedIntegrationEvent::class)]
-    public function onShipmentTrackingReferenceAssigned(ShipmentTrackingReferenceAssignedIntegrationEvent $event): void
+    #[Subscribe(ShipmentManifestedIntegrationEvent::class)]
+    public function onShipmentManifested(ShipmentManifestedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'tracking_reference' => $event->trackingReference,

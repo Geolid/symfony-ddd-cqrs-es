@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
 use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
@@ -24,6 +25,7 @@ use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Exception\ResultNotFoundException;
+use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -36,6 +38,7 @@ return static function (ContainerConfigurator $container): void {
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Fulfilment
+            ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
@@ -62,6 +65,7 @@ return static function (ContainerConfigurator $container): void {
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],

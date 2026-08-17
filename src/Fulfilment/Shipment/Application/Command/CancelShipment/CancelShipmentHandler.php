@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Command\CancelShipment;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -21,6 +22,7 @@ final readonly class CancelShipmentHandler
 
     /**
      * @throws ShipmentNotFoundException
+     * @throws ShipmentAlreadyExistsException
      */
     public function __invoke(CancelShipment $command): void
     {

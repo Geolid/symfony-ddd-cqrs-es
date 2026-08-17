@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Command\DispatchShipment;
 
+use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
@@ -23,6 +24,7 @@ final readonly class DispatchShipmentHandler
     /**
      * @throws ShipmentNotFoundException
      * @throws ShipmentInvalidTransitionException
+     * @throws ShipmentAlreadyExistsException
      */
     public function __invoke(DispatchShipment $command): void
     {

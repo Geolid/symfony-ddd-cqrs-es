@@ -69,17 +69,4 @@ final class LoginTest extends TestCase
         self::assertTrue($equalResult);
         self::assertFalse($differentResult);
     }
-
-    #[Test]
-    public function itFingerprints(): void
-    {
-        // Given
-        $login = Login::fromString('  operator  ');
-
-        // When
-        $fingerprint = $login->fingerprint();
-
-        // Then
-        self::assertSame(hash('sha256', 'operator'), $fingerprint);
-    }
 }

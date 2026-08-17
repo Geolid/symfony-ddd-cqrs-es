@@ -13,6 +13,8 @@ use OpenApi\Annotations as OA;
 use Symfony\Component\TypeInfo\Type;
 use Webhook\Webhook\CarrierDeliveryParser;
 use Webhook\Webhook\CarrierDeliveryPayload;
+use Webhook\Webhook\CarrierPickupConfirmedParser;
+use Webhook\Webhook\CarrierPickupConfirmedPayload;
 use Webhook\Webhook\PaymentAuthorizedParser;
 use Webhook\Webhook\PaymentAuthorizedPayload;
 use Webhook\Webhook\PaymentFailedParser;
@@ -32,7 +34,13 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
             'summary' => 'Report a shipment as delivered.',
             'payload' => CarrierDeliveryPayload::class,
             'signatureHeader' => CarrierDeliveryParser::SIGNATURE_HEADER,
-            'responses' => [404 => 'No shipment matches the given shipmentId.'],
+            'responses' => [404 => 'No shipment matches the given shipment ID.'],
+        ],
+        '/webhooks/'.CarrierPickupConfirmedParser::EVENT_TYPE => [
+            'summary' => 'Report a shipment as picked up by the carrier.',
+            'payload' => CarrierPickupConfirmedPayload::class,
+            'signatureHeader' => CarrierPickupConfirmedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No shipment matches the given tracking reference.'],
         ],
         '/webhooks/'.PaymentAuthorizedParser::EVENT_TYPE => [
             'summary' => 'Report an order payment as authorized.',

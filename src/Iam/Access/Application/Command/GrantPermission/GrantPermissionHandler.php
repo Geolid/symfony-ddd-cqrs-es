@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Access\Application\Command\GrantPermission;
 
+use Iam\Access\Domain\Exception\GrantAlreadyExistsException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
@@ -41,6 +42,10 @@ final readonly class GrantPermissionHandler
             );
         }
 
-        $this->repository->save($grant);
+        try {
+            $this->repository->save($grant);
+        } catch (GrantAlreadyExistsException) {
+            return;
+        }
     }
 }

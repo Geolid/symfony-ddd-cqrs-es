@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Access\Infrastructure\Persistence\EventStore\Repository;
 
+use Iam\Access\Domain\Exception\GrantAlreadyExistsException;
 use Iam\Access\Domain\Exception\GrantNotFoundException;
 use Iam\Access\Domain\Grant;
 use Iam\Access\Domain\Repository\GrantRepositoryInterface;
 use Iam\Access\Domain\ValueObject\GrantId;
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +41,10 @@ final readonly class GrantRepository implements GrantRepositoryInterface
 
     public function save(Grant $grant): void
     {
-        $this->repository->save($grant);
+        try {
+            $this->repository->save($grant);
+        } catch (AggregateAlreadyExists) {
+            throw GrantAlreadyExistsException::forId($grant->id()->toString());
+        }
     }
 }

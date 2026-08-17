@@ -14,12 +14,13 @@ use Iam\Identity\Domain\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\Login;
-use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueValue;
+use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestCase
@@ -105,7 +106,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenTheLoginIsAlreadyTaken(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(PasswordCredentialUniqueValue::LOGIN, Login::fromString('operator')->fingerprint());
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'operator', Uuid::uuid7()->toString());
         $identity = IdentityTestFactory::new()->store();
 
         // Then

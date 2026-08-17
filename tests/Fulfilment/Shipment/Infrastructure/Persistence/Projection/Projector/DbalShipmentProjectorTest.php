@@ -19,24 +19,43 @@ use Support\AbstractIntegrationTestCase;
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsANewShipmentOnShipmentCreated(): void
+    public function itProjectsANewShipmentOnShipmentRequested(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->withCustomerId($customerId)->store();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->withCustomerId($customerId)
+            ->store();
 
         // Then
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
-        self::assertSame(ShipmentStatus::PENDING->value, $row['status']);
+        self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
+        self::assertNull($row['tracking_reference']);
     }
 
     #[Test]
-    public function itProjectsTheCarrierReferenceOnTrackingReferenceAssigned(): void
+    public function itProjectsThePreparationOnShipmentPrepared(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->store();
+
+        // When
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->store();
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ShipmentStatus::PREPARED->value, $row['status']);
+    }
+
+    #[Test]
+    public function itProjectsTheCarrierReferenceOnShipmentManifested(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -44,15 +63,14 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // When
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id()->toString())
-            ->manifested()
-            ->dispatched()
-            ->tracked('ACME-4Q7X2K9')
+            ->prepared()
+            ->manifested('ACME-4Q7X2K9')
             ->store();
 
         // Then
         $row = $this->fetchRow($shipment->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::DISPATCHED->value, $row['status']);
+        self::assertSame(ShipmentStatus::MANIFESTED->value, $row['status']);
         self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
     }
 
@@ -74,7 +92,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id()->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::PENDING->value, $otherRow['status']);
+        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
         self::assertNull($otherRow['cancelled_at']);
     }
 

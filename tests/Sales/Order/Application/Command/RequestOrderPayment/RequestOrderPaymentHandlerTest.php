@@ -11,9 +11,10 @@ use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Order\Domain\ValueObject\OrderPaymentUniqueValue;
+use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
@@ -81,7 +82,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $reference = 'GLBX-9F3K2M1P';
-        $this->service(UniqueValueRegistryInterface::class)->reserve(OrderPaymentUniqueValue::REFERENCE, $reference);
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(OrderPaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
         $orderId = Uuid::uuid7()->toString();
 
         // Then

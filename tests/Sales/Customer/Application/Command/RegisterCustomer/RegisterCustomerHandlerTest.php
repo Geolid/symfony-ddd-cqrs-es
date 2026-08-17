@@ -9,9 +9,9 @@ use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Sales\Customer\Domain\ValueObject\CustomerUniqueValue;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\UniqueKey;
 use Support\AbstractIntegrationTestCase;
 
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -36,7 +36,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheAddressIsAlreadyRegistered(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(CustomerUniqueValue::EMAIL, Email::fromString('buyer@example.com')->fingerprint());
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', CustomerId::generate()->toString());
 
         // Then
         $this->expectException(CustomerEmailAlreadyRegisteredException::class);
