@@ -47,7 +47,16 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);
-        self::assertSame('12 rue des Lilas', $this->carrier->deliveryAddress->address->street);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            [
+                'firstName' => $this->carrier->deliveryAddress->fullName->firstName,
+                'lastName' => $this->carrier->deliveryAddress->fullName->lastName,
+                'street' => $this->carrier->deliveryAddress->address->street,
+                'postalCode' => $this->carrier->deliveryAddress->address->postalCode,
+                'city' => $this->carrier->deliveryAddress->address->city,
+            ],
+        );
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
         self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);

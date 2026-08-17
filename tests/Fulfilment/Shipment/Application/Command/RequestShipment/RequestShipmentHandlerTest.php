@@ -50,7 +50,17 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($orderId, $results[0]->orderId);
         self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
-        self::assertSame('12 rue des Lilas', $shipment->shippingAddress()->address->street);
+        $shippingAddress = $shipment->shippingAddress();
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+        );
     }
 
     #[Test]
@@ -75,9 +85,16 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
+        $shippingAddress = $this->repository->load(ShipmentId::fromString($id))->shippingAddress();
         self::assertSame(
-            '12 rue des Lilas',
-            $this->repository->load(ShipmentId::fromString($id))->shippingAddress()->address->street,
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
         );
     }
 }

@@ -34,7 +34,24 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $order->id();
         self::assertTrue($this->repository->has($id));
-        self::assertTrue($order->shippingAddress()->equals($this->repository->load($id)->shippingAddress()));
+        $shippingAddress = $order->shippingAddress();
+        $reloadedShippingAddress = $this->repository->load($id)->shippingAddress();
+        self::assertSame(
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+            [
+                'firstName' => $reloadedShippingAddress->fullName->firstName,
+                'lastName' => $reloadedShippingAddress->fullName->lastName,
+                'street' => $reloadedShippingAddress->address->street,
+                'postalCode' => $reloadedShippingAddress->address->postalCode,
+                'city' => $reloadedShippingAddress->address->city,
+            ],
+        );
     }
 
     #[Test]

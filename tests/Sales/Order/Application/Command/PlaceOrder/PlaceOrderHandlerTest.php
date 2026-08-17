@@ -44,8 +44,28 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(1_999, $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
         $order = $this->orderOf($id);
-        self::assertSame('12 rue des Lilas', $order->shippingAddress()->address->street);
-        self::assertSame('8 avenue Foch', $order->billingAddress()->address->street);
+        $shippingAddress = $order->shippingAddress();
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+        );
+        $billingAddress = $order->billingAddress();
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+            ],
+        );
     }
 
     #[Test]
