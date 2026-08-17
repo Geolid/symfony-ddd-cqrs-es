@@ -207,7 +207,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyOrderPlaced(OrderPlaced $event): void
+    private function applyPlaced(OrderPlaced $event): void
     {
         $this->id = OrderId::fromString($event->id);
         $this->customerId = $event->customerId;
@@ -225,31 +225,31 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyOrderCancelled(OrderCancelled $event): void
+    private function applyCancelled(OrderCancelled $event): void
     {
         $this->state = OrderState::CANCELLED;
     }
 
     #[Apply]
-    private function applyOrderConfirmed(OrderConfirmed $event): void
+    private function applyConfirmed(OrderConfirmed $event): void
     {
         $this->state = OrderState::CONFIRMED;
     }
 
     #[Apply]
-    private function applyOrderDispatched(OrderDispatched $event): void
+    private function applyDispatched(OrderDispatched $event): void
     {
         $this->state = OrderState::DISPATCHED;
     }
 
     #[Apply]
-    private function applyOrderCompleted(OrderCompleted $event): void
+    private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
     }
 
     #[Apply]
-    private function applyOrderAnonymized(OrderAnonymized $event): void
+    private function applyAnonymized(OrderAnonymized $event): void
     {
         $this->anonymizedAt = new \DateTimeImmutable($event->anonymizedAt);
     }

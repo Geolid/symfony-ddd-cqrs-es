@@ -130,7 +130,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCustomerRegistered(CustomerRegistered $event): void
+    private function applyRegistered(CustomerRegistered $event): void
     {
         $this->id = CustomerId::fromString($event->id);
         $this->email = Email::fromString($event->email);
@@ -138,7 +138,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCustomerShippingAddressRegistered(CustomerShippingAddressRegistered $event): void
+    private function applyShippingAddressRegistered(CustomerShippingAddressRegistered $event): void
     {
         $this->shippingAddress = PostalAddress::of(
             FullName::of($event->address['firstName'], $event->address['lastName']),
@@ -147,7 +147,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCustomerBillingAddressRegistered(CustomerBillingAddressRegistered $event): void
+    private function applyBillingAddressRegistered(CustomerBillingAddressRegistered $event): void
     {
         $this->billingAddress = PostalAddress::of(
             FullName::of($event->address['firstName'], $event->address['lastName']),
@@ -156,7 +156,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCustomerErased(CustomerErased $event): void
+    private function applyErased(CustomerErased $event): void
     {
         $this->erased = true;
     }

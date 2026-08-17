@@ -113,7 +113,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     #[Apply]
-    private function applyPasswordCredentialDefined(PasswordCredentialDefined $event): void
+    private function applyDefined(PasswordCredentialDefined $event): void
     {
         $this->id = PasswordCredentialId::fromString($event->id);
         $this->login = Login::fromString($event->login);
@@ -121,13 +121,13 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     #[Apply]
-    private function applyPasswordCredentialChanged(PasswordCredentialChanged $event): void
+    private function applyChanged(PasswordCredentialChanged $event): void
     {
         $this->hash = $event->hash;
     }
 
     #[Apply]
-    private function applyPasswordCredentialRehashed(PasswordCredentialRehashed $event): void
+    private function applyRehashed(PasswordCredentialRehashed $event): void
     {
         $this->hash = $event->hash;
     }

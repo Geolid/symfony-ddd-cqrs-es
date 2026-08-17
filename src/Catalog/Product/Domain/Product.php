@@ -72,7 +72,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyProductListed(ProductListed $event): void
+    private function applyListed(ProductListed $event): void
     {
         $this->id = ProductId::fromString($event->id);
         $this->label = Label::fromString($event->label);
@@ -80,12 +80,12 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyProductRepriced(ProductRepriced $event): void
+    private function applyRepriced(ProductRepriced $event): void
     {
     }
 
     #[Apply]
-    private function applyProductDelisted(ProductDelisted $event): void
+    private function applyDelisted(ProductDelisted $event): void
     {
         $this->delisted = true;
     }
