@@ -31,10 +31,8 @@ final readonly class CancelOrphanedOrderHandler
 
         try {
             $order->cancel($command->customerId, $this->clock->now());
+            $this->repository->save($order);
         } catch (OrderNotCancellableException) {
-            return;
         }
-
-        $this->repository->save($order);
     }
 }
