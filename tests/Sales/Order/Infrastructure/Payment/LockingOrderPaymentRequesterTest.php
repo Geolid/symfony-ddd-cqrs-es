@@ -10,6 +10,7 @@ use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Infrastructure\Payment\LockingOrderPaymentRequester;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\SharedLockInterface;
 use Symfony\Component\Lock\Store\InMemoryStore;
 
 final class LockingOrderPaymentRequesterTest extends TestCase
@@ -43,14 +44,18 @@ final class LockingOrderPaymentRequesterTest extends TestCase
     public function itReleasesTheLockAfterASuccessfulRequest(): void
     {
         // Given
-        $this->requester->requestFor('order-id', 'https://web.test/sales/orders');
+        // A plain second call would pass even without an explicit release: the Lock object's
+        // own destructor releases it as soon as it goes out of scope, regardless. Retaining it
+        // here rules that out — only an explicit release() keeps `isAcquired()` truthful.
+        $lockFactory = new RetainingLockFactory(new InMemoryStore());
+        $requester = new LockingOrderPaymentRequester($this->inner, $lockFactory);
 
         // When
-        $checkoutUrl = $this->requester->requestFor('order-id', 'https://web.test/sales/orders');
+        $requester->requestFor('order-id', 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame(DummyOrderPaymentRequester::CHECKOUT_URL, $checkoutUrl);
-        self::assertSame(2, $this->inner->callCount);
+        self::assertCount(1, $lockFactory->createdLocks);
+        self::assertFalse($lockFactory->createdLocks[0]->isAcquired());
     }
 
     #[Test]
@@ -107,5 +112,19 @@ final class DummyOrderPaymentRequester implements OrderPaymentRequesterInterface
         $this->returnUrl = $returnUrl;
 
         return self::CHECKOUT_URL;
+    }
+}
+
+final class RetainingLockFactory extends LockFactory
+{
+    /** @var list<SharedLockInterface> */
+    public array $createdLocks = [];
+
+    public function createLock(string $resource, ?float $ttl = 300.0, bool $autoRelease = true): SharedLockInterface
+    {
+        $lock = parent::createLock($resource, $ttl, $autoRelease);
+        $this->createdLocks[] = $lock;
+
+        return $lock;
     }
 }
