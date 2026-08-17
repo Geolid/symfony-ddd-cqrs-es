@@ -63,6 +63,18 @@ final class BoundaryMessageTest
     public function eventsCarryOnlyNativeTypesOrEsMetadata(): iterable
     {
         foreach (self::EVENT_INTERFACES as $eventInterface) {
+            $allowed = [
+                Selector::classname($eventInterface),
+                Selector::classname(Event::class),
+                Selector::classname(SensitiveData::class),
+                Selector::classname(DataSubjectId::class),
+                Selector::classname(ErasedFieldSentinel::class),
+            ];
+
+            if (DomainEventInterface::class === $eventInterface) {
+                $allowed[] = Selector::classname(DataSubjectErasureInterface::class);
+            }
+
             yield $eventInterface => PHPat::rule()
                 ->classes(Selector::AllOf(
                     Selector::implements($eventInterface),
@@ -70,15 +82,8 @@ final class BoundaryMessageTest
                 ))
                 ->canOnly()
                 ->dependOn()
-                ->classes(
-                    Selector::classname($eventInterface),
-                    Selector::classname(Event::class),
-                    Selector::classname(SensitiveData::class),
-                    Selector::classname(DataSubjectId::class),
-                    Selector::classname(ErasedFieldSentinel::class),
-                    Selector::classname(DataSubjectErasureInterface::class),
-                )
-                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[SensitiveData], #[DataSubjectId], the erasure fallback sentinel) and, if it erases personal data, the DataSubjectErasureInterface marker — nothing else, or a VO/vendor type couples both sides to internals.');
+                ->classes(...$allowed)
+                ->because('An event carries native types plus patchlevel ES-metadata attributes (#[Event], #[SensitiveData], #[DataSubjectId], the erasure fallback sentinel) and, if it erases personal data at its own origin, the DataSubjectErasureInterface marker — a Translator always derives an Integration Event from an already-marked Domain Event, so the marker never belongs on the Integration Event side too, or the two GDPR-wide Processors subscribed to it react twice to the same fact.');
         }
     }
 }
