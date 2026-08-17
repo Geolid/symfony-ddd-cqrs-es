@@ -38,7 +38,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;
     private int $totalAmountInCents;
-    private OrderState $status;
+    private OrderState $state;
     private bool $billingAddressErased;
 
     public function id(): OrderId
@@ -71,7 +71,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public function ensureNotCancelled(): void
     {
-        if ($this->status->isCancelled()) {
+        if ($this->state->isCancelled()) {
             throw OrderAlreadyCancelledException::forId($this->id);
         }
     }
@@ -142,7 +142,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
         }
 
-        if (!$this->status->isCancellable()) {
+        if (!$this->state->isCancellable()) {
             return;
         }
 
@@ -154,7 +154,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function confirm(\DateTimeImmutable $confirmedAt): void
     {
-        if (!$this->status->isPlaced()) {
+        if (!$this->state->isPlaced()) {
             return;
         }
 
@@ -166,7 +166,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->status->isConfirmed()) {
+        if (!$this->state->isConfirmed()) {
             return;
         }
 
@@ -178,7 +178,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function complete(\DateTimeImmutable $completedAt): void
     {
-        if (!$this->status->isDispatched()) {
+        if (!$this->state->isDispatched()) {
             return;
         }
 
@@ -214,32 +214,32 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             Address::of($event->billingAddress['street'], $event->billingAddress['postalCode'], $event->billingAddress['city']),
         );
         $this->totalAmountInCents = $event->totalAmountInCents;
-        $this->status = OrderState::PLACED;
+        $this->state = OrderState::PLACED;
         $this->billingAddressErased = false;
     }
 
     #[Apply]
     private function applyOrderCancelled(OrderCancelled $event): void
     {
-        $this->status = OrderState::CANCELLED;
+        $this->state = OrderState::CANCELLED;
     }
 
     #[Apply]
     private function applyOrderConfirmed(OrderConfirmed $event): void
     {
-        $this->status = OrderState::CONFIRMED;
+        $this->state = OrderState::CONFIRMED;
     }
 
     #[Apply]
     private function applyOrderDispatched(OrderDispatched $event): void
     {
-        $this->status = OrderState::DISPATCHED;
+        $this->state = OrderState::DISPATCHED;
     }
 
     #[Apply]
     private function applyOrderCompleted(OrderCompleted $event): void
     {
-        $this->status = OrderState::COMPLETED;
+        $this->state = OrderState::COMPLETED;
     }
 
     #[Apply]

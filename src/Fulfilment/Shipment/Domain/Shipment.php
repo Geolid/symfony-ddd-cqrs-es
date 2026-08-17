@@ -37,7 +37,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private string $customerId;
     private PostalAddress $shippingAddress;
     private ?TrackingReference $trackingReference;
-    private ShipmentState $status;
+    private ShipmentState $state;
 
     public function id(): ShipmentId
     {
@@ -86,7 +86,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function prepare(\DateTimeImmutable $preparedAt): void
     {
-        if (!$this->status->isRequested()) {
+        if (!$this->state->isRequested()) {
             return;
         }
 
@@ -102,7 +102,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function manifest(TrackingReference $trackingReference, \DateTimeImmutable $manifestedAt): void
     {
-        if ($this->status->isManifested()) {
+        if ($this->state->isManifested()) {
             \assert(null !== $this->trackingReference);
 
             if ($this->trackingReference->equals($trackingReference)) {
@@ -112,8 +112,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->toString());
         }
 
-        if (!$this->status->isPrepared()) {
-            throw ShipmentInvalidTransitionException::cannotManifest($this->status);
+        if (!$this->state->isPrepared()) {
+            throw ShipmentInvalidTransitionException::cannotManifest($this->state);
         }
 
         $this->recordThat(new ShipmentManifested(
@@ -128,8 +128,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->status->isManifested()) {
-            throw ShipmentInvalidTransitionException::cannotDispatch($this->status);
+        if (!$this->state->isManifested()) {
+            throw ShipmentInvalidTransitionException::cannotDispatch($this->state);
         }
 
         $this->recordThat(new ShipmentDispatched(
@@ -143,8 +143,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->status->isDispatched()) {
-            throw ShipmentInvalidTransitionException::cannotDeliver($this->status);
+        if (!$this->state->isDispatched()) {
+            throw ShipmentInvalidTransitionException::cannotDeliver($this->state);
         }
 
         $this->recordThat(new ShipmentDelivered(
@@ -155,14 +155,14 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if ($this->status->isCancelled()) {
+        if ($this->state->isCancelled()) {
             return;
         }
 
-        if (!$this->status->isCancellable()) {
+        if (!$this->state->isCancellable()) {
             $this->recordThat(new ShipmentCancellationRejected(
                 id: $this->id->toString(),
-                status: $this->status->value,
+                status: $this->state->value,
                 rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
             ));
 
@@ -186,38 +186,38 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
         );
         $this->trackingReference = null;
-        $this->status = ShipmentState::REQUESTED;
+        $this->state = ShipmentState::REQUESTED;
     }
 
     #[Apply]
     private function applyShipmentPrepared(ShipmentPrepared $event): void
     {
-        $this->status = ShipmentState::PREPARED;
+        $this->state = ShipmentState::PREPARED;
     }
 
     #[Apply]
     private function applyShipmentManifested(ShipmentManifested $event): void
     {
         $this->trackingReference = TrackingReference::fromString($event->trackingReference);
-        $this->status = ShipmentState::MANIFESTED;
+        $this->state = ShipmentState::MANIFESTED;
     }
 
     #[Apply]
     private function applyShipmentDispatched(ShipmentDispatched $event): void
     {
-        $this->status = ShipmentState::DISPATCHED;
+        $this->state = ShipmentState::DISPATCHED;
     }
 
     #[Apply]
     private function applyShipmentDelivered(ShipmentDelivered $event): void
     {
-        $this->status = ShipmentState::DELIVERED;
+        $this->state = ShipmentState::DELIVERED;
     }
 
     #[Apply]
     private function applyShipmentCancelled(ShipmentCancelled $event): void
     {
-        $this->status = ShipmentState::CANCELLED;
+        $this->state = ShipmentState::CANCELLED;
     }
 
     #[Apply]
