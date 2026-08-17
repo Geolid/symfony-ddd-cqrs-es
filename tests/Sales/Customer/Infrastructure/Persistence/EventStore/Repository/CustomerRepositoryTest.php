@@ -45,8 +45,40 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
         self::assertTrue($this->repository->has($id));
         $reloaded = $this->repository->load($id);
         self::assertSame('buyer@example.com', $reloaded->email()->toString());
-        self::assertTrue(null !== $reloaded->shippingAddress() && $shippingAddress->equals($reloaded->shippingAddress()));
-        self::assertTrue(null !== $reloaded->billingAddress() && $billingAddress->equals($reloaded->billingAddress()));
+        self::assertNotNull($reloaded->shippingAddress());
+        self::assertSame(
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+            ],
+            [
+                'firstName' => $reloaded->shippingAddress()->fullName->firstName,
+                'lastName' => $reloaded->shippingAddress()->fullName->lastName,
+                'street' => $reloaded->shippingAddress()->address->street,
+                'postalCode' => $reloaded->shippingAddress()->address->postalCode,
+                'city' => $reloaded->shippingAddress()->address->city,
+            ],
+        );
+        self::assertNotNull($reloaded->billingAddress());
+        self::assertSame(
+            [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+            ],
+            [
+                'firstName' => $reloaded->billingAddress()->fullName->firstName,
+                'lastName' => $reloaded->billingAddress()->fullName->lastName,
+                'street' => $reloaded->billingAddress()->address->street,
+                'postalCode' => $reloaded->billingAddress()->address->postalCode,
+                'city' => $reloaded->billingAddress()->address->city,
+            ],
+        );
     }
 
     #[Test]

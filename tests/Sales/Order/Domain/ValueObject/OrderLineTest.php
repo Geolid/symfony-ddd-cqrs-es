@@ -19,13 +19,16 @@ final class OrderLineTest extends TestCase
     public function itCreates(): void
     {
         // Given
-        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
+        $id = Uuid::uuid7()->toString();
+        $product = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
 
         // When
         $line = OrderLine::of($product, 3);
 
         // Then
-        self::assertTrue($product->equals($line->product));
+        self::assertSame($id, $line->product->id);
+        self::assertSame('Saucer', $line->product->label->toString());
+        self::assertSame(83, $line->product->price->toCents());
         self::assertSame(3, $line->quantity);
     }
 
