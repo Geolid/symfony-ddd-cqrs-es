@@ -32,7 +32,8 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itRehashesAnOutdatedPasswordCredential(): void
     {
-        // Given — FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
+        // Given
+        // FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
         $identityId = Uuid::uuid7()->toString();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
