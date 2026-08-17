@@ -9,10 +9,7 @@ use Ramsey\Uuid\UuidFactory;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * `Patchlevel\EventSourcing\Test\IncrementalRamseyUuidFactory`'s own `uuid7()` puts the
- * incrementing counter in a group that leaves the version/variant nibbles at `0`, an
- * RFC4122-invalid shape that intermittently fails a strict `Requirement::UUID` route match.
- * Same incremental/deterministic intent, correct nibble placement instead.
+ * Deterministic incremental ids for test ordering, RFC 9562-valid (version 7, variant 8).
  */
 final class StrictIncrementalUuidFactory extends UuidFactory
 {
