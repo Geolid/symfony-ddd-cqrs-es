@@ -22,7 +22,7 @@ use Support\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 {
-    private DummyPaymentGateway $paymentGateway;
+    private SpyPaymentGateway $paymentGateway;
 
     private OrderPaymentRequester $service;
 
@@ -30,7 +30,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->paymentGateway = new DummyPaymentGateway();
+        $this->paymentGateway = new SpyPaymentGateway();
         $this->service = new OrderPaymentRequester(
             $this->service(OrderPaymentRepositoryInterface::class),
             $this->service(OrderRepositoryInterface::class),
@@ -49,7 +49,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
         $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
+        self::assertSame(SpyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
         self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
@@ -72,9 +72,9 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
             ],
         );
 
-        $orderPayment = $this->ask(new GetOrderPaymentByReference(DummyPaymentGateway::CHARGE_REFERENCE));
-        self::assertSame(DummyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
-        self::assertSame(DummyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
+        $orderPayment = $this->ask(new GetOrderPaymentByReference(SpyPaymentGateway::CHARGE_REFERENCE));
+        self::assertSame(SpyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
+        self::assertSame(SpyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
     }
 
     #[Test]
@@ -116,7 +116,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 }
 
-final class DummyPaymentGateway implements PaymentGatewayInterface
+final class SpyPaymentGateway implements PaymentGatewayInterface
 {
     public const string CHARGE_REFERENCE = 'GLBX-9F3K2M1P';
 

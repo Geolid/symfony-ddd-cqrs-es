@@ -9,8 +9,9 @@ use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Tests\Support\Doubles\StubDataSubjectErased;
+use Support\Doubles\DummyMessage;
 
 final class DataSubjectEraserTest extends TestCase
 {
@@ -34,7 +35,7 @@ final class DataSubjectEraserTest extends TestCase
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
-        $event = new DummyErasure($subjectId);
+        $event = new StubDataSubjectErased($subjectId);
 
         // When
         (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
@@ -47,7 +48,7 @@ final class DataSubjectEraserTest extends TestCase
     public function itKeepsEveryKeyOnAnyOtherEvent(): void
     {
         // Given
-        $event = new DummyFact();
+        $event = new DummyMessage();
 
         // When
         (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
@@ -55,20 +56,4 @@ final class DataSubjectEraserTest extends TestCase
         // Then
         self::assertSame([], $this->dropped);
     }
-}
-
-final readonly class DummyErasure implements DataSubjectErasureInterface
-{
-    public function __construct(private string $subjectId)
-    {
-    }
-
-    public function subjectId(): string
-    {
-        return $this->subjectId;
-    }
-}
-
-final readonly class DummyFact
-{
 }

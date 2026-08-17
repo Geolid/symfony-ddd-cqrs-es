@@ -8,9 +8,9 @@ use Iam\Identity\Application\Command\RehashApiTokenCredential\RehashApiTokenCred
 use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -32,12 +32,12 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     #[Test]
     public function itRehashesAnOutdatedApiTokenCredential(): void
     {
-        // Given — DummySecretHasher's format never matches the real hasher, so it always looks outdated.
+        // Given — FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
         $identifier = $this->generateIdentifier();
         $credential = ApiTokenCredentialTestFactory::new()
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
-            ->withHasher(new DummySecretHasher())
+            ->withHasher(new FakeSecretHasher())
             ->store();
         $staleHash = $this->finder->ofIdentifier($identifier)->hash;
 

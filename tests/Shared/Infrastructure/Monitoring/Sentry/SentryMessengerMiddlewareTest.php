@@ -12,9 +12,9 @@ use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
-use Support\Stub\DummyMessage;
-use Support\Stub\DummyNextMiddleware;
-use Support\Stub\DummyStack;
+use Support\Doubles\DummyMessage;
+use Support\Doubles\StubNextMiddleware;
+use Support\Doubles\StubStack;
 use Symfony\Component\Messenger\Envelope;
 
 final class SentryMessengerMiddlewareTest extends TestCase
@@ -43,7 +43,7 @@ final class SentryMessengerMiddlewareTest extends TestCase
         $envelope = new Envelope(new DummyMessage());
 
         // When
-        $handled = new SentryMessengerMiddleware()->handle($envelope, new DummyStack(new DummyNextMiddleware()));
+        $handled = new SentryMessengerMiddleware()->handle($envelope, new StubStack(new StubNextMiddleware()));
 
         // Then
         self::assertSame($envelope, $handled);
@@ -61,7 +61,7 @@ final class SentryMessengerMiddlewareTest extends TestCase
 
         // When
         try {
-            new SentryMessengerMiddleware()->handle(new Envelope(new DummyMessage()), new DummyStack(new DummyNextMiddleware($failure)));
+            new SentryMessengerMiddleware()->handle(new Envelope(new DummyMessage()), new StubStack(new StubNextMiddleware($failure)));
         } finally {
             self::assertSame(['message' => DummyMessage::class], $this->contextOfAReport());
         }

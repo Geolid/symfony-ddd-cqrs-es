@@ -17,8 +17,8 @@ final class SentryEventEnricherTest extends TestCase
     {
         // Given
         $enricher = new SentryEventEnricher('web', [
-            new DummyContextProvider('billing', ['plan' => 'free']),
-            new DummyContextProvider('silent', null),
+            new StubContextProvider('billing', ['plan' => 'free']),
+            new StubContextProvider('silent', null),
         ]);
 
         // When
@@ -45,7 +45,7 @@ final class SentryEventEnricherTest extends TestCase
     }
 }
 
-final readonly class DummyContextProvider implements SentryContextProviderInterface
+final readonly class StubContextProvider implements SentryContextProviderInterface
 {
     /**
      * @param array<string, mixed>|null $context

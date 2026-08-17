@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Support\Stub;
+namespace Support\Doubles;
 
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 
-final readonly class DummyStack implements StackInterface
+final readonly class StubStack implements StackInterface
 {
     public function __construct(private MiddlewareInterface $next)
     {

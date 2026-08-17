@@ -28,7 +28,7 @@ paths:
 - A test's name covers exactly what it asserts, nothing more — an assertion outside that scope belongs in a separate test. The reverse also holds: one success case covers its full contract in a single test — never fragment it across near-duplicate tests replaying the same call.
 - Failure naming: when the failure is a business rule, name the rule/condition that wasn't met; when it's a technical/architectural constraint, the implementation detail is what explains the name (that's fine).
 - Data providers: `provide[Context]`, `#[DataProvider]` attribute, `yield` with a descriptive label.
-- A class/enum created for a single test: `Dummy` prefix, declared at the bottom of the test file.
+- A hand-written test double is prefixed by its real role, never a blanket term: `Dummy` when it has zero behavior beyond satisfying a type, `Stub` when it returns a canned/configurable answer with no real logic, `Fake` when it's a genuinely working simplified implementation, `Spy` when the point is an interaction recorded for a later assertion. A class/enum used by a single test is declared at the bottom of that test file; one reused across two or more test files moves to a `Support/Doubles/` folder instead (scoped to the narrowest BC/subdomain all its callers share).
 
 ### Test Factory
 - `<Aggregate>TestFactory extends Shared\Tests\Support\Factory\AbstractAggregateTestFactory`, one per aggregate, colocated at `tests/<Subdomain>/<Bc>/Support/Factory/`.

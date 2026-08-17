@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Stub;
+namespace Support\Doubles;
 
 final readonly class DummyMessage
 {

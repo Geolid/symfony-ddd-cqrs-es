@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Support\Stub;
+namespace Support\Doubles;
 
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 
-final readonly class DummyNextMiddleware implements MiddlewareInterface
+final readonly class StubNextMiddleware implements MiddlewareInterface
 {
     public function __construct(private ?\Throwable $failure = null)
     {

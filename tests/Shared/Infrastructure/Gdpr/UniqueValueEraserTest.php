@@ -8,9 +8,10 @@ use Patchlevel\EventSourcing\Message\Message;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Infrastructure\Gdpr\UniqueValueEraser;
+use Shared\Tests\Support\Doubles\StubDataSubjectErased;
+use Support\Doubles\DummyMessage;
 
 final class UniqueValueEraserTest extends TestCase
 {
@@ -34,7 +35,7 @@ final class UniqueValueEraserTest extends TestCase
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
-        $event = new DummyGdprErasure($subjectId);
+        $event = new StubDataSubjectErased($subjectId);
 
         // When
         (new UniqueValueEraser($this->uniqueValues))(Message::create($event));
@@ -47,7 +48,7 @@ final class UniqueValueEraserTest extends TestCase
     public function itIgnoresAnyOtherEvent(): void
     {
         // Given
-        $event = new DummyGdprFact();
+        $event = new DummyMessage();
 
         // When
         (new UniqueValueEraser($this->uniqueValues))(Message::create($event));
@@ -55,20 +56,4 @@ final class UniqueValueEraserTest extends TestCase
         // Then
         self::assertSame([], $this->releasedForSubject);
     }
-}
-
-final readonly class DummyGdprErasure implements DataSubjectErasureInterface
-{
-    public function __construct(private string $subjectId)
-    {
-    }
-
-    public function subjectId(): string
-    {
-        return $this->subjectId;
-    }
-}
-
-final readonly class DummyGdprFact
-{
 }

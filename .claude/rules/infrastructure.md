@@ -47,3 +47,6 @@ paths:
 
 #### Structure
 - A Projector test asserts DB state through a `private fetchRow(string $id): array|false` helper — never an inline `SELECT`.
+
+#### Test doubles
+- An Application-level test (a Processor/Handler exercising the port) doubles the port interface directly, no HTTP involved. Only the dedicated Infrastructure test for the concrete adapter doubles the vendor client instead, to exercise that adapter's own HTTP↔Domain mapping (payload serialization, error mapping to its own client exception).

@@ -17,14 +17,14 @@ final class LockingOrderPaymentRequesterTest extends TestCase
 {
     private LockFactory $lockFactory;
 
-    private DummyOrderPaymentRequester $inner;
+    private SpyOrderPaymentRequester $inner;
 
     private LockingOrderPaymentRequester $requester;
 
     protected function setUp(): void
     {
         $this->lockFactory = new LockFactory(new InMemoryStore());
-        $this->inner = new DummyOrderPaymentRequester();
+        $this->inner = new SpyOrderPaymentRequester();
         $this->requester = new LockingOrderPaymentRequester($this->inner, $this->lockFactory);
     }
 
@@ -35,7 +35,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
         $checkoutUrl = $this->requester->requestFor('order-id', 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame(DummyOrderPaymentRequester::CHECKOUT_URL, $checkoutUrl);
+        self::assertSame(SpyOrderPaymentRequester::CHECKOUT_URL, $checkoutUrl);
         self::assertSame('order-id', $this->inner->orderId);
         self::assertSame('https://web.test/sales/orders', $this->inner->returnUrl);
     }
@@ -47,7 +47,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
         // A plain second call would pass even without an explicit release: the Lock object's
         // own destructor releases it as soon as it goes out of scope, regardless. Retaining it
         // here rules that out — only an explicit release() keeps `isAcquired()` truthful.
-        $lockFactory = new DummyLockFactory(new InMemoryStore());
+        $lockFactory = new SpyLockFactory(new InMemoryStore());
         $requester = new LockingOrderPaymentRequester($this->inner, $lockFactory);
 
         // When
@@ -91,11 +91,11 @@ final class LockingOrderPaymentRequesterTest extends TestCase
         }
 
         // Then
-        self::assertSame(DummyOrderPaymentRequester::CHECKOUT_URL, $checkoutUrl);
+        self::assertSame(SpyOrderPaymentRequester::CHECKOUT_URL, $checkoutUrl);
     }
 }
 
-final class DummyOrderPaymentRequester implements OrderPaymentRequesterInterface
+final class SpyOrderPaymentRequester implements OrderPaymentRequesterInterface
 {
     public const string CHECKOUT_URL = 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P';
 
@@ -115,7 +115,7 @@ final class DummyOrderPaymentRequester implements OrderPaymentRequesterInterface
     }
 }
 
-final class DummyLockFactory extends LockFactory
+final class SpyLockFactory extends LockFactory
 {
     /** @var list<SharedLockInterface> */
     public array $createdLocks = [];

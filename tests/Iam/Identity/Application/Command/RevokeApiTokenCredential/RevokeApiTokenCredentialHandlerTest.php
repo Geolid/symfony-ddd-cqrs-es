@@ -8,9 +8,9 @@ use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCred
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use Iam\Identity\Domain\Exception\ApiTokenCredentialNotFoundException;
 use Iam\Identity\Domain\ValueObject\ApiTokenCredentialId;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
 use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
 use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -23,7 +23,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     {
         // Given
         $identifier = $this->generateIdentifier();
-        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new DummySecretHasher())->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new FakeSecretHasher())->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
@@ -51,7 +51,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     public function itIgnoresAnAlreadyRevokedCredential(): void
     {
         // Given
-        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new DummySecretHasher())->revoked()->store();
+        $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->revoked()->store();
 
         // When
         $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));

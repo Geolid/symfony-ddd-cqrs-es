@@ -8,9 +8,9 @@ use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException
 use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\IdentityId;
+use Iam\Tests\Identity\Support\Doubles\FakeSecretHasher;
+use Iam\Tests\Identity\Support\Doubles\StubPasswordPolicy;
 use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Stub\DummyPasswordPolicy;
-use Iam\Tests\Identity\Support\Stub\DummySecretHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -34,8 +34,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withIdentityId($identityId)
             ->withLogin('operator')
             ->withPassword('S3cr3tPassw0rd!')
-            ->withHasher(new DummySecretHasher())
-            ->withPolicy(new DummyPasswordPolicy())
+            ->withHasher(new FakeSecretHasher())
+            ->withPolicy(new StubPasswordPolicy())
             ->store();
 
         // When
@@ -68,8 +68,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withIdentityId($identityId)
             ->withLogin('operator')
             ->withPassword('S3cr3tPassw0rd!')
-            ->withHasher(new DummySecretHasher())
-            ->withPolicy(new DummyPasswordPolicy())
+            ->withHasher(new FakeSecretHasher())
+            ->withPolicy(new StubPasswordPolicy())
             ->store();
 
         // When
