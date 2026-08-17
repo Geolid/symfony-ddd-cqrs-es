@@ -82,8 +82,13 @@ sales:
                 paid: Paid
                 shipped: Shipped
                 delivered: Delivered
+        payment_in_progress:
+            title: Payment in progress
+            message: A payment request for this order is already being processed — this page will refresh automatically.
         flash:
-            cancellation_requested: Cancellation requested.
+            cancelled: Order cancelled.
+            not_cancellable: This order can no longer be cancelled.
+            cannot_pay_cancelled: This order has been cancelled and can no longer be paid.
             catalog_changed: Prices or product availability changed since you loaded this page — please review your order.
     customer:
         register:

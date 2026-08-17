@@ -86,9 +86,9 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->complete($completedAt));
     }
 
-    public function billingAddressErased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    public function anonymized(\DateTimeImmutable $anonymizedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Order $order) => $order->eraseBillingAddress($erasedAt));
+        return $this->withModifier(static fn (Order $order) => $order->anonymize($anonymizedAt));
     }
 
     protected function defaults(): array

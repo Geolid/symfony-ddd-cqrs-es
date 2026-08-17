@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Payment;
 
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Shared\Infrastructure\Locking\LockingTrait;
@@ -30,7 +30,7 @@ final readonly class LockingOrderPaymentRequester implements OrderPaymentRequest
     }
 
     /**
-     * @throws OrderPaymentAlreadyRequestedException
+     * @throws OrderPaymentRequestInProgressException
      */
     public function requestFor(string $orderId, string $returnUrl): string
     {
@@ -41,7 +41,7 @@ final readonly class LockingOrderPaymentRequester implements OrderPaymentRequest
                 fn (): string => $this->inner->requestFor($orderId, $returnUrl),
             );
         } catch (LockNotAcquiredException $e) {
-            throw OrderPaymentAlreadyRequestedException::forOrderId($orderId, $e);
+            throw OrderPaymentRequestInProgressException::forOrderId($orderId, $e);
         }
     }
 

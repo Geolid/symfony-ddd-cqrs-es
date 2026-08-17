@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Command\CancelOrdersForCustomer;
+namespace Sales\Tests\Order\Application\Command\CancelOrphanedOrdersOfCustomer;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Command\CancelOrdersForCustomer\CancelOrdersForCustomer;
+use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCase
+final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCancelsEveryCancellableOrderOfTheCustomer(): void
+    public function itCancelsCancellableOrdersOfTheCustomer(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -28,7 +28,7 @@ final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCa
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
 
         // When
-        $this->dispatch(new CancelOrdersForCustomer($customerId));
+        $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
         $finder = $this->service(OrderFinderInterface::class);
@@ -53,7 +53,7 @@ final class CancelOrdersForCustomerHandlerTest extends AbstractIntegrationTestCa
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
 
         // When
-        $this->dispatch(new CancelOrdersForCustomer($customerId));
+        $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
         $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);

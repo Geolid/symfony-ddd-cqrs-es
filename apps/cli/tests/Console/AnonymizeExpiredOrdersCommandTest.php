@@ -14,7 +14,7 @@ use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Lock\Store\SemaphoreStore;
 
-final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCase
+final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
 {
     private OrderFinderInterface $orderFinder;
 
@@ -26,7 +26,7 @@ final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCa
     }
 
     #[Test]
-    public function itPurgesEveryOrderPastItsBillingRetentionPeriod(): void
+    public function itAnonymizesOrdersPastTheRetentionPeriod(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
@@ -35,13 +35,13 @@ final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCa
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'sales:order:purge-expired-billing-address']);
+        $tester->run(['command' => 'sales:order:anonymize-expired']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 order(s) purged.', $tester->getDisplay());
-        self::assertCount(0, $this->orderFinder->byCustomer($order->customerId()));
-        self::assertCount(1, $this->orderFinder->byCustomer($other->customerId()));
+        self::assertStringContainsString('1 order(s) anonymized.', $tester->getDisplay());
+        self::assertNotNull($this->orderFinder->ofId($order->id()->toString())->anonymizedAt);
+        self::assertNull($this->orderFinder->ofId($other->id()->toString())->anonymizedAt);
     }
 
     #[Test]
@@ -50,13 +50,13 @@ final class PurgeExpiredOrderBillingAddressCommandTest extends AbstractCliTestCa
         // Given
         OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
-        $lock = (new LockFactory($store))->createLock('sales:order:purge-expired-billing-address');
+        $lock = (new LockFactory($store))->createLock('sales:order:anonymize-expired');
         $lock->acquire();
         $tester = $this->tester();
 
         try {
             // When
-            $tester->run(['command' => 'sales:order:purge-expired-billing-address']);
+            $tester->run(['command' => 'sales:order:anonymize-expired']);
 
             // Then
             self::assertSame(Command::SUCCESS, $tester->getStatusCode());

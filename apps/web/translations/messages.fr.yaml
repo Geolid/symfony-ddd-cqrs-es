@@ -82,8 +82,13 @@ sales:
                 paid: Payée
                 shipped: Expédiée
                 delivered: Livrée
+        payment_in_progress:
+            title: Paiement en cours
+            message: Une demande de paiement pour cette commande est déjà en cours de traitement — cette page va se rafraîchir automatiquement.
         flash:
-            cancellation_requested: Annulation demandée.
+            cancelled: Commande annulée.
+            not_cancellable: Cette commande ne peut plus être annulée.
+            cannot_pay_cancelled: Cette commande a été annulée et ne peut plus être payée.
             catalog_changed: Les prix ou la disponibilité des produits ont changé depuis le chargement de cette page — merci de vérifier votre commande.
     customer:
         register:

@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Infrastructure\Payment\LockingOrderPaymentRequester;
 use Symfony\Component\Lock\LockFactory;
@@ -66,7 +66,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
         $lock->acquire();
 
         // Then
-        $this->expectException(OrderPaymentAlreadyRequestedException::class);
+        $this->expectException(OrderPaymentRequestInProgressException::class);
 
         // When
         try {

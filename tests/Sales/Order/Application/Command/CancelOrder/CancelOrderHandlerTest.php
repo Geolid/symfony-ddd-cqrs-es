@@ -10,6 +10,7 @@ use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -69,6 +70,20 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new CancelOrder($id, $customerId));
+    }
+
+    #[Test]
+    public function itFailsWhenTheOrderIsNoLongerCancellable(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->store();
+
+        // Then
+        $this->expectException(OrderNotCancellableException::class);
+
+        // When
+        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
     }
 
     #[Test]

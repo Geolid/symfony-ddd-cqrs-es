@@ -10,8 +10,11 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
+use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
+use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
@@ -161,13 +164,17 @@ final class OrderController extends AbstractController
 
         $this->denyAccessUnlessGranted(OrderVoter::VIEW, $summary);
 
-        if (null !== $summary->paymentCheckoutUrl) {
-            return $this->redirect($summary->paymentCheckoutUrl);
-        }
-
         $returnUrl = $this->generateUrl('sales_order_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        return $this->redirect($this->orderPaymentRequester->requestFor($id, $returnUrl));
+        try {
+            return $this->redirect($this->orderPaymentRequester->requestFor($id, $returnUrl));
+        } catch (OrderAlreadyCancelledException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.cannot_pay_cancelled'));
+
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+        } catch (OrderPaymentRequestInProgressException) {
+            return $this->render('sales/order/payment_in_progress.html.twig', [], new Response(null, Response::HTTP_CONFLICT, ['Refresh' => '3']));
+        }
     }
 
     /**
@@ -181,9 +188,15 @@ final class OrderController extends AbstractController
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
-        $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
+        try {
+            $this->commandBus->dispatch(new CancelOrder($id, $user->identityId()));
+        } catch (OrderNotCancellableException) {
+            $this->addFlash('error', $this->translator->trans('sales.order.flash.not_cancellable'));
 
-        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancellation_requested'));
+            return $this->redirectToRoute('sales_order_show', ['id' => $id]);
+        }
+
+        $this->addFlash('success', $this->translator->trans('sales.order.flash.cancelled'));
 
         return $this->redirectToRoute('sales_order_show', ['id' => $id]);
     }

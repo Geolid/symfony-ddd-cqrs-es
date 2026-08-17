@@ -16,11 +16,12 @@ use Iam\Identity\Domain\Exception\WeakPasswordException;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\OrderPaymentAlreadyRequestedException;
+use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -58,7 +59,8 @@ return static function (ContainerConfigurator $container): void {
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderPaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderPaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderSummaryResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
