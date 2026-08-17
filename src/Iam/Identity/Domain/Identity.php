@@ -107,26 +107,26 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyIdentityRegistered(IdentityRegistered $event): void
+    private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
         $this->state = IdentityState::ACTIVE;
     }
 
     #[Apply]
-    private function applyIdentityErased(IdentityErased $event): void
+    private function applyErased(IdentityErased $event): void
     {
         $this->state = IdentityState::ERASED;
     }
 
     #[Apply]
-    private function applyIdentitySuspended(IdentitySuspended $event): void
+    private function applySuspended(IdentitySuspended $event): void
     {
         $this->state = IdentityState::SUSPENDED;
     }
 
     #[Apply]
-    private function applyIdentityReactivated(IdentityReactivated $event): void
+    private function applyReactivated(IdentityReactivated $event): void
     {
         $this->state = IdentityState::ACTIVE;
     }

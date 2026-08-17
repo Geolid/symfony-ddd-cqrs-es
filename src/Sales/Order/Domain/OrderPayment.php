@@ -152,7 +152,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyOrderPaymentRequested(OrderPaymentRequested $event): void
+    private function applyRequested(OrderPaymentRequested $event): void
     {
         $this->id = OrderPaymentId::fromString($event->id);
         $this->orderId = $event->orderId;
@@ -162,37 +162,37 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyOrderPaymentAuthorized(OrderPaymentAuthorized $event): void
+    private function applyAuthorized(OrderPaymentAuthorized $event): void
     {
         $this->state = OrderPaymentState::AUTHORIZED;
     }
 
     #[Apply]
-    private function applyOrderPaymentFailed(OrderPaymentFailed $event): void
+    private function applyFailed(OrderPaymentFailed $event): void
     {
         $this->state = OrderPaymentState::FAILED;
     }
 
     #[Apply]
-    private function applyOrderPaymentCaptured(OrderPaymentCaptured $event): void
+    private function applyCaptured(OrderPaymentCaptured $event): void
     {
         $this->state = OrderPaymentState::CAPTURED;
     }
 
     #[Apply]
-    private function applyOrderPaymentCancelled(OrderPaymentCancelled $event): void
+    private function applyCancelled(OrderPaymentCancelled $event): void
     {
         $this->state = OrderPaymentState::CANCELLED;
     }
 
     #[Apply]
-    private function applyOrderPaymentVoided(OrderPaymentVoided $event): void
+    private function applyVoided(OrderPaymentVoided $event): void
     {
         $this->state = OrderPaymentState::CANCELLED;
     }
 
     #[Apply]
-    private function applyOrderPaymentRefundRequested(OrderPaymentRefundRequested $event): void
+    private function applyRefundRequested(OrderPaymentRefundRequested $event): void
     {
         $this->state = OrderPaymentState::REFUNDING;
     }

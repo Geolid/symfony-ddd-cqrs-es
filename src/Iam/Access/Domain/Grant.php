@@ -68,20 +68,20 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyPermissionGranted(PermissionGranted $event): void
+    private function applyGranted(PermissionGranted $event): void
     {
         $this->id = GrantId::fromString($event->id);
         $this->revoked = false;
     }
 
     #[Apply]
-    private function applyPermissionRevoked(PermissionRevoked $event): void
+    private function applyRevoked(PermissionRevoked $event): void
     {
         $this->revoked = true;
     }
 
     #[Apply]
-    private function applyPermissionReactivated(PermissionReactivated $event): void
+    private function applyReactivated(PermissionReactivated $event): void
     {
         $this->revoked = false;
     }

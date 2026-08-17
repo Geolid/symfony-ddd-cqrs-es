@@ -176,7 +176,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyShipmentRequested(ShipmentRequested $event): void
+    private function applyRequested(ShipmentRequested $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
         $this->orderId = $event->orderId;
@@ -190,38 +190,38 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyShipmentPrepared(ShipmentPrepared $event): void
+    private function applyPrepared(ShipmentPrepared $event): void
     {
         $this->state = ShipmentState::PREPARED;
     }
 
     #[Apply]
-    private function applyShipmentManifested(ShipmentManifested $event): void
+    private function applyManifested(ShipmentManifested $event): void
     {
         $this->trackingReference = TrackingReference::fromString($event->trackingReference);
         $this->state = ShipmentState::MANIFESTED;
     }
 
     #[Apply]
-    private function applyShipmentDispatched(ShipmentDispatched $event): void
+    private function applyDispatched(ShipmentDispatched $event): void
     {
         $this->state = ShipmentState::DISPATCHED;
     }
 
     #[Apply]
-    private function applyShipmentDelivered(ShipmentDelivered $event): void
+    private function applyDelivered(ShipmentDelivered $event): void
     {
         $this->state = ShipmentState::DELIVERED;
     }
 
     #[Apply]
-    private function applyShipmentCancelled(ShipmentCancelled $event): void
+    private function applyCancelled(ShipmentCancelled $event): void
     {
         $this->state = ShipmentState::CANCELLED;
     }
 
     #[Apply]
-    private function applyShipmentCancellationRejected(ShipmentCancellationRejected $event): void
+    private function applyCancellationRejected(ShipmentCancellationRejected $event): void
     {
     }
 }

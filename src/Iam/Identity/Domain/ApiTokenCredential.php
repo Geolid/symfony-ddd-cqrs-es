@@ -91,7 +91,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     #[Apply]
-    private function applyApiTokenCredentialIssued(ApiTokenCredentialIssued $event): void
+    private function applyIssued(ApiTokenCredentialIssued $event): void
     {
         $this->id = ApiTokenCredentialId::fromString($event->id);
         $this->identityId = IdentityId::fromString($event->identityId);
@@ -100,13 +100,13 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     #[Apply]
-    private function applyApiTokenCredentialRevoked(ApiTokenCredentialRevoked $event): void
+    private function applyRevoked(ApiTokenCredentialRevoked $event): void
     {
         $this->revoked = true;
     }
 
     #[Apply]
-    private function applyApiTokenCredentialRehashed(ApiTokenCredentialRehashed $event): void
+    private function applyRehashed(ApiTokenCredentialRehashed $event): void
     {
     }
 }
