@@ -31,7 +31,7 @@ final class UniqueValueEraserTest extends TestCase
     }
 
     #[Test]
-    public function itReleasesEveryReservationOfAnErasedSubject(): void
+    public function itReleasesReservationsOfAnErasedSubject(): void
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();

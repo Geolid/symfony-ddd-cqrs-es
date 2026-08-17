@@ -43,7 +43,7 @@ final class CarrierPickupConfirmedOpenApiDocumentationTest extends AbstractWebho
     }
 
     #[Test]
-    public function itDocumentsEveryPayloadFieldWithDescriptionAndExample(): void
+    public function itDocumentsPayloadFieldsWithDescriptionAndExample(): void
     {
         // Given
         $client = self::createClient();

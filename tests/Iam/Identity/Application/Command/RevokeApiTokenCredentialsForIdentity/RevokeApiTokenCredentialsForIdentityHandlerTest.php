@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itRevokesEveryActiveCredentialOfTheIdentity(): void
+    public function itRevokesActiveCredentialsOfTheIdentity(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();

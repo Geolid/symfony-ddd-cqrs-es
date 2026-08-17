@@ -13,7 +13,7 @@ use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
 final class SentryEventEnricherTest extends TestCase
 {
     #[Test]
-    public function itTagsTheReportWithTheApplicationAndEveryContextOffered(): void
+    public function itTagsTheReportWithTheApplicationAndContextsOffered(): void
     {
         // Given
         $enricher = new SentryEventEnricher('web', [

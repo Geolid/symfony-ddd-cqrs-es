@@ -45,7 +45,7 @@ final class DataSubjectEraserTest extends TestCase
     }
 
     #[Test]
-    public function itKeepsEveryKeyOnAnyOtherEvent(): void
+    public function itIgnoresAnyOtherEvent(): void
     {
         // Given
         $event = new DummyMessage();

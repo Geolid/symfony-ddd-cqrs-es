@@ -25,7 +25,7 @@ final class RevokeApiTokenCredentialsOnIdentityErasedTest extends AbstractIntegr
     }
 
     #[Test]
-    public function itRevokesEveryActiveCredentialOnIdentityErased(): void
+    public function itRevokesActiveCredentialsOnIdentityErased(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();

@@ -27,7 +27,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCancelsEveryPlacedOrderOnCustomerErased(): void
+    public function itCancelsPlacedOrdersOnCustomerErased(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
