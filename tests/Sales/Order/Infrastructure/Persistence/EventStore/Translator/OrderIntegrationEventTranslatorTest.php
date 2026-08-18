@@ -11,6 +11,7 @@ use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
@@ -142,5 +143,23 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
             'postalCode' => $shippingAddress->address->postalCode,
             'city' => $shippingAddress->address->city,
         ], $event->shippingAddress);
+    }
+
+    #[Test]
+    public function itPublishesTheRequestOnOrderReturnRequested(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->returnRequested()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        self::assertCount(3, $published);
+        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $published[1]);
+        $event = $published[2];
+        self::assertInstanceOf(OrderReturnRequestedIntegrationEvent::class, $event);
+        self::assertSame($order->id()->toString(), $event->orderId);
     }
 }

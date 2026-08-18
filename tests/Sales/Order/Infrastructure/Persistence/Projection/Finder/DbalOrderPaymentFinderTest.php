@@ -31,7 +31,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
         $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
-        $refundedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
+        $refundRequestedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
+        $refundedAt = new \DateTimeImmutable('2026-01-04T12:00:00+00:00');
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
             ->withReference('GLBX-9F3K2M1P')
@@ -40,7 +41,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($capturedAt)
-            ->refunded($refundedAt)
+            ->refunded($refundRequestedAt)
+            ->refundConfirmed($refundedAt)
             ->store();
 
         // When
@@ -52,12 +54,13 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
-        self::assertSame(OrderPaymentStatus::REFUNDING, $result->status);
+        self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
         self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->failedAt);
         self::assertNull($result->cancelledAt);
+        self::assertSame($refundRequestedAt->format('Y-m-d H:i:s'), $result->refundRequestedAt?->format('Y-m-d H:i:s'));
         self::assertSame($refundedAt->format('Y-m-d H:i:s'), $result->refundedAt?->format('Y-m-d H:i:s'));
     }
 

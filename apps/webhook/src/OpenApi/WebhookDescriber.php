@@ -15,10 +15,16 @@ use Webhook\Webhook\CarrierDeliveryParser;
 use Webhook\Webhook\CarrierDeliveryPayload;
 use Webhook\Webhook\CarrierPickupConfirmedParser;
 use Webhook\Webhook\CarrierPickupConfirmedPayload;
+use Webhook\Webhook\CarrierReturnPickedUpParser;
+use Webhook\Webhook\CarrierReturnPickedUpPayload;
+use Webhook\Webhook\CarrierReturnReceivedParser;
+use Webhook\Webhook\CarrierReturnReceivedPayload;
 use Webhook\Webhook\PaymentAuthorizedParser;
 use Webhook\Webhook\PaymentAuthorizedPayload;
 use Webhook\Webhook\PaymentFailedParser;
 use Webhook\Webhook\PaymentFailedPayload;
+use Webhook\Webhook\PaymentRefundedParser;
+use Webhook\Webhook\PaymentRefundedPayload;
 
 final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareInterface
 {
@@ -52,6 +58,24 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
             'summary' => 'Report an order payment as failed.',
             'payload' => PaymentFailedPayload::class,
             'signatureHeader' => PaymentFailedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No payment matches the given reference.'],
+        ],
+        '/webhooks/'.CarrierReturnPickedUpParser::EVENT_TYPE => [
+            'summary' => 'Report a shipment return as picked up by the carrier.',
+            'payload' => CarrierReturnPickedUpPayload::class,
+            'signatureHeader' => CarrierReturnPickedUpParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No shipment matches the given return tracking reference.'],
+        ],
+        '/webhooks/'.CarrierReturnReceivedParser::EVENT_TYPE => [
+            'summary' => 'Report a shipment as received back by the carrier.',
+            'payload' => CarrierReturnReceivedPayload::class,
+            'signatureHeader' => CarrierReturnReceivedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No shipment matches the given return tracking reference.'],
+        ],
+        '/webhooks/'.PaymentRefundedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment refund as confirmed.',
+            'payload' => PaymentRefundedPayload::class,
+            'signatureHeader' => PaymentRefundedParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No payment matches the given reference.'],
         ],
     ];

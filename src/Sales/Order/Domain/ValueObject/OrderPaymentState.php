@@ -12,6 +12,7 @@ enum OrderPaymentState: string
     case FAILED = 'failed';
     case CANCELLED = 'cancelled';
     case REFUNDING = 'refunding';
+    case REFUNDED = 'refunded';
 
     public function isRequested(): bool
     {
@@ -41,5 +42,10 @@ enum OrderPaymentState: string
     public function isRefunding(): bool
     {
         return self::REFUNDING === $this;
+    }
+
+    public function isRefunded(): bool
+    {
+        return self::REFUNDED === $this;
     }
 }

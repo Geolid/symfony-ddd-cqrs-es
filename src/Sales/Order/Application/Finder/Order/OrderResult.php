@@ -18,6 +18,11 @@ final readonly class OrderResult implements ResultInterface
         public ?\DateTimeImmutable $confirmedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $completedAt,
+        public ?\DateTimeImmutable $returnRequestedAt,
+        public ?\DateTimeImmutable $refundStartedAt,
+        public ?\DateTimeImmutable $returnedAt,
+        public ?\DateTimeImmutable $returnRejectedAt,
+        public ?string $returnRejectionReason,
         public ?\DateTimeImmutable $cancelledAt,
         public ?\DateTimeImmutable $anonymizedAt,
     ) {

@@ -22,7 +22,7 @@ abstract class AbstractResourcePropertyDocumentationTestCase extends AbstractApi
         $response = $client->getResponse();
         Assert::notNull($response);
 
-        $spec = self::toArray(json_decode((string) $response->getContent(), true));
+        $spec = self::toArray(json_decode($response->getContent(), true));
         $schemas = self::toArray(self::toArray($spec['components'])['schemas']);
         $schema = self::toArray($schemas[$schemaName]);
 

@@ -90,6 +90,9 @@ sales:
             not_cancellable: Cette commande ne peut plus être annulée.
             cannot_pay_cancelled: Cette commande a été annulée et ne peut plus être payée.
             catalog_changed: Les prix ou la disponibilité des produits ont changé depuis le chargement de cette page — merci de vérifier votre commande.
+            return_requested: Retour demandé.
+            not_returnable: Cette commande n'est pas éligible à un retour.
+            return_window_expired: Le délai de retour pour cette commande est dépassé.
     customer:
         register:
             title: S'inscrire

@@ -8,6 +8,8 @@ use Fulfilment\Shipment\Application\Event\ShipmentCancelledIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentManifestedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentReturnApprovedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentReturnRejectedIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -94,5 +96,44 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         self::assertInstanceOf(ShipmentCancelledIntegrationEvent::class, $event);
         self::assertSame($shipment->id()->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
+    }
+
+    #[Test]
+    public function itPublishesTheReturnApprovalOnShipmentReturnApproved(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved()->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        self::assertCount(4, $published);
+        $event = $published[3];
+        self::assertInstanceOf(ShipmentReturnApprovedIntegrationEvent::class, $event);
+        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($orderId, $event->orderId);
+    }
+
+    #[Test]
+    public function itPublishesTheReturnRejectionOnShipmentReturnRejected(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected('item damaged beyond resale')->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        self::assertCount(4, $published);
+        $event = $published[3];
+        self::assertInstanceOf(ShipmentReturnRejectedIntegrationEvent::class, $event);
+        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($orderId, $event->orderId);
+        self::assertSame('item damaged beyond resale', $event->reason);
     }
 }

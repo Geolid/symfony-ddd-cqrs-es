@@ -14,7 +14,7 @@ final readonly class OrderPaymentRefundRequested implements DomainEventInterface
         public string $id,
         public string $orderId,
         public string $reference,
-        public string $refundedAt,
+        public string $requestedAt,
     ) {
     }
 }

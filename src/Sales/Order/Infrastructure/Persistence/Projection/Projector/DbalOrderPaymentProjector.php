@@ -14,6 +14,7 @@ use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentFailed;
+use Sales\Order\Domain\Event\OrderPaymentRefunded;
 use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
@@ -111,6 +112,19 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::REFUNDING->value,
+                'refund_requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentRefunded::class)]
+    public function onOrderPaymentRefunded(OrderPaymentRefunded $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderPaymentStatus::REFUNDED->value,
                 'refunded_at' => new \DateTimeImmutable($event->refundedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
@@ -134,6 +148,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $table->addColumn('captured_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('failed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refund_requested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('refunded_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

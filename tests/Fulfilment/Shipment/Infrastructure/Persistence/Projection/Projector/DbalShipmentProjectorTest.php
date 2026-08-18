@@ -14,7 +14,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, cancelled_at: ?string, return_received_at: ?string, return_approved_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -96,6 +96,70 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($otherRow['cancelled_at']);
     }
 
+    #[Test]
+    public function itProjectsTheReturnReceptionOnShipmentReturnReceived(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->prepared()->manifested()->dispatched()->delivered()
+            ->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
+            ->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED->value, $row['status']);
+        self::assertNotNull($row['return_received_at']);
+    }
+
+    #[Test]
+    public function itProjectsTheReturnApprovalOnShipmentReturnApproved(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
+            ->returnApproved()
+            ->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ShipmentStatus::RETURN_APPROVED->value, $row['status']);
+        self::assertNotNull($row['return_approved_at']);
+    }
+
+    #[Test]
+    public function itProjectsTheReturnRejectionOnShipmentReturnRejected(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()
+            ->withOrderId($order->id()->toString())
+            ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
+            ->returnRejected('item damaged beyond resale')
+            ->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id()->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ShipmentStatus::RETURN_REJECTED->value, $row['status']);
+        self::assertNotNull($row['return_rejected_at']);
+        self::assertSame('item damaged beyond resale', $row['return_rejection_reason']);
+    }
+
     /**
      * @return Row|false
      */
@@ -104,7 +168,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, status, tracking_reference, cancelled_at FROM %s WHERE id = :id',
+                'SELECT customer_id, status, tracking_reference, cancelled_at, return_received_at, return_approved_at, return_rejected_at, return_rejection_reason FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

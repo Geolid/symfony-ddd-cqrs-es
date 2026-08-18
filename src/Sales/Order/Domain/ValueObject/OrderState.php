@@ -11,6 +11,10 @@ enum OrderState: string
     case CONFIRMED = 'confirmed';
     case DISPATCHED = 'dispatched';
     case COMPLETED = 'completed';
+    case RETURN_REQUESTED = 'return_requested';
+    case REFUNDING = 'refunding';
+    case RETURNED = 'returned';
+    case RETURN_REJECTED = 'return_rejected';
 
     public function isPlaced(): bool
     {
@@ -35,6 +39,26 @@ enum OrderState: string
     public function isCompleted(): bool
     {
         return self::COMPLETED === $this;
+    }
+
+    public function isReturnRequested(): bool
+    {
+        return self::RETURN_REQUESTED === $this;
+    }
+
+    public function isRefunding(): bool
+    {
+        return self::REFUNDING === $this;
+    }
+
+    public function isReturned(): bool
+    {
+        return self::RETURNED === $this;
+    }
+
+    public function isReturnRejected(): bool
+    {
+        return self::RETURN_REJECTED === $this;
     }
 
     public function isCancellable(): bool

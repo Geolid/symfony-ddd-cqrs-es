@@ -16,6 +16,10 @@ use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Event\OrderRefundStarted;
+use Sales\Order\Domain\Event\OrderReturned;
+use Sales\Order\Domain\Event\OrderReturnRejected;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
@@ -88,6 +92,59 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(OrderReturnRequested::class)]
+    public function onOrderReturnRequested(OrderReturnRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::RETURN_REQUESTED->value,
+                'return_requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderRefundStarted::class)]
+    public function onOrderRefundStarted(OrderRefundStarted $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::REFUNDING->value,
+                'refund_started_at' => new \DateTimeImmutable($event->startedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderReturned::class)]
+    public function onOrderReturned(OrderReturned $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::RETURNED->value,
+                'returned_at' => new \DateTimeImmutable($event->returnedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderReturnRejected::class)]
+    public function onOrderReturnRejected(OrderReturnRejected $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::RETURN_REJECTED->value,
+                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
+                'return_rejection_reason' => $event->reason,
+            ],
+            ['id' => $event->id],
+        );
+    }
+
     #[Subscribe(OrderAnonymized::class)]
     public function onOrderAnonymized(OrderAnonymized $event): void
     {
@@ -107,11 +164,16 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
-        $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('status', Types::STRING, ['length' => 17]);
         $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
         $table->addColumn('confirmed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_requested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refund_started_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('returned_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('anonymized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(

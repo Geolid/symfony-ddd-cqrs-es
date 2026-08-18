@@ -15,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<OrderResult>
  *
- * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, confirmed_at: string|null, dispatched_at: string|null, completed_at: string|null, cancelled_at: string|null, anonymized_at: string|null}
+ * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, confirmed_at: string|null, dispatched_at: string|null, completed_at: string|null, return_requested_at: string|null, refund_started_at: string|null, returned_at: string|null, return_rejected_at: string|null, return_rejection_reason: string|null, cancelled_at: string|null, anonymized_at: string|null}
  */
 final class DbalOrderFinder extends AbstractDbalCollectionFinder implements OrderFinderInterface
 {
@@ -57,7 +57,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'confirmed_at', 'dispatched_at', 'completed_at', 'cancelled_at', 'anonymized_at')
+        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'confirmed_at', 'dispatched_at', 'completed_at', 'return_requested_at', 'refund_started_at', 'returned_at', 'return_rejected_at', 'return_rejection_reason', 'cancelled_at', 'anonymized_at')
             ->from(DbalOrderProjector::TABLE);
     }
 
@@ -75,6 +75,11 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             confirmedAt: null !== $row['confirmed_at'] ? new \DateTimeImmutable($row['confirmed_at'], new \DateTimeZone('UTC')) : null,
             dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,
             completedAt: null !== $row['completed_at'] ? new \DateTimeImmutable($row['completed_at'], new \DateTimeZone('UTC')) : null,
+            returnRequestedAt: null !== $row['return_requested_at'] ? new \DateTimeImmutable($row['return_requested_at'], new \DateTimeZone('UTC')) : null,
+            refundStartedAt: null !== $row['refund_started_at'] ? new \DateTimeImmutable($row['refund_started_at'], new \DateTimeZone('UTC')) : null,
+            returnedAt: null !== $row['returned_at'] ? new \DateTimeImmutable($row['returned_at'], new \DateTimeZone('UTC')) : null,
+            returnRejectedAt: null !== $row['return_rejected_at'] ? new \DateTimeImmutable($row['return_rejected_at'], new \DateTimeZone('UTC')) : null,
+            returnRejectionReason: $row['return_rejection_reason'],
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
             anonymizedAt: null !== $row['anonymized_at'] ? new \DateTimeImmutable($row['anonymized_at'], new \DateTimeZone('UTC')) : null,
         );

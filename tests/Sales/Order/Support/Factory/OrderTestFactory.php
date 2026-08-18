@@ -86,6 +86,31 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->complete($completedAt));
     }
 
+    public function returnRequested(\DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
+
+        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
+            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt));
+    }
+
+    public function refundStarted(\DateTimeImmutable $startedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->startRefund($startedAt));
+    }
+
+    public function returned(\DateTimeImmutable $returnedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->return($returnedAt));
+    }
+
+    public function returnRejected(
+        string $reason = 'item damaged beyond resale',
+        \DateTimeImmutable $rejectedAt = new \DateTimeImmutable('now +00:00'),
+    ): self {
+        return $this->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
+    }
+
     public function anonymized(\DateTimeImmutable $anonymizedAt = new \DateTimeImmutable('now +00:00')): self
     {
         return $this->withModifier(static fn (Order $order) => $order->anonymize($anonymizedAt));

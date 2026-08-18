@@ -12,6 +12,7 @@ enum OrderPaymentStatus: string
     case FAILED = 'failed';
     case CANCELLED = 'cancelled';
     case REFUNDING = 'refunding';
+    case REFUNDED = 'refunded';
 
     public function isCaptured(): bool
     {

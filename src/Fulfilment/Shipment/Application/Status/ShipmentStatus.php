@@ -12,4 +12,10 @@ enum ShipmentStatus: string
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
+    case RETURN_REQUESTED = 'return_requested';
+    case RETURN_MANIFESTED = 'return_manifested';
+    case RETURN_DISPATCHED = 'return_dispatched';
+    case RETURN_RECEIVED = 'return_received';
+    case RETURN_APPROVED = 'return_approved';
+    case RETURN_REJECTED = 'return_rejected';
 }

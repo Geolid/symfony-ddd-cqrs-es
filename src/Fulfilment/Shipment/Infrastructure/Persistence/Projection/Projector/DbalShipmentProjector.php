@@ -15,6 +15,12 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnApproved;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnManifested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnReceived;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -98,6 +104,82 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(ShipmentReturnRequested::class)]
+    public function onShipmentReturnRequested(ShipmentReturnRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => ShipmentStatus::RETURN_REQUESTED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentReturnManifested::class)]
+    public function onShipmentReturnManifested(ShipmentReturnManifested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentStatus::RETURN_MANIFESTED->value,
+                'return_tracking_reference' => $event->returnTrackingReference,
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentReturnDispatched::class)]
+    public function onShipmentReturnDispatched(ShipmentReturnDispatched $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentStatus::RETURN_DISPATCHED->value,
+                'return_dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentReturnReceived::class)]
+    public function onShipmentReturnReceived(ShipmentReturnReceived $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentStatus::RETURN_RECEIVED->value,
+                'return_received_at' => new \DateTimeImmutable($event->receivedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentReturnApproved::class)]
+    public function onShipmentReturnApproved(ShipmentReturnApproved $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentStatus::RETURN_APPROVED->value,
+                'return_approved_at' => new \DateTimeImmutable($event->approvedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentReturnRejected::class)]
+    public function onShipmentReturnRejected(ShipmentReturnRejected $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => ShipmentStatus::RETURN_REJECTED->value,
+                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
+                'return_rejection_reason' => $event->reason,
+            ],
+            ['id' => $event->id],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -107,12 +189,18 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('status', Types::STRING, ['length' => 17]);
         $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
+        $table->addColumn('return_tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('created_at', Types::DATETIME_MUTABLE);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_received_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_approved_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
@@ -121,5 +209,6 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addIndex(['order_id'], 'fulfilment_shipment_order_id_idx');
         $table->addIndex(['customer_id'], 'fulfilment_shipment_customer_id_idx');
         $table->addIndex(['tracking_reference'], 'fulfilment_shipment_tracking_reference_idx');
+        $table->addIndex(['return_tracking_reference'], 'fulfilment_shipment_return_tracking_reference_idx');
     }
 }

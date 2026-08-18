@@ -11,6 +11,10 @@ enum OrderStatus: string
     case CONFIRMED = 'confirmed';
     case DISPATCHED = 'dispatched';
     case COMPLETED = 'completed';
+    case RETURN_REQUESTED = 'return_requested';
+    case REFUNDING = 'refunding';
+    case RETURNED = 'returned';
+    case RETURN_REJECTED = 'return_rejected';
 
     public function isCancelled(): bool
     {

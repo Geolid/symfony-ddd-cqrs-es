@@ -11,6 +11,12 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnApproved;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnManifested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnReceived;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Shipment;
@@ -185,6 +191,353 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
             ->when(static fn (Shipment $shipment) => $shipment->deliver(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
+    }
+
+    #[Test]
+    public function itRequestsAReturnOnceDelivered(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt))
+            ->then(new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotRequestAReturnBeforeBeingDelivered(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        $this
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->when(static fn (Shipment $shipment) => $shipment->requestReturn(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itManifestsAReturnOnceRequested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), $manifestedAt))
+            ->then(new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotManifestAReturnBeforeBeingRequested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
+    }
+
+    #[Test]
+    public function itIgnoresAReturnAlreadyManifestedWithTheSameReference(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotManifestAReturnAlreadyManifestedWithADifferentReference(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-OTHER'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->expectsException(ShipmentAlreadyTrackedException::class);
+    }
+
+    #[Test]
+    public function itDispatchesAReturnOnceManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn($returnDispatchedAt))
+            ->then(new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotDispatchAReturnBeforeBeingManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
+    }
+
+    #[Test]
+    public function itDoesNotDispatchAReturnAlreadyDispatchedOrLater(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn(new \DateTimeImmutable('2026-01-13T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itReceivesAReturnOnceDispatched(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt))
+            ->then(new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itReceivesAReturnOnceManifestedEvenWithoutAPickupScan(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt))
+            ->then(new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotReceiveAReturnBeforeBeingManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn(new \DateTimeImmutable('2026-01-13T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
+    }
+
+    #[Test]
+    public function itDoesNotReceiveAReturnAlreadyReceivedOrLater(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn(new \DateTimeImmutable('2026-01-14T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itApprovesAReturnOnceReceived(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $approvedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt))
+            ->then(new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotApproveAReturnBeforeBeingReceived(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->expectsException(ShipmentInvalidTransitionException::class);
+    }
+
+    #[Test]
+    public function itRejectsAReturnOnceReceived(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', $rejectedAt))
+            ->then(new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotRejectAReturnBeforeBeingReceived(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 

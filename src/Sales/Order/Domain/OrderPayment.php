@@ -14,6 +14,7 @@ use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentFailed;
+use Sales\Order\Domain\Event\OrderPaymentRefunded;
 use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
@@ -147,6 +148,19 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             orderId: $this->orderId,
             reference: $this->reference->toString(),
+            requestedAt: $refundedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function confirmRefund(\DateTimeImmutable $refundedAt): void
+    {
+        if (!$this->state->isRefunding()) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaymentRefunded(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
             refundedAt: $refundedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -195,5 +209,11 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRefundRequested(OrderPaymentRefundRequested $event): void
     {
         $this->state = OrderPaymentState::REFUNDING;
+    }
+
+    #[Apply]
+    private function applyRefunded(OrderPaymentRefunded $event): void
+    {
+        $this->state = OrderPaymentState::REFUNDED;
     }
 }
