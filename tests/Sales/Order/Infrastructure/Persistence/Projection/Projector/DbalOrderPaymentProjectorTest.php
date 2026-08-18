@@ -184,8 +184,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()->store();
         $otherOrder = OrderTestFactory::new()->store();
-        $other = OrderPaymentTestFactory::new()->withOrderId($otherOrder->id()->toString())->authorized()->captured()->refundInitiated()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refundInitiated()->refundConfirmed()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->authorized()->captured()->refundInitiated();
+        $other = $orderPayment->withOrderId($otherOrder->id()->toString())->store();
+        $orderPayment = $orderPayment->withOrderId($order->id()->toString())->refundConfirmed()->create();
 
         // When
         $this->store($orderPayment);

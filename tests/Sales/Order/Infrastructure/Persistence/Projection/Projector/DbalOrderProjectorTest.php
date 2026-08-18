@@ -170,8 +170,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturnRequested(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered();
+        $other = $order->store();
+        $order = $order->returnRequested()->create();
 
         // When
         $this->store($order);
@@ -191,8 +192,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturned(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->returned()->create();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
+        $other = $order->store();
+        $order = $order->returned()->create();
 
         // When
         $this->store($order);
@@ -213,10 +215,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturnRejected(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()
-            ->returnRejected('item damaged beyond resale')
-            ->create();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
+        $other = $order->store();
+        $order = $order->returnRejected('item damaged beyond resale')->create();
 
         // When
         $this->store($order);
