@@ -37,8 +37,7 @@ final class AcmeCarrierGatewayTest extends TestCase
             [
                 'reference' => $shipmentId,
                 'destination' => [
-                    'firstName' => 'Ada',
-                    'lastName' => 'Lovelace',
+                    'recipient' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
@@ -65,15 +64,13 @@ final class AcmeCarrierGatewayTest extends TestCase
             [
                 'reference' => $shipmentId,
                 'origin' => [
-                    'firstName' => 'Ada',
-                    'lastName' => 'Lovelace',
+                    'recipient' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
                 ],
                 'destination' => [
-                    'firstName' => 'Returns',
-                    'lastName' => 'Department',
+                    'recipient' => 'Returns Department',
                     'street' => "1 rue de l'Entrepot",
                     'postalCode' => '75012',
                     'city' => 'Paris',
@@ -140,8 +137,7 @@ final class AcmeCarrierGatewayTest extends TestCase
     {
         return new AcmeCarrierGateway(
             new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')),
-            'Returns',
-            'Department',
+            'Returns Department',
             "1 rue de l'Entrepot",
             '75012',
             'Paris',

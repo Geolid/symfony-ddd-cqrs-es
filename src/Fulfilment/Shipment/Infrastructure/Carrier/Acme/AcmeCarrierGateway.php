@@ -7,7 +7,6 @@ namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -18,10 +17,8 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 
     public function __construct(
         private AcmeClient $acmeClient,
-        #[Autowire(param: 'fulfilment.return_address_first_name')]
-        private string $returnAddressFirstName,
-        #[Autowire(param: 'fulfilment.return_address_last_name')]
-        private string $returnAddressLastName,
+        #[Autowire(param: 'fulfilment.return_address_name')]
+        private string $returnAddressName,
         #[Autowire(param: 'fulfilment.return_address_street')]
         private string $returnAddressStreet,
         #[Autowire(param: 'fulfilment.return_address_postal_code')]
@@ -39,8 +36,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $response = $this->acmeClient->post(self::PICKUP_PATH, [
             'reference' => $shipmentId,
             'destination' => [
-                'firstName' => $deliveryAddress->fullName->firstName,
-                'lastName' => $deliveryAddress->fullName->lastName,
+                'recipient' => $deliveryAddress->fullName->toString(),
                 'street' => $deliveryAddress->address->street,
                 'postalCode' => $deliveryAddress->address->postalCode,
                 'city' => $deliveryAddress->address->city,
@@ -61,26 +57,21 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
      */
     public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string
     {
-        $returnAddress = PostalAddress::of(
-            FullName::of($this->returnAddressFirstName, $this->returnAddressLastName),
-            Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity),
-        );
+        $returnAddress = Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity);
 
         $response = $this->acmeClient->post(self::RETURN_PICKUP_PATH, [
             'reference' => $shipmentId,
             'origin' => [
-                'firstName' => $pickupAddress->fullName->firstName,
-                'lastName' => $pickupAddress->fullName->lastName,
+                'recipient' => $pickupAddress->fullName->toString(),
                 'street' => $pickupAddress->address->street,
                 'postalCode' => $pickupAddress->address->postalCode,
                 'city' => $pickupAddress->address->city,
             ],
             'destination' => [
-                'firstName' => $returnAddress->fullName->firstName,
-                'lastName' => $returnAddress->fullName->lastName,
-                'street' => $returnAddress->address->street,
-                'postalCode' => $returnAddress->address->postalCode,
-                'city' => $returnAddress->address->city,
+                'recipient' => $this->returnAddressName,
+                'street' => $returnAddress->street,
+                'postalCode' => $returnAddress->postalCode,
+                'city' => $returnAddress->city,
             ],
         ]);
 
