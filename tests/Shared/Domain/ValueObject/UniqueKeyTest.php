@@ -19,7 +19,7 @@ final class UniqueKeyTest extends TestCase
         $key = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, ...$scope);
 
         // Then
-        self::assertSame($expected, $key->value);
+        self::assertSame($expected, $key->toString());
     }
 
     /**

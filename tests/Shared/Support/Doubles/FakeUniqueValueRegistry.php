@@ -44,6 +44,6 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
 
     private static function normalize(UniqueKey $key, string $value): string
     {
-        return \sprintf('%s:%s', $key->value, $value);
+        return \sprintf('%s:%s', $key->toString(), $value);
     }
 }

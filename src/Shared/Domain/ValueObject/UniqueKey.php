@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Shared\Domain\ValueObject;
 
-final class UniqueKey
+final readonly class UniqueKey
 {
     private const string SEPARATOR = "\x1F";
-
-    public string $value {
-        get => implode(self::SEPARATOR, [(string) $this->discriminator->value, ...$this->scope]);
-    }
 
     /**
      * @param list<string> $scope
      */
     private function __construct(
-        public readonly \BackedEnum $discriminator,
-        private readonly array $scope,
+        public \BackedEnum $discriminator,
+        private array $scope,
     ) {
     }
 
@@ -28,6 +24,11 @@ final class UniqueKey
 
     public function equals(self $other): bool
     {
-        return $this->value === $other->value;
+        return $this->toString() === $other->toString();
+    }
+
+    public function toString(): string
+    {
+        return implode(self::SEPARATOR, [(string) $this->discriminator->value, ...$this->scope]);
     }
 }
