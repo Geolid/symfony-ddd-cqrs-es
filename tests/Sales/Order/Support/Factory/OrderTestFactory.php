@@ -6,6 +6,8 @@ namespace Sales\Tests\Order\Support\Factory;
 
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Order;
+use Sales\Order\Domain\Service\RetentionPolicy;
+use Sales\Order\Domain\Service\ReturnWindowPolicy;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
@@ -86,17 +88,21 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
     }
 
-    public function completed(\DateTimeImmutable $now = new \DateTimeImmutable('now +00:00')): self
-    {
-        return $this->withModifier(static fn (Order $order) => $order->complete($now));
+    public function completed(
+        \DateTimeImmutable $now = new \DateTimeImmutable('now +00:00'),
+        ReturnWindowPolicy $returnWindowPolicy = new ReturnWindowPolicy(14),
+    ): self {
+        return $this->withModifier(static fn (Order $order) => $order->complete($now, $returnWindowPolicy));
     }
 
-    public function returnRequested(\DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00')): self
-    {
+    public function returnRequested(
+        \DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00'),
+        ReturnWindowPolicy $returnWindowPolicy = new ReturnWindowPolicy(14),
+    ): self {
         Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
 
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
-            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt));
+            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, $returnWindowPolicy));
     }
 
     public function returned(\DateTimeImmutable $returnedAt = new \DateTimeImmutable('now +00:00')): self
@@ -111,9 +117,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
     }
 
-    public function anonymized(\DateTimeImmutable $anonymizedAt = new \DateTimeImmutable('now +00:00')): self
-    {
-        return $this->withModifier(static fn (Order $order) => $order->anonymize($anonymizedAt));
+    public function anonymized(
+        \DateTimeImmutable $now = new \DateTimeImmutable('now +00:00'),
+        RetentionPolicy $retentionPolicy = new RetentionPolicy(3650),
+    ): self {
+        return $this->withModifier(static fn (Order $order) => $order->anonymize($now, $retentionPolicy));
     }
 
     protected function defaults(): array

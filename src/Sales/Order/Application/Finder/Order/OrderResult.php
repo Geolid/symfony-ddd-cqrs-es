@@ -24,6 +24,7 @@ final readonly class OrderResult implements ResultInterface
         public ?\DateTimeImmutable $returnRejectedAt,
         public ?string $returnRejectionReason,
         public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $closedAt,
         public ?\DateTimeImmutable $anonymizedAt,
     ) {
     }

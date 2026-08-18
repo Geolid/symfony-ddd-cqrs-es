@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Sales\Order\Application\Command\CompleteOrder\CompleteOrder;
-use Sales\Order\Application\Query\ListDeliveredOrders\ListDeliveredOrders;
+use Sales\Order\Application\Query\ListOrdersPastReturnWindow\ListOrdersPastReturnWindow;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -40,16 +40,15 @@ final class CompleteDeliveredOrdersCommand
         }
 
         try {
-            $delivered = $this->queryBus->ask(new ListDeliveredOrders());
-            $total = 0;
+            $expired = $this->queryBus->ask(new ListOrdersPastReturnWindow());
+            $total = \count($expired);
 
-            foreach ($delivered as $order) {
+            foreach ($expired as $order) {
                 $this->commandBus->dispatch(new CompleteOrder($order->id));
-                $io->writeln(\sprintf('Checked order %s for completion', $order->id));
-                ++$total;
+                $io->writeln(\sprintf('Completed order %s', $order->id));
             }
 
-            $io->success(\sprintf('%d delivered order(s) checked for completion.', $total));
+            $io->success(\sprintf('%d order(s) completed.', $total));
         } finally {
             $this->release();
         }

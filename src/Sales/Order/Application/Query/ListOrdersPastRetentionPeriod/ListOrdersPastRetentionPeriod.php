@@ -13,7 +13,4 @@ use Shared\Application\Query\Result\StreamResult;
  */
 final readonly class ListOrdersPastRetentionPeriod implements QueryInterface
 {
-    public function __construct(public string $cutoff)
-    {
-    }
 }

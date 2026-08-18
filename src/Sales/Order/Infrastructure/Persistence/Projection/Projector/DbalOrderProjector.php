@@ -48,6 +48,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'status' => OrderStatus::CANCELLED->value,
                 'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+                'closed_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -100,6 +101,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'status' => OrderStatus::COMPLETED->value,
                 'completed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
+                'closed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -126,6 +128,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'status' => OrderStatus::RETURNED->value,
                 'returned_at' => new \DateTimeImmutable($event->returnedAt)->format('Y-m-d H:i:s'),
+                'closed_at' => new \DateTimeImmutable($event->returnedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -140,6 +143,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::RETURN_REJECTED->value,
                 'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
                 'return_rejection_reason' => $event->reason,
+                'closed_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -175,6 +179,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('closed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('anonymized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

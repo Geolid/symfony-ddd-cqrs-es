@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
-use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Query\ListOrdersPastRetentionPeriod\ListOrdersPastRetentionPeriod;
 use Shared\Application\Command\CommandBusInterface;
@@ -14,7 +13,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
 #[AsCommand(name: 'sales:order:anonymize-expired', description: 'Anonymize every Order past its sales retention period')]
@@ -26,9 +24,6 @@ final class AnonymizeExpiredOrdersCommand
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly QueryBusInterface $queryBus,
-        private readonly ClockInterface $clock,
-        #[Autowire(param: 'sales.retention_days')]
-        private readonly int $retentionDays,
     ) {
     }
 
@@ -45,8 +40,7 @@ final class AnonymizeExpiredOrdersCommand
         }
 
         try {
-            $cutoff = $this->clock->now()->modify(\sprintf('-%d days', $this->retentionDays))->format(\DateTimeInterface::ATOM);
-            $expired = $this->queryBus->ask(new ListOrdersPastRetentionPeriod($cutoff));
+            $expired = $this->queryBus->ask(new ListOrdersPastRetentionPeriod());
             $total = \count($expired);
 
             foreach ($expired as $order) {

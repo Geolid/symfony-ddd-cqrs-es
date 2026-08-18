@@ -19,7 +19,7 @@ interface OrderFinderInterface extends CollectionFinderInterface
 
     public function byCustomer(string $customerId): static;
 
-    public function placedBefore(string $cutoff): static;
+    public function closedBefore(string $cutoff): static;
 
-    public function delivered(): static;
+    public function deliveredBefore(string $cutoff): static;
 }

@@ -30,8 +30,8 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $order = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
-        $other = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->store();
+        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
+        $other = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->store();
         $tester = $this->tester();
 
         // When

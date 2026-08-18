@@ -27,6 +27,8 @@ use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
+use Sales\Order\Domain\Service\RetentionPolicy;
+use Sales\Order\Domain\Service\ReturnWindowPolicy;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
@@ -40,8 +42,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
 
-    private const int RETURN_WINDOW_DAYS = 14;
-
     #[Id]
     private OrderId $id;
     private string $customerId;
@@ -50,6 +50,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private int $totalAmountInCents;
     private OrderState $state;
     private \DateTimeImmutable $deliveredAt;
+    private ?\DateTimeImmutable $closedAt;
     private ?\DateTimeImmutable $anonymizedAt;
 
     public function id(): OrderId
@@ -207,7 +208,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws OrderNotCompletableException
      */
-    public function complete(\DateTimeImmutable $now): void
+    public function complete(\DateTimeImmutable $now, ReturnWindowPolicy $returnWindowPolicy): void
     {
         if ($this->state->isCompleted()) {
             return;
@@ -217,7 +218,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderNotCompletableException::forId($this->id);
         }
 
-        if ($now <= $this->deliveredAt->modify(\sprintf('+%d days', self::RETURN_WINDOW_DAYS))) {
+        if (!$returnWindowPolicy->hasExpired($this->deliveredAt, $now)) {
             return;
         }
 
@@ -232,7 +233,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      * @throws OrderNotReturnableException
      * @throws OrderReturnWindowExpiredException
      */
-    public function requestReturn(string $customerId, \DateTimeImmutable $now): void
+    public function requestReturn(string $customerId, \DateTimeImmutable $now, ReturnWindowPolicy $returnWindowPolicy): void
     {
         if ($this->customerId !== $customerId) {
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
@@ -246,7 +247,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderNotReturnableException::forId($this->id);
         }
 
-        if ($now > $this->deliveredAt->modify(\sprintf('+%d days', self::RETURN_WINDOW_DAYS))) {
+        if ($returnWindowPolicy->hasExpired($this->deliveredAt, $now)) {
             throw OrderReturnWindowExpiredException::forId($this->id);
         }
 
@@ -281,15 +282,19 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function anonymize(\DateTimeImmutable $anonymizedAt): void
+    public function anonymize(\DateTimeImmutable $now, RetentionPolicy $retentionPolicy): void
     {
         if (null !== $this->anonymizedAt) {
             return;
         }
 
+        if (null === $this->closedAt || !$retentionPolicy->hasExpired($this->closedAt, $now)) {
+            return;
+        }
+
         $this->recordThat(new OrderAnonymized(
             id: $this->id->toString(),
-            anonymizedAt: $anonymizedAt->format(\DateTimeInterface::ATOM),
+            anonymizedAt: $now->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -308,6 +313,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         );
         $this->totalAmountInCents = $event->totalAmountInCents;
         $this->state = OrderState::PLACED;
+        $this->closedAt = null;
         $this->anonymizedAt = null;
     }
 
@@ -315,6 +321,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyCancelled(OrderCancelled $event): void
     {
         $this->state = OrderState::CANCELLED;
+        $this->closedAt = new \DateTimeImmutable($event->cancelledAt);
     }
 
     #[Apply]
@@ -340,6 +347,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
+        $this->closedAt = new \DateTimeImmutable($event->completedAt);
     }
 
     #[Apply]
@@ -352,12 +360,14 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyReturned(OrderReturned $event): void
     {
         $this->state = OrderState::RETURNED;
+        $this->closedAt = new \DateTimeImmutable($event->returnedAt);
     }
 
     #[Apply]
     private function applyReturnRejected(OrderReturnRejected $event): void
     {
         $this->state = OrderState::RETURN_REJECTED;
+        $this->closedAt = new \DateTimeImmutable($event->rejectedAt);
     }
 
     #[Apply]
