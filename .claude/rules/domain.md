@@ -40,5 +40,5 @@ paths:
 ### Conventions
 
 #### Naming
-- Aggregate: success `it*`. A genuine invariant violation (no business meaning on the current state) is `itCannot*`, throwing. A re-entry that still matches the caller's intent (already in that state, nothing left to do) is `itDoesNot*`, asserting no event recorded instead — never the reverse.
+- Aggregate: success `it*`. A genuine invariant violation (no business meaning on the current state) is `itCannot*`, throwing. A re-entry that still matches the caller's intent (already in that state, nothing left to do) is `itDoesNot*`, asserting no event recorded instead — never the reverse. A refusal worth recording as its own fact (neither a silent no-op nor an exception) is `itRejects*`, asserting the dedicated rejection event instead — same name at the Application Handler layer when it exercises the same transition through `dispatch()`.
 - Value Object: success `it*`, failure `itProtectsInvariants` (the violated condition lives in the test name or a data set label).
