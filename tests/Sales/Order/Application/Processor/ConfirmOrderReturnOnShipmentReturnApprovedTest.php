@@ -31,10 +31,10 @@ final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractInteg
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        ($this->processor)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id()->toString(), '2026-01-11T00:00:00+00:00'));
+        ($this->processor)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-11T00:00:00+00:00'));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURNED, $result->status);
     }
 }

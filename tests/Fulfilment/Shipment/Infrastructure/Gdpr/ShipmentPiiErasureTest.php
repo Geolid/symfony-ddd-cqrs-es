@@ -26,7 +26,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
             ->store();
         $serialized = $this->serializedEventOf(
             ShipmentRequested::class,
-            static fn (ShipmentRequested $event): bool => $event->id === $shipment->id()->toString(),
+            static fn (ShipmentRequested $event): bool => $event->id === $shipment->id->toString(),
         );
 
         // When

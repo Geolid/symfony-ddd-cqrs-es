@@ -10,7 +10,7 @@ final readonly class Permission
 {
     public const string PATTERN = '/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/';
 
-    private string $value;
+    public string $value;
 
     private function __construct(string $value)
     {
@@ -28,10 +28,5 @@ final readonly class Permission
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function toString(): string
-    {
-        return $this->value;
     }
 }

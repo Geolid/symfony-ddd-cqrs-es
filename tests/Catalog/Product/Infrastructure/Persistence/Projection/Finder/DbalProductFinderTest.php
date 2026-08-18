@@ -37,7 +37,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         $result = $results[0];
         self::assertInstanceOf(ProductResult::class, $result);
-        self::assertSame($product->id()->toString(), $result->id);
+        self::assertSame($product->id->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
     }
@@ -66,10 +66,10 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
-        $result = $this->finder->ofId($product->id()->toString());
+        $result = $this->finder->ofId($product->id->toString());
 
         // Then
-        self::assertSame($product->id()->toString(), $result->id);
+        self::assertSame($product->id->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
     }

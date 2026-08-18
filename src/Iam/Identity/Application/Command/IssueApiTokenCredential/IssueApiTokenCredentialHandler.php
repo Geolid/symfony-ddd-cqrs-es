@@ -48,12 +48,12 @@ final readonly class IssueApiTokenCredentialHandler
         try {
             $this->uniqueValues->reserve(
                 UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $command->identityId),
-                $label->toString(),
+                $label->value,
                 $command->id,
                 $command->identityId,
             );
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw LabelAlreadyTakenException::forLabel($label->toString(), $e);
+            throw LabelAlreadyTakenException::forLabel($label->value, $e);
         }
 
         $credential = ApiTokenCredential::issue(

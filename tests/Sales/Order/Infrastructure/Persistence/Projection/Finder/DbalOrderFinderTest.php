@@ -46,10 +46,10 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
 
         // Then
-        self::assertSame($order->id()->toString(), $result->id);
+        self::assertSame($order->id->toString(), $result->id);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(2_500, $result->totalAmountInCents);
         self::assertSame(OrderStatus::COMPLETED, $result->status);
@@ -86,7 +86,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($order->id()->toString(), $results[0]->id);
+        self::assertSame($order->id->toString(), $results[0]->id);
     }
 
     #[Test]
@@ -103,7 +103,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($expired->id()->toString(), $results[0]->id);
+        self::assertSame($expired->id->toString(), $results[0]->id);
     }
 
     #[Test]
@@ -124,6 +124,6 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($expired->id()->toString(), $results[0]->id);
+        self::assertSame($expired->id->toString(), $results[0]->id);
     }
 }

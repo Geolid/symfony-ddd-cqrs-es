@@ -29,7 +29,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
             ->store();
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
-            static fn (OrderPlaced $event): bool => $event->id === $order->id()->toString(),
+            static fn (OrderPlaced $event): bool => $event->id === $order->id->toString(),
         );
 
         // When
@@ -51,12 +51,12 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
-            static fn (OrderPlaced $event): bool => $event->id === $order->id()->toString(),
+            static fn (OrderPlaced $event): bool => $event->id === $order->id->toString(),
         );
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new StubDataSubjectErased($order->id()->toString())),
+            Message::create(new StubDataSubjectErased($order->id->toString())),
         );
 
         // Then
@@ -72,11 +72,11 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($orderPayment);
         $serialized = $this->serializedEventOf(
             OrderPaymentCapturedIntegrationEvent::class,
-            static fn (OrderPaymentCapturedIntegrationEvent $event): bool => $event->orderId === $order->id()->toString(),
+            static fn (OrderPaymentCapturedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),
         );
 
         // When
@@ -99,7 +99,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderConfirmedIntegrationEvent::class,
-            static fn (OrderConfirmedIntegrationEvent $event): bool => $event->orderId === $order->id()->toString(),
+            static fn (OrderConfirmedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),
         );
 
         // When

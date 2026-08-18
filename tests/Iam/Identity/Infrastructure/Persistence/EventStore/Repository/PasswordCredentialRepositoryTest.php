@@ -35,9 +35,9 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($credential);
 
         // Then
-        $id = $credential->id();
+        $id = $credential->id;
         self::assertTrue($this->repository->has($id));
-        self::assertSame('operator', $this->repository->load($id)->login()->toString());
+        self::assertSame('operator', $this->repository->load($id)->login->value);
     }
 
     #[Test]

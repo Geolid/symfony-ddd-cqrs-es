@@ -33,7 +33,7 @@ final class ApiTokenCredentialRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($credential);
 
         // Then
-        $id = $credential->id();
+        $id = $credential->id;
         self::assertTrue($this->repository->has($id));
         $this->repository->load($id);
     }

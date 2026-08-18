@@ -44,7 +44,7 @@ final readonly class ShipmentRepository implements ShipmentRepositoryInterface
         try {
             $this->repository->save($shipment);
         } catch (AggregateAlreadyExists) {
-            throw ShipmentAlreadyExistsException::forId($shipment->id()->toString());
+            throw ShipmentAlreadyExistsException::forId($shipment->id->toString());
         }
     }
 }

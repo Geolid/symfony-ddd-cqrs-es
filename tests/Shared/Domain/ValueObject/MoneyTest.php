@@ -18,7 +18,7 @@ final class MoneyTest extends TestCase
         $money = Money::fromCents(1_500);
 
         // Then
-        self::assertSame(1_500, $money->toCents());
+        self::assertSame(1_500, $money->cents);
     }
 
     #[Test]
@@ -65,7 +65,7 @@ final class MoneyTest extends TestCase
         $sum = Money::fromCents(1_750)->plus(Money::fromCents(249));
 
         // Then
-        self::assertSame(1_999, $sum->toCents());
+        self::assertSame(1_999, $sum->cents);
     }
 
     #[Test]
@@ -75,6 +75,6 @@ final class MoneyTest extends TestCase
         $product = Money::fromCents(83)->times(3);
 
         // Then
-        self::assertSame(249, $product->toCents());
+        self::assertSame(249, $product->cents);
     }
 }

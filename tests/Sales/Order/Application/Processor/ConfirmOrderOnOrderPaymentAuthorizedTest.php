@@ -31,10 +31,10 @@ final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegration
         $order = OrderTestFactory::new()->store();
 
         // When
-        ($this->processor)(new OrderPaymentAuthorized(Uuid::uuid7()->toString(), $order->id()->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->processor)(new OrderPaymentAuthorized(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 }

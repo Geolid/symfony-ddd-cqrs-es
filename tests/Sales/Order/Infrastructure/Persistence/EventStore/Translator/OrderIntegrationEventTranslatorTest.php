@@ -33,11 +33,11 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(OrderPlacedIntegrationEvent::class, $event);
-        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame(2_500, $event->totalAmountInCents);
     }
@@ -52,11 +52,11 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(OrderCancelledIntegrationEvent::class, $event);
-        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($order->id->toString(), $event->orderId);
     }
 
     #[Test]
@@ -70,13 +70,13 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $event);
-        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
-        $shippingAddress = $order->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
         self::assertSame([
             'firstName' => $shippingAddress->fullName->firstName,
             'lastName' => $shippingAddress->fullName->lastName,
@@ -119,7 +119,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
         $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($order->id()->toString())
+            ->withOrderId($order->id->toString())
             ->authorized()
             ->captured()
             ->create();
@@ -128,14 +128,14 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($orderPayment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
         self::assertCount(3, $published);
         self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $published[1]);
         $event = $published[2];
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $event);
-        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
-        $shippingAddress = $order->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
         self::assertSame([
             'firstName' => $shippingAddress->fullName->firstName,
             'lastName' => $shippingAddress->fullName->lastName,
@@ -155,11 +155,11 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
         self::assertCount(3, $published);
         self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $published[1]);
         $event = $published[2];
         self::assertInstanceOf(OrderReturnRequestedIntegrationEvent::class, $event);
-        self::assertSame($order->id()->toString(), $event->orderId);
+        self::assertSame($order->id->toString(), $event->orderId);
     }
 }

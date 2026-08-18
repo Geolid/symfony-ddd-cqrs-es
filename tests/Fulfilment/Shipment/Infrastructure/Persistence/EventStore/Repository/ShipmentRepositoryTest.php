@@ -33,7 +33,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($shipment);
 
         // Then
-        $id = $shipment->id();
+        $id = $shipment->id;
         self::assertTrue($this->repository->has($id));
         $this->repository->load($id);
     }

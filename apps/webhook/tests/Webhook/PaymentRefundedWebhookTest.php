@@ -24,7 +24,7 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
         // Given
         $client = self::createClient();
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference(self::REFERENCE)->authorized()->captured()->refundInitiated()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference(self::REFERENCE)->authorized()->captured()->refundInitiated()->store();
         $body = self::body(self::REFERENCE);
 
         // When
@@ -32,7 +32,7 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(OrderPaymentStatus::REFUNDED, $this->statusOf($orderPayment->id()->toString()));
+        self::assertSame(OrderPaymentStatus::REFUNDED, $this->statusOf($orderPayment->id->toString()));
     }
 
     #[Test]

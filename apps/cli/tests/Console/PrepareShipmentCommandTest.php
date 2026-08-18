@@ -22,13 +22,13 @@ final class PrepareShipmentCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'fulfilment:shipment:prepare', 'shipment-id' => $shipment->id()->toString()]);
+        $tester->run(['command' => 'fulfilment:shipment:prepare', 'shipment-id' => $shipment->id->toString()]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('prepared', $tester->getDisplay());
         $ids = array_column(iterator_to_array($this->service(ShipmentFinderInterface::class)->byStatus(ShipmentStatus::PREPARED->value), false), 'id');
-        self::assertContains($shipment->id()->toString(), $ids);
-        self::assertNotContains($other->id()->toString(), $ids);
+        self::assertContains($shipment->id->toString(), $ids);
+        self::assertNotContains($other->id->toString(), $ids);
     }
 }

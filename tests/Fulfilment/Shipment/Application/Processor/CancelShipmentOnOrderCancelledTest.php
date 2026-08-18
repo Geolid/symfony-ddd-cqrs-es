@@ -37,7 +37,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         ($this->processor)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId()), false);
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId), false);
         self::assertCount(1, $results);
         self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
     }

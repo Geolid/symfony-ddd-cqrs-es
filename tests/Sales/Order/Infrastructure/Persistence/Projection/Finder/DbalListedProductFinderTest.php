@@ -29,11 +29,11 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         ProductTestFactory::new()->withLabel('Untouched')->withUnitAmountInCents(500)->store();
 
         // When
-        $results = iterator_to_array($this->finder->byIds($cups->id()->toString(), Uuid::uuid7()->toString()));
+        $results = iterator_to_array($this->finder->byIds($cups->id->toString(), Uuid::uuid7()->toString()));
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($cups->id()->toString(), $results[0]->productId);
+        self::assertSame($cups->id->toString(), $results[0]->productId);
         self::assertSame('Espresso cups, set of 6', $results[0]->label);
         self::assertSame(1_750, $results[0]->unitAmountInCents);
     }

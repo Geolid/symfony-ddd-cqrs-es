@@ -22,13 +22,8 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private GrantId $id;
+    public private(set) GrantId $id;
     private bool $revoked;
-
-    public function id(): GrantId
-    {
-        return $this->id;
-    }
 
     public static function grant(GrantId $id, string $identityId, Permission $permission, \DateTimeImmutable $grantedAt): self
     {
@@ -36,7 +31,7 @@ final class Grant implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new PermissionGranted(
             id: $id->toString(),
             identityId: $identityId,
-            permission: $permission->toString(),
+            permission: $permission->value,
             grantedAt: $grantedAt->format(\DateTimeInterface::ATOM),
         ));
 

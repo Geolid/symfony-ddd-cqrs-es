@@ -35,11 +35,11 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
-        self::assertSame($customer->id()->toString(), $result->customerId);
+        self::assertSame($customer->id->toString(), $result->customerId);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             $result->shippingAddress,
@@ -57,11 +57,11 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()->store();
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
-        self::assertSame($customer->id()->toString(), $result->customerId);
+        self::assertSame($customer->id->toString(), $result->customerId);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
     }
@@ -75,7 +75,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id()->toString());
+        $result = $this->finder->ofIdOrNull($customer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);

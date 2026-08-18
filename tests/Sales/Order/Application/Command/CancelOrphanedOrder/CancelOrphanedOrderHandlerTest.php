@@ -33,10 +33,10 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->cancelledAt);
     }
@@ -49,7 +49,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -63,10 +63,10 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->store();
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::DISPATCHED, $result->status);
     }
 

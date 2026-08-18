@@ -24,11 +24,11 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($identity);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(IdentityErasedIntegrationEvent::class, $event);
-        self::assertSame($identity->id()->toString(), $event->identityId);
+        self::assertSame($identity->id->toString(), $event->identityId);
     }
 
     #[Test]
@@ -41,11 +41,11 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($identity);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(IdentitySuspendedIntegrationEvent::class, $event);
-        self::assertSame($identity->id()->toString(), $event->identityId);
+        self::assertSame($identity->id->toString(), $event->identityId);
     }
 
     #[Test]
@@ -58,10 +58,10 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($identity);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(IdentityReactivatedIntegrationEvent::class, $event);
-        self::assertSame($identity->id()->toString(), $event->identityId);
+        self::assertSame($identity->id->toString(), $event->identityId);
     }
 }

@@ -21,10 +21,10 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         ProductTestFactory::new()->store();
 
         // When
-        $result = $this->ask(new GetProduct($product->id()->toString()));
+        $result = $this->ask(new GetProduct($product->id->toString()));
 
         // Then
-        self::assertSame($product->id()->toString(), $result->id);
+        self::assertSame($product->id->toString(), $result->id);
         self::assertSame('Espresso cups, set of 6', $result->label);
         self::assertSame(1_750, $result->unitAmountInCents);
     }

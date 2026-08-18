@@ -34,9 +34,9 @@ final readonly class RegisterCustomerHandler
         $email = Email::fromString($command->email);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $email->toString(), $command->id, $command->id);
+            $this->uniqueValues->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $email->value, $command->id, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw CustomerEmailAlreadyRegisteredException::forEmail($email->toString(), $e);
+            throw CustomerEmailAlreadyRegisteredException::forEmail($email->value, $e);
         }
 
         $customer = Customer::register(

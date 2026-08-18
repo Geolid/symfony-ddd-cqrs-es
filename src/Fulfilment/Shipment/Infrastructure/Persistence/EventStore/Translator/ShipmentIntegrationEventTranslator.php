@@ -47,7 +47,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentDispatchedIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 dispatchedAt: $event->dispatchedAt,
             ),
         );
@@ -65,7 +65,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentDeliveredIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 deliveredAt: $event->deliveredAt,
             ),
         );
@@ -83,7 +83,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentCancelledIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 cancelledAt: $event->cancelledAt,
             ),
         );
@@ -101,7 +101,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentManifestedIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 trackingReference: $event->trackingReference,
             ),
         );
@@ -119,7 +119,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentReturnApprovedIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 approvedAt: $event->approvedAt,
             ),
         );
@@ -137,7 +137,7 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
             IntegrationStreamId::build('fulfilment.shipment', $event->id),
             new ShipmentReturnRejectedIntegrationEvent(
                 shipmentId: $event->id,
-                orderId: $shipment->orderId(),
+                orderId: $shipment->orderId,
                 reason: $event->reason,
                 rejectedAt: $event->rejectedAt,
             ),

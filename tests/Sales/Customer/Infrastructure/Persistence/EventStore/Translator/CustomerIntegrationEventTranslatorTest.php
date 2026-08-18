@@ -28,11 +28,11 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(CustomerRegisteredIntegrationEvent::class, $event);
-        self::assertSame($customer->id()->toString(), $event->customerId);
+        self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame('buyer@example.com', $event->email);
     }
 
@@ -46,11 +46,11 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(CustomerErasedIntegrationEvent::class, $event);
-        self::assertSame($customer->id()->toString(), $event->customerId);
+        self::assertSame($customer->id->toString(), $event->customerId);
     }
 
     #[Test]
@@ -65,11 +65,11 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(CustomerShippingAddressRegisteredIntegrationEvent::class, $event);
-        self::assertSame($customer->id()->toString(), $event->customerId);
+        self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             $event->address,
@@ -88,11 +88,11 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($customer);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.customer', $customer->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(CustomerBillingAddressRegisteredIntegrationEvent::class, $event);
-        self::assertSame($customer->id()->toString(), $event->customerId);
+        self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
             $event->address,

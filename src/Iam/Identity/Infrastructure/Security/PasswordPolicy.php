@@ -18,14 +18,14 @@ final readonly class PasswordPolicy implements PasswordPolicyInterface
 
     public function isStrongEnough(#[\SensitiveParameter] Password $password): bool
     {
-        $violations = $this->validator->validate($password->toString(), new PasswordStrength(minScore: PasswordStrength::STRENGTH_VERY_STRONG));
+        $violations = $this->validator->validate($password->value, new PasswordStrength(minScore: PasswordStrength::STRENGTH_VERY_STRONG));
 
         return 0 === $violations->count();
     }
 
     public function isCompromised(#[\SensitiveParameter] Password $password): bool
     {
-        $violations = $this->validator->validate($password->toString(), new NotCompromisedPassword(skipOnError: true));
+        $violations = $this->validator->validate($password->value, new NotCompromisedPassword(skipOnError: true));
 
         return $violations->count() > 0;
     }

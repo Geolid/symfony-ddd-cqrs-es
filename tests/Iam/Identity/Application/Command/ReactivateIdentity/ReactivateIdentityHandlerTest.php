@@ -22,10 +22,10 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
-        $this->dispatch(new ReactivateIdentity($identity->id()->toString()));
+        $this->dispatch(new ReactivateIdentity($identity->id->toString()));
 
         // Then
-        $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
+        $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertNotNull($result);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
     }
@@ -50,7 +50,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new ReactivateIdentity($identity->id()->toString()));
+        $this->dispatch(new ReactivateIdentity($identity->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

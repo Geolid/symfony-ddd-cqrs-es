@@ -32,7 +32,7 @@ final class ProductRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($product);
 
         // Then
-        $id = $product->id();
+        $id = $product->id;
         self::assertTrue($this->repository->has($id));
         $this->repository->load($id);
     }

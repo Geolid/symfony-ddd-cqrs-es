@@ -43,7 +43,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        ($this->processor)(new ShipmentReturnRequested($shipment->id()->toString(), '2026-01-10T00:00:00+00:00'));
+        ($this->processor)(new ShipmentReturnRequested($shipment->id->toString(), '2026-01-10T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->pickupAddress);

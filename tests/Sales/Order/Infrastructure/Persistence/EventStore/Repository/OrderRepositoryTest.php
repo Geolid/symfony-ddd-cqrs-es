@@ -32,10 +32,10 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($order);
 
         // Then
-        $id = $order->id();
+        $id = $order->id;
         self::assertTrue($this->repository->has($id));
-        $shippingAddress = $order->shippingAddress();
-        $reloadedShippingAddress = $this->repository->load($id)->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
+        $reloadedShippingAddress = $this->repository->load($id)->shippingAddress;
         self::assertSame(
             [
                 'firstName' => $shippingAddress->fullName->firstName,

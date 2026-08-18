@@ -53,7 +53,7 @@ final class GrantPermissionHandlerTest extends AbstractIntegrationTestCase
         // Then
         $results = iterator_to_array($this->grantFinder->byIdentity($identityId), false);
         self::assertCount(1, $results);
-        self::assertSame($grant->id()->toString(), $results[0]->id);
+        self::assertSame($grant->id->toString(), $results[0]->id);
     }
 
     #[Test]

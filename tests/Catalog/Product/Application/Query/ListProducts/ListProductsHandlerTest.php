@@ -23,7 +23,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $result->items);
-        self::assertSame($product->id()->toString(), $result->items[0]->id);
+        self::assertSame($product->id->toString(), $result->items[0]->id);
         self::assertSame('Espresso cups, set of 6', $result->items[0]->label);
         self::assertSame(1_750, $result->items[0]->unitAmountInCents);
         self::assertSame(1, $result->pagination->totalItems);

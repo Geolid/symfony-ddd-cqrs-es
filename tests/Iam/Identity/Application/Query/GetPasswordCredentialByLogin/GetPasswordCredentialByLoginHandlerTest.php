@@ -28,7 +28,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         $result = $this->ask(new GetPasswordCredentialByLogin('operator'));
 
         // Then
-        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($credential->id->toString(), $result->id);
         self::assertSame('operator', $result->login);
     }
 

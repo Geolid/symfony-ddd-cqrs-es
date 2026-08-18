@@ -32,9 +32,9 @@ final readonly class ReleaseLabelOnApiTokenCredentialRevoked
         $credential = $this->repository->load(ApiTokenCredentialId::fromString($event->id));
 
         $this->uniqueValues->release(
-            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId()->toString()),
-            $credential->label()->toString(),
-            $credential->id()->toString(),
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId->toString()),
+            $credential->label->value,
+            $credential->id->toString(),
         );
     }
 }

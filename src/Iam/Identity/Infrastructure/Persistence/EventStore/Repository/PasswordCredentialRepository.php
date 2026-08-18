@@ -44,7 +44,7 @@ final readonly class PasswordCredentialRepository implements PasswordCredentialR
         try {
             $this->repository->save($passwordCredential);
         } catch (AggregateAlreadyExists) {
-            throw PasswordCredentialAlreadyExistsException::forId($passwordCredential->id()->toString());
+            throw PasswordCredentialAlreadyExistsException::forId($passwordCredential->id->toString());
         }
     }
 }

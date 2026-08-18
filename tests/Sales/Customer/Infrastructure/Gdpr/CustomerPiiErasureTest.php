@@ -28,19 +28,19 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
         $serialized = $this->serializedEventOf(
             CustomerRegistered::class,
-            static fn (CustomerRegistered $event): bool => $event->id === $customer->id()->toString(),
+            static fn (CustomerRegistered $event): bool => $event->id === $customer->id->toString(),
         );
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerRegistered::class, $rehydrated);
         $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
-        self::assertSame($sentinel($customer->id()->toString()), $rehydrated->email);
+        self::assertSame($sentinel($customer->id->toString()), $rehydrated->email);
     }
 
     #[Test]
@@ -52,12 +52,12 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
             ->store();
         $serialized = $this->serializedEventOf(
             CustomerShippingAddressRegistered::class,
-            static fn (CustomerShippingAddressRegistered $event): bool => $event->id === $customer->id()->toString(),
+            static fn (CustomerShippingAddressRegistered $event): bool => $event->id === $customer->id->toString(),
         );
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
         // Then
@@ -75,12 +75,12 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
             ->store();
         $serialized = $this->serializedEventOf(
             CustomerBillingAddressRegistered::class,
-            static fn (CustomerBillingAddressRegistered $event): bool => $event->id === $customer->id()->toString(),
+            static fn (CustomerBillingAddressRegistered $event): bool => $event->id === $customer->id->toString(),
         );
 
         // When
         ($this->service(DataSubjectEraser::class))(
-            Message::create(new CustomerErased($customer->id()->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
         // Then

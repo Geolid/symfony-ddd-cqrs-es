@@ -12,7 +12,7 @@ final readonly class UniqueKey
      * @param list<string> $scope
      */
     private function __construct(
-        private \BackedEnum $discriminator,
+        public \BackedEnum $discriminator,
         private array $scope,
     ) {
     }
@@ -20,11 +20,6 @@ final readonly class UniqueKey
     public static function for(\BackedEnum $discriminator, string ...$scope): self
     {
         return new self($discriminator, array_values($scope));
-    }
-
-    public function discriminator(): \BackedEnum
-    {
-        return $this->discriminator;
     }
 
     public function equals(self $other): bool

@@ -31,7 +31,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->statusOf($shipment->id()->toString()));
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->statusOf($shipment->id->toString()));
     }
 
     #[Test]

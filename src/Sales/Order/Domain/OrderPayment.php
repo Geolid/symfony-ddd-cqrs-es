@@ -29,21 +29,11 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private OrderPaymentId $id;
+    public private(set) OrderPaymentId $id;
+    public private(set) string $checkoutUrl;
     private string $orderId;
     private PaymentReference $reference;
     private OrderPaymentState $state;
-    private string $checkoutUrl;
-
-    public function id(): OrderPaymentId
-    {
-        return $this->id;
-    }
-
-    public function checkoutUrl(): string
-    {
-        return $this->checkoutUrl;
-    }
 
     public static function request(
         OrderPaymentId $id,
@@ -57,8 +47,8 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPaymentRequested(
             id: $id->toString(),
             orderId: $orderId,
-            amountInCents: $amount->toCents(),
-            reference: $reference->toString(),
+            amountInCents: $amount->cents,
+            reference: $reference->value,
             checkoutUrl: $checkoutUrl,
             requestedAt: $requestedAt->format(\DateTimeInterface::ATOM),
         ));
@@ -72,7 +62,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new OrderPaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
-                reference: $this->reference->toString(),
+                reference: $this->reference->value,
                 voidedAt: $authorizedAt->format(\DateTimeInterface::ATOM),
             ));
         }
@@ -128,7 +118,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new OrderPaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
-                reference: $this->reference->toString(),
+                reference: $this->reference->value,
                 voidedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
             ));
         }
@@ -147,7 +137,7 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new OrderPaymentRefundInitiated(
             id: $this->id->toString(),
             orderId: $this->orderId,
-            reference: $this->reference->toString(),
+            reference: $this->reference->value,
             initiatedAt: $initiatedAt->format(\DateTimeInterface::ATOM),
         ));
     }

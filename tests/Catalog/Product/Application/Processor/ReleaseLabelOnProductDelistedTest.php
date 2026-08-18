@@ -31,12 +31,12 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->store();
-        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label()->toString(), $product->id()->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
 
         // When
-        ($this->processor)(new ProductDelisted($product->id()->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->processor)(new ProductDelisted($product->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label()->toString()));
+        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value));
     }
 }

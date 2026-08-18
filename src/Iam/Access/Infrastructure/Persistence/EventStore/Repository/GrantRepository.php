@@ -44,7 +44,7 @@ final readonly class GrantRepository implements GrantRepositoryInterface
         try {
             $this->repository->save($grant);
         } catch (AggregateAlreadyExists) {
-            throw GrantAlreadyExistsException::forId($grant->id()->toString());
+            throw GrantAlreadyExistsException::forId($grant->id->toString());
         }
     }
 }

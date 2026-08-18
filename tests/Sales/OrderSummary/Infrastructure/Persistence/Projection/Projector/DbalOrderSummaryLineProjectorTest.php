@@ -30,7 +30,7 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
         ])->store();
 
         // Then
-        $rows = $this->fetchRows($order->id()->toString());
+        $rows = $this->fetchRows($order->id->toString());
         self::assertCount(2, $rows);
         self::assertSame(0, $rows[0]['position']);
         self::assertSame('Widget', $rows[0]['label']);

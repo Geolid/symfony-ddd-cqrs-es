@@ -19,10 +19,10 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
 
         // When
-        $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
+        $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
@@ -34,10 +34,10 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
 
         // When
-        $this->dispatch(new CaptureOrderPayment($orderPayment->id()->toString()));
+        $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

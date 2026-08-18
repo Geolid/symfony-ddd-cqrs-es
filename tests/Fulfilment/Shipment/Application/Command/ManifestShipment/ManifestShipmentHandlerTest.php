@@ -37,7 +37,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->prepared()->store();
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -51,10 +51,10 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->store();
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', $shipment->id()->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -72,7 +72,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id()->toString(), 'ACME-OTHER'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-OTHER'));
     }
 
     #[Test]
@@ -86,7 +86,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(TrackingReferenceAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id()->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
     }
 
     #[Test]

@@ -31,10 +31,10 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
 
         // When
-        ($this->processor)(new OrderReturned($order->id()->toString(), self::RETURNED_AT));
+        ($this->processor)(new OrderReturned($order->id->toString(), self::RETURNED_AT));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');

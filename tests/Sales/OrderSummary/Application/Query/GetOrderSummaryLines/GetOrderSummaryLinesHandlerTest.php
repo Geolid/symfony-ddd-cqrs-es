@@ -25,11 +25,11 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $results = $this->ask(new GetOrderSummaryLines($order->id()->toString()));
+        $results = $this->ask(new GetOrderSummaryLines($order->id->toString()));
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($order->id()->toString(), $results[0]->orderId);
+        self::assertSame($order->id->toString(), $results[0]->orderId);
         self::assertSame('Widget', $results[0]->label);
         self::assertSame(2, $results[0]->quantity);
         self::assertSame(1_500, $results[0]->unitAmountInCents);

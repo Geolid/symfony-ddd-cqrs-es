@@ -27,7 +27,7 @@ final class ListGrantsForIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $result);
-        self::assertSame($grant->id()->toString(), $result[0]->id);
+        self::assertSame($grant->id->toString(), $result[0]->id);
         self::assertSame($identityId, $result[0]->identityId);
         self::assertSame('fixture.widget:read', $result[0]->permission);
     }

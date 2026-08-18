@@ -33,13 +33,13 @@ final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegr
         // When
         ($this->processor)(new ShipmentReturnRejectedIntegrationEvent(
             Uuid::uuid7()->toString(),
-            $order->id()->toString(),
+            $order->id->toString(),
             'item damaged beyond resale',
             '2026-01-11T00:00:00+00:00',
         ));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURN_REJECTED, $result->status);
         self::assertSame('item damaged beyond resale', $result->returnRejectionReason);
     }

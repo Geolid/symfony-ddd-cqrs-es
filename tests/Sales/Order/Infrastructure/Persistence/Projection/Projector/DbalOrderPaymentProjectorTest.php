@@ -34,7 +34,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame($orderId, $row['order_id']);
         self::assertSame(4_200, (int) $row['amount_in_cents']);
@@ -60,12 +60,12 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::AUTHORIZED->value, $row['status']);
         self::assertNotNull($row['authorized_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
     }
@@ -76,18 +76,18 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()->store();
         $other = OrderPaymentTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
 
         // When
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::CAPTURED->value, $row['status']);
         self::assertNotNull($row['captured_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
     }
@@ -103,12 +103,12 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::FAILED->value, $row['status']);
         self::assertNotNull($row['failed_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
     }
@@ -124,12 +124,12 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
     }
@@ -145,12 +145,12 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::AUTHORIZED->value, $otherRow['status']);
     }
@@ -161,19 +161,19 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()->store();
         $other = OrderPaymentTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refundInitiated()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated()->create();
 
         // When
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::REFUND_INITIATED->value, $row['status']);
         self::assertNotNull($row['refund_initiated_at']);
         self::assertNull($row['refunded_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $otherRow['status']);
     }
@@ -185,20 +185,20 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
         $otherOrder = OrderTestFactory::new()->store();
         $orderPayment = OrderPaymentTestFactory::new()->authorized()->captured()->refundInitiated();
-        $other = $orderPayment->withOrderId($otherOrder->id()->toString())->store();
-        $orderPayment = $orderPayment->withOrderId($order->id()->toString())->refundConfirmed()->create();
+        $other = $orderPayment->withOrderId($otherOrder->id->toString())->store();
+        $orderPayment = $orderPayment->withOrderId($order->id->toString())->refundConfirmed()->create();
 
         // When
         $this->store($orderPayment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id()->toString());
+        $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::REFUNDED->value, $row['status']);
         self::assertNotNull($row['refund_initiated_at']);
         self::assertNotNull($row['refunded_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderPaymentStatus::REFUND_INITIATED->value, $otherRow['status']);
     }

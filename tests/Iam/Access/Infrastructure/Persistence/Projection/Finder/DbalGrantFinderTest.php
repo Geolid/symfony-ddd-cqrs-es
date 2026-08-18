@@ -37,7 +37,7 @@ final class DbalGrantFinderTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         $result = $results[0];
         self::assertInstanceOf(GrantResult::class, $result);
-        self::assertSame($grant->id()->toString(), $result->id);
+        self::assertSame($grant->id->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('fixture.widget:read', $result->permission);
     }
@@ -55,6 +55,6 @@ final class DbalGrantFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($grant->id()->toString(), $results[0]->id);
+        self::assertSame($grant->id->toString(), $results[0]->id);
     }
 }

@@ -23,7 +23,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->store();
 
         // When
-        $this->dispatch(new CancelShipment($shipment->id()->toString()));
+        $this->dispatch(new CancelShipment($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -39,7 +39,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new CancelShipment($shipment->id()->toString()));
+        $this->dispatch(new CancelShipment($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

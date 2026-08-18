@@ -45,7 +45,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('sales_order_place'));
-        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
@@ -69,7 +69,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $this->submitAddresses($client, $this->path('checkout_address_complete'), sameAsShipping: true);
 
         // Then
-        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
@@ -94,7 +94,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('sales_order_place'));
-        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id()->toString());
+        $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
@@ -173,7 +173,7 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     private function createCustomer(string $email): Identity
     {
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail($email)->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail($email)->store();
 
         return $identity;
     }

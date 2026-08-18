@@ -28,7 +28,7 @@ final readonly class GrantPermissionHandler
     public function __invoke(GrantPermission $command): void
     {
         $permission = Permission::fromString($command->permission);
-        $id = GrantId::forIdentityAndPermission($command->identityId, $permission->toString());
+        $id = GrantId::forIdentityAndPermission($command->identityId, $permission->value);
 
         if ($this->repository->has($id)) {
             $grant = $this->repository->load($id);

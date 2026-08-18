@@ -24,25 +24,10 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private ApiTokenCredentialId $id;
-    private IdentityId $identityId;
-    private Label $label;
+    public private(set) ApiTokenCredentialId $id;
+    public private(set) IdentityId $identityId;
+    public private(set) Label $label;
     private bool $revoked;
-
-    public function id(): ApiTokenCredentialId
-    {
-        return $this->id;
-    }
-
-    public function identityId(): IdentityId
-    {
-        return $this->identityId;
-    }
-
-    public function label(): Label
-    {
-        return $this->label;
-    }
 
     public static function issue(
         ApiTokenCredentialId $id,
@@ -60,7 +45,7 @@ final class ApiTokenCredential implements AggregateRoot, AggregateRootMetadataAw
             id: $id->toString(),
             identityId: $identityId->toString(),
             identifier: $identifier,
-            label: $label->toString(),
+            label: $label->value,
             secretHash: $hasher->hash($plainSecret),
             issuedAt: $issuedAt->format(\DateTimeInterface::ATOM),
             expiresAt: $expiresAt->format(\DateTimeInterface::ATOM),

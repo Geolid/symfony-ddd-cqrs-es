@@ -27,38 +27,18 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private CustomerId $id;
-    private Email $email;
-    private ?PostalAddress $shippingAddress = null;
-    private ?PostalAddress $billingAddress = null;
+    public private(set) CustomerId $id;
+    public private(set) Email $email;
+    public private(set) ?PostalAddress $shippingAddress = null;
+    public private(set) ?PostalAddress $billingAddress = null;
     private bool $erased;
-
-    public function id(): CustomerId
-    {
-        return $this->id;
-    }
-
-    public function email(): Email
-    {
-        return $this->email;
-    }
-
-    public function shippingAddress(): ?PostalAddress
-    {
-        return $this->shippingAddress;
-    }
-
-    public function billingAddress(): ?PostalAddress
-    {
-        return $this->billingAddress;
-    }
 
     public static function register(CustomerId $id, Email $email, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
         $self->recordThat(new CustomerRegistered(
             id: $id->toString(),
-            email: $email->toString(),
+            email: $email->value,
             registeredAt: $registeredAt->format(\DateTimeInterface::ATOM),
         ));
 

@@ -31,10 +31,10 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        $this->dispatch(new RejectOrderReturn($order->id()->toString(), 'item damaged beyond resale'));
+        $this->dispatch(new RejectOrderReturn($order->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURN_REJECTED, $result->status);
         self::assertSame('item damaged beyond resale', $result->returnRejectionReason);
     }
@@ -46,7 +46,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new RejectOrderReturn($order->id()->toString(), 'item damaged beyond resale'));
+        $this->dispatch(new RejectOrderReturn($order->id->toString(), 'item damaged beyond resale'));
 
         // Then
         self::expectNotToPerformAssertions();

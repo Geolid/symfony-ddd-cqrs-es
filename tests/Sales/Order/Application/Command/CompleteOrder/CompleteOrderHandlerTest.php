@@ -38,10 +38,10 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $this->dispatch(new CompleteOrder($order->id()->toString()));
+        $this->dispatch(new CompleteOrder($order->id->toString()));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::COMPLETED, $result->status);
     }
 
@@ -58,7 +58,7 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
             ->store();
 
         // When
-        $this->dispatch(new CompleteOrder($order->id()->toString()));
+        $this->dispatch(new CompleteOrder($order->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -74,7 +74,7 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotCompletableException::class);
 
         // When
-        $this->dispatch(new CompleteOrder($order->id()->toString()));
+        $this->dispatch(new CompleteOrder($order->id->toString()));
     }
 
     #[Test]

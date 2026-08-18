@@ -19,7 +19,7 @@ final class PasswordTest extends TestCase
         $password = Password::fromString($value);
 
         // Then
-        self::assertSame($value, $password->toString());
+        self::assertSame($value, $password->value);
     }
 
     /**

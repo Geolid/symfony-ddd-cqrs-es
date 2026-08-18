@@ -19,7 +19,7 @@ final class LoginTest extends TestCase
         $login = Login::fromString($value);
 
         // Then
-        self::assertSame($expected, $login->toString());
+        self::assertSame($expected, $login->value);
     }
 
     /**

@@ -40,7 +40,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $row = $this->fetchRow($customer->id()->toString());
+        $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertNull($row['shipping_street']);
         self::assertNull($row['billing_street']);
@@ -58,7 +58,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $row = $this->fetchRow($customer->id()->toString());
+        $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertSame('12 rue des Lilas', $row['shipping_street']);
         self::assertNull($row['billing_street']);
@@ -76,7 +76,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $row = $this->fetchRow($customer->id()->toString());
+        $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertSame('8 avenue Foch', $row['billing_street']);
         self::assertNull($row['shipping_street']);
@@ -93,11 +93,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        self::assertFalse($this->fetchRow($customer->id()->toString()));
+        self::assertFalse($this->fetchRow($customer->id->toString()));
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($other->id()->toString(), $otherRow['customer_id']);
+        self::assertSame($other->id->toString(), $otherRow['customer_id']);
     }
 
     /**

@@ -57,13 +57,13 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderConfirmed(OrderConfirmed $event): void
     {
         $order = $this->orderRepository->load(OrderId::fromString($event->id));
-        $shippingAddress = $order->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
 
         $this->append(
             IntegrationStreamId::build('sales.order', $event->id),
             new OrderConfirmedIntegrationEvent(
                 orderId: $event->id,
-                customerId: $order->customerId(),
+                customerId: $order->customerId,
                 shippingAddress: [
                     'firstName' => $shippingAddress->fullName->firstName,
                     'lastName' => $shippingAddress->fullName->lastName,
@@ -98,13 +98,13 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
     public function onOrderPaymentCaptured(OrderPaymentCaptured $event): void
     {
         $order = $this->orderRepository->load(OrderId::fromString($event->orderId));
-        $shippingAddress = $order->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
 
         $this->append(
             IntegrationStreamId::build('sales.order', $event->orderId),
             new OrderPaymentCapturedIntegrationEvent(
                 orderId: $event->orderId,
-                customerId: $order->customerId(),
+                customerId: $order->customerId,
                 shippingAddress: [
                     'firstName' => $shippingAddress->fullName->firstName,
                     'lastName' => $shippingAddress->fullName->lastName,

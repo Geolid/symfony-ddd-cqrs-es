@@ -28,7 +28,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
         self::assertSame(2_500, (int) $row['total_amount_in_cents']);
@@ -52,7 +52,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
@@ -70,12 +70,12 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
@@ -91,12 +91,12 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::DISPATCHED->value, $row['status']);
         self::assertNotNull($row['dispatched_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::CONFIRMED->value, $otherRow['status']);
     }
@@ -114,7 +114,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['anonymized_at']);
@@ -131,12 +131,12 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::DELIVERED->value, $row['status']);
         self::assertNotNull($row['delivered_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
@@ -155,13 +155,13 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::COMPLETED->value, $row['status']);
         self::assertNotNull($row['completed_at']);
         self::assertNotNull($row['closed_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::DELIVERED->value, $otherRow['status']);
     }
@@ -178,12 +178,12 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::RETURN_REQUESTED->value, $row['status']);
         self::assertNotNull($row['return_requested_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::DELIVERED->value, $otherRow['status']);
     }
@@ -200,13 +200,13 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::RETURNED->value, $row['status']);
         self::assertNotNull($row['returned_at']);
         self::assertNotNull($row['closed_at']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::RETURN_REQUESTED->value, $otherRow['status']);
     }
@@ -223,14 +223,14 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::RETURN_REJECTED->value, $row['status']);
         self::assertNotNull($row['return_rejected_at']);
         self::assertNotNull($row['closed_at']);
         self::assertSame('item damaged beyond resale', $row['return_rejection_reason']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(OrderStatus::RETURN_REQUESTED->value, $otherRow['status']);
     }

@@ -41,11 +41,11 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($customer);
 
         // Then
-        $id = $customer->id();
+        $id = $customer->id;
         self::assertTrue($this->repository->has($id));
         $reloaded = $this->repository->load($id);
-        self::assertSame('buyer@example.com', $reloaded->email()->toString());
-        self::assertNotNull($reloaded->shippingAddress());
+        self::assertSame('buyer@example.com', $reloaded->email->value);
+        self::assertNotNull($reloaded->shippingAddress);
         self::assertSame(
             [
                 'firstName' => $shippingAddress->fullName->firstName,
@@ -55,14 +55,14 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'city' => $shippingAddress->address->city,
             ],
             [
-                'firstName' => $reloaded->shippingAddress()->fullName->firstName,
-                'lastName' => $reloaded->shippingAddress()->fullName->lastName,
-                'street' => $reloaded->shippingAddress()->address->street,
-                'postalCode' => $reloaded->shippingAddress()->address->postalCode,
-                'city' => $reloaded->shippingAddress()->address->city,
+                'firstName' => $reloaded->shippingAddress->fullName->firstName,
+                'lastName' => $reloaded->shippingAddress->fullName->lastName,
+                'street' => $reloaded->shippingAddress->address->street,
+                'postalCode' => $reloaded->shippingAddress->address->postalCode,
+                'city' => $reloaded->shippingAddress->address->city,
             ],
         );
-        self::assertNotNull($reloaded->billingAddress());
+        self::assertNotNull($reloaded->billingAddress);
         self::assertSame(
             [
                 'firstName' => $billingAddress->fullName->firstName,
@@ -72,11 +72,11 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'city' => $billingAddress->address->city,
             ],
             [
-                'firstName' => $reloaded->billingAddress()->fullName->firstName,
-                'lastName' => $reloaded->billingAddress()->fullName->lastName,
-                'street' => $reloaded->billingAddress()->address->street,
-                'postalCode' => $reloaded->billingAddress()->address->postalCode,
-                'city' => $reloaded->billingAddress()->address->city,
+                'firstName' => $reloaded->billingAddress->fullName->firstName,
+                'lastName' => $reloaded->billingAddress->fullName->lastName,
+                'street' => $reloaded->billingAddress->address->street,
+                'postalCode' => $reloaded->billingAddress->address->postalCode,
+                'city' => $reloaded->billingAddress->address->city,
             ],
         );
     }

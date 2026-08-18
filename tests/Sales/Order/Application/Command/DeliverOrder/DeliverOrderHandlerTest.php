@@ -31,10 +31,10 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
 
         // When
-        $this->dispatch(new DeliverOrder($order->id()->toString()));
+        $this->dispatch(new DeliverOrder($order->id->toString()));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::DELIVERED, $result->status);
     }
 
@@ -45,7 +45,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->store();
 
         // When
-        $this->dispatch(new DeliverOrder($order->id()->toString()));
+        $this->dispatch(new DeliverOrder($order->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

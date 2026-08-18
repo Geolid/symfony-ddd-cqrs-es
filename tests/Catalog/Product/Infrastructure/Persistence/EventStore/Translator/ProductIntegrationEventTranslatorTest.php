@@ -24,11 +24,11 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(ProductListedIntegrationEvent::class, $event);
-        self::assertSame($product->id()->toString(), $event->productId);
+        self::assertSame($product->id->toString(), $event->productId);
         self::assertSame('Espresso cups, set of 6', $event->label);
         self::assertSame(1_750, $event->unitAmountInCents);
     }
@@ -43,11 +43,11 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(ProductRepricedIntegrationEvent::class, $event);
-        self::assertSame($product->id()->toString(), $event->productId);
+        self::assertSame($product->id->toString(), $event->productId);
         self::assertSame(2_000, $event->unitAmountInCents);
     }
 
@@ -61,10 +61,10 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
         self::assertCount(2, $published);
         $event = $published[1];
         self::assertInstanceOf(ProductDelistedIntegrationEvent::class, $event);
-        self::assertSame($product->id()->toString(), $event->productId);
+        self::assertSame($product->id->toString(), $event->productId);
     }
 }

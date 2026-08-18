@@ -26,13 +26,8 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private IdentityId $id;
+    public private(set) IdentityId $id;
     private IdentityState $state;
-
-    public function id(): IdentityId
-    {
-        return $this->id;
-    }
 
     public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
     {
@@ -60,7 +55,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentitySuspended(
             id: $this->id->toString(),
-            reason: $reason->toString(),
+            reason: $reason->value,
             suspendedAt: $suspendedAt->format(\DateTimeInterface::ATOM),
         ));
     }

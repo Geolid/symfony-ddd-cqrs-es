@@ -44,7 +44,7 @@ final readonly class OrderPaymentRepository implements OrderPaymentRepositoryInt
         try {
             $this->repository->save($orderPayment);
         } catch (AggregateAlreadyExists) {
-            throw OrderPaymentAlreadyExistsException::forId($orderPayment->id()->toString());
+            throw OrderPaymentAlreadyExistsException::forId($orderPayment->id->toString());
         }
     }
 }

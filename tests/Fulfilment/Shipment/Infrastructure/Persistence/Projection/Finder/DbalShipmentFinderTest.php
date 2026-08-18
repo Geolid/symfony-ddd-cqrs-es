@@ -31,7 +31,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()->store();
         $shipment = ShipmentTestFactory::new()
-            ->withOrderId($order->id()->toString())
+            ->withOrderId($order->id->toString())
             ->prepared()
             ->manifested('ACME-4Q7X2K9')
             ->dispatched()
@@ -44,8 +44,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         $result = $results[0];
         self::assertInstanceOf(ShipmentResult::class, $result);
-        self::assertSame($shipment->id()->toString(), $result->id);
-        self::assertSame($shipment->orderId(), $result->orderId);
+        self::assertSame($shipment->id->toString(), $result->id);
+        self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
@@ -66,8 +66,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         $result = $results[0];
-        self::assertSame($manifested->id()->toString(), $result->id);
-        self::assertSame($manifested->orderId(), $result->orderId);
+        self::assertSame($manifested->id->toString(), $result->id);
+        self::assertSame($manifested->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
         self::assertNotNull($result->trackingReference);
         self::assertNotNull($result->createdAt);
@@ -80,7 +80,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(2, $results);
         self::assertEqualsCanonicalizing(
-            [$manifested->id()->toString(), $dispatched->id()->toString()],
+            [$manifested->id->toString(), $dispatched->id->toString()],
             array_map(static fn (ShipmentResult $result) => $result->id, $results),
         );
     }
@@ -98,7 +98,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($shipment->id()->toString(), $results[0]->id);
+        self::assertSame($shipment->id->toString(), $results[0]->id);
     }
 
     #[Test]
@@ -112,8 +112,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
 
         // Then
-        self::assertSame($tracked->id()->toString(), $result->id);
-        self::assertSame($tracked->orderId(), $result->orderId);
+        self::assertSame($tracked->id->toString(), $result->id);
+        self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
@@ -155,8 +155,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofReturnTrackingReference('ACME-RETURN-1');
 
         // Then
-        self::assertSame($tracked->id()->toString(), $result->id);
-        self::assertSame($tracked->orderId(), $result->orderId);
+        self::assertSame($tracked->id->toString(), $result->id);
+        self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
         self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
     }

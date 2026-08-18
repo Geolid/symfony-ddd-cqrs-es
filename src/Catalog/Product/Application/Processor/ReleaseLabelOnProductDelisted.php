@@ -31,6 +31,6 @@ final readonly class ReleaseLabelOnProductDelisted
     {
         $product = $this->repository->load(ProductId::fromString($event->id));
 
-        $this->uniqueValues->release(UniqueKey::for(ProductUniqueKey::LABEL), $product->label()->toString(), $product->id()->toString());
+        $this->uniqueValues->release(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
     }
 }

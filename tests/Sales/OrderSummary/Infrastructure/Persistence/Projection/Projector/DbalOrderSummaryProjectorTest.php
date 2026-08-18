@@ -26,7 +26,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
         self::assertSame(4_200, (int) $row['total_amount_in_cents']);
@@ -44,14 +44,14 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 
         // When
         $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($order->id()->toString())
+            ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('requested', $row['payment_status']);
         self::assertSame(2_500, (int) $row['payment_amount_in_cents']);
@@ -67,10 +67,10 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('captured', $row['payment_status']);
         self::assertNotNull($row['paid_at']);
@@ -85,10 +85,10 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('dispatched', $row['shipment_status']);
         self::assertNotNull($row['dispatched_at']);
@@ -101,10 +101,10 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
     }
@@ -116,10 +116,10 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->store();
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('delivered', $row['shipment_status']);
         self::assertNotNull($row['delivered_at']);
@@ -131,15 +131,15 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
-        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested()->dispatched()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->store();
+        ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->store();
 
         // When
         $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id()->toString());
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame('cancelled', $row['order_status']);
         self::assertNotNull($row['cancelled_at']);
@@ -157,10 +157,10 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
 
         // Then
-        $row = $this->fetchRow($untouchedOrder->id()->toString());
+        $row = $this->fetchRow($untouchedOrder->id->toString());
         self::assertNotFalse($row);
         self::assertSame($untouchedCustomerId, $row['customer_id']);
         self::assertSame('placed', $row['order_status']);

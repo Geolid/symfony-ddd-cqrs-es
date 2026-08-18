@@ -41,10 +41,10 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
 
         // Then
-        $result = $this->finder->ofIdentityId($identity->id()->toString());
+        $result = $this->finder->ofIdentityId($identity->id->toString());
         self::assertSame('operator', $result->login);
     }
 
@@ -54,7 +54,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // Given
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withLogin('operator')
             ->withPassword('OldStr0ngP@ssw0rd123!')
             ->withHasher($this->service(SecretHasherInterface::class))
@@ -62,10 +62,10 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
             ->store();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
 
         // Then
-        $result = $this->finder->ofIdentityId($identity->id()->toString());
+        $result = $this->finder->ofIdentityId($identity->id->toString());
         self::assertSame('operator', $result->login);
     }
 
@@ -75,7 +75,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // Given
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withLogin('operator')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(SecretHasherInterface::class))
@@ -86,7 +86,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(PasswordUnchangedException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 
     #[Test]
@@ -99,7 +99,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'passwordpassword'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'passwordpassword'));
     }
 
     #[Test]
@@ -113,7 +113,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'NewStr0ngP@ssw0rd456!'));
     }
 
     #[Test]
@@ -136,7 +136,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 
     #[Test]
@@ -149,6 +149,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id()->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'operator', 'MyStr0ngP@ssw0rd123!'));
     }
 }

@@ -19,7 +19,7 @@ final class TrackingReferenceTest extends TestCase
         $reference = TrackingReference::fromString($value);
 
         // Then
-        self::assertSame($value, $reference->toString());
+        self::assertSame($value, $reference->value);
     }
 
     /**

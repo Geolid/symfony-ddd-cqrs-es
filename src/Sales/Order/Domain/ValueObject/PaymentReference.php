@@ -8,7 +8,7 @@ use Webmozart\Assert\Assert;
 
 final readonly class PaymentReference
 {
-    private string $value;
+    public string $value;
 
     private function __construct(string $value)
     {
@@ -26,10 +26,5 @@ final readonly class PaymentReference
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function toString(): string
-    {
-        return $this->value;
     }
 }

@@ -35,7 +35,7 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
             ->store();
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame($identityId, $row['identity_id']);
         self::assertSame('key_abc123', $row['identifier']);
@@ -53,11 +53,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->revoked()->store();
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(1, (int) $row['revoked']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(0, (int) $otherRow['revoked']);
     }
@@ -70,12 +70,12 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
 
         // When
         $credential = ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())
             ->store();
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
     }
@@ -86,13 +86,13 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $other = IdentityTestFactory::new()->store();
         $otherCredential = ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($other->id()->toString())
+            ->withIdentityId($other->id->toString())
             ->withHasher(new FakeSecretHasher())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())
             ->store();
 
@@ -101,11 +101,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
 
-        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        $otherRow = $this->fetchRow($otherCredential->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['identity_status']);
     }
@@ -116,13 +116,13 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $other = IdentityTestFactory::new()->suspended()->store();
         $otherCredential = ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($other->id()->toString())
+            ->withIdentityId($other->id->toString())
             ->withHasher(new FakeSecretHasher())
             ->store();
 
         $identity = IdentityTestFactory::new()->suspended()->store();
         $credential = ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())
             ->store();
 
@@ -131,11 +131,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['identity_status']);
 
-        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        $otherRow = $this->fetchRow($otherCredential->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['identity_status']);
     }
@@ -145,11 +145,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $other = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
-        $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
+        $otherHashBeforeRehash = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherHashBeforeRehash);
 
         $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->store();
-        $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
+        $hashBeforeRehash = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($hashBeforeRehash);
 
         // When
@@ -157,11 +157,11 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($credential);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertNotSame($hashBeforeRehash['hash'], $row['hash']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherHashBeforeRehash['hash'], $otherRow['hash']);
     }
@@ -180,8 +180,8 @@ final class DbalApiTokenCredentialProjectorTest extends AbstractIntegrationTestC
         );
 
         // Then
-        self::assertFalse($this->fetchRow($credential->id()->toString()));
-        self::assertNotFalse($this->fetchRow($other->id()->toString()));
+        self::assertFalse($this->fetchRow($credential->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**
