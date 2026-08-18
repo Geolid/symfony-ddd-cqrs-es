@@ -7,7 +7,7 @@ namespace Iam\Access\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.access.permission_revoked')]
+#[Event('iam.access.revoked')]
 final readonly class PermissionRevoked implements DomainEventInterface
 {
     public function __construct(

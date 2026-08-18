@@ -7,7 +7,7 @@ namespace Iam\Access\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.access.permission_granted')]
+#[Event('iam.access.granted')]
 final readonly class PermissionGranted implements DomainEventInterface
 {
     public function __construct(
