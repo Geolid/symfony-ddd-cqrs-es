@@ -49,4 +49,4 @@ paths:
 #### Naming
 - Command Handler: success `it*`, failure `itFailsWhen*` — a no-op success (idempotent re-dispatch, nothing left to do) is `itIgnores*`, never `itDoesNot*` (that shape stays reserved for a Domain Aggregate test asserting the same no-op through an absent event).
 - Query Handler: success `itGets*` / `itLists*` / `itLists*By*` / `itPaginates*`, failure `itFailsWhen*`.
-- Side effect (`#[Processor]`): `it*On*` (no dedicated failure shape).
+- Side effect (`#[Processor]`): `it*On*` (no dedicated failure shape). Its own negative control — the triggering event's referenced collection has zero matching items — is `itDoesNothingWhen*`.

@@ -24,7 +24,9 @@ paths:
 ## Conventions
 
 ### Naming
-- Method names: `it{Verb}*` — a short, readable sentence, no implementation detail, no quantifier ("Both", "Every").
+- Method names: `it{Verb}*` — a short, readable sentence, no implementation detail.
+- The test class already fixes the subject under test — a method name never repeats it as a noun, nor an article referring back to it ("a", "an", "the"). Drop both outright, unless doing so would leave a dangling adjective or relative clause with nothing left to attach to — reword instead of leaving it dangling.
+- A quantifier ("Every", "Both", "All"...) never restates a completeness guarantee the architecture already provides — a batch operation that always acts on its full filtered collection by construction needs no quantifier, the plural noun alone already conveys the whole matching set. It stays legitimate to name an actual multi-condition business fact (a genuine AND/OR the system could satisfy incorrectly) that isn't already carried by a data provider's own case labels.
 - A test's name covers exactly what it asserts, nothing more — an assertion outside that scope belongs in a separate test. The reverse also holds: one success case covers its full contract in a single test — never fragment it across near-duplicate tests replaying the same call.
 - Failure naming: when the failure is a business rule, name the rule/condition that wasn't met; when it's a technical/architectural constraint, the implementation detail is what explains the name (that's fine).
 - Data providers: `provide[Context]`, `#[DataProvider]` attribute, `yield` with a descriptive label.

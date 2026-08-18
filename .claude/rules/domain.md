@@ -40,5 +40,5 @@ paths:
 ### Conventions
 
 #### Naming
-- Aggregate: success `it*`, failure `itCannot*`.
+- Aggregate: success `it*`. A genuine invariant violation (no business meaning on the current state) is `itCannot*`, throwing. A re-entry that still matches the caller's intent (already in that state, nothing left to do) is `itDoesNot*`, asserting no event recorded instead — never the reverse.
 - Value Object: success `it*`, failure `itProtectsInvariants` (the violated condition lives in the test name or a data set label).
