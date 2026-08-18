@@ -28,7 +28,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsAReturnOnceRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
         $this->dispatch(new RejectOrderReturn($order->id()->toString(), 'item damaged beyond resale'));
@@ -43,7 +43,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresAnOrderWithNoReturnRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
 
         // When
         $this->dispatch(new RejectOrderReturn($order->id()->toString(), 'item damaged beyond resale'));

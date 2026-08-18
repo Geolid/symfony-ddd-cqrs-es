@@ -149,7 +149,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     public function itPublishesTheRequestOnOrderReturnRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->returnRequested()->create();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
 
         // When
         $this->store($order);

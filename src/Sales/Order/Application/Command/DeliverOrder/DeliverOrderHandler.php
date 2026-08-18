@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Command\ReturnOrder;
+namespace Sales\Order\Application\Command\DeliverOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -11,7 +11,7 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Shared\Application\Command\AsCommandHandler;
 
 #[AsCommandHandler]
-final readonly class ReturnOrderHandler
+final readonly class DeliverOrderHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
@@ -22,10 +22,10 @@ final readonly class ReturnOrderHandler
     /**
      * @throws OrderNotFoundException
      */
-    public function __invoke(ReturnOrder $command): void
+    public function __invoke(DeliverOrder $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
-        $order->return($this->clock->now());
+        $order->deliver($this->clock->now());
         $this->repository->save($order);
     }
 }

@@ -28,7 +28,7 @@ final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegr
     public function itRejectsTheOrderReturnOnShipmentReturnRejected(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
         ($this->processor)(new ShipmentReturnRejectedIntegrationEvent(

@@ -8,24 +8,24 @@ use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Processor\CompleteOrderOnShipmentDelivered;
+use Sales\Order\Application\Processor\DeliverOrderOnShipmentDelivered;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class CompleteOrderOnShipmentDeliveredTest extends AbstractIntegrationTestCase
+final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestCase
 {
-    private CompleteOrderOnShipmentDelivered $processor;
+    private DeliverOrderOnShipmentDelivered $processor;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CompleteOrderOnShipmentDelivered::class);
+        $this->processor = $this->service(DeliverOrderOnShipmentDelivered::class);
     }
 
     #[Test]
-    public function itCompletesTheOrderOnShipmentDelivered(): void
+    public function itDeliversTheOrderOnShipmentDelivered(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
@@ -35,6 +35,6 @@ final class CompleteOrderOnShipmentDeliveredTest extends AbstractIntegrationTest
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
-        self::assertSame(OrderStatus::COMPLETED, $result->status);
+        self::assertSame(OrderStatus::DELIVERED, $result->status);
     }
 }

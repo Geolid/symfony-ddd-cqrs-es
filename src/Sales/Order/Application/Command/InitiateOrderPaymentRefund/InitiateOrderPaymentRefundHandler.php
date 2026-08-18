@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Command\RefundOrderPayment;
+namespace Sales\Order\Application\Command\InitiateOrderPaymentRefund;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\Exception\OrderPaymentAlreadyExistsException;
@@ -12,7 +12,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\AsCommandHandler;
 
 #[AsCommandHandler]
-final readonly class RefundOrderPaymentHandler
+final readonly class InitiateOrderPaymentRefundHandler
 {
     public function __construct(
         private OrderPaymentRepositoryInterface $repository,
@@ -24,10 +24,10 @@ final readonly class RefundOrderPaymentHandler
      * @throws OrderPaymentNotFoundException
      * @throws OrderPaymentAlreadyExistsException
      */
-    public function __invoke(RefundOrderPayment $command): void
+    public function __invoke(InitiateOrderPaymentRefund $command): void
     {
         $orderPayment = $this->repository->load(OrderPaymentId::fromString($command->id));
-        $orderPayment->refund($this->clock->now());
+        $orderPayment->initiateRefund($this->clock->now());
         $this->repository->save($orderPayment);
     }
 }

@@ -31,7 +31,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
         $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
-        $refundRequestedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
+        $refundInitiatedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
         $refundedAt = new \DateTimeImmutable('2026-01-04T12:00:00+00:00');
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id()->toString())
@@ -41,7 +41,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($capturedAt)
-            ->refunded($refundRequestedAt)
+            ->refundInitiated($refundInitiatedAt)
             ->refundConfirmed($refundedAt)
             ->store();
 
@@ -60,7 +60,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->failedAt);
         self::assertNull($result->cancelledAt);
-        self::assertSame($refundRequestedAt->format('Y-m-d H:i:s'), $result->refundRequestedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($refundInitiatedAt->format('Y-m-d H:i:s'), $result->refundInitiatedAt?->format('Y-m-d H:i:s'));
         self::assertSame($refundedAt->format('Y-m-d H:i:s'), $result->refundedAt?->format('Y-m-d H:i:s'));
     }
 

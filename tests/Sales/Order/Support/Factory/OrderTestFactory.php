@@ -81,9 +81,14 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
     }
 
-    public function completed(\DateTimeImmutable $completedAt = new \DateTimeImmutable('now +00:00')): self
+    public function delivered(\DateTimeImmutable $deliveredAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Order $order) => $order->complete($completedAt));
+        return $this->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
+    }
+
+    public function completed(\DateTimeImmutable $now = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(static fn (Order $order) => $order->complete($now));
     }
 
     public function returnRequested(\DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00')): self
@@ -94,14 +99,9 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt));
     }
 
-    public function refundStarted(\DateTimeImmutable $startedAt = new \DateTimeImmutable('now +00:00')): self
-    {
-        return $this->withModifier(static fn (Order $order) => $order->startRefund($startedAt));
-    }
-
     public function returned(\DateTimeImmutable $returnedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Order $order) => $order->return($returnedAt));
+        return $this->withModifier(static fn (Order $order) => $order->confirmReturn($returnedAt));
     }
 
     public function returnRejected(

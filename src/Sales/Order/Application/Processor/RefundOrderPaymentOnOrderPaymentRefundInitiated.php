@@ -6,18 +6,18 @@ namespace Sales\Order\Application\Processor;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
-use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
+use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Shared\Application\Processor\Processor;
 
-#[Processor('sales.order.refund_order_payment_on_order_payment_refund_requested')]
-final readonly class RefundOrderPaymentOnOrderPaymentRefundRequested
+#[Processor('sales.order.refund_order_payment_on_order_payment_refund_initiated')]
+final readonly class RefundOrderPaymentOnOrderPaymentRefundInitiated
 {
     public function __construct(private PaymentGatewayInterface $paymentGateway)
     {
     }
 
-    #[Subscribe(OrderPaymentRefundRequested::class)]
-    public function __invoke(OrderPaymentRefundRequested $event): void
+    #[Subscribe(OrderPaymentRefundInitiated::class)]
+    public function __invoke(OrderPaymentRefundInitiated $event): void
     {
         $this->paymentGateway->refund($event->reference);
     }

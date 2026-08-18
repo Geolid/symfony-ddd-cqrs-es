@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CompleteOrder;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -21,6 +22,7 @@ final readonly class CompleteOrderHandler
 
     /**
      * @throws OrderNotFoundException
+     * @throws OrderNotCompletableException
      */
     public function __invoke(CompleteOrder $command): void
     {

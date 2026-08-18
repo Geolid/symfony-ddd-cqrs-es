@@ -6,38 +6,38 @@ namespace Sales\Tests\Order\Application\Processor;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Processor\RefundOrderPaymentOnOrderRefundStarted;
+use Sales\Order\Application\Processor\InitiateOrderPaymentRefundOnOrderReturned;
 use Sales\Order\Application\Status\OrderPaymentStatus;
-use Sales\Order\Domain\Event\OrderRefundStarted;
+use Sales\Order\Domain\Event\OrderReturned;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class RefundOrderPaymentOnOrderRefundStartedTest extends AbstractIntegrationTestCase
+final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegrationTestCase
 {
-    private const string STARTED_AT = '2026-01-11T00:00:00+00:00';
+    private const string RETURNED_AT = '2026-01-12T00:00:00+00:00';
 
-    private RefundOrderPaymentOnOrderRefundStarted $processor;
+    private InitiateOrderPaymentRefundOnOrderReturned $processor;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(RefundOrderPaymentOnOrderRefundStarted::class);
+        $this->processor = $this->service(InitiateOrderPaymentRefundOnOrderReturned::class);
     }
 
     #[Test]
-    public function itRefundsTheOrderPaymentOnOrderRefundStarted(): void
+    public function itInitiatesTheOrderPaymentRefundOnOrderReturned(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
         OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
 
         // When
-        ($this->processor)(new OrderRefundStarted($order->id()->toString(), self::STARTED_AT));
+        ($this->processor)(new OrderReturned($order->id()->toString(), self::RETURNED_AT));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
-        self::assertSame(OrderPaymentStatus::REFUNDING, $result->status);
+        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $result->status);
     }
 }

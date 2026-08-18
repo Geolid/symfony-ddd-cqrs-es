@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Command\RefundOrderPayment;
+namespace Sales\Order\Application\Command\DeliverOrder;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class RefundOrderPayment implements CommandInterface
+final readonly class DeliverOrder implements CommandInterface
 {
     public function __construct(public string $id)
     {

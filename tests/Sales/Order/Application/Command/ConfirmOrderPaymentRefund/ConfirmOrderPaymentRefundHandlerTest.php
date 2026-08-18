@@ -22,7 +22,7 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->refunded()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->refundInitiated()->store();
 
         // When
         $this->dispatch(new ConfirmOrderPaymentRefund($orderPayment->id()->toString()));

@@ -12,7 +12,7 @@ use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentFailed;
 use Sales\Order\Domain\Event\OrderPaymentRefunded;
-use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
+use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Sales\Order\Domain\OrderPayment;
@@ -207,7 +207,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsRefundedWhenCancelledAfterCapture(): void
+    public function itInitiatesARefundWhenCancelledAfterCapture(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
@@ -223,7 +223,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt))
-            ->then(new OrderPaymentRefundRequested($id, $orderId, self::REFERENCE, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new OrderPaymentRefundInitiated($id, $orderId, self::REFERENCE, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
@@ -244,14 +244,14 @@ final class OrderPaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsRefundedOnceCaptured(): void
+    public function itInitiatesARefundOnceCaptured(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $refundedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $initiatedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
 
         $this
             ->given(
@@ -259,12 +259,12 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->refund($refundedAt))
-            ->then(new OrderPaymentRefundRequested($id, $orderId, self::REFERENCE, $refundedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt))
+            ->then(new OrderPaymentRefundInitiated($id, $orderId, self::REFERENCE, $initiatedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
-    public function itDoesNotRefundAnUncapturedPayment(): void
+    public function itDoesNotInitiateARefundOnAnUncapturedPayment(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
@@ -276,19 +276,19 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 self::orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->refund(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 
     #[Test]
-    public function itConfirmsRefundOnceRefunding(): void
+    public function itConfirmsRefundOnceInitiated(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $refundRequestedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $refundInitiatedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
         $refundedAt = new \DateTimeImmutable('2026-01-05T00:00:00+00:00');
 
         $this
@@ -296,14 +296,14 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 self::orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
-                new OrderPaymentRefundRequested($id, $orderId, self::REFERENCE, $refundRequestedAt->format(\DateTimeInterface::ATOM)),
+                new OrderPaymentRefundInitiated($id, $orderId, self::REFERENCE, $refundInitiatedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($refundedAt))
             ->then(new OrderPaymentRefunded($id, $orderId, $refundedAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
-    public function itDoesNotConfirmRefundBeforeBeingRequested(): void
+    public function itDoesNotConfirmRefundBeforeBeingInitiated(): void
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();

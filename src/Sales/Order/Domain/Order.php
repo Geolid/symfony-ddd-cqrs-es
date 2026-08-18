@@ -14,15 +14,16 @@ use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Event\OrderRefundStarted;
 use Sales\Order\Domain\Event\OrderReturned;
 use Sales\Order\Domain\Event\OrderReturnRejected;
 use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
+use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -48,7 +49,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private PostalAddress $billingAddress;
     private int $totalAmountInCents;
     private OrderState $state;
-    private \DateTimeImmutable $completedAt;
+    private \DateTimeImmutable $deliveredAt;
     private ?\DateTimeImmutable $anonymizedAt;
 
     public function id(): OrderId
@@ -191,15 +192,38 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function complete(\DateTimeImmutable $completedAt): void
+    public function deliver(\DateTimeImmutable $deliveredAt): void
     {
         if (!$this->state->isDispatched()) {
             return;
         }
 
+        $this->recordThat(new OrderDelivered(
+            id: $this->id->toString(),
+            deliveredAt: $deliveredAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws OrderNotCompletableException
+     */
+    public function complete(\DateTimeImmutable $now): void
+    {
+        if ($this->state->isCompleted()) {
+            return;
+        }
+
+        if (!$this->state->isDelivered()) {
+            throw OrderNotCompletableException::forId($this->id);
+        }
+
+        if ($now <= $this->deliveredAt->modify(\sprintf('+%d days', self::RETURN_WINDOW_DAYS))) {
+            return;
+        }
+
         $this->recordThat(new OrderCompleted(
             id: $this->id->toString(),
-            completedAt: $completedAt->format(\DateTimeInterface::ATOM),
+            completedAt: $now->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -218,11 +242,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!$this->state->isCompleted()) {
+        if (!$this->state->isDelivered()) {
             throw OrderNotReturnableException::forId($this->id);
         }
 
-        if ($now > $this->completedAt->modify(\sprintf('+%d days', self::RETURN_WINDOW_DAYS))) {
+        if ($now > $this->deliveredAt->modify(\sprintf('+%d days', self::RETURN_WINDOW_DAYS))) {
             throw OrderReturnWindowExpiredException::forId($this->id);
         }
 
@@ -232,23 +256,9 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function startRefund(\DateTimeImmutable $startedAt): void
+    public function confirmReturn(\DateTimeImmutable $returnedAt): void
     {
         if (!$this->state->isReturnRequested()) {
-            return;
-        }
-
-        $this->recordThat(new OrderRefundStarted(
-            id: $this->id->toString(),
-            startedAt: $startedAt->format(\DateTimeInterface::ATOM),
-        ));
-    }
-
-    public function return(\DateTimeImmutable $returnedAt): void
-    {
-        // Not refunding: the payment refund that triggered this fired for another reason
-        // (e.g. a late cancellation compensation) — no return actually in progress here.
-        if (!$this->state->isRefunding()) {
             return;
         }
 
@@ -320,22 +330,22 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
+    private function applyDelivered(OrderDelivered $event): void
+    {
+        $this->state = OrderState::DELIVERED;
+        $this->deliveredAt = new \DateTimeImmutable($event->deliveredAt);
+    }
+
+    #[Apply]
     private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
-        $this->completedAt = new \DateTimeImmutable($event->completedAt);
     }
 
     #[Apply]
     private function applyReturnRequested(OrderReturnRequested $event): void
     {
         $this->state = OrderState::RETURN_REQUESTED;
-    }
-
-    #[Apply]
-    private function applyRefundStarted(OrderRefundStarted $event): void
-    {
-        $this->state = OrderState::REFUNDING;
     }
 
     #[Apply]

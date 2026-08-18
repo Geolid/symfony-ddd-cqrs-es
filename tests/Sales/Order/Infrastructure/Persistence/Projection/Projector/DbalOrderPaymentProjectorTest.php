@@ -14,7 +14,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{order_id: string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_requested_at: ?string, refunded_at: ?string}
+ * @phpstan-type Row array{order_id: string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_initiated_at: ?string, refunded_at: ?string}
  */
 final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -42,7 +42,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($row['captured_at']);
         self::assertNull($row['failed_at']);
         self::assertNull($row['cancelled_at']);
-        self::assertNull($row['refund_requested_at']);
+        self::assertNull($row['refund_initiated_at']);
         self::assertNull($row['refunded_at']);
     }
 
@@ -148,20 +148,20 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRefundOnOrderPaymentRefundRequested(): void
+    public function itProjectsTheRefundOnOrderPaymentRefundInitiated(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
         $other = OrderPaymentTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refunded()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refundInitiated()->store();
 
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());
         self::assertNotFalse($row);
-        self::assertSame(OrderPaymentStatus::REFUNDING->value, $row['status']);
-        self::assertNotNull($row['refund_requested_at']);
+        self::assertSame(OrderPaymentStatus::REFUND_INITIATED->value, $row['status']);
+        self::assertNotNull($row['refund_initiated_at']);
         self::assertNull($row['refunded_at']);
 
         $otherRow = $this->fetchRow($other->id()->toString());
@@ -176,13 +176,13 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refunded()->refundConfirmed()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->authorized()->captured()->refundInitiated()->refundConfirmed()->store();
 
         // Then
         $row = $this->fetchRow($orderPayment->id()->toString());
         self::assertNotFalse($row);
         self::assertSame(OrderPaymentStatus::REFUNDED->value, $row['status']);
-        self::assertNotNull($row['refund_requested_at']);
+        self::assertNotNull($row['refund_initiated_at']);
         self::assertNotNull($row['refunded_at']);
     }
 
@@ -194,7 +194,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, cancelled_at, refund_requested_at, refunded_at FROM %s WHERE id = :id',
+                'SELECT order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, cancelled_at, refund_initiated_at, refunded_at FROM %s WHERE id = :id',
                 DbalOrderPaymentProjector::TABLE,
             ),
             ['id' => $id],

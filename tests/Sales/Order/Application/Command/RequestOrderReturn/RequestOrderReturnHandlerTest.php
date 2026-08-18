@@ -29,11 +29,11 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsAReturnOnACompletedOrder(): void
+    public function itRequestsAReturnOnceDelivered(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->completed()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->store();
 
         // When
         $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
@@ -49,7 +49,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->completed()->returnRequested()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
         $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
@@ -62,7 +62,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTheOrderBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
 
         // Then
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
@@ -94,7 +94,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
             ->withCustomerId($customerId)
             ->confirmed()
             ->dispatched()
-            ->completed(new \DateTimeImmutable('2020-01-01T00:00:00+00:00'))
+            ->delivered(new \DateTimeImmutable('2020-01-01T00:00:00+00:00'))
             ->store();
 
         // Then

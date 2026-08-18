@@ -8,14 +8,14 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentSession;
-use Sales\Order\Application\Processor\RefundOrderPaymentOnOrderPaymentRefundRequested;
-use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
+use Sales\Order\Application\Processor\RefundOrderPaymentOnOrderPaymentRefundInitiated;
+use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
-final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends AbstractIntegrationTestCase
+final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends AbstractIntegrationTestCase
 {
-    private RefundOrderPaymentOnOrderPaymentRefundRequested $processor;
+    private RefundOrderPaymentOnOrderPaymentRefundInitiated $processor;
 
     private SpyRefundingPaymentGateway $paymentGateway;
 
@@ -26,17 +26,17 @@ final class RefundOrderPaymentOnOrderPaymentRefundRequestedTest extends Abstract
         $this->paymentGateway = new SpyRefundingPaymentGateway();
         self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
 
-        $this->processor = $this->service(RefundOrderPaymentOnOrderPaymentRefundRequested::class);
+        $this->processor = $this->service(RefundOrderPaymentOnOrderPaymentRefundInitiated::class);
     }
 
     #[Test]
-    public function itRefundsTheChargeOnOrderPaymentRefundRequested(): void
+    public function itRefundsTheChargeOnOrderPaymentRefundInitiated(): void
     {
         // Given
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderPaymentRefundRequested(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
+        ($this->processor)(new OrderPaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertSame($reference, $this->paymentGateway->refundedReference);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Application\Command\StartOrderRefund;
+namespace Sales\Order\Application\Command\ConfirmOrderReturn;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -11,7 +11,7 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Shared\Application\Command\AsCommandHandler;
 
 #[AsCommandHandler]
-final readonly class StartOrderRefundHandler
+final readonly class ConfirmOrderReturnHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
@@ -22,10 +22,10 @@ final readonly class StartOrderRefundHandler
     /**
      * @throws OrderNotFoundException
      */
-    public function __invoke(StartOrderRefund $command): void
+    public function __invoke(ConfirmOrderReturn $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
-        $order->startRefund($this->clock->now());
+        $order->confirmReturn($this->clock->now());
         $this->repository->save($order);
     }
 }

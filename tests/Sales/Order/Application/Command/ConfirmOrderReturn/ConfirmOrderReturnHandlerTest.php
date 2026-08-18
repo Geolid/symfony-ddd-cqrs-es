@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Command\StartOrderRefund;
+namespace Sales\Tests\Order\Application\Command\ConfirmOrderReturn;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Command\StartOrderRefund\StartOrderRefund;
+use Sales\Order\Application\Command\ConfirmOrderReturn\ConfirmOrderReturn;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -13,7 +13,7 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class StartOrderRefundHandlerTest extends AbstractIntegrationTestCase
+final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
 {
     private OrderFinderInterface $finder;
 
@@ -25,27 +25,27 @@ final class StartOrderRefundHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itStartsTheRefundOnceAReturnHasBeenRequested(): void
+    public function itConfirmsTheReturnOnceRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        $this->dispatch(new StartOrderRefund($order->id()->toString()));
+        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
 
         // Then
         $result = $this->finder->ofId($order->id()->toString());
-        self::assertSame(OrderStatus::REFUNDING, $result->status);
+        self::assertSame(OrderStatus::RETURNED, $result->status);
     }
 
     #[Test]
     public function itIgnoresAnOrderWithNoReturnRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->completed()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new StartOrderRefund($order->id()->toString()));
+        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -61,6 +61,6 @@ final class StartOrderRefundHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new StartOrderRefund($id));
+        $this->dispatch(new ConfirmOrderReturn($id));
     }
 }

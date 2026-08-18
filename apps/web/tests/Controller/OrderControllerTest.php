@@ -10,8 +10,8 @@ use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Command\CompleteOrder\CompleteOrder;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
+use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
@@ -392,7 +392,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRequestsAReturnForACompletedOrder(): void
+    public function itRequestsAReturnForADeliveredOrder(): void
     {
         // Given
         $client = self::browser();
@@ -402,7 +402,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $commandBus = $this->service(CommandBusInterface::class);
         $commandBus->dispatch(new ConfirmOrder($id));
         $commandBus->dispatch(new DispatchOrder($id));
-        $commandBus->dispatch(new CompleteOrder($id));
+        $commandBus->dispatch(new DeliverOrder($id));
 
         // When
         $client->request('POST', $this->path('sales_order_request_return', ['id' => $id]), [
@@ -419,7 +419,7 @@ final class OrderControllerTest extends AbstractWebTestCase
     }
 
     #[Test]
-    public function itRefusesToRequestAReturnForAnOrderNotYetCompleted(): void
+    public function itRefusesToRequestAReturnForAnOrderNotYetDelivered(): void
     {
         // Given
         $client = self::browser();

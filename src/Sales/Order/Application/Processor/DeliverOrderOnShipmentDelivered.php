@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Processor;
 
+use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\Command\ReturnOrder\ReturnOrder;
-use Sales\Order\Domain\Event\OrderPaymentRefunded;
+use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Processor\Processor;
 
-#[Processor('sales.order.return_order_on_order_payment_refunded')]
-final readonly class ReturnOrderOnOrderPaymentRefunded
+#[Processor('sales.order.deliver_order_on_shipment_delivered')]
+final readonly class DeliverOrderOnShipmentDelivered
 {
     public function __construct(private CommandBusInterface $commandBus)
     {
@@ -22,9 +22,9 @@ final readonly class ReturnOrderOnOrderPaymentRefunded
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(OrderPaymentRefunded::class)]
-    public function __invoke(OrderPaymentRefunded $event): void
+    #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
+    public function __invoke(ShipmentDeliveredIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new ReturnOrder($event->orderId));
+        $this->commandBus->dispatch(new DeliverOrder($event->orderId));
     }
 }

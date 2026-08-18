@@ -10,9 +10,9 @@ enum OrderStatus: string
     case CANCELLED = 'cancelled';
     case CONFIRMED = 'confirmed';
     case DISPATCHED = 'dispatched';
+    case DELIVERED = 'delivered';
     case COMPLETED = 'completed';
     case RETURN_REQUESTED = 'return_requested';
-    case REFUNDING = 'refunding';
     case RETURNED = 'returned';
     case RETURN_REJECTED = 'return_rejected';
 

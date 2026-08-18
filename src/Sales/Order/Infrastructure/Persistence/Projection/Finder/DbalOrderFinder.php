@@ -15,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<OrderResult>
  *
- * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, confirmed_at: string|null, dispatched_at: string|null, completed_at: string|null, return_requested_at: string|null, refund_started_at: string|null, returned_at: string|null, return_rejected_at: string|null, return_rejection_reason: string|null, cancelled_at: string|null, anonymized_at: string|null}
+ * @phpstan-type Row array{id: string, customer_id: string, total_amount_in_cents: int, status: string, placed_at: string, confirmed_at: string|null, dispatched_at: string|null, delivered_at: string|null, completed_at: string|null, return_requested_at: string|null, returned_at: string|null, return_rejected_at: string|null, return_rejection_reason: string|null, cancelled_at: string|null, anonymized_at: string|null}
  */
 final class DbalOrderFinder extends AbstractDbalCollectionFinder implements OrderFinderInterface
 {
@@ -55,9 +55,19 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
         );
     }
 
+    public function delivered(): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) {
+                $qb->andWhere('status = :status')
+                    ->setParameter('status', OrderStatus::DELIVERED->value);
+            },
+        );
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'confirmed_at', 'dispatched_at', 'completed_at', 'return_requested_at', 'refund_started_at', 'returned_at', 'return_rejected_at', 'return_rejection_reason', 'cancelled_at', 'anonymized_at')
+        $qb->select('id', 'customer_id', 'total_amount_in_cents', 'status', 'placed_at', 'confirmed_at', 'dispatched_at', 'delivered_at', 'completed_at', 'return_requested_at', 'returned_at', 'return_rejected_at', 'return_rejection_reason', 'cancelled_at', 'anonymized_at')
             ->from(DbalOrderProjector::TABLE);
     }
 
@@ -74,9 +84,9 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
             placedAt: new \DateTimeImmutable($row['placed_at'], new \DateTimeZone('UTC')),
             confirmedAt: null !== $row['confirmed_at'] ? new \DateTimeImmutable($row['confirmed_at'], new \DateTimeZone('UTC')) : null,
             dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,
+            deliveredAt: null !== $row['delivered_at'] ? new \DateTimeImmutable($row['delivered_at'], new \DateTimeZone('UTC')) : null,
             completedAt: null !== $row['completed_at'] ? new \DateTimeImmutable($row['completed_at'], new \DateTimeZone('UTC')) : null,
             returnRequestedAt: null !== $row['return_requested_at'] ? new \DateTimeImmutable($row['return_requested_at'], new \DateTimeZone('UTC')) : null,
-            refundStartedAt: null !== $row['refund_started_at'] ? new \DateTimeImmutable($row['refund_started_at'], new \DateTimeZone('UTC')) : null,
             returnedAt: null !== $row['returned_at'] ? new \DateTimeImmutable($row['returned_at'], new \DateTimeZone('UTC')) : null,
             returnRejectedAt: null !== $row['return_rejected_at'] ? new \DateTimeImmutable($row['return_rejected_at'], new \DateTimeZone('UTC')) : null,
             returnRejectionReason: $row['return_rejection_reason'],

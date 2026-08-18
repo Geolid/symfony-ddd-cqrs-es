@@ -15,7 +15,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 /**
  * @extends AbstractDbalFinder<OrderPaymentResult>
  *
- * @phpstan-type Row array{id: string, order_id: string, amount_in_cents: int, reference: string, checkout_url: string, status: string, requested_at: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_requested_at: ?string, refunded_at: ?string}
+ * @phpstan-type Row array{id: string, order_id: string, amount_in_cents: int, reference: string, checkout_url: string, status: string, requested_at: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_initiated_at: ?string, refunded_at: ?string}
  */
 final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPaymentFinderInterface
 {
@@ -37,7 +37,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_requested_at', 'refunded_at')
+        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_initiated_at', 'refunded_at')
             ->from(DbalOrderPaymentProjector::TABLE);
     }
 
@@ -58,7 +58,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
             capturedAt: null !== $row['captured_at'] ? new \DateTimeImmutable($row['captured_at'], new \DateTimeZone('UTC')) : null,
             failedAt: null !== $row['failed_at'] ? new \DateTimeImmutable($row['failed_at'], new \DateTimeZone('UTC')) : null,
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
-            refundRequestedAt: null !== $row['refund_requested_at'] ? new \DateTimeImmutable($row['refund_requested_at'], new \DateTimeZone('UTC')) : null,
+            refundInitiatedAt: null !== $row['refund_initiated_at'] ? new \DateTimeImmutable($row['refund_initiated_at'], new \DateTimeZone('UTC')) : null,
             refundedAt: null !== $row['refunded_at'] ? new \DateTimeImmutable($row['refunded_at'], new \DateTimeZone('UTC')) : null,
         );
     }

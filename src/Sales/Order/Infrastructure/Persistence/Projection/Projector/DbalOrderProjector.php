@@ -14,9 +14,9 @@ use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Event\OrderRefundStarted;
 use Sales\Order\Domain\Event\OrderReturned;
 use Sales\Order\Domain\Event\OrderReturnRejected;
 use Sales\Order\Domain\Event\OrderReturnRequested;
@@ -79,6 +79,19 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(OrderDelivered::class)]
+    public function onOrderDelivered(OrderDelivered $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::DELIVERED->value,
+                'delivered_at' => new \DateTimeImmutable($event->deliveredAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
     #[Subscribe(OrderCompleted::class)]
     public function onOrderCompleted(OrderCompleted $event): void
     {
@@ -100,19 +113,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'status' => OrderStatus::RETURN_REQUESTED->value,
                 'return_requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
-            ],
-            ['id' => $event->id],
-        );
-    }
-
-    #[Subscribe(OrderRefundStarted::class)]
-    public function onOrderRefundStarted(OrderRefundStarted $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => OrderStatus::REFUNDING->value,
-                'refund_started_at' => new \DateTimeImmutable($event->startedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -168,9 +168,9 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
         $table->addColumn('confirmed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_requested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('refund_started_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('returned_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);

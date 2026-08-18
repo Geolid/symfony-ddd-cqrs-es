@@ -62,9 +62,9 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
     }
 
-    public function refunded(\DateTimeImmutable $refundedAt = new \DateTimeImmutable('now +00:00')): self
+    public function refundInitiated(\DateTimeImmutable $initiatedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->refund($refundedAt));
+        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt));
     }
 
     public function refundConfirmed(\DateTimeImmutable $refundedAt = new \DateTimeImmutable('now +00:00')): self
