@@ -60,7 +60,7 @@ abstract class AbstractWebTestCase extends WebTestCase
      */
     protected function loginAs(KernelBrowser $client, Identity $identity, ?string $login = null): void
     {
-        $identityId = $identity->id()->toString();
+        $identityId = $identity->id->toString();
         $login ??= \sprintf('test-%s', $identityId);
 
         // A lazy firewall re-resolves the user (refreshUser()) on any request that actually

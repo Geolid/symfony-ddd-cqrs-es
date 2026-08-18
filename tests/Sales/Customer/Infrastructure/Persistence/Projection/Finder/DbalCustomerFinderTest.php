@@ -29,10 +29,10 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
 
         // When
-        $result = $this->finder->ofId($customer->id()->toString());
+        $result = $this->finder->ofId($customer->id->toString());
 
         // Then
-        self::assertSame($customer->id()->toString(), $result->id);
+        self::assertSame($customer->id->toString(), $result->id);
         self::assertSame('buyer@example.com', $result->email);
     }
 

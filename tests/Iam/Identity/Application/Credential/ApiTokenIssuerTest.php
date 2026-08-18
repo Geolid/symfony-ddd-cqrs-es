@@ -45,7 +45,7 @@ final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
         $expiresAt = new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM);
 
         // When
-        $apiKey = $this->service->issueFor($identity->id()->toString(), 'CI pipeline', $expiresAt);
+        $apiKey = $this->service->issueFor($identity->id->toString(), 'CI pipeline', $expiresAt);
 
         // Then
         self::assertNotEmpty($apiKey->identifier);
@@ -76,7 +76,7 @@ final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotActiveException::class);
 
         // When
-        $this->service->issueFor($identity->id()->toString(), 'CI pipeline', new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM));
+        $this->service->issueFor($identity->id->toString(), 'CI pipeline', new \DateTimeImmutable('+1 year +00:00')->format(\DateTimeInterface::ATOM));
     }
 
     #[Test]
@@ -84,7 +84,7 @@ final class ApiTokenIssuerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $identityId = $identity->id()->toString();
+        $identityId = $identity->id->toString();
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $identityId),
             'CI pipeline',

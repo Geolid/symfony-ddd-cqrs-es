@@ -24,14 +24,14 @@ final class OrderResourceTest extends AbstractApiTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->store();
 
         // When
-        $client->request('GET', \sprintf('/v1/sales/orders/%s', $order->id()->toString()));
+        $client->request('GET', \sprintf('/v1/sales/orders/%s', $order->id->toString()));
 
         // Then
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         self::assertMatchesResourceItemJsonSchema(OrderResource::class);
         self::assertJsonContains([
-            'id' => $order->id()->toString(),
+            'id' => $order->id->toString(),
             'customerId' => $customerId,
             'totalAmountInCents' => 1_999,
             'status' => 'placed',

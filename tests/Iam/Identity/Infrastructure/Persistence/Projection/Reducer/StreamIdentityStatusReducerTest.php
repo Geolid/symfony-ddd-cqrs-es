@@ -28,7 +28,7 @@ final class StreamIdentityStatusReducerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $status = $this->reducer->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id->toString());
 
         // Then
         self::assertSame(IdentityStatus::ACTIVE, $status);
@@ -41,7 +41,7 @@ final class StreamIdentityStatusReducerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
-        $status = $this->reducer->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id->toString());
 
         // Then
         self::assertSame(IdentityStatus::SUSPENDED, $status);
@@ -56,7 +56,7 @@ final class StreamIdentityStatusReducerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $status = $this->reducer->statusFor($identity->id()->toString());
+        $status = $this->reducer->statusFor($identity->id->toString());
 
         // Then
         self::assertSame(IdentityStatus::ACTIVE, $status);

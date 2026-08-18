@@ -19,7 +19,7 @@ final class LabelTest extends TestCase
         $label = Label::fromString($value);
 
         // Then
-        self::assertSame($expected, $label->toString());
+        self::assertSame($expected, $label->value);
     }
 
     /**

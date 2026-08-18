@@ -34,7 +34,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $refundInitiatedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
         $refundedAt = new \DateTimeImmutable('2026-01-04T12:00:00+00:00');
         $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($order->id()->toString())
+            ->withOrderId($order->id->toString())
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
@@ -49,8 +49,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofReference('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame($orderPayment->id()->toString(), $result->id);
-        self::assertSame($order->id()->toString(), $result->orderId);
+        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);

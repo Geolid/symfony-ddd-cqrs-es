@@ -43,7 +43,7 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofIdentifier('key_operator');
 
         // Then
-        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('key_operator', $result->identifier);
         self::assertSame('Operator key', $result->label);
@@ -82,7 +82,7 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($credential->id()->toString(), $results[0]->id);
+        self::assertSame($credential->id->toString(), $results[0]->id);
     }
 
     #[Test]
@@ -97,6 +97,6 @@ final class DbalApiTokenCredentialFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($active->id()->toString(), $results[0]->id);
+        self::assertSame($active->id->toString(), $results[0]->id);
     }
 }

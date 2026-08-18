@@ -46,15 +46,15 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->store();
 
         // When
-        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
+        $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
 
         // Then
         self::assertSame(SpyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
-        self::assertSame($order->id()->toString(), $this->paymentGateway->orderId);
+        self::assertSame($order->id->toString(), $this->paymentGateway->orderId);
         self::assertSame(4_200, $this->paymentGateway->amountInCents);
         self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
         self::assertNotNull($this->paymentGateway->billingAddress);
-        $billingAddress = $order->billingAddress();
+        $billingAddress = $order->billingAddress;
         self::assertSame(
             [
                 'firstName' => $billingAddress->fullName->firstName,
@@ -92,10 +92,10 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->store();
 
         // When
-        $checkoutUrl = $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
+        $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
 
         // Then
         self::assertSame('https://fake-checkout.test/?ref=existing', $checkoutUrl);
@@ -112,7 +112,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
         $this->expectException(OrderAlreadyCancelledException::class);
 
         // When
-        $this->service->requestFor($order->id()->toString(), 'https://web.test/sales/orders');
+        $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
     }
 }
 

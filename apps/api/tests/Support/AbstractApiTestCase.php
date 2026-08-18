@@ -50,14 +50,14 @@ abstract class AbstractApiTestCase extends ApiTestCase
     {
         $apiKey = $this->generateApiKey();
         ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
             ->store();
 
         foreach ($permissions as $permission) {
-            GrantTestFactory::new()->withIdentityId($identity->id()->toString())->withPermission($permission)->store();
+            GrantTestFactory::new()->withIdentityId($identity->id->toString())->withPermission($permission)->store();
         }
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
@@ -72,7 +72,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     {
         $apiKey = $this->generateApiKey();
         ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withIdentifier($apiKey->identifier)
             ->withHasher($this->hasher)
             ->store();
@@ -84,7 +84,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     {
         $apiKey = $this->generateApiKey();
         ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
@@ -98,7 +98,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     {
         $apiKey = $this->generateApiKey();
         ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withIdentifier($apiKey->identifier)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)

@@ -38,15 +38,15 @@ final readonly class OrderPaymentRequester implements OrderPaymentRequesterInter
         $orderPaymentId = OrderPaymentId::forOrder($orderId);
 
         if ($this->orderPaymentRepository->has($orderPaymentId)) {
-            return $this->orderPaymentRepository->load($orderPaymentId)->checkoutUrl();
+            return $this->orderPaymentRepository->load($orderPaymentId)->checkoutUrl;
         }
 
-        $session = $this->paymentGateway->requestPayment($orderId, $order->totalAmountInCents(), $returnUrl, $order->billingAddress());
+        $session = $this->paymentGateway->requestPayment($orderId, $order->totalAmountInCents, $returnUrl, $order->billingAddress);
 
         $this->commandBus->dispatch(new RequestOrderPayment(
             id: $orderPaymentId->toString(),
             orderId: $orderId,
-            amountInCents: $order->totalAmountInCents(),
+            amountInCents: $order->totalAmountInCents,
             reference: $session->reference,
             checkoutUrl: $session->checkoutUrl,
         ));

@@ -25,7 +25,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        $row = $this->fetchRow($product->id()->toString());
+        $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
         self::assertSame('Espresso cups, set of 6', $row['label']);
         self::assertSame(1_750, (int) $row['unit_amount_in_cents']);
@@ -42,11 +42,11 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        $row = $this->fetchRow($product->id()->toString());
+        $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
         self::assertSame(2_000, (int) $row['unit_amount_in_cents']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(83, (int) $otherRow['unit_amount_in_cents']);
     }
@@ -62,8 +62,8 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        self::assertFalse($this->fetchRow($product->id()->toString()));
-        self::assertNotFalse($this->fetchRow($other->id()->toString()));
+        self::assertFalse($this->fetchRow($product->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**

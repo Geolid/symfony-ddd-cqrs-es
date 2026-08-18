@@ -38,8 +38,8 @@ final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractInte
         $result = $this->ask(new GetShipmentByReturnTrackingReference('ACME-RETURN-1'));
 
         // Then
-        self::assertSame($shipment->id()->toString(), $result->id);
-        self::assertSame($shipment->orderId(), $result->orderId);
+        self::assertSame($shipment->id->toString(), $result->id);
+        self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
         self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
     }

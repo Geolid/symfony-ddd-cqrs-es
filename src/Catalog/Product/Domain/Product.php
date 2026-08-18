@@ -23,27 +23,17 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private ProductId $id;
-    private Label $label;
+    public private(set) ProductId $id;
+    public private(set) Label $label;
     private bool $delisted;
-
-    public function id(): ProductId
-    {
-        return $this->id;
-    }
-
-    public function label(): Label
-    {
-        return $this->label;
-    }
 
     public static function list(ProductId $id, Label $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
     {
         $self = new self();
         $self->recordThat(new ProductListed(
             id: $id->toString(),
-            label: $label->toString(),
-            unitAmountInCents: $unitAmount->toCents(),
+            label: $label->value,
+            unitAmountInCents: $unitAmount->cents,
             listedAt: $listedAt->format(\DateTimeInterface::ATOM),
         ));
 
@@ -54,7 +44,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->recordThat(new ProductRepriced(
             id: $this->id->toString(),
-            unitAmountInCents: $unitAmount->toCents(),
+            unitAmountInCents: $unitAmount->cents,
             repricedAt: $repricedAt->format(\DateTimeInterface::ATOM),
         ));
     }

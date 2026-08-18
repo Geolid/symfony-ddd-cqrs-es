@@ -30,7 +30,7 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
         $result = $this->ask(new GetOrderPaymentByReference('GLBX-9F3K2M1P'));
 
         // Then
-        self::assertSame($orderPayment->id()->toString(), $result->id);
+        self::assertSame($orderPayment->id->toString(), $result->id);
         self::assertSame($orderId, $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);

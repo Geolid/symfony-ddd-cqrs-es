@@ -30,7 +30,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id()->toString(), '--approve' => true]);
+        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id->toString(), '--approve' => true]);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -46,7 +46,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id()->toString(), '--reject' => 'item damaged beyond resale']);
+        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id->toString(), '--reject' => 'item damaged beyond resale']);
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -62,7 +62,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         $tester = $this->tester();
 
         // When
-        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id()->toString()]);
+        $tester->run(['command' => 'fulfilment:shipment:inspect-return', 'shipment-id' => $shipment->id->toString()]);
 
         // Then
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
@@ -78,7 +78,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         // When
         $tester->run([
             'command' => 'fulfilment:shipment:inspect-return',
-            'shipment-id' => $shipment->id()->toString(),
+            'shipment-id' => $shipment->id->toString(),
             '--approve' => true,
             '--reject' => 'item damaged beyond resale',
         ]);

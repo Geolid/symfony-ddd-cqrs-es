@@ -42,10 +42,10 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Then
         $results = iterator_to_array($this->shipmentFinder, false);
         self::assertCount(1, $results);
-        self::assertSame(ShipmentId::forOrder($order->id()->toString())->toString(), $results[0]->id);
-        self::assertSame($order->id()->toString(), $results[0]->orderId);
+        self::assertSame(ShipmentId::forOrder($order->id->toString())->toString(), $results[0]->id);
+        self::assertSame($order->id->toString(), $results[0]->orderId);
         self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
-        $shippingAddress = $this->shipmentOf($order)->shippingAddress();
+        $shippingAddress = $this->shipmentOf($order)->shippingAddress;
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             [
@@ -83,7 +83,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     private function orderConfirmed(Order $order): OrderConfirmedIntegrationEvent
     {
         return new OrderConfirmedIntegrationEvent(
-            orderId: $order->id()->toString(),
+            orderId: $order->id->toString(),
             customerId: Uuid::uuid7()->toString(),
             shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             confirmedAt: '2026-01-01T00:00:00+00:00',
@@ -93,6 +93,6 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     private function shipmentOf(Order $order): Shipment
     {
         return $this->service(ShipmentRepositoryInterface::class)
-            ->load(ShipmentId::forOrder($order->id()->toString()));
+            ->load(ShipmentId::forOrder($order->id->toString()));
     }
 }

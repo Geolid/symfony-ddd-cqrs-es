@@ -30,10 +30,10 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // When
-        $result = $this->finder->ofId($identity->id()->toString());
+        $result = $this->finder->ofId($identity->id->toString());
 
         // Then
-        self::assertSame($identity->id()->toString(), $result->id);
+        self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
     }
 

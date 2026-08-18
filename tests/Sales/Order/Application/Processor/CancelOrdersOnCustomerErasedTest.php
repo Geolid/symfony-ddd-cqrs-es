@@ -41,7 +41,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         // Then
         $finder = $this->service(OrderFinderInterface::class);
         $results = iterator_to_array($finder->byCustomer($customerId), false);
-        self::assertSame($order->id()->toString(), $results[0]->id);
+        self::assertSame($order->id->toString(), $results[0]->id);
         self::assertSame(OrderStatus::CANCELLED, $results[0]->status);
 
         $otherResults = iterator_to_array($finder->byCustomer($otherCustomerId), false);

@@ -43,40 +43,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private OrderId $id;
-    private string $customerId;
-    private PostalAddress $shippingAddress;
-    private PostalAddress $billingAddress;
-    private int $totalAmountInCents;
+    public private(set) OrderId $id;
+    public private(set) string $customerId;
+    public private(set) PostalAddress $shippingAddress;
+    public private(set) PostalAddress $billingAddress;
+    public private(set) int $totalAmountInCents;
     private OrderState $state;
     private \DateTimeImmutable $deliveredAt;
     private ?\DateTimeImmutable $closedAt;
     private ?\DateTimeImmutable $anonymizedAt;
-
-    public function id(): OrderId
-    {
-        return $this->id;
-    }
-
-    public function customerId(): string
-    {
-        return $this->customerId;
-    }
-
-    public function shippingAddress(): PostalAddress
-    {
-        return $this->shippingAddress;
-    }
-
-    public function billingAddress(): PostalAddress
-    {
-        return $this->billingAddress;
-    }
-
-    public function totalAmountInCents(): int
-    {
-        return $this->totalAmountInCents;
-    }
 
     /**
      * @throws OrderAlreadyCancelledException
@@ -132,13 +107,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             lines: array_values(array_map(
                 static fn (OrderLine $line): array => [
                     'productId' => $line->product->id,
-                    'label' => $line->product->label->toString(),
+                    'label' => $line->product->label->value,
                     'quantity' => $line->quantity,
-                    'unitAmountInCents' => $line->product->price->toCents(),
+                    'unitAmountInCents' => $line->product->price->cents,
                 ],
                 $lines,
             )),
-            totalAmountInCents: $total->toCents(),
+            totalAmountInCents: $total->cents,
             placedAt: $placedAt->format(\DateTimeInterface::ATOM),
         ));
 

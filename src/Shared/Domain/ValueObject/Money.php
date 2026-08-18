@@ -8,37 +8,32 @@ use Webmozart\Assert\Assert;
 
 final readonly class Money
 {
-    private int $value;
+    public int $cents;
 
-    private function __construct(int $value)
+    private function __construct(int $cents)
     {
-        Assert::greaterThanEq($value, 0, 'A monetary amount cannot be negative, %s given.');
+        Assert::greaterThanEq($cents, 0, 'A monetary amount cannot be negative, %s given.');
 
-        $this->value = $value;
+        $this->cents = $cents;
     }
 
-    public static function fromCents(int $value): self
+    public static function fromCents(int $cents): self
     {
-        return new self($value);
+        return new self($cents);
     }
 
     public function equals(self $other): bool
     {
-        return $this->value === $other->value;
+        return $this->cents === $other->cents;
     }
 
     public function plus(self $other): self
     {
-        return new self($this->value + $other->value);
+        return new self($this->cents + $other->cents);
     }
 
     public function times(int $multiplier): self
     {
-        return new self($this->value * $multiplier);
-    }
-
-    public function toCents(): int
-    {
-        return $this->value;
+        return new self($this->cents * $multiplier);
     }
 }

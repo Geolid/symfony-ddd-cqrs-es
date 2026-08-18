@@ -24,7 +24,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
 
         // Then
-        $row = $this->fetchRow($identity->id()->toString());
+        $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
     }
@@ -42,11 +42,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($identity->id()->toString());
+        $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['status']);
     }
@@ -64,11 +64,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($identity->id()->toString());
+        $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['status']);
     }
@@ -86,8 +86,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // Then
-        self::assertFalse($this->fetchRow($identity->id()->toString()));
-        self::assertNotFalse($this->fetchRow($other->id()->toString()));
+        self::assertFalse($this->fetchRow($identity->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**

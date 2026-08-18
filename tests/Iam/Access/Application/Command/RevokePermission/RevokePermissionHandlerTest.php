@@ -23,7 +23,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
         $grant = GrantTestFactory::new()->withIdentityId($identityId)->store();
 
         // When
-        $this->dispatch(new RevokePermission($grant->id()->toString()));
+        $this->dispatch(new RevokePermission($grant->id->toString()));
 
         // Then
         $result = $this->service(GrantFinderInterface::class)->byIdentity($identityId);
@@ -50,7 +50,7 @@ final class RevokePermissionHandlerTest extends AbstractIntegrationTestCase
         $grant = GrantTestFactory::new()->revoked()->store();
 
         // When
-        $this->dispatch(new RevokePermission($grant->id()->toString()));
+        $this->dispatch(new RevokePermission($grant->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

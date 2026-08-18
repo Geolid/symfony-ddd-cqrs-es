@@ -37,7 +37,7 @@ final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractInte
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
         self::assertCount(1, $results);
-        self::assertSame($shipment->id()->toString(), $results[0]->id);
+        self::assertSame($shipment->id->toString(), $results[0]->id);
         self::assertSame(ShipmentStatus::RETURN_REQUESTED, $results[0]->status);
     }
 }

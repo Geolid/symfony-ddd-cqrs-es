@@ -24,7 +24,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->store();
 
         // When
-        $this->dispatch(new DispatchShipmentReturn($shipment->id()->toString()));
+        $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -42,7 +42,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new DispatchShipmentReturn($shipment->id()->toString()));
+        $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
     }
 
     #[Test]
@@ -52,7 +52,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->store();
 
         // When
-        $this->dispatch(new DispatchShipmentReturn($shipment->id()->toString()));
+        $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

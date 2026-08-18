@@ -47,13 +47,13 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
             ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->store();
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
@@ -74,7 +74,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))
@@ -101,7 +101,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->suspended()->store();
         PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('correct horse battery staple')
             ->withHasher($this->service(SecretHasherInterface::class))

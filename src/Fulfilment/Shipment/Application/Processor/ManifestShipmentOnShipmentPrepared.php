@@ -35,7 +35,7 @@ final readonly class ManifestShipmentOnShipmentPrepared
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
-        $trackingReference = $this->carrier->requestPickup($event->id, $shipment->shippingAddress());
+        $trackingReference = $this->carrier->requestPickup($event->id, $shipment->shippingAddress);
 
         $this->commandBus->dispatch(new ManifestShipment(
             id: $event->id,

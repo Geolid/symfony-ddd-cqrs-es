@@ -25,8 +25,8 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct($product->id()->toString()));
-        $this->service(ProductFinderInterface::class)->ofId($product->id()->toString());
+        $this->dispatch(new DelistProduct($product->id->toString()));
+        $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $product = ProductTestFactory::new()->delisted()->store();
 
         // When
-        $this->dispatch(new DelistProduct($product->id()->toString()));
+        $this->dispatch(new DelistProduct($product->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

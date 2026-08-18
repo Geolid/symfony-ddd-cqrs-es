@@ -32,7 +32,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($identity);
 
         // Then
-        $id = $identity->id();
+        $id = $identity->id;
         self::assertTrue($this->repository->has($id));
         $this->repository->load($id);
     }

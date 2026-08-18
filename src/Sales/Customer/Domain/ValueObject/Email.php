@@ -8,7 +8,7 @@ use Webmozart\Assert\Assert;
 
 final readonly class Email
 {
-    private string $value;
+    public string $value;
 
     private function __construct(string $value)
     {
@@ -27,10 +27,5 @@ final readonly class Email
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function toString(): string
-    {
-        return $this->value;
     }
 }

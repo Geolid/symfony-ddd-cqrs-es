@@ -33,7 +33,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
         $this->repository->save($orderPayment);
 
         // Then
-        $id = $orderPayment->id();
+        $id = $orderPayment->id;
         self::assertTrue($this->repository->has($id));
         $this->repository->load($id);
     }

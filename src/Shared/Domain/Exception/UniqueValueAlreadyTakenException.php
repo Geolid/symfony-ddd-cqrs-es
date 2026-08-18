@@ -15,6 +15,6 @@ final class UniqueValueAlreadyTakenException extends \DomainException
 
     public static function forValue(UniqueKey $key, string $value): self
     {
-        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $key->toString()));
+        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $key->value));
     }
 }

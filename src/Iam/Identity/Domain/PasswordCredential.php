@@ -29,19 +29,9 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private PasswordCredentialId $id;
-    private Login $login;
+    public private(set) PasswordCredentialId $id;
+    public private(set) Login $login;
     private string $hash;
-
-    public function id(): PasswordCredentialId
-    {
-        return $this->id;
-    }
-
-    public function login(): Login
-    {
-        return $this->login;
-    }
 
     /**
      * @throws WeakPasswordException
@@ -69,8 +59,8 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         $self->recordThat(new PasswordCredentialDefined(
             id: $id->toString(),
             identityId: $identityId->toString(),
-            login: $login->toString(),
-            hash: $hasher->hash($password->toString()),
+            login: $login->value,
+            hash: $hasher->hash($password->value),
             setAt: $definedAt->format(\DateTimeInterface::ATOM),
         ));
 
@@ -92,13 +82,13 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
             throw CompromisedPasswordException::forCredential($this->id);
         }
 
-        if ($hasher->verify($this->hash, $password->toString())) {
+        if ($hasher->verify($this->hash, $password->value)) {
             throw PasswordUnchangedException::forId($this->id);
         }
 
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id->toString(),
-            hash: $hasher->hash($password->toString()),
+            hash: $hasher->hash($password->value),
             changedAt: $changedAt->format(\DateTimeInterface::ATOM),
         ));
     }

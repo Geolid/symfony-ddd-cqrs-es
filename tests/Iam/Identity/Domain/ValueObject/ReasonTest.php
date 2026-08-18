@@ -19,7 +19,7 @@ final class ReasonTest extends TestCase
         $reason = Reason::fromString($value);
 
         // Then
-        self::assertSame($expected, $reason->toString());
+        self::assertSame($expected, $reason->value);
     }
 
     /**

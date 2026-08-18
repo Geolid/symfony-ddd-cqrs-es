@@ -25,8 +25,8 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CustomerResultNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseCustomer($customer->id()->toString()));
-        $this->service(CustomerFinderInterface::class)->ofId($customer->id()->toString());
+        $this->dispatch(new EraseCustomer($customer->id->toString()));
+        $this->service(CustomerFinderInterface::class)->ofId($customer->id->toString());
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()->erased()->store();
 
         // When
-        $this->dispatch(new EraseCustomer($customer->id()->toString()));
+        $this->dispatch(new EraseCustomer($customer->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

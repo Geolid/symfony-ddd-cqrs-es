@@ -34,7 +34,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(4_200, $result->items[0]->totalAmountInCents);
 
         for ($i = 1; $i < 5; ++$i) {
-            self::assertSame($orders[$i]->id()->toString(), $result->items[$i]->orderId);
+            self::assertSame($orders[$i]->id->toString(), $result->items[$i]->orderId);
         }
     }
 
@@ -51,7 +51,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $result);
-        self::assertSame($order->id()->toString(), $result->items[0]->orderId);
+        self::assertSame($order->id->toString(), $result->items[0]->orderId);
     }
 
     #[Test]
@@ -66,7 +66,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $result);
-        self::assertSame($cancelled->id()->toString(), $result->items[0]->orderId);
+        self::assertSame($cancelled->id->toString(), $result->items[0]->orderId);
     }
 
     #[Test]
@@ -82,9 +82,9 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(3, $result);
-        self::assertSame($newest->id()->toString(), $result->items[0]->orderId);
-        self::assertSame($middle->id()->toString(), $result->items[1]->orderId);
-        self::assertSame($oldest->id()->toString(), $result->items[2]->orderId);
+        self::assertSame($newest->id->toString(), $result->items[0]->orderId);
+        self::assertSame($middle->id->toString(), $result->items[1]->orderId);
+        self::assertSame($oldest->id->toString(), $result->items[2]->orderId);
     }
 
     #[Test]
@@ -98,8 +98,8 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(2, $result);
-        self::assertSame($orders[2]->id()->toString(), $result->items[0]->orderId);
-        self::assertSame($orders[3]->id()->toString(), $result->items[1]->orderId);
+        self::assertSame($orders[2]->id->toString(), $result->items[0]->orderId);
+        self::assertSame($orders[3]->id->toString(), $result->items[1]->orderId);
 
         self::assertSame(5, $result->pagination->totalItems);
         self::assertSame(2, $result->pagination->currentPage);

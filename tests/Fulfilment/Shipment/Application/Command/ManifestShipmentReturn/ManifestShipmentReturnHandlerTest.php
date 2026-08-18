@@ -37,7 +37,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id()->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -51,10 +51,10 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->store();
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', $shipment->id()->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id()->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -71,7 +71,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id()->toString(), 'ACME-RETURN-OTHER'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-OTHER'));
     }
 
     #[Test]
@@ -85,7 +85,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(TrackingReferenceAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id()->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
     }
 
     #[Test]

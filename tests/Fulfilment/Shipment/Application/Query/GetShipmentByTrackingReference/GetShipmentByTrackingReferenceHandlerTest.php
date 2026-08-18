@@ -24,8 +24,8 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
         $result = $this->ask(new GetShipmentByTrackingReference('ACME-4Q7X2K9'));
 
         // Then
-        self::assertSame($shipment->id()->toString(), $result->id);
-        self::assertSame($shipment->orderId(), $result->orderId);
+        self::assertSame($shipment->id->toString(), $result->id);
+        self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->createdAt);

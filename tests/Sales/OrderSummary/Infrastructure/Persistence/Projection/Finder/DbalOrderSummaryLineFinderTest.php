@@ -38,15 +38,15 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         ])->store();
 
         // When
-        $lines = iterator_to_array($this->finder->byOrder($order->id()->toString()));
+        $lines = iterator_to_array($this->finder->byOrder($order->id->toString()));
 
         // Then
         self::assertCount(2, $lines);
-        self::assertSame($order->id()->toString(), $lines[0]->orderId);
+        self::assertSame($order->id->toString(), $lines[0]->orderId);
         self::assertSame('Widget', $lines[0]->label);
         self::assertSame(2, $lines[0]->quantity);
         self::assertSame(1_000, $lines[0]->unitAmountInCents);
-        self::assertSame($order->id()->toString(), $lines[1]->orderId);
+        self::assertSame($order->id->toString(), $lines[1]->orderId);
         self::assertSame('Gadget', $lines[1]->label);
         self::assertSame(1, $lines[1]->quantity);
         self::assertSame(3_000, $lines[1]->unitAmountInCents);

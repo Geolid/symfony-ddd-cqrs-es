@@ -19,7 +19,7 @@ final class EmailTest extends TestCase
         $email = Email::fromString($value);
 
         // Then
-        self::assertSame($expected, $email->toString());
+        self::assertSame($expected, $email->value);
     }
 
     /**

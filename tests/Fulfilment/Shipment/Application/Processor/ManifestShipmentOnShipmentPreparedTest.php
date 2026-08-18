@@ -43,7 +43,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->store();
 
         // When
-        ($this->processor)(new ShipmentPrepared($shipment->id()->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->processor)(new ShipmentPrepared($shipment->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);

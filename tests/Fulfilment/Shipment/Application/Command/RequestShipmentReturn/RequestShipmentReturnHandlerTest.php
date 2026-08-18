@@ -23,7 +23,7 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new RequestShipmentReturn($shipment->id()->toString()));
+        $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
@@ -38,7 +38,7 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
 
         // When
-        $this->dispatch(new RequestShipmentReturn($shipment->id()->toString()));
+        $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

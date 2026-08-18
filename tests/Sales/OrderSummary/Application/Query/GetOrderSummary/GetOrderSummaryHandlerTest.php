@@ -22,10 +22,10 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->store();
 
         // When
-        $result = $this->ask(new GetOrderSummary($order->id()->toString()));
+        $result = $this->ask(new GetOrderSummary($order->id->toString()));
 
         // Then
-        self::assertSame($order->id()->toString(), $result->orderId);
+        self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame('placed', $result->status->value);

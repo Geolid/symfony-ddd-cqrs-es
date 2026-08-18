@@ -65,9 +65,9 @@ final readonly class DefinePasswordCredentialHandler
             $login = Login::fromString($command->login);
 
             try {
-                $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->toString(), $id->toString(), $identityId->toString());
+                $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString(), $identityId->toString());
             } catch (UniqueValueAlreadyTakenException $e) {
-                throw LoginAlreadyTakenException::forLogin($login->toString(), $e);
+                throw LoginAlreadyTakenException::forLogin($login->value, $e);
             }
 
             $credential = PasswordCredential::define(

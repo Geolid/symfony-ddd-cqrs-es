@@ -17,7 +17,7 @@ final class PermissionTest extends TestCase
     {
         $permission = Permission::fromString($value);
 
-        self::assertSame($value, $permission->toString());
+        self::assertSame($value, $permission->value);
     }
 
     /**

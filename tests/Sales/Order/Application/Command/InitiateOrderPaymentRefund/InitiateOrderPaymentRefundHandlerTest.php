@@ -22,10 +22,10 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
 
         // When
-        $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id()->toString()));
+        $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
@@ -39,7 +39,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
         $orderPayment = OrderPaymentTestFactory::new()->store();
 
         // When
-        $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id()->toString()));
+        $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

@@ -44,7 +44,7 @@ final class UniqueValueValidator extends ConstraintValidator
         if ($this->registry->exists($key, (string) $value, $excludeOwnerId)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', (string) $value)
-                ->setParameter('{{ key }}', $key->discriminator()->name)
+                ->setParameter('{{ key }}', $key->discriminator->name)
                 ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
                 ->addViolation();
         }

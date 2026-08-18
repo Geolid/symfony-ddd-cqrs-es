@@ -25,8 +25,8 @@ final class ProductTest extends TestCase
 
         // Then
         self::assertSame($id, $product->id);
-        self::assertSame('Saucer', $product->label->toString());
-        self::assertSame(1_750, $product->price->toCents());
+        self::assertSame('Saucer', $product->label->value);
+        self::assertSame(1_750, $product->price->cents);
     }
 
     #[Test]

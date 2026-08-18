@@ -25,7 +25,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $row = $this->fetchRow($customer->id()->toString());
+        $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertSame('buyer@example.com', $row['email']);
     }
@@ -41,9 +41,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        self::assertFalse($this->fetchRow($customer->id()->toString()));
+        self::assertFalse($this->fetchRow($customer->id->toString()));
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame('other@example.com', $otherRow['email']);
     }

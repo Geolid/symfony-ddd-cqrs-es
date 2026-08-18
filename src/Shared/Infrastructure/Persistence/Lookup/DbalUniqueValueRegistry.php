@@ -28,7 +28,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
 
     public function reserve(UniqueKey $key, string $value, string $ownerId, ?string $subjectId = null): void
     {
-        $keyType = $key->toString();
+        $keyType = $key->value;
 
         try {
             $this->connection->insert(self::TABLE, [
@@ -47,7 +47,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     public function release(UniqueKey $key, string $value, string $ownerId): void
     {
         $this->connection->delete(self::TABLE, [
-            'key_type' => $key->toString(),
+            'key_type' => $key->value,
             'key_value' => $value,
             'owner_id' => $ownerId,
         ]);
@@ -60,7 +60,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
             ->from(self::TABLE)
             ->where('key_type = :type')
             ->andWhere('key_value = :value')
-            ->setParameter('type', $key->toString())
+            ->setParameter('type', $key->value)
             ->setParameter('value', $value);
 
         if (null !== $excludeOwnerId) {

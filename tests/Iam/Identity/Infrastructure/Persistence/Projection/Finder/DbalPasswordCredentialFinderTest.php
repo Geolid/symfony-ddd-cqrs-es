@@ -42,7 +42,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofLogin('operator');
 
         // Then
-        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('operator', $result->login);
         self::assertSame('hashed:S3cr3tPassw0rd!', $result->hash);
@@ -76,7 +76,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofIdentityId($identityId);
 
         // Then
-        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('operator', $result->login);
         self::assertSame('hashed:S3cr3tPassw0rd!', $result->hash);

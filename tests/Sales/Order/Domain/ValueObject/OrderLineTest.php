@@ -27,8 +27,8 @@ final class OrderLineTest extends TestCase
 
         // Then
         self::assertSame($id, $line->product->id);
-        self::assertSame('Saucer', $line->product->label->toString());
-        self::assertSame(83, $line->product->price->toCents());
+        self::assertSame('Saucer', $line->product->label->value);
+        self::assertSame(83, $line->product->price->cents);
         self::assertSame(3, $line->quantity);
     }
 
@@ -83,6 +83,6 @@ final class OrderLineTest extends TestCase
         $total = OrderLine::of($product, 3)->total();
 
         // Then
-        self::assertSame(249, $total->toCents());
+        self::assertSame(249, $total->cents);
     }
 }

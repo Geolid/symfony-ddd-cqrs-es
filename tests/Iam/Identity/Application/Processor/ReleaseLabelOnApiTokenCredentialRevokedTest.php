@@ -32,13 +32,13 @@ final class ReleaseLabelOnApiTokenCredentialRevokedTest extends AbstractIntegrat
     {
         // Given
         $credential = ApiTokenCredentialTestFactory::new()->withLabel('CI pipeline')->withHasher(new FakeSecretHasher())->store();
-        $key = UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId()->toString());
-        $this->uniqueValues->reserve($key, $credential->label()->toString(), $credential->id()->toString());
+        $key = UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $credential->identityId->toString());
+        $this->uniqueValues->reserve($key, $credential->label->value, $credential->id->toString());
 
         // When
-        ($this->processor)(new ApiTokenCredentialRevoked($credential->id()->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->processor)(new ApiTokenCredentialRevoked($credential->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists($key, $credential->label()->toString()));
+        self::assertFalse($this->uniqueValues->exists($key, $credential->label->value));
     }
 }

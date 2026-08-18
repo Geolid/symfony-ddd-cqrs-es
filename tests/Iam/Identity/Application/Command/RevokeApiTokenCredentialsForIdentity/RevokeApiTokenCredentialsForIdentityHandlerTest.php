@@ -29,7 +29,7 @@ final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractInte
         // Then
         $finder = $this->service(ApiTokenCredentialFinderInterface::class);
         self::assertCount(0, $finder->byIdentity($identityId)->active());
-        self::assertCount(1, $finder->byIdentity($other->identityId()->toString())->active());
+        self::assertCount(1, $finder->byIdentity($other->identityId->toString())->active());
     }
 
     #[Test]
@@ -42,6 +42,6 @@ final class RevokeApiTokenCredentialsForIdentityHandlerTest extends AbstractInte
         $this->dispatch(new RevokeApiTokenCredentialsForIdentity(Uuid::uuid7()->toString()));
 
         // Then
-        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId()->toString())->active());
+        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId->toString())->active());
     }
 }

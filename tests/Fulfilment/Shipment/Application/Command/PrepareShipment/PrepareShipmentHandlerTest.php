@@ -23,7 +23,7 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = ShipmentTestFactory::new()->store();
 
         // When
-        $this->dispatch(new PrepareShipment($shipment->id()->toString()));
+        $this->dispatch(new PrepareShipment($shipment->id->toString()));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

@@ -36,10 +36,10 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
+        $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURN_REQUESTED, $result->status);
         self::assertNotNull($result->returnRequestedAt);
     }
@@ -52,7 +52,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
+        $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -68,7 +68,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
 
         // When
-        $this->dispatch(new RequestOrderReturn($order->id()->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new RequestOrderReturn($order->id->toString(), Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -82,7 +82,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotReturnableException::class);
 
         // When
-        $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
+        $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
     }
 
     #[Test]
@@ -101,7 +101,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderReturnWindowExpiredException::class);
 
         // When
-        $this->dispatch(new RequestOrderReturn($order->id()->toString(), $customerId));
+        $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
     }
 
     #[Test]

@@ -46,7 +46,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // When
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $identity->id()->toString(),
+            identityId: $identity->id->toString(),
             identifier: $identifier,
             secret: 'S3cr3t!',
             label: 'CI pipeline',
@@ -63,7 +63,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $identityId = $identity->id()->toString();
+        $identityId = $identity->id->toString();
         $this->uniqueValues->reserve(
             UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $identityId),
             'CI pipeline',
@@ -90,7 +90,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // Given
         $firstIdentity = IdentityTestFactory::new()->store();
         $this->uniqueValues->reserve(
-            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $firstIdentity->id()->toString()),
+            UniqueKey::for(ApiTokenCredentialUniqueKey::LABEL, $firstIdentity->id->toString()),
             'CI pipeline',
             Uuid::uuid7()->toString(),
         );
@@ -101,7 +101,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // When
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $secondIdentity->id()->toString(),
+            identityId: $secondIdentity->id->toString(),
             identifier: $identifier,
             secret: 'NewS3cr3t!',
             label: 'CI pipeline',
@@ -142,7 +142,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // When
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $identity->id()->toString(),
+            identityId: $identity->id->toString(),
             identifier: $this->generateIdentifier(),
             secret: 'S3cr3t!',
             label: 'CI pipeline',
@@ -162,7 +162,7 @@ final class IssueApiTokenCredentialHandlerTest extends AbstractIntegrationTestCa
         // When
         $this->dispatch(new IssueApiTokenCredential(
             id: ApiTokenCredentialId::generate()->toString(),
-            identityId: $identity->id()->toString(),
+            identityId: $identity->id->toString(),
             identifier: $this->generateIdentifier(),
             secret: 'S3cr3t!',
             label: 'CI pipeline',

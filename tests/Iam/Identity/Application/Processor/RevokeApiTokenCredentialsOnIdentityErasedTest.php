@@ -38,7 +38,7 @@ final class RevokeApiTokenCredentialsOnIdentityErasedTest extends AbstractIntegr
         // Then
         $finder = $this->service(ApiTokenCredentialFinderInterface::class);
         self::assertCount(0, $finder->byIdentity($identityId)->active());
-        self::assertCount(1, $finder->byIdentity($other->identityId()->toString())->active());
+        self::assertCount(1, $finder->byIdentity($other->identityId->toString())->active());
     }
 
     #[Test]
@@ -51,6 +51,6 @@ final class RevokeApiTokenCredentialsOnIdentityErasedTest extends AbstractIntegr
         ($this->processor)(new IdentityErased(Uuid::uuid7()->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
-        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId()->toString())->active());
+        self::assertCount(1, $this->service(ApiTokenCredentialFinderInterface::class)->byIdentity($other->identityId->toString())->active());
     }
 }

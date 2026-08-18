@@ -23,14 +23,14 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->store();
 
         // When
-        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id()->toString()));
+        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
 
         // Then
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         self::assertMatchesResourceItemJsonSchema(ProductResource::class);
         self::assertJsonContains([
-            'id' => $product->id()->toString(),
+            'id' => $product->id->toString(),
             'label' => 'Wireless mouse',
             'unitAmountInCents' => 2_999,
         ]);
@@ -245,14 +245,14 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id()->toString()), [
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
             'json' => ['unitAmountInCents' => 3_499],
         ]);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
-        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id()->toString()));
+        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
         self::assertJsonContains(['unitAmountInCents' => 3_499]);
     }
 
@@ -265,7 +265,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id()->toString()), [
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
             'json' => ['unitAmountInCents' => -1],
         ]);
 
@@ -298,7 +298,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id()->toString()), [
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
             'json' => ['unitAmountInCents' => 3_499],
         ]);
 
@@ -315,12 +315,12 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id()->toString()));
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
-        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id()->toString()));
+        $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
@@ -347,7 +347,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->delisted()->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id()->toString()));
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -362,7 +362,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         $product = ProductTestFactory::new()->store();
 
         // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id()->toString()));
+        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);

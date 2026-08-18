@@ -35,16 +35,16 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderId::generate()->toString();
 
         // When
-        $this->dispatch(new PlaceOrder($id, $customer->id()->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $this->lines()));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame($customer->id()->toString(), $result->customerId);
+        self::assertSame($customer->id->toString(), $result->customerId);
         self::assertSame(1_999, $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
         $order = $this->orderOf($id);
-        $shippingAddress = $order->shippingAddress();
+        $shippingAddress = $order->shippingAddress;
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             [
@@ -55,7 +55,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
                 'city' => $shippingAddress->address->city,
             ],
         );
-        $billingAddress = $order->billingAddress();
+        $billingAddress = $order->billingAddress;
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
             [
@@ -91,7 +91,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -112,7 +112,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id()->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
     }
 
     /**
@@ -137,7 +137,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
-            $customer->id()->toString(),
+            $customer->id->toString(),
             [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
         ));
     }
@@ -155,8 +155,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
-            $customer->id()->toString(),
-            [['productId' => $cups->id()->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
+            $customer->id->toString(),
+            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
         ));
     }
 
@@ -169,8 +169,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->store();
 
         return [
-            ['productId' => $cups->id()->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_750],
-            ['productId' => $saucer->id()->toString(), 'quantity' => 3, 'label' => 'Saucer', 'unitAmountInCents' => 83],
+            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_750],
+            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => 'Saucer', 'unitAmountInCents' => 83],
         ];
     }
 

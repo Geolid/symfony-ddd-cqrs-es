@@ -32,18 +32,18 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->store();
         OrderPaymentTestFactory::new()
-            ->withOrderId($order->id()->toString())
+            ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
             ->store();
-        ShipmentTestFactory::new()->withOrderId($order->id()->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
 
         // When
-        $result = $this->finder->ofOrder($order->id()->toString());
+        $result = $this->finder->ofOrder($order->id->toString());
 
         // Then
-        self::assertSame($order->id()->toString(), $result->orderId);
+        self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PAYMENT_PENDING, $result->status);
@@ -80,7 +80,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($order->id()->toString(), $results[0]->orderId);
+        self::assertSame($order->id->toString(), $results[0]->orderId);
         self::assertSame($customerId, $results[0]->customerId);
         self::assertSame(1_500, $results[0]->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PLACED, $results[0]->status);
@@ -98,7 +98,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($cancelled->id()->toString(), $results[0]->orderId);
+        self::assertSame($cancelled->id->toString(), $results[0]->orderId);
         self::assertSame(OrderSummaryStatus::CANCELLED, $results[0]->status);
         self::assertNotNull($results[0]->cancelledAt);
     }

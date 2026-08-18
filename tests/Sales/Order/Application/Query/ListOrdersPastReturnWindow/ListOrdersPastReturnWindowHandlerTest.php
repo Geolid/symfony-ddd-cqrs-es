@@ -29,6 +29,6 @@ final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTes
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($expired->id()->toString(), $results[0]->id);
+        self::assertSame($expired->id->toString(), $results[0]->id);
     }
 }

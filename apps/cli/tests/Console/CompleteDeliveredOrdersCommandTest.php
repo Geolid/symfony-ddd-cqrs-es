@@ -45,8 +45,8 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('1 order(s) completed.', $tester->getDisplay());
-        self::assertSame(OrderStatus::COMPLETED, $this->orderFinder->ofId($expired->id()->toString())->status);
-        self::assertSame(OrderStatus::DELIVERED, $this->orderFinder->ofId($withinWindow->id()->toString())->status);
+        self::assertSame(OrderStatus::COMPLETED, $this->orderFinder->ofId($expired->id->toString())->status);
+        self::assertSame(OrderStatus::DELIVERED, $this->orderFinder->ofId($withinWindow->id->toString())->status);
     }
 
     #[Test]

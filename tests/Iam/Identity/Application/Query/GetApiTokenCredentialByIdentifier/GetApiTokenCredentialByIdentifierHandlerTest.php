@@ -34,7 +34,7 @@ final class GetApiTokenCredentialByIdentifierHandlerTest extends AbstractIntegra
         $result = $this->ask(new GetApiTokenCredentialByIdentifier('key_operator'));
 
         // Then
-        self::assertSame($credential->id()->toString(), $result->id);
+        self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame('key_operator', $result->identifier);
         self::assertSame('Operator key', $result->label);

@@ -31,10 +31,10 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
+        $this->dispatch(new ConfirmOrderReturn($order->id->toString()));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURNED, $result->status);
     }
 
@@ -45,7 +45,7 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
 
         // When
-        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
+        $this->dispatch(new ConfirmOrderReturn($order->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

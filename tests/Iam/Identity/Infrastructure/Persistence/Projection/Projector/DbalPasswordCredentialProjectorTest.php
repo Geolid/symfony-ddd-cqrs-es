@@ -31,7 +31,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialTestFactory::new()->withLogin('operator')->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())->store();
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame('operator', $row['login']);
     }
@@ -41,16 +41,16 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $credential = PasswordCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())->store();
-        $hashBeforeChange = $this->fetchRow($credential->id()->toString());
+        $hashBeforeChange = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($hashBeforeChange);
 
         // When
-        $reloaded = $this->service(PasswordCredentialRepositoryInterface::class)->load($credential->id());
+        $reloaded = $this->service(PasswordCredentialRepositoryInterface::class)->load($credential->id);
         $reloaded->change(Password::fromString('a new correct horse battery staple'), $this->service(PasswordPolicyInterface::class), $this->service(SecretHasherInterface::class), new \DateTimeImmutable('now +00:00'));
         $this->store($reloaded);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertNotSame($hashBeforeChange['hash'], $row['hash']);
     }
@@ -63,12 +63,12 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
 
         // When
         $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
     }
@@ -79,13 +79,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($other->id()->toString())
+            ->withIdentityId($other->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
@@ -94,11 +94,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['identity_status']);
 
-        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        $otherRow = $this->fetchRow($otherCredential->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['identity_status']);
     }
@@ -109,13 +109,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $other = IdentityTestFactory::new()->suspended()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($other->id()->toString())
+            ->withIdentityId($other->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->suspended()->store();
         $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
@@ -124,11 +124,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['identity_status']);
 
-        $otherRow = $this->fetchRow($otherCredential->id()->toString());
+        $otherRow = $this->fetchRow($otherCredential->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['identity_status']);
     }
@@ -138,11 +138,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $other = PasswordCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())->store();
-        $otherHashBeforeRehash = $this->fetchRow($other->id()->toString());
+        $otherHashBeforeRehash = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherHashBeforeRehash);
 
         $credential = PasswordCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())->store();
-        $hashBeforeRehash = $this->fetchRow($credential->id()->toString());
+        $hashBeforeRehash = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($hashBeforeRehash);
 
         // When
@@ -150,11 +150,11 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($credential);
 
         // Then
-        $row = $this->fetchRow($credential->id()->toString());
+        $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertNotSame($hashBeforeRehash['hash'], $row['hash']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherHashBeforeRehash['hash'], $otherRow['hash']);
     }
@@ -165,13 +165,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $other = IdentityTestFactory::new()->store();
         $otherCredential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($other->id()->toString())
+            ->withIdentityId($other->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id()->toString())
+            ->withIdentityId($identity->id->toString())
             ->withHasher(new FakeSecretHasher())->withPolicy(new StubPasswordPolicy())
             ->store();
 
@@ -180,8 +180,8 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // Then
-        self::assertFalse($this->fetchRow($credential->id()->toString()));
-        self::assertNotFalse($this->fetchRow($otherCredential->id()->toString()));
+        self::assertFalse($this->fetchRow($credential->id->toString()));
+        self::assertNotFalse($this->fetchRow($otherCredential->id->toString()));
     }
 
     /**

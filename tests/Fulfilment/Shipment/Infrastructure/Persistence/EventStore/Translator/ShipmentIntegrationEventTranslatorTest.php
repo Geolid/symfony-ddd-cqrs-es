@@ -29,11 +29,11 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(ShipmentManifestedIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
         self::assertSame('ACME-4Q7X2K9', $event->trackingReference);
     }
@@ -49,12 +49,12 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(2, $published);
         self::assertInstanceOf(ShipmentManifestedIntegrationEvent::class, $published[0]);
         $event = $published[1];
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
     }
 
@@ -69,13 +69,13 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(3, $published);
         self::assertInstanceOf(ShipmentManifestedIntegrationEvent::class, $published[0]);
         self::assertInstanceOf(ShipmentDispatchedIntegrationEvent::class, $published[1]);
         $event = $published[2];
         self::assertInstanceOf(ShipmentDeliveredIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
     }
 
@@ -90,11 +90,11 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(1, $published);
         $event = $published[0];
         self::assertInstanceOf(ShipmentCancelledIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
     }
 
@@ -109,11 +109,11 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(4, $published);
         $event = $published[3];
         self::assertInstanceOf(ShipmentReturnApprovedIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
     }
 
@@ -128,11 +128,11 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id()->toString()));
+        $published = $this->publishedTo(IntegrationStreamId::build('fulfilment.shipment', $shipment->id->toString()));
         self::assertCount(4, $published);
         $event = $published[3];
         self::assertInstanceOf(ShipmentReturnRejectedIntegrationEvent::class, $event);
-        self::assertSame($shipment->id()->toString(), $event->shipmentId);
+        self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
         self::assertSame('item damaged beyond resale', $event->reason);
     }

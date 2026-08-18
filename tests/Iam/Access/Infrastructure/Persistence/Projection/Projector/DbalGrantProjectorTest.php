@@ -25,7 +25,7 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $grant = GrantTestFactory::new()->withIdentityId($identityId)->withPermission('fixture.widget:read')->store();
 
         // Then
-        $row = $this->fetchRow($grant->id()->toString());
+        $row = $this->fetchRow($grant->id->toString());
         self::assertNotFalse($row);
         self::assertSame($identityId, $row['identity_id']);
         self::assertSame('fixture.widget:read', $row['permission']);
@@ -42,11 +42,11 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $grant = GrantTestFactory::new()->revoked()->store();
 
         // Then
-        $row = $this->fetchRow($grant->id()->toString());
+        $row = $this->fetchRow($grant->id->toString());
         self::assertNotFalse($row);
         self::assertSame(1, (int) $row['revoked']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(0, (int) $otherRow['revoked']);
     }
@@ -63,11 +63,11 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         $this->store($grant);
 
         // Then
-        $row = $this->fetchRow($grant->id()->toString());
+        $row = $this->fetchRow($grant->id->toString());
         self::assertNotFalse($row);
         self::assertSame(0, (int) $row['revoked']);
 
-        $otherRow = $this->fetchRow($other->id()->toString());
+        $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(1, (int) $otherRow['revoked']);
     }
@@ -84,8 +84,8 @@ final class DbalGrantProjectorTest extends AbstractIntegrationTestCase
         IdentityTestFactory::new()->withId($identityId)->erased()->store();
 
         // Then
-        self::assertFalse($this->fetchRow($grant->id()->toString()));
-        self::assertNotFalse($this->fetchRow($other->id()->toString()));
+        self::assertFalse($this->fetchRow($grant->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**

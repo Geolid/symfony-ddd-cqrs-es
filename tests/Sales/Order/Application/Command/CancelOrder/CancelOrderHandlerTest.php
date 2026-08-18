@@ -36,10 +36,10 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
 
         // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->cancelledAt);
     }
@@ -52,7 +52,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
 
         // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -83,7 +83,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotCancellableException::class);
 
         // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
     }
 
     #[Test]
@@ -96,7 +96,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
 
         // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new CancelOrder($order->id->toString(), Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -105,13 +105,13 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id()->toString())->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->store();
 
         // When
-        $this->dispatch(new CancelOrder($order->id()->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
 
         // Then
-        $result = $this->finder->ofId($order->id()->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 }

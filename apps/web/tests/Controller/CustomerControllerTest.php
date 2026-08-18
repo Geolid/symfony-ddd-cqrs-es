@@ -156,7 +156,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-3@example.com')->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -171,7 +171,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertSame(['sales.customer.flash.erased'], $session->getFlashBag()->get('success'));
 
         self::expectException(IdentityResultNotFoundException::class);
-        $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
+        $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
     }
 
     #[Test]
@@ -180,7 +180,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-4@example.com')->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -197,7 +197,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-locale@example.com')->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->store();
         $this->loginAs($client, $identity);
 
         // When
@@ -224,7 +224,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id()->toString())->withEmail('buyer-5@example.com')->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->store();
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When
@@ -239,7 +239,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
-        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id()->toString());
+        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
         self::assertTrue($this->service(SecretHasherInterface::class)->verify($credential->hash, 'A Brand New Password!42'));
     }
 

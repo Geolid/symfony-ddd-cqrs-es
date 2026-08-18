@@ -38,33 +38,13 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     #[Id]
-    private ShipmentId $id;
-    private string $orderId;
-    private string $customerId;
-    private PostalAddress $shippingAddress;
+    public private(set) ShipmentId $id;
+    public private(set) string $orderId;
+    public private(set) string $customerId;
+    public private(set) PostalAddress $shippingAddress;
     private ?TrackingReference $trackingReference;
     private ?TrackingReference $returnTrackingReference;
     private ShipmentState $state;
-
-    public function id(): ShipmentId
-    {
-        return $this->id;
-    }
-
-    public function orderId(): string
-    {
-        return $this->orderId;
-    }
-
-    public function customerId(): string
-    {
-        return $this->customerId;
-    }
-
-    public function shippingAddress(): PostalAddress
-    {
-        return $this->shippingAddress;
-    }
 
     public static function request(
         ShipmentId $id,
@@ -138,7 +118,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 return;
             }
 
-            throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->toString());
+            throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->value);
         }
 
         if (!$this->state->isPrepared()) {
@@ -147,7 +127,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentManifested(
             id: $this->id->toString(),
-            trackingReference: $trackingReference->toString(),
+            trackingReference: $trackingReference->value,
             manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -207,7 +187,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 return;
             }
 
-            throw ShipmentAlreadyTrackedException::forReference($this->returnTrackingReference->toString());
+            throw ShipmentAlreadyTrackedException::forReference($this->returnTrackingReference->value);
         }
 
         if (!$this->state->isReturnRequested()) {
@@ -216,7 +196,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentReturnManifested(
             id: $this->id->toString(),
-            returnTrackingReference: $returnTrackingReference->toString(),
+            returnTrackingReference: $returnTrackingReference->value,
             manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
         ));
     }

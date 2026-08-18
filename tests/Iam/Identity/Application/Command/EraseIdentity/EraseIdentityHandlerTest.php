@@ -25,8 +25,8 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseIdentity($identity->id()->toString()));
-        $this->service(IdentityFinderInterface::class)->ofId($identity->id()->toString());
+        $this->dispatch(new EraseIdentity($identity->id->toString()));
+        $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->erased()->store();
 
         // When
-        $this->dispatch(new EraseIdentity($identity->id()->toString()));
+        $this->dispatch(new EraseIdentity($identity->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

@@ -650,9 +650,9 @@ final class OrderTest extends AggregateRootTestCase
         return array_map(
             static fn (OrderLine $line): array => [
                 'productId' => $line->product->id,
-                'label' => $line->product->label->toString(),
+                'label' => $line->product->label->value,
                 'quantity' => $line->quantity,
-                'unitAmountInCents' => $line->product->price->toCents(),
+                'unitAmountInCents' => $line->product->price->cents,
             ],
             $lines,
         );

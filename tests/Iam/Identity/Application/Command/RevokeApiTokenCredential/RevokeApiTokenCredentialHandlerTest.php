@@ -26,7 +26,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
         $credential = ApiTokenCredentialTestFactory::new()->withIdentifier($identifier)->withHasher(new FakeSecretHasher())->store();
 
         // When
-        $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
+        $this->dispatch(new RevokeApiTokenCredential($credential->id->toString()));
 
         // Then
         $result = $this->service(ApiTokenCredentialFinderInterface::class)->ofIdentifier($identifier);
@@ -54,7 +54,7 @@ final class RevokeApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
         $credential = ApiTokenCredentialTestFactory::new()->withHasher(new FakeSecretHasher())->revoked()->store();
 
         // When
-        $this->dispatch(new RevokeApiTokenCredential($credential->id()->toString()));
+        $this->dispatch(new RevokeApiTokenCredential($credential->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

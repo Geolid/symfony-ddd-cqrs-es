@@ -24,10 +24,10 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))->store();
 
         // When
-        $this->dispatch(new AnonymizeExpiredOrder($order->id()->toString()));
+        $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->anonymizedAt);
     }
@@ -39,10 +39,10 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $this->dispatch(new AnonymizeExpiredOrder($order->id()->toString()));
+        $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertNull($result->anonymizedAt);
     }
 

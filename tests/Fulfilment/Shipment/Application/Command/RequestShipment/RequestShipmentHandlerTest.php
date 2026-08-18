@@ -50,7 +50,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($orderId, $results[0]->orderId);
         self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
-        $shippingAddress = $shipment->shippingAddress();
+        $shippingAddress = $shipment->shippingAddress;
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             [
@@ -85,7 +85,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $shippingAddress = $this->repository->load(ShipmentId::fromString($id))->shippingAddress();
+        $shippingAddress = $this->repository->load(ShipmentId::fromString($id))->shippingAddress;
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
             [
