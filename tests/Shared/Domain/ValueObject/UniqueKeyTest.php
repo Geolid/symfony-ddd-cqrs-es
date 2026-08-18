@@ -11,6 +11,9 @@ use Shared\Domain\ValueObject\UniqueKey;
 
 final class UniqueKeyTest extends TestCase
 {
+    /**
+     * @param list<string> $scope
+     */
     #[Test]
     #[DataProvider('provideScopes')]
     public function itCreates(array $scope, string $expected): void
