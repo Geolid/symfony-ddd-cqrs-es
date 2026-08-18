@@ -32,8 +32,8 @@ final readonly class ProductCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
         $result = $this->queryBus->ask(new ListProducts(
-            page: (int) $this->pagination->getPage($context),
-            itemsPerPage: (int) $this->pagination->getLimit($operation, $context),
+            page: $this->pagination->getPage($context),
+            itemsPerPage: $this->pagination->getLimit($operation, $context),
         ));
 
         return new TraversablePaginator(

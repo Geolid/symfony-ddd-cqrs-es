@@ -74,7 +74,6 @@ final class SentryMessengerMiddlewareTest extends TestCase
     {
         $contexts = $this->scope->applyToEvent(Event::createEvent())?->getContexts() ?? [];
 
-        /** @var array<string, mixed> */
         return $contexts['messenger'] ?? [];
     }
 }

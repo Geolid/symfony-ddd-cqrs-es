@@ -33,7 +33,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => OrderPayment::request(
+            ->when(static fn (): OrderPayment => OrderPayment::request(
                 $id,
                 $orderId,
                 Money::fromCents(4_200),
@@ -41,7 +41,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
                 $requestedAt,
             ))
-            ->then(self::orderPaymentRequested($id->toString(), $orderId, $requestedAt));
+            ->then($this->orderPaymentRequested($id->toString(), $orderId, $requestedAt));
     }
 
     #[Test]
@@ -53,7 +53,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt))
             ->then(new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)));
     }
@@ -68,7 +68,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -86,7 +86,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentCancelled($id, $orderId, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
@@ -102,7 +102,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         $failedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt))
             ->then(new OrderPaymentFailed($id, $orderId, $failedAt->format(\DateTimeInterface::ATOM)));
     }
@@ -117,7 +117,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->fail(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -135,7 +135,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt))
@@ -150,7 +150,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->then();
     }
@@ -166,7 +166,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -183,7 +183,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt))
             ->then(new OrderPaymentCancelled($id, $orderId, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
@@ -199,7 +199,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt))
@@ -218,7 +218,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -236,7 +236,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentFailed($id, $orderId, $failedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -255,7 +255,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -273,7 +273,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -293,7 +293,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentRefundInitiated($id, $orderId, self::REFERENCE, $refundInitiatedAt->format(\DateTimeInterface::ATOM)),
@@ -313,7 +313,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $requestedAt),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt->format(\DateTimeInterface::ATOM)),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -326,7 +326,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
         return OrderPayment::class;
     }
 
-    private static function orderPaymentRequested(string $id, string $orderId, \DateTimeImmutable $requestedAt): OrderPaymentRequested
+    private function orderPaymentRequested(string $id, string $orderId, \DateTimeImmutable $requestedAt): OrderPaymentRequested
     {
         return new OrderPaymentRequested(
             $id,

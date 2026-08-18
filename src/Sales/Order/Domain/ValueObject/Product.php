@@ -12,17 +12,14 @@ final readonly class Product
 {
     public string $id;
 
-    public Label $label;
-
-    public Money $price;
-
-    private function __construct(string $id, Label $label, Money $price)
-    {
+    private function __construct(
+        string $id,
+        public Label $label,
+        public Money $price,
+    ) {
         Assert::stringNotEmpty($id, 'A product id cannot be empty, %s given.');
 
         $this->id = $id;
-        $this->label = $label;
-        $this->price = $price;
     }
 
     public static function of(string $id, Label $label, Money $price): self

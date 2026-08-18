@@ -37,7 +37,7 @@ final class ValidAddressTest extends CompoundConstraintTestCase
 
         // Then
         $this->assertViolationsCount(1);
-        $this->assertViolationsRaisedByCompound([self::collection()]);
+        $this->assertViolationsRaisedByCompound([$this->collection()]);
     }
 
     /**
@@ -62,7 +62,7 @@ final class ValidAddressTest extends CompoundConstraintTestCase
 
         // Then
         $this->assertViolationsCount(2);
-        $this->assertViolationsRaisedByCompound([self::collection()]);
+        $this->assertViolationsRaisedByCompound([$this->collection()]);
     }
 
     #[Test]
@@ -73,7 +73,7 @@ final class ValidAddressTest extends CompoundConstraintTestCase
 
         // Then
         $this->assertViolationsCount(1);
-        $this->assertViolationsRaisedByCompound([self::collection()]);
+        $this->assertViolationsRaisedByCompound([$this->collection()]);
     }
 
     protected function createCompound(): ValidAddress
@@ -81,7 +81,7 @@ final class ValidAddressTest extends CompoundConstraintTestCase
         return new ValidAddress();
     }
 
-    private static function collection(): Assert\Collection
+    private function collection(): Assert\Collection
     {
         return new Assert\Collection(
             fields: [

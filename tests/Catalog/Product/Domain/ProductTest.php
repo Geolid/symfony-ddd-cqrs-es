@@ -24,7 +24,7 @@ final class ProductTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Product::list($id, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750), $listedAt))
+            ->when(static fn (): Product => Product::list($id, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750), $listedAt))
             ->then(new ProductListed($id->toString(), 'Espresso cups, set of 6', 1_750, $listedAt->format(\DateTimeInterface::ATOM)));
     }
 

@@ -7,11 +7,11 @@ namespace Iam\Tests\Identity\Support\Doubles;
 use Iam\Identity\Domain\Service\PasswordPolicyInterface;
 use Iam\Identity\Domain\ValueObject\Password;
 
-final class StubPasswordPolicy implements PasswordPolicyInterface
+final readonly class StubPasswordPolicy implements PasswordPolicyInterface
 {
     public function __construct(
-        private readonly bool $strongEnough = true,
-        private readonly bool $compromised = false,
+        private bool $strongEnough = true,
+        private bool $compromised = false,
     ) {
     }
 

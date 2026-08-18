@@ -6,14 +6,10 @@ namespace Shared\Domain\ValueObject;
 
 final readonly class PostalAddress
 {
-    public FullName $fullName;
-
-    public Address $address;
-
-    private function __construct(FullName $fullName, Address $address)
-    {
-        $this->fullName = $fullName;
-        $this->address = $address;
+    private function __construct(
+        public FullName $fullName,
+        public Address $address,
+    ) {
     }
 
     public static function of(FullName $fullName, Address $address): self

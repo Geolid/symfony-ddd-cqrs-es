@@ -25,7 +25,7 @@ final class GrantTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Grant::grant($id, $identityId, Permission::fromString('fixture.widget:write'), $grantedAt))
+            ->when(static fn (): Grant => Grant::grant($id, $identityId, Permission::fromString('fixture.widget:write'), $grantedAt))
             ->then(new PermissionGranted($id->toString(), $identityId, 'fixture.widget:write', $grantedAt->format(\DateTimeInterface::ATOM)));
     }
 

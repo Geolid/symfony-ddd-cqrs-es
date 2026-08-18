@@ -16,14 +16,14 @@ final class RegisterMessageBusHandlersPass implements CompilerPassInterface
     {
         $container->registerAttributeForAutoconfiguration(
             AsCommandHandler::class,
-            static function (ChildDefinition $definition) {
+            static function (ChildDefinition $definition): void {
                 $definition->addTag('messenger.message_handler', ['bus' => 'command.bus']);
             },
         );
 
         $container->registerAttributeForAutoconfiguration(
             AsQueryHandler::class,
-            static function (ChildDefinition $definition) {
+            static function (ChildDefinition $definition): void {
                 $definition->addTag('messenger.message_handler', ['bus' => 'query.bus']);
             },
         );

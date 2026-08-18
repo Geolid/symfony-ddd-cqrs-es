@@ -40,7 +40,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
         self::assertNotSame('erased', $rehydrated->billingAddress['street']);
     }
 
@@ -62,7 +62,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->billingAddress);
+        self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
         self::assertNotSame('erased', $rehydrated->shippingAddress['street']);
     }
 
@@ -87,7 +87,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
     }
 
     #[Test]
@@ -110,13 +110,13 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->shippingAddress);
+        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
     }
 
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private static function erasedAddress(): array
+    private function erasedAddress(): array
     {
         return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
     }

@@ -43,7 +43,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()
+        OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
@@ -67,7 +67,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
 
         // Then
         $row = $this->fetchRow($order->id->toString());
@@ -85,7 +85,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->store();
 
         // Then
         $row = $this->fetchRow($order->id->toString());
@@ -101,7 +101,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
 
         // Then
         $row = $this->fetchRow($order->id->toString());
@@ -116,7 +116,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->store();
+        ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->store();
 
         // Then
         $row = $this->fetchRow($order->id->toString());
@@ -157,7 +157,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $order = OrderTestFactory::new()->store();
 
         // When
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
+        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
 
         // Then
         $row = $this->fetchRow($untouchedOrder->id->toString());

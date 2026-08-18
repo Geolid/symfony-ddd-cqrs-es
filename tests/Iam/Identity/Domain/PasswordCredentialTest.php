@@ -45,7 +45,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(fn () => PasswordCredential::define($id, $identityId, $login, Password::fromString('MyStr0ngP@ssw0rd123!'), $this->policy, $this->hasher, $definedAt))
+            ->when(fn (): PasswordCredential => PasswordCredential::define($id, $identityId, $login, Password::fromString('MyStr0ngP@ssw0rd123!'), $this->policy, $this->hasher, $definedAt))
             ->then(new PasswordCredentialDefined($id->toString(), $identityId->toString(), 'operator', $this->hasher->hash('MyStr0ngP@ssw0rd123!'), $definedAt->format(\DateTimeInterface::ATOM)));
     }
 
@@ -87,7 +87,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(fn () => PasswordCredential::define($id, $identityId, $login, Password::fromString('passwordpassword'), $policy, $this->hasher, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')))
+            ->when(fn (): PasswordCredential => PasswordCredential::define($id, $identityId, $login, Password::fromString('passwordpassword'), $policy, $this->hasher, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')))
             ->expectsException(WeakPasswordException::class);
     }
 
@@ -101,7 +101,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(fn () => PasswordCredential::define($id, $identityId, $login, Password::fromString('MyStr0ngP@ssw0rd123!'), $policy, $this->hasher, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')))
+            ->when(fn (): PasswordCredential => PasswordCredential::define($id, $identityId, $login, Password::fromString('MyStr0ngP@ssw0rd123!'), $policy, $this->hasher, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')))
             ->expectsException(CompromisedPasswordException::class);
     }
 

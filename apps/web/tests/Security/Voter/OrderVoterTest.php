@@ -25,7 +25,7 @@ final class OrderVoterTest extends TestCase
         $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter())->vote($token, $order, [OrderVoter::VIEW]);
+        $vote = new OrderVoter()->vote($token, $order, [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_GRANTED, $vote);
@@ -40,7 +40,7 @@ final class OrderVoterTest extends TestCase
         $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter())->vote($token, $order, [OrderVoter::VIEW]);
+        $vote = new OrderVoter()->vote($token, $order, [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
@@ -53,7 +53,7 @@ final class OrderVoterTest extends TestCase
         $token = new UsernamePasswordToken(new PasswordUser(Uuid::uuid7()->toString(), 'buyer@example.com'), 'main', ['ROLE_USER']);
 
         // When
-        $vote = (new OrderVoter())->vote($token, new \stdClass(), [OrderVoter::VIEW]);
+        $vote = new OrderVoter()->vote($token, new \stdClass(), [OrderVoter::VIEW]);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_ABSTAIN, $vote);

@@ -55,7 +55,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
         // Given
         OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
-        $lock = (new LockFactory($store))->createLock('sales:order:complete-delivered');
+        $lock = new LockFactory($store)->createLock('sales:order:complete-delivered');
         $lock->acquire();
         $tester = $this->tester();
 

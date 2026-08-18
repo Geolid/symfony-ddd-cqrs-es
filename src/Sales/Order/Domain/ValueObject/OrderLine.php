@@ -9,15 +9,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class OrderLine
 {
-    public Product $product;
-
     public int $quantity;
 
-    private function __construct(Product $product, int $quantity)
-    {
+    private function __construct(
+        public Product $product,
+        int $quantity,
+    ) {
         Assert::positiveInteger($quantity, 'An order line quantity must be positive, %s given.');
-
-        $this->product = $product;
         $this->quantity = $quantity;
     }
 

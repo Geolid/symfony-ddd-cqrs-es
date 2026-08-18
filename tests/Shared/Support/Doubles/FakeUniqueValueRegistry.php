@@ -19,17 +19,17 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
             throw UniqueValueAlreadyTakenException::forValue($key, $value);
         }
 
-        $this->reserved[self::normalize($key, $value)] = $ownerId;
+        $this->reserved[$this->normalize($key, $value)] = $ownerId;
     }
 
     public function release(UniqueKey $key, string $value, string $ownerId): void
     {
-        unset($this->reserved[self::normalize($key, $value)]);
+        unset($this->reserved[$this->normalize($key, $value)]);
     }
 
     public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
     {
-        $existingOwnerId = $this->reserved[self::normalize($key, $value)] ?? null;
+        $existingOwnerId = $this->reserved[$this->normalize($key, $value)] ?? null;
 
         if (null === $existingOwnerId) {
             return false;
@@ -42,7 +42,7 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
     {
     }
 
-    private static function normalize(UniqueKey $key, string $value): string
+    private function normalize(UniqueKey $key, string $value): string
     {
         return \sprintf('%s:%s', $key->toString(), $value);
     }

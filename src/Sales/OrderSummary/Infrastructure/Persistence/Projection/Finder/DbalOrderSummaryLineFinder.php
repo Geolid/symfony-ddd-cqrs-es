@@ -20,7 +20,7 @@ final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder impl
     public function byOrder(string $orderId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($orderId) {
+            static function (QueryBuilder $qb) use ($orderId): void {
                 $qb->andWhere('order_id = :orderId')
                     ->setParameter('orderId', $orderId);
             },

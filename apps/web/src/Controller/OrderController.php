@@ -26,6 +26,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Shared\Application\Query\Result\ListResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -185,7 +186,7 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route(path: ['en' => '/{id}/cancel', 'fr' => '/{id}/annuler'], name: 'sales_order_cancel', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
-    public function cancel(Request $request, string $id, #[CurrentUser] PasswordUser $user): Response
+    public function cancel(Request $request, string $id, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('cancel-order-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
@@ -209,7 +210,7 @@ final class OrderController extends AbstractController
      * @throws \DomainException
      */
     #[Route(path: ['en' => '/{id}/request-return', 'fr' => '/{id}/demander-un-retour'], name: 'sales_order_request_return', requirements: ['id' => Requirement::UUID], methods: ['POST'])]
-    public function requestReturn(Request $request, string $id, #[CurrentUser] PasswordUser $user): Response
+    public function requestReturn(Request $request, string $id, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('request-order-return-'.$id, (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');

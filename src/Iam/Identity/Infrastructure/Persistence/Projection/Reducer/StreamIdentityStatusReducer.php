@@ -25,7 +25,7 @@ final readonly class StreamIdentityStatusReducer
         ));
 
         /** @var array{status: IdentityStatus} $state */
-        $state = (new Reducer())
+        $state = new Reducer()
             ->initState(['status' => IdentityStatus::ACTIVE])
             ->when(IdentitySuspended::class, static fn (): array => ['status' => IdentityStatus::SUSPENDED])
             ->when(IdentityReactivated::class, static fn (): array => ['status' => IdentityStatus::ACTIVE])

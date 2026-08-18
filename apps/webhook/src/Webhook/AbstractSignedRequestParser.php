@@ -66,7 +66,7 @@ abstract class AbstractSignedRequestParser extends AbstractRequestParser
         } catch (NotEncodableValueException) {
             throw new RejectWebhookException(Response::HTTP_BAD_REQUEST, 'Invalid JSON payload.');
         } catch (PartialDenormalizationException $e) {
-            throw new RejectWebhookException(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
+            throw new RejectWebhookException(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e);
         }
 
         $violations = $this->validator->validate($payload);

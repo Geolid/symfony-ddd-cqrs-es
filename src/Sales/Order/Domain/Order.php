@@ -50,8 +50,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) int $totalAmountInCents;
     private OrderState $state;
     private \DateTimeImmutable $deliveredAt;
-    private ?\DateTimeImmutable $closedAt;
-    private ?\DateTimeImmutable $anonymizedAt;
+    private ?\DateTimeImmutable $closedAt = null;
+    private ?\DateTimeImmutable $anonymizedAt = null;
 
     /**
      * @throws OrderAlreadyCancelledException

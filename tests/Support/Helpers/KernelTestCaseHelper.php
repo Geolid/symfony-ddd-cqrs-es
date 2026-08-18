@@ -48,8 +48,8 @@ final class KernelTestCaseHelper
         }
 
         (\Closure::bind(
-            static function () {
-                static::ensureKernelShutdown();
+            static function (): void {
+                self::ensureKernelShutdown();
                 static::$class = null;
                 static::$kernel = null;
                 static::$booted = false;

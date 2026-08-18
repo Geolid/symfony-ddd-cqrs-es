@@ -26,7 +26,6 @@ final readonly class RepriceProductProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        \assert($data instanceof RepriceProductInput);
         \assert(null !== $data->unitAmountInCents);
         \assert(\is_string($uriVariables['id']));
 

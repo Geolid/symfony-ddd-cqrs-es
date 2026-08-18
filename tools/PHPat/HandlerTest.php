@@ -10,6 +10,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Application\Query\AsQueryHandler;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 final class HandlerTest
 {
@@ -38,7 +39,7 @@ final class HandlerTest
             ))
             ->shouldNot()
             ->dependOn()
-            ->classes(Selector::classname('Symfony\Component\Messenger\Attribute\AsMessageHandler'))
+            ->classes(Selector::classname(AsMessageHandler::class))
             ->because('RegisterMessageBusHandlersPass only wires #[AsCommandHandler]/#[AsQueryHandler] — the framework attribute lands on the default bus, silently.');
     }
 }

@@ -35,7 +35,7 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // Given
         // FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher(new FakeSecretHasher())
@@ -57,7 +57,7 @@ final class RehashPasswordCredentialHandlerTest extends AbstractIntegrationTestC
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->hasher)

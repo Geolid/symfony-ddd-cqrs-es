@@ -43,7 +43,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Shipment::request($id, $orderId, $customerId, self::shippingAddress(), $createdAt))
+            ->when(static fn (): Shipment => Shipment::request($id, $orderId, $customerId, self::shippingAddress(), $createdAt))
             ->then(self::shipmentRequested($id->toString(), $orderId, $customerId, $createdAt));
     }
 

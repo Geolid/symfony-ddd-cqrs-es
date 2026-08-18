@@ -22,6 +22,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     use EventSourcingTrait;
     use ServiceLocatorTrait;
 
+    #[\Override]
     protected static ?bool $alwaysBootKernel = false;
 
     private SecretHasherInterface $hasher;

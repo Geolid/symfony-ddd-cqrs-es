@@ -61,12 +61,12 @@ final class ApiTokenCredentialAuthenticator extends AbstractAuthenticator implem
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
         return new JsonResponse(['error' => 'Invalid API key.'], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): JsonResponse
     {
         return new JsonResponse(['error' => 'An API key is required.'], Response::HTTP_UNAUTHORIZED);
     }

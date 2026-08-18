@@ -20,7 +20,7 @@ final class GrantVoterTest extends TestCase
         $token = $this->tokenWithRoles(['ROLE_USER', 'fixture.widget:read']);
 
         // When
-        $vote = (new GrantVoter())->vote($token, null, ['fixture.widget:read']);
+        $vote = new GrantVoter()->vote($token, null, ['fixture.widget:read']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_GRANTED, $vote);
@@ -33,7 +33,7 @@ final class GrantVoterTest extends TestCase
         $token = $this->tokenWithRoles(['ROLE_USER']);
 
         // When
-        $vote = (new GrantVoter())->vote($token, null, ['fixture.widget:read']);
+        $vote = new GrantVoter()->vote($token, null, ['fixture.widget:read']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_DENIED, $vote);
@@ -46,7 +46,7 @@ final class GrantVoterTest extends TestCase
         $token = $this->tokenWithRoles(['ROLE_USER']);
 
         // When
-        $vote = (new GrantVoter())->vote($token, null, ['ROLE_USER']);
+        $vote = new GrantVoter()->vote($token, null, ['ROLE_USER']);
 
         // Then
         self::assertSame(VoterInterface::ACCESS_ABSTAIN, $vote);

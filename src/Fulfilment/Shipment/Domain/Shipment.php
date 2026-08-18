@@ -42,8 +42,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $orderId;
     public private(set) string $customerId;
     public private(set) PostalAddress $shippingAddress;
-    private ?TrackingReference $trackingReference;
-    private ?TrackingReference $returnTrackingReference;
+    private ?TrackingReference $trackingReference = null;
+    private ?TrackingReference $returnTrackingReference = null;
     private ShipmentState $state;
 
     public static function request(

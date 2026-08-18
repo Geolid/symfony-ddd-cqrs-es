@@ -38,7 +38,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
     public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId) {
+            static function (QueryBuilder $qb) use ($customerId): void {
                 $qb->andWhere('customer_id = :customerId')
                     ->setParameter('customerId', $customerId);
             },
@@ -48,7 +48,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
     public function closedBefore(string $cutoff): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($cutoff) {
+            static function (QueryBuilder $qb) use ($cutoff): void {
                 $qb->andWhere('closed_at < :cutoff')
                     ->setParameter('cutoff', new \DateTimeImmutable($cutoff)->format('Y-m-d H:i:s'));
             },
@@ -58,7 +58,7 @@ final class DbalOrderFinder extends AbstractDbalCollectionFinder implements Orde
     public function deliveredBefore(string $cutoff): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($cutoff) {
+            static function (QueryBuilder $qb) use ($cutoff): void {
                 $qb->andWhere('status = :status')
                     ->andWhere('delivered_at < :cutoff')
                     ->setParameter('status', OrderStatus::DELIVERED->value)

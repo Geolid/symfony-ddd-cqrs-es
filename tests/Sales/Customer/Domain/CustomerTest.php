@@ -28,7 +28,7 @@ final class CustomerTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Customer::register($id, Email::fromString('Buyer@Example.COM'), $registeredAt))
+            ->when(static fn (): Customer => Customer::register($id, Email::fromString('Buyer@Example.COM'), $registeredAt))
             ->then(new CustomerRegistered($id->toString(), 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)));
     }
 
