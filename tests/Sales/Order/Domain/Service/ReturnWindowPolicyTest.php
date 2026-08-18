@@ -25,6 +25,20 @@ final class ReturnWindowPolicyTest extends TestCase
     }
 
     #[Test]
+    public function itHasNotExpiredAtWindowBoundary(): void
+    {
+        // Given
+        $policy = new ReturnWindowPolicy(14);
+        $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        // When
+        $expired = $policy->hasExpired($deliveredAt, $deliveredAt->modify('+14 days'));
+
+        // Then
+        self::assertFalse($expired);
+    }
+
+    #[Test]
     public function itHasExpiredPastWindow(): void
     {
         // Given

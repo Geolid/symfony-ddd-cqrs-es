@@ -11,6 +11,7 @@ paths:
 - Code is organized in three blocks separated by blank lines: `// Given`, `// When`, `// Then`. For an exception test, `// Then` (`expectException()`) comes before `// When`.
 - An identical construction (a `service(<X>::class)` resolution, a constraint instance reused across data sets) repeated across two or more call sites in the same test class is hoisted once instead of repeated — a property resolved in `setUp()` when the call sites are instance methods, a `private static` helper when they're static (a data provider). Exception: a Web test case, where `setUp()` runs before the test method's own `self::browser()`/`createClient()` call — resolving a service that early boots the kernel out of order (`LogicException: Booting the kernel before calling createClient()...`), so the repeated resolution stays inline there.
 - Success and failure cases for the same behavior are grouped together, success first.
+- A relational-operator comparison against a threshold (`<`/`<=`/`>`/`>=`, e.g. a window/retention policy's expiry check) is tested exactly at the boundary value, not only clearly-before/clearly-after — otherwise a mutant flipping the operator's inclusivity survives unnoticed.
 
 **NEVER**
 - Mock an Aggregate or a Result object directly — build it through the matching Test Factory instead of a test double.

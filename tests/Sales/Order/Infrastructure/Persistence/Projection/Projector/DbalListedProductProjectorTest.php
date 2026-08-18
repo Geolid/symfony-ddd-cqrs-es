@@ -18,8 +18,11 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itProjectsOnProductListed(): void
     {
+        // Given
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+
         // When
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $this->store($product);
 
         // Then
         $row = $this->fetchRow($product->id()->toString());

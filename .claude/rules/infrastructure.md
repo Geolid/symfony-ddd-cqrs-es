@@ -47,6 +47,7 @@ paths:
 
 #### Structure
 - A Projector test asserts DB state through a `private fetchRow(string $id): array|false` helper — never an inline `SELECT`.
+- A Projector test exercising an UPDATE (a reaction on an aggregate that already has a projected row) stores a second, unrelated row (different id) alongside the one under test, and asserts that row stayed untouched — a single-row dataset can't distinguish "the right row was targeted" from "whatever row existed got updated", so a mutant removing the UPDATE's WHERE/identifying criteria entirely survives unnoticed.
 
 #### Test doubles
 - An Application-level test (a Processor/Handler exercising the port) doubles the port interface directly, no HTTP involved. Only the dedicated Infrastructure test for the concrete adapter doubles the vendor client instead, to exercise that adapter's own HTTP↔Domain mapping (payload serialization, error mapping to its own client exception).

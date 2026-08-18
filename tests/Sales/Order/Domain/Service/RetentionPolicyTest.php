@@ -25,6 +25,20 @@ final class RetentionPolicyTest extends TestCase
     }
 
     #[Test]
+    public function itHasNotExpiredAtRetentionPeriodBoundary(): void
+    {
+        // Given
+        $policy = new RetentionPolicy(3650);
+        $closedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
+        // When
+        $expired = $policy->hasExpired($closedAt, $closedAt->modify('+3650 days'));
+
+        // Then
+        self::assertFalse($expired);
+    }
+
+    #[Test]
     public function itHasExpiredPastRetentionPeriod(): void
     {
         // Given
