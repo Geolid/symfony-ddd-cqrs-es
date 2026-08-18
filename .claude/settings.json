@@ -17,6 +17,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash .claude/hooks/rector-fix.sh"
+          },
+          {
+            "type": "command",
             "command": "bash .claude/hooks/cs-fix.sh"
           }
         ]

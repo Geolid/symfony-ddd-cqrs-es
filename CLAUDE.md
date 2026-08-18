@@ -19,7 +19,8 @@ make mutation [coverage=1]                      # Infection mutation testing (sc
 make stan.src / stan.<dm>                       # PHPStan
 make deptrac-bc / -layers / -dm                 # architecture isolation checks
 make cs-php-fix / -twig-fix [file=<x>]          # Linter auto-fix (whole repo if file omitted)
-make static                                     # Lint + CS + Deptrac + Stan
+make rector-fix [file=<x>]                      # Rector auto-fix (whole repo if file omitted)
+make static                                     # Lint + CS + Deptrac + Stan + Rector
 make qa                                         # static + tests + mutation testing
 make assets                                     # Install DM assets
 ```
