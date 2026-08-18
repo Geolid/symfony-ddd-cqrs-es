@@ -19,7 +19,7 @@ use Support\AbstractIntegrationTestCase;
 final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPublishesTheRegistrationOnCustomerRegistered(): void
+    public function itPublishesOnCustomerRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
@@ -37,7 +37,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheErasureOnCustomerErased(): void
+    public function itPublishesOnCustomerErased(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->erased()->create();
@@ -54,7 +54,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheShippingAddressOnCustomerShippingAddressRegistered(): void
+    public function itPublishesOnCustomerShippingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -77,7 +77,7 @@ final class CustomerIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheBillingAddressOnCustomerBillingAddressRegistered(): void
+    public function itPublishesOnCustomerBillingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()

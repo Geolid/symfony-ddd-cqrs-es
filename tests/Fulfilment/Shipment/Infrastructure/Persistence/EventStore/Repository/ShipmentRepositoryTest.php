@@ -24,7 +24,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedShipment(): void
+    public function itLoadsSaved(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->create();
@@ -39,7 +39,7 @@ final class ShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedShipment(): void
+    public function itThrowsOnUnsaved(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString());

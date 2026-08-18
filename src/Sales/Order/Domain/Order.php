@@ -14,12 +14,21 @@ use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Event\OrderReturned;
+use Sales\Order\Domain\Event\OrderReturnRejected;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
+use Sales\Order\Domain\Exception\OrderNotCompletableException;
+use Sales\Order\Domain\Exception\OrderNotReturnableException;
+use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
+use Sales\Order\Domain\Service\RetentionPolicy;
+use Sales\Order\Domain\Service\ReturnWindowPolicy;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
@@ -40,6 +49,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private PostalAddress $billingAddress;
     private int $totalAmountInCents;
     private OrderState $state;
+    private \DateTimeImmutable $deliveredAt;
+    private ?\DateTimeImmutable $closedAt;
     private ?\DateTimeImmutable $anonymizedAt;
 
     public function id(): OrderId
@@ -134,6 +145,18 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
+    public function confirm(\DateTimeImmutable $confirmedAt): void
+    {
+        if (!$this->state->isPlaced()) {
+            return;
+        }
+
+        $this->recordThat(new OrderConfirmed(
+            id: $this->id->toString(),
+            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     /**
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
@@ -158,18 +181,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function confirm(\DateTimeImmutable $confirmedAt): void
-    {
-        if (!$this->state->isPlaced()) {
-            return;
-        }
-
-        $this->recordThat(new OrderConfirmed(
-            id: $this->id->toString(),
-            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
-        ));
-    }
-
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
         if (!$this->state->isConfirmed()) {
@@ -182,27 +193,108 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function complete(\DateTimeImmutable $completedAt): void
+    public function deliver(\DateTimeImmutable $deliveredAt): void
     {
         if (!$this->state->isDispatched()) {
             return;
         }
 
-        $this->recordThat(new OrderCompleted(
+        $this->recordThat(new OrderDelivered(
             id: $this->id->toString(),
-            completedAt: $completedAt->format(\DateTimeInterface::ATOM),
+            deliveredAt: $deliveredAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
-    public function anonymize(\DateTimeImmutable $anonymizedAt): void
+    /**
+     * @throws OrderNotCompletableException
+     */
+    public function complete(\DateTimeImmutable $now, ReturnWindowPolicy $returnWindowPolicy): void
+    {
+        if ($this->state->isCompleted()) {
+            return;
+        }
+
+        if (!$this->state->isDelivered()) {
+            throw OrderNotCompletableException::forId($this->id);
+        }
+
+        if (!$returnWindowPolicy->hasExpired($this->deliveredAt, $now)) {
+            return;
+        }
+
+        $this->recordThat(new OrderCompleted(
+            id: $this->id->toString(),
+            completedAt: $now->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws OrderBelongsToAnotherCustomerException
+     * @throws OrderNotReturnableException
+     * @throws OrderReturnWindowExpiredException
+     */
+    public function requestReturn(string $customerId, \DateTimeImmutable $now, ReturnWindowPolicy $returnWindowPolicy): void
+    {
+        if ($this->customerId !== $customerId) {
+            throw OrderBelongsToAnotherCustomerException::forId($this->id);
+        }
+
+        if ($this->state->isReturnRequested()) {
+            return;
+        }
+
+        if (!$this->state->isDelivered()) {
+            throw OrderNotReturnableException::forId($this->id);
+        }
+
+        if ($returnWindowPolicy->hasExpired($this->deliveredAt, $now)) {
+            throw OrderReturnWindowExpiredException::forId($this->id);
+        }
+
+        $this->recordThat(new OrderReturnRequested(
+            id: $this->id->toString(),
+            requestedAt: $now->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function confirmReturn(\DateTimeImmutable $returnedAt): void
+    {
+        if (!$this->state->isReturnRequested()) {
+            return;
+        }
+
+        $this->recordThat(new OrderReturned(
+            id: $this->id->toString(),
+            returnedAt: $returnedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function rejectReturn(string $reason, \DateTimeImmutable $rejectedAt): void
+    {
+        if (!$this->state->isReturnRequested()) {
+            return;
+        }
+
+        $this->recordThat(new OrderReturnRejected(
+            id: $this->id->toString(),
+            reason: $reason,
+            rejectedAt: $rejectedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function anonymize(\DateTimeImmutable $now, RetentionPolicy $retentionPolicy): void
     {
         if (null !== $this->anonymizedAt) {
             return;
         }
 
+        if (null === $this->closedAt || !$retentionPolicy->hasExpired($this->closedAt, $now)) {
+            return;
+        }
+
         $this->recordThat(new OrderAnonymized(
             id: $this->id->toString(),
-            anonymizedAt: $anonymizedAt->format(\DateTimeInterface::ATOM),
+            anonymizedAt: $now->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -221,13 +313,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         );
         $this->totalAmountInCents = $event->totalAmountInCents;
         $this->state = OrderState::PLACED;
+        $this->closedAt = null;
         $this->anonymizedAt = null;
-    }
-
-    #[Apply]
-    private function applyCancelled(OrderCancelled $event): void
-    {
-        $this->state = OrderState::CANCELLED;
     }
 
     #[Apply]
@@ -237,15 +324,50 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
+    private function applyCancelled(OrderCancelled $event): void
+    {
+        $this->state = OrderState::CANCELLED;
+        $this->closedAt = new \DateTimeImmutable($event->cancelledAt);
+    }
+
+    #[Apply]
     private function applyDispatched(OrderDispatched $event): void
     {
         $this->state = OrderState::DISPATCHED;
     }
 
     #[Apply]
+    private function applyDelivered(OrderDelivered $event): void
+    {
+        $this->state = OrderState::DELIVERED;
+        $this->deliveredAt = new \DateTimeImmutable($event->deliveredAt);
+    }
+
+    #[Apply]
     private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
+        $this->closedAt = new \DateTimeImmutable($event->completedAt);
+    }
+
+    #[Apply]
+    private function applyReturnRequested(OrderReturnRequested $event): void
+    {
+        $this->state = OrderState::RETURN_REQUESTED;
+    }
+
+    #[Apply]
+    private function applyReturned(OrderReturned $event): void
+    {
+        $this->state = OrderState::RETURNED;
+        $this->closedAt = new \DateTimeImmutable($event->returnedAt);
+    }
+
+    #[Apply]
+    private function applyReturnRejected(OrderReturnRejected $event): void
+    {
+        $this->state = OrderState::RETURN_REJECTED;
+        $this->closedAt = new \DateTimeImmutable($event->rejectedAt);
     }
 
     #[Apply]

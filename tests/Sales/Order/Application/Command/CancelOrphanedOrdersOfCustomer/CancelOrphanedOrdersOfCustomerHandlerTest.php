@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCancelsCancellableOrdersOfTheCustomer(): void
+    public function itCancelsWhenCancellable(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -45,7 +45,7 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
     }
 
     #[Test]
-    public function itIgnoresACustomerWithNoOrders(): void
+    public function itIgnoresWhenNoneExist(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

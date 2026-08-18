@@ -13,7 +13,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 final class OrderPaymentIdTest extends TestCase
 {
     #[Test]
-    public function itDerivesTheSameIdForTheSameOrder(): void
+    public function itDerivesSameIdForSameOrder(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -27,7 +27,7 @@ final class OrderPaymentIdTest extends TestCase
     }
 
     #[Test]
-    public function itDerivesADifferentIdForADifferentOrder(): void
+    public function itDerivesDifferentIdForDifferentOrder(): void
     {
         // When
         $a = OrderPaymentId::forOrder(Uuid::uuid7()->toString());

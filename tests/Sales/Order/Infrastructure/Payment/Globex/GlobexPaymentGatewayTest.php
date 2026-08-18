@@ -21,7 +21,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class GlobexPaymentGatewayTest extends TestCase
 {
     #[Test]
-    public function itChargesAnOrderAndReadsTheProviderSession(): void
+    public function itChargesOrderAndReadsProviderSession(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -56,7 +56,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreachableProviders')]
-    public function itThrowsOnAProviderItCannotReach(callable|MockResponse $response): void
+    public function itThrowsOnProviderItCannotReach(callable|MockResponse $response): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -76,7 +76,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnAChargeResponseItCannotRead(MockResponse $response): void
+    public function itThrowsOnChargeResponseItCannotRead(MockResponse $response): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -100,7 +100,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itVoidsACharge(): void
+    public function itVoidsCharge(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'voided']);
@@ -117,7 +117,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenVoidingOnAProviderItCannotReach(): void
+    public function itThrowsWhenVoidingOnProviderItCannotReach(): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -127,7 +127,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itRefundsACharge(): void
+    public function itRefundsCharge(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'refunding']);
@@ -144,7 +144,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenRefundingOnAProviderItCannotReach(): void
+    public function itThrowsWhenRefundingOnProviderItCannotReach(): void
     {
         // Then
         $this->expectException(GlobexClientException::class);

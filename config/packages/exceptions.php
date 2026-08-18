@@ -22,6 +22,9 @@ use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
+use Sales\Order\Domain\Exception\OrderNotCompletableException;
+use Sales\Order\Domain\Exception\OrderNotReturnableException;
+use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -60,6 +63,9 @@ return static function (ContainerConfigurator $container): void {
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderNotCompletableException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderNotReturnableException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderReturnWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],

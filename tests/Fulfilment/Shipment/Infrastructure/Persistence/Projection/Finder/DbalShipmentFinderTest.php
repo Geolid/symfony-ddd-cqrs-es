@@ -26,7 +26,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsShipments(): void
+    public function itLists(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -121,12 +121,53 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownTrackingReference(): void
+    public function itThrowsOnUnknownTrackingReference(): void
     {
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
         $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');
+    }
+
+    #[Test]
+    public function itGetsByReturnTrackingReference(): void
+    {
+        // Given
+        $tracked = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-4Q7X2K9')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-1')
+            ->store();
+        ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-OTHER')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-OTHER')
+            ->store();
+
+        // When
+        $result = $this->finder->ofReturnTrackingReference('ACME-RETURN-1');
+
+        // Then
+        self::assertSame($tracked->id()->toString(), $result->id);
+        self::assertSame($tracked->orderId(), $result->orderId);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
+        self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
+    }
+
+    #[Test]
+    public function itThrowsOnUnknownReturnTrackingReference(): void
+    {
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
     }
 }

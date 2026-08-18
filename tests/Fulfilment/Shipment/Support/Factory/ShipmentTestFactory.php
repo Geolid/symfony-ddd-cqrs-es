@@ -76,6 +76,52 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         );
     }
 
+    public function returnRequested(\DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt),
+        );
+    }
+
+    public function returnManifested(
+        string $returnTrackingReference = 'ACME-RETURN-1',
+        \DateTimeImmutable $manifestedAt = new \DateTimeImmutable('now +00:00'),
+    ): self {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString($returnTrackingReference), $manifestedAt),
+        );
+    }
+
+    public function returnDispatched(\DateTimeImmutable $dispatchedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->dispatchReturn($dispatchedAt),
+        );
+    }
+
+    public function returnReceived(\DateTimeImmutable $receivedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt),
+        );
+    }
+
+    public function returnApproved(\DateTimeImmutable $approvedAt = new \DateTimeImmutable('now +00:00')): self
+    {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt),
+        );
+    }
+
+    public function returnRejected(
+        string $reason = 'item damaged beyond resale',
+        \DateTimeImmutable $rejectedAt = new \DateTimeImmutable('now +00:00'),
+    ): self {
+        return $this->withModifier(
+            static fn (Shipment $shipment) => $shipment->rejectReturn($reason, $rejectedAt),
+        );
+    }
+
     protected function defaults(): array
     {
         return [

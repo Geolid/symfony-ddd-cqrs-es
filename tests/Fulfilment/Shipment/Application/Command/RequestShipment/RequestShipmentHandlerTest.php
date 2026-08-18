@@ -29,7 +29,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsAShipmentForAnOrder(): void
+    public function itRequestsForOrder(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -64,7 +64,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyRequestedShipment(): void
+    public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

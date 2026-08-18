@@ -41,12 +41,13 @@ paths:
 
 #### Naming
 - Repository: success `it*`, failure `itThrowsOn*`.
-- Projector: `itProjects*On*` for every reaction, whether it inserts a new row or mutates an already-projected one (no dedicated failure shape).
+- Projector: `itProjects*On*` for every reaction that inserts a new row or mutates an already-projected one in place (no dedicated failure shape). A reaction whose own assertion proves the row is gone (a `fetchRow()` returning nothing/false), not merely updated, is `itRemoves*On*` instead — the verb states what the row's own final state actually is, never a euphemism for a real deletion.
 - Translator: `itPublishes*On*` for every reaction (no dedicated failure shape) — names the cross-BC effect (an Integration Event becomes visible on the shared stream), not the class's own mechanism.
 - Finder: an exact lookup that throws when absent is `itGets*`, failure `itThrowsOn*`; one that stays nullable is `itFinds*` for both outcomes — absence is a valid result there, not a failure, so it never takes the `itThrowsOn*`/`itFailsWhen*` shape. A collection read (iterate/filter/paginate) is `itLists*`/`itFilters*By*`/`itPaginates*` — `itGets*`/`itFinds*` are reserved for a single-shot lookup, never a collection scan.
 
 #### Structure
 - A Projector test asserts DB state through a `private fetchRow(string $id): array|false` helper — never an inline `SELECT`.
+- A Projector test exercising an UPDATE (a reaction on an aggregate that already has a projected row) stores a second, unrelated row (different id) alongside the one under test, and asserts that row stayed untouched — a single-row dataset can't distinguish "the right row was targeted" from "whatever row existed got updated", so a mutant removing the UPDATE's WHERE/identifying criteria entirely survives unnoticed.
 
 #### Test doubles
 - An Application-level test (a Processor/Handler exercising the port) doubles the port interface directly, no HTTP involved. Only the dedicated Infrastructure test for the concrete adapter doubles the vendor client instead, to exercise that adapter's own HTTP↔Domain mapping (payload serialization, error mapping to its own client exception).

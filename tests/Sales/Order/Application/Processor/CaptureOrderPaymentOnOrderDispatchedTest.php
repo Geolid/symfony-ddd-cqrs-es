@@ -25,7 +25,7 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
     }
 
     #[Test]
-    public function itCapturesTheOrderPaymentOnOrderDispatched(): void
+    public function itCapturesOnOrderDispatched(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

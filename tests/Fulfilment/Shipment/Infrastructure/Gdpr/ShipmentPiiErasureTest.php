@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCryptoShredsTheFrozenAddressOnErasure(): void
+    public function itCryptoShredsFrozenAddressOnErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

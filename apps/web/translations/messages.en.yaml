@@ -90,6 +90,9 @@ sales:
             not_cancellable: This order can no longer be cancelled.
             cannot_pay_cancelled: This order has been cancelled and can no longer be paid.
             catalog_changed: Prices or product availability changed since you loaded this page — please review your order.
+            return_requested: Return requested.
+            not_returnable: This order is not eligible for a return.
+            return_window_expired: The return window for this order has expired.
     customer:
         register:
             title: Register

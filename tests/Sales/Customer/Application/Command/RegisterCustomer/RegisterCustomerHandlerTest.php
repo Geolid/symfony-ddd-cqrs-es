@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itRegistersACustomer(): void
+    public function itRegisters(): void
     {
         // Given
         $id = CustomerId::generate()->toString();
@@ -33,7 +33,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheAddressIsAlreadyRegistered(): void
+    public function itFailsWhenEmailAlreadyRegistered(): void
     {
         // Given
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', CustomerId::generate()->toString());

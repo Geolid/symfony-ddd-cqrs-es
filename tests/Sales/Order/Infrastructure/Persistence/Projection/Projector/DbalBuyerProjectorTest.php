@@ -31,10 +31,13 @@ use Support\AbstractIntegrationTestCase;
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheBuyerOnCustomerRegistered(): void
+    public function itProjectsOnCustomerRegistered(): void
     {
+        // Given
+        $customer = CustomerTestFactory::new()->create();
+
         // When
-        $customer = CustomerTestFactory::new()->store();
+        $this->store($customer);
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
@@ -44,12 +47,15 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheShippingAddressOnCustomerShippingAddressRegistered(): void
+    public function itProjectsOnCustomerShippingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
-            ->store();
+            ->create();
+
+        // When
+        $this->store($customer);
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
@@ -59,12 +65,15 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheBillingAddressOnCustomerBillingAddressRegistered(): void
+    public function itProjectsOnCustomerBillingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
             ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
-            ->store();
+            ->create();
+
+        // When
+        $this->store($customer);
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
@@ -74,13 +83,14 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRedactionOnCustomerErased(): void
+    public function itRemovesOnCustomerErased(): void
     {
         // Given
         $other = CustomerTestFactory::new()->store();
+        $customer = CustomerTestFactory::new()->erased()->create();
 
         // When
-        $customer = CustomerTestFactory::new()->erased()->store();
+        $this->store($customer);
 
         // Then
         self::assertFalse($this->fetchRow($customer->id()->toString()));

@@ -8,10 +8,11 @@ enum OrderPaymentState: string
 {
     case REQUESTED = 'requested';
     case AUTHORIZED = 'authorized';
-    case CAPTURED = 'captured';
     case FAILED = 'failed';
+    case CAPTURED = 'captured';
     case CANCELLED = 'cancelled';
-    case REFUNDING = 'refunding';
+    case REFUND_INITIATED = 'refund_initiated';
+    case REFUNDED = 'refunded';
 
     public function isRequested(): bool
     {
@@ -23,14 +24,14 @@ enum OrderPaymentState: string
         return self::AUTHORIZED === $this;
     }
 
-    public function isCaptured(): bool
-    {
-        return self::CAPTURED === $this;
-    }
-
     public function isFailed(): bool
     {
         return self::FAILED === $this;
+    }
+
+    public function isCaptured(): bool
+    {
+        return self::CAPTURED === $this;
     }
 
     public function isCancelled(): bool
@@ -38,8 +39,13 @@ enum OrderPaymentState: string
         return self::CANCELLED === $this;
     }
 
-    public function isRefunding(): bool
+    public function isRefundInitiated(): bool
     {
-        return self::REFUNDING === $this;
+        return self::REFUND_INITIATED === $this;
+    }
+
+    public function isRefunded(): bool
+    {
+        return self::REFUNDED === $this;
     }
 }

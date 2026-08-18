@@ -11,13 +11,22 @@ use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
+use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Event\OrderReturned;
+use Sales\Order\Domain\Event\OrderReturnRejected;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
+use Sales\Order\Domain\Exception\OrderNotCompletableException;
+use Sales\Order\Domain\Exception\OrderNotReturnableException;
+use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
+use Sales\Order\Domain\Service\RetentionPolicy;
+use Sales\Order\Domain\Service\ReturnWindowPolicy;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
@@ -30,7 +39,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class OrderTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itPlacesDerivingItsTotalFromItsLines(): void
+    public function itPlacesDerivingTotalFromLines(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -52,7 +61,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotPlaceWithoutALine(): void
+    public function itCannotPlaceWithoutLine(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -61,6 +70,37 @@ final class OrderTest extends AggregateRootTestCase
             ->given()
             ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
             ->expectsException(OrderWithoutLineException::class);
+    }
+
+    #[Test]
+    public function itConfirmsWhenPlaced(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
+            ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotConfirmWhenAlreadyConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
     }
 
     #[Test]
@@ -78,7 +118,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCancelAnAlreadyCancelled(): void
+    public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -132,38 +172,19 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsConfirmedWhenPlaced(): void
+    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
-            ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
+            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
+            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
-    public function itDoesNotConfirmAnAlreadyConfirmed(): void
-    {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-
-        $this
-            ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
-                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
-            )
-            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->then();
-    }
-
-    #[Test]
-    public function itIsDispatchedWhenConfirmed(): void
+    public function itDispatchesWhenConfirmed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -194,14 +215,14 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsCompletedWhenDispatched(): void
+    public function itDeliversWhenDispatched(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $completedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
 
         $this
             ->given(
@@ -209,12 +230,12 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete($completedAt))
-            ->then(new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (Order $order) => $order->deliver($deliveredAt))
+            ->then(new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
-    public function itDoesNotCompleteWhenNotDispatched(): void
+    public function itDoesNotDeliverWhenNotDispatched(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -226,20 +247,284 @@ final class OrderTest extends AggregateRootTestCase
                 self::orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->deliver(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 
     #[Test]
-    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
+    public function itCompletesWhenReturnWindowElapsed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete($completedAt, new ReturnWindowPolicy(14)))
+            ->then(new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotCompleteWhenReturnWindowNotElapsed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotCompleteWhenAlreadyCompleted(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-03-01T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotCompleteWhenNotCompletable(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->expectsException(OrderNotCompletableException::class);
+    }
+
+    #[Test]
+    public function itRequestsReturnWhenDelivered(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, new ReturnWindowPolicy(14)))
+            ->then(new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotRequestReturnWhenAlreadyRequested(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-11T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotRequestReturnWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
-            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(
+                self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
+    }
+
+    #[Test]
+    public function itCannotRequestReturnWhenNotDelivered(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->expectsException(OrderNotReturnableException::class);
+    }
+
+    #[Test]
+    public function itCannotRequestReturnWhenReturnWindowElapsed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-19T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->expectsException(OrderReturnWindowExpiredException::class);
+    }
+
+    #[Test]
+    public function itConfirmsReturnWhenRequested(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $returnedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->confirmReturn($returnedAt))
+            ->then(new OrderReturned($id, $returnedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotConfirmReturnWhenNotRequested(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->confirmReturn(new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itRejectsReturnWhenRequested(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', $rejectedAt))
+            ->then(new OrderReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotRejectReturnWhenNotRequested(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->then();
     }
 
     #[Test]
@@ -273,33 +558,69 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAnonymizes(): void
+    public function itAnonymizesWhenRetentionPeriodElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $anonymizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2016-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->anonymize($anonymizedAt))
-            ->then(new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)));
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->anonymize($now, new RetentionPolicy(3650)))
+            ->then(new OrderAnonymized($id, $now->format(\DateTimeInterface::ATOM)));
     }
 
     #[Test]
-    public function itDoesNotReanonymizeAnAlreadyAnonymized(): void
+    public function itDoesNotAnonymizeWhenNotClosed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotAnonymizeWhenRetentionPeriodNotElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotAnonymizeWhenAlreadyAnonymized(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
+        $cancelledAt = new \DateTimeImmutable('2016-01-02T00:00:00+00:00');
         $anonymizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
             ->given(
                 self::orderPlaced($id, $customerId, $placedAt),
+                new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
                 new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
             ->then();
     }
 

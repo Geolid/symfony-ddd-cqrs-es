@@ -11,6 +11,12 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnApproved;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnDispatched;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnManifested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnReceived;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -37,6 +43,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private string $customerId;
     private PostalAddress $shippingAddress;
     private ?TrackingReference $trackingReference;
+    private ?TrackingReference $returnTrackingReference;
     private ShipmentState $state;
 
     public function id(): ShipmentId
@@ -93,6 +100,28 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new ShipmentPrepared(
             id: $this->id->toString(),
             preparedAt: $preparedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function cancel(\DateTimeImmutable $cancelledAt): void
+    {
+        if ($this->state->isCancelled()) {
+            return;
+        }
+
+        if (!$this->state->isCancellable()) {
+            $this->recordThat(new ShipmentCancellationRejected(
+                id: $this->id->toString(),
+                status: $this->state->value,
+                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
+        }
+
+        $this->recordThat(new ShipmentCancelled(
+            id: $this->id->toString(),
+            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -153,25 +182,111 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function cancel(\DateTimeImmutable $cancelledAt): void
+    public function requestReturn(\DateTimeImmutable $requestedAt): void
     {
-        if ($this->state->isCancelled()) {
+        if (!$this->state->isDelivered()) {
             return;
         }
 
-        if (!$this->state->isCancellable()) {
-            $this->recordThat(new ShipmentCancellationRejected(
-                id: $this->id->toString(),
-                status: $this->state->value,
-                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
-            ));
-
-            return;
-        }
-
-        $this->recordThat(new ShipmentCancelled(
+        $this->recordThat(new ShipmentReturnRequested(
             id: $this->id->toString(),
-            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            requestedAt: $requestedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentAlreadyTrackedException
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function manifestReturn(TrackingReference $returnTrackingReference, \DateTimeImmutable $manifestedAt): void
+    {
+        if ($this->state->isReturnManifested()) {
+            \assert(null !== $this->returnTrackingReference);
+
+            if ($this->returnTrackingReference->equals($returnTrackingReference)) {
+                return;
+            }
+
+            throw ShipmentAlreadyTrackedException::forReference($this->returnTrackingReference->toString());
+        }
+
+        if (!$this->state->isReturnRequested()) {
+            throw ShipmentInvalidTransitionException::cannotManifestReturn($this->state);
+        }
+
+        $this->recordThat(new ShipmentReturnManifested(
+            id: $this->id->toString(),
+            returnTrackingReference: $returnTrackingReference->toString(),
+            manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function dispatchReturn(\DateTimeImmutable $dispatchedAt): void
+    {
+        if ($this->state->isReturnDispatchedOrLater()) {
+            return;
+        }
+
+        if (!$this->state->isReturnManifested()) {
+            throw ShipmentInvalidTransitionException::cannotDispatchReturn($this->state);
+        }
+
+        $this->recordThat(new ShipmentReturnDispatched(
+            id: $this->id->toString(),
+            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function receiveReturn(\DateTimeImmutable $receivedAt): void
+    {
+        if ($this->state->isReturnReceived() || $this->state->isReturnApproved() || $this->state->isReturnRejected()) {
+            return;
+        }
+
+        if (!$this->state->isReturnManifestedOrLater()) {
+            throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->state);
+        }
+
+        $this->recordThat(new ShipmentReturnReceived(
+            id: $this->id->toString(),
+            receivedAt: $receivedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function approveReturn(\DateTimeImmutable $approvedAt): void
+    {
+        if (!$this->state->isReturnReceived()) {
+            throw ShipmentInvalidTransitionException::cannotApproveReturn($this->state);
+        }
+
+        $this->recordThat(new ShipmentReturnApproved(
+            id: $this->id->toString(),
+            approvedAt: $approvedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
+    public function rejectReturn(string $reason, \DateTimeImmutable $rejectedAt): void
+    {
+        if (!$this->state->isReturnReceived()) {
+            throw ShipmentInvalidTransitionException::cannotRejectReturn($this->state);
+        }
+
+        $this->recordThat(new ShipmentReturnRejected(
+            id: $this->id->toString(),
+            reason: $reason,
+            rejectedAt: $rejectedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -186,6 +301,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
         );
         $this->trackingReference = null;
+        $this->returnTrackingReference = null;
         $this->state = ShipmentState::REQUESTED;
     }
 
@@ -223,5 +339,42 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyCancellationRejected(ShipmentCancellationRejected $event): void
     {
+    }
+
+    #[Apply]
+    private function applyReturnRequested(ShipmentReturnRequested $event): void
+    {
+        $this->state = ShipmentState::RETURN_REQUESTED;
+    }
+
+    #[Apply]
+    private function applyReturnManifested(ShipmentReturnManifested $event): void
+    {
+        $this->returnTrackingReference = TrackingReference::fromString($event->returnTrackingReference);
+        $this->state = ShipmentState::RETURN_MANIFESTED;
+    }
+
+    #[Apply]
+    private function applyReturnDispatched(ShipmentReturnDispatched $event): void
+    {
+        $this->state = ShipmentState::RETURN_DISPATCHED;
+    }
+
+    #[Apply]
+    private function applyReturnReceived(ShipmentReturnReceived $event): void
+    {
+        $this->state = ShipmentState::RETURN_RECEIVED;
+    }
+
+    #[Apply]
+    private function applyReturnApproved(ShipmentReturnApproved $event): void
+    {
+        $this->state = ShipmentState::RETURN_APPROVED;
+    }
+
+    #[Apply]
+    private function applyReturnRejected(ShipmentReturnRejected $event): void
+    {
+        $this->state = ShipmentState::RETURN_REJECTED;
     }
 }

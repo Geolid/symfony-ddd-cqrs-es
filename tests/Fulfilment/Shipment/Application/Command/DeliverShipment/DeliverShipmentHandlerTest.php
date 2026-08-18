@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDeliversADispatchedShipment(): void
+    public function itDeliversWhenDispatched(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
@@ -34,7 +34,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentHasNotLeftYet(): void
+    public function itFailsWhenNotDispatched(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->store();
@@ -47,7 +47,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

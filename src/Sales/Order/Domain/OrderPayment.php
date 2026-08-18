@@ -14,7 +14,8 @@ use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentFailed;
-use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
+use Sales\Order\Domain\Event\OrderPaymentRefunded;
+use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
@@ -133,20 +134,33 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if ($this->state->isCaptured()) {
-            $this->refund($cancelledAt);
+            $this->initiateRefund($cancelledAt);
         }
     }
 
-    public function refund(\DateTimeImmutable $refundedAt): void
+    public function initiateRefund(\DateTimeImmutable $initiatedAt): void
     {
         if (!$this->state->isCaptured()) {
             return;
         }
 
-        $this->recordThat(new OrderPaymentRefundRequested(
+        $this->recordThat(new OrderPaymentRefundInitiated(
             id: $this->id->toString(),
             orderId: $this->orderId,
             reference: $this->reference->toString(),
+            initiatedAt: $initiatedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
+    public function confirmRefund(\DateTimeImmutable $refundedAt): void
+    {
+        if (!$this->state->isRefundInitiated()) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaymentRefunded(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
             refundedAt: $refundedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -192,8 +206,14 @@ final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyRefundRequested(OrderPaymentRefundRequested $event): void
+    private function applyRefundInitiated(OrderPaymentRefundInitiated $event): void
     {
-        $this->state = OrderPaymentState::REFUNDING;
+        $this->state = OrderPaymentState::REFUND_INITIATED;
+    }
+
+    #[Apply]
+    private function applyRefunded(OrderPaymentRefunded $event): void
+    {
+        $this->state = OrderPaymentState::REFUNDED;
     }
 }

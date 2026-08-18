@@ -21,7 +21,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class AcmeCarrierGatewayTest extends TestCase
 {
     #[Test]
-    public function itBooksAPickupAndReadsTheCarrierReference(): void
+    public function itBooksPickupAndReadsCarrierReference(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -37,8 +37,7 @@ final class AcmeCarrierGatewayTest extends TestCase
             [
                 'reference' => $shipmentId,
                 'destination' => [
-                    'firstName' => 'Ada',
-                    'lastName' => 'Lovelace',
+                    'recipient' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
@@ -49,8 +48,41 @@ final class AcmeCarrierGatewayTest extends TestCase
     }
 
     #[Test]
+    public function itBooksReturnPickupAndReadsCarrierReference(): void
+    {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $response = self::jsonResponse(['trackingNumber' => 'ACME-RETURN-4Q7X2K9']);
+
+        // When
+        $returnTrackingReference = self::gateway($response)->requestReturnPickup($shipmentId, self::deliveryAddress());
+
+        // Then
+        self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
+        self::assertSame('https://carrier.acme.test/returns', $response->getRequestUrl());
+        self::assertSame(
+            [
+                'reference' => $shipmentId,
+                'origin' => [
+                    'recipient' => 'Ada Lovelace',
+                    'street' => '12 rue des Lilas',
+                    'postalCode' => '75001',
+                    'city' => 'Paris',
+                ],
+                'destination' => [
+                    'recipient' => 'Returns Department',
+                    'street' => "1 rue de l'Entrepot",
+                    'postalCode' => '75012',
+                    'city' => 'Paris',
+                ],
+            ],
+            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+        );
+    }
+
+    #[Test]
     #[DataProvider('provideUnreachableCarriers')]
-    public function itThrowsOnACarrierItCannotReach(callable|MockResponse $response): void
+    public function itThrowsOnCarrierItCannotReach(callable|MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -70,13 +102,24 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnAPickupResponseItCannotRead(MockResponse $response): void
+    public function itThrowsOnPickupResponseItCannotRead(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
 
         // When
         self::gateway($response)->requestPickup(Uuid::uuid7()->toString(), self::deliveryAddress());
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreadableResponses')]
+    public function itThrowsOnReturnPickupResponseItCannotRead(MockResponse $response): void
+    {
+        // Then
+        $this->expectException(AcmeClientException::class);
+
+        // When
+        self::gateway($response)->requestReturnPickup(Uuid::uuid7()->toString(), self::deliveryAddress());
     }
 
     /**
@@ -92,7 +135,13 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     private static function gateway(callable|MockResponse $response): AcmeCarrierGateway
     {
-        return new AcmeCarrierGateway(new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')));
+        return new AcmeCarrierGateway(
+            new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')),
+            'Returns Department',
+            "1 rue de l'Entrepot",
+            '75012',
+            'Paris',
+        );
     }
 
     private static function deliveryAddress(): PostalAddress

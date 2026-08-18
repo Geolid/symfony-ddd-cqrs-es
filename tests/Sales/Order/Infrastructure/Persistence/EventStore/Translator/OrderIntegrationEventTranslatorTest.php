@@ -11,6 +11,7 @@ use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
@@ -19,7 +20,7 @@ use Support\AbstractIntegrationTestCase;
 final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPublishesThePlacementOnOrderPlaced(): void
+    public function itPublishesOnOrderPlaced(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -42,7 +43,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheCancellationOnOrderCancelled(): void
+    public function itPublishesOnOrderCancelled(): void
     {
         // Given
         $order = OrderTestFactory::new()->cancelled()->create();
@@ -59,7 +60,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheConfirmationOnOrderConfirmed(): void
+    public function itPublishesOnOrderConfirmed(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -86,7 +87,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheRequestOnOrderPaymentRequested(): void
+    public function itPublishesOnOrderPaymentRequested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -112,7 +113,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheCaptureOnOrderPaymentCaptured(): void
+    public function itPublishesOnOrderPaymentCaptured(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -142,5 +143,23 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
             'postalCode' => $shippingAddress->address->postalCode,
             'city' => $shippingAddress->address->city,
         ], $event->shippingAddress);
+    }
+
+    #[Test]
+    public function itPublishesOnOrderReturnRequested(): void
+    {
+        // Given
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id()->toString()));
+        self::assertCount(3, $published);
+        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $published[1]);
+        $event = $published[2];
+        self::assertInstanceOf(OrderReturnRequestedIntegrationEvent::class, $event);
+        self::assertSame($order->id()->toString(), $event->orderId);
     }
 }

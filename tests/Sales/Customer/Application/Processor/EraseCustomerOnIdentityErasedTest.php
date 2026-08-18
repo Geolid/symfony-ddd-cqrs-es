@@ -25,7 +25,7 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itErasesTheCustomerOnIdentityErased(): void
+    public function itErasesOnIdentityErased(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();
@@ -40,7 +40,7 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itDoesNothingWhenNoCustomerExistsForTheIdentity(): void
+    public function itIgnoresWhenNoneExist(): void
     {
         // When
         ($this->processor)(new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), '2026-01-02T00:00:00+00:00'));

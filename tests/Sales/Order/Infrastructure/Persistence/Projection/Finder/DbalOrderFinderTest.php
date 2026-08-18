@@ -24,21 +24,23 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsAnOrder(): void
+    public function itGets(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
         $confirmedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
         $dispatchedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
-        $completedAt = new \DateTimeImmutable('2026-01-05T11:00:00+00:00');
-        $anonymizedAt = new \DateTimeImmutable('2026-01-06T12:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-05T11:00:00+00:00');
+        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+        $anonymizedAt = new \DateTimeImmutable('2036-02-02T12:00:00+00:00');
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
             ->withPlacedAt($placedAt)
             ->confirmed($confirmedAt)
             ->dispatched($dispatchedAt)
+            ->delivered($deliveredAt)
             ->completed($completedAt)
             ->anonymized($anonymizedAt)
             ->store();
@@ -54,13 +56,15 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($placedAt->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
         self::assertSame($confirmedAt->format('Y-m-d H:i:s'), $result->confirmedAt?->format('Y-m-d H:i:s'));
         self::assertSame($dispatchedAt->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($deliveredAt->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
         self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->completedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
+        self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->closedAt?->format('Y-m-d H:i:s'));
         self::assertSame($anonymizedAt->format('Y-m-d H:i:s'), $result->anonymizedAt?->format('Y-m-d H:i:s'));
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownOrder(): void
+    public function itThrowsOnUnknown(): void
     {
         // Then
         $this->expectException(OrderResultNotFoundException::class);
@@ -86,15 +90,37 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersOrdersPlacedBeforeACutoff(): void
+    public function itFiltersClosedBeforeACutoff(): void
     {
         // Given
         $cutoff = '2026-01-01T00:00:00+00:00';
-        $expired = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->store();
-        OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->store();
+        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->store();
+        OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->store();
+        OrderTestFactory::new()->store();
 
         // When
-        $results = iterator_to_array($this->finder->placedBefore($cutoff), false);
+        $results = iterator_to_array($this->finder->closedBefore($cutoff), false);
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($expired->id()->toString(), $results[0]->id);
+    }
+
+    #[Test]
+    public function itFiltersDeliveredBeforeACutoff(): void
+    {
+        // Given
+        $cutoff = '2026-01-15T00:00:00+00:00';
+        $expired = OrderTestFactory::new()->confirmed()->dispatched()
+            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->store();
+        OrderTestFactory::new()->confirmed()->dispatched()
+            ->delivered(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
+            ->store();
+        OrderTestFactory::new()->confirmed()->dispatched()->store();
+
+        // When
+        $results = iterator_to_array($this->finder->deliveredBefore($cutoff), false);
 
         // Then
         self::assertCount(1, $results);

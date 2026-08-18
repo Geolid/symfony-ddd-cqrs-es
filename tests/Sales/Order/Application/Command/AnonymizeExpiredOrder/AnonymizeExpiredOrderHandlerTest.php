@@ -12,11 +12,28 @@ use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\MockClock;
 
 final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itAnonymizesAPlacedOrder(): void
+    public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
+    {
+        // Given
+        self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
+        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))->store();
+
+        // When
+        $this->dispatch(new AnonymizeExpiredOrder($order->id()->toString()));
+
+        // Then
+        $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
+        self::assertSame(OrderStatus::CANCELLED, $result->status);
+        self::assertNotNull($result->anonymizedAt);
+    }
+
+    #[Test]
+    public function itIgnoresWhenNotClosed(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -26,12 +43,11 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id()->toString());
-        self::assertSame(OrderStatus::PLACED, $result->status);
-        self::assertNotNull($result->anonymizedAt);
+        self::assertNull($result->anonymizedAt);
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Then
         $this->expectException(OrderNotFoundException::class);

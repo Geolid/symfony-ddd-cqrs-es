@@ -8,10 +8,14 @@ use Fulfilment\Shipment\Application\Event\ShipmentCancelledIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipment\Application\Event\ShipmentManifestedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentReturnApprovedIntegrationEvent;
+use Fulfilment\Shipment\Application\Event\ShipmentReturnRejectedIntegrationEvent;
 use Fulfilment\Shipment\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipment\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnApproved;
+use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -99,6 +103,43 @@ final readonly class ShipmentIntegrationEventTranslator extends AbstractIntegrat
                 shipmentId: $event->id,
                 orderId: $shipment->orderId(),
                 trackingReference: $event->trackingReference,
+            ),
+        );
+    }
+
+    /**
+     * @throws ShipmentNotFoundException
+     */
+    #[Subscribe(ShipmentReturnApproved::class)]
+    public function onShipmentReturnApproved(ShipmentReturnApproved $event): void
+    {
+        $shipment = $this->repository->load(ShipmentId::fromString($event->id));
+
+        $this->append(
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
+            new ShipmentReturnApprovedIntegrationEvent(
+                shipmentId: $event->id,
+                orderId: $shipment->orderId(),
+                approvedAt: $event->approvedAt,
+            ),
+        );
+    }
+
+    /**
+     * @throws ShipmentNotFoundException
+     */
+    #[Subscribe(ShipmentReturnRejected::class)]
+    public function onShipmentReturnRejected(ShipmentReturnRejected $event): void
+    {
+        $shipment = $this->repository->load(ShipmentId::fromString($event->id));
+
+        $this->append(
+            IntegrationStreamId::build('fulfilment.shipment', $event->id),
+            new ShipmentReturnRejectedIntegrationEvent(
+                shipmentId: $event->id,
+                orderId: $shipment->orderId(),
+                reason: $event->reason,
+                rejectedAt: $event->rejectedAt,
             ),
         );
     }

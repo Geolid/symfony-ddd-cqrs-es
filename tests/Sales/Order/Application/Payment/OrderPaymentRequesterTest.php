@@ -40,7 +40,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsPaymentForAPlacedOrder(): void
+    public function itRequestsWhenPlaced(): void
     {
         // Given
         $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->store();
@@ -78,7 +78,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Then
         $this->expectException(OrderNotFoundException::class);
@@ -88,7 +88,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReturnsTheExistingCheckoutUrlWhenAPaymentHasAlreadyBeenRequested(): void
+    public function itReturnsExistingWhenAlreadyRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -103,7 +103,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderIsCancelled(): void
+    public function itFailsWhenCancelled(): void
     {
         // Given
         $order = OrderTestFactory::new()->cancelled()->store();

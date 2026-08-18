@@ -21,6 +21,7 @@ final readonly class OrderPaymentResult implements ResultInterface
         public ?\DateTimeImmutable $capturedAt,
         public ?\DateTimeImmutable $failedAt,
         public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $refundInitiatedAt,
         public ?\DateTimeImmutable $refundedAt,
     ) {
     }

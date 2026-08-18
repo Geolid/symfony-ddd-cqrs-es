@@ -17,6 +17,11 @@ interface ShipmentFinderInterface extends CollectionFinderInterface
      */
     public function ofTrackingReference(string $trackingReference): ShipmentResult;
 
+    /**
+     * @throws ShipmentResultNotFoundException
+     */
+    public function ofReturnTrackingReference(string $returnTrackingReference): ShipmentResult;
+
     public function byStatus(string ...$statuses): static;
 
     public function byCustomer(string $customerId): static;

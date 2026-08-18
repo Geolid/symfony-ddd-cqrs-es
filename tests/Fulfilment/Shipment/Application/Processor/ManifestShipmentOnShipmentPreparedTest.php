@@ -33,7 +33,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itManifestsThePreparedShipmentOnShipmentPrepared(): void
+    public function itManifestsOnShipmentPrepared(): void
     {
         // Given
         $shippingAddress = PostalAddress::of(
@@ -75,5 +75,10 @@ final class SpyCarrierGateway implements CarrierGatewayInterface
         $this->deliveryAddress = $deliveryAddress;
 
         return self::TRACKING_REFERENCE;
+    }
+
+    public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string
+    {
+        throw new \LogicException('Not exercised by this test.');
     }
 }

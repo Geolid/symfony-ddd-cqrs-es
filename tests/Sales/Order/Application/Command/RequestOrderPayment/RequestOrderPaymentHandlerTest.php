@@ -29,7 +29,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsAPaymentForAnOrder(): void
+    public function itRequestsForOrder(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -51,7 +51,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itKeepsThePaymentItAlreadyRequested(): void
+    public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -78,7 +78,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheReferenceIsAlreadyTaken(): void
+    public function itFailsWhenReferenceAlreadyTaken(): void
     {
         // Given
         $reference = 'GLBX-9F3K2M1P';

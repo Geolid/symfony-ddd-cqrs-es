@@ -22,7 +22,7 @@ use Support\AbstractIntegrationTestCase;
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCryptoShredsTheEmailOnErasure(): void
+    public function itCryptoShredsEmailOnErasure(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
@@ -44,7 +44,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsTheShippingAddressOnErasure(): void
+    public function itCryptoShredsShippingAddressOnErasure(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -67,7 +67,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsTheBillingAddressOnErasure(): void
+    public function itCryptoShredsBillingAddressOnErasure(): void
     {
         // Given
         $customer = CustomerTestFactory::new()

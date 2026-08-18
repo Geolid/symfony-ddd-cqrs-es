@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsAPaymentByItsReference(): void
+    public function itGetsByReference(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -41,7 +41,7 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itFailsWhenNoPaymentCarriesThatReference(): void
+    public function itFailsWhenNotFound(): void
     {
         // Then
         $this->expectException(OrderPaymentResultNotFoundException::class);

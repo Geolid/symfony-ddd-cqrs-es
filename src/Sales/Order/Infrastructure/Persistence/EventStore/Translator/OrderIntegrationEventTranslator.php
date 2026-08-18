@@ -11,11 +11,13 @@ use Sales\Order\Application\Event\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPlaced;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -33,21 +35,6 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
         parent::__construct($store);
     }
 
-    #[Subscribe(OrderPaymentRequested::class)]
-    public function onOrderPaymentRequested(OrderPaymentRequested $event): void
-    {
-        $this->append(
-            IntegrationStreamId::build('sales.order', $event->orderId),
-            new OrderPaymentRequestedIntegrationEvent(
-                orderId: $event->orderId,
-                amountInCents: $event->amountInCents,
-                reference: $event->reference,
-                checkoutUrl: $event->checkoutUrl,
-                requestedAt: $event->requestedAt,
-            ),
-        );
-    }
-
     #[Subscribe(OrderPlaced::class)]
     public function onOrderPlaced(OrderPlaced $event): void
     {
@@ -59,18 +46,6 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
                 lines: $event->lines,
                 totalAmountInCents: $event->totalAmountInCents,
                 placedAt: $event->placedAt,
-            ),
-        );
-    }
-
-    #[Subscribe(OrderCancelled::class)]
-    public function onOrderCancelled(OrderCancelled $event): void
-    {
-        $this->append(
-            IntegrationStreamId::build('sales.order', $event->id),
-            new OrderCancelledIntegrationEvent(
-                orderId: $event->id,
-                cancelledAt: $event->cancelledAt,
             ),
         );
     }
@@ -101,6 +76,21 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
         );
     }
 
+    #[Subscribe(OrderPaymentRequested::class)]
+    public function onOrderPaymentRequested(OrderPaymentRequested $event): void
+    {
+        $this->append(
+            IntegrationStreamId::build('sales.order', $event->orderId),
+            new OrderPaymentRequestedIntegrationEvent(
+                orderId: $event->orderId,
+                amountInCents: $event->amountInCents,
+                reference: $event->reference,
+                checkoutUrl: $event->checkoutUrl,
+                requestedAt: $event->requestedAt,
+            ),
+        );
+    }
+
     /**
      * @throws OrderNotFoundException
      */
@@ -123,6 +113,30 @@ final readonly class OrderIntegrationEventTranslator extends AbstractIntegration
                     'city' => $shippingAddress->address->city,
                 ],
                 capturedAt: $event->capturedAt,
+            ),
+        );
+    }
+
+    #[Subscribe(OrderCancelled::class)]
+    public function onOrderCancelled(OrderCancelled $event): void
+    {
+        $this->append(
+            IntegrationStreamId::build('sales.order', $event->id),
+            new OrderCancelledIntegrationEvent(
+                orderId: $event->id,
+                cancelledAt: $event->cancelledAt,
+            ),
+        );
+    }
+
+    #[Subscribe(OrderReturnRequested::class)]
+    public function onOrderReturnRequested(OrderReturnRequested $event): void
+    {
+        $this->append(
+            IntegrationStreamId::build('sales.order', $event->id),
+            new OrderReturnRequestedIntegrationEvent(
+                orderId: $event->id,
+                requestedAt: $event->requestedAt,
             ),
         );
     }

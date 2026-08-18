@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCancelsAPendingShipment(): void
+    public function itCancelsWhenPending(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->store();
@@ -33,7 +33,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRejectsCancellationOfAnAlreadyDeliveredShipment(): void
+    public function itRejectsCancellationWhenAlreadyDelivered(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
@@ -48,7 +48,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

@@ -1,0 +1,156 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Webhook\Tests\Webhook;
+
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\HttpFoundation\Response;
+use Webhook\Tests\Support\AbstractWebhookTestCase;
+
+final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
+{
+    private const string PATH = '/webhooks/carrier-return-picked-up';
+
+    private const string RETURN_TRACKING_REFERENCE = 'ACME-RETURN-4Q7X2K9';
+
+    #[Test]
+    public function itAcceptsACarrierReturnPickup(): void
+    {
+        // Given
+        $client = self::createClient();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
+            ->returnRequested()->returnManifested(self::RETURN_TRACKING_REFERENCE)->store();
+        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+
+        // When
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->statusOf($shipment->id()->toString()));
+    }
+
+    #[Test]
+    #[DataProvider('provideBadSignatures')]
+    public function itRejectsAnUnsignedReturnPickup(?string $signature): void
+    {
+        // Given
+        $client = self::createClient();
+        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+
+        // When
+        $client->request('POST', self::PATH, server: self::headers($signature), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * @return iterable<string, array{?string}>
+     */
+    public static function provideBadSignatures(): iterable
+    {
+        yield 'header absent' => [null];
+        yield 'value forged' => ['sha256=0000000000000000000000000000000000000000000000000000000000000000'];
+    }
+
+    #[Test]
+    #[DataProvider('provideBadPayloads')]
+    public function itFailsToAcceptAMalformedReturnPickup(string $body): void
+    {
+        // Given
+        $client = self::createClient();
+
+        // When
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideBadPayloads(): iterable
+    {
+        yield 'reference blank' => [self::body('')];
+        yield 'reference longer than the carrier can issue' => [self::body(str_repeat('A', 65))];
+        // No value at all is mapped to `returnTrackingReference` — COLLECT_DENORMALIZATION_ERRORS
+        // folds this into the same PartialDenormalizationException as a type mismatch below.
+        yield 'reference absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
+        // A value is mapped to `returnTrackingReference` but of an incompatible type.
+        yield 'reference not a string' => [json_encode(['returnTrackingReference' => ['nested' => 'object']], \JSON_THROW_ON_ERROR)];
+    }
+
+    #[Test]
+    #[DataProvider('provideRequestsNotMatchingTheWebhookShape')]
+    public function itRejectsARequestNotMatchingTheWebhookShape(string $method, string $body): void
+    {
+        // Given
+        $client = self::createClient();
+
+        // When
+        $client->request($method, self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideRequestsNotMatchingTheWebhookShape(): iterable
+    {
+        yield 'method is not POST' => ['GET', self::body(self::RETURN_TRACKING_REFERENCE)];
+        yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
+    }
+
+    #[Test]
+    public function itFailsToAcceptAnUntrackedReturnPickup(): void
+    {
+        // Given
+        $client = self::createClient();
+        $body = self::body('ACME-RETURN-NEVER-ISSUED');
+
+        // When
+        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+
+        // Then
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function headers(?string $signature): array
+    {
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+
+        if (null !== $signature) {
+            $headers['HTTP_X_CARRIER_SIGNATURE'] = $signature;
+        }
+
+        return $headers;
+    }
+
+    private static function body(string $returnTrackingReference): string
+    {
+        return json_encode(['returnTrackingReference' => $returnTrackingReference], \JSON_THROW_ON_ERROR);
+    }
+
+    private function statusOf(string $id): ShipmentStatus
+    {
+        $shipment = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference(self::RETURN_TRACKING_REFERENCE);
+
+        if ($id !== $shipment->id) {
+            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
+        }
+
+        return $shipment->status;
+    }
+}

@@ -29,7 +29,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCancelsAPlacedOrder(): void
+    public function itCancels(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -45,7 +45,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyCancelledOrder(): void
+    public function itIgnoresWhenAlreadyCancelled(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -59,7 +59,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate()->toString();
@@ -73,7 +73,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderIsNoLongerCancellable(): void
+    public function itFailsWhenNotCancellable(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -87,7 +87,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderBelongsToAnotherCustomer(): void
+    public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -100,7 +100,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCancelsAnOrderWithPaymentRequestedButNotYetCaptured(): void
+    public function itCancelsWhenPaymentRequestedButNotCaptured(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

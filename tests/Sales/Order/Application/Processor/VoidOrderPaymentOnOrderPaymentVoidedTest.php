@@ -30,7 +30,7 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
     }
 
     #[Test]
-    public function itVoidsTheChargeOnOrderPaymentVoided(): void
+    public function itVoidsOnOrderPaymentVoided(): void
     {
         // Given
         $reference = 'GLBX-'.Uuid::uuid7()->toString();

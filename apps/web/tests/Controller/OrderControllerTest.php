@@ -11,6 +11,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
+use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
@@ -384,6 +385,90 @@ final class OrderControllerTest extends AbstractWebTestCase
         // When
         $client->request('POST', $this->path('sales_order_cancel', ['id' => $id]), [
             '_token' => $this->csrfToken($client, 'cancel-order-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    #[Test]
+    public function itRequestsAReturnForADeliveredOrder(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = $this->createCustomer('buyer-11@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->store()->id()->toString();
+        $commandBus = $this->service(CommandBusInterface::class);
+        $commandBus->dispatch(new ConfirmOrder($id));
+        $commandBus->dispatch(new DispatchOrder($id));
+        $commandBus->dispatch(new DeliverOrder($id));
+
+        // When
+        $client->request('POST', $this->path('sales_order_request_return', ['id' => $id]), [
+            '_token' => $this->csrfToken($client, 'request-order-return-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
+        $client->followRedirect();
+        self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.return_requested');
+
+        $order = $this->service(OrderFinderInterface::class)->ofId($id);
+        self::assertSame(OrderStatus::RETURN_REQUESTED, $order->status);
+    }
+
+    #[Test]
+    public function itRefusesToRequestAReturnForAnOrderNotYetDelivered(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = $this->createCustomer('buyer-12@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->store()->id()->toString();
+
+        // When
+        $client->request('POST', $this->path('sales_order_request_return', ['id' => $id]), [
+            '_token' => $this->csrfToken($client, 'request-order-return-'.$id),
+        ]);
+
+        // Then
+        self::assertResponseRedirects($this->path('sales_order_show', ['id' => $id]));
+        $client->followRedirect();
+        self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.not_returnable');
+
+        $order = $this->service(OrderFinderInterface::class)->ofId($id);
+        self::assertSame(OrderStatus::PLACED, $order->status);
+    }
+
+    #[Test]
+    public function itRefusesToRequestAReturnWithAnInvalidCsrfToken(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = $this->createCustomer('buyer-13@example.com');
+        $this->loginAs($client, $identity);
+        $id = OrderTestFactory::new()->withCustomerId($identity->id()->toString())->store()->id()->toString();
+
+        // When
+        $client->request('POST', $this->path('sales_order_request_return', ['id' => $id]), ['_token' => 'invalid']);
+
+        // Then
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    #[Test]
+    public function itRefusesToRequestAReturnForAnotherCustomersOrder(): void
+    {
+        // Given
+        $client = self::browser();
+        $owner = $this->createCustomer('owner-request-return@example.com');
+        $id = OrderTestFactory::new()->withCustomerId($owner->id()->toString())->store()->id()->toString();
+        $this->loginAs($client, $this->createCustomer('intruder-request-return@example.com'));
+
+        // When
+        $client->request('POST', $this->path('sales_order_request_return', ['id' => $id]), [
+            '_token' => $this->csrfToken($client, 'request-order-return-'.$id),
         ]);
 
         // Then

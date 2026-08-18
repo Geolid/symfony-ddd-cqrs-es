@@ -31,7 +31,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itManifestsAPreparedShipment(): void
+    public function itManifestsPrepared(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->store();
@@ -47,7 +47,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresARetryWithTheSameTrackingReference(): void
+    public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->store();
@@ -63,7 +63,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentIsAlreadyTrackedUnderAnotherReference(): void
+    public function itFailsWhenAlreadyTrackedUnderAnotherReference(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->store();
@@ -76,7 +76,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheTrackingReferenceIsAlreadyTaken(): void
+    public function itFailsWhenTrackingReferenceAlreadyTaken(): void
     {
         // Given
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', Uuid::uuid7()->toString());
@@ -90,7 +90,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

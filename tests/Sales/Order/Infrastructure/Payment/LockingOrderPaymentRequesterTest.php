@@ -29,7 +29,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
     }
 
     #[Test]
-    public function itDelegatesToTheInnerRequester(): void
+    public function itDelegatesToInnerRequester(): void
     {
         // When
         $checkoutUrl = $this->requester->requestFor('order-id', 'https://web.test/sales/orders');
@@ -41,7 +41,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
     }
 
     #[Test]
-    public function itReleasesTheLockAfterASuccessfulRequest(): void
+    public function itReleasesLockAfterSuccessfulRequest(): void
     {
         // Given
         // A plain second call would pass even without an explicit release: the Lock object's
@@ -59,7 +59,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
     }
 
     #[Test]
-    public function itFailsWhenAConcurrentRequestAlreadyHoldsTheLock(): void
+    public function itFailsWhenRequestInProgress(): void
     {
         // Given
         $lock = $this->lockFactory->createLock('sales.order.payment_request.order-id');
@@ -77,7 +77,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
     }
 
     #[Test]
-    public function itDoesNotLockAConcurrentRequestForAnotherOrder(): void
+    public function itAllowsConcurrentRequestForAnotherOrder(): void
     {
         // Given
         $lock = $this->lockFactory->createLock('sales.order.payment_request.another-order-id');

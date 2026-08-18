@@ -14,7 +14,8 @@ use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;
 use Sales\Order\Domain\Event\OrderPaymentFailed;
-use Sales\Order\Domain\Event\OrderPaymentRefundRequested;
+use Sales\Order\Domain\Event\OrderPaymentRefunded;
+use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
@@ -104,13 +105,26 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(OrderPaymentRefundRequested::class)]
-    public function onOrderPaymentRefundRequested(OrderPaymentRefundRequested $event): void
+    #[Subscribe(OrderPaymentRefundInitiated::class)]
+    public function onOrderPaymentRefundInitiated(OrderPaymentRefundInitiated $event): void
     {
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderPaymentStatus::REFUNDING->value,
+                'status' => OrderPaymentStatus::REFUND_INITIATED->value,
+                'refund_initiated_at' => new \DateTimeImmutable($event->initiatedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderPaymentRefunded::class)]
+    public function onOrderPaymentRefunded(OrderPaymentRefunded $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderPaymentStatus::REFUNDED->value,
                 'refunded_at' => new \DateTimeImmutable($event->refundedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
@@ -128,12 +142,13 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
         $table->addColumn('amount_in_cents', Types::INTEGER);
         $table->addColumn('reference', Types::STRING, ['length' => 64]);
         $table->addColumn('checkout_url', Types::STRING, ['length' => 2048]);
-        $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('status', Types::STRING, ['length' => 17]);
         $table->addColumn('requested_at', Types::DATETIME_MUTABLE);
         $table->addColumn('authorized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('captured_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('failed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refund_initiated_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('refunded_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

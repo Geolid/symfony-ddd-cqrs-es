@@ -16,10 +16,13 @@ use Support\AbstractIntegrationTestCase;
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheCustomerOnCustomerRegistered(): void
+    public function itProjectsOnCustomerRegistered(): void
     {
+        // Given
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+
         // When
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
+        $this->store($customer);
 
         // Then
         $row = $this->fetchRow($customer->id()->toString());
@@ -28,13 +31,14 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDeletesOnCustomerErased(): void
+    public function itRemovesOnCustomerErased(): void
     {
         // Given
         $other = CustomerTestFactory::new()->withEmail('other@example.com')->store();
+        $customer = CustomerTestFactory::new()->erased()->create();
 
         // When
-        $customer = CustomerTestFactory::new()->erased()->store();
+        $this->store($customer);
 
         // Then
         self::assertFalse($this->fetchRow($customer->id()->toString()));
