@@ -28,7 +28,7 @@ use Support\AbstractIntegrationTestCase;
 final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPlacesAnOrder(): void
+    public function itPlaces(): void
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
@@ -69,7 +69,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheBuyerIsNotRegistered(): void
+    public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
         $customerId = CustomerId::generate()->toString();
@@ -82,7 +82,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheBuyerIsErased(): void
+    public function itFailsWhenBuyerErased(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->store();
@@ -96,7 +96,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideIncompleteAddresses')]
-    public function itFailsWhenTheBuyerHasNotCompletedTheirAddresses(bool $withShippingAddress, bool $withBillingAddress): void
+    public function itFailsWhenBuyerAddressesNotCompleted(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com');
@@ -126,7 +126,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAProductIsNotAvailable(): void
+    public function itFailsWhenProductNotAvailable(): void
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
@@ -143,7 +143,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAProductHasChangedSinceItWasDisplayed(): void
+    public function itFailsWhenProductChanged(): void
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');

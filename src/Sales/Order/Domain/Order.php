@@ -145,6 +145,18 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
+    public function confirm(\DateTimeImmutable $confirmedAt): void
+    {
+        if (!$this->state->isPlaced()) {
+            return;
+        }
+
+        $this->recordThat(new OrderConfirmed(
+            id: $this->id->toString(),
+            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     /**
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
@@ -166,18 +178,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new OrderCancelled(
             id: $this->id->toString(),
             cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
-        ));
-    }
-
-    public function confirm(\DateTimeImmutable $confirmedAt): void
-    {
-        if (!$this->state->isPlaced()) {
-            return;
-        }
-
-        $this->recordThat(new OrderConfirmed(
-            id: $this->id->toString(),
-            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
         ));
     }
 
@@ -318,16 +318,16 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
+    private function applyConfirmed(OrderConfirmed $event): void
+    {
+        $this->state = OrderState::CONFIRMED;
+    }
+
+    #[Apply]
     private function applyCancelled(OrderCancelled $event): void
     {
         $this->state = OrderState::CANCELLED;
         $this->closedAt = new \DateTimeImmutable($event->cancelledAt);
-    }
-
-    #[Apply]
-    private function applyConfirmed(OrderConfirmed $event): void
-    {
-        $this->state = OrderState::CONFIRMED;
     }
 
     #[Apply]

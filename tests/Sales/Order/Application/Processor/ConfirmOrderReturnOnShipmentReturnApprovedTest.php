@@ -25,7 +25,7 @@ final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractInteg
     }
 
     #[Test]
-    public function itConfirmsTheOrderReturnOnShipmentReturnApproved(): void
+    public function itConfirmsOnShipmentReturnApproved(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();

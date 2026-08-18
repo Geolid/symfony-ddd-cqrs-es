@@ -103,6 +103,28 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function cancel(\DateTimeImmutable $cancelledAt): void
+    {
+        if ($this->state->isCancelled()) {
+            return;
+        }
+
+        if (!$this->state->isCancellable()) {
+            $this->recordThat(new ShipmentCancellationRejected(
+                id: $this->id->toString(),
+                status: $this->state->value,
+                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            ));
+
+            return;
+        }
+
+        $this->recordThat(new ShipmentCancelled(
+            id: $this->id->toString(),
+            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+        ));
+    }
+
     /**
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
@@ -265,28 +287,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             reason: $reason,
             rejectedAt: $rejectedAt->format(\DateTimeInterface::ATOM),
-        ));
-    }
-
-    public function cancel(\DateTimeImmutable $cancelledAt): void
-    {
-        if ($this->state->isCancelled()) {
-            return;
-        }
-
-        if (!$this->state->isCancellable()) {
-            $this->recordThat(new ShipmentCancellationRejected(
-                id: $this->id->toString(),
-                status: $this->state->value,
-                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
-            ));
-
-            return;
-        }
-
-        $this->recordThat(new ShipmentCancelled(
-            id: $this->id->toString(),
-            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
         ));
     }
 

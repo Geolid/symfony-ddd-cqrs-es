@@ -33,7 +33,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itManifestsThePreparedShipmentOnShipmentPrepared(): void
+    public function itManifestsOnShipmentPrepared(): void
     {
         // Given
         $shippingAddress = PostalAddress::of(

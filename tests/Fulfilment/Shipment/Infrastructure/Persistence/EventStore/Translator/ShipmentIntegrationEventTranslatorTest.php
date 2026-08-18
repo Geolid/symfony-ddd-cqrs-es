@@ -19,7 +19,7 @@ use Support\AbstractIntegrationTestCase;
 final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPublishesTheTrackingReferenceOnShipmentManifested(): void
+    public function itPublishesOnShipmentManifested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -39,7 +39,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheDispatchOnShipmentDispatched(): void
+    public function itPublishesOnShipmentDispatched(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -59,7 +59,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheDeliveryOnShipmentDelivered(): void
+    public function itPublishesOnShipmentDelivered(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -80,7 +80,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheCancellationOnShipmentCancelled(): void
+    public function itPublishesOnShipmentCancelled(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -99,7 +99,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheReturnApprovalOnShipmentReturnApproved(): void
+    public function itPublishesOnShipmentReturnApproved(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -118,7 +118,7 @@ final class ShipmentIntegrationEventTranslatorTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itPublishesTheReturnRejectionOnShipmentReturnRejected(): void
+    public function itPublishesOnShipmentReturnRejected(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

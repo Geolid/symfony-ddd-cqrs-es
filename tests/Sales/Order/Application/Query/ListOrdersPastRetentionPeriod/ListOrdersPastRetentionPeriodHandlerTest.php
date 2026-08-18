@@ -13,7 +13,7 @@ use Symfony\Component\Clock\MockClock;
 final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsOrdersPastTheRetentionPeriod(): void
+    public function itListsPastRetentionPeriod(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));

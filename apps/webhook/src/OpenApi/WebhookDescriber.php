@@ -36,29 +36,17 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
 
     /** @var array<string, array{summary: string, payload: class-string, signatureHeader: string, responses: array<int, string>}> */
     private const array ENDPOINTS = [
-        '/webhooks/'.CarrierDeliveryParser::EVENT_TYPE => [
-            'summary' => 'Report a shipment as delivered.',
-            'payload' => CarrierDeliveryPayload::class,
-            'signatureHeader' => CarrierDeliveryParser::SIGNATURE_HEADER,
-            'responses' => [404 => 'No shipment matches the given shipment ID.'],
-        ],
         '/webhooks/'.CarrierPickupConfirmedParser::EVENT_TYPE => [
             'summary' => 'Report a shipment as picked up by the carrier.',
             'payload' => CarrierPickupConfirmedPayload::class,
             'signatureHeader' => CarrierPickupConfirmedParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No shipment matches the given tracking reference.'],
         ],
-        '/webhooks/'.PaymentAuthorizedParser::EVENT_TYPE => [
-            'summary' => 'Report an order payment as authorized.',
-            'payload' => PaymentAuthorizedPayload::class,
-            'signatureHeader' => PaymentAuthorizedParser::SIGNATURE_HEADER,
-            'responses' => [404 => 'No payment matches the given reference.'],
-        ],
-        '/webhooks/'.PaymentFailedParser::EVENT_TYPE => [
-            'summary' => 'Report an order payment as failed.',
-            'payload' => PaymentFailedPayload::class,
-            'signatureHeader' => PaymentFailedParser::SIGNATURE_HEADER,
-            'responses' => [404 => 'No payment matches the given reference.'],
+        '/webhooks/'.CarrierDeliveryParser::EVENT_TYPE => [
+            'summary' => 'Report a shipment as delivered.',
+            'payload' => CarrierDeliveryPayload::class,
+            'signatureHeader' => CarrierDeliveryParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No shipment matches the given shipment ID.'],
         ],
         '/webhooks/'.CarrierReturnPickedUpParser::EVENT_TYPE => [
             'summary' => 'Report a shipment return as picked up by the carrier.',
@@ -71,6 +59,18 @@ final class WebhookDescriber implements DescriberInterface, ModelRegistryAwareIn
             'payload' => CarrierReturnReceivedPayload::class,
             'signatureHeader' => CarrierReturnReceivedParser::SIGNATURE_HEADER,
             'responses' => [404 => 'No shipment matches the given return tracking reference.'],
+        ],
+        '/webhooks/'.PaymentAuthorizedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment as authorized.',
+            'payload' => PaymentAuthorizedPayload::class,
+            'signatureHeader' => PaymentAuthorizedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No payment matches the given reference.'],
+        ],
+        '/webhooks/'.PaymentFailedParser::EVENT_TYPE => [
+            'summary' => 'Report an order payment as failed.',
+            'payload' => PaymentFailedPayload::class,
+            'signatureHeader' => PaymentFailedParser::SIGNATURE_HEADER,
+            'responses' => [404 => 'No payment matches the given reference.'],
         ],
         '/webhooks/'.PaymentRefundedParser::EVENT_TYPE => [
             'summary' => 'Report an order payment refund as confirmed.',

@@ -26,7 +26,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerByItsId(): void
+    public function itFindsById(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -51,7 +51,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerWithNoAddressYet(): void
+    public function itFindsWithNoAddress(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->store();
@@ -67,7 +67,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsABuyerWithOnlyAShippingAddress(): void
+    public function itFindsWithOnlyShippingAddress(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -84,7 +84,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNoBuyerForAnUnknownCustomer(): void
+    public function itFindsNoneForUnknownCustomer(): void
     {
         // When
         $result = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());

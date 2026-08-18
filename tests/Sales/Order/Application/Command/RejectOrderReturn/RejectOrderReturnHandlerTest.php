@@ -25,7 +25,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRejectsAReturnOnceRequested(): void
+    public function itRejectsReturnWhenRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
@@ -40,7 +40,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnOrderWithNoReturnRequested(): void
+    public function itIgnoresWhenNotRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
@@ -53,7 +53,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate()->toString();

@@ -24,7 +24,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedOrderPayment(): void
+    public function itLoadsSaved(): void
     {
         // Given
         $orderPayment = OrderPaymentTestFactory::new()->create();
@@ -39,7 +39,7 @@ final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedOrderPayment(): void
+    public function itThrowsOnUnsaved(): void
     {
         // Given
         $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString());

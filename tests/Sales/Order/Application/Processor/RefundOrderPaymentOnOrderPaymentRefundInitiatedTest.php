@@ -30,7 +30,7 @@ final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends Abstract
     }
 
     #[Test]
-    public function itRefundsTheChargeOnOrderPaymentRefundInitiated(): void
+    public function itRefundsOnOrderPaymentRefundInitiated(): void
     {
         // Given
         $reference = 'GLBX-'.Uuid::uuid7()->toString();

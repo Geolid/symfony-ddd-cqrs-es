@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCapturesAnAuthorizedPayment(): void
+    public function itCapturesWhenAuthorized(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -30,7 +30,7 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyCapturedPayment(): void
+    public function itIgnoresWhenAlreadyCaptured(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itApprovesAReceivedReturn(): void
+    public function itApprovesReturnWhenReceived(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
@@ -33,7 +33,7 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheReturnHasNotBeenReceived(): void
+    public function itFailsWhenNotReceived(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
@@ -46,7 +46,7 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

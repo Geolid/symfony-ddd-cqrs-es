@@ -29,7 +29,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsAReturnOnceDelivered(): void
+    public function itRequestsReturnWhenDelivered(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -45,7 +45,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyRequestedReturn(): void
+    public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -59,7 +59,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderBelongsToAnotherCustomer(): void
+    public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
@@ -72,7 +72,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderIsNotYetReturnable(): void
+    public function itFailsWhenNotReturnable(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -86,7 +86,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheReturnWindowHasExpired(): void
+    public function itFailsWhenReturnWindowHasExpired(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -105,7 +105,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate()->toString();

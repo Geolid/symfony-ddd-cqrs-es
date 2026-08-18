@@ -27,7 +27,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     }
 
     #[Test]
-    public function itCancelsTheShipmentOnOrderCancelled(): void
+    public function itCancelsOnOrderCancelled(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -43,7 +43,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     }
 
     #[Test]
-    public function itDoesNothingWhenNoShipmentExistsForTheOrder(): void
+    public function itIgnoresWhenNoneExistForOrder(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsANewProductOnProductListed(): void
+    public function itProjectsOnProductListed(): void
     {
         // When
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
@@ -29,7 +29,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheNewPriceOnProductRepriced(): void
+    public function itProjectsOnProductRepriced(): void
     {
         // Given
         $other = ProductTestFactory::new()->withUnitAmountInCents(83)->store();
@@ -49,7 +49,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRemovesTheProductOnProductDelisted(): void
+    public function itRemovesOnProductDelisted(): void
     {
         // Given
         $other = ProductTestFactory::new()->store();

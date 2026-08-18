@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheOrderOnOrderPlaced(): void
+    public function itProjectsOnOrderPlaced(): void
     {
         // When
         $customerId = Uuid::uuid7()->toString();
@@ -40,7 +40,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationOnOrderCancelled(): void
+    public function itProjectsOnOrderCancelled(): void
     {
         // When
         $order = OrderTestFactory::new()->cancelled()->store();
@@ -54,7 +54,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheConfirmationOnOrderConfirmed(): void
+    public function itProjectsOnOrderConfirmed(): void
     {
         // Given
         $other = OrderTestFactory::new()->store();
@@ -74,7 +74,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheDispatchOnOrderDispatched(): void
+    public function itProjectsOnOrderDispatched(): void
     {
         // Given
         $other = OrderTestFactory::new()->confirmed()->store();
@@ -94,7 +94,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheAnonymizationOnOrderAnonymized(): void
+    public function itProjectsOnOrderAnonymized(): void
     {
         // When
         $order = OrderTestFactory::new()
@@ -110,7 +110,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheDeliveryOnOrderDelivered(): void
+    public function itProjectsOnOrderDelivered(): void
     {
         // Given
         $other = OrderTestFactory::new()->store();
@@ -130,7 +130,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCompletionOnOrderCompleted(): void
+    public function itProjectsOnOrderCompleted(): void
     {
         // Given
         $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();

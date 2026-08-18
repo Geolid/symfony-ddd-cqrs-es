@@ -8,10 +8,10 @@ enum ShipmentStatus: string
 {
     case REQUESTED = 'requested';
     case PREPARED = 'prepared';
+    case CANCELLED = 'cancelled';
     case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
-    case CANCELLED = 'cancelled';
     case RETURN_REQUESTED = 'return_requested';
     case RETURN_MANIFESTED = 'return_manifested';
     case RETURN_DISPATCHED = 'return_dispatched';

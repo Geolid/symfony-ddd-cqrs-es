@@ -24,7 +24,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsAnOrderPaymentByItsReference(): void
+    public function itGetsByReference(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -65,7 +65,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownReference(): void
+    public function itThrowsOnUnknownReference(): void
     {
         // Then
         $this->expectException(OrderPaymentResultNotFoundException::class);

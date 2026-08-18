@@ -39,7 +39,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class OrderTest extends AggregateRootTestCase
 {
     #[Test]
-    public function itPlacesDerivingItsTotalFromItsLines(): void
+    public function itPlacesDerivingTotalFromLines(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -61,7 +61,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotPlaceWithoutALine(): void
+    public function itCannotPlaceWithoutLine(): void
     {
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -70,6 +70,37 @@ final class OrderTest extends AggregateRootTestCase
             ->given()
             ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
             ->expectsException(OrderWithoutLineException::class);
+    }
+
+    #[Test]
+    public function itConfirmsWhenPlaced(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
+            ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotConfirmWhenAlreadyConfirmed(): void
+    {
+        $id = OrderId::generate()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::orderPlaced($id, $customerId, $placedAt),
+                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->then();
     }
 
     #[Test]
@@ -87,7 +118,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCancelAnAlreadyCancelled(): void
+    public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -141,38 +172,19 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsConfirmedWhenPlaced(): void
+    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
-            ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
+            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
+            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
-    public function itDoesNotConfirmAnAlreadyConfirmed(): void
-    {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-
-        $this
-            ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
-                new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
-            )
-            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->then();
-    }
-
-    #[Test]
-    public function itIsDispatchedWhenConfirmed(): void
+    public function itDispatchesWhenConfirmed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -203,7 +215,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itIsDeliveredWhenDispatched(): void
+    public function itDeliversWhenDispatched(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -240,7 +252,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCompletesOnceTheReturnWindowHasElapsed(): void
+    public function itCompletesWhenReturnWindowElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -262,7 +274,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCompleteBeforeTheReturnWindowHasElapsed(): void
+    public function itDoesNotCompleteWhenReturnWindowNotElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -283,7 +295,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRecompleteAnAlreadyCompleted(): void
+    public function itDoesNotCompleteWhenAlreadyCompleted(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -306,7 +318,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCompleteWhenNotDelivered(): void
+    public function itCannotCompleteWhenNotCompletable(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -323,7 +335,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRequestsAReturnOnceDelivered(): void
+    public function itRequestsReturnWhenDelivered(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -345,7 +357,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRequestAReturnTwice(): void
+    public function itDoesNotRequestReturnWhenAlreadyRequested(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -368,7 +380,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRequestAReturnWhenBelongingToAnotherCustomer(): void
+    public function itCannotRequestReturnWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -388,7 +400,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRequestAReturnBeforeBeingDelivered(): void
+    public function itCannotRequestReturnWhenNotDelivered(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -405,7 +417,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRequestAReturnPastTheReturnWindow(): void
+    public function itCannotRequestReturnWhenReturnWindowElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -426,7 +438,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itConfirmsTheReturnOnceRequested(): void
+    public function itConfirmsReturnWhenRequested(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -450,7 +462,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotConfirmTheReturnBeforeBeingRequested(): void
+    public function itDoesNotConfirmReturnWhenNotRequested(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -471,7 +483,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRejectsTheReturnOnceRequested(): void
+    public function itRejectsReturnWhenRequested(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -495,7 +507,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRejectTheReturnBeforeBeingRequested(): void
+    public function itDoesNotRejectReturnWhenNotRequested(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -513,18 +525,6 @@ final class OrderTest extends AggregateRootTestCase
             )
             ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
             ->then();
-    }
-
-    #[Test]
-    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
-    {
-        $id = OrderId::generate()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
-            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
-            ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
@@ -558,7 +558,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAnonymizesOnceThePastRetentionPeriodHasElapsed(): void
+    public function itAnonymizesWhenRetentionPeriodElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -576,7 +576,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotAnonymizeBeforeBeingClosed(): void
+    public function itDoesNotAnonymizeWhenNotClosed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -589,7 +589,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotAnonymizeBeforeTheRetentionPeriodHasElapsed(): void
+    public function itDoesNotAnonymizeWhenRetentionPeriodNotElapsed(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
@@ -606,7 +606,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotReanonymizeAnAlreadyAnonymized(): void
+    public function itDoesNotAnonymizeWhenAlreadyAnonymized(): void
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();

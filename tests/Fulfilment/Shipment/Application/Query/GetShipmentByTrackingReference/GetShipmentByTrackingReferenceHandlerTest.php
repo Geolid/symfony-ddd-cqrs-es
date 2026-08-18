@@ -14,7 +14,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsAShipmentByItsTrackingReference(): void
+    public function itGetsByTrackingReference(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
@@ -34,7 +34,7 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
     }
 
     #[Test]
-    public function itFailsWhenNoShipmentCarriesThatReference(): void
+    public function itFailsWhenNotFound(): void
     {
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);

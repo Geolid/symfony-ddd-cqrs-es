@@ -33,7 +33,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRegistersTheShippingAddress(): void
+    public function itRegistersShippingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -51,7 +51,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRegisterAnIdenticalShippingAddress(): void
+    public function itDoesNotRegisterWhenIdenticalShippingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -67,7 +67,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRegistersTheBillingAddress(): void
+    public function itRegistersBillingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -85,7 +85,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotRegisterAnIdenticalBillingAddress(): void
+    public function itDoesNotRegisterWhenIdenticalBillingAddress(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -114,7 +114,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotEraseAnAlreadyErased(): void
+    public function itDoesNotEraseWhenAlreadyErased(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -130,7 +130,7 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRegisterAnAddressOnAnErasedCustomer(): void
+    public function itCannotRegisterAddressWhenErased(): void
     {
         $id = CustomerId::generate()->toString();
         $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');

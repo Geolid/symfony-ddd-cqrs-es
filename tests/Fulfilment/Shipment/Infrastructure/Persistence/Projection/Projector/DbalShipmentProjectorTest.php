@@ -19,7 +19,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsANewShipmentOnShipmentRequested(): void
+    public function itProjectsOnShipmentRequested(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -40,7 +40,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsThePreparationOnShipmentPrepared(): void
+    public function itProjectsOnShipmentPrepared(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -55,7 +55,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCarrierReferenceOnShipmentManifested(): void
+    public function itProjectsOnShipmentManifested(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -75,7 +75,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationOnShipmentCancelled(): void
+    public function itProjectsOnShipmentCancelled(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -97,7 +97,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheReturnReceptionOnShipmentReturnReceived(): void
+    public function itProjectsOnShipmentReturnReceived(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -118,7 +118,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheReturnApprovalOnShipmentReturnApproved(): void
+    public function itProjectsOnShipmentReturnApproved(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -139,7 +139,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheReturnRejectionOnShipmentReturnRejected(): void
+    public function itProjectsOnShipmentReturnRejected(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

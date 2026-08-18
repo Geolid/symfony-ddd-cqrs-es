@@ -11,7 +11,7 @@ use Sales\Order\Domain\Service\RetentionPolicy;
 final class RetentionPolicyTest extends TestCase
 {
     #[Test]
-    public function itHasNotExpiredWithinTheRetentionPeriod(): void
+    public function itHasNotExpiredWithinRetentionPeriod(): void
     {
         // Given
         $policy = new RetentionPolicy(3650);
@@ -25,7 +25,7 @@ final class RetentionPolicyTest extends TestCase
     }
 
     #[Test]
-    public function itHasExpiredPastTheRetentionPeriod(): void
+    public function itHasExpiredPastRetentionPeriod(): void
     {
         // Given
         $policy = new RetentionPolicy(3650);
@@ -39,7 +39,7 @@ final class RetentionPolicyTest extends TestCase
     }
 
     #[Test]
-    public function itComputesTheCutoff(): void
+    public function itComputesCutoff(): void
     {
         // Given
         $policy = new RetentionPolicy(3650);

@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itInitiatesARefundOnACapturedPayment(): void
+    public function itInitiatesRefundWhenCaptured(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -33,7 +33,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itIgnoresAnUncapturedPayment(): void
+    public function itIgnoresWhenUncaptured(): void
     {
         // Given
         $orderPayment = OrderPaymentTestFactory::new()->store();
@@ -46,7 +46,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itFailsWhenThePaymentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString())->toString();

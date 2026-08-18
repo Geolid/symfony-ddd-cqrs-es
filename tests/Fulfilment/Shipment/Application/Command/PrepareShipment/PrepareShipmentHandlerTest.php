@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPreparesARequestedShipment(): void
+    public function itPreparesRequested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->store();
@@ -32,7 +32,7 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

@@ -21,7 +21,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class AcmeCarrierGatewayTest extends TestCase
 {
     #[Test]
-    public function itBooksAPickupAndReadsTheCarrierReference(): void
+    public function itBooksPickupAndReadsCarrierReference(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -48,7 +48,7 @@ final class AcmeCarrierGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itBooksAReturnPickupAndReadsTheCarrierReference(): void
+    public function itBooksReturnPickupAndReadsCarrierReference(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -82,7 +82,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreachableCarriers')]
-    public function itThrowsOnACarrierItCannotReach(callable|MockResponse $response): void
+    public function itThrowsOnCarrierItCannotReach(callable|MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -102,7 +102,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnAPickupResponseItCannotRead(MockResponse $response): void
+    public function itThrowsOnPickupResponseItCannotRead(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -113,7 +113,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnAReturnPickupResponseItCannotRead(MockResponse $response): void
+    public function itThrowsOnReturnPickupResponseItCannotRead(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);

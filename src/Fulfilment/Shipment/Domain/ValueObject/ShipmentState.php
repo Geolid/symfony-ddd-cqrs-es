@@ -8,10 +8,10 @@ enum ShipmentState: string
 {
     case REQUESTED = 'requested';
     case PREPARED = 'prepared';
+    case CANCELLED = 'cancelled';
     case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
-    case CANCELLED = 'cancelled';
     case RETURN_REQUESTED = 'return_requested';
     case RETURN_MANIFESTED = 'return_manifested';
     case RETURN_DISPATCHED = 'return_dispatched';
@@ -29,6 +29,11 @@ enum ShipmentState: string
         return self::PREPARED === $this;
     }
 
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
+    }
+
     public function isManifested(): bool
     {
         return self::MANIFESTED === $this;
@@ -42,11 +47,6 @@ enum ShipmentState: string
     public function isDelivered(): bool
     {
         return self::DELIVERED === $this;
-    }
-
-    public function isCancelled(): bool
-    {
-        return self::CANCELLED === $this;
     }
 
     public function isReturnRequested(): bool
@@ -64,16 +64,6 @@ enum ShipmentState: string
         return self::RETURN_DISPATCHED === $this;
     }
 
-    public function isReturnManifestedOrLater(): bool
-    {
-        return \in_array($this, self::returnManifestedOrLater(), true);
-    }
-
-    public function isReturnDispatchedOrLater(): bool
-    {
-        return \in_array($this, self::returnDispatchedOrLater(), true);
-    }
-
     public function isReturnReceived(): bool
     {
         return self::RETURN_RECEIVED === $this;
@@ -87,6 +77,16 @@ enum ShipmentState: string
     public function isReturnRejected(): bool
     {
         return self::RETURN_REJECTED === $this;
+    }
+
+    public function isReturnManifestedOrLater(): bool
+    {
+        return \in_array($this, self::returnManifestedOrLater(), true);
+    }
+
+    public function isReturnDispatchedOrLater(): bool
+    {
+        return \in_array($this, self::returnDispatchedOrLater(), true);
     }
 
     public function isCancellable(): bool

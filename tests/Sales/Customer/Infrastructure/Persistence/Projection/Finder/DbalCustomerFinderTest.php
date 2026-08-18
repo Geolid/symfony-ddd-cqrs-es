@@ -37,7 +37,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknown(): void
+    public function itThrowsOnUnknown(): void
     {
         // Then
         $this->expectException(CustomerResultNotFoundException::class);

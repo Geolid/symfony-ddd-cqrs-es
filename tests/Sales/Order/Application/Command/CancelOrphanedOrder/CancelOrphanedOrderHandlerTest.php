@@ -26,7 +26,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCancelsAPlacedOrder(): void
+    public function itCancels(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -42,7 +42,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyCancelledOrder(): void
+    public function itIgnoresWhenAlreadyCancelled(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -56,7 +56,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnOrderThatIsNoLongerCancellable(): void
+    public function itIgnoresWhenNoLongerCancellable(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -71,7 +71,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate()->toString();

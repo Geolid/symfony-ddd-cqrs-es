@@ -26,7 +26,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedCustomer(): void
+    public function itLoadsSaved(): void
     {
         // Given
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
@@ -82,7 +82,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedCustomer(): void
+    public function itThrowsOnUnsaved(): void
     {
         // Given
         $id = CustomerId::generate();

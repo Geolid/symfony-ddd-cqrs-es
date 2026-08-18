@@ -25,7 +25,7 @@ final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractInte
     }
 
     #[Test]
-    public function itRequestsTheShipmentReturnOnOrderReturnRequested(): void
+    public function itRequestsOnOrderReturnRequested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

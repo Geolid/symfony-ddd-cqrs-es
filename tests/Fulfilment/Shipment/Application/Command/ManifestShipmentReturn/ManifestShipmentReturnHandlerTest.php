@@ -31,7 +31,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itManifestsARequestedReturn(): void
+    public function itManifestsReturnWhenRequested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
@@ -47,7 +47,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itIgnoresARetryWithTheSameReturnTrackingReference(): void
+    public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->store();
@@ -62,7 +62,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentIsAlreadyTrackedUnderAnotherReturnReference(): void
+    public function itFailsWhenAlreadyTrackedUnderAnotherReturnReference(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->store();
@@ -75,7 +75,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itFailsWhenTheReturnTrackingReferenceIsAlreadyTaken(): void
+    public function itFailsWhenReturnTrackingReferenceAlreadyTaken(): void
     {
         // Given
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', Uuid::uuid7()->toString());
@@ -89,7 +89,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

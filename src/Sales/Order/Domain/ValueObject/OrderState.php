@@ -7,8 +7,8 @@ namespace Sales\Order\Domain\ValueObject;
 enum OrderState: string
 {
     case PLACED = 'placed';
-    case CANCELLED = 'cancelled';
     case CONFIRMED = 'confirmed';
+    case CANCELLED = 'cancelled';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case COMPLETED = 'completed';
@@ -21,14 +21,14 @@ enum OrderState: string
         return self::PLACED === $this;
     }
 
-    public function isCancelled(): bool
-    {
-        return self::CANCELLED === $this;
-    }
-
     public function isConfirmed(): bool
     {
         return self::CONFIRMED === $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
     }
 
     public function isDispatched(): bool

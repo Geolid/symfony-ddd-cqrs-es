@@ -33,7 +33,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
     }
 
     #[Test]
-    public function itManifestsTheReturnOnShipmentReturnRequested(): void
+    public function itManifestsOnShipmentReturnRequested(): void
     {
         // Given
         $shippingAddress = PostalAddress::of(

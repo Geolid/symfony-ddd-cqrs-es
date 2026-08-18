@@ -30,7 +30,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyErasedCustomer(): void
+    public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
         $customer = CustomerTestFactory::new()->erased()->store();
@@ -43,7 +43,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheCustomerDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();

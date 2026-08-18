@@ -25,7 +25,7 @@ final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegration
     }
 
     #[Test]
-    public function itConfirmsTheOrderOnOrderPaymentAuthorized(): void
+    public function itConfirmsOnOrderPaymentAuthorized(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

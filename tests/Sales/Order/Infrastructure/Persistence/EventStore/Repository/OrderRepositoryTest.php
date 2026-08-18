@@ -23,7 +23,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedOrder(): void
+    public function itLoadsSaved(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -55,7 +55,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedOrder(): void
+    public function itThrowsOnUnsaved(): void
     {
         // Given
         $id = OrderId::generate();

@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDispatchesAManifestedReturn(): void
+    public function itDispatchesReturnWhenManifested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->store();
@@ -33,7 +33,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itFailsWhenTheReturnHasNotBeenManifested(): void
+    public function itFailsWhenNotManifested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
@@ -46,7 +46,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itIgnoresAReturnAlreadyDispatched(): void
+    public function itIgnoresReturnAlreadyDispatched(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->store();
@@ -60,7 +60,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itFailsWhenTheShipmentDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();

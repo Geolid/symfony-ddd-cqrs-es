@@ -24,7 +24,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsAnOrder(): void
+    public function itGets(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -64,7 +64,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownOrder(): void
+    public function itThrowsOnUnknown(): void
     {
         // Then
         $this->expectException(OrderResultNotFoundException::class);

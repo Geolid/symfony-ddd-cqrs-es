@@ -20,7 +20,7 @@ use Support\AbstractIntegrationTestCase;
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCryptoShredsTheShippingAddressOnCustomerErasure(): void
+    public function itCryptoShredsShippingAddressOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -45,7 +45,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsTheBillingAddressOnBillingRetentionExpiry(): void
+    public function itCryptoShredsBillingAddressOnBillingRetentionExpiry(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -67,7 +67,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsThePaymentCapturedShippingAddressOnCustomerErasure(): void
+    public function itCryptoShredsPaymentCapturedShippingAddressOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -91,7 +91,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsTheOrderConfirmedShippingAddressOnCustomerErasure(): void
+    public function itCryptoShredsOrderConfirmedShippingAddressOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();

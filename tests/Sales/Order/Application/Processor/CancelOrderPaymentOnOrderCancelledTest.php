@@ -27,7 +27,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itCancelsTheOrderPaymentOnOrderCancelled(): void
+    public function itCancelsOnOrderCancelled(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -42,7 +42,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
     }
 
     #[Test]
-    public function itDoesNothingWhenNoPaymentExistsForTheOrder(): void
+    public function itIgnoresWhenNoneExist(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

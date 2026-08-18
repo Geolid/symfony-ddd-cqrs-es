@@ -19,7 +19,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsThePaymentOnOrderPaymentRequested(): void
+    public function itProjectsOnOrderPaymentRequested(): void
     {
         // When
         $orderId = Uuid::uuid7()->toString();
@@ -47,7 +47,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheAuthorizationOnOrderPaymentAuthorized(): void
+    public function itProjectsOnOrderPaymentAuthorized(): void
     {
         // Given
         $other = OrderPaymentTestFactory::new()->store();
@@ -67,7 +67,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCaptureOnOrderPaymentCaptured(): void
+    public function itProjectsOnOrderPaymentCaptured(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -88,7 +88,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheFailureOnOrderPaymentFailed(): void
+    public function itProjectsOnOrderPaymentFailed(): void
     {
         // Given
         $other = OrderPaymentTestFactory::new()->store();
@@ -108,7 +108,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationOnOrderPaymentCancelled(): void
+    public function itProjectsOnOrderPaymentCancelled(): void
     {
         // Given
         $other = OrderPaymentTestFactory::new()->store();
@@ -128,7 +128,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheVoidingOnOrderPaymentVoided(): void
+    public function itProjectsOnOrderPaymentVoided(): void
     {
         // Given
         $other = OrderPaymentTestFactory::new()->authorized()->store();
@@ -148,7 +148,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRefundOnOrderPaymentRefundInitiated(): void
+    public function itProjectsOnOrderPaymentRefundInitiated(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -170,7 +170,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRefundConfirmationOnOrderPaymentRefunded(): void
+    public function itProjectsOnOrderPaymentRefunded(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

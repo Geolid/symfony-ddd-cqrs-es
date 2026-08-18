@@ -25,7 +25,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itDispatchesTheOrderOnShipmentDispatched(): void
+    public function itDispatchesOnShipmentDispatched(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->store();

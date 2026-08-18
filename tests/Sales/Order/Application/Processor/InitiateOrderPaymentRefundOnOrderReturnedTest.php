@@ -27,7 +27,7 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
     }
 
     #[Test]
-    public function itInitiatesTheOrderPaymentRefundOnOrderReturned(): void
+    public function itInitiatesOnOrderReturned(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();

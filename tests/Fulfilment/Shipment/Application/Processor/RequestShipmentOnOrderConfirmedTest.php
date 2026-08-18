@@ -31,7 +31,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itRequestsAShipmentOnOrderConfirmed(): void
+    public function itRequestsOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();
@@ -59,7 +59,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itRequestsASingleShipmentWhenReplayedOnOrderConfirmed(): void
+    public function itRequestsSingleWhenReplayedOnOrderConfirmed(): void
     {
         // Given
         $order = $this->placedOrder();

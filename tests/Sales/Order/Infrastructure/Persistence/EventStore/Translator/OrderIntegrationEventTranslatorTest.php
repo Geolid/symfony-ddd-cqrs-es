@@ -20,7 +20,7 @@ use Support\AbstractIntegrationTestCase;
 final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPublishesThePlacementOnOrderPlaced(): void
+    public function itPublishesOnOrderPlaced(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -43,7 +43,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheCancellationOnOrderCancelled(): void
+    public function itPublishesOnOrderCancelled(): void
     {
         // Given
         $order = OrderTestFactory::new()->cancelled()->create();
@@ -60,7 +60,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheConfirmationOnOrderConfirmed(): void
+    public function itPublishesOnOrderConfirmed(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -87,7 +87,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheRequestOnOrderPaymentRequested(): void
+    public function itPublishesOnOrderPaymentRequested(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -113,7 +113,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheCaptureOnOrderPaymentCaptured(): void
+    public function itPublishesOnOrderPaymentCaptured(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -146,7 +146,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itPublishesTheRequestOnOrderReturnRequested(): void
+    public function itPublishesOnOrderReturnRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();

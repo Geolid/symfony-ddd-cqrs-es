@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Command\ConfirmOrderReturn;
+namespace Sales\Tests\Order\Application\Command\DeliverOrder;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Application\Command\ConfirmOrderReturn\ConfirmOrderReturn;
+use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -13,7 +13,7 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
+final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
 {
     private OrderFinderInterface $finder;
 
@@ -25,27 +25,27 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itConfirmsReturnWhenRequested(): void
+    public function itDeliversWhenDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
 
         // When
-        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
+        $this->dispatch(new DeliverOrder($order->id()->toString()));
 
         // Then
         $result = $this->finder->ofId($order->id()->toString());
-        self::assertSame(OrderStatus::RETURNED, $result->status);
+        self::assertSame(OrderStatus::DELIVERED, $result->status);
     }
 
     #[Test]
-    public function itIgnoresWhenNotRequested(): void
+    public function itIgnoresWhenNotDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
+        $order = OrderTestFactory::new()->confirmed()->store();
 
         // When
-        $this->dispatch(new ConfirmOrderReturn($order->id()->toString()));
+        $this->dispatch(new DeliverOrder($order->id()->toString()));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -61,6 +61,6 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new ConfirmOrderReturn($id));
+        $this->dispatch(new DeliverOrder($id));
     }
 }

@@ -41,7 +41,7 @@ final class ValidUniqueCustomerEmailTest extends CompoundConstraintTestCase
     }
 
     #[Test]
-    public function itRefusesAnEmailAlreadyReserved(): void
+    public function itRefusesWhenAlreadyReserved(): void
     {
         // Given
         $this->registry->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');

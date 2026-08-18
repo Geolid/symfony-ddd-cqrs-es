@@ -13,7 +13,7 @@ use Symfony\Component\Clock\MockClock;
 final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsOrdersPastTheReturnWindow(): void
+    public function itListsPastReturnWindow(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));

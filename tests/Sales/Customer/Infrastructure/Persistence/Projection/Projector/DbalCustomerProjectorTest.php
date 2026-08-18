@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheCustomerOnCustomerRegistered(): void
+    public function itProjectsOnCustomerRegistered(): void
     {
         // When
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
@@ -28,7 +28,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDeletesOnCustomerErased(): void
+    public function itRemovesOnCustomerErased(): void
     {
         // Given
         $other = CustomerTestFactory::new()->withEmail('other@example.com')->store();

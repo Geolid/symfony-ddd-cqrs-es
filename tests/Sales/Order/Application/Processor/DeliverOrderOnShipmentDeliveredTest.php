@@ -25,7 +25,7 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itDeliversTheOrderOnShipmentDelivered(): void
+    public function itDeliversOnShipmentDelivered(): void
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->store();

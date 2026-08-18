@@ -17,7 +17,7 @@ use Symfony\Component\Clock\MockClock;
 final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itAnonymizesAClosedOrderPastItsRetentionPeriod(): void
+    public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
@@ -33,7 +33,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnOrderNotYetClosed(): void
+    public function itIgnoresWhenNotClosed(): void
     {
         // Given
         $order = OrderTestFactory::new()->store();
@@ -47,7 +47,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Then
         $this->expectException(OrderNotFoundException::class);

@@ -31,7 +31,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsTheBuyerOnCustomerRegistered(): void
+    public function itProjectsOnCustomerRegistered(): void
     {
         // When
         $customer = CustomerTestFactory::new()->store();
@@ -44,7 +44,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheShippingAddressOnCustomerShippingAddressRegistered(): void
+    public function itProjectsOnCustomerShippingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -59,7 +59,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheBillingAddressOnCustomerBillingAddressRegistered(): void
+    public function itProjectsOnCustomerBillingAddressRegistered(): void
     {
         // Given
         $customer = CustomerTestFactory::new()
@@ -74,7 +74,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRedactionOnCustomerErased(): void
+    public function itRemovesOnCustomerErased(): void
     {
         // Given
         $other = CustomerTestFactory::new()->store();

@@ -11,7 +11,7 @@ use Sales\Order\Domain\Service\ReturnWindowPolicy;
 final class ReturnWindowPolicyTest extends TestCase
 {
     #[Test]
-    public function itHasNotExpiredWithinTheWindow(): void
+    public function itHasNotExpiredWithinWindow(): void
     {
         // Given
         $policy = new ReturnWindowPolicy(14);
@@ -25,7 +25,7 @@ final class ReturnWindowPolicyTest extends TestCase
     }
 
     #[Test]
-    public function itHasExpiredPastTheWindow(): void
+    public function itHasExpiredPastWindow(): void
     {
         // Given
         $policy = new ReturnWindowPolicy(14);
@@ -39,7 +39,7 @@ final class ReturnWindowPolicyTest extends TestCase
     }
 
     #[Test]
-    public function itComputesTheCutoff(): void
+    public function itComputesCutoff(): void
     {
         // Given
         $policy = new ReturnWindowPolicy(14);
