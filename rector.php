@@ -24,13 +24,8 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__.'/tools',
     ]);
 
-    // Every method here is invoked through reflection, not a traceable PHP call site: a #[Apply]
-    // method matched by its event's type-hint (can legitimately have an empty body — the event
-    // alone feeds the Read Model, nothing for the aggregate to remember), a Handler/Processor's
-    // __invoke() routed by Messenger/the event subscription on its typed parameter, a Translator/
-    // Projector's on<Event>() routed by #[Subscribe], a Console command's __invoke(), a webhook
-    // Consumer's __invoke(), a Symfony UserInterface method the security component calls regardless
-    // of local usage. Static analysis can't see any of those callers.
+    // Reflection-invoked, no traceable PHP call site: #[Apply], Handler/Processor __invoke(),
+    // Translator/Projector on<Event>(), Console __invoke(), webhook Consumer __invoke().
     $reflectionInvokedPaths = [
         __DIR__.'/src/*/*/Domain/*.php',
         __DIR__.'/src/*/*/Application/Command/*/*Handler.php',
@@ -50,10 +45,12 @@ return static function (RectorConfig $rectorConfig): void {
         RemoveUnusedPrivateMethodRector::class => $reflectionInvokedPaths,
         RemoveUnusedPrivateMethodParameterRector::class => $reflectionInvokedPaths,
         RemoveUnusedPublicMethodParameterRector::class => $reflectionInvokedPaths,
-        RemoveEmptyClassMethodRector::class => $reflectionInvokedPaths,
+        // #[Apply] only — a body-less apply is legit (event feeds the Read Model, nothing to keep).
+        RemoveEmptyClassMethodRector::class => [
+            __DIR__.'/src/*/*/Domain/*.php',
+        ],
 
-        // Rewrites a null-comparison into an instanceof check — fights this repo's own consistent
-        // `null !== $x`/`null === $x` idiom used throughout, everywhere it would fire.
+        // Fights the null !== $x / null === $x convention.
         FlipTypeControlToUseExclusiveTypeRector::class,
     ]);
 

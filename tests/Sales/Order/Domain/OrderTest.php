@@ -44,7 +44,7 @@ final class OrderTest extends AggregateRootTestCase
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
-        $lines = self::lines();
+        $lines = $this->lines();
 
         $this
             ->given()
@@ -54,7 +54,7 @@ final class OrderTest extends AggregateRootTestCase
                 $customerId,
                 $this->primitiveShippingAddress(),
                 $this->primitiveBillingAddress(),
-                self::primitiveLines($lines),
+                $this->primitiveLines($lines),
                 1_999,
                 $placedAt->format(\DateTimeInterface::ATOM),
             ));
@@ -632,7 +632,7 @@ final class OrderTest extends AggregateRootTestCase
     /**
      * @return list<OrderLine>
      */
-    private static function lines(): array
+    private function lines(): array
     {
         return [
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
@@ -645,7 +645,7 @@ final class OrderTest extends AggregateRootTestCase
      *
      * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
      */
-    private static function primitiveLines(array $lines): array
+    private function primitiveLines(array $lines): array
     {
         return array_map(
             static fn (OrderLine $line): array => [
@@ -675,7 +675,7 @@ final class OrderTest extends AggregateRootTestCase
             $customerId,
             $this->primitiveShippingAddress(),
             $this->primitiveBillingAddress(),
-            self::primitiveLines(self::lines()),
+            $this->primitiveLines($this->lines()),
             1_999,
             $placedAt->format(\DateTimeInterface::ATOM),
         );

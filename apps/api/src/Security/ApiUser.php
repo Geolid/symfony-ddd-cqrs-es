@@ -28,10 +28,6 @@ final readonly class ApiUser implements UserInterface
         return ['ROLE_USER', ...$this->grants];
     }
 
-    public function eraseCredentials(): void
-    {
-    }
-
     public function getUserIdentifier(): string
     {
         \assert('' !== $this->identifier);
