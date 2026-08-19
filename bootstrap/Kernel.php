@@ -67,6 +67,17 @@ class Kernel extends BaseKernel
         }
     }
 
+    protected function getKernelParameters(): array
+    {
+        $parameters = parent::getKernelParameters();
+
+        if ($this->appId) {
+            $parameters['.kernel.config_dir'] = \sprintf('%s/apps/%s/config', $this->getProjectDir(), $this->appId);
+        }
+
+        return $parameters;
+    }
+
     protected function build(ContainerBuilder $container): void
     {
         // Priority > 100: Must run before Symfony's ResolveInstanceofConditionalsPass /

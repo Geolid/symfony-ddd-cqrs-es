@@ -50,12 +50,14 @@ function assets(
 }
 
 #[AsTask(description: 'Warmup all caches')]
-function warmup(): void
-{
+function warmup(
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
+    ?string $app = null,
+): void {
     io()->comment('shared');
     console(['cache:warmup']);
 
-    foreach (apps() as $app) {
+    foreach (resolve_apps($app) as $app) {
         io()->comment("DM: {$app}");
         console(['cache:warmup', "--appId={$app}"]);
     }

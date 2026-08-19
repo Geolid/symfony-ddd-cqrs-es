@@ -30,10 +30,18 @@ function sh(
 }
 
 #[AsTask(description: 'Clear all caches')]
-function cc(): void
-{
-    fs()->remove(glob(__DIR__.'/../var/cache/*') ?: []);
-    warmup();
+function cc(
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
+    ?string $app = null,
+): void {
+    if (null !== $app) {
+        resolve_apps($app);
+        fs()->remove(sprintf('%s/../var/cache/%s/%s', __DIR__, app_env(), $app));
+    } else {
+        fs()->remove(glob(__DIR__.'/../var/cache/*') ?: []);
+    }
+
+    warmup($app);
 }
 
 #[AsTask(name: 'dump', description: 'Start Symfony VarDumper server')]
