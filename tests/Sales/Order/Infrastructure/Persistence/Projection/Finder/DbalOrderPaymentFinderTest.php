@@ -73,4 +73,35 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         // When
         $this->finder->ofReference('GLBX-NEVER-ISSUED');
     }
+
+    #[Test]
+    public function itFiltersByStatus(): void
+    {
+        // Given
+        $requested = OrderPaymentTestFactory::new()->store();
+        OrderPaymentTestFactory::new()->authorized()->store();
+
+        // When
+        $results = iterator_to_array($this->finder->byStatus(OrderPaymentStatus::REQUESTED->value));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($requested->id->toString(), $results[0]->id);
+    }
+
+    #[Test]
+    public function itFiltersRequestedBefore(): void
+    {
+        // Given
+        $cutoff = '2026-06-01T00:00:00+00:00';
+        $stale = OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->store();
+        OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->store();
+
+        // When
+        $results = iterator_to_array($this->finder->requestedBefore($cutoff));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($stale->id->toString(), $results[0]->id);
+    }
 }

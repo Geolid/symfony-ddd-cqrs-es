@@ -33,9 +33,10 @@ final class AcmeCarrierGatewayTest extends TestCase
         // Then
         self::assertSame('ACME-4Q7X2K9', $trackingReference);
         self::assertSame('https://carrier.acme.test/pickups', $response->getRequestUrl());
+        self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
         self::assertSame(
             [
-                'reference' => $shipmentId,
+                'clientReferenceId' => $shipmentId,
                 'destination' => [
                     'recipient' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
@@ -60,9 +61,10 @@ final class AcmeCarrierGatewayTest extends TestCase
         // Then
         self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
         self::assertSame('https://carrier.acme.test/returns', $response->getRequestUrl());
+        self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
         self::assertSame(
             [
-                'reference' => $shipmentId,
+                'clientReferenceId' => $shipmentId,
                 'origin' => [
                     'recipient' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
@@ -82,7 +84,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreachableCarriers')]
-    public function itThrowsOnCarrierItCannotReach(callable|MockResponse $response): void
+    public function itThrowsWhenCarrierUnreachable(callable|MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -102,7 +104,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnPickupResponseItCannotRead(MockResponse $response): void
+    public function itThrowsWhenPickupResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -113,7 +115,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnReturnPickupResponseItCannotRead(MockResponse $response): void
+    public function itThrowsWhenReturnPickupResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
@@ -131,6 +133,52 @@ final class AcmeCarrierGatewayTest extends TestCase
         yield 'tracking number absent' => [self::jsonResponse(['status' => 'booked'])];
         yield 'tracking number blank' => [self::jsonResponse(['trackingNumber' => ''])];
         yield 'tracking number of another type' => [self::jsonResponse(['trackingNumber' => 42])];
+    }
+
+    #[Test]
+    public function itChecksTrackingStatus(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => 'dispatched']);
+
+        // When
+        $status = $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
+
+        // Then
+        self::assertSame('dispatched', $status);
+        self::assertSame('https://carrier.acme.test/status/ACME-4Q7X2K9', $response->getRequestUrl());
+    }
+
+    #[Test]
+    public function itThrowsWhenCheckingStatusAndCarrierUnreachable(): void
+    {
+        // Then
+        $this->expectException(AcmeClientException::class);
+
+        // When
+        $this->gateway(static fn () => throw new TransportException('Connection refused'))->checkStatus('ACME-4Q7X2K9');
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreadableStatusResponses')]
+    public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
+    {
+        // Then
+        $this->expectException(AcmeClientException::class);
+
+        // When
+        $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
+    }
+
+    /**
+     * @return iterable<string, array{MockResponse}>
+     */
+    public static function provideUnreadableStatusResponses(): iterable
+    {
+        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'status absent' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9'])];
+        yield 'status blank' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => ''])];
+        yield 'status of another type' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => 42])];
     }
 
     private function gateway(callable|MockResponse $response): AcmeCarrierGateway

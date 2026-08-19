@@ -26,7 +26,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itAnonymizesOrdersPastTheRetentionPeriod(): void
+    public function itAnonymizesPastTheRetentionPeriod(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
@@ -45,7 +45,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itFailsToRunWhileAlreadyRunningInAnotherProcess(): void
+    public function itFailsWhenAlreadyRunning(): void
     {
         // Given
         OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();

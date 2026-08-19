@@ -60,6 +60,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'status' => ShipmentStatus::MANIFESTED->value,
                 'tracking_reference' => $event->trackingReference,
+                'manifested_at' => new \DateTimeImmutable($event->manifestedAt)->format('Y-m-d H:i:s'),
             ],
             ['id' => $event->id],
         );
@@ -193,6 +194,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('return_tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('created_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('manifested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);

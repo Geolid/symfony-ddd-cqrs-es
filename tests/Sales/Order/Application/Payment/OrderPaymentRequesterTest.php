@@ -147,4 +147,9 @@ final class SpyPaymentGateway implements PaymentGatewayInterface
     public function refund(string $reference): void
     {
     }
+
+    public function checkStatus(string $reference): string
+    {
+        throw new \LogicException('Not needed by this test.');
+    }
 }

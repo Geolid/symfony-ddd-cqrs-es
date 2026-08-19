@@ -25,4 +25,6 @@ interface ShipmentFinderInterface extends CollectionFinderInterface
     public function byStatus(string ...$statuses): static;
 
     public function byCustomer(string $customerId): static;
+
+    public function manifestedBefore(string $cutoff): static;
 }

@@ -27,7 +27,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itCompletesOrdersPastTheReturnWindow(): void
+    public function itCompletesPastTheReturnWindow(): void
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
@@ -50,7 +50,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itFailsToRunWhileAlreadyRunningInAnotherProcess(): void
+    public function itFailsWhenAlreadyRunning(): void
     {
         // Given
         OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();

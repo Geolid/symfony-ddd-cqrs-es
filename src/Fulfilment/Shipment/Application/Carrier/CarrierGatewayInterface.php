@@ -17,4 +17,9 @@ interface CarrierGatewayInterface
      * @return string the carrier's own tracking reference for the return leg
      */
     public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string;
+
+    /**
+     * @return string the carrier's own current status for this tracking reference
+     */
+    public function checkStatus(string $reference): string;
 }

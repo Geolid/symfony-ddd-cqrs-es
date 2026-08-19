@@ -26,10 +26,37 @@ final readonly class GlobexClient
      *
      * @throws GlobexClientException
      */
-    public function post(string $path, array $body): array
+    public function post(string $path, array $body, ?string $idempotencyKey = null): array
+    {
+        $options = ['json' => $body];
+        if (null !== $idempotencyKey) {
+            $options['headers'] = ['Idempotency-Key' => $idempotencyKey];
+        }
+
+        return $this->request('POST', $path, $options);
+    }
+
+    /**
+     * @return mixed[]
+     *
+     * @throws GlobexClientException
+     */
+    public function get(string $path): array
+    {
+        return $this->request('GET', $path);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return mixed[]
+     *
+     * @throws GlobexClientException
+     */
+    private function request(string $method, string $path, array $options = []): array
     {
         try {
-            return $this->client->request('POST', $path, ['json' => $body])->toArray();
+            return $this->client->request($method, $path, $options)->toArray();
         } catch (TransportExceptionInterface|HttpExceptionInterface $e) {
             throw GlobexClientException::networkFailure($path, $e->getMessage());
         } catch (DecodingExceptionInterface $e) {

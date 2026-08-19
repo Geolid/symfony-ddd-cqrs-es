@@ -86,6 +86,23 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFiltersManifestedBefore(): void
+    {
+        // Given
+        $cutoff = '2026-06-01T00:00:00+00:00';
+        $stale = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->store();
+        ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->store();
+        ShipmentTestFactory::new()->prepared()->store();
+
+        // When
+        $results = iterator_to_array($this->finder->manifestedBefore($cutoff));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($stale->id->toString(), $results[0]->id);
+    }
+
+    #[Test]
     public function itFiltersByCustomer(): void
     {
         // Given

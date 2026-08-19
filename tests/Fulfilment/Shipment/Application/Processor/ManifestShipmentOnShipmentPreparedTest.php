@@ -81,4 +81,9 @@ final class SpyCarrierGateway implements CarrierGatewayInterface
     {
         throw new \LogicException('Not exercised by this test.');
     }
+
+    public function checkStatus(string $reference): string
+    {
+        throw new \LogicException('Not exercised by this test.');
+    }
 }

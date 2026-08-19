@@ -16,6 +16,7 @@ final readonly class ShipmentResult implements ResultInterface
         public ?string $trackingReference,
         public ?string $returnTrackingReference,
         public \DateTimeImmutable $createdAt,
+        public ?\DateTimeImmutable $manifestedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,

@@ -61,4 +61,9 @@ final class SpyRefundingPaymentGateway implements PaymentGatewayInterface
     {
         $this->refundedReference = $reference;
     }
+
+    public function checkStatus(string $reference): string
+    {
+        throw new \LogicException('Not needed by this test.');
+    }
 }

@@ -37,9 +37,10 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
         self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $session->checkoutUrl);
         self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
+        self::assertContains('Idempotency-Key: '.$orderId, $response->getRequestOptions()['headers']);
         self::assertSame(
             [
-                'reference' => $orderId,
+                'clientReferenceId' => $orderId,
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
                 'billingAddress' => [
@@ -56,7 +57,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreachableProviders')]
-    public function itThrowsOnProviderItCannotReach(callable|MockResponse $response): void
+    public function itThrowsWhenPaymentProviderUnreachable(callable|MockResponse $response): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -76,7 +77,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsOnChargeResponseItCannotRead(MockResponse $response): void
+    public function itThrowsWhenChargeResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -117,7 +118,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenVoidingOnProviderItCannotReach(): void
+    public function itThrowsWhenVoidingAndPaymentProviderUnreachable(): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
@@ -144,13 +145,59 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenRefundingOnProviderItCannotReach(): void
+    public function itThrowsWhenRefundingAndPaymentProviderUnreachable(): void
     {
         // Then
         $this->expectException(GlobexClientException::class);
 
         // When
         $this->gateway(static fn () => throw new TransportException('Connection refused'))->refund('GLBX-9F3K2M1P');
+    }
+
+    #[Test]
+    public function itChecksChargeStatus(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'authorized']);
+
+        // When
+        $status = $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');
+
+        // Then
+        self::assertSame('authorized', $status);
+        self::assertSame('https://payments.globex.test/status/GLBX-9F3K2M1P', $response->getRequestUrl());
+    }
+
+    #[Test]
+    public function itThrowsWhenCheckingStatusAndPaymentProviderUnreachable(): void
+    {
+        // Then
+        $this->expectException(GlobexClientException::class);
+
+        // When
+        $this->gateway(static fn () => throw new TransportException('Connection refused'))->checkStatus('GLBX-9F3K2M1P');
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreadableStatusResponses')]
+    public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
+    {
+        // Then
+        $this->expectException(GlobexClientException::class);
+
+        // When
+        $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');
+    }
+
+    /**
+     * @return iterable<string, array{MockResponse}>
+     */
+    public static function provideUnreadableStatusResponses(): iterable
+    {
+        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'status absent' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P'])];
+        yield 'status blank' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => ''])];
+        yield 'status of another type' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 42])];
     }
 
     private function gateway(callable|MockResponse $response): GlobexPaymentGateway

@@ -22,6 +22,8 @@ phpunit.xml
 # INFRASTRUCTURE & DOCKER
 # =============================================================================
 compose.override.yaml
+/sandbox/data/*
+!/sandbox/data/.gitkeep
 
 # =============================================================================
 # FRONTEND

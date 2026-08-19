@@ -10,16 +10,16 @@ $body = json_decode($rawBody ?: '[]', true, 512, \JSON_THROW_ON_ERROR);
 $idempotencyKey = $_SERVER['HTTP_IDEMPOTENCY_KEY'] ?? null;
 
 if (null !== $idempotencyKey) {
-    $existing = fake_api_store_find('acme-pickups', 'idempotencyKey', $idempotencyKey);
+    $existing = fake_api_store_find('acme-returns', 'idempotencyKey', $idempotencyKey);
     if (null !== $existing) {
         fake_api_respond(['trackingNumber' => $existing['reference']]);
         exit;
     }
 }
 
-$trackingNumber = fake_api_reference('ACME-LOCAL', $rawBody);
+$trackingNumber = fake_api_reference('ACME-RETURN-LOCAL', $rawBody);
 
-fake_api_store_mutate('acme-pickups', static function (array $records) use ($trackingNumber, $idempotencyKey, $body): array {
+fake_api_store_mutate('acme-returns', static function (array $records) use ($trackingNumber, $idempotencyKey, $body): array {
     $records[$trackingNumber] = [
         'reference' => $trackingNumber,
         'idempotencyKey' => $idempotencyKey,

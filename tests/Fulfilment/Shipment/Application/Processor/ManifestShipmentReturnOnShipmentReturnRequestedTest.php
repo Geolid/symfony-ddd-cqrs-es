@@ -72,4 +72,9 @@ final class SpyReturnCarrierGateway implements CarrierGatewayInterface
 
         return self::RETURN_TRACKING_REFERENCE;
     }
+
+    public function checkStatus(string $reference): string
+    {
+        throw new \LogicException('Not exercised by this test.');
+    }
 }

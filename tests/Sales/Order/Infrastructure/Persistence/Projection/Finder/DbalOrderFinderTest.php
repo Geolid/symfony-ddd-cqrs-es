@@ -90,7 +90,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersClosedBeforeACutoff(): void
+    public function itFiltersClosedBefore(): void
     {
         // Given
         $cutoff = '2026-01-01T00:00:00+00:00';
@@ -107,7 +107,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersDeliveredBeforeACutoff(): void
+    public function itFiltersDeliveredBefore(): void
     {
         // Given
         $cutoff = '2026-01-15T00:00:00+00:00';
