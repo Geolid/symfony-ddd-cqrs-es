@@ -11,9 +11,9 @@ use function Castor\context;
 use function Castor\run;
 
 #[AsTask(name: 'up', namespace: 'docker', description: 'Build images and start containers')]
-function dockerUp(): void
+function docker_up(): void
 {
-    checkDocker();
+    check_docker();
 
     run(['docker', 'compose', 'pull']);
     run(['docker', 'compose', 'build', '--pull']);
@@ -21,34 +21,34 @@ function dockerUp(): void
 }
 
 #[AsTask(name: 'stop', namespace: 'docker', description: 'Stop and remove containers')]
-function dockerStop(): void
+function docker_stop(): void
 {
-    checkDocker();
+    check_docker();
 
     run(['docker', 'compose', 'down']);
 }
 
 #[AsTask(name: 'destroy', namespace: 'docker', description: 'Remove containers, volumes, and networks')]
-function dockerDestroy(): void
+function docker_destroy(): void
 {
-    checkDocker();
+    check_docker();
 
     run(['docker', 'compose', 'down', '-v']);
 }
 
 #[AsTask(name: 'logs', namespace: 'docker', description: 'Display logs for a service')]
-function dockerLog(
+function docker_log(
     #[AsArgument(description: 'Service name', autocomplete: ['app', 'db', 'mailer', 'nginx', 'sandbox'])]
     string $service,
 ): void {
-    checkDocker();
+    check_docker();
 
     $tty = context()->supportsInteraction;
 
     run(['docker', 'compose', 'logs', '-f', $service], context: context()->withTty($tty)->withPty($tty));
 }
 
-function checkDocker(): void
+function check_docker(): void
 {
     check(
         'Checking Docker is installed',

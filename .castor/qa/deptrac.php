@@ -8,20 +8,20 @@ use Castor\Attribute\AsTask;
 use function Castor\io;
 
 #[AsTask(name: 'deptrac', namespace: 'qa', description: 'Run architectural checks')]
-function qaDeptrac(
+function qa_deptrac(
     #[AsOption(description: 'Restrict to "bc", "layers" or "dm" (default: all)', autocomplete: ['bc', 'layers', 'dm'])]
     ?string $scope = null,
 ): void {
     $allowedScopes = ['bc', 'layers', 'dm'];
 
-    assertOneOf($scope, $allowedScopes, 'scope');
+    assert_one_of($scope, $allowedScopes, 'scope');
 
     $scopesToRun = $scope ? [$scope] : $allowedScopes;
 
     foreach ($scopesToRun as $s) {
         io()->comment("Scope: {$s}");
 
-        dockerExec([
+        docker_exec([
             'vendor/bin/deptrac',
             'analyse',
             "--config-file=deptrac_{$s}.yaml",

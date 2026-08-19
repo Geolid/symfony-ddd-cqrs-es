@@ -9,20 +9,20 @@ use function Castor\io;
 
 #[AsTask(description: 'Run all linters')]
 function lint(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
-    qaLintContainer($app);
-    qaLintTwig($app);
-    qaLintTranslations($app);
+    qa_lint_container($app);
+    qa_lint_twig($app);
+    qa_lint_translations($app);
 }
 
 #[AsTask(name: 'container', namespace: 'qa:lint', description: 'Validate Symfony container for all DMs')]
-function qaLintContainer(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
+function qa_lint_container(
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
-    foreach (resolveApps($app) as $app) {
+    foreach (resolve_apps($app) as $app) {
         io()->comment("DM: {$app}");
 
         console(['lint:container', '--no-debug', "--appId={$app}"]);
@@ -30,13 +30,13 @@ function qaLintContainer(
 }
 
 #[AsTask(name: 'translations', namespace: 'qa:lint', description: 'Check YAML syntax of translation files (shared + per DM)')]
-function qaLintTranslations(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
+function qa_lint_translations(
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
     preg_match_all('/ui\/translations[^\'"]*/', (string) file_get_contents(__DIR__.'/../../config/packages/translation.php'), $sharedMatches);
 
-    foreach (resolveApps($app) as $app) {
+    foreach (resolve_apps($app) as $app) {
         if (!is_file(__DIR__."/../../apps/{$app}/config/packages/translation.php")) {
             continue;
         }
@@ -53,11 +53,11 @@ function qaLintTranslations(
 }
 
 #[AsTask(name: 'twig', namespace: 'qa:lint', description: 'Check Twig syntax for DMs where TwigBundle is loaded')]
-function qaLintTwig(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
+function qa_lint_twig(
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
-    foreach (resolveApps($app) as $app) {
+    foreach (resolve_apps($app) as $app) {
         $configFile = __DIR__."/../../apps/{$app}/config/packages/twig.php";
         if (!is_file($configFile)) {
             continue;

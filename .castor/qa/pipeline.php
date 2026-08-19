@@ -10,36 +10,36 @@ use function Castor\io;
 function qa(): void
 {
     io()->section('Composer check');
-    qaComposerValidate();
-    qaComposerAudit();
+    qa_composer_validate();
+    qa_composer_audit();
 
     io()->section('Static checks');
-    qaStatic();
+    qa_static();
 
     io()->section('Tests (with coverage)');
-    qaTest(coverage: true);
+    qa_test(coverage: true);
 
     io()->section('Mutation testing');
-    qaMutation(coverage: true);
+    qa_mutation(coverage: true);
 
     io()->success('QA pipeline passed.');
 }
 
 #[AsTask(name: 'static', namespace: 'qa', description: 'Run all static checks')]
-function qaStatic(): void
+function qa_static(): void
 {
     io()->section('Lint');
     lint();
 
     io()->section('Coding standards');
-    qaCs(fix: false);
+    qa_cs(fix: false);
 
     io()->section('Deptrac');
-    qaDeptrac();
+    qa_deptrac();
 
     io()->section('PHPStan');
-    qaStan();
+    qa_stan();
 
     io()->section('Rector');
-    qaRector(fix: false);
+    qa_rector(fix: false);
 }

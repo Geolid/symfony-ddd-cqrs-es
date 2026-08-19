@@ -5,29 +5,29 @@ declare(strict_types=1);
 use Castor\Attribute\AsTask;
 
 #[AsTask(name: 'build', namespace: 'ci', description: 'Validate, install dependencies and assets')]
-function ciBuild(): void
+function ci_build(): void
 {
-    qaComposerValidate();
+    qa_composer_validate();
     vendor();
     assets();
 }
 
 #[AsTask(name: 'static', namespace: 'ci', description: 'Warmup then run static analysis')]
-function ciStatic(): void
+function ci_static(): void
 {
     warmup();
-    qaComposerAudit();
-    qaStatic();
+    qa_composer_audit();
+    qa_static();
 }
 
 #[AsTask(name: 'coverage', namespace: 'ci', description: 'Run test suite with coverage')]
-function ciCoverage(): void
+function ci_coverage(): void
 {
-    qaTest(coverage: true);
+    qa_test(coverage: true);
 }
 
 #[AsTask(name: 'mutation', namespace: 'ci', description: 'Run mutation testing')]
-function ciMutation(): void
+function ci_mutation(): void
 {
-    qaMutation(coverage: true);
+    qa_mutation(coverage: true);
 }

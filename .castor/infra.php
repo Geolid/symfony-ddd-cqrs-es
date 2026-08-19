@@ -20,10 +20,10 @@ function vendor(
     ?bool $dev = null,
 ): void {
     if (null !== $package) {
-        dockerExec(['composer', 'require', ...($dev ? ['--dev'] : []), $package]);
+        docker_exec(['composer', 'require', ...($dev ? ['--dev'] : []), $package]);
     } else {
         fingerprint(
-            callback: static fn () => dockerExec(['composer', 'install', '--prefer-dist', '--no-progress', '--no-interaction']),
+            callback: static fn () => docker_exec(['composer', 'install', '--prefer-dist', '--no-progress', '--no-interaction']),
             id: 'vendor',
             fingerprint: hasher()->writeFile('composer.lock', FileHashStrategy::Content)->finish(),
         );
@@ -35,10 +35,10 @@ function vendor(
 
 #[AsTask(description: 'Install bundle and AssetMapper assets')]
 function assets(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
-    foreach (resolveApps($app) as $app) {
+    foreach (resolve_apps($app) as $app) {
         io()->comment("DM: {$app}");
 
         console(['assets:install', 'public/', '--no-cleanup', "--appId={$app}"]);
@@ -64,5 +64,5 @@ function warmup(): void
 #[AsTask(description: 'Install git hooks (CaptainHook)')]
 function hooks(): void
 {
-    dockerExec(['vendor/bin/captainhook', 'install', '-f', '-n']);
+    docker_exec(['vendor/bin/captainhook', 'install', '-f', '-n']);
 }
