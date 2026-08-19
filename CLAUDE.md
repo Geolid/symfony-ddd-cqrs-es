@@ -20,7 +20,7 @@ castor qa:stan [--app=<dm>] [<target>]             # PHPStan (default: all)
 castor qa:deptrac [--scope=bc|layers|dm]           # architecture checks (default: all)
 castor qa:cs [--type=php|twig] [--fix] [<target>]  # lint (default: check)
 castor qa:rector [--fix] [<target>]                # Rector (default: check)
-castor qa:static                                   # lint + cs + deptrac + stan + rector
+castor qa:static                                   # all static checks
 castor qa                                          # static + test + mutation
 castor assets [<dm>]                               # install assets (default: all DMs)
 ```
