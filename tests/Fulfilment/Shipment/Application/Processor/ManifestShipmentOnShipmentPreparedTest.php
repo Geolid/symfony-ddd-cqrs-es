@@ -70,14 +70,14 @@ final class SpyCarrierGateway implements CarrierGatewayInterface
 
     public ?PostalAddress $deliveryAddress = null;
 
-    public function requestPickup(string $shipmentId, PostalAddress $deliveryAddress): string
+    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
     {
         $this->deliveryAddress = $deliveryAddress;
 
         return self::TRACKING_REFERENCE;
     }
 
-    public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string
+    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
     {
         throw new \LogicException('Not exercised by this test.');
     }

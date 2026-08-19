@@ -115,12 +115,12 @@ final readonly class StubCarrierGateway implements CarrierGatewayInterface
     ) {
     }
 
-    public function requestPickup(string $shipmentId, PostalAddress $deliveryAddress): string
+    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
     {
         throw new \LogicException('Not needed by this test.');
     }
 
-    public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string
+    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
     {
         throw new \LogicException('Not needed by this test.');
     }

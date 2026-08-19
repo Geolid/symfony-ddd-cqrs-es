@@ -165,7 +165,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
         // Then
         self::assertSame('authorized', $status);
-        self::assertSame('https://payments.globex.test/status/GLBX-9F3K2M1P', $response->getRequestUrl());
+        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $response->getRequestUrl());
     }
 
     #[Test]

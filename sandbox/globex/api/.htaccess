@@ -1,4 +1,4 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^status/([A-Za-z0-9\-]+)$ status.php?reference=$1 [L,QSA]
+RewriteRule ^charges/([A-Za-z0-9\-]+)$ charges.php?reference=$1 [L,QSA]
 RewriteRule ^([a-z]+)$ $1.php [L]

@@ -21,18 +21,18 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class AcmeCarrierGatewayTest extends TestCase
 {
     #[Test]
-    public function itBooksPickupAndReadsCarrierReference(): void
+    public function itManifestsAndReadsCarrierReference(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
         $response = self::jsonResponse(['trackingNumber' => 'ACME-4Q7X2K9']);
 
         // When
-        $trackingReference = $this->gateway($response)->requestPickup($shipmentId, $this->deliveryAddress());
+        $trackingReference = $this->gateway($response)->manifest($shipmentId, $this->deliveryAddress());
 
         // Then
         self::assertSame('ACME-4Q7X2K9', $trackingReference);
-        self::assertSame('https://carrier.acme.test/pickups', $response->getRequestUrl());
+        self::assertSame('https://carrier.acme.test/shipments', $response->getRequestUrl());
         self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
         self::assertSame(
             [
@@ -49,14 +49,14 @@ final class AcmeCarrierGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itBooksReturnPickupAndReadsCarrierReference(): void
+    public function itManifestsReturnAndReadsCarrierReference(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
         $response = self::jsonResponse(['trackingNumber' => 'ACME-RETURN-4Q7X2K9']);
 
         // When
-        $returnTrackingReference = $this->gateway($response)->requestReturnPickup($shipmentId, $this->deliveryAddress());
+        $returnTrackingReference = $this->gateway($response)->manifestReturn($shipmentId, $this->deliveryAddress());
 
         // Then
         self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
@@ -90,7 +90,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         $this->expectException(AcmeClientException::class);
 
         // When
-        $this->gateway($response)->requestPickup(Uuid::uuid7()->toString(), $this->deliveryAddress());
+        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->deliveryAddress());
     }
 
     /**
@@ -104,24 +104,24 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsWhenPickupResponseUnreadable(MockResponse $response): void
+    public function itThrowsWhenManifestResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
 
         // When
-        $this->gateway($response)->requestPickup(Uuid::uuid7()->toString(), $this->deliveryAddress());
+        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->deliveryAddress());
     }
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsWhenReturnPickupResponseUnreadable(MockResponse $response): void
+    public function itThrowsWhenReturnManifestResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(AcmeClientException::class);
 
         // When
-        $this->gateway($response)->requestReturnPickup(Uuid::uuid7()->toString(), $this->deliveryAddress());
+        $this->gateway($response)->manifestReturn(Uuid::uuid7()->toString(), $this->deliveryAddress());
     }
 
     /**
@@ -146,7 +146,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame('dispatched', $status);
-        self::assertSame('https://carrier.acme.test/status/ACME-4Q7X2K9', $response->getRequestUrl());
+        self::assertSame('https://carrier.acme.test/trackers/ACME-4Q7X2K9', $response->getRequestUrl());
     }
 
     #[Test]
