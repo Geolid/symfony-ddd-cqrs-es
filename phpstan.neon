@@ -25,7 +25,7 @@ parameters:
     # Castor is a standalone binary, not a Composer dependency.
     # This generated stub provides all IDE type-hinting for castor.php and .castor/.
     scanFiles:
-        - .castor/.castor.stub.php
+        - .castor.stub.php
 
     symfony:
         containerXmlPath: var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
