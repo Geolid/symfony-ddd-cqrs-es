@@ -67,6 +67,9 @@ class Kernel extends BaseKernel
         }
     }
 
+    /**
+     * @return array<string, array|bool|string|int|float|\UnitEnum|null>
+     */
     protected function getKernelParameters(): array
     {
         $parameters = parent::getKernelParameters();
