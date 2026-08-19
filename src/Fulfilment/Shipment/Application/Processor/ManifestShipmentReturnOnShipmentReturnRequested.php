@@ -35,7 +35,7 @@ final readonly class ManifestShipmentReturnOnShipmentReturnRequested
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
-        $returnTrackingReference = $this->carrier->requestReturnPickup($event->id, $shipment->shippingAddress);
+        $returnTrackingReference = $this->carrier->manifestReturn($event->id, $shipment->shippingAddress);
 
         $this->commandBus->dispatch(new ManifestShipmentReturn(
             id: $event->id,

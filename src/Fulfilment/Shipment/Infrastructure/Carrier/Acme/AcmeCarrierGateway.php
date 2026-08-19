@@ -12,9 +12,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {
-    private const string PICKUP_PATH = '/pickups';
-    private const string RETURN_PICKUP_PATH = '/returns';
-    private const string STATUS_PATH = '/status';
+    private const string SHIPMENT_PATH = '/shipments';
+    private const string RETURN_PATH = '/returns';
+    private const string TRACKER_PATH = '/trackers';
 
     public function __construct(
         private AcmeClient $acmeClient,
@@ -32,9 +32,9 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     /**
      * @throws AcmeClientException
      */
-    public function requestPickup(string $shipmentId, PostalAddress $deliveryAddress): string
+    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
     {
-        $response = $this->acmeClient->post(self::PICKUP_PATH, [
+        $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
             'clientReferenceId' => $shipmentId,
             'destination' => [
                 'recipient' => $deliveryAddress->fullName->toString(),
@@ -47,7 +47,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $trackingReference = $response['trackingNumber'] ?? null;
 
         if (!\is_string($trackingReference) || '' === $trackingReference) {
-            throw AcmeClientException::invalidResponse(self::PICKUP_PATH, 'A pickup response carries a non-empty "trackingNumber".');
+            throw AcmeClientException::invalidResponse(self::SHIPMENT_PATH, 'A manifest response carries a non-empty "trackingNumber".');
         }
 
         return $trackingReference;
@@ -56,11 +56,11 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     /**
      * @throws AcmeClientException
      */
-    public function requestReturnPickup(string $shipmentId, PostalAddress $pickupAddress): string
+    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
     {
         $returnAddress = Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity);
 
-        $response = $this->acmeClient->post(self::RETURN_PICKUP_PATH, [
+        $response = $this->acmeClient->post(self::RETURN_PATH, [
             'clientReferenceId' => $shipmentId,
             'origin' => [
                 'recipient' => $pickupAddress->fullName->toString(),
@@ -79,7 +79,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $returnTrackingReference = $response['trackingNumber'] ?? null;
 
         if (!\is_string($returnTrackingReference) || '' === $returnTrackingReference) {
-            throw AcmeClientException::invalidResponse(self::RETURN_PICKUP_PATH, 'A return pickup response carries a non-empty "trackingNumber".');
+            throw AcmeClientException::invalidResponse(self::RETURN_PATH, 'A return manifest response carries a non-empty "trackingNumber".');
         }
 
         return $returnTrackingReference;
@@ -90,12 +90,12 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
      */
     public function checkStatus(string $reference): string
     {
-        $response = $this->acmeClient->get(self::STATUS_PATH.'/'.$reference);
+        $response = $this->acmeClient->get(self::TRACKER_PATH.'/'.$reference);
 
         $status = $response['status'] ?? null;
 
         if (!\is_string($status) || '' === $status) {
-            throw AcmeClientException::invalidResponse(self::STATUS_PATH, 'A status response carries a non-empty "status".');
+            throw AcmeClientException::invalidResponse(self::TRACKER_PATH, 'A status response carries a non-empty "status".');
         }
 
         return $status;

@@ -6,6 +6,23 @@ require dirname(__DIR__, 2).'/shared/reference.php';
 require dirname(__DIR__, 2).'/shared/request.php';
 require dirname(__DIR__, 2).'/shared/store.php';
 
+if ('GET' === $_SERVER['REQUEST_METHOD']) {
+    $reference = filter_var($_GET['reference'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+    $records = fake_api_store_read('globex-charges');
+
+    if (!isset($records[$reference])) {
+        http_response_code(404);
+        fake_api_respond(['error' => 'unknown_reference']);
+        exit;
+    }
+
+    fake_api_respond([
+        'reference' => $reference,
+        'status' => $records[$reference]['status'],
+    ]);
+    exit;
+}
+
 $rawBody = fake_api_read_raw_body();
 $body = fake_api_decode_json_body($rawBody);
 

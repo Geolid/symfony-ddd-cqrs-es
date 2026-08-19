@@ -12,7 +12,6 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
     private const string CHARGES_PATH = '/charges';
-    private const string STATUS_PATH = '/status';
 
     public function __construct(private GlobexClient $globexClient)
     {
@@ -71,12 +70,12 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function checkStatus(string $reference): string
     {
-        $response = $this->globexClient->get(self::STATUS_PATH.'/'.$reference);
+        $response = $this->globexClient->get(self::CHARGES_PATH.'/'.$reference);
 
         $status = $response['status'] ?? null;
 
         if (!\is_string($status) || '' === $status) {
-            throw GlobexClientException::invalidResponse(self::STATUS_PATH, 'A status response carries a non-empty "status".');
+            throw GlobexClientException::invalidResponse(self::CHARGES_PATH, 'A status response carries a non-empty "status".');
         }
 
         return $status;
