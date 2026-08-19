@@ -9,8 +9,8 @@ proposing a structural change.
 - Branch from `main`.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
   (`type(scope): description`) — enforced by a `commit-msg` git hook, install
-  it with `make hooks` (already wired into `make start`).
-- Run `make qa` before opening a PR — it covers linting, coding standards,
+  it with `castor hooks` (already wired into `castor start`).
+- Run `castor qa` before opening a PR — it covers linting, coding standards,
   architecture isolation (Deptrac/PHPat), tests, and mutation testing.
 - Fill in the PR template.
 
