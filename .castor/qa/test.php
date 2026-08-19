@@ -23,7 +23,7 @@ function qa_test(
 ): void {
     // No APP_ENV forwarded: phpunit.dist.xml forces it to "test" itself, and that
     // force loses to a real, externally-set APP_ENV env var.
-    with(static fn () => docker_exec([
+    with(static fn () => compose_exec([
         'vendor/bin/paratest', '--processes', '8', '--display-all-issues',
         ...(!$coverage ? ['--no-coverage'] : []),
         ...(null !== $filter ? ['--filter', $filter] : []),
@@ -37,7 +37,7 @@ function qa_mutation(
     #[AsOption(mode: InputOption::VALUE_NONE, description: 'Reuse var/coverage from `castor qa:test --coverage` and skip initial tests')]
     ?bool $coverage = null,
 ): void {
-    with(static fn () => docker_exec([
+    with(static fn () => compose_exec([
         'vendor/bin/infection', '--threads=max', '--git-diff-lines', '--git-diff-base=origin/main',
         '--min-msi=100', '--ignore-msi-with-no-mutations',
         ...($coverage ? ['--coverage=var/coverage', '--skip-initial-tests'] : []),

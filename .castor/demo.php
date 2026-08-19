@@ -26,5 +26,5 @@ function demo_list(): void
  */
 function demo_exec(array $args): void
 {
-    docker_exec(['php', 'demo/console', ...$args]);
+    compose_exec(['php', 'demo/console', ...$args]);
 }

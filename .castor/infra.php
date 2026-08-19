@@ -20,10 +20,10 @@ function vendor(
     ?bool $dev = null,
 ): void {
     if (null !== $package) {
-        docker_exec(['composer', 'require', ...($dev ? ['--dev'] : []), $package]);
+        compose_exec(['composer', 'require', ...($dev ? ['--dev'] : []), $package]);
     } else {
         fingerprint(
-            callback: static fn () => docker_exec(['composer', 'install', '--prefer-dist', '--no-progress', '--no-interaction']),
+            callback: static fn () => compose_exec(['composer', 'install', '--prefer-dist', '--no-progress', '--no-interaction']),
             id: 'vendor',
             fingerprint: hasher()->writeFile('composer.lock', FileHashStrategy::Content)->finish(),
         );
@@ -49,7 +49,7 @@ function assets(
     }
 }
 
-#[AsTask(description: 'Warmup cache for all contexts — shared and all DMs')]
+#[AsTask(description: 'Warmup all caches')]
 function warmup(): void
 {
     io()->comment('shared');
@@ -64,5 +64,5 @@ function warmup(): void
 #[AsTask(description: 'Install git hooks (CaptainHook)')]
 function hooks(): void
 {
-    docker_exec(['vendor/bin/captainhook', 'install', '-f', '-n']);
+    compose_exec(['vendor/bin/captainhook', 'install', '-f', '-n']);
 }

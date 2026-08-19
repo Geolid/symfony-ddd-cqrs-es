@@ -7,8 +7,8 @@ use Castor\Attribute\AsTask;
 
 use function Castor\io;
 
-#[AsTask(description: 'Run all linters')]
-function lint(
+#[AsTask(name: 'lint', namespace: 'qa', description: 'Run all linters')]
+function qa_lint(
     #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
@@ -29,7 +29,7 @@ function qa_lint_container(
     }
 }
 
-#[AsTask(name: 'translations', namespace: 'qa:lint', description: 'Check YAML syntax of translation files (shared + per DM)')]
+#[AsTask(name: 'translations', namespace: 'qa:lint', description: 'Check YAML syntax of translation files')]
 function qa_lint_translations(
     #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
@@ -52,7 +52,7 @@ function qa_lint_translations(
     }
 }
 
-#[AsTask(name: 'twig', namespace: 'qa:lint', description: 'Check Twig syntax for DMs where TwigBundle is loaded')]
+#[AsTask(name: 'twig', namespace: 'qa:lint', description: 'Check Twig syntax of template files')]
 function qa_lint_twig(
     #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,

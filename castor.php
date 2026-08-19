@@ -50,7 +50,7 @@ function default_context(): Context
  *
  * @param array<string> $args
  */
-function docker_exec(array $args, ?bool $tty = null): void
+function compose_exec(array $args, ?bool $tty = null): void
 {
     $tty ??= context()->supportsInteraction;
 
@@ -82,7 +82,7 @@ function docker_exec(array $args, ?bool $tty = null): void
  */
 function console(array $args, ?bool $tty = null): void
 {
-    docker_exec(['php', 'bin/console', '--ansi', ...$args], $tty);
+    compose_exec(['php', 'bin/console', '--ansi', ...$args], $tty);
 }
 
 function app_env(string $default = 'dev'): string

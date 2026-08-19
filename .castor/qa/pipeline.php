@@ -29,7 +29,7 @@ function qa(): void
 function qa_static(): void
 {
     io()->section('Lint');
-    lint();
+    qa_lint();
 
     io()->section('Coding standards');
     qa_cs(fix: false);

@@ -26,7 +26,7 @@ function sh(
     #[AsArgument(description: 'Command to run instead of an interactive shell')]
     ?string $cmd = null,
 ): void {
-    docker_exec(null !== $cmd ? ['/bin/sh', '-c', $cmd] : ['/bin/sh']);
+    compose_exec(null !== $cmd ? ['/bin/sh', '-c', $cmd] : ['/bin/sh']);
 }
 
 #[AsTask(description: 'Clear all caches')]

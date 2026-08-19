@@ -21,7 +21,7 @@ function qa_deptrac(
     foreach ($scopesToRun as $s) {
         io()->comment("Scope: {$s}");
 
-        docker_exec([
+        compose_exec([
             'vendor/bin/deptrac',
             'analyse',
             "--config-file=deptrac_{$s}.yaml",

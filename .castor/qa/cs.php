@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\io;
 
-#[AsTask(name: 'cs', namespace: 'qa', description: 'Check (or fix) coding standards')]
+#[AsTask(name: 'cs', namespace: 'qa', description: 'Check coding standards')]
 function qa_cs(
     #[AsOption(description: 'Restrict to "php" or "twig" (default: both)', autocomplete: ['php', 'twig'])]
     ?string $type = null,
@@ -23,7 +23,7 @@ function qa_cs(
     if (null === $type || 'twig' === $type) {
         io()->comment('Twig');
 
-        docker_exec([
+        compose_exec([
             'vendor/bin/twig-cs-fixer',
             'lint',
             ...($fix ? ['--fix'] : []),
@@ -34,7 +34,7 @@ function qa_cs(
     if (null === $type || 'php' === $type) {
         io()->comment('PHP');
 
-        docker_exec([
+        compose_exec([
             'vendor/bin/php-cs-fixer',
             'fix',
             ...(!$fix ? ['--dry-run', '--diff'] : []),
