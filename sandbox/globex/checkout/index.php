@@ -3,30 +3,17 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/shared/store.php';
+require dirname(__DIR__, 2).'/shared/webhook_caller.php';
 
 if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
     $reference = filter_var($_POST['ref'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
     $returnUrl = filter_var($_POST['returnUrl'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
 
-    $payload = json_encode(['paymentReference' => $reference], \JSON_THROW_ON_ERROR);
-    $signature = 'sha256='.hash_hmac('sha256', $payload, (string) getenv('PAYMENT_WEBHOOK_SECRET'));
-
-    $context = stream_context_create(['http' => [
-        'method' => 'POST',
-        'header' => implode("\r\n", [
-            'Content-Type: application/json',
-            'X-Payment-Signature: '.$signature,
-        ]),
-        'content' => $payload,
-        'ignore_errors' => true,
-    ]]);
-
-    @file_get_contents('http://nginx/webhook/webhooks/payment-authorized', false, $context);
-    $statusLine = http_get_last_response_headers()[0] ?? '';
-
-    if (!preg_match('/\s(2\d\d)\s/', $statusLine)) {
+    try {
+        fake_api_call_webhook('PAYMENT_WEBHOOK_SECRET', 'X-Payment-Signature', 'payment-authorized', ['paymentReference' => $reference]);
+    } catch (RuntimeException $e) {
         http_response_code(502);
-        echo 'Webhook call failed: '.htmlspecialchars($statusLine ?: 'no response');
+        echo htmlspecialchars($e->getMessage());
         exit;
     }
 

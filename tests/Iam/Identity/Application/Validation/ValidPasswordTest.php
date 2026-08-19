@@ -93,6 +93,6 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
 
     private static function passwordStrength(): PasswordStrength
     {
-        return new PasswordStrength(minScore: PasswordStrength::STRENGTH_VERY_STRONG);
+        return new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG);
     }
 }
