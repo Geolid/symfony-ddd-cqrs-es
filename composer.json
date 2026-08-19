@@ -122,14 +122,6 @@
     "symfony/polyfill-php82": "*",
     "symfony/polyfill-php83": "*"
   },
-  "scripts": {
-    "post-install-cmd": [
-      "make assets warmup"
-    ],
-    "post-update-cmd": [
-      "make assets warmup"
-    ]
-  },
   "conflict": {
     "symfony/symfony": "*"
   }

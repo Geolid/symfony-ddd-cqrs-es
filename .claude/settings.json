@@ -29,7 +29,7 @@
   },
   "permissions": {
     "allow": [
-      "Bash(make:*)"
+      "Bash(castor:*)"
     ],
     "deny": [
       "Read(**/.env.local)",
@@ -41,7 +41,7 @@
       "Read(**/credentials*)"
     ],
     "ask": [
-      "Bash(make sh:*)",
+      "Bash(castor sh:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git merge:*)",

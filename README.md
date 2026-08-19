@@ -103,30 +103,35 @@ Everything this stack needs to run locally or in CI is free and self-hostable:
 
 ## Getting started
 
+Prerequisites: Docker, Docker Compose, and [Castor](https://castor.jolicode.com/) (`curl https://castor.jolicode.com/install | bash`).
+
 ```bash
 git clone <this-repo> && cd symfony-ddd-cqrs-es
 cp compose.override.yaml.dist compose.override.yaml
-make start   # stack up, composer install, event store + read model set up, demo data seeded
+castor start   # stack up, composer install, git hooks, event store + read model set up, assets
 ```
 
 Then visit `http://localhost/web/` (already showing the seeded orders) or call
 `http://localhost/api/v1/sales/orders`. Mailpit's UI is at `http://localhost:8025`.
 
-`make start` is `up wait-db install setup seed` — see `Makefile` for each step, or run them
-individually. Re-run `make seed` any time to add more demo orders (`demo/SeedCommand.php`,
+`castor start` is `docker:up`, `vendor`, `hooks`, `db:create`, `assets` — see `castor.php`/`.castor/` for each
+step, or run them individually. Run `castor demo:seed` to seed demo orders (`demo/SeedCommand.php`,
 a worked example of writing fixtures for an event-sourced app: through the Command bus, never
 a direct insert into the read model). For anything beyond a laptop, copy `.env` to `.env.local`
 and set a real `APP_SECRET`/`CARRIER_WEBHOOK_SECRET` first.
 
+Add a dependency with `castor vendor <package> [--dev]` rather than a bare `composer require` —
+it keeps assets and cache in sync automatically.
+
 ## Quality gates
 
 ```bash
-make test              # PHPUnit
-make stan               # PHPStan, includes the phpat architecture suite
-make deptrac-layers      # Domain / Application / Infrastructure
-make deptrac-bc          # Bounded Context isolation
-make deptrac-dm          # Delivery Mechanism -> Bounded Context reach
-make qa                 # everything above
+castor qa:test                    # PHPUnit
+castor qa:stan                    # PHPStan, includes the phpat architecture suite
+castor qa:deptrac --scope=layers  # Domain / Application / Infrastructure
+castor qa:deptrac --scope=bc      # Bounded Context isolation
+castor qa:deptrac --scope=dm      # Delivery Mechanism -> Bounded Context reach
+castor qa                         # everything above
 ```
 
 ## Directory structure
@@ -137,7 +142,7 @@ bootstrap/          the single Kernel + cross-BC DI wiring (compiler passes, sub
 config/             global Symfony config + per-subdomain services
 demo/               demo/console (env "demo") + fixtures dispatched through the real Command bus
 docker/             Dockerfile, nginx vhost, MariaDB init
-make/               the modular Makefile (make/base/*.mk + make/tiers/{dev,ci,demo}.mk)
+.castor/            Castor tasks (castor.php at the root + .castor/*.php, .castor/qa/*.php)
 src/<Subdomain>/<BC>/ a Bounded Context: Domain/, Application/, Infrastructure/
 tests/              mirrors src/
 tools/PHPat/        architecture rules run through PHPStan

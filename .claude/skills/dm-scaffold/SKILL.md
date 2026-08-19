@@ -27,7 +27,7 @@ Unique — list `apps/` for precedent.
 
 ### 5. Validate
 
-`make deptrac-dm` and `make stan` before exposing the first use case
+`castor qa:deptrac --scope=dm` and `castor qa:stan` before exposing the first use case
 
 ---
 
@@ -45,4 +45,4 @@ The Command/Query must already exist on the BC side — implement it there first
 
 ### 3. Validate
 
-`make stan` + `make test filter=<Dm>`
+`castor qa:stan` + `castor qa:test --filter=<Dm>`

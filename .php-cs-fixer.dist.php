@@ -6,8 +6,9 @@ use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
-$finder = (new Finder())
+$finder = new Finder()
     ->in([
+        __DIR__.'/.castor',
         __DIR__.'/apps',
         __DIR__.'/bootstrap',
         __DIR__.'/config',
@@ -18,9 +19,9 @@ $finder = (new Finder())
         __DIR__.'/ui',
     ])
     ->notPath('reference.php')
-    ->append([__FILE__]);
+    ->append([__FILE__, __DIR__.'/castor.php']);
 
-return (new Config())
+return new Config()
     ->setFinder($finder)
     ->setRiskyAllowed(true)
     ->setRules([

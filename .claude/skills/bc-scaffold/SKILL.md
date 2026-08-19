@@ -32,4 +32,4 @@ List `src/`; pick an existing one. A new Subdomain only if none fits:
 
 ### 5. Validate
 
-`make deptrac-bc` and `make stan` before any business logic
+`castor qa:deptrac --scope=bc` and `castor qa:stan` before any business logic

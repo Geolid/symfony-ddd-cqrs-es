@@ -4,6 +4,6 @@ FILE=$(jq -r '.tool_input.file_path // empty' 2>/dev/null)
 [ -z "$FILE" ] && exit 0
 REL="${FILE#"$PWD"/}"
 case "$FILE" in
-    *.php) make rector-fix file="$REL" ;;
+    *.php) castor qa:rector --fix "$REL" ;;
 esac
 exit 0
