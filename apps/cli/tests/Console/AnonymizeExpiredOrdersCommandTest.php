@@ -50,7 +50,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
         // Given
         OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
-        $lock = (new LockFactory($store))->createLock('sales:order:anonymize-expired');
+        $lock = new LockFactory($store)->createLock('sales:order:anonymize-expired');
         $lock->acquire();
         $tester = $this->tester();
 

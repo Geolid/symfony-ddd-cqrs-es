@@ -32,7 +32,7 @@ final class ApiKeySecurityOpenApiFactoryTest extends AbstractApiTestCase
     }
 }
 
-final class DummyOpenApiFactoryWithAnExistingScheme implements OpenApiFactoryInterface
+final readonly class DummyOpenApiFactoryWithAnExistingScheme implements OpenApiFactoryInterface
 {
     public function __construct(private OpenApiFactoryInterface $inner)
     {

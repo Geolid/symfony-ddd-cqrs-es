@@ -30,7 +30,7 @@ abstract class AbstractDbalCollectionFinder extends AbstractDbalFinder implement
     public function paginate(int $page, int $itemsPerPage): PaginatorInterface
     {
         /** @var DbalPaginator<TResult> */
-        return (new DbalPaginator($this->connection, $this->query(), fn (array $row) => $this->mapRow($row)))
+        return new DbalPaginator($this->connection, $this->query(), fn (array $row): object => $this->mapRow($row))
             ->withPagination($page, $itemsPerPage);
     }
 

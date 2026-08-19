@@ -32,7 +32,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->hasher)
@@ -51,7 +51,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()
+        PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->hasher)

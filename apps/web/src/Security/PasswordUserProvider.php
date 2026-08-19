@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
 use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
@@ -77,7 +76,6 @@ final readonly class PasswordUserProvider implements UserProviderInterface
         $grants = [];
 
         foreach ($this->queryBus->ask(new ListGrantsForIdentity($identityId)) as $grant) {
-            \assert($grant instanceof GrantResult);
             $grants[] = $grant->permission;
         }
 

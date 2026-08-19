@@ -22,7 +22,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalCollectionFinder im
     public function byIdentity(string $identityId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($identityId) {
+            static function (QueryBuilder $qb) use ($identityId): void {
                 $qb->andWhere('identity_id = :identityId')
                     ->setParameter('identityId', $identityId);
             },
@@ -32,7 +32,7 @@ final class DbalApiTokenCredentialFinder extends AbstractDbalCollectionFinder im
     public function active(): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) {
+            static function (QueryBuilder $qb): void {
                 $qb->andWhere('revoked = 0');
             },
         );

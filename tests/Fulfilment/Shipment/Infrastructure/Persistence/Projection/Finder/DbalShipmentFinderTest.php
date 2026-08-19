@@ -81,7 +81,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertCount(2, $results);
         self::assertEqualsCanonicalizing(
             [$manifested->id->toString(), $dispatched->id->toString()],
-            array_map(static fn (ShipmentResult $result) => $result->id, $results),
+            array_map(static fn (ShipmentResult $result): string => $result->id, $results),
         );
     }
 

@@ -37,7 +37,7 @@ final class ApiTokenCredentialTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(fn () => ApiTokenCredential::issue($id, $identityId, 'key_abc123', Label::fromString('CI pipeline'), 'S3cr3t!', $this->hasher, $issuedAt, $expiresAt))
+            ->when(fn (): ApiTokenCredential => ApiTokenCredential::issue($id, $identityId, 'key_abc123', Label::fromString('CI pipeline'), 'S3cr3t!', $this->hasher, $issuedAt, $expiresAt))
             ->then(new ApiTokenCredentialIssued(
                 $id->toString(),
                 $identityId->toString(),

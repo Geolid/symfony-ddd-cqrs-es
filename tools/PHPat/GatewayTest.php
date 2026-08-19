@@ -8,6 +8,7 @@ use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class GatewayTest
 {
@@ -29,7 +30,7 @@ final class GatewayTest
             ))
             ->shouldNot()
             ->dependOn()
-            ->classes(Selector::classname('Symfony\Contracts\HttpClient\HttpClientInterface'))
+            ->classes(Selector::classname(HttpClientInterface::class))
             ->because('A vendor is reached through its scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface elsewhere scatters both.');
     }
 }

@@ -38,7 +38,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
     public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId) {
+            static function (QueryBuilder $qb) use ($customerId): void {
                 $qb->andWhere('customer_id = :customerId')
                     ->setParameter('customerId', $customerId);
             },
@@ -48,7 +48,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
     public function byStatus(string $status): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($status) {
+            static function (QueryBuilder $qb) use ($status): void {
                 $qb->andWhere('status = :status')
                     ->setParameter('status', $status);
             },

@@ -14,9 +14,9 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'fulfilment:shipment:prepare', description: 'Prepare a requested Shipment once its parcel has been packed')]
-final class PrepareShipmentCommand
+final readonly class PrepareShipmentCommand
 {
-    public function __construct(private readonly CommandBusInterface $commandBus)
+    public function __construct(private CommandBusInterface $commandBus)
     {
     }
 

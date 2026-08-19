@@ -63,7 +63,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerShippingAddressRegistered::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->address);
+        self::assertSame($this->erasedAddress(), $rehydrated->address);
     }
 
     #[Test]
@@ -86,13 +86,13 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(CustomerBillingAddressRegistered::class, $rehydrated);
-        self::assertSame(self::erasedAddress(), $rehydrated->address);
+        self::assertSame($this->erasedAddress(), $rehydrated->address);
     }
 
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private static function erasedAddress(): array
+    private function erasedAddress(): array
     {
         return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
     }

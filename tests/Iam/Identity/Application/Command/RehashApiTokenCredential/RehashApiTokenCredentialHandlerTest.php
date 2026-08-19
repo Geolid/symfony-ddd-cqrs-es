@@ -35,7 +35,7 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
         // Given
         // FakeSecretHasher's format never matches the real hasher, so it always looks outdated.
         $identifier = $this->generateIdentifier();
-        $credential = ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher(new FakeSecretHasher())
@@ -56,7 +56,7 @@ final class RehashApiTokenCredentialHandlerTest extends AbstractIntegrationTestC
     {
         // Given
         $identifier = $this->generateIdentifier();
-        $credential = ApiTokenCredentialTestFactory::new()
+        ApiTokenCredentialTestFactory::new()
             ->withIdentifier($identifier)
             ->withSecret('S3cr3t!')
             ->withHasher($this->hasher)

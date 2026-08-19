@@ -55,7 +55,7 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
     public function byStatus(string ...$statuses): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($statuses) {
+            static function (QueryBuilder $qb) use ($statuses): void {
                 $qb->andWhere('status IN (:statuses)')
                     ->setParameter('statuses', $statuses, ArrayParameterType::STRING);
             },
@@ -65,7 +65,7 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
     public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId) {
+            static function (QueryBuilder $qb) use ($customerId): void {
                 $qb->andWhere('customer_id = :customerId')
                     ->setParameter('customerId', $customerId);
             },

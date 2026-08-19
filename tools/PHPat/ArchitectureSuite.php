@@ -21,7 +21,7 @@ final class ArchitectureSuite
             $class = __NAMESPACE__.'\\'.$shortName;
             $instance = new $class();
 
-            foreach ((new \ReflectionClass($class))->getMethods() as $method) {
+            foreach (new \ReflectionClass($class)->getMethods() as $method) {
                 if ([] !== $method->getAttributes(TestRule::class)) {
                     $result = $method->invoke($instance);
                     $rules = is_iterable($result) ? $result : [$result];

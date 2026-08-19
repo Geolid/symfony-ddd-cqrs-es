@@ -1,0 +1,5 @@
+includes:
+    - phpstan.base.neon
+
+parameters:
+    tmpDir: var/rector/phpstan

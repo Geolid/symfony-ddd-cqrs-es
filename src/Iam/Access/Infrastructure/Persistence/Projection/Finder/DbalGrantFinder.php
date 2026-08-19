@@ -20,7 +20,7 @@ final class DbalGrantFinder extends AbstractDbalCollectionFinder implements Gran
     public function byIdentity(string $identityId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($identityId) {
+            static function (QueryBuilder $qb) use ($identityId): void {
                 $qb->andWhere('identity_id = :identityId')
                     ->setParameter('identityId', $identityId);
             },

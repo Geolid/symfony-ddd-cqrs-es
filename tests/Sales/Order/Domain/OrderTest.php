@@ -44,17 +44,17 @@ final class OrderTest extends AggregateRootTestCase
         $id = OrderId::generate();
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
-        $lines = self::lines();
+        $lines = $this->lines();
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $placedAt))
+            ->when(static fn (): Order => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $placedAt))
             ->then(new OrderPlaced(
                 $id->toString(),
                 $customerId,
-                self::primitiveShippingAddress(),
-                self::primitiveBillingAddress(),
-                self::primitiveLines($lines),
+                $this->primitiveShippingAddress(),
+                $this->primitiveBillingAddress(),
+                $this->primitiveLines($lines),
                 1_999,
                 $placedAt->format(\DateTimeInterface::ATOM),
             ));
@@ -68,7 +68,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
+            ->when(static fn (): Order => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -81,7 +81,7 @@ final class OrderTest extends AggregateRootTestCase
         $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->confirm($confirmedAt))
             ->then(new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)));
     }
@@ -96,7 +96,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -112,7 +112,7 @@ final class OrderTest extends AggregateRootTestCase
         $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
     }
@@ -127,7 +127,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -145,7 +145,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
@@ -163,7 +163,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -178,7 +178,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
+            ->given($this->orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
             ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
@@ -194,7 +194,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->dispatch($dispatchedAt))
@@ -209,7 +209,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->dispatch(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->then();
     }
@@ -226,7 +226,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -244,7 +244,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->deliver(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
@@ -264,7 +264,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -285,7 +285,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -307,7 +307,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -327,7 +327,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new ReturnWindowPolicy(14)))
@@ -347,7 +347,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -369,7 +369,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -390,7 +390,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, Uuid::uuid7()->toString(), $placedAt),
+                $this->orderPlaced($id, Uuid::uuid7()->toString(), $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -409,7 +409,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
@@ -428,7 +428,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -451,7 +451,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -473,7 +473,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -496,7 +496,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -518,7 +518,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
@@ -535,7 +535,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
             ->then();
     }
@@ -550,7 +550,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
@@ -568,7 +568,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->anonymize($now, new RetentionPolicy(3650)))
@@ -583,7 +583,7 @@ final class OrderTest extends AggregateRootTestCase
         $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $placedAt))
             ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
             ->then();
     }
@@ -598,7 +598,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
             ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
@@ -616,7 +616,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given(
-                self::orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
                 new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)),
             )
@@ -632,7 +632,7 @@ final class OrderTest extends AggregateRootTestCase
     /**
      * @return list<OrderLine>
      */
-    private static function lines(): array
+    private function lines(): array
     {
         return [
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
@@ -645,7 +645,7 @@ final class OrderTest extends AggregateRootTestCase
      *
      * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
      */
-    private static function primitiveLines(array $lines): array
+    private function primitiveLines(array $lines): array
     {
         return array_map(
             static fn (OrderLine $line): array => [
@@ -668,14 +668,14 @@ final class OrderTest extends AggregateRootTestCase
         return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris'));
     }
 
-    private static function orderPlaced(string $id, string $customerId, \DateTimeImmutable $placedAt): OrderPlaced
+    private function orderPlaced(string $id, string $customerId, \DateTimeImmutable $placedAt): OrderPlaced
     {
         return new OrderPlaced(
             $id,
             $customerId,
-            self::primitiveShippingAddress(),
-            self::primitiveBillingAddress(),
-            self::primitiveLines(self::lines()),
+            $this->primitiveShippingAddress(),
+            $this->primitiveBillingAddress(),
+            $this->primitiveLines($this->lines()),
             1_999,
             $placedAt->format(\DateTimeInterface::ATOM),
         );
@@ -684,7 +684,7 @@ final class OrderTest extends AggregateRootTestCase
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private static function primitiveShippingAddress(): array
+    private function primitiveShippingAddress(): array
     {
         return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'];
     }
@@ -692,7 +692,7 @@ final class OrderTest extends AggregateRootTestCase
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private static function primitiveBillingAddress(): array
+    private function primitiveBillingAddress(): array
     {
         return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'];
     }

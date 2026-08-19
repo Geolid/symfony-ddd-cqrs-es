@@ -27,7 +27,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $body = self::body(self::TRACKING_REFERENCE);
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+        $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
@@ -43,7 +43,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $body = self::body(self::TRACKING_REFERENCE);
 
         // When
-        $client->request('POST', self::PATH, server: self::headers($signature), content: $body);
+        $client->request('POST', self::PATH, server: $this->headers($signature), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -66,7 +66,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $client = self::createClient();
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+        $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -94,7 +94,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $client = self::createClient();
 
         // When
-        $client->request($method, self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+        $client->request($method, self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
@@ -117,7 +117,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $body = self::body('ACME-NEVER-ISSUED');
 
         // When
-        $client->request('POST', self::PATH, server: self::headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
+        $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -126,7 +126,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
     /**
      * @return array<string, string>
      */
-    private static function headers(?string $signature): array
+    private function headers(?string $signature): array
     {
         $headers = ['CONTENT_TYPE' => 'application/json'];
 

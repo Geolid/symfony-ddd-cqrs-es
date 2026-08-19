@@ -12,7 +12,7 @@ final class WeightedPicker
     public static function pick(array $weights): string
     {
         $total = array_sum($weights);
-        $rand = rand(1, $total);
+        $rand = random_int(1, $total);
         $cumulative = 0;
 
         foreach ($weights as $key => $weight) {

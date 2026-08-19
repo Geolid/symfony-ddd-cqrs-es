@@ -50,7 +50,7 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
         );
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): RedirectResponse
     {
         return new RedirectResponse($this->urlGenerator->generate('sales_order_list'));
     }

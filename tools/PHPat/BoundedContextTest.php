@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tools\PHPat;
 
+use PHPat\Selector\ClassNamespace;
+use PHPat\Selector\Filepath;
 use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
@@ -34,7 +36,7 @@ final class BoundedContextTest
             ->shouldNot()
             ->dependOn()
             ->classes(
-                ...array_map(static fn (string $namespace) => Selector::inNamespace($namespace), self::DELIVERY_VENDOR_NAMESPACES),
+                ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_VENDOR_NAMESPACES),
             )
             ->because('Delivery belongs to a Delivery Mechanism, never to a BC — Infrastructure may use a framework vendor for glue (Twig, Mailer...) but never a delivery-only one.');
     }
@@ -64,7 +66,7 @@ final class BoundedContextTest
                 ->dependOn()
                 ->classes(
                     Selector::NoneOf(...array_map(
-                        static fn (string $otherBcDir) => Selector::withFilepath('#'.preg_quote(substr($otherBcDir, \strlen($root)), '#').'/#', true),
+                        static fn (string $otherBcDir): Filepath => Selector::withFilepath('#'.preg_quote(substr($otherBcDir, \strlen($root)), '#').'/#', true),
                         $otherBcDirs,
                     )),
                     Selector::implements(IntegrationEventInterface::class),

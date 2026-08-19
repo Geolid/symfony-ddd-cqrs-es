@@ -32,7 +32,6 @@ final readonly class ListProductForSaleProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ProductResource
     {
-        \assert($data instanceof ListProductForSaleInput);
         \assert(null !== $data->label);
         \assert(null !== $data->unitAmountInCents);
 

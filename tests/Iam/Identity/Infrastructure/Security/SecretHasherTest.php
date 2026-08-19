@@ -57,7 +57,7 @@ final class SecretHasherTest extends TestCase
     public function itFindsARehashNeededWhenTheCostChanged(): void
     {
         // Given
-        $staleHash = (new SecretHasher(new NativePasswordHasher(cost: 4)))->hash('S3cr3t!');
+        $staleHash = new SecretHasher(new NativePasswordHasher(cost: 4))->hash('S3cr3t!');
         $hasher = new SecretHasher(new NativePasswordHasher(cost: 5));
 
         // When

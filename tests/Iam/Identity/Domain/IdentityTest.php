@@ -26,7 +26,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given()
-            ->when(static fn () => Identity::register($id, $registeredAt))
+            ->when(static fn (): Identity => Identity::register($id, $registeredAt))
             ->then(new IdentityRegistered($id->toString(), $registeredAt->format(\DateTimeInterface::ATOM)));
     }
 

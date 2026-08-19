@@ -6,6 +6,7 @@ namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use Iam\Access\Application\Finder\Grant\GrantFinderInterface;
+use Iam\Access\Application\Finder\Grant\GrantResult;
 use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
@@ -41,7 +42,7 @@ final class RegisterIdentityCommandTest extends AbstractCliTestCase
 
         $grants = iterator_to_array($this->service(GrantFinderInterface::class)->byIdentity($credential->identityId), false);
         self::assertCount(2, $grants);
-        self::assertEqualsCanonicalizing(['fixture.widget:read', 'fixture.widget:write'], array_map(static fn ($grant): string => $grant->permission, $grants));
+        self::assertEqualsCanonicalizing(['fixture.widget:read', 'fixture.widget:write'], array_map(static fn (GrantResult $grant): string => $grant->permission, $grants));
     }
 
     #[Test]

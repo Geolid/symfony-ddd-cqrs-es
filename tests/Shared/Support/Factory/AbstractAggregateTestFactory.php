@@ -61,7 +61,7 @@ abstract class AbstractAggregateTestFactory
      */
     public function create(): AggregateRoot
     {
-        $factory = fn () => $this->instantiate();
+        $factory = fn (): AggregateRoot => $this->instantiate();
 
         if ($this->useIncrementalIds) {
             return $this->wrapWithIncrementalIds($factory);

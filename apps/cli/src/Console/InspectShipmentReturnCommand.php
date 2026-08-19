@@ -15,9 +15,9 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'fulfilment:shipment:inspect-return', description: 'Record the quality control outcome of a received Shipment return')]
-final class InspectShipmentReturnCommand
+final readonly class InspectShipmentReturnCommand
 {
-    public function __construct(private readonly CommandBusInterface $commandBus)
+    public function __construct(private CommandBusInterface $commandBus)
     {
     }
 

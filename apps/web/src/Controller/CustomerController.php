@@ -92,7 +92,7 @@ final class CustomerController extends AbstractController
      */
     #[Route(path: ['en' => '/erase', 'fr' => '/suppression'], name: 'sales_customer_erase', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function erase(Request $request, #[CurrentUser] PasswordUser $user): Response
+    public function erase(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('erase-customer', (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
