@@ -16,7 +16,7 @@
 .php-cs-fixer.php
 .twig-cs-fixer.php
 phpunit.xml
-.castor.stub.php
+.castor/.castor.stub.php
 
 # =============================================================================
 # INFRASTRUCTURE & DOCKER
