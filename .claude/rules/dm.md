@@ -69,6 +69,7 @@ The name describes the interaction with that Delivery Mechanism's own surface (H
 **CLI** (terminal output or task completed):
 - Display success `itDisplays*` / `itDisplays*By*`, failure `itFailsTo*`
 - Action success `it*` / failure `itFailsTo*`
+- A lock contention that skips the whole run because another instance already holds it is `itSkips*` — still a success outcome, never `itFailsTo*`, which stays reserved for a genuine failure.
 
 **Webhook** (notification received from the external system):
 - Reception success `itAccepts*` / failure `itFailsTo*`, `itRejects*`

@@ -45,7 +45,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyRunning(): void
+    public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
         OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();

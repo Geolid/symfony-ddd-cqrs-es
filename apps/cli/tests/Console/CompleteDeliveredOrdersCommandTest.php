@@ -50,7 +50,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyRunning(): void
+    public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
         OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
