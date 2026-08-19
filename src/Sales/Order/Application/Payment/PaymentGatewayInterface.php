@@ -13,4 +13,9 @@ interface PaymentGatewayInterface
     public function void(string $reference): void;
 
     public function refund(string $reference): void;
+
+    /**
+     * @return string the gateway's own current status for this charge
+     */
+    public function checkStatus(string $reference): string;
 }

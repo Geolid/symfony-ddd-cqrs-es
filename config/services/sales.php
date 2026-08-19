@@ -7,6 +7,7 @@ use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Infrastructure\Persistence\Projection\Finder\DbalCustomerFinder;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
+use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThresholdHandler;
 use Sales\Order\Domain\Service\RetentionPolicy;
 use Sales\Order\Domain\Service\ReturnWindowPolicy;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -14,6 +15,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('sales.retention_days', 3650);
     $container->parameters()->set('sales.return_window_days', 14);
+    $container->parameters()->set('sales.order_payment.reconciliation_threshold_minutes', 60);
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -22,6 +24,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(RetentionPolicy::class)->arg('$days', '%sales.retention_days%');
     $services->get(ReturnWindowPolicy::class)->arg('$days', '%sales.return_window_days%');
+    $services->get(ListOrderPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdMinutes', '%sales.order_payment.reconciliation_threshold_minutes%');
 
     // 2 implementations exist (itself + its decorator) — autowire is ambiguous without this.
     $orderPaymentRequesterAlias = $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequester::class);

@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
 
 /**
- * @extends AbstractDbalFinder<OrderPaymentResult>
+ * @extends AbstractDbalCollectionFinder<OrderPaymentResult>
  *
  * @phpstan-type Row array{id: string, order_id: string, amount_in_cents: int, reference: string, checkout_url: string, status: string, requested_at: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_initiated_at: ?string, refunded_at: ?string}
  */
-final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPaymentFinderInterface
+final class DbalOrderPaymentFinder extends AbstractDbalCollectionFinder implements OrderPaymentFinderInterface
 {
     public function ofReference(string $reference): OrderPaymentResult
     {
@@ -33,6 +34,26 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         }
 
         return $this->mapRow($row);
+    }
+
+    public function byStatus(string ...$statuses): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($statuses): void {
+                $qb->andWhere('status IN (:statuses)')
+                    ->setParameter('statuses', $statuses, ArrayParameterType::STRING);
+            },
+        );
+    }
+
+    public function requestedBefore(string $cutoff): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cutoff): void {
+                $qb->andWhere('requested_at < :cutoff')
+                    ->setParameter('cutoff', $cutoff);
+            },
+        );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

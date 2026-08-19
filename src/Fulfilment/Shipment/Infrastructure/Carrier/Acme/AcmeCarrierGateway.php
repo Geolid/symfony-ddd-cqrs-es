@@ -14,6 +14,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {
     private const string PICKUP_PATH = '/pickups';
     private const string RETURN_PICKUP_PATH = '/returns';
+    private const string STATUS_PATH = '/status';
 
     public function __construct(
         private AcmeClient $acmeClient,
@@ -34,14 +35,14 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     public function requestPickup(string $shipmentId, PostalAddress $deliveryAddress): string
     {
         $response = $this->acmeClient->post(self::PICKUP_PATH, [
-            'reference' => $shipmentId,
+            'clientReferenceId' => $shipmentId,
             'destination' => [
                 'recipient' => $deliveryAddress->fullName->toString(),
                 'street' => $deliveryAddress->address->street,
                 'postalCode' => $deliveryAddress->address->postalCode,
                 'city' => $deliveryAddress->address->city,
             ],
-        ]);
+        ], $shipmentId);
 
         $trackingReference = $response['trackingNumber'] ?? null;
 
@@ -60,7 +61,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $returnAddress = Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity);
 
         $response = $this->acmeClient->post(self::RETURN_PICKUP_PATH, [
-            'reference' => $shipmentId,
+            'clientReferenceId' => $shipmentId,
             'origin' => [
                 'recipient' => $pickupAddress->fullName->toString(),
                 'street' => $pickupAddress->address->street,
@@ -73,7 +74,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
                 'postalCode' => $returnAddress->postalCode,
                 'city' => $returnAddress->city,
             ],
-        ]);
+        ], $shipmentId);
 
         $returnTrackingReference = $response['trackingNumber'] ?? null;
 
@@ -82,5 +83,21 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         }
 
         return $returnTrackingReference;
+    }
+
+    /**
+     * @throws AcmeClientException
+     */
+    public function checkStatus(string $reference): string
+    {
+        $response = $this->acmeClient->get(self::STATUS_PATH.'/'.$reference);
+
+        $status = $response['status'] ?? null;
+
+        if (!\is_string($status) || '' === $status) {
+            throw AcmeClientException::invalidResponse(self::STATUS_PATH, 'A status response carries a non-empty "status".');
+        }
+
+        return $status;
     }
 }

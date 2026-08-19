@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require dirname(__DIR__, 2).'/shared/store.php';
+
 if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
     $reference = (string) ($_POST['ref'] ?? '');
     $returnUrl = (string) ($_POST['returnUrl'] ?? '');
@@ -27,6 +29,14 @@ if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
         echo 'Webhook call failed: '.htmlspecialchars($statusLine ?: 'no response');
         exit;
     }
+
+    fake_api_store_mutate('globex-charges', static function (array $records) use ($reference): array {
+        if (isset($records[$reference])) {
+            $records[$reference]['status'] = 'authorized';
+        }
+
+        return $records;
+    });
 
     header('Location: '.$returnUrl);
     exit;

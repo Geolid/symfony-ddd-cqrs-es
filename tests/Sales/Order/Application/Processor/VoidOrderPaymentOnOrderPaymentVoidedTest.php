@@ -61,4 +61,9 @@ final class SpyVoidingPaymentGateway implements PaymentGatewayInterface
     {
         throw new \LogicException('Not needed by this test.');
     }
+
+    public function checkStatus(string $reference): string
+    {
+        throw new \LogicException('Not needed by this test.');
+    }
 }

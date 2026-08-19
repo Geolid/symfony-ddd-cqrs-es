@@ -14,7 +14,7 @@ use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, return_tracking_reference: ?string, cancelled_at: ?string, return_dispatched_at: ?string, return_received_at: ?string, return_approved_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string}
+ * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, return_tracking_reference: ?string, manifested_at: ?string, cancelled_at: ?string, return_dispatched_at: ?string, return_received_at: ?string, return_approved_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -75,6 +75,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(ShipmentStatus::MANIFESTED->value, $row['status']);
         self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
+        self::assertNotNull($row['manifested_at']);
     }
 
     #[Test]
@@ -264,7 +265,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, status, tracking_reference, return_tracking_reference, cancelled_at, return_dispatched_at, return_received_at, return_approved_at, return_rejected_at, return_rejection_reason FROM %s WHERE id = :id',
+                'SELECT customer_id, status, tracking_reference, return_tracking_reference, manifested_at, cancelled_at, return_dispatched_at, return_received_at, return_approved_at, return_rejected_at, return_rejection_reason FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

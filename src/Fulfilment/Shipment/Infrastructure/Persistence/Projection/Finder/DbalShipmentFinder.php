@@ -16,7 +16,7 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFi
 /**
  * @extends AbstractDbalCollectionFinder<ShipmentResult>
  *
- * @phpstan-type Row array{id: string, order_id: string, status: string, tracking_reference: string|null, return_tracking_reference: string|null, created_at: string, dispatched_at: string|null, delivered_at: string|null, cancelled_at: string|null, return_dispatched_at: string|null, return_received_at: string|null, return_approved_at: string|null, return_rejected_at: string|null, return_rejection_reason: string|null}
+ * @phpstan-type Row array{id: string, order_id: string, status: string, tracking_reference: string|null, return_tracking_reference: string|null, created_at: string, manifested_at: string|null, dispatched_at: string|null, delivered_at: string|null, cancelled_at: string|null, return_dispatched_at: string|null, return_received_at: string|null, return_approved_at: string|null, return_rejected_at: string|null, return_rejection_reason: string|null}
  */
 final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements ShipmentFinderInterface
 {
@@ -72,9 +72,19 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
         );
     }
 
+    public function manifestedBefore(string $cutoff): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cutoff): void {
+                $qb->andWhere('manifested_at < :cutoff')
+                    ->setParameter('cutoff', $cutoff);
+            },
+        );
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
+        $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
             ->from(DbalShipmentProjector::TABLE);
     }
 
@@ -90,6 +100,7 @@ final class DbalShipmentFinder extends AbstractDbalCollectionFinder implements S
             trackingReference: $row['tracking_reference'],
             returnTrackingReference: $row['return_tracking_reference'],
             createdAt: new \DateTimeImmutable($row['created_at'], new \DateTimeZone('UTC')),
+            manifestedAt: null !== $row['manifested_at'] ? new \DateTimeImmutable($row['manifested_at'], new \DateTimeZone('UTC')) : null,
             dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,
             deliveredAt: null !== $row['delivered_at'] ? new \DateTimeImmutable($row['delivered_at'], new \DateTimeZone('UTC')) : null,
             cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
