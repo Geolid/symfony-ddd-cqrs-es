@@ -5,7 +5,7 @@ declare(strict_types=1);
 require dirname(__DIR__, 2).'/shared/reference.php';
 require dirname(__DIR__, 2).'/shared/store.php';
 
-$reference = (string) ($_GET['reference'] ?? '');
+$reference = filter_var($_GET['reference'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
 $records = fake_api_store_read('globex-charges');
 
 if (!isset($records[$reference])) {

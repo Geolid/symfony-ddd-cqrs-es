@@ -1,0 +1,11 @@
+includes:
+    - phpstan.base.neon
+
+parameters:
+    tmpDir: var/phpstan/sandbox
+
+    paths:
+        - sandbox/
+
+    symfony:
+        containerXmlPath: var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
