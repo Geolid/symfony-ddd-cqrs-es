@@ -28,7 +28,10 @@ return static function (ContainerConfigurator $container): void {
             'subscription' => [
                 'catch_up' => true,
                 'throw_on_error' => true,
-                'run_after_aggregate_save' => true,
+                'run_after_aggregate_save' => [
+                    'enabled' => true,
+                    'groups' => [Translator::GROUP, Projector::GROUP, Processor::GROUP, Processor::GROUP_SYNC],
+                ],
                 'rebuild_after_file_change' => true,
                 'auto_setup' => true,
             ],

@@ -18,7 +18,7 @@ final readonly class PasswordPolicy implements PasswordPolicyInterface
 
     public function isStrongEnough(#[\SensitiveParameter] Password $password): bool
     {
-        $violations = $this->validator->validate($password->value, new PasswordStrength(minScore: PasswordStrength::STRENGTH_VERY_STRONG));
+        $violations = $this->validator->validate($password->value, new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG));
 
         return 0 === $violations->count();
     }

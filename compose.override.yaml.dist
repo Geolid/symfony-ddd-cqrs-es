@@ -23,6 +23,7 @@ services:
   sandbox:
     environment:
       PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET}
+      CARRIER_WEBHOOK_SECRET: ${CARRIER_WEBHOOK_SECRET}
       FAKE_CHECKOUT_BASE_URL: http://localhost:8081
     ports:
       - '8081:80'
