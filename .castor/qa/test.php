@@ -10,16 +10,16 @@ use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\with;
 
-#[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite (optional: --coverage, --filter=<x>, --suite=<x>, a target file or directory)')]
+#[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite')]
 function qaTest(
-    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Run with coverage')]
-    bool $coverage,
     #[AsOption(description: 'Filter tests by name')]
     ?string $filter = null,
     #[AsOption(description: 'Run a specific test suite')]
     ?string $suite = null,
     #[AsArgument(description: 'Target test file or directory')]
     ?string $target = null,
+    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Run with coverage')]
+    ?bool $coverage = null,
 ): void {
     // No APP_ENV forwarded: phpunit.dist.xml forces it to "test" itself, and that
     // force loses to a real, externally-set APP_ENV env var.
@@ -32,10 +32,10 @@ function qaTest(
     ]), context: new Context());
 }
 
-#[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff (optional: --coverage to reuse var/coverage from `castor qa:test --coverage`)')]
+#[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff')]
 function qaMutation(
     #[AsOption(mode: InputOption::VALUE_NONE, description: 'Reuse var/coverage from `castor qa:test --coverage` and skip initial tests')]
-    bool $coverage,
+    ?bool $coverage = null,
 ): void {
     with(static fn () => dockerExec([
         'vendor/bin/infection', '--threads=max', '--git-diff-lines', '--git-diff-base=origin/main',

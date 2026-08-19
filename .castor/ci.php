@@ -8,7 +8,7 @@ use Castor\Attribute\AsTask;
 function ciBuild(): void
 {
     qaComposerValidate();
-    vendor(dev: false);
+    vendor();
     assets();
 }
 
@@ -16,7 +16,7 @@ function ciBuild(): void
 function ciStatic(): void
 {
     warmup();
-    qaSecurity();
+    qaComposerAudit();
     qaStatic();
 }
 

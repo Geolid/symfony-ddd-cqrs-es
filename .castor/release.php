@@ -16,7 +16,8 @@ function dist(): void
     $appEnv = appEnv('prod');
     $distPaths = ['bin/console', 'bootstrap', 'config', 'apps', 'public', 'src', '.castor', 'ui', 'vendor', 'castor.php', 'composer.json'];
 
-    io()->title("Building production artifact with APP_ENV={$appEnv}...");
+    io()->title('Building production artifact');
+    io()->comment("APP_ENV={$appEnv}");
 
     run(['rm', '-rf', 'vendor/', 'dist/']);
     run(['composer', 'install', '--optimize-autoloader', '--classmap-authoritative', '--prefer-dist', '--no-progress', '--no-dev'], context: context()->withEnvironment(['APP_ENV' => $appEnv]));
@@ -39,5 +40,6 @@ function dist(): void
 
     run(['tar', 'czf', 'dist/symfony-ddd-cqrs-es.tar.gz', ...$distPaths, '-C', 'dist', 'release.txt']);
 
-    io()->success('Artifact built at dist/symfony-ddd-cqrs-es.tar.gz');
+    io()->info('dist/symfony-ddd-cqrs-es.tar.gz');
+    io()->success('Artifact built');
 }

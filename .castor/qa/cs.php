@@ -7,22 +7,22 @@ use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 use Symfony\Component\Console\Input\InputOption;
 
-#[AsTask(name: 'cs', namespace: 'qa', description: 'Check (or fix) coding standards (optional: --type=php|twig, a target file or directory)')]
+use function Castor\io;
+
+#[AsTask(name: 'cs', namespace: 'qa', description: 'Check (or fix) coding standards')]
 function qaCs(
-    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Apply fixes instead of just checking')]
-    bool $fix,
     #[AsOption(description: 'Restrict to "php" or "twig" (default: both)', autocomplete: ['php', 'twig'])]
     ?string $type = null,
     #[AsArgument(description: 'Target file or directory')]
     ?string $target = null,
+    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Apply the changes instead of just checking (default: dry-run)')]
+    ?bool $fix = null,
 ): void {
-    $allowedTypes = ['php', 'twig'];
-
-    if (null !== $type && !in_array($type, $allowedTypes, true)) {
-        throw new InvalidArgumentException(sprintf('Invalid type "%s". Allowed values are: %s.', $type, implode(', ', $allowedTypes)));
-    }
+    assertOneOf($type, ['php', 'twig'], 'type');
 
     if (null === $type || 'twig' === $type) {
+        io()->comment('Twig');
+
         dockerExec([
             'vendor/bin/twig-cs-fixer',
             'lint',
@@ -32,6 +32,8 @@ function qaCs(
     }
 
     if (null === $type || 'php' === $type) {
+        io()->comment('PHP');
+
         dockerExec([
             'vendor/bin/php-cs-fixer',
             'fix',

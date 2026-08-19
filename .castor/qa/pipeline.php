@@ -9,10 +9,11 @@ use function Castor\io;
 #[AsTask(description: 'Run the full QA pipeline')]
 function qa(): void
 {
-    io()->section('Composer validate');
+    io()->section('Composer check');
     qaComposerValidate();
+    qaComposerAudit();
 
-    io()->section('Static checks (lint, cs, deptrac, stan, rector)');
+    io()->section('Static checks');
     qaStatic();
 
     io()->section('Tests (with coverage)');
@@ -24,24 +25,21 @@ function qa(): void
     io()->success('QA pipeline passed.');
 }
 
-#[AsTask(name: 'composer-validate', namespace: 'qa', description: 'Validate composer configuration')]
-function qaComposerValidate(): void
-{
-    dockerExec(['composer', 'validate', '--no-check-publish', '--strict']);
-}
-
-#[AsTask(name: 'security', namespace: 'qa', description: 'Check for vulnerable dependencies')]
-function qaSecurity(): void
-{
-    dockerExec(['composer', 'audit']);
-}
-
-#[AsTask(name: 'static', namespace: 'qa', description: 'Run linters, coding standards, architecture checks, static analysis and Rector')]
+#[AsTask(name: 'static', namespace: 'qa', description: 'Run all static checks')]
 function qaStatic(): void
 {
+    io()->section('Lint');
     lint();
+
+    io()->section('Coding standards');
     qaCs(fix: false);
+
+    io()->section('Deptrac');
     qaDeptrac();
+
+    io()->section('PHPStan');
     qaStan();
+
+    io()->section('Rector');
     qaRector(fix: false);
 }

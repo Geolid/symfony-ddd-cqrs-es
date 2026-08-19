@@ -7,9 +7,10 @@ use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 
 use function Castor\context;
+use function Castor\io;
 use function Castor\with;
 
-#[AsTask(name: 'stan', namespace: 'qa', description: 'Run static analysis on src/, tests/ and all DMs (optional: --app=<dm>, default: all)')]
+#[AsTask(name: 'stan', namespace: 'qa', description: 'Run static analysis on src/, tests/ and all DMs')]
 function qaStan(
     #[AsOption(description: 'Restrict to a single DM (default: src/, tests/ and every DM)', autocomplete: 'autocompleteApps')]
     ?string $app = null,
@@ -31,6 +32,8 @@ function qaStan(
     }
 
     stanExec(null);
+
+    io()->comment('tests/');
     with(
         static fn () => dockerExec(['vendor/bin/phpstan', 'analyse', '-c', 'tests/phpstan.neon']),
         environment: ['APP_ENV' => 'test', 'APP_ENV_UCFIRST' => 'Test'],
@@ -50,6 +53,8 @@ function stanExec(?string $app, ?string $target = null): void
     } else {
         $config = is_file(__DIR__."/../../apps/{$app}/phpstan.neon") ? "apps/{$app}/phpstan.neon" : 'apps/phpstan.neon';
     }
+
+    io()->comment((null !== $app ? "DM: {$app}" : 'src/')." ({$config})");
 
     with(
         static fn () => dockerExec([

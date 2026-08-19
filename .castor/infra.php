@@ -10,13 +10,14 @@ use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\fingerprint;
 use function Castor\hasher;
+use function Castor\io;
 
-#[AsTask(description: 'Install PHP dependencies (optional: a package to require)')]
+#[AsTask(description: 'Install PHP dependencies')]
 function vendor(
-    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Require as a dev dependency')]
-    bool $dev,
-    #[AsArgument(description: 'Composer package to require, e.g. symfony/foo (default: composer install)')]
+    #[AsArgument(description: 'Composer package to require, e.g. symfony/foo (omit to run composer install)')]
     ?string $package = null,
+    #[AsOption(mode: InputOption::VALUE_NONE, description: 'Require as a dev dependency')]
+    ?bool $dev = null,
 ): void {
     if (null !== $package) {
         dockerExec(['composer', 'require', ...($dev ? ['--dev'] : []), $package]);
@@ -32,12 +33,14 @@ function vendor(
     warmup();
 }
 
-#[AsTask(description: 'Install bundle and AssetMapper assets (optional: a DM name, default: all)')]
+#[AsTask(description: 'Install bundle and AssetMapper assets')]
 function assets(
-    #[AsArgument(description: 'Restrict to a single DM (default: every DM)', autocomplete: 'autocompleteApps')]
+    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocompleteApps')]
     ?string $app = null,
 ): void {
     foreach (resolveApps($app) as $app) {
+        io()->comment("DM: {$app}");
+
         console(['assets:install', 'public/', '--no-cleanup', "--appId={$app}"]);
 
         if (is_file(__DIR__."/../apps/{$app}/importmap.php")) {
@@ -49,9 +52,17 @@ function assets(
 #[AsTask(description: 'Warmup cache for all contexts — shared and all DMs')]
 function warmup(): void
 {
+    io()->comment('shared');
     console(['cache:warmup']);
 
     foreach (apps() as $app) {
+        io()->comment("DM: {$app}");
         console(['cache:warmup', "--appId={$app}"]);
     }
+}
+
+#[AsTask(description: 'Install git hooks (CaptainHook)')]
+function hooks(): void
+{
+    dockerExec(['vendor/bin/captainhook', 'install', '-f', '-n']);
 }

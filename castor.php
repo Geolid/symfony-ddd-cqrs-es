@@ -28,9 +28,13 @@ load_dot_env();
 function about(): void
 {
     io()->title('DDD/CQRS/Event Sourcing showcase, Onion-layered with pluggable Delivery Mechanisms');
-    io()->comment('Run <comment>castor list</comment> to display the command list.');
-    io()->comment('Run <comment>castor start</comment> to set up the project.');
-    io()->comment('Run <comment>castor qa</comment> before opening a PR.');
+
+    io()->section('Quick Start');
+    io()->listing([
+        'Run <comment>castor start</comment> to set up the project.',
+        'Run <comment>castor qa</comment> before opening a PR.',
+        'Run <comment>castor list</comment> to display the command list.',
+    ]);
 }
 
 #[AsContext(default: true)]
@@ -40,9 +44,8 @@ function defaultContext(): Context
 }
 
 /**
- * Runs a command in the app container. The ambient context's environment (see
- * `with(..., environment: [...])`) is forwarded via `-e` — `docker compose exec` doesn't
- * inherit the host process' own env otherwise.
+ * The ambient context's environment (see `with(..., environment: [...])`) is forwarded via
+ * `-e` — `docker compose exec` doesn't inherit the host process' own env otherwise.
  * Executes bare (without docker-compose) in CI, inside a container, or if Docker is missing.
  *
  * @param array<string> $args
@@ -75,8 +78,6 @@ function dockerExec(array $args, ?bool $tty = null): void
 }
 
 /**
- * Runs a bin/console command in the app container.
- *
  * @param array<string> $args
  */
 function console(array $args, ?bool $tty = null): void
@@ -106,21 +107,25 @@ function autocompleteApps(CompletionInput $input): array
 }
 
 /**
+ * @param list<string> $allowed
+ */
+function assertOneOf(?string $value, array $allowed, string $label): void
+{
+    if (null !== $value && !in_array($value, $allowed, true)) {
+        throw new InvalidArgumentException(sprintf('Invalid %s "%s". Allowed values are: %s.', $label, $value, implode(', ', $allowed)));
+    }
+}
+
+/**
  * Validates $app against apps() and resolves it to a one-element list, or every app if null.
  *
  * @return list<string>
  */
 function resolveApps(?string $app): array
 {
-    if (null === $app) {
-        return apps();
-    }
+    $all = apps();
 
-    if (!in_array($app, apps(), true)) {
-        io()->error(sprintf('The DM must be one of: %s.', implode(', ', apps())));
+    assertOneOf($app, $all, 'DM');
 
-        exit(1);
-    }
-
-    return [$app];
+    return null !== $app ? [$app] : $all;
 }
