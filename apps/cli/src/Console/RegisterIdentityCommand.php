@@ -54,8 +54,8 @@ final class RegisterIdentityCommand
                 $this->commandBus->dispatch(new GrantPermission($identityId, $permission));
             }
 
+            $io->writeln(\sprintf('API key (shown once, store it securely): %s.%s', $apiKey->identifier, $apiKey->secret));
             $io->success(\sprintf('Identity %s registered.', $identityId));
-            $io->info(\sprintf('API key (shown once, store it securely): %s.%s', $apiKey->identifier, $apiKey->secret));
         } finally {
             $this->release();
         }
