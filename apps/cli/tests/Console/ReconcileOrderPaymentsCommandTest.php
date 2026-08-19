@@ -8,10 +8,9 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
-use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
@@ -102,38 +101,5 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         } finally {
             $lock->release();
         }
-    }
-}
-
-final readonly class StubPaymentGateway implements PaymentGatewayInterface
-{
-    public function __construct(
-        private string $status,
-        private ?string $failingReference = null,
-    ) {
-    }
-
-    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function void(string $reference): void
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function refund(string $reference): void
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function checkStatus(string $reference): string
-    {
-        if ($reference === $this->failingReference) {
-            throw new \RuntimeException('Provider unreachable.');
-        }
-
-        return $this->status;
     }
 }
