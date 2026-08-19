@@ -68,7 +68,7 @@ class Kernel extends BaseKernel
     }
 
     /**
-     * @return array<string, array|bool|string|int|float|\UnitEnum|null>
+     * @return array<string, mixed>
      */
     protected function getKernelParameters(): array
     {
