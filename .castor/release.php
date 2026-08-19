@@ -13,14 +13,14 @@ use function Castor\run;
 #[AsTask(description: 'Build a production-optimized artifact')]
 function dist(): void
 {
-    $appEnv = appEnv('prod');
+    $app_env = app_env('prod');
     $distPaths = ['bin/console', 'bootstrap', 'config', 'apps', 'public', 'src', '.castor', 'ui', 'vendor', 'castor.php', 'composer.json'];
 
     io()->title('Building production artifact');
-    io()->comment("APP_ENV={$appEnv}");
+    io()->comment("APP_ENV={$app_env}");
 
     run(['rm', '-rf', 'vendor/', 'dist/']);
-    run(['composer', 'install', '--optimize-autoloader', '--classmap-authoritative', '--prefer-dist', '--no-progress', '--no-dev'], context: context()->withEnvironment(['APP_ENV' => $appEnv]));
+    run(['composer', 'install', '--optimize-autoloader', '--classmap-authoritative', '--prefer-dist', '--no-progress', '--no-dev'], context: context()->withEnvironment(['APP_ENV' => $app_env]));
 
     fs()->mkdir('dist');
 

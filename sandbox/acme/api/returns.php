@@ -3,18 +3,17 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/shared/reference.php';
+require dirname(__DIR__, 2).'/shared/request.php';
 require dirname(__DIR__, 2).'/shared/store.php';
 
-$rawBody = file_get_contents('php://input') ?: '';
-$body = json_decode($rawBody ?: '[]', true, 512, \JSON_THROW_ON_ERROR);
-$idempotencyKey = $_SERVER['HTTP_IDEMPOTENCY_KEY'] ?? null;
+$rawBody = fake_api_read_raw_body();
+$body = fake_api_decode_json_body($rawBody);
+$idempotencyKey = fake_api_read_idempotency_key();
 
-if (null !== $idempotencyKey) {
-    $existing = fake_api_store_find('acme-returns', 'idempotencyKey', $idempotencyKey);
-    if (null !== $existing) {
-        fake_api_respond(['trackingNumber' => $existing['reference']]);
-        exit;
-    }
+$existing = fake_api_find_existing_by_idempotency_key('acme-returns', $idempotencyKey);
+if (null !== $existing) {
+    fake_api_respond(['trackingNumber' => $existing['reference']]);
+    exit;
 }
 
 $trackingNumber = fake_api_reference('ACME-RETURN-LOCAL', $rawBody);
@@ -23,7 +22,7 @@ fake_api_store_mutate('acme-returns', static function (array $records) use ($tra
     $records[$trackingNumber] = [
         'reference' => $trackingNumber,
         'idempotencyKey' => $idempotencyKey,
-        'clientReferenceId' => (string) ($body['clientReferenceId'] ?? ''),
+        'clientReferenceId' => filter_var($body['clientReferenceId'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
         'status' => 'requested',
         'createdAt' => gmdate('c'),
     ];

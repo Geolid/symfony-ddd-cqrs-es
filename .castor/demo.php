@@ -7,24 +7,24 @@ use Castor\Attribute\AsTask;
 use function Castor\with;
 
 #[AsTask(name: 'seed', namespace: 'demo', description: 'Reset the database and seed demo orders')]
-function demoSeed(): void
+function demo_seed(): void
 {
     with(static function (): void {
-        dbReset();
-        demoExec(['demo:seed']);
+        db_reset();
+        demo_exec(['demo:seed']);
     }, environment: ['APP_ENV' => 'demo']);
 }
 
 #[AsTask(name: 'list', namespace: 'demo', description: 'List available demo commands')]
-function demoList(): void
+function demo_list(): void
 {
-    with(static fn () => demoExec(['list', 'demo']), environment: ['APP_ENV' => 'demo']);
+    with(static fn () => demo_exec(['list', 'demo']), environment: ['APP_ENV' => 'demo']);
 }
 
 /**
  * @param array<string> $args
  */
-function demoExec(array $args): void
+function demo_exec(array $args): void
 {
-    dockerExec(['php', 'demo/console', ...$args]);
+    compose_exec(['php', 'demo/console', ...$args]);
 }

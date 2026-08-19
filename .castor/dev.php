@@ -14,10 +14,10 @@ function start(): void
         fs()->copy(__DIR__.'/../compose.override.yaml.dist', __DIR__.'/../compose.override.yaml');
     }
 
-    dockerUp();
+    docker_up();
     vendor();
     hooks();
-    dbCreate();
+    db_create();
     assets();
 }
 
@@ -26,7 +26,7 @@ function sh(
     #[AsArgument(description: 'Command to run instead of an interactive shell')]
     ?string $cmd = null,
 ): void {
-    dockerExec(null !== $cmd ? ['/bin/sh', '-c', $cmd] : ['/bin/sh']);
+    compose_exec(null !== $cmd ? ['/bin/sh', '-c', $cmd] : ['/bin/sh']);
 }
 
 #[AsTask(description: 'Clear all caches')]
@@ -37,7 +37,7 @@ function cc(): void
 }
 
 #[AsTask(name: 'dump', description: 'Start Symfony VarDumper server')]
-function dumpServer(): void
+function dump_server(): void
 {
     console(['server:dump']);
 }

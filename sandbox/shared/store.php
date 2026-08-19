@@ -23,12 +23,21 @@ function fake_api_store_read(string $provider): array
     }
 
     $handle = fopen($path, 'r');
+    if (false === $handle) {
+        throw new RuntimeException(sprintf('Unable to open "%s" for reading.', $path));
+    }
+
     flock($handle, \LOCK_SH);
     $contents = stream_get_contents($handle);
     flock($handle, \LOCK_UN);
     fclose($handle);
 
-    return json_decode($contents ?: '[]', true, 512, \JSON_THROW_ON_ERROR);
+    $decoded = json_decode($contents ?: '[]', true, 512, \JSON_THROW_ON_ERROR);
+
+    /** @var array<string, array<string, mixed>> $decoded */
+    $decoded = is_array($decoded) ? $decoded : [];
+
+    return $decoded;
 }
 
 /**
@@ -38,11 +47,19 @@ function fake_api_store_read(string $provider): array
  */
 function fake_api_store_mutate(string $provider, callable $mutator): array
 {
-    $handle = fopen(fake_api_store_path($provider), 'c+');
+    $path = fake_api_store_path($provider);
+    $handle = fopen($path, 'c+');
+    if (false === $handle) {
+        throw new RuntimeException(sprintf('Unable to open "%s" for writing.', $path));
+    }
+
     flock($handle, \LOCK_EX);
 
     $contents = stream_get_contents($handle);
     $records = json_decode($contents ?: '[]', true, 512, \JSON_THROW_ON_ERROR);
+
+    /** @var array<string, array<string, mixed>> $records */
+    $records = is_array($records) ? $records : [];
     $records = $mutator($records);
 
     ftruncate($handle, 0);
@@ -67,4 +84,27 @@ function fake_api_store_find(string $provider, string $field, string $value): ?a
     }
 
     return null;
+}
+
+/**
+ * @return array<string, mixed>|null
+ */
+function fake_api_find_existing_by_idempotency_key(string $provider, ?string $idempotencyKey): ?array
+{
+    if (null === $idempotencyKey) {
+        return null;
+    }
+
+    return fake_api_store_find($provider, 'idempotencyKey', $idempotencyKey);
+}
+
+function fake_api_store_transition_status(string $provider, string $reference, string $status): void
+{
+    fake_api_store_mutate($provider, static function (array $records) use ($reference, $status): array {
+        if (isset($records[$reference])) {
+            $records[$reference]['status'] = $status;
+        }
+
+        return $records;
+    });
 }

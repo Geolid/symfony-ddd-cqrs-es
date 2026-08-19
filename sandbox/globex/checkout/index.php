@@ -5,8 +5,8 @@ declare(strict_types=1);
 require dirname(__DIR__, 2).'/shared/store.php';
 
 if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
-    $reference = (string) ($_POST['ref'] ?? '');
-    $returnUrl = (string) ($_POST['returnUrl'] ?? '');
+    $reference = filter_var($_POST['ref'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+    $returnUrl = filter_var($_POST['returnUrl'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
 
     $payload = json_encode(['paymentReference' => $reference], \JSON_THROW_ON_ERROR);
     $signature = 'sha256='.hash_hmac('sha256', $payload, (string) getenv('PAYMENT_WEBHOOK_SECRET'));
@@ -30,21 +30,15 @@ if ('POST' === ($_SERVER['REQUEST_METHOD'] ?? 'GET')) {
         exit;
     }
 
-    fake_api_store_mutate('globex-charges', static function (array $records) use ($reference): array {
-        if (isset($records[$reference])) {
-            $records[$reference]['status'] = 'authorized';
-        }
-
-        return $records;
-    });
+    fake_api_store_transition_status('globex-charges', $reference, 'authorized');
 
     header('Location: '.$returnUrl);
     exit;
 }
 
-$reference = (string) ($_GET['ref'] ?? '');
-$total = number_format(((int) ($_GET['total'] ?? 0)) / 100, 2).' €';
-$returnUrl = (string) ($_GET['returnUrl'] ?? '');
+$reference = filter_var($_GET['ref'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+$total = number_format((filter_var($_GET['total'] ?? 0, \FILTER_VALIDATE_INT) ?: 0) / 100, 2).' €';
+$returnUrl = filter_var($_GET['returnUrl'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
 
 header('Content-Type: text/html; charset=utf-8');
 ?>

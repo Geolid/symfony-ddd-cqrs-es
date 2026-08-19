@@ -19,6 +19,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__.'/bootstrap',
         __DIR__.'/config',
         __DIR__.'/demo',
+        __DIR__.'/sandbox',
         __DIR__.'/src',
         __DIR__.'/tests',
         __DIR__.'/tools',

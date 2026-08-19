@@ -38,7 +38,7 @@ function about(): void
 }
 
 #[AsContext(default: true)]
-function defaultContext(): Context
+function default_context(): Context
 {
     return new Context(environment: ['APP_ENV' => is_string($_SERVER['APP_ENV'] ?? null) ? $_SERVER['APP_ENV'] : 'dev']);
 }
@@ -50,7 +50,7 @@ function defaultContext(): Context
  *
  * @param array<string> $args
  */
-function dockerExec(array $args, ?bool $tty = null): void
+function compose_exec(array $args, ?bool $tty = null): void
 {
     $tty ??= context()->supportsInteraction;
 
@@ -82,10 +82,10 @@ function dockerExec(array $args, ?bool $tty = null): void
  */
 function console(array $args, ?bool $tty = null): void
 {
-    dockerExec(['php', 'bin/console', '--ansi', ...$args], $tty);
+    compose_exec(['php', 'bin/console', '--ansi', ...$args], $tty);
 }
 
-function appEnv(string $default = 'dev'): string
+function app_env(string $default = 'dev'): string
 {
     return (string) (context()->environment['APP_ENV'] ?? $default);
 }
@@ -101,7 +101,7 @@ function apps(): array
 /**
  * @return list<string>
  */
-function autocompleteApps(CompletionInput $input): array
+function autocomplete_apps(CompletionInput $input): array
 {
     return apps();
 }
@@ -109,7 +109,7 @@ function autocompleteApps(CompletionInput $input): array
 /**
  * @param list<string> $allowed
  */
-function assertOneOf(?string $value, array $allowed, string $label): void
+function assert_one_of(?string $value, array $allowed, string $label): void
 {
     if (null !== $value && !in_array($value, $allowed, true)) {
         throw new InvalidArgumentException(sprintf('Invalid %s "%s". Allowed values are: %s.', $label, $value, implode(', ', $allowed)));
@@ -121,11 +121,11 @@ function assertOneOf(?string $value, array $allowed, string $label): void
  *
  * @return list<string>
  */
-function resolveApps(?string $app): array
+function resolve_apps(?string $app): array
 {
     $all = apps();
 
-    assertOneOf($app, $all, 'DM');
+    assert_one_of($app, $all, 'DM');
 
     return null !== $app ? [$app] : $all;
 }
