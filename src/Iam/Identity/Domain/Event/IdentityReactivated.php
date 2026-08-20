@@ -7,7 +7,7 @@ namespace Iam\Identity\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.identity.reactivated')]
+#[Event('iam.identity.identity.reactivated')]
 final readonly class IdentityReactivated implements DomainEventInterface
 {
     public function __construct(

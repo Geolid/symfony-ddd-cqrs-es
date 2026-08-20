@@ -22,7 +22,7 @@ final class ValidPassword extends Compound
             new Assert\Length(min: 12, max: 4096),
             new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG),
             new NotCompromisedPassword(skipOnError: true),
-            new ValidValueObject(Password::class),
+            new ValidValueObject(Password::class, method: 'fromString'),
         ];
     }
 }

@@ -19,7 +19,7 @@ final class ValidPermission extends Compound
             new Assert\Type('string'),
             new Assert\Regex(pattern: Permission::PATTERN, message: 'iam.access.permission.invalid_format'),
             new Assert\Length(max: 64),
-            new ValidValueObject(Permission::class),
+            new ValidValueObject(Permission::class, method: 'fromString'),
         ];
     }
 }

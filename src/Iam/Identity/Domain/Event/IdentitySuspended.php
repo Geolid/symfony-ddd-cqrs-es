@@ -7,7 +7,7 @@ namespace Iam\Identity\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.identity.suspended')]
+#[Event('iam.identity.identity.suspended')]
 final readonly class IdentitySuspended implements DomainEventInterface
 {
     public function __construct(

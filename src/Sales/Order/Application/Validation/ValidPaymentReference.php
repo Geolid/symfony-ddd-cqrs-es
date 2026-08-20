@@ -18,7 +18,7 @@ final class ValidPaymentReference extends Compound
             new Assert\NotBlank(normalizer: 'trim'),
             new Assert\Type('string'),
             new Assert\Length(max: 64),
-            new ValidValueObject(PaymentReference::class),
+            new ValidValueObject(PaymentReference::class, method: 'fromString'),
         ];
     }
 }
