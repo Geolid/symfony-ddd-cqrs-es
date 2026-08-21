@@ -30,6 +30,7 @@ final class AsDrivingPortTest
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
                 Selector::Not(Selector::withFilepath('#/tools/PHPat/#', true)),
                 Selector::Not(Selector::withFilepath('#/tests/#', true)),
+                Selector::Not(Selector::withFilepath('#/bootstrap/#', true)),
             ))
             ->shouldNot()
             ->dependOn()

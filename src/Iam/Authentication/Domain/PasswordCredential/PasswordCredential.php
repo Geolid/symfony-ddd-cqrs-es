@@ -12,9 +12,9 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -30,7 +30,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     #[Id]
     public private(set) PasswordCredentialId $id;
     public private(set) Login $login;
-    private string $hash;
+    private string $passwordHash;
 
     /**
      * @throws WeakPasswordException
@@ -59,7 +59,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
             id: $id->toString(),
             identityId: $identityId,
             login: $login->value,
-            hash: $hasher->hash($password->value),
+            passwordHash: $hasher->hash($password->value),
             definedAt: $definedAt->format(\DateTimeInterface::ATOM),
         ));
 
@@ -81,13 +81,13 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
             throw CompromisedPasswordException::forPasswordCredential($this->id);
         }
 
-        if ($hasher->verify($this->hash, $password->value)) {
+        if ($hasher->verify($this->passwordHash, $password->value)) {
             throw SamePasswordException::forId($this->id);
         }
 
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id->toString(),
-            hash: $hasher->hash($password->value),
+            passwordHash: $hasher->hash($password->value),
             changedAt: $changedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -96,7 +96,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     {
         $this->recordThat(new PasswordCredentialRehashed(
             id: $this->id->toString(),
-            hash: $hasher->hash($plainPassword),
+            passwordHash: $hasher->hash($plainPassword),
             rehashedAt: $rehashedAt->format(\DateTimeInterface::ATOM),
         ));
     }
@@ -106,18 +106,18 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     {
         $this->id = PasswordCredentialId::fromString($event->id);
         $this->login = Login::fromString($event->login);
-        $this->hash = $event->hash;
+        $this->passwordHash = $event->passwordHash;
     }
 
     #[Apply]
     private function applyChanged(PasswordCredentialChanged $event): void
     {
-        $this->hash = $event->hash;
+        $this->passwordHash = $event->passwordHash;
     }
 
     #[Apply]
     private function applyRehashed(PasswordCredentialRehashed $event): void
     {
-        $this->hash = $event->hash;
+        $this->passwordHash = $event->passwordHash;
     }
 }

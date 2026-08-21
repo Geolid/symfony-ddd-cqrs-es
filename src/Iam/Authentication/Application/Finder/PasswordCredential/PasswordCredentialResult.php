@@ -12,8 +12,8 @@ final readonly class PasswordCredentialResult implements ResultInterface
         public string $id,
         public string $identityId,
         public string $login,
-        public string $hash,
-        public bool $authenticatable,
+        public string $passwordHash,
+        public bool $identityAuthenticatable,
     ) {
     }
 }

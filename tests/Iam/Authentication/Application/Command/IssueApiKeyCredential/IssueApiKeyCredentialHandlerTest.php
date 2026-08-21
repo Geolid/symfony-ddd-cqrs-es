@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
+
+use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
+use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
+use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
+use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
+use Support\AbstractIntegrationTestCase;
+
+final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
+{
+    #[Test]
+    public function itIssues(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+        $keyId = KeyId::PREFIX.'0123456789abcdef';
+
+        // When
+        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identity->id->toString(), 'CI pipeline', $keyId, 'plain-secret'));
+
+        // Then
+        $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($keyId);
+        self::assertSame($identity->id->toString(), $result->identityId);
+        self::assertSame('CI pipeline', $result->label);
+        self::assertFalse($result->revoked);
+        self::assertTrue($result->identityAuthenticatable);
+    }
+
+    #[Test]
+    public function itFailsWhenIdentityNotFound(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+
+        // Then
+        $this->expectException(AuthenticatableIdentityResultNotFoundException::class);
+
+        // When
+        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identityId, 'CI pipeline', KeyId::PREFIX.'0123456789abcdef', 'plain-secret'));
+    }
+
+    #[Test]
+    public function itFailsWhenIdentityNotAuthenticatable(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->suspended()->store();
+
+        // Then
+        $this->expectException(IdentityNotAuthenticatableException::class);
+
+        // When
+        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identity->id->toString(), 'CI pipeline', KeyId::PREFIX.'0123456789abcdef', 'plain-secret'));
+    }
+
+    #[Test]
+    public function itFailsWhenLabelAlreadyTaken(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
+            'CI pipeline',
+            Uuid::uuid7()->toString(),
+        );
+
+        // Then
+        $this->expectException(LabelAlreadyTakenException::class);
+
+        // When
+        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identity->id->toString(), 'CI pipeline', KeyId::PREFIX.'0123456789abcdef', 'plain-secret'));
+    }
+}

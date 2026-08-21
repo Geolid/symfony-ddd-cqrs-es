@@ -22,6 +22,9 @@ return static function (ContainerConfigurator $container): void {
                 'provider' => 'password_users',
                 'user_checker' => IdentityChecker::class,
                 'custom_authenticators' => [PasswordCredentialAuthenticator::class],
+                'login_throttling' => [
+                    'max_attempts' => 3,
+                ],
                 'logout' => ['path' => '/logout', 'target' => 'sales_order_list'],
             ],
         ],

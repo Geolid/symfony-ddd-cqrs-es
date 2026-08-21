@@ -8,14 +8,15 @@ use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFou
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\AuthenticatableIdentity\AuthenticatableIdentityFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 
@@ -38,6 +39,7 @@ final readonly class ChangePasswordHandler
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
      * @throws SamePasswordException
+     * @throws PasswordCredentialAlreadyExistsException
      */
     public function __invoke(ChangePassword $command): void
     {
@@ -45,9 +47,9 @@ final readonly class ChangePasswordHandler
             throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
         }
 
-        $passwordCredential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $passwordCredential->change(Password::fromString($command->password), $this->policy, $this->hasher, $this->clock->now());
+        $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
+        $credential->change(Password::fromString($command->password), $this->policy, $this->hasher, $this->clock->now());
 
-        $this->repository->save($passwordCredential);
+        $this->repository->save($credential);
     }
 }

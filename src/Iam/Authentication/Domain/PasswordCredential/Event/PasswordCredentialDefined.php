@@ -19,7 +19,7 @@ final readonly class PasswordCredentialDefined implements DomainEventInterface
         public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-%s'))]
         public string $login,
-        public string $hash,
+        public string $passwordHash,
         public string $definedAt,
     ) {
     }

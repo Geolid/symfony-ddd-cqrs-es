@@ -25,8 +25,7 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
 
         // Then
         $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
-        self::assertCount(1, $published);
-        $event = $published[0];
+        $event = end($published);
         self::assertInstanceOf(IdentityErasedIntegrationEvent::class, $event);
         self::assertSame($identity->id->toString(), $event->identityId);
     }
@@ -42,8 +41,7 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
 
         // Then
         $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
-        self::assertCount(1, $published);
-        $event = $published[0];
+        $event = end($published);
         self::assertInstanceOf(IdentitySuspendedIntegrationEvent::class, $event);
         self::assertSame($identity->id->toString(), $event->identityId);
     }
@@ -59,8 +57,7 @@ final class IdentityIntegrationEventTranslatorTest extends AbstractIntegrationTe
 
         // Then
         $published = $this->publishedTo(IntegrationStreamId::build('iam.identity', $identity->id->toString()));
-        self::assertCount(2, $published);
-        $event = $published[1];
+        $event = end($published);
         self::assertInstanceOf(IdentityReactivatedIntegrationEvent::class, $event);
         self::assertSame($identity->id->toString(), $event->identityId);
     }

@@ -12,7 +12,7 @@ final readonly class PasswordCredentialChanged implements DomainEventInterface
 {
     public function __construct(
         public string $id,
-        public string $hash,
+        public string $passwordHash,
         public string $changedAt,
     ) {
     }

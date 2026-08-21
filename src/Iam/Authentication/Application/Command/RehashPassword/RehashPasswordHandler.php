@@ -34,13 +34,13 @@ final readonly class RehashPasswordHandler
     {
         $current = $this->passwordCredentialFinder->ofIdentityId($command->identityId);
 
-        if (!$this->hasher->needsRehash($current->hash)) {
+        if (!$this->hasher->needsRehash($current->passwordHash)) {
             return;
         }
 
-        $passwordCredential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $passwordCredential->rehash($command->password, $this->hasher, $this->clock->now());
+        $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
+        $credential->rehash($command->password, $this->hasher, $this->clock->now());
 
-        $this->repository->save($passwordCredential);
+        $this->repository->save($credential);
     }
 }

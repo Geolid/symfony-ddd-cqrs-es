@@ -9,15 +9,16 @@ use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Application\Finder\AuthenticatableIdentity\AuthenticatableIdentityFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
@@ -43,6 +44,7 @@ final readonly class DefinePasswordCredentialHandler
      * @throws LoginAlreadyTakenException
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
+     * @throws PasswordCredentialAlreadyExistsException
      */
     public function __invoke(DefinePasswordCredential $command): void
     {
@@ -52,7 +54,6 @@ final readonly class DefinePasswordCredentialHandler
 
         $id = PasswordCredentialId::forIdentity($command->identityId);
         $login = Login::fromString($command->login);
-        $password = Password::fromString($command->password);
 
         try {
             $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString(), $command->identityId);
@@ -60,16 +61,16 @@ final readonly class DefinePasswordCredentialHandler
             throw LoginAlreadyTakenException::forLogin($login->value, $e);
         }
 
-        $passwordCredential = PasswordCredential::define(
+        $credential = PasswordCredential::define(
             id: $id,
             identityId: $command->identityId,
             login: $login,
-            password: $password,
+            password: Password::fromString($command->password),
             policy: $this->policy,
             hasher: $this->hasher,
             definedAt: $this->clock->now(),
         );
 
-        $this->repository->save($passwordCredential);
+        $this->repository->save($credential);
     }
 }
