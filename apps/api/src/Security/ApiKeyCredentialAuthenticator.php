@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Credential\ApiTokenCredentialVerifierInterface;
+use Iam\Authentication\Application\Credential\ApiKeyCredentialVerifierInterface;
+use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
+use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,11 +21,11 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCre
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
-final class ApiTokenCredentialAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
+final class ApiKeyCredentialAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     private const string HEADER = 'X-Api-Key';
 
-    public function __construct(private readonly ApiTokenCredentialVerifierInterface $verifier)
+    public function __construct(private readonly ApiKeyCredentialVerifierInterface $verifier)
     {
     }
 
@@ -33,26 +36,29 @@ final class ApiTokenCredentialAuthenticator extends AbstractAuthenticator implem
 
     public function authenticate(Request $request): Passport
     {
-        $token = (string) $request->headers->get(self::HEADER);
+        $apiKey = (string) $request->headers->get(self::HEADER);
 
-        if (!str_contains($token, '.')) {
+        if (!str_contains($apiKey, '.')) {
             throw new CustomUserMessageAuthenticationException('Malformed API key.');
         }
 
-        [$identifier, $secret] = explode('.', $token, 2);
+        [$keyId, $secret] = explode('.', $apiKey, 2);
 
         return new Passport(
-            new UserBadge($identifier),
+            new UserBadge($keyId),
             new CustomCredentials(
                 function (mixed $secret, UserInterface $user): bool {
                     \assert(\is_string($secret));
                     \assert($user instanceof ApiUser);
 
-                    return $this->verifier->verify($user->getUserIdentifier(), $secret);
+                    try {
+                        return $this->verifier->verify($user->getUserIdentifier(), $secret);
+                    } catch (ApiKeyCredentialResultNotFoundException|ApiKeyCredentialRevokedException|IdentityNotAuthenticatableException) {
+                        return false;
+                    }
                 },
                 $secret,
             ),
-            [new PlainSecretBadge($secret)],
         );
     }
 

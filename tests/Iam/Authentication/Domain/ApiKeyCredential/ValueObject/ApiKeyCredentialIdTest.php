@@ -23,21 +23,6 @@ final class ApiKeyCredentialIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $value = ApiKeyCredentialId::generate()->toString();
-
-        // When
-        $a = ApiKeyCredentialId::fromString($value);
-        $b = ApiKeyCredentialId::fromString($value);
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(ApiKeyCredentialId::generate()));
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -55,5 +40,20 @@ final class ApiKeyCredentialIdTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'invalid uuid' => ['not-a-uuid'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $value = ApiKeyCredentialId::generate()->toString();
+
+        // When
+        $a = ApiKeyCredentialId::fromString($value);
+        $b = ApiKeyCredentialId::fromString($value);
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(ApiKeyCredentialId::generate()));
     }
 }

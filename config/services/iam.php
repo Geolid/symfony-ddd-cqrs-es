@@ -3,20 +3,18 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Iam\Identity\Application\Credential\ApiTokenCredentialVerifierInterface;
-use Iam\Identity\Application\Credential\ApiTokenGeneratorInterface;
-use Iam\Identity\Application\Credential\ApiTokenIssuer;
-use Iam\Identity\Application\Credential\ApiTokenIssuerInterface;
-use Iam\Identity\Application\Credential\PasswordCredentialVerifierInterface;
-use Iam\Identity\Application\Finder\ApiTokenCredential\ApiTokenCredentialFinderInterface;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
+use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalApiKeyCredentialFinder;
+use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
+use Iam\Authentication\Infrastructure\Security\ApiKeyHasher;
+use Iam\Authentication\Infrastructure\Security\PasswordHasher;
+use Iam\Authentication\Infrastructure\Security\PasswordPolicy;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalApiTokenCredentialFinder;
 use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalIdentityFinder;
-use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
-use Iam\Identity\Infrastructure\Security\ApiTokenCredentialVerifier;
-use Iam\Identity\Infrastructure\Security\ApiTokenGenerator;
-use Iam\Identity\Infrastructure\Security\PasswordCredentialVerifier;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
@@ -35,12 +33,11 @@ return static function (ContainerConfigurator $container): void {
 
         // Not otherwise referenced by a service definition; alias+public here or the
         // test container's compiler prunes them.
-        $services->alias(ApiTokenCredentialFinderInterface::class, DbalApiTokenCredentialFinder::class)->public();
-        $services->alias(ApiTokenCredentialVerifierInterface::class, ApiTokenCredentialVerifier::class)->public();
-        $services->alias(ApiTokenGeneratorInterface::class, ApiTokenGenerator::class)->public();
-        $services->alias(ApiTokenIssuerInterface::class, ApiTokenIssuer::class)->public();
+        $services->alias(ApiKeyCredentialFinderInterface::class, DbalApiKeyCredentialFinder::class)->public();
+        $services->alias(ApiKeyHasherInterface::class, ApiKeyHasher::class)->public();
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
         $services->alias(PasswordCredentialFinderInterface::class, DbalPasswordCredentialFinder::class)->public();
-        $services->alias(PasswordCredentialVerifierInterface::class, PasswordCredentialVerifier::class)->public();
+        $services->alias(PasswordHasherInterface::class, PasswordHasher::class)->public();
+        $services->alias(PasswordPolicyInterface::class, PasswordPolicy::class)->public();
     }
 };

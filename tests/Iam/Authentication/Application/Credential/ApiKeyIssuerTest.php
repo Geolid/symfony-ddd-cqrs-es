@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Credential;
 
 use Iam\Authentication\Application\Credential\ApiKeyIssuerInterface;
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
@@ -42,32 +40,6 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->identityId);
         self::assertSame('CI pipeline', $result->label);
         self::assertFalse($result->revoked);
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-
-        // Then
-        $this->expectException(AuthenticatableIdentityResultNotFoundException::class);
-
-        // When
-        $this->issuer->issueFor($identityId, 'CI pipeline');
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
-
-        // When
-        $this->issuer->issueFor($identity->id->toString(), 'CI pipeline');
     }
 
     #[Test]

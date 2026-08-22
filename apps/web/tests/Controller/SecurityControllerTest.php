@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
-use Iam\Identity\Domain\Service\PasswordPolicyInterface;
-use Iam\Identity\Domain\Service\SecretHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Identity\Domain\ValueObject\Reason;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
-use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
@@ -49,8 +50,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
-            ->withPassword('correct horse battery staple')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPassword('MyStr0ngP@ssw0rd123!')
+            ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
         CustomerTestFactory::new()->withId($identity->id->toString())->store();
@@ -58,13 +59,39 @@ final class SecurityControllerTest extends AbstractWebTestCase
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
-        $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
+        $form->setValues(['login' => 'buyer@example.com', 'password' => 'MyStr0ngP@ssw0rd123!']);
         $client->submit($form);
 
         // Then
         self::assertResponseRedirects($this->path('sales_order_list'));
         $client->followRedirect();
         self::assertSelectorExists('[data-testid="nav-logout"]');
+    }
+
+    #[Test]
+    public function itLogsInWithRememberMe(): void
+    {
+        // Given
+        $client = self::browser();
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id->toString())
+            ->withLogin('buyer-remember@example.com')
+            ->withPassword('MyStr0ngP@ssw0rd123!')
+            ->withHasher($this->service(PasswordHasherInterface::class))
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->store();
+        CustomerTestFactory::new()->withId($identity->id->toString())->store();
+
+        // When
+        $crawler = $client->request('GET', $this->path('security_login'));
+        $form = $crawler->filter('[data-testid="login-form"]')->form();
+        $form->setValues(['login' => 'buyer-remember@example.com', 'password' => 'MyStr0ngP@ssw0rd123!', '_remember_me' => true]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseRedirects($this->path('sales_order_list'));
+        self::assertNotNull($client->getCookieJar()->get('REMEMBERME'));
     }
 
     #[Test]
@@ -76,8 +103,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
-            ->withPassword('correct horse battery staple')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPassword('MyStr0ngP@ssw0rd123!')
+            ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
 
@@ -99,19 +126,21 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->suspended()->store();
+        $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
-            ->withPassword('correct horse battery staple')
-            ->withHasher($this->service(SecretHasherInterface::class))
+            ->withPassword('MyStr0ngP@ssw0rd123!')
+            ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->store();
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
         $form = $crawler->filter('[data-testid="login-form"]')->form();
-        $form->setValues(['login' => 'buyer@example.com', 'password' => 'correct horse battery staple']);
+        $form->setValues(['login' => 'buyer@example.com', 'password' => 'MyStr0ngP@ssw0rd123!']);
         $client->submit($form);
 
         // Then

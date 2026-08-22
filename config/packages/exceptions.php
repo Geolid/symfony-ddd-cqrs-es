@@ -6,13 +6,15 @@ use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
-use Iam\Identity\Application\Exception\LabelAlreadyTakenException;
-use Iam\Identity\Application\Exception\LoginAlreadyTakenException;
-use Iam\Identity\Domain\Exception\CompromisedPasswordException;
+use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
+use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
+use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
+use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
+use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityNotActiveException;
-use Iam\Identity\Domain\Exception\PasswordUnchangedException;
-use Iam\Identity\Domain\Exception\WeakPasswordException;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -27,6 +29,7 @@ use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
+use Shared\Application\Exception\ActingIdentityNotActiveException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
@@ -47,11 +50,13 @@ return static function (ContainerConfigurator $container): void {
             TrackingReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
-            IdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
+            ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             LabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             LoginAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
-            PasswordUnchangedException::class => ['log_level' => 'info', 'status_code' => 422],
+            SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
@@ -75,6 +80,7 @@ return static function (ContainerConfigurator $container): void {
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
+            ActingIdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 

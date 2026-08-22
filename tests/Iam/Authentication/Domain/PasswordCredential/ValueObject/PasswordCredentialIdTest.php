@@ -23,21 +23,6 @@ final class PasswordCredentialIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-
-        // When
-        $a = PasswordCredentialId::forIdentity($identityId);
-        $b = PasswordCredentialId::forIdentity($identityId);
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())));
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -55,5 +40,20 @@ final class PasswordCredentialIdTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'invalid uuid' => ['not-a-uuid'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+
+        // When
+        $a = PasswordCredentialId::forIdentity($identityId);
+        $b = PasswordCredentialId::forIdentity($identityId);
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())));
     }
 }

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use Web\Security\IdentityChecker;
 use Web\Security\PasswordCredentialAuthenticator;
 use Web\Security\PasswordUserProvider;
 
@@ -20,10 +19,15 @@ return static function (ContainerConfigurator $container): void {
             'main' => [
                 'lazy' => true,
                 'provider' => 'password_users',
-                'user_checker' => IdentityChecker::class,
                 'custom_authenticators' => [PasswordCredentialAuthenticator::class],
                 'login_throttling' => [
                     'max_attempts' => 3,
+                ],
+                'remember_me' => [
+                    'secret' => '%kernel.secret%',
+                    'lifetime' => 604800,
+                    'path' => '/',
+                    'signature_properties' => ['authenticatable', 'passwordChangedAt'],
                 ],
                 'logout' => ['path' => '/logout', 'target' => 'sales_order_list'],
             ],

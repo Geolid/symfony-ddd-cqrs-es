@@ -31,6 +31,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
             'identity_id' => $event->identityId,
             'login' => $event->login,
             'password_hash' => $event->passwordHash,
+            'defined_at' => new \DateTimeImmutable($event->definedAt)->format('Y-m-d H:i:s'),
+            'password_changed_at' => new \DateTimeImmutable($event->definedAt)->format('Y-m-d H:i:s'),
             'identity_authenticatable' => true,
         ], ['identity_authenticatable' => Types::BOOLEAN]);
     }
@@ -38,7 +40,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     #[Subscribe(PasswordCredentialChanged::class)]
     public function onPasswordCredentialChanged(PasswordCredentialChanged $event): void
     {
-        $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash], ['id' => $event->id]);
+        $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash, 'password_changed_at' => new \DateTimeImmutable($event->changedAt)->format('Y-m-d H:i:s')], ['id' => $event->id]);
     }
 
     #[Subscribe(PasswordCredentialRehashed::class)]
@@ -75,6 +77,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('login', Types::STRING, ['length' => 255]);
         $table->addColumn('password_hash', Types::STRING, ['length' => 255]);
+        $table->addColumn('defined_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('password_changed_at', Types::DATETIME_MUTABLE);
         $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

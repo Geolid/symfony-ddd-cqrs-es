@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
 
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
@@ -25,43 +23,19 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
+        $id = Uuid::uuid7()->toString();
         $keyId = KeyId::PREFIX.'0123456789abcdef';
 
         // When
-        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identity->id->toString(), 'CI pipeline', $keyId, 'plain-secret'));
+        $this->dispatch(new IssueApiKeyCredential($id, $identity->id->toString(), 'CI pipeline', $keyId, 'plain-secret'));
 
         // Then
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($keyId);
+        self::assertSame($id, $result->id);
         self::assertSame($identity->id->toString(), $result->identityId);
         self::assertSame('CI pipeline', $result->label);
         self::assertFalse($result->revoked);
         self::assertTrue($result->identityAuthenticatable);
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-
-        // Then
-        $this->expectException(AuthenticatableIdentityResultNotFoundException::class);
-
-        // When
-        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identityId, 'CI pipeline', KeyId::PREFIX.'0123456789abcdef', 'plain-secret'));
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
-
-        // When
-        $this->dispatch(new IssueApiKeyCredential(Uuid::uuid7()->toString(), $identity->id->toString(), 'CI pipeline', KeyId::PREFIX.'0123456789abcdef', 'plain-secret'));
     }
 
     #[Test]

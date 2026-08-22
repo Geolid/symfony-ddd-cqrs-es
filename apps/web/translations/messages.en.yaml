@@ -13,6 +13,7 @@ security:
         title: Log in
         label_login: Login
         label_password: Password
+        label_remember_me: Remember me
         button_submit: Log in
 
 sales:

@@ -10,11 +10,11 @@ final class PasswordCredentialResultNotFoundException extends ResultNotFoundExce
 {
     public static function forLogin(string $login): self
     {
-        return new self(\sprintf('Password credential with login "%s" not found.', $login));
+        return new self(\sprintf('Password credential of login "%s" not found.', $login));
     }
 
     public static function forIdentity(string $identityId): self
     {
-        return new self(\sprintf('Password credential for identity "%s" not found.', $identityId));
+        return new self(\sprintf('Password credential of identity "%s" not found.', $identityId));
     }
 }

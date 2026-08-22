@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
+use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Iam\Identity\Domain\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -56,7 +56,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client = self::browser();
 
         // When
-        $this->registerCustomer($client, 'buyer-1', 'buyer-1@example.com', 'correct horse battery staple');
+        $this->registerCustomer($client, 'buyer-1', 'buyer-1@example.com', 'MyStr0ngP@ssw0rd123!');
 
         // Then
         self::assertResponseRedirects($this->path('security_login'));
@@ -82,8 +82,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $form->setValues([
             \sprintf('%s[login]', $prefix) => 'buyer-2-retry',
             \sprintf('%s[email]', $prefix) => 'buyer-2@example.com',
-            \sprintf('%s[password][first]', $prefix) => 'another password entirely',
-            \sprintf('%s[password][second]', $prefix) => 'another password entirely',
+            \sprintf('%s[password][first]', $prefix) => 'MyStr0ngP@ssw0rd123!',
+            \sprintf('%s[password][second]', $prefix) => 'MyStr0ngP@ssw0rd123!',
         ]);
         $client->submit($form);
 
@@ -100,7 +100,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'buyer-10', Uuid::uuid7()->toString());
 
         // When
-        $this->registerCustomer($client, 'buyer-10', 'buyer-10-other@example.com', 'another password entirely');
+        $this->registerCustomer($client, 'buyer-10', 'buyer-10-other@example.com', 'MyStr0ngP@ssw0rd123!');
 
         // Then
         self::assertResponseStatusCodeSame(422);
@@ -120,8 +120,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $form->setValues([
             \sprintf('%s[login]', $prefix) => 'buyer-7',
             \sprintf('%s[email]', $prefix) => 'buyer-7@example.com',
-            \sprintf('%s[password][first]', $prefix) => 'correct horse battery staple',
-            \sprintf('%s[password][second]', $prefix) => 'a different password entirely',
+            \sprintf('%s[password][first]', $prefix) => 'MyStr0ngP@ssw0rd123!',
+            \sprintf('%s[password][second]', $prefix) => 'Xk9$mQ2vLp7&zR4w',
         ]);
         $client->submit($form);
 
@@ -137,8 +137,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer-6@example.com', Uuid::uuid7()->toString());
 
         // When
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'another password entirely');
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'yet another Password!42');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'MyStr0ngP@ssw0rd123!');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'Xk9$mQ2vLp7&zR4w');
 
         // Then
         self::assertResponseRedirects($this->path('security_login'));
@@ -231,7 +231,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $crawler = $client->request('GET', $this->path('sales_customer_profile'));
         $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
-        $form->setValues([\sprintf('%s[password]', $prefix) => 'A Brand New Password!42']);
+        $form->setValues([\sprintf('%s[password]', $prefix) => 'Xk9$mQ2vLp7&zR4w']);
         $client->submit($form);
 
         // Then
@@ -240,7 +240,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
         $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
-        self::assertTrue($this->service(SecretHasherInterface::class)->verify($credential->hash, 'A Brand New Password!42'));
+        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
     }
 
     private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void

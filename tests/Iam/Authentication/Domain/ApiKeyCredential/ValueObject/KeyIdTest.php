@@ -22,18 +22,6 @@ final class KeyIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
-    {
-        // When
-        $a = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
-        $b = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(KeyId::fromString(KeyId::PREFIX.'fedcba9876543210')));
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -53,5 +41,17 @@ final class KeyIdTest extends TestCase
         yield 'too short' => [KeyId::PREFIX.'0123456789abcde'];
         yield 'too long' => [KeyId::PREFIX.'0123456789abcdef0'];
         yield 'missing key_ prefix' => ['abc_0123456789abcdef'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // When
+        $a = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
+        $b = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(KeyId::fromString(KeyId::PREFIX.'fedcba9876543210')));
     }
 }

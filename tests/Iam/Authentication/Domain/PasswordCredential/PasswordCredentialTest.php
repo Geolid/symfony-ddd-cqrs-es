@@ -36,7 +36,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id,
                 $identityId,
                 Login::fromString('ada.lovelace'),
-                Password::fromString('Xk9$mQ2vLp7&zR4w'),
+                Password::fromString('original-password'),
                 new StubPasswordPolicy(),
                 $hasher,
                 $definedAt,
@@ -45,7 +45,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 $definedAt->format(\DateTimeInterface::ATOM),
             ));
     }
@@ -61,7 +61,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 PasswordCredentialId::forIdentity($identityId),
                 $identityId,
                 Login::fromString('ada.lovelace'),
-                Password::fromString('Xk9$mQ2vLp7&zR4w'),
+                Password::fromString('original-password'),
                 new StubPasswordPolicy(strongEnough: false),
                 new StubPasswordHasher(),
                 new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
@@ -80,7 +80,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 PasswordCredentialId::forIdentity($identityId),
                 $identityId,
                 Login::fromString('ada.lovelace'),
-                Password::fromString('Xk9$mQ2vLp7&zR4w'),
+                Password::fromString('original-password'),
                 new StubPasswordPolicy(compromised: true),
                 new StubPasswordHasher(),
                 new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
@@ -101,18 +101,18 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 '2026-01-01T00:00:00+00:00',
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('Qm3&nJ8wXv5Tz1p!'),
+                Password::fromString('updated-password'),
                 new StubPasswordPolicy(),
                 $hasher,
                 $changedAt,
             ))
             ->then(new PasswordCredentialChanged(
                 $id->toString(),
-                $hasher->hash('Qm3&nJ8wXv5Tz1p!'),
+                $hasher->hash('updated-password'),
                 $changedAt->format(\DateTimeInterface::ATOM),
             ));
     }
@@ -129,11 +129,11 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 '2026-01-01T00:00:00+00:00',
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('Qm3&nJ8wXv5Tz1p!'),
+                Password::fromString('updated-password'),
                 new StubPasswordPolicy(strongEnough: false),
                 $hasher,
                 new \DateTimeImmutable('2026-01-02T00:00:00+00:00'),
@@ -153,11 +153,11 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 '2026-01-01T00:00:00+00:00',
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('Qm3&nJ8wXv5Tz1p!'),
+                Password::fromString('updated-password'),
                 new StubPasswordPolicy(compromised: true),
                 $hasher,
                 new \DateTimeImmutable('2026-01-02T00:00:00+00:00'),
@@ -177,11 +177,11 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 '2026-01-01T00:00:00+00:00',
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('Xk9$mQ2vLp7&zR4w'),
+                Password::fromString('original-password'),
                 new StubPasswordPolicy(),
                 $hasher,
                 new \DateTimeImmutable('2026-01-02T00:00:00+00:00'),
@@ -202,17 +202,17 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 '2026-01-01T00:00:00+00:00',
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->rehash(
-                'Xk9$mQ2vLp7&zR4w',
+                'original-password',
                 $hasher,
                 $rehashedAt,
             ))
             ->then(new PasswordCredentialRehashed(
                 $id->toString(),
-                $hasher->hash('Xk9$mQ2vLp7&zR4w'),
+                $hasher->hash('original-password'),
                 $rehashedAt->format(\DateTimeInterface::ATOM),
             ));
     }

@@ -22,18 +22,6 @@ final class PasswordTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
-    {
-        // When
-        $a = Password::fromString('Xk9$mQ2vLp7&zR4w');
-        $b = Password::fromString('Xk9$mQ2vLp7&zR4w');
-
-        // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(Password::fromString('AnotherHorse456!')));
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -51,5 +39,17 @@ final class PasswordTest extends TestCase
     {
         yield 'too short' => ['tooshort1!'];
         yield 'too long' => [str_repeat('a', 4_097)];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // When
+        $a = Password::fromString('Xk9$mQ2vLp7&zR4w');
+        $b = Password::fromString('Xk9$mQ2vLp7&zR4w');
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(Password::fromString('AnotherHorse456!')));
     }
 }

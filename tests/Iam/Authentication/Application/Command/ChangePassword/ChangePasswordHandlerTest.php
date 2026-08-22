@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\ChangePassword;
 
 use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
@@ -16,7 +14,6 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
@@ -41,32 +38,6 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-
-        // Then
-        $this->expectException(AuthenticatableIdentityResultNotFoundException::class);
-
-        // When
-        $this->dispatch(new ChangePassword($identityId, 'Qm3&nJ8wXv5Tz1p!'));
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
-
-        // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
-    }
-
-    #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
@@ -80,7 +51,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenPasswordWeak(): void
+    public function itFailsWhenWeakPassword(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
@@ -98,7 +69,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenPasswordSame(): void
+    public function itFailsWhenSamePassword(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();

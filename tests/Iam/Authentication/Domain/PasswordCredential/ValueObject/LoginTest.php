@@ -22,6 +22,27 @@ final class LoginTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('provideInvalidValues')]
+    public function itProtectsInvariants(string $value): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Login::fromString($value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideInvalidValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
+        yield 'too long' => [str_repeat('a', 51)];
+    }
+
+    #[Test]
     public function itNormalizes(): void
     {
         // When
@@ -41,26 +62,5 @@ final class LoginTest extends TestCase
         // Then
         self::assertTrue($a->equals($b));
         self::assertFalse($a->equals(Login::fromString('grace.hopper')));
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidValues')]
-    public function itProtectsInvariants(string $value): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        Login::fromString($value);
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function provideInvalidValues(): iterable
-    {
-        yield 'empty string' => [''];
-        yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_repeat('a', 51)];
     }
 }

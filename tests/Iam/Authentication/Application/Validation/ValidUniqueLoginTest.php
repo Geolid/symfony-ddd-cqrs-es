@@ -25,6 +25,7 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 
     protected function setUp(): void
     {
+        // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
         $this->registry = new FakeUniqueValueRegistry();
 
         parent::setUp();

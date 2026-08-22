@@ -23,7 +23,7 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedIdentity(): void
+    public function itSavesAndLoads(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
@@ -34,11 +34,11 @@ final class IdentityRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $identity->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedIdentity(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = IdentityId::generate();

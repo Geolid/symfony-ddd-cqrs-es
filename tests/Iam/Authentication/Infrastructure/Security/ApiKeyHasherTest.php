@@ -16,8 +16,11 @@ final class ApiKeyHasherTest extends TestCase
         // Given
         $hasher = new ApiKeyHasher();
 
-        // When / Then
-        self::assertSame($hasher->hash('a-secret-value'), $hasher->hash('a-secret-value'));
+        // When
+        $hash = $hasher->hash('a-secret-value');
+
+        // Then
+        self::assertSame($hash, $hasher->hash('a-secret-value'));
     }
 
     #[Test]

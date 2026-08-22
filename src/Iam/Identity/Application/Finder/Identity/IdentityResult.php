@@ -12,7 +12,10 @@ final readonly class IdentityResult implements ResultInterface
     public function __construct(
         public string $id,
         public IdentityStatus $status,
+        public ?string $reason,
         public \DateTimeImmutable $registeredAt,
+        public ?\DateTimeImmutable $suspendedAt,
+        public ?\DateTimeImmutable $reactivatedAt,
     ) {
     }
 }

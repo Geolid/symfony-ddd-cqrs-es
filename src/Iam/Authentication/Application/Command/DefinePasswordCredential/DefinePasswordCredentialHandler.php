@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
-use Iam\Authentication\Application\Finder\AuthenticatableIdentity\AuthenticatableIdentityFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
@@ -29,7 +26,6 @@ use Shared\Domain\ValueObject\UniqueKey;
 final readonly class DefinePasswordCredentialHandler
 {
     public function __construct(
-        private AuthenticatableIdentityFinderInterface $authenticatableIdentityFinder,
         private PasswordCredentialRepositoryInterface $repository,
         private UniqueValueRegistryInterface $uniqueValues,
         private PasswordPolicyInterface $policy,
@@ -39,8 +35,6 @@ final readonly class DefinePasswordCredentialHandler
     }
 
     /**
-     * @throws AuthenticatableIdentityResultNotFoundException
-     * @throws IdentityNotAuthenticatableException
      * @throws LoginAlreadyTakenException
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
@@ -48,10 +42,6 @@ final readonly class DefinePasswordCredentialHandler
      */
     public function __invoke(DefinePasswordCredential $command): void
     {
-        if (!$this->authenticatableIdentityFinder->ofIdentityId($command->identityId)->authenticatable) {
-            throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
-        }
-
         $id = PasswordCredentialId::forIdentity($command->identityId);
         $login = Login::fromString($command->login);
 

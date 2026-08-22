@@ -6,9 +6,9 @@ namespace Iam\Tests\Authentication\Infrastructure\Persistence\EventStore\Reposit
 
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -30,8 +30,8 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $credential = PasswordCredentialTestFactory::new()
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
+            ->withPolicy(new StubPasswordPolicy())
+            ->withHasher(new StubPasswordHasher())
             ->create();
 
         // When
@@ -40,7 +40,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $credential->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
     }
 
     #[Test]

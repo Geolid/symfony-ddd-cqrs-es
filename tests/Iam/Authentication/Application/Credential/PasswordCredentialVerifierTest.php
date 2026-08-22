@@ -8,73 +8,75 @@ use Iam\Authentication\Application\Credential\PasswordCredentialVerifier;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialResult;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Identity\Domain\ValueObject\Reason;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Support\AbstractIntegrationTestCase;
 
-final class PasswordCredentialVerifierTest extends TestCase
+final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
+    private PasswordHasherInterface $hasher;
+    private PasswordPolicyInterface $policy;
+    private PasswordCredentialVerifier $verifier;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->hasher = $this->service(PasswordHasherInterface::class);
+        $this->policy = $this->service(PasswordPolicyInterface::class);
+        $this->verifier = new PasswordCredentialVerifier($this->service(PasswordCredentialFinderInterface::class), $this->hasher);
+    }
+
     #[Test]
     public function itVerifies(): void
     {
         // Given
-        $hasher = new StubPasswordHasher();
-        $identityId = Uuid::uuid7()->toString();
-        $result = new PasswordCredentialResult(
-            id: Uuid::uuid7()->toString(),
-            identityId: $identityId,
-            login: 'ada.lovelace',
-            passwordHash: $hasher->hash('Xk9$mQ2vLp7&zR4w'),
-            identityAuthenticatable: true,
-        );
-        $finder = $this->createStub(PasswordCredentialFinderInterface::class);
-        $finder->method('ofIdentityId')->willReturn($result);
-        $verifier = new PasswordCredentialVerifier($finder, $hasher);
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id->toString())
+            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPolicy($this->policy)
+            ->withHasher($this->hasher)
+            ->store();
 
         // Then
-        self::assertTrue($verifier->verify($identityId, 'Xk9$mQ2vLp7&zR4w'));
-        self::assertFalse($verifier->verify($identityId, 'WrongPassword456!'));
+        self::assertTrue($this->verifier->verify($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        self::assertFalse($this->verifier->verify($identity->id->toString(), 'WrongPassword456!'));
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-        $finder = $this->createStub(PasswordCredentialFinderInterface::class);
-        $finder->method('ofIdentityId')->willThrowException(PasswordCredentialResultNotFoundException::forIdentity($identityId));
-        $verifier = new PasswordCredentialVerifier($finder, new StubPasswordHasher());
-
         // Then
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $verifier->verify($identityId, 'Xk9$mQ2vLp7&zR4w');
+        $this->verifier->verify(Uuid::uuid7()->toString(), 'Xk9$mQ2vLp7&zR4w');
     }
 
     #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $hasher = new StubPasswordHasher();
-        $identityId = Uuid::uuid7()->toString();
-        $result = new PasswordCredentialResult(
-            id: Uuid::uuid7()->toString(),
-            identityId: $identityId,
-            login: 'ada.lovelace',
-            passwordHash: $hasher->hash('Xk9$mQ2vLp7&zR4w'),
-            identityAuthenticatable: false,
-        );
-        $finder = $this->createStub(PasswordCredentialFinderInterface::class);
-        $finder->method('ofIdentityId')->willReturn($result);
-        $verifier = new PasswordCredentialVerifier($finder, $hasher);
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id->toString())
+            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPolicy($this->policy)
+            ->withHasher($this->hasher)
+            ->store();
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $verifier->verify($identityId, 'Xk9$mQ2vLp7&zR4w');
+        $this->verifier->verify($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w');
     }
 }

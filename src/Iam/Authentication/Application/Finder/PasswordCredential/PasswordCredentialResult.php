@@ -13,6 +13,8 @@ final readonly class PasswordCredentialResult implements ResultInterface
         public string $identityId,
         public string $login,
         public string $passwordHash,
+        public \DateTimeImmutable $definedAt,
+        public \DateTimeImmutable $passwordChangedAt,
         public bool $identityAuthenticatable,
     ) {
     }

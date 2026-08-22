@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Infrastructure\Security;
+namespace Iam\Authentication\Application\Credential;
 
-use Iam\Authentication\Application\Credential\ApiKeyGeneratorInterface;
-use Iam\Authentication\Application\Credential\GeneratedApiKey;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 
-final class ApiKeyGenerator implements ApiKeyGeneratorInterface
+final class ApiKeyGenerator
 {
     public function generate(): GeneratedApiKey
     {

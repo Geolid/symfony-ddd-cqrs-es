@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
@@ -36,32 +34,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-
-        // Then
-        $this->expectException(AuthenticatableIdentityResultNotFoundException::class);
-
-        // When
-        $this->dispatch(new DefinePasswordCredential($identityId, 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
-
-        // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
-    }
-
-    #[Test]
     public function itFailsWhenLoginAlreadyTaken(): void
     {
         // Given
@@ -76,7 +48,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itFailsWhenPasswordWeak(): void
+    public function itFailsWhenWeakPassword(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();

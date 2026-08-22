@@ -11,7 +11,7 @@ final class LoginAlreadyTakenException extends \RuntimeException implements Appl
     public static function forLogin(string $login, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('The login "%s" is already in use.', $login),
+            message: \sprintf('Login "%s" is already in use.', $login),
             previous: $previous,
         );
     }

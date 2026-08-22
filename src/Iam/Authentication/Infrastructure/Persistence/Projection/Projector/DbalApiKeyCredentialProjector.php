@@ -31,6 +31,7 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
             'label' => $event->label,
             'key_id' => $event->keyId,
             'secret_hash' => $event->secretHash,
+            'issued_at' => new \DateTimeImmutable($event->issuedAt)->format('Y-m-d H:i:s'),
             'revoked' => false,
             'identity_authenticatable' => true,
         ], ['revoked' => Types::BOOLEAN, 'identity_authenticatable' => Types::BOOLEAN]);
@@ -39,7 +40,12 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
     #[Subscribe(ApiKeyCredentialRevoked::class)]
     public function onApiKeyCredentialRevoked(ApiKeyCredentialRevoked $event): void
     {
-        $this->connection->update(self::TABLE, ['revoked' => true], ['id' => $event->id], ['revoked' => Types::BOOLEAN]);
+        $this->connection->update(
+            self::TABLE,
+            ['revoked' => true, 'revoked_at' => new \DateTimeImmutable($event->revokedAt)->format('Y-m-d H:i:s')],
+            ['id' => $event->id],
+            ['revoked' => Types::BOOLEAN],
+        );
     }
 
     #[Subscribe(IdentitySuspendedIntegrationEvent::class)]
@@ -71,7 +77,9 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
         $table->addColumn('label', Types::STRING, ['length' => 255]);
         $table->addColumn('key_id', Types::STRING, ['length' => 20]);
         $table->addColumn('secret_hash', Types::STRING, ['length' => 64]);
+        $table->addColumn('issued_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('revoked', Types::BOOLEAN);
+        $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

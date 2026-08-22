@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Credential;
 
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
-use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -15,15 +12,12 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 final readonly class ApiKeyIssuer implements ApiKeyIssuerInterface
 {
     public function __construct(
-        private ApiKeyGeneratorInterface $apiKeyGenerator,
+        private ApiKeyGenerator $apiKeyGenerator,
         private CommandBusInterface $commandBus,
     ) {
     }
 
     /**
-     * @throws AuthenticatableIdentityResultNotFoundException
-     * @throws IdentityNotAuthenticatableException
-     * @throws LabelAlreadyTakenException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */

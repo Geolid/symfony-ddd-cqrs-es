@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Application\Query\GetApiKeyCredentialByKeyId;
 
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId\GetApiKeyCredentialByKeyId;
+use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
-use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,12 +16,12 @@ use Support\AbstractIntegrationTestCase;
 final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsByKeyId(): void
+    public function itGets(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
         $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $hasher = new StubApiKeyHasher();
+        $hasher = $this->service(ApiKeyHasherInterface::class);
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLabel('CI pipeline')

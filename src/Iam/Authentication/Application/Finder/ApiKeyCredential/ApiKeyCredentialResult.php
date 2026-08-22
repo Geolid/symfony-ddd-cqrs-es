@@ -14,7 +14,9 @@ final readonly class ApiKeyCredentialResult implements ResultInterface
         public string $label,
         public string $keyId,
         public string $secretHash,
+        public \DateTimeImmutable $issuedAt,
         public bool $revoked,
+        public ?\DateTimeImmutable $revokedAt,
         public bool $identityAuthenticatable,
     ) {
     }

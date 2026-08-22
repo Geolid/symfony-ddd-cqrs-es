@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
-use Iam\Identity\Application\Exception\PasswordCredentialResultNotFoundException;
-use Iam\Identity\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
+use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
+use Iam\Authentication\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Exception\DisabledException;
@@ -32,15 +31,10 @@ final readonly class PasswordUserProvider implements UserProviderInterface
         try {
             $credential = $this->queryBus->ask(new GetPasswordCredentialByLogin($identifier));
         } catch (PasswordCredentialResultNotFoundException $e) {
-            throw new UserNotFoundException($e->getMessage(), 0, $e);
+            throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        return new PasswordUser(
-            $credential->identityId,
-            $credential->login,
-            $this->grantsFor($credential->identityId),
-            $credential->identityStatus,
-        );
+        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format('c'));
     }
 
     /**
@@ -52,33 +46,21 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new UnsupportedUserException(\sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
-        $refreshed = $this->loadUserByIdentifier($user->getUserIdentifier());
-
-        if (!$refreshed->identityStatus->isActive()) {
-            throw new DisabledException(\sprintf('Identity "%s" is not active.', $refreshed->identityId()));
+        try {
+            $credential = $this->queryBus->ask(new GetPasswordCredentialByLogin($user->getUserIdentifier()));
+        } catch (PasswordCredentialResultNotFoundException $e) {
+            throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        return $refreshed;
+        if (!$credential->identityAuthenticatable) {
+            throw new DisabledException(\sprintf('Identity "%s" is not authenticatable.', $credential->identityId));
+        }
+
+        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format('c'));
     }
 
     public function supportsClass(string $class): bool
     {
         return PasswordUser::class === $class;
-    }
-
-    /**
-     * @return list<string>
-     *
-     * @throws ApplicationExceptionInterface
-     */
-    private function grantsFor(string $identityId): array
-    {
-        $grants = [];
-
-        foreach ($this->queryBus->ask(new ListGrantsForIdentity($identityId)) as $grant) {
-            $grants[] = $grant->permission;
-        }
-
-        return $grants;
     }
 }

@@ -11,7 +11,7 @@ final class LabelAlreadyTakenException extends \RuntimeException implements Appl
     public static function forLabel(string $label, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('The label "%s" is already in use.', $label),
+            message: \sprintf('Label "%s" is already in use.', $label),
             previous: $previous,
         );
     }

@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\Persistence\Projection\Finder;
 
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -28,11 +28,12 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itGetsByLogin(): void
     {
         // Given
-        $hasher = $this->service(PasswordHasherInterface::class);
+        $hasher = new StubPasswordHasher();
         $credential = PasswordCredentialTestFactory::new()
             ->withLogin('ada.lovelace')
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPassword('original-password')
+            ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->withPolicy(new StubPasswordPolicy())
             ->withHasher($hasher)
             ->store();
 
@@ -42,27 +43,10 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame('ada.lovelace', $result->login);
-        self::assertTrue($hasher->verify($result->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertSame($hasher->hash('original-password'), $result->passwordHash);
+        self::assertSame('2026-01-01T00:00:00+00:00', $result->definedAt->format('c'));
+        self::assertSame('2026-01-01T00:00:00+00:00', $result->passwordChangedAt->format('c'));
         self::assertTrue($result->identityAuthenticatable);
-    }
-
-    #[Test]
-    public function itGetsByIdentityId(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identityId)
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->store();
-
-        // When
-        $result = $this->finder->ofIdentityId($identityId);
-
-        // Then
-        self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($identityId, $result->identityId);
     }
 
     #[Test]
@@ -73,6 +57,25 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
 
         // When
         $this->finder->ofLogin('unknown.login');
+    }
+
+    #[Test]
+    public function itGetsByIdentityId(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $credential = PasswordCredentialTestFactory::new()
+            ->withIdentityId($identityId)
+            ->withPolicy(new StubPasswordPolicy())
+            ->withHasher(new StubPasswordHasher())
+            ->store();
+
+        // When
+        $result = $this->finder->ofIdentityId($identityId);
+
+        // Then
+        self::assertSame($credential->id->toString(), $result->id);
+        self::assertSame($identityId, $result->identityId);
     }
 
     #[Test]

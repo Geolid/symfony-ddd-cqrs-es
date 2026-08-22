@@ -23,9 +23,13 @@ final class PasswordPolicyTest extends TestCase
         // Given
         $policy = new PasswordPolicy(Validation::createValidator());
 
+        // When
+        $strong = $policy->isStrongEnough(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $weak = $policy->isStrongEnough(Password::fromString(str_repeat('a', 12)));
+
         // Then
-        self::assertTrue($policy->isStrongEnough(Password::fromString('Xk9$mQ2vLp7&zR4w')));
-        self::assertFalse($policy->isStrongEnough(Password::fromString(str_repeat('a', 12))));
+        self::assertTrue($strong);
+        self::assertFalse($weak);
     }
 
     #[Test]
@@ -35,9 +39,13 @@ final class PasswordPolicyTest extends TestCase
         $compromised = new PasswordPolicy($this->validatorStubbingNotCompromised(violates: true));
         $safe = new PasswordPolicy($this->validatorStubbingNotCompromised(violates: false));
 
+        // When
+        $isCompromised = $compromised->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $isSafe = $safe->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+
         // Then
-        self::assertTrue($compromised->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w')));
-        self::assertFalse($safe->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w')));
+        self::assertTrue($isCompromised);
+        self::assertFalse($isSafe);
     }
 
     private function validatorStubbingNotCompromised(bool $violates): ValidatorInterface

@@ -7,6 +7,7 @@ namespace Iam\Tests\Authentication\Domain\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialIssued;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialRevoked;
+use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
@@ -22,7 +23,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         $id = ApiKeyCredentialId::generate();
         $identityId = Uuid::uuid7()->toString();
-        $keyId = KeyId::fromString(KeyId::PREFIX.bin2hex(random_bytes(8)));
+        $keyId = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
         $hasher = new StubApiKeyHasher();
         $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
@@ -51,39 +52,59 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     public function itRevokes(): void
     {
         $id = ApiKeyCredentialId::generate();
+        $identityId = Uuid::uuid7()->toString();
         $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+
+        $this
+            ->given(new ApiKeyCredentialIssued(
+                $id->toString(),
+                $identityId,
+                'CI pipeline',
+                KeyId::PREFIX.'0123456789abcdef',
+                'hashed:plain-secret',
+                '2026-01-01T00:00:00+00:00',
+            ))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt))
+            ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
+    {
+        $id = ApiKeyCredentialId::generate();
 
         $this
             ->given(new ApiKeyCredentialIssued(
                 $id->toString(),
                 Uuid::uuid7()->toString(),
                 'CI pipeline',
-                KeyId::PREFIX.bin2hex(random_bytes(8)),
+                KeyId::PREFIX.'0123456789abcdef',
                 'hashed:plain-secret',
                 '2026-01-01T00:00:00+00:00',
             ))
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($revokedAt))
-            ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
     }
 
     #[Test]
-    public function itDoesNotRevokeAlreadyRevoked(): void
+    public function itDoesNotRevokeWhenAlreadyRevoked(): void
     {
         $id = ApiKeyCredentialId::generate();
+        $identityId = Uuid::uuid7()->toString();
 
         $this
             ->given(
                 new ApiKeyCredentialIssued(
                     $id->toString(),
-                    Uuid::uuid7()->toString(),
+                    $identityId,
                     'CI pipeline',
-                    KeyId::PREFIX.bin2hex(random_bytes(8)),
+                    KeyId::PREFIX.'0123456789abcdef',
                     'hashed:plain-secret',
                     '2026-01-01T00:00:00+00:00',
                 ),
                 new ApiKeyCredentialRevoked($id->toString(), '2026-01-02T00:00:00+00:00'),
             )
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
     }
 

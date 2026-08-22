@@ -13,6 +13,7 @@ security:
         title: Connexion
         label_login: Identifiant
         label_password: Mot de passe
+        label_remember_me: Se souvenir de moi
         button_submit: Se connecter
 
 sales:

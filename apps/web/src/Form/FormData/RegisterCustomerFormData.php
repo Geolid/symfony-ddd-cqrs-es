@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Iam\Identity\Application\Validation\ValidLogin;
-use Iam\Identity\Application\Validation\ValidPassword;
-use Iam\Identity\Application\Validation\ValidUniqueLogin;
+use Iam\Authentication\Application\Validation\ValidLogin;
+use Iam\Authentication\Application\Validation\ValidPassword;
+use Iam\Authentication\Application\Validation\ValidUniqueLogin;
 use Sales\Customer\Application\Validation\ValidEmail;
 use Sales\Customer\Application\Validation\ValidUniqueCustomerEmail;
 

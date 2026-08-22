@@ -6,6 +6,7 @@ namespace Iam\Authentication\Domain\ApiKeyCredential;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialIssued;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialRevoked;
+use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
@@ -25,6 +26,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     #[Id]
     public private(set) ApiKeyCredentialId $id;
     public private(set) Label $label;
+    private string $identityId;
     private bool $revoked;
 
     public static function issue(
@@ -50,8 +52,15 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
         return $self;
     }
 
-    public function revoke(\DateTimeImmutable $revokedAt): void
+    /**
+     * @throws ApiKeyCredentialOwnedByAnotherIdentityException
+     */
+    public function revoke(string $identityId, \DateTimeImmutable $revokedAt): void
     {
+        if ($this->identityId !== $identityId) {
+            throw ApiKeyCredentialOwnedByAnotherIdentityException::forId($this->id);
+        }
+
         if ($this->revoked) {
             return;
         }
@@ -66,6 +75,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     private function applyIssued(ApiKeyCredentialIssued $event): void
     {
         $this->id = ApiKeyCredentialId::fromString($event->id);
+        $this->identityId = $event->identityId;
         $this->label = Label::fromString($event->label);
         $this->revoked = false;
     }

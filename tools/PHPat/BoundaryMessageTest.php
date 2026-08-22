@@ -11,6 +11,7 @@ use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Shared\Application\Command\ActingIdentityAware;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Event\IntegrationEventInterface;
 use Shared\Application\Query\QueryInterface;
@@ -32,8 +33,8 @@ final class BoundaryMessageTest
             ))
             ->canOnly()
             ->dependOn()
-            ->classes(Selector::classname(CommandInterface::class))
-            ->because('A Command carries native types only — it never returns, so it has no Result to carry; a VO or vendor type would couple both sides to internals.');
+            ->classes(Selector::classname(CommandInterface::class), Selector::classname(ActingIdentityAware::class))
+            ->because('A Command carries native types only — it never returns, so it has no Result to carry; a VO or vendor type would couple both sides to internals. ActingIdentityAware is a pure marker (no field of its own) naming which already-native field is the acting identity, so it stays allowed alongside CommandInterface.');
     }
 
     #[TestRule]

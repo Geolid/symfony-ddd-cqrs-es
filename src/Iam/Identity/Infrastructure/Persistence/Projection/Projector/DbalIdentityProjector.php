@@ -35,13 +35,29 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     #[Subscribe(IdentitySuspended::class)]
     public function onIdentitySuspended(IdentitySuspended $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityState::SUSPENDED->value], ['id' => $event->id]);
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => IdentityState::SUSPENDED->value,
+                'reason' => $event->reason,
+                'suspended_at' => new \DateTimeImmutable($event->suspendedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
     }
 
     #[Subscribe(IdentityReactivated::class)]
     public function onIdentityReactivated(IdentityReactivated $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityState::ACTIVE->value], ['id' => $event->id]);
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => IdentityState::ACTIVE->value,
+                'reason' => $event->reason,
+                'reactivated_at' => new \DateTimeImmutable($event->reactivatedAt)->format('Y-m-d H:i:s'),
+            ],
+            ['id' => $event->id],
+        );
     }
 
     #[Subscribe(IdentityErased::class)]
@@ -58,7 +74,10 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
-        $table->addColumn('registered_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('reason', Types::STRING, ['length' => 255, 'notnull' => false]);
+        $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('suspended_at', Types::DATETIME_MUTABLE, ['notnull' => false]);
+        $table->addColumn('reactivated_at', Types::DATETIME_MUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

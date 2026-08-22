@@ -35,7 +35,7 @@ final class ApiKeyCredentialRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $credential->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
     }
 
     #[Test]

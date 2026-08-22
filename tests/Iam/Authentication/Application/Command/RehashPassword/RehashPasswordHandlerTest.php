@@ -8,12 +8,13 @@ use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Infrastructure\Security\PasswordHasher;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
 final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
 {
@@ -25,9 +26,10 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy(new StubPasswordPolicy())
-            ->withHasher(new StubPasswordHasher())
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withHasher(new PasswordHasher(new NativePasswordHasher(cost: 4)))
             ->store();
+        self::getContainer()->set(PasswordHasherInterface::class, new PasswordHasher(new NativePasswordHasher(cost: 12)));
 
         // When
         $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
@@ -38,7 +40,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNoRehashNeeded(): void
+    public function itIgnoresWhenRehashNotNeeded(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
@@ -46,7 +48,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy(new StubPasswordPolicy())
+            ->withPolicy($this->service(PasswordPolicyInterface::class))
             ->withHasher($hasher)
             ->store();
         $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());

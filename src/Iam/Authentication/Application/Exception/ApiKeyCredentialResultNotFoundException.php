@@ -10,6 +10,6 @@ final class ApiKeyCredentialResultNotFoundException extends ResultNotFoundExcept
 {
     public static function forKeyId(string $keyId): self
     {
-        return new self(\sprintf('API key credential with key "%s" not found.', $keyId));
+        return new self(\sprintf('API key credential of key "%s" not found.', $keyId));
     }
 }

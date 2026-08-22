@@ -92,6 +92,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         ));
     }
 
+    // Raw string, not Password: re-validating an already-accepted secret could fail if invariants tightened since.
     public function rehash(#[\SensitiveParameter] string $plainPassword, PasswordHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
     {
         $this->recordThat(new PasswordCredentialRehashed(

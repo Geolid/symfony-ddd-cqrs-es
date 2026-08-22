@@ -36,6 +36,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
             ->withLabel('CI pipeline')
             ->withKeyId($keyId)
             ->withSecret('plain-secret')
+            ->withIssuedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->withHasher($hasher)
             ->store();
 
@@ -49,11 +50,13 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($keyId, $result->keyId);
         self::assertSame($hasher->hash('plain-secret'), $result->secretHash);
         self::assertFalse($result->revoked);
+        self::assertSame('2026-01-01T00:00:00+00:00', $result->issuedAt->format('c'));
+        self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);
     }
 
     #[Test]
-    public function itThrowsWhenNotFound(): void
+    public function itThrowsWhenKeyIdNotFound(): void
     {
         // Then
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);

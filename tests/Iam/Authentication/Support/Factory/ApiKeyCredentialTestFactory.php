@@ -53,9 +53,13 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
     }
 
-    public function revoked(\DateTimeImmutable $revokedAt = new \DateTimeImmutable('now +00:00')): self
+    public function revoked(?string $identityId = null, \DateTimeImmutable $revokedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (ApiKeyCredential $credential) => $credential->revoke($revokedAt));
+        $identityId ??= $this->attributes['identityId'] ?? Uuid::uuid7()->toString();
+        \assert(\is_string($identityId));
+
+        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]))
+            ->withModifier(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt));
     }
 
     protected function defaults(): array

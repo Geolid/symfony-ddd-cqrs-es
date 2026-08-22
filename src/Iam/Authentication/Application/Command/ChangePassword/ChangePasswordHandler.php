@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\ChangePassword;
 
-use Iam\Authentication\Application\Exception\AuthenticatableIdentityResultNotFoundException;
-use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
-use Iam\Authentication\Application\Finder\AuthenticatableIdentity\AuthenticatableIdentityFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
@@ -24,7 +21,6 @@ use Shared\Application\Command\AsCommandHandler;
 final readonly class ChangePasswordHandler
 {
     public function __construct(
-        private AuthenticatableIdentityFinderInterface $authenticatableIdentityFinder,
         private PasswordCredentialRepositoryInterface $repository,
         private PasswordPolicyInterface $policy,
         private PasswordHasherInterface $hasher,
@@ -33,8 +29,6 @@ final readonly class ChangePasswordHandler
     }
 
     /**
-     * @throws AuthenticatableIdentityResultNotFoundException
-     * @throws IdentityNotAuthenticatableException
      * @throws PasswordCredentialNotFoundException
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
@@ -43,10 +37,6 @@ final readonly class ChangePasswordHandler
      */
     public function __invoke(ChangePassword $command): void
     {
-        if (!$this->authenticatableIdentityFinder->ofIdentityId($command->identityId)->authenticatable) {
-            throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
-        }
-
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
         $credential->change(Password::fromString($command->password), $this->policy, $this->hasher, $this->clock->now());
 

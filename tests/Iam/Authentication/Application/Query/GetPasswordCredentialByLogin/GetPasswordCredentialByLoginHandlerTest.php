@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsByLogin(): void
+    public function itGets(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
