@@ -22,7 +22,7 @@ final class ValidValueObject extends Constraint
      */
     public function __construct(
         public readonly string $class,
-        public readonly string $method = 'fromString',
+        public readonly string $method,
         mixed $options = null,
         ?array $groups = null,
         mixed $payload = null,

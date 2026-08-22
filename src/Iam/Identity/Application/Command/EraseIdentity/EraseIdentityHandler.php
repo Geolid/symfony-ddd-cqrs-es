@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Command\EraseIdentity;
 
+use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -14,20 +15,20 @@ use Shared\Application\Command\AsCommandHandler;
 final readonly class EraseIdentityHandler
 {
     public function __construct(
-        private IdentityRepositoryInterface $identityRepository,
+        private IdentityRepositoryInterface $repository,
         private ClockInterface $clock,
     ) {
     }
 
     /**
      * @throws IdentityNotFoundException
+     * @throws IdentityAlreadyExistsException
      */
     public function __invoke(EraseIdentity $command): void
     {
-        $identityId = IdentityId::fromString($command->id);
-        $identity = $this->identityRepository->load($identityId);
+        $identity = $this->repository->load(IdentityId::fromString($command->id));
 
         $identity->erase($this->clock->now());
-        $this->identityRepository->save($identity);
+        $this->repository->save($identity);
     }
 }

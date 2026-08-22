@@ -33,7 +33,7 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'a scalar value' => ['acceptable', new ValidValueObject(StubValue::class)];
+        yield 'a scalar value' => ['acceptable', new ValidValueObject(StubValue::class, method: 'fromString')];
         yield 'an array spread into the constructor' => [['left', 'right'], new ValidValueObject(StubPair::class, method: 'of')];
     }
 
@@ -56,9 +56,9 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
      */
     public static function provideRefusals(): iterable
     {
-        yield 'a value the invariants reject' => ['refused', new ValidValueObject(StubValue::class), 'Refused by the value object.'];
-        yield 'a value of the wrong type' => ['mistyped', new ValidValueObject(StubValue::class), 'Expected a different type.'];
-        yield 'a value outside the accepted range' => ['out-of-range', new ValidValueObject(StubValue::class), 'Outside the accepted range.'];
+        yield 'a value the invariants reject' => ['refused', new ValidValueObject(StubValue::class, method: 'fromString'), 'Refused by the value object.'];
+        yield 'a value of the wrong type' => ['mistyped', new ValidValueObject(StubValue::class, method: 'fromString'), 'Expected a different type.'];
+        yield 'a value outside the accepted range' => ['out-of-range', new ValidValueObject(StubValue::class, method: 'fromString'), 'Outside the accepted range.'];
         yield 'a spread array value' => [['same', 'same'], new ValidValueObject(StubPair::class, method: 'of'), 'Refused a matching pair.'];
     }
 
@@ -67,7 +67,7 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     public function itLeavesAnEmptyValueToTheConstraintThatOwnsIt(mixed $value): void
     {
         // When
-        $this->validator->validate($value, new ValidValueObject(StubValue::class));
+        $this->validator->validate($value, new ValidValueObject(StubValue::class, method: 'fromString'));
 
         // Then
         $this->assertNoViolation();
@@ -87,7 +87,7 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     public function itCarriesTheGroupsAndPayloadItWasGiven(): void
     {
         // When
-        $constraint = new ValidValueObject(StubValue::class, groups: ['registration'], payload: 'severity');
+        $constraint = new ValidValueObject(StubValue::class, method: 'fromString', groups: ['registration'], payload: 'severity');
 
         // Then
         self::assertSame(['registration'], $constraint->groups);

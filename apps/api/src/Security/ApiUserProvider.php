@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Access\Application\Query\ListGrantsForIdentity\ListGrantsForIdentity;
-use Iam\Identity\Application\Exception\ApiTokenCredentialResultNotFoundException;
-use Iam\Identity\Application\Query\GetApiTokenCredentialByIdentifier\GetApiTokenCredentialByIdentifier;
+use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId\GetApiKeyCredentialByKeyId;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -29,20 +28,12 @@ final readonly class ApiUserProvider implements UserProviderInterface
     public function loadUserByIdentifier(string $identifier): ApiUser
     {
         try {
-            $credential = $this->queryBus->ask(new GetApiTokenCredentialByIdentifier($identifier));
-        } catch (ApiTokenCredentialResultNotFoundException $e) {
-            throw new UserNotFoundException($e->getMessage(), 0, $e);
+            $credential = $this->queryBus->ask(new GetApiKeyCredentialByKeyId($identifier));
+        } catch (ApiKeyCredentialResultNotFoundException $e) {
+            throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        return new ApiUser(
-            $credential->id,
-            $credential->identityId,
-            $credential->identifier,
-            $this->grantsFor($credential->identityId),
-            $credential->revoked,
-            $credential->expiresAt,
-            $credential->identityStatus,
-        );
+        return new ApiUser($credential->id, $credential->identityId, $credential->keyId);
     }
 
     public function refreshUser(UserInterface $user): ApiUser
@@ -58,21 +49,5 @@ final readonly class ApiUserProvider implements UserProviderInterface
     public function supportsClass(string $class): bool
     {
         return ApiUser::class === $class;
-    }
-
-    /**
-     * @return list<string>
-     *
-     * @throws ApplicationExceptionInterface
-     */
-    private function grantsFor(string $identityId): array
-    {
-        $grants = [];
-
-        foreach ($this->queryBus->ask(new ListGrantsForIdentity($identityId)) as $grant) {
-            $grants[] = $grant->permission;
-        }
-
-        return $grants;
     }
 }

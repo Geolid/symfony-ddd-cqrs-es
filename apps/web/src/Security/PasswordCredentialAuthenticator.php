@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Identity\Application\Credential\PasswordCredentialVerifierInterface;
+use Iam\Authentication\Application\Credential\PasswordCredentialVerifierInterface;
+use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
+use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +16,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -39,13 +42,18 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
                     \assert(\is_string($password));
                     \assert($user instanceof PasswordUser);
 
-                    return $this->verifier->verify($user->identityId(), $password);
+                    try {
+                        return $this->verifier->verify($user->identityId(), $password);
+                    } catch (PasswordCredentialResultNotFoundException|IdentityNotAuthenticatableException) {
+                        return false;
+                    }
                 },
                 $password,
             ),
             [
                 new CsrfTokenBadge('authenticate', (string) $request->request->get('_csrf_token')),
                 new PlainSecretBadge($password),
+                new RememberMeBadge(),
             ],
         );
     }

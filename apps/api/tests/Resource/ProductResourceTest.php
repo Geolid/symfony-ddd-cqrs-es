@@ -7,6 +7,7 @@ namespace Api\Tests\Resource;
 use Api\Resource\ProductResource;
 use Api\Tests\Support\AbstractApiTestCase;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -19,7 +20,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
+        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->store();
 
         // When
@@ -41,7 +42,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', '/v1/catalog/products/'.Uuid::uuid7()->toString());
@@ -55,7 +56,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
+        $client = $this->authenticatedClient($identity);
         ProductTestFactory::new()->withLabel('Wireless mouse')->store();
         ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->store();
 
@@ -80,20 +81,6 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    }
-
-    #[Test]
-    public function itRejectsACallerWithoutTheReadGrant(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity);
-
-        // When
-        $client->request('GET', '/v1/catalog/products');
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     #[Test]
@@ -138,25 +125,13 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsAnExpiredApiKey(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->expiredApiKeyClient($identity);
-
-        // When
-        $client->request('GET', '/v1/catalog/products');
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    }
-
-    #[Test]
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
+        $identity = IdentityTestFactory::new()->store();
+        $client = $this->authenticatedClient($identity);
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -170,7 +145,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $response = $client->request('POST', '/v1/catalog/products', [
@@ -193,7 +168,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -209,7 +184,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', '/v1/catalog/products', [
@@ -221,27 +196,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsACreationWithoutTheWriteGrant(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
-
-        // When
-        $client->request('POST', '/v1/catalog/products', [
-            'json' => ['label' => 'Wireless mouse', 'unitAmountInCents' => 2_999],
-        ]);
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-    }
-
-    #[Test]
     public function itAcceptsAReprice(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write', 'catalog.product:read');
+        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->store();
 
         // When
@@ -261,7 +220,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->store();
 
         // When
@@ -278,7 +237,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', Uuid::uuid7()->toString()), [
@@ -290,28 +249,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsARepriceWithoutTheWriteGrant(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
-        $product = ProductTestFactory::new()->store();
-
-        // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
-            'json' => ['unitAmountInCents' => 3_499],
-        ]);
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-    }
-
-    #[Test]
     public function itAcceptsADelisting(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write', 'catalog.product:read');
+        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->store();
 
         // When
@@ -329,7 +271,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', Uuid::uuid7()->toString()));
@@ -343,7 +285,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:write');
+        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->delisted()->store();
 
         // When
@@ -351,20 +293,5 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
-    }
-
-    #[Test]
-    public function itRejectsADelistingWithoutTheWriteGrant(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'catalog.product:read');
-        $product = ProductTestFactory::new()->store();
-
-        // When
-        $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 }

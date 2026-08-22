@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Cli\Console\Input\RegisterIdentityInput;
-use Iam\Access\Application\Command\GrantPermission\GrantPermission;
+use Iam\Authentication\Application\Credential\ApiKeyIssuerInterface;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Credential\ApiTokenIssuerInterface;
-use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -18,15 +16,14 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key and grants (chicken-and-egg admin setup)')]
+#[AsCommand(name: 'iam:identity:register', description: 'Bootstrap an Identity with an API key (chicken-and-egg admin setup)')]
 final class RegisterIdentityCommand
 {
     use LockableTrait;
 
     public function __construct(
         private readonly CommandBusInterface $commandBus,
-        private readonly ApiTokenIssuerInterface $apiTokenIssuer,
-        private readonly ClockInterface $clock,
+        private readonly ApiKeyIssuerInterface $apiKeyIssuer,
     ) {
     }
 
@@ -44,17 +41,12 @@ final class RegisterIdentityCommand
 
         try {
             $identityId = Uuid::uuid7()->toString();
-            $expiresAt = $this->clock->now()->modify(\sprintf('+%d days', $input->expiresInDays));
 
             $this->commandBus->dispatch(new RegisterIdentity($identityId));
 
-            $apiKey = $this->apiTokenIssuer->issueFor($identityId, $input->label, $expiresAt->format(\DateTimeInterface::ATOM));
+            $apiKey = $this->apiKeyIssuer->issueFor($identityId, $input->label);
 
-            foreach ($input->permission as $permission) {
-                $this->commandBus->dispatch(new GrantPermission($identityId, $permission));
-            }
-
-            $io->writeln(\sprintf('API key (shown once, store it securely): %s.%s', $apiKey->identifier, $apiKey->secret));
+            $io->writeln(\sprintf('API key (shown once, store it securely): %s.%s', $apiKey->keyId, $apiKey->secret));
             $io->success(\sprintf('Identity %s registered.', $identityId));
         } finally {
             $this->release();

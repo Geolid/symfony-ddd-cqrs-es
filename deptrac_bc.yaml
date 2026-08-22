@@ -24,9 +24,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Iam/Identity/.*' }
 
-    - name: Iam.Access
+    - name: Iam.Authentication
       collectors:
-        - { type: directory, value: 'src/Iam/Access/.*' }
+        - { type: directory, value: 'src/Iam/Authentication/.*' }
 
     - name: Catalog.Product
       collectors:
@@ -57,6 +57,6 @@ deptrac:
     Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
-    Iam.Access:          [ Iam.Identity, Shared, Vendors ]
+    Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Product:     [ Shared, Vendors ]
     Shared:              [ Vendors ]

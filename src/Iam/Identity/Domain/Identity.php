@@ -9,7 +9,6 @@ use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Domain\ValueObject\Reason;
@@ -63,7 +62,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws IdentityAlreadyErasedException
      */
-    public function reactivate(\DateTimeImmutable $reactivatedAt): void
+    public function reactivate(Reason $reason, \DateTimeImmutable $reactivatedAt): void
     {
         if ($this->state->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -75,18 +74,9 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentityReactivated(
             id: $this->id->toString(),
+            reason: $reason->value,
             reactivatedAt: $reactivatedAt->format(\DateTimeInterface::ATOM),
         ));
-    }
-
-    /**
-     * @throws IdentityNotActiveException
-     */
-    public function ensureActive(): void
-    {
-        if (!$this->state->isActive()) {
-            throw IdentityNotActiveException::forId($this->id);
-        }
     }
 
     public function erase(\DateTimeImmutable $erasedAt): void

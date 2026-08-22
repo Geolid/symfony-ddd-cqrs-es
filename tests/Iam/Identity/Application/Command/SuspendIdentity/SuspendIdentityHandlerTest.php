@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itSuspendsAnIdentity(): void
+    public function itSuspends(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
@@ -26,12 +26,11 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
-        self::assertNotNull($result);
         self::assertSame(IdentityStatus::SUSPENDED, $result->status);
     }
 
     #[Test]
-    public function itFailsWhenTheIdentityDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = IdentityId::generate()->toString();
@@ -44,7 +43,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadySuspendedIdentity(): void
+    public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->store();

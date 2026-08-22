@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 final class IdentityStatusTest extends TestCase
 {
     #[Test]
-    public function itIsActiveOnlyWhenActive(): void
+    public function itIsActive(): void
     {
         foreach (IdentityStatus::cases() as $status) {
             self::assertSame(IdentityStatus::ACTIVE === $status, $status->isActive(), $status->value);
