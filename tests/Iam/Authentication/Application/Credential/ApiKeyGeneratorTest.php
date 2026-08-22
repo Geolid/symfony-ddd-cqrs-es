@@ -27,7 +27,7 @@ final class ApiKeyGeneratorTest extends TestCase
 
         // Then
         KeyId::fromString($a->keyId);
-        self::assertNotSame('', $a->secret);
+        self::assertSame(64, \strlen($a->secret));
         self::assertNotSame($a->keyId, $b->keyId);
         self::assertNotSame($a->secret, $b->secret);
     }
