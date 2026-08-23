@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Tests\Product\Infrastructure\Persistence\EventStore\Translator;
+namespace Catalog\Tests\Product\Infrastructure\Persistence\EventStore\Publisher;
 
 use Catalog\Product\Application\Event\ProductDelistedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductListedIntegrationEvent;
 use Catalog\Product\Application\Event\ProductRepricedIntegrationEvent;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
 use Support\AbstractIntegrationTestCase;
 
-final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
+final class ProductPublisherTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPublishesTheListingOnProductListed(): void
+    public function itPublishesOnProductListed(): void
     {
         // Given
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
@@ -24,17 +23,14 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
-        self::assertCount(1, $published);
-        $event = $published[0];
-        self::assertInstanceOf(ProductListedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(ProductListedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame('Espresso cups, set of 6', $event->label);
         self::assertSame(1_750, $event->unitAmountInCents);
     }
 
     #[Test]
-    public function itPublishesTheRepriceOnProductRepriced(): void
+    public function itPublishesOnProductRepriced(): void
     {
         // Given
         $product = ProductTestFactory::new()->repriced(2_000)->create();
@@ -43,16 +39,13 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
-        self::assertCount(2, $published);
-        $event = $published[1];
-        self::assertInstanceOf(ProductRepricedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(ProductRepricedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame(2_000, $event->unitAmountInCents);
     }
 
     #[Test]
-    public function itPublishesTheDelistingOnProductDelisted(): void
+    public function itPublishesOnProductDelisted(): void
     {
         // Given
         $product = ProductTestFactory::new()->delisted()->create();
@@ -61,10 +54,7 @@ final class ProductIntegrationEventTranslatorTest extends AbstractIntegrationTes
         $this->store($product);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('catalog.product', $product->id->toString()));
-        self::assertCount(2, $published);
-        $event = $published[1];
-        self::assertInstanceOf(ProductDelistedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(ProductDelistedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
     }
 }

@@ -12,7 +12,7 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
+use Shared\Infrastructure\Persistence\EventStore\Publisher\Publisher;
 
 final class SubscriberTest
 {
@@ -41,7 +41,7 @@ final class SubscriberTest
             Selector::AnyOf(
                 Selector::appliesAttribute(Processor::class),
                 Selector::appliesAttribute(Subscriber::class),
-                Selector::appliesAttribute(Translator::class),
+                Selector::appliesAttribute(Publisher::class),
             ),
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),

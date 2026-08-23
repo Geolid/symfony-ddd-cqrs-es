@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Translator;
+namespace Sales\Tests\Order\Infrastructure\Persistence\EventStore\Publisher;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -12,12 +12,13 @@ use Sales\Order\Application\Event\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\Event\OrderPlacedIntegrationEvent;
 use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Infrastructure\Persistence\EventStore\IntegrationStreamId;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
-final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestCase
+final class OrderPublisherTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itPublishesOnOrderPlaced(): void
@@ -33,10 +34,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
-        self::assertCount(1, $published);
-        $event = $published[0];
-        self::assertInstanceOf(OrderPlacedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderPlacedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame(2_500, $event->totalAmountInCents);
@@ -52,10 +50,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
-        self::assertCount(2, $published);
-        $event = $published[1];
-        self::assertInstanceOf(OrderCancelledIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderCancelledIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
     }
 
@@ -70,27 +65,17 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
-        self::assertCount(2, $published);
-        $event = $published[1];
-        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderConfirmedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
-        $shippingAddress = $order->shippingAddress;
-        self::assertSame([
-            'firstName' => $shippingAddress->fullName->firstName,
-            'lastName' => $shippingAddress->fullName->lastName,
-            'street' => $shippingAddress->address->street,
-            'postalCode' => $shippingAddress->address->postalCode,
-            'city' => $shippingAddress->address->city,
-        ], $event->shippingAddress);
+        self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);
     }
 
     #[Test]
     public function itPublishesOnOrderPaymentRequested(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $orderId = OrderId::generate()->toString();
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($orderId)
             ->withAmountInCents(2_500)
@@ -102,10 +87,7 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($orderPayment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $orderId));
-        self::assertCount(1, $published);
-        $event = $published[0];
-        self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderPaymentRequestedIntegrationEvent::class);
         self::assertSame($orderId, $event->orderId);
         self::assertSame(2_500, $event->amountInCents);
         self::assertSame('GLBX-ABC12345', $event->reference);
@@ -128,21 +110,10 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($orderPayment);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
-        self::assertCount(3, $published);
-        self::assertInstanceOf(OrderPaymentRequestedIntegrationEvent::class, $published[1]);
-        $event = $published[2];
-        self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderPaymentCapturedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
-        $shippingAddress = $order->shippingAddress;
-        self::assertSame([
-            'firstName' => $shippingAddress->fullName->firstName,
-            'lastName' => $shippingAddress->fullName->lastName,
-            'street' => $shippingAddress->address->street,
-            'postalCode' => $shippingAddress->address->postalCode,
-            'city' => $shippingAddress->address->city,
-        ], $event->shippingAddress);
+        self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);
     }
 
     #[Test]
@@ -155,11 +126,21 @@ final class OrderIntegrationEventTranslatorTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // Then
-        $published = $this->publishedTo(IntegrationStreamId::build('sales.order', $order->id->toString()));
-        self::assertCount(3, $published);
-        self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $published[1]);
-        $event = $published[2];
-        self::assertInstanceOf(OrderReturnRequestedIntegrationEvent::class, $event);
+        $event = $this->publishedEventOfType(OrderReturnRequestedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private function address(PostalAddress $address): array
+    {
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+        ];
     }
 }

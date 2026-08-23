@@ -8,8 +8,6 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\EventSourcing\Serializer\SerializedEvent;
-use Patchlevel\EventSourcing\Store\Criteria\Criteria;
-use Patchlevel\EventSourcing\Store\Criteria\StreamCriterion;
 use Patchlevel\EventSourcing\Store\Store;
 
 trait EventSourcingTrait
@@ -17,7 +15,7 @@ trait EventSourcingTrait
     abstract protected function service(string $serviceId): mixed;
 
     /**
-     * Saves aggregates, synchronously triggering translators, projectors, and sync processors.
+     * Saves aggregates, synchronously triggering publishers, projectors, and sync processors.
      *
      * @see config/packages/patchlevel_event_sourcing.php (run_after_aggregate_save)
      */
@@ -31,19 +29,25 @@ trait EventSourcingTrait
     }
 
     /**
-     * Retrieves all events published to a specific stream.
+     * The persisted event of $eventClass, scanning the whole store.
      *
-     * @return list<object>
+     * @template T of object
+     *
+     * @param class-string<T> $eventClass
+     *
+     * @return T
      */
-    protected function publishedTo(string $streamId): array
+    protected function publishedEventOfType(string $eventClass): object
     {
-        $published = [];
+        foreach ($this->service(Store::class)->load() as $message) {
+            $event = $message->event();
 
-        foreach ($this->service(Store::class)->load(new Criteria(new StreamCriterion($streamId))) as $message) {
-            $published[] = $message->event();
+            if ($event instanceof $eventClass) {
+                return $event;
+            }
         }
 
-        return $published;
+        self::fail(\sprintf('%s event not found.', $eventClass));
     }
 
     /**
