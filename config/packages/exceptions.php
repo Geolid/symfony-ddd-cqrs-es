@@ -29,7 +29,6 @@ use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
-use Shared\Application\Exception\ActingIdentityNotActiveException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
@@ -80,7 +79,6 @@ return static function (ContainerConfigurator $container): void {
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
-            ActingIdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             UniqueValueAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 

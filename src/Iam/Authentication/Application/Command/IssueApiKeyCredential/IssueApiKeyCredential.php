@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
 
-use Shared\Application\Command\ActingIdentityAware;
 use Shared\Application\Command\CommandInterface;
 
-final readonly class IssueApiKeyCredential implements CommandInterface, ActingIdentityAware
+final readonly class IssueApiKeyCredential implements CommandInterface
 {
     public function __construct(
         public string $id,
@@ -17,10 +16,5 @@ final readonly class IssueApiKeyCredential implements CommandInterface, ActingId
         #[\SensitiveParameter]
         public string $secret,
     ) {
-    }
-
-    public function actingIdentityId(): string
-    {
-        return $this->identityId;
     }
 }

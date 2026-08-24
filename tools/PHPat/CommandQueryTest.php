@@ -9,7 +9,6 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Shared\Application\Command\ActingIdentityAware;
 use Shared\Application\Command\AsCommandHandler;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Query\AsQueryHandler;
@@ -28,7 +27,7 @@ final class CommandQueryTest
             ))
             ->canOnly()
             ->dependOn()
-            ->classes(Selector::classname(CommandInterface::class), Selector::classname(ActingIdentityAware::class))
+            ->classes(Selector::classname(CommandInterface::class))
             ->because('Whoever dispatches it must be able to build it without knowing any internal type it doesn\'t own.');
     }
 

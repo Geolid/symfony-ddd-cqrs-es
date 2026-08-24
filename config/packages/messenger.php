@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
-use Iam\Identity\Infrastructure\Security\ActingIdentityMessengerMiddleware;
 use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
@@ -15,8 +14,8 @@ return static function (ContainerConfigurator $container): void {
         'messenger' => [
             'default_bus' => 'command.bus',
             'buses' => [
-                'command.bus' => ['middleware' => [SentryMessengerMiddleware::class, ActingIdentityMessengerMiddleware::class, DbalTransactionMessengerMiddleware::class]],
-                'query.bus' => ['middleware' => [SentryMessengerMiddleware::class, ActingIdentityMessengerMiddleware::class]],
+                'command.bus' => ['middleware' => [SentryMessengerMiddleware::class, DbalTransactionMessengerMiddleware::class]],
+                'query.bus' => ['middleware' => [SentryMessengerMiddleware::class]],
             ],
             'failure_transport' => 'failed',
             'transports' => [

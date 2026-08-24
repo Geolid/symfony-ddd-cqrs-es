@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 
-use Shared\Application\Command\ActingIdentityAware;
 use Shared\Application\Command\CommandInterface;
 
-final readonly class DefinePasswordCredential implements CommandInterface, ActingIdentityAware
+final readonly class DefinePasswordCredential implements CommandInterface
 {
     public function __construct(
         public string $identityId,
@@ -15,10 +14,5 @@ final readonly class DefinePasswordCredential implements CommandInterface, Actin
         #[\SensitiveParameter]
         public string $password,
     ) {
-    }
-
-    public function actingIdentityId(): string
-    {
-        return $this->identityId;
     }
 }
