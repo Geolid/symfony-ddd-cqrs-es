@@ -31,6 +31,6 @@ final class GatewayTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname(HttpClientInterface::class))
-            ->because('A vendor is reached through its scoped client (host/auth on the service, errors wrapped typed) — a raw HttpClientInterface elsewhere scatters both.');
+            ->because('Reaching a vendor from more than one place scatters its auth, host, and error handling inconsistently.');
     }
 }

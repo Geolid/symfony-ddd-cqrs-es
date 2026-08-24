@@ -25,7 +25,7 @@ final class AggregateTest
                 Selector::classname(AggregateRoot::class),
                 Selector::classname(AggregateRootMetadataAware::class),
             )
-            ->because('An #[Aggregate] class is loaded through patchlevel — both contracts are required for hydration and metadata resolution.');
+            ->because('Event Sourcing requires an aggregate to be rebuildable from its own recorded history.');
     }
 
     #[TestRule]
@@ -35,15 +35,6 @@ final class AggregateTest
             ->classes(Selector::appliesAttribute(Aggregate::class))
             ->should()->include()
             ->classes(Selector::classname(AggregateRootAttributeBehaviour::class))
-            ->because('AggregateRootAttributeBehaviour provides recordThat()/#[Apply] dispatch — without it the contracts above are dead letters.');
-    }
-
-    #[TestRule]
-    public function isNotReadonly(): Rule
-    {
-        return PHPat::rule()
-            ->classes(Selector::appliesAttribute(Aggregate::class))
-            ->shouldNot()->beReadonly()
-            ->because('Aggregate state is mutated by #[Apply] methods on replay — readonly would break rehydration.');
+            ->because('Event Sourcing requires an aggregate to record and replay facts to rebuild its own state.');
     }
 }

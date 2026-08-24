@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Finder\ApiKeyCredential;
 
-use Shared\Application\Result\ResultInterface;
-
-final readonly class ApiKeyCredentialResult implements ResultInterface
+final readonly class ApiKeyCredentialResult
 {
     public function __construct(
         public string $id,

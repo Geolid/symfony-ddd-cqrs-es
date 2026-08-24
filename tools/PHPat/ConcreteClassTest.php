@@ -30,6 +30,6 @@ final class ConcreteClassTest
                 Selector::isEnum(),
             )
             ->should()->beFinal()
-            ->because('Concrete classes are closed by default — an extension point is abstract on purpose.');
+            ->because('The Open/Closed Principle keeps concrete classes closed to modification to prevent unplanned subclassing.');
     }
 }

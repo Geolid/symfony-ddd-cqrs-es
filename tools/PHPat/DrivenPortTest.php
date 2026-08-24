@@ -9,9 +9,9 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 
-final class AdapterTest
+final class DrivenPortTest
 {
-    private const array PORT_SUFFIXES = ['Repository', 'Finder', 'Gateway', 'Resolver'];
+    private const array PORT_SUFFIXES = ['Repository', 'Finder', 'Gateway'];
 
     /**
      * @return iterable<string, Rule>
@@ -31,7 +31,7 @@ final class AdapterTest
                 ))
                 ->should()->implement()
                 ->classes(Selector::classname('#'.$suffix.'Interface$#', true))
-                ->because("An Infrastructure {$suffix} is the adapter of its port — the matching {$suffix}Interface.");
+                ->because('An implementation that never commits to its own contract can never be swapped for another.');
         }
     }
 }

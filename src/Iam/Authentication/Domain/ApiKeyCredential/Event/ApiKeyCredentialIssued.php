@@ -7,11 +7,10 @@ namespace Iam\Authentication\Domain\ApiKeyCredential\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
 #[Event('iam.authentication.api_key_credential.issued')]
-final readonly class ApiKeyCredentialIssued implements DomainEventInterface
+final readonly class ApiKeyCredentialIssued
 {
     public function __construct(
         public string $id,

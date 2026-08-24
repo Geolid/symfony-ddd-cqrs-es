@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Finder\OrderPayment;
 
 use Sales\Order\Application\Status\OrderPaymentStatus;
-use Shared\Application\Result\ResultInterface;
 
-final readonly class OrderPaymentResult implements ResultInterface
+final readonly class OrderPaymentResult
 {
     public function __construct(
         public string $id,

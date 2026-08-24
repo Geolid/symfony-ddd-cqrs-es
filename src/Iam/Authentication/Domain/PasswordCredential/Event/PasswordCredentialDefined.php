@@ -7,11 +7,10 @@ namespace Iam\Authentication\Domain\PasswordCredential\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
 #[Event('iam.authentication.password_credential.defined')]
-final readonly class PasswordCredentialDefined implements DomainEventInterface
+final readonly class PasswordCredentialDefined
 {
     public function __construct(
         public string $id,

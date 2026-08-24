@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Finder\PasswordCredential;
 
-use Shared\Application\Result\ResultInterface;
-
-final readonly class PasswordCredentialResult implements ResultInterface
+final readonly class PasswordCredentialResult
 {
     public function __construct(
         public string $id,

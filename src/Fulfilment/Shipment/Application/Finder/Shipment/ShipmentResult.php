@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
-use Shared\Application\Result\ResultInterface;
 
-final readonly class ShipmentResult implements ResultInterface
+final readonly class ShipmentResult
 {
     public function __construct(
         public string $id,

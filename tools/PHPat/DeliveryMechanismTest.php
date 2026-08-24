@@ -9,18 +9,17 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Port\AsDrivingPort;
-use Shared\Application\Port\DrivingPortOutcomeInterface;
 use Shared\Application\Query\QueryInterface;
-use Shared\Application\Result\ResultInterface;
 use Symfony\Component\Validator\Constraints\Compound;
 
 final class DeliveryMechanismTest
 {
     #[TestRule]
-    public function onlyDependsOnTheOpenHostService(): Rule
+    public function onlyDependsOnOwnBcExposedSurface(): Rule
     {
         return PHPat::rule()
             ->classes($this->deliveryMechanisms())
@@ -30,16 +29,16 @@ final class DeliveryMechanismTest
                 Selector::appliesAttribute(AsDrivingPort::class),
                 Selector::implements(CommandInterface::class),
                 Selector::implements(QueryInterface::class),
-                Selector::implements(ResultInterface::class),
+                Selector::AllOf(Selector::classname('#Result$#', true), Selector::withFilepath('#/Application/#', true)),
                 Selector::classname(ApplicationExceptionInterface::class),
                 Selector::implements(ApplicationExceptionInterface::class),
                 Selector::extends(\DomainException::class),
                 Selector::extends(Compound::class),
-                Selector::implements(DrivingPortOutcomeInterface::class),
                 Selector::AllOf(Selector::isEnum(), Selector::withFilepath('#/Application/Status/#', true)),
                 Selector::Not($this->projectCode()),
+                ...$this->drivingPortOutcomeSelectors(),
             )
-            ->because('A Delivery Mechanism touches only a BC Open Host Service: its #[AsDrivingPort] behaviours and their outcomes, its Command/Query/Result/Exception vocabulary, its validation compounds, its Application/Status <X>Status vocabulary, and \DomainException — a business failure bubbling from the aggregate that owns it, generic or concrete alike.');
+            ->because('Reaching past what a Bounded Context exposes lets its own rules be bypassed or duplicated outside it.');
     }
 
     #[TestRule]
@@ -55,7 +54,23 @@ final class DeliveryMechanismTest
                 Selector::inNamespace('Doctrine\Persistence'),
                 Selector::inNamespace('Patchlevel\EventSourcing'),
             )
-            ->because('A Delivery Mechanism never reaches storage — reads go through a Query, writes through a Command.');
+            ->because('Touching storage directly bypasses every guarantee the owning Bounded Context already provides over it.');
+    }
+
+    #[TestRule]
+    public function providersNeverDispatchCommands(): Rule
+    {
+        return PHPat::rule()
+            ->classes(Selector::AllOf(
+                Selector::withFilepath('#/State/#', true),
+                Selector::withFilepath('#Provider#', true),
+                Selector::Not(Selector::withFilepath('#/vendor/#', true)),
+                Selector::Not(Selector::withFilepath('#/tests/#', true)),
+            ))
+            ->shouldNot()
+            ->dependOn()
+            ->classes(Selector::classname(CommandBusInterface::class))
+            ->because('Command-Query Separation requires a read to stay side-effect-free.');
     }
 
     private function deliveryMechanisms(): SelectorInterface
@@ -72,5 +87,51 @@ final class DeliveryMechanismTest
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/apps/#', true)),
         );
+    }
+
+    /**
+     * @return list<SelectorInterface>
+     */
+    private function drivingPortOutcomeSelectors(): array
+    {
+        $root = \dirname(__DIR__, 2);
+        /** @var array<class-string, SelectorInterface> $selectors */
+        $selectors = [];
+
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root.'/src', \FilesystemIterator::SKIP_DOTS));
+
+        foreach ($files as $file) {
+            \assert($file instanceof \SplFileInfo);
+
+            if (!$file->isFile() || 'php' !== $file->getExtension()) {
+                continue;
+            }
+
+            $class = str_replace('/', '\\', substr($file->getPathname(), \strlen($root.'/src/'), -4));
+
+            if (!interface_exists($class) && !class_exists($class)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($class);
+
+            if ([] === $reflection->getAttributes(AsDrivingPort::class)) {
+                continue;
+            }
+
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                $returnType = $method->getReturnType();
+
+                if (!$returnType instanceof \ReflectionNamedType || $returnType->isBuiltin()) {
+                    continue;
+                }
+
+                $name = $returnType->getName();
+                \assert('' !== $name);
+                $selectors[$name] = Selector::AnyOf(Selector::classname($name), Selector::implements($name));
+            }
+        }
+
+        return array_values($selectors);
     }
 }

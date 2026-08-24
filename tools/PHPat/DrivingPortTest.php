@@ -10,7 +10,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Port\AsDrivingPort;
 
-final class AsDrivingPortTest
+final class DrivingPortTest
 {
     #[TestRule]
     public function marksOnlyInterfaces(): Rule
@@ -18,7 +18,7 @@ final class AsDrivingPortTest
         return PHPat::rule()
             ->classes(Selector::appliesAttribute(AsDrivingPort::class))
             ->should()->beInterface()
-            ->because('#[AsDrivingPort] declares a port — a contract, never an implementation.');
+            ->because('Marking an implementation instead of its contract exposes internals as if they were the stable surface.');
     }
 
     #[TestRule]
@@ -35,6 +35,6 @@ final class AsDrivingPortTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname(AsDrivingPort::class))
-            ->because('#[AsDrivingPort] is declared on Application ports only — marking Infrastructure or a DM would widen the exposition surface from the wrong side.');
+            ->because('Marking it from the wrong side widens what\'s exposed instead of narrowing it.');
     }
 }

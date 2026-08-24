@@ -7,11 +7,10 @@ namespace Iam\Identity\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
 #[Event('iam.identity.identity.suspended')]
-final readonly class IdentitySuspended implements DomainEventInterface
+final readonly class IdentitySuspended
 {
     public function __construct(
         #[DataSubjectId]

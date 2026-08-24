@@ -11,10 +11,11 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
+use Tools\PHPat\Helpers\BcDirs;
 
 final class BoundedContextTest
 {
-    private const array DELIVERY_VENDOR_NAMESPACES = [
+    private const array DELIVERY_MECHANISM_VENDOR_NAMESPACES = [
         'Symfony\Component\Console',
         'Symfony\Component\Form',
         'Symfony\Component\HttpFoundation',
@@ -25,7 +26,7 @@ final class BoundedContextTest
     ];
 
     #[TestRule]
-    public function neverDependsOnDeliveryVendors(): Rule
+    public function neverDependsOnDeliveryMechanismVendors(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
@@ -36,22 +37,19 @@ final class BoundedContextTest
             ->shouldNot()
             ->dependOn()
             ->classes(
-                ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_VENDOR_NAMESPACES),
+                ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_MECHANISM_VENDOR_NAMESPACES),
             )
-            ->because('Delivery belongs to a Delivery Mechanism, never to a BC — Infrastructure may use a framework vendor for glue (Twig, Mailer...) but never a delivery-only one.');
+            ->because('A Bounded Context coupled to its delivery mechanism loses its Hexagonal portability.');
     }
 
     /**
      * @return iterable<string, Rule>
      */
     #[TestRule]
-    public function onlyReachesAnotherBcThroughIntegrationEvents(): iterable
+    public function communicatesOnlyViaIntegrationEvents(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $bcDirs = [
-            ...glob($root.'/src/*/*', \GLOB_ONLYDIR) ?: [],
-        ];
-        $bcDirs = array_values(array_filter($bcDirs, static fn (string $dir): bool => 'Shared' !== basename(\dirname($dir))));
+        $bcDirs = BcDirs::all($root);
 
         foreach ($bcDirs as $bcDir) {
             $bcName = str_replace('/', '.', substr($bcDir, \strlen($root.'/src/')));
@@ -71,7 +69,7 @@ final class BoundedContextTest
                     )),
                     Selector::implements(IntegrationEventInterface::class),
                 )
-                ->because('A BC reaches another BC only through its Integration Events — Deptrac allows the pair, this rule says how.');
+                ->because('This is a Bounded Context\'s Open Host Service — a shared, uniform protocol for every consumer; a bespoke integration per consumer would mean an internal change ripples across each one.');
         }
     }
 }

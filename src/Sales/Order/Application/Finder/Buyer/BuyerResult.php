@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Buyer;
 
-use Shared\Application\Result\ResultInterface;
-
-final readonly class BuyerResult implements ResultInterface
+final readonly class BuyerResult
 {
     /**
      * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string}|null $shippingAddress

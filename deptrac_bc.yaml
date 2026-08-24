@@ -50,7 +50,7 @@ deptrac:
             - { type: directory, value: 'bin/.*' }
             - { type: directory, value: 'ui/.*' }
 
-  # Deptrac draws which BC pairs may see each other; PHPat seals how (DomainEventTest, BoundedContextTest.onlyReachesAnotherBcThroughIntegrationEvents).
+  # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
     Sales.Customer:      [ Iam.Identity, Shared, Vendors ]
     Sales.Order:         [ Sales.Customer, Catalog.Product, Fulfilment.Shipment, Shared, Vendors ]
