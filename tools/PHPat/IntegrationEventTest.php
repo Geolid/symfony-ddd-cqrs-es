@@ -9,7 +9,7 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Shared\Application\Event\IntegrationEventInterface;
+use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
 final class IntegrationEventTest
 {
@@ -35,8 +35,8 @@ final class IntegrationEventTest
     private function integrationEvents(): SelectorInterface
     {
         return Selector::AllOf(
-            Selector::withFilepath('#/Application/Event/#', true),
-            Selector::Not(Selector::withFilepath('#/src/Shared/Application/Event/#', true)),
+            Selector::classname('#IntegrationEvent$#', true),
+            Selector::withFilepath('#/Application/IntegrationEvent/#', true),
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),
             Selector::Not(Selector::isInterface()),

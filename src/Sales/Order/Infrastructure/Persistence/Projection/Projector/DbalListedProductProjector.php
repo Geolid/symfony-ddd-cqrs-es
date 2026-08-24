@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Persistence\Projection\Projector;
 
-use Catalog\Product\Application\Event\ProductDelistedIntegrationEvent;
-use Catalog\Product\Application\Event\ProductListedIntegrationEvent;
-use Catalog\Product\Application\Event\ProductRepricedIntegrationEvent;
+use Catalog\Product\Application\IntegrationEvent\ProductDelisted\ProductDelistedIntegrationEvent;
+use Catalog\Product\Application\IntegrationEvent\ProductListed\ProductListedIntegrationEvent;
+use Catalog\Product\Application\IntegrationEvent\ProductRepriced\ProductRepricedIntegrationEvent;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;

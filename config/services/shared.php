@@ -8,12 +8,12 @@ use Psr\Log\LogLevel;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
 use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Shared\Infrastructure\Messaging\MessengerCommandBus;
 use Shared\Infrastructure\Messaging\MessengerQueryBus;
 use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
-use Shared\Infrastructure\Persistence\EventStore\Publisher\IntegrationEventAppender;
-use Shared\Infrastructure\Persistence\EventStore\Publisher\IntegrationEventAppenderInterface;
+use Shared\Infrastructure\Persistence\EventStore\Appender\IntegrationEventAppender;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $container): void {
 
     $commandBusAlias = $services->alias(CommandBusInterface::class, MessengerCommandBus::class);
     $queryBusAlias = $services->alias(QueryBusInterface::class, MessengerQueryBus::class);
-    $services->alias(IntegrationEventAppenderInterface::class, IntegrationEventAppender::class);
+    $services->alias(IntegrationEventPublisherInterface::class, IntegrationEventAppender::class);
 
     if ('test' === $container->env()) {
         // Fetched by type from the container; must be public for that.

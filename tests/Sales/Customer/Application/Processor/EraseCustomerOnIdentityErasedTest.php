@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Customer\Application\Processor;
 
-use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
+use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;

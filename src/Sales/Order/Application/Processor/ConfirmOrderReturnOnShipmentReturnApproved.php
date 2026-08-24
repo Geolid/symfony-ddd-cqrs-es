@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Processor;
 
-use Fulfilment\Shipment\Application\Event\ShipmentReturnApprovedIntegrationEvent;
+use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnApproved\ShipmentReturnApprovedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\ConfirmOrderReturn\ConfirmOrderReturn;
 use Shared\Application\Command\CommandBusInterface;

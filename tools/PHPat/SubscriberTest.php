@@ -11,8 +11,8 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\EventStore\Publisher\Publisher;
 
 final class SubscriberTest
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Application\Processor;
 
-use Iam\Identity\Application\Event\IdentityErasedIntegrationEvent;
+use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;

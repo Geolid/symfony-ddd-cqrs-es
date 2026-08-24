@@ -13,7 +13,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Command\ActingIdentityAware;
 use Shared\Application\Command\CommandInterface;
-use Shared\Application\Event\IntegrationEventInterface;
+use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Application\Query\QueryInterface;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
