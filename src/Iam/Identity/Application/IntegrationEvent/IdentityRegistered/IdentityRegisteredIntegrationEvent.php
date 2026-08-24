@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentityRegistered;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('iam.identity.identity.integration.registered')]
+#[Event('integration.iam.identity.identity.registered')]
 final readonly class IdentityRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

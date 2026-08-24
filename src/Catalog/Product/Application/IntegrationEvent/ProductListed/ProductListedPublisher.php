@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('catalog.product.product_listed_publisher')]
+#[Publisher('catalog.product.publish_product_listed')]
 final readonly class ProductListedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

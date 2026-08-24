@@ -7,7 +7,7 @@ namespace Catalog\Product\Application\IntegrationEvent\ProductListed;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('catalog.product.integration.listed')]
+#[Event('integration.catalog.product.product.listed')]
 final readonly class ProductListedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

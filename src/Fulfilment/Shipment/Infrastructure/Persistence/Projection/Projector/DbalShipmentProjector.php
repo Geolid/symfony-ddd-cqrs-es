@@ -25,7 +25,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('fulfilment.shipment.shipments')]
+#[Projector('fulfilment.shipment.project_shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'fulfilment_shipment';

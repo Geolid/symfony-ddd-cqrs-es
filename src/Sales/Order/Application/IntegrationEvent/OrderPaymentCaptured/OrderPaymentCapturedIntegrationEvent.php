@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.order.integration.payment_captured')]
+#[Event('integration.sales.order.payment.captured')]
 final readonly class OrderPaymentCapturedIntegrationEvent implements IntegrationEventInterface
 {
     /**

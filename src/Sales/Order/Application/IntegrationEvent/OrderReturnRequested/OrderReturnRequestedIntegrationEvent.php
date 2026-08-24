@@ -7,7 +7,7 @@ namespace Sales\Order\Application\IntegrationEvent\OrderReturnRequested;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('sales.order.integration.return_requested')]
+#[Event('integration.sales.order.order.return_requested')]
 final readonly class OrderReturnRequestedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Application\IntegrationEvent\ShipmentCancelled;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('fulfilment.shipment.integration.cancelled')]
+#[Event('integration.fulfilment.shipment.shipment.cancelled')]
 final readonly class ShipmentCancelledIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

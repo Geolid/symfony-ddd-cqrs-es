@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('fulfilment.shipment.return_dispatched')]
+#[Event('fulfilment.shipment.shipment.return_dispatched')]
 final readonly class ShipmentReturnDispatched implements DomainEventInterface
 {
     public function __construct(

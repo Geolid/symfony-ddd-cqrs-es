@@ -7,7 +7,7 @@ namespace Sales\Order\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.delivered')]
+#[Event('sales.order.order.delivered')]
 final readonly class OrderDelivered implements DomainEventInterface
 {
     public function __construct(

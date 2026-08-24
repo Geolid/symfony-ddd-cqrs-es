@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.customer.integration.shipping_address_registered')]
+#[Event('integration.sales.customer.customer.shipping_address_registered')]
 final readonly class CustomerShippingAddressRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     /**

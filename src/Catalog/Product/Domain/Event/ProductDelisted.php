@@ -7,7 +7,7 @@ namespace Catalog\Product\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('catalog.product.delisted')]
+#[Event('catalog.product.product.delisted')]
 final readonly class ProductDelisted implements DomainEventInterface
 {
     public function __construct(

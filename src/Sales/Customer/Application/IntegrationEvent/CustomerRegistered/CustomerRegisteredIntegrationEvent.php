@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.customer.integration.registered')]
+#[Event('integration.sales.customer.customer.registered')]
 final readonly class CustomerRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

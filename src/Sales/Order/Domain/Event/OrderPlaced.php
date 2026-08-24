@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.order.placed')]
+#[Event('sales.order.order.placed')]
 final readonly class OrderPlaced implements DomainEventInterface
 {
     /**

@@ -10,7 +10,7 @@ use Sales\Customer\Domain\Event\CustomerErased;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('sales.customer.customer_erased_publisher')]
+#[Publisher('sales.customer.publish_customer_erased')]
 final readonly class CustomerErasedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

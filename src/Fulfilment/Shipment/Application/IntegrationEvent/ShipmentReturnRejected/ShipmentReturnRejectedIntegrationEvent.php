@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnRejecte
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('fulfilment.shipment.integration.return_rejected')]
+#[Event('integration.fulfilment.shipment.shipment.return_rejected')]
 final readonly class ShipmentReturnRejectedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

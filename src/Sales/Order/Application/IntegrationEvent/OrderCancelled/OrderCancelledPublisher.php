@@ -10,7 +10,7 @@ use Sales\Order\Domain\Order;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('sales.order.order_cancelled_publisher')]
+#[Publisher('sales.order.publish_order_cancelled')]
 final readonly class OrderCancelledPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

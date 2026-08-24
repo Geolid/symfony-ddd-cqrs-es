@@ -14,7 +14,7 @@ use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[Publisher('sales.order.order_confirmed_publisher')]
+#[Publisher('sales.order.publish_order_confirmed')]
 final readonly class OrderConfirmedPublisher
 {
     public function __construct(

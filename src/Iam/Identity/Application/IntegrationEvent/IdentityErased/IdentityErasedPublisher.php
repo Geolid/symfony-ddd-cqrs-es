@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('iam.identity.identity_erased_publisher')]
+#[Publisher('iam.identity.publish_identity_erased')]
 final readonly class IdentityErasedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

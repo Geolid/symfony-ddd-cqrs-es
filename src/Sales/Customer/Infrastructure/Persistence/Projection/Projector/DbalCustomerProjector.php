@@ -14,7 +14,7 @@ use Sales\Customer\Domain\Event\CustomerRegistered;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.customer.customers')]
+#[Projector('sales.customer.project_customers')]
 final readonly class DbalCustomerProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_customer';

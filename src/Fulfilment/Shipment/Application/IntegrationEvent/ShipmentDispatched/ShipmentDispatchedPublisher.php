@@ -13,7 +13,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('fulfilment.shipment.shipment_dispatched_publisher')]
+#[Publisher('fulfilment.shipment.publish_shipment_dispatched')]
 final readonly class ShipmentDispatchedPublisher
 {
     public function __construct(

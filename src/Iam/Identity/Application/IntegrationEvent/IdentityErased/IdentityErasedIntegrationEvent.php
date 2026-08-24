@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentityErased;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('iam.identity.identity.integration.erased')]
+#[Event('integration.iam.identity.identity.erased')]
 final readonly class IdentityErasedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

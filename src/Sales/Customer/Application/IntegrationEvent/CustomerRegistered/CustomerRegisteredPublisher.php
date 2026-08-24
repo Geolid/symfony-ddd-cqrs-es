@@ -10,7 +10,7 @@ use Sales\Customer\Domain\Event\CustomerRegistered;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('sales.customer.customer_registered_publisher')]
+#[Publisher('sales.customer.publish_customer_registered')]
 final readonly class CustomerRegisteredPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

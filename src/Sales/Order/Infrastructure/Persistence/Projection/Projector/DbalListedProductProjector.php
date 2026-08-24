@@ -15,7 +15,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.listed_products')]
+#[Projector('sales.order.project_listed_products')]
 final readonly class DbalListedProductProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_listed_products';

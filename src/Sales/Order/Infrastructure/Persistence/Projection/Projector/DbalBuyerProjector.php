@@ -16,7 +16,7 @@ use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistere
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.buyers')]
+#[Projector('sales.order.project_buyers')]
 final readonly class DbalBuyerProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_buyer';

@@ -8,7 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
-#[Event('sales.order.anonymized')]
+#[Event('sales.order.order.anonymized')]
 final readonly class OrderAnonymized implements DomainEventInterface, DataSubjectErasureInterface
 {
     public function __construct(

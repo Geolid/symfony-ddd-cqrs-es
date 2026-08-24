@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('fulfilment.shipment.manifested')]
+#[Event('fulfilment.shipment.shipment.manifested')]
 final readonly class ShipmentManifested implements DomainEventInterface
 {
     public function __construct(

@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('fulfilment.shipment.requested')]
+#[Event('fulfilment.shipment.shipment.requested')]
 final readonly class ShipmentRequested implements DomainEventInterface
 {
     /**

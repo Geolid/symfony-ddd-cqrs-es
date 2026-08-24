@@ -7,7 +7,7 @@ namespace Catalog\Product\Application\IntegrationEvent\ProductDelisted;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('catalog.product.integration.delisted')]
+#[Event('integration.catalog.product.product.delisted')]
 final readonly class ProductDelistedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

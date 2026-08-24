@@ -10,7 +10,7 @@ use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('sales.customer.customer_shipping_address_registered_publisher')]
+#[Publisher('sales.customer.publish_customer_shipping_address_registered')]
 final readonly class CustomerShippingAddressRegisteredPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

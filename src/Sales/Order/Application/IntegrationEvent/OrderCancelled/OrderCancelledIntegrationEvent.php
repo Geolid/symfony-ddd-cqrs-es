@@ -7,7 +7,7 @@ namespace Sales\Order\Application\IntegrationEvent\OrderCancelled;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('sales.order.integration.cancelled')]
+#[Event('integration.sales.order.order.cancelled')]
 final readonly class OrderCancelledIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

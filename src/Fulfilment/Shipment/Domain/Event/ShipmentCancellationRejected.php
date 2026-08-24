@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('fulfilment.shipment.cancellation_rejected')]
+#[Event('fulfilment.shipment.shipment.cancellation_rejected')]
 final readonly class ShipmentCancellationRejected implements DomainEventInterface
 {
     public function __construct(

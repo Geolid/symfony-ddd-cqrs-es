@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('iam.identity.identity_reactivated_publisher')]
+#[Publisher('iam.identity.publish_identity_reactivated')]
 final readonly class IdentityReactivatedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

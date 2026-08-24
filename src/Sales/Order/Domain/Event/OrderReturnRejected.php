@@ -7,7 +7,7 @@ namespace Sales\Order\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.return_rejected')]
+#[Event('sales.order.order.return_rejected')]
 final readonly class OrderReturnRejected implements DomainEventInterface
 {
     public function __construct(

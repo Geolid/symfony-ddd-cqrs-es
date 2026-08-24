@@ -14,7 +14,7 @@ use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[Publisher('sales.order.order_payment_captured_publisher')]
+#[Publisher('sales.order.publish_order_payment_captured')]
 final readonly class OrderPaymentCapturedPublisher
 {
     public function __construct(

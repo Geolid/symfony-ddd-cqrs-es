@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDispatched;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('fulfilment.shipment.integration.dispatched')]
+#[Event('integration.fulfilment.shipment.shipment.dispatched')]
 final readonly class ShipmentDispatchedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

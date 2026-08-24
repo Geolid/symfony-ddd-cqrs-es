@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.customer.billing_address_registered')]
+#[Event('sales.customer.customer.billing_address_registered')]
 final readonly class CustomerBillingAddressRegistered implements DomainEventInterface
 {
     /**

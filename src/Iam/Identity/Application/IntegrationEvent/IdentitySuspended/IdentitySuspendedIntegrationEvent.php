@@ -7,7 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentitySuspended;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('iam.identity.identity.integration.suspended')]
+#[Event('integration.iam.identity.identity.suspended')]
 final readonly class IdentitySuspendedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

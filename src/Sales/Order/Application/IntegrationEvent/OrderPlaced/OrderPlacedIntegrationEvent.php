@@ -7,7 +7,7 @@ namespace Sales\Order\Application\IntegrationEvent\OrderPlaced;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('sales.order.integration.placed')]
+#[Event('integration.sales.order.order.placed')]
 final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInterface
 {
     /**

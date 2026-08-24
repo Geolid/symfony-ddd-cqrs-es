@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.order.integration.confirmed')]
+#[Event('integration.sales.order.order.confirmed')]
 final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventInterface
 {
     /**

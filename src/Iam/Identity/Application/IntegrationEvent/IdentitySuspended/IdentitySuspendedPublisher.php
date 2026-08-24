@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('iam.identity.identity_suspended_publisher')]
+#[Publisher('iam.identity.publish_identity_suspended')]
 final readonly class IdentitySuspendedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

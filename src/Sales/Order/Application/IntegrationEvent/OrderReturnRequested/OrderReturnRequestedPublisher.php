@@ -10,7 +10,7 @@ use Sales\Order\Domain\Order;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('sales.order.order_return_requested_publisher')]
+#[Publisher('sales.order.publish_order_return_requested')]
 final readonly class OrderReturnRequestedPublisher
 {
     public function __construct(private IntegrationEventPublisherInterface $publisher)

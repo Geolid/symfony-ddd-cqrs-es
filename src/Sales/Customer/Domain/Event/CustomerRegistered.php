@@ -10,7 +10,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('sales.customer.registered')]
+#[Event('sales.customer.customer.registered')]
 final readonly class CustomerRegistered implements DomainEventInterface
 {
     public function __construct(

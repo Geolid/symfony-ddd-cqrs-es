@@ -15,7 +15,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('catalog.product.products')]
+#[Projector('catalog.product.project_products')]
 final readonly class DbalProductProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'catalog_product';

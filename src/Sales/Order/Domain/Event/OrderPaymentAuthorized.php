@@ -7,7 +7,7 @@ namespace Sales\Order\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.payment_authorized')]
+#[Event('sales.order.payment.authorized')]
 final readonly class OrderPaymentAuthorized implements DomainEventInterface
 {
     public function __construct(

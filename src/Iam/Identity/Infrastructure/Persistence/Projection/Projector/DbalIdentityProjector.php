@@ -17,7 +17,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('iam.identity.identities')]
+#[Projector('iam.identity.project_identities')]
 final readonly class DbalIdentityProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'iam_identity';

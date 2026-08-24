@@ -18,7 +18,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('iam.authentication.password_credentials')]
+#[Projector('iam.authentication.project_password_credentials')]
 final readonly class DbalPasswordCredentialProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'iam_authentication_password_credential';

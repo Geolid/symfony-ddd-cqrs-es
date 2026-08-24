@@ -7,7 +7,7 @@ namespace Catalog\Product\Application\IntegrationEvent\ProductRepriced;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('catalog.product.integration.repriced')]
+#[Event('integration.catalog.product.product.repriced')]
 final readonly class ProductRepricedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

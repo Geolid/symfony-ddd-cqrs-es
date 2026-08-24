@@ -7,7 +7,7 @@ namespace Sales\Order\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.payment_cancelled')]
+#[Event('sales.order.payment.cancelled')]
 final readonly class OrderPaymentCancelled implements DomainEventInterface
 {
     public function __construct(

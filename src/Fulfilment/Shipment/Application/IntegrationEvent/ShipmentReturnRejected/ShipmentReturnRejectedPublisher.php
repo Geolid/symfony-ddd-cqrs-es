@@ -13,7 +13,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
-#[Publisher('fulfilment.shipment.shipment_return_rejected_publisher')]
+#[Publisher('fulfilment.shipment.publish_shipment_return_rejected')]
 final readonly class ShipmentReturnRejectedPublisher
 {
     public function __construct(

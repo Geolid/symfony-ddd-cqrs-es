@@ -8,7 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
-#[Event('sales.customer.erased')]
+#[Event('sales.customer.customer.erased')]
 final readonly class CustomerErased implements DomainEventInterface, DataSubjectErasureInterface
 {
     public function __construct(

@@ -7,7 +7,7 @@ namespace Catalog\Product\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('catalog.product.repriced')]
+#[Event('catalog.product.product.repriced')]
 final readonly class ProductRepriced implements DomainEventInterface
 {
     public function __construct(
