@@ -16,7 +16,10 @@ final class SubdomainServiceLoader
         $services->load($subdomain.'\\', $base.'/**/Application/{Command,Query}/**/*Handler.php');
         $services->load($subdomain.'\\', $base.'/**/Application/IntegrationEvent/**/*Publisher.php');
         $services->load($subdomain.'\\', $base.'/**/Application/')
-            ->exclude($base.'/**/Application/{Command,Query,IntegrationEvent}/');
+            ->exclude([
+                $base.'/**/Application/{Command,Query,IntegrationEvent}/',
+                $base.'/**/Application/Finder/**/*Result.php',
+            ]);
         $services->load($subdomain.'\\', $base.'/**/Infrastructure/');
     }
 }
