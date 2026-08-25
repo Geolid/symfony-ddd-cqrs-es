@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\PasswordCredential;
+namespace Iam\Authentication\Application\Credential;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 

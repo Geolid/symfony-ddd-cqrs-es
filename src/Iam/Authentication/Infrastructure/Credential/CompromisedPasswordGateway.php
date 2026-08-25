@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Infrastructure\PasswordCredential;
+namespace Iam\Authentication\Infrastructure\Credential;
 
-use Iam\Authentication\Application\PasswordCredential\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Symfony\Component\Validator\Constraints\NotCompromisedPassword;
 use Symfony\Component\Validator\Validator\ValidatorInterface;

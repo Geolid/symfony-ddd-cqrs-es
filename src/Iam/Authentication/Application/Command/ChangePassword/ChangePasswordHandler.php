@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\ChangePassword;
 
+use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\PasswordCredential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
