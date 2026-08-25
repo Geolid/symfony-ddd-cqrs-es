@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Processor;
+namespace Shared\Application\Policy;
 
 use Patchlevel\EventSourcing\Attribute\Subscriber;
 use Patchlevel\EventSourcing\Subscription\RunMode;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class Processor extends Subscriber
+final class Policy extends Subscriber
 {
-    public const string GROUP = 'processor';
+    public const string GROUP = 'policy';
 
     public function __construct(string $id, string $group = self::GROUP, RunMode $runMode = RunMode::FromNow)
     {

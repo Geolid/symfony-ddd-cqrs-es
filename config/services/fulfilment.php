@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Fulfilment\Shipment\Application\Processor\ManifestShipmentOnShipmentPrepared;
-use Fulfilment\Shipment\Application\Processor\RequestShipmentOnOrderConfirmed;
+use Fulfilment\Shipment\Application\Policy\ManifestShipmentOnShipmentPrepared;
+use Fulfilment\Shipment\Application\Policy\RequestShipmentOnOrderConfirmed;
 use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThresholdHandler;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 

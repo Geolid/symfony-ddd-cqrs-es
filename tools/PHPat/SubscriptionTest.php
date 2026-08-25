@@ -11,6 +11,7 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\Publisher;
+use Shared\Application\Policy\Policy;
 use Shared\Application\Processor\Processor;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -34,6 +35,16 @@ final class SubscriptionTest
             ->shouldNot()->dependOn()
             ->classes(Selector::classname(OnFailed::class))
             ->because('A failure silently skipped lets state drift from the truth it was supposed to reflect, unnoticed.');
+    }
+
+    #[TestRule]
+    public function policiesApplyOwnAttribute(): Rule
+    {
+        return PHPat::rule()
+            ->classes($this->policies())
+            ->should()->applyAttribute()
+            ->classes(Selector::classname(Policy::class))
+            ->because('A side effect never wired up silently never runs.');
     }
 
     #[TestRule]
@@ -80,10 +91,23 @@ final class SubscriptionTest
     {
         return Selector::AllOf(
             Selector::AnyOf(
+                Selector::appliesAttribute(Policy::class),
                 Selector::appliesAttribute(Processor::class),
                 Selector::appliesAttribute(Projector::class),
                 Selector::appliesAttribute(Publisher::class),
             ),
+            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
+            Selector::Not(Selector::withFilepath('#/tests/#', true)),
+            Selector::Not(Selector::isAbstract()),
+            Selector::Not(Selector::isInterface()),
+        );
+    }
+
+    private function policies(): SelectorInterface
+    {
+        return Selector::AllOf(
+            Selector::withFilepath('#/Application/Policy/#', true),
+            Selector::Not(Selector::withFilepath('#/Shared/#', true)),
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),
             Selector::Not(Selector::isAbstract()),
