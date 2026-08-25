@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Query;
+namespace Shared\Application\Port;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class AsQueryHandler
+final class DrivingPort
 {
 }

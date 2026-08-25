@@ -14,12 +14,12 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class ManifestShipmentHandler
 {
     public function __construct(

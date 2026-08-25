@@ -13,13 +13,13 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class IssueApiKeyCredentialHandler
 {
     public function __construct(

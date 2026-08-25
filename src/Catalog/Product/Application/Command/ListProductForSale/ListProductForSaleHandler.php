@@ -10,14 +10,14 @@ use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class ListProductForSaleHandler
 {
     public function __construct(

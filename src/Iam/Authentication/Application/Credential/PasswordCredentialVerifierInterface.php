@@ -6,9 +6,9 @@ namespace Iam\Authentication\Application\Credential;
 
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 
-#[AsDrivingPort]
+#[DrivingPort]
 interface PasswordCredentialVerifierInterface
 {
     /**

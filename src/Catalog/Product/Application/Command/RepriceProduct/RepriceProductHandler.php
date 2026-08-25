@@ -8,10 +8,10 @@ use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 use Shared\Domain\ValueObject\Money;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class RepriceProductHandler
 {
     public function __construct(

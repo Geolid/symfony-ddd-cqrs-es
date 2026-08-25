@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Credential;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 
-#[AsDrivingPort]
+#[DrivingPort]
 interface ApiKeyIssuerInterface
 {
     /**

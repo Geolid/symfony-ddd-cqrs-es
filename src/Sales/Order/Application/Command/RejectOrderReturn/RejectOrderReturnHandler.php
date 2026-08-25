@@ -8,9 +8,9 @@ use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class RejectOrderReturnHandler
 {
     public function __construct(

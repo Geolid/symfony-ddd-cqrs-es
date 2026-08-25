@@ -8,10 +8,10 @@ use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\Status\OrderPaymentStatus;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
-#[AsQueryHandler]
+#[QueryHandler]
 final readonly class ListOrderPaymentsPastReconciliationThresholdHandler
 {
     public function __construct(

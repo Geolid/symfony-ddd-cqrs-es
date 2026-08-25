@@ -11,9 +11,9 @@ use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class SuspendIdentityHandler
 {
     public function __construct(

@@ -12,13 +12,13 @@ use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Order\Domain\ValueObject\PaymentReference;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class RequestOrderPaymentHandler
 {
     public function __construct(

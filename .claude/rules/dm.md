@@ -9,7 +9,7 @@ paths:
 ### Rules
 
 **ALWAYS**
-- HTTP/CLI input becomes a Command or Query and goes through the bus — a Delivery Mechanism calls an Application port directly only if that port is marked `#[AsDrivingPort]`.
+- HTTP/CLI input becomes a Command or Query and goes through the bus — a Delivery Mechanism calls an Application port directly only if that port is marked `#[DrivingPort]`.
 - Input mapped to a Command/Query field is validated through the BC's own compound constraint (`Application/Validation/Valid<Name>`); a param outside that model (a URI variable, a filter) gets an `Assert` guard before dispatch.
 - A closed vocabulary the DM has to name (a status, a type) is the BC's `Application/Status/<X>Status` enum, never the Domain `<X>State` enum — the Domain enum carries the aggregate's behaviour and `Domain/` is not part of a DM's exposition surface. Where the vocabulary isn't user input but the use case itself, the DM names no value at all: it dispatches a dedicated Query and the BC decides what the filter means.
 - A webhook payload is verified (HMAC signature, `hash_equals`) and shape-checked *before* any Command is dispatched from it. Prefer a tolerant reader for unknown event types (acknowledge, don't error) over rejecting the whole request. An aggregate ID derived from the external payload is a deterministic `uuid5` on a bound namespace — a retry must resolve to the same ID. A payload that addresses an *existing* aggregate carries the external system's own reference, never ours: the DM resolves it through a dedicated Query before dispatching. A DM parsing more than one webhook shape shares them through its own abstract base.

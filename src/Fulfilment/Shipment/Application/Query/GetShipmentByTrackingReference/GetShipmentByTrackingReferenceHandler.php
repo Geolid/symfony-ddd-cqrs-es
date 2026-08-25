@@ -7,9 +7,9 @@ namespace Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\QueryHandler;
 
-#[AsQueryHandler]
+#[QueryHandler]
 final readonly class GetShipmentByTrackingReferenceHandler
 {
     public function __construct(private ShipmentFinderInterface $shipmentFinder)

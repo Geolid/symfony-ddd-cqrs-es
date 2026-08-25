@@ -9,9 +9,9 @@ use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandHandler;
 
-#[AsCommandHandler]
+#[CommandHandler]
 final readonly class RegisterIdentityHandler
 {
     public function __construct(
