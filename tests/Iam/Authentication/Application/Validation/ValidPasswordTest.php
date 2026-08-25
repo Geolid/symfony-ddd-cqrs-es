@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Validation;
 
 use Iam\Authentication\Application\Validation\ValidPassword;
+use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;
@@ -16,9 +16,6 @@ use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
-use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 
 /**
  * @extends CompoundConstraintTestCase<ValidPassword>
@@ -112,29 +109,5 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
     private static function passwordStrength(): PasswordStrength
     {
         return new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG);
-    }
-}
-
-final class StubFailingHttpClient implements HttpClientInterface
-{
-    /**
-     * @param array<string, mixed> $options
-     */
-    public function request(string $method, string $url, array $options = []): ResponseInterface
-    {
-        throw new TransportException('Simulated network failure.');
-    }
-
-    public function stream(ResponseInterface|iterable $responses, ?float $timeout = null): ResponseStreamInterface
-    {
-        throw new TransportException('Simulated network failure.');
-    }
-
-    /**
-     * @param array<string, mixed> $options
-     */
-    public function withOptions(array $options): static
-    {
-        return $this;
     }
 }

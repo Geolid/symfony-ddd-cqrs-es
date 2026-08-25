@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\PasswordCredential;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Infrastructure\PasswordCredential\CompromisedPasswordGateway;
+use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Constraint;
@@ -33,11 +34,33 @@ final class CompromisedPasswordGatewayTest extends TestCase
         self::assertFalse($isSafe);
     }
 
+    #[Test]
+    public function itSkipsWhenCheckFails(): void
+    {
+        // Given
+        $gateway = new CompromisedPasswordGateway($this->validatorWithFailingHttpClient());
+
+        // When
+        $isCompromised = $gateway->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+
+        // Then
+        self::assertFalse($isCompromised);
+    }
+
     private function validatorStubbingNotCompromised(bool $violates): ValidatorInterface
     {
         return Validation::createValidatorBuilder()
             ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
                 NotCompromisedPasswordValidator::class => new StubNotCompromisedPasswordValidator($violates),
+            ]))
+            ->getValidator();
+    }
+
+    private function validatorWithFailingHttpClient(): ValidatorInterface
+    {
+        return Validation::createValidatorBuilder()
+            ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
+                NotCompromisedPasswordValidator::class => new NotCompromisedPasswordValidator(new StubFailingHttpClient()),
             ]))
             ->getValidator();
     }
