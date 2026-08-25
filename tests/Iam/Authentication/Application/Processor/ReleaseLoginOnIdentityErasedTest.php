@@ -31,7 +31,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReleasesTheLoginOnIdentityErased(): void
+    public function itReleases(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();

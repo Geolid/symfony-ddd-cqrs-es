@@ -27,7 +27,7 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
     }
 
     #[Test]
-    public function itReleasesEveryLabelOnIdentityErased(): void
+    public function itReleases(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
