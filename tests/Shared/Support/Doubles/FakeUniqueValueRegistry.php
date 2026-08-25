@@ -13,7 +13,7 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
     /** @var array<string, string> */
     private array $reserved = [];
 
-    public function reserve(UniqueKey $key, string $value, string $ownerId, ?string $subjectId = null): void
+    public function reserve(UniqueKey $key, string $value, string $ownerId): void
     {
         if ($this->exists($key, $value)) {
             throw UniqueValueAlreadyTakenException::forValue($key, $value);
@@ -38,8 +38,15 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
         return $existingOwnerId !== $excludeOwnerId;
     }
 
-    public function releaseAllForSubject(string $subjectId): void
+    public function releaseAll(UniqueKey $key): void
     {
+        $prefix = $key->toString().':';
+
+        foreach (array_keys($this->reserved) as $normalized) {
+            if (str_starts_with($normalized, $prefix)) {
+                unset($this->reserved[$normalized]);
+            }
+        }
     }
 
     private function normalize(UniqueKey $key, string $value): string

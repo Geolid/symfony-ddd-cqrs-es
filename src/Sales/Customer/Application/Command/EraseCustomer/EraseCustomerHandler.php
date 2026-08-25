@@ -8,13 +8,17 @@ use Psr\Clock\ClockInterface;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Shared\Application\Command\AsCommandHandler;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
 
 #[AsCommandHandler]
 final readonly class EraseCustomerHandler
 {
     public function __construct(
         private CustomerRepositoryInterface $repository,
+        private UniqueValueRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
@@ -28,5 +32,7 @@ final readonly class EraseCustomerHandler
         $customer->erase($this->clock->now());
 
         $this->repository->save($customer);
+
+        $this->uniqueValues->release(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value, $customer->id->toString());
     }
 }
