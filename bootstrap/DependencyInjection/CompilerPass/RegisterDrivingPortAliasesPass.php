@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Bootstrap\DependencyInjection\CompilerPass;
 
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Symfony inlines/removes a private, singly-(or un-)referenced service at compile time — not
- * directly `get()`-able from a test afterward. Makes every #[AsDrivingPort] implementation public
+ * directly `get()`-able from a test afterward. Makes every #[DrivingPort] implementation public
  * + interface-aliased in test env so `$this->service(<Port>Interface::class)` just works.
  */
 final class RegisterDrivingPortAliasesPass implements CompilerPassInterface
@@ -29,7 +29,7 @@ final class RegisterDrivingPortAliasesPass implements CompilerPassInterface
             }
 
             foreach (class_implements($class) as $interface) {
-                if ([] === new \ReflectionClass($interface)->getAttributes(AsDrivingPort::class)) {
+                if ([] === new \ReflectionClass($interface)->getAttributes(DrivingPort::class)) {
                     continue;
                 }
 

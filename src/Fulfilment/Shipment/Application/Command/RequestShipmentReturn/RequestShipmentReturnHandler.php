@@ -9,9 +9,9 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandUseCase;
 
-#[AsCommandHandler]
+#[CommandUseCase]
 final readonly class RequestShipmentReturnHandler
 {
     public function __construct(

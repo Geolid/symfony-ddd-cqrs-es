@@ -8,9 +8,9 @@ use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandUseCase;
 
-#[AsCommandHandler]
+#[CommandUseCase]
 final readonly class DelistProductHandler
 {
     public function __construct(

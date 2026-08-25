@@ -11,12 +11,12 @@ use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Sales\Customer\Domain\ValueObject\Email;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[AsCommandHandler]
+#[CommandUseCase]
 final readonly class RegisterCustomerHandler
 {
     public function __construct(

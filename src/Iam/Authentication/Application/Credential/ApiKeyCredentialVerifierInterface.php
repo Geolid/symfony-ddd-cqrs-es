@@ -7,9 +7,9 @@ namespace Iam\Authentication\Application\Credential;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 
-#[AsDrivingPort]
+#[DrivingPort]
 interface ApiKeyCredentialVerifierInterface
 {
     /**

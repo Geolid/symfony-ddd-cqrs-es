@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Command;
+namespace Shared\Application\Port;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class AsCommandHandler
+final class DrivingPort
 {
 }

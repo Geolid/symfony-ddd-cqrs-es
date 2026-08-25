@@ -8,10 +8,10 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\QueryUseCase;
 use Shared\Application\Query\Result\StreamResult;
 
-#[AsQueryHandler]
+#[QueryUseCase]
 final readonly class ListShipmentsPastReconciliationThresholdHandler
 {
     public function __construct(

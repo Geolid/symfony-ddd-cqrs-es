@@ -6,11 +6,11 @@ namespace Iam\Identity\Application\Query\ListIdentities;
 
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Query\QueryUseCase;
 use Shared\Application\Query\Result\ListResult;
 
-#[AsQueryHandler]
+#[QueryUseCase]
 final readonly class ListIdentitiesHandler
 {
     public function __construct(private IdentityFinderInterface $identityFinder)

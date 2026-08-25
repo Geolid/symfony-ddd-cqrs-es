@@ -8,10 +8,10 @@ use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Domain\Service\RetentionWindow;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\QueryUseCase;
 use Shared\Application\Query\Result\StreamResult;
 
-#[AsQueryHandler]
+#[QueryUseCase]
 final readonly class ListOrdersPastRetentionPeriodHandler
 {
     public function __construct(

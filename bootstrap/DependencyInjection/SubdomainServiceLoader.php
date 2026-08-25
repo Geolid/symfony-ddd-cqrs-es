@@ -13,13 +13,13 @@ final class SubdomainServiceLoader
         $base = '%kernel.project_dir%/src/'.$subdomain;
 
         $services->load($subdomain.'\\', $base.'/**/Domain/**/{Repository,Service}/');
-        $services->load($subdomain.'\\', $base.'/**/Application/{Command,Query}/**/*Handler.php')
-            ->exclude([
-                $base.'/**/Application/Command/AsCommandHandler.php',
-                $base.'/**/Application/Query/AsQueryHandler.php',
-            ]);
+        $services->load($subdomain.'\\', $base.'/**/Application/{Command,Query}/**/*Handler.php');
+        $services->load($subdomain.'\\', $base.'/**/Application/IntegrationEvent/**/*Publisher.php');
         $services->load($subdomain.'\\', $base.'/**/Application/')
-            ->exclude($base.'/**/Application/{Command,Query,Event}/');
+            ->exclude([
+                $base.'/**/Application/{Command,Query,IntegrationEvent}/',
+                $base.'/**/Application/Finder/**/*Result.php',
+            ]);
         $services->load($subdomain.'\\', $base.'/**/Infrastructure/');
     }
 }

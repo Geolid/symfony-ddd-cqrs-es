@@ -8,12 +8,12 @@ use Psr\Clock\ClockInterface;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
-use Shared\Application\Command\AsCommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[AsCommandHandler]
+#[CommandUseCase]
 final readonly class RegisterCustomerBillingAddressHandler
 {
     public function __construct(

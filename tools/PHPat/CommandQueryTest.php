@@ -9,10 +9,10 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Shared\Application\Command\AsCommandHandler;
 use Shared\Application\Command\CommandInterface;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Application\Query\QueryInterface;
+use Shared\Application\Query\QueryUseCase;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 final class CommandQueryTest
@@ -71,8 +71,8 @@ final class CommandQueryTest
     {
         return PHPat::rule()
             ->classes(Selector::AnyOf(
-                Selector::appliesAttribute(AsCommandHandler::class),
-                Selector::appliesAttribute(AsQueryHandler::class),
+                Selector::appliesAttribute(CommandUseCase::class),
+                Selector::appliesAttribute(QueryUseCase::class),
             ))
             ->should()->beReadonly()
             ->because('A handler holds no state — a mutable one is a latent concurrency bug.');

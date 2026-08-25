@@ -12,7 +12,7 @@ use PHPat\Test\PHPat;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 use Shared\Application\Query\QueryInterface;
 use Symfony\Component\Validator\Constraints\Compound;
 
@@ -26,7 +26,7 @@ final class DeliveryMechanismTest
             ->canOnly()
             ->dependOn()
             ->classes(
-                Selector::appliesAttribute(AsDrivingPort::class),
+                Selector::appliesAttribute(DrivingPort::class),
                 Selector::implements(CommandInterface::class),
                 Selector::implements(QueryInterface::class),
                 Selector::AllOf(Selector::classname('#Result$#', true), Selector::withFilepath('#/Application/#', true)),
@@ -115,7 +115,7 @@ final class DeliveryMechanismTest
 
             $reflection = new \ReflectionClass($class);
 
-            if ([] === $reflection->getAttributes(AsDrivingPort::class)) {
+            if ([] === $reflection->getAttributes(DrivingPort::class)) {
                 continue;
             }
 

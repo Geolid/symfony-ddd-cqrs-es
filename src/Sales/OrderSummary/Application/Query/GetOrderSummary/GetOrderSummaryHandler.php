@@ -7,9 +7,9 @@ namespace Sales\OrderSummary\Application\Query\GetOrderSummary;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Shared\Application\Query\AsQueryHandler;
+use Shared\Application\Query\QueryUseCase;
 
-#[AsQueryHandler]
+#[QueryUseCase]
 final readonly class GetOrderSummaryHandler
 {
     public function __construct(private OrderSummaryFinderInterface $orderSummaryFinder)

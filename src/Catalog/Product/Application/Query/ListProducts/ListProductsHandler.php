@@ -6,11 +6,11 @@ namespace Catalog\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
-use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Query\QueryUseCase;
 use Shared\Application\Query\Result\ListResult;
 
-#[AsQueryHandler]
+#[QueryUseCase]
 final readonly class ListProductsHandler
 {
     public function __construct(private ProductFinderInterface $productFinder)

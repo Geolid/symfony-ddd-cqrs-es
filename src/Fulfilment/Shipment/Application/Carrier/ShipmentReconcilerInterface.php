@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Carrier;
 
-use Shared\Application\Port\AsDrivingPort;
+use Shared\Application\Port\DrivingPort;
 
-#[AsDrivingPort]
+#[DrivingPort]
 interface ShipmentReconcilerInterface
 {
     /**
