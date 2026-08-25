@@ -4,35 +4,27 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Identity\Application\Status\IdentityStatus;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 final readonly class ApiUser implements UserInterface
 {
-    /**
-     * @param list<string> $grants
-     */
     public function __construct(
         public string $id,
         private string $identityId,
-        private string $identifier,
-        private array $grants,
-        public bool $revoked,
-        public \DateTimeImmutable $expiresAt,
-        public IdentityStatus $identityStatus,
+        private string $keyId,
     ) {
     }
 
     public function getRoles(): array
     {
-        return ['ROLE_USER', ...$this->grants];
+        return ['ROLE_USER'];
     }
 
     public function getUserIdentifier(): string
     {
-        \assert('' !== $this->identifier);
+        \assert('' !== $this->keyId);
 
-        return $this->identifier;
+        return $this->keyId;
     }
 
     public function identityId(): string

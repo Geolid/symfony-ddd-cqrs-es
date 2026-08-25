@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bootstrap;
 
 use Bootstrap\DependencyInjection\CompilerPass\RegisterDoctrineSchemaConfiguratorsPass;
+use Bootstrap\DependencyInjection\CompilerPass\RegisterDrivingPortAliasesPass;
 use Bootstrap\DependencyInjection\CompilerPass\RegisterEnvVarProcessorsPass;
 use Bootstrap\DependencyInjection\CompilerPass\RegisterMessageBusHandlersPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -88,6 +89,7 @@ class Kernel extends BaseKernel
         $container->addCompilerPass(new RegisterMessageBusHandlersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterDoctrineSchemaConfiguratorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
+        $container->addCompilerPass(new RegisterDrivingPortAliasesPass(), PassConfig::TYPE_BEFORE_REMOVING);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void

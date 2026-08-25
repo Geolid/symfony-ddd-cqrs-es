@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Application\Processor;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Processor\CancelOrdersOnCustomerErased;
 use Sales\Order\Application\Status\OrderStatus;

@@ -7,7 +7,7 @@ namespace Fulfilment\Shipment\Application\Processor;
 use Fulfilment\Shipment\Application\Command\RequestShipmentReturn\RequestShipmentReturn;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderReturnRequested\OrderReturnRequestedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Processor\Processor;

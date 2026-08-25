@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Web\Tests\Support;
 
 use Bootstrap\Kernel;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Identity\Domain\Identity;
-use Iam\Identity\Domain\Service\PasswordPolicyInterface;
-use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Iam\Tests\Identity\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
@@ -69,8 +69,8 @@ abstract class AbstractWebTestCase extends WebTestCase
             ->withIdentityId($identityId)
             ->withLogin($login)
             ->withPassword('MyStr0ngP@ssw0rd123!')
-            ->withHasher($this->service(SecretHasherInterface::class))
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withHasher($this->service(PasswordHasherInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->store();
 
         $client->loginUser($this->service(PasswordUserProvider::class)->loadUserByIdentifier($login));

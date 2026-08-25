@@ -24,6 +24,11 @@
                 <label for="password">{{ 'security.login.label_password'|trans }}</label>
                 <input type="password" id="password" name="password" required>
 
+                <label for="remember_me">
+                    <input type="checkbox" id="remember_me" name="_remember_me" data-testid="login-remember-me">
+                    {{ 'security.login.label_remember_me'|trans }}
+                </label>
+
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                 <button type="submit" data-testid="login-submit">

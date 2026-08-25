@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Processor;
 
-use Fulfilment\Shipment\Application\Event\ShipmentReturnApprovedIntegrationEvent;
+use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnApproved\ShipmentReturnApprovedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;

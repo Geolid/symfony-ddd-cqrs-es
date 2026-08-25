@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Shared\Application\Query\Result;
 
 use Shared\Application\Query\Pagination\PaginationInfo;
-use Shared\Application\Result\ResultInterface;
 
 /**
  * @template TResult of object
  *
  * @implements \IteratorAggregate<int, TResult>
  */
-final readonly class ListResult implements \IteratorAggregate, \Countable, ResultInterface
+final readonly class ListResult implements \IteratorAggregate, \Countable
 {
     /**
      * @param list<TResult> $items

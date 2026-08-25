@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Shared\Domain\Event\DomainEventInterface;
+use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
+use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
+use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('iam.identity.reactivated')]
-final readonly class IdentityReactivated implements DomainEventInterface
+#[Event('iam.identity.identity.reactivated')]
+final readonly class IdentityReactivated
 {
     public function __construct(
+        #[DataSubjectId]
         public string $id,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased'))]
+        public string $reason,
         public string $reactivatedAt,
     ) {
     }

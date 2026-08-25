@@ -16,22 +16,34 @@ use Support\AbstractIntegrationTestCase;
 final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itReactivatesASuspendedIdentity(): void
+    public function itReactivates(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->store();
 
         // When
-        $this->dispatch(new ReactivateIdentity($identity->id->toString()));
+        $this->dispatch(new ReactivateIdentity($identity->id->toString(), 'Appeal upheld'));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
-        self::assertNotNull($result);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
     }
 
     #[Test]
-    public function itFailsWhenTheIdentityDoesNotExist(): void
+    public function itIgnoresWhenAlreadyActive(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+
+        // When
+        $this->dispatch(new ReactivateIdentity($identity->id->toString(), 'Appeal upheld'));
+
+        // Then
+        self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = IdentityId::generate()->toString();
@@ -40,19 +52,6 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ReactivateIdentity($id));
-    }
-
-    #[Test]
-    public function itIgnoresAnIdentityThatIsNotSuspended(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-
-        // When
-        $this->dispatch(new ReactivateIdentity($identity->id->toString()));
-
-        // Then
-        self::expectNotToPerformAssertions();
+        $this->dispatch(new ReactivateIdentity($id, 'Appeal upheld'));
     }
 }

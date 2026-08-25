@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Processor;
 
-use Fulfilment\Shipment\Application\Event\ShipmentDeliveredIntegrationEvent;
+use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Shared\Application\Command\CommandBusInterface;

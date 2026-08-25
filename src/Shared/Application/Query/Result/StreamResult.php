@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Shared\Application\Query\Result;
 
 use Shared\Application\Finder\CollectionFinderInterface;
-use Shared\Application\Result\ResultInterface;
 
 /**
  * @template TResult of object
  *
  * @implements \IteratorAggregate<int, TResult>
  */
-final readonly class StreamResult implements \IteratorAggregate, \Countable, ResultInterface
+final readonly class StreamResult implements \IteratorAggregate, \Countable
 {
     /**
      * @param CollectionFinderInterface<TResult> $finder

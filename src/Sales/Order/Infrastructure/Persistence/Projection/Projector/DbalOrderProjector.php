@@ -23,7 +23,7 @@ use Sales\Order\Domain\Event\OrderReturnRequested;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.orders')]
+#[Projector('sales.order.project_orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order';

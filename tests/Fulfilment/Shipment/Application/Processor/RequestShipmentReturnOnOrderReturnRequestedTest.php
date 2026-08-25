@@ -10,7 +10,7 @@ use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Event\OrderReturnRequestedIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderReturnRequested\OrderReturnRequestedIntegrationEvent;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractIntegrationTestCase

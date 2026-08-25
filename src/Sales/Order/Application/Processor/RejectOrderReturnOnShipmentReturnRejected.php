@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Processor;
 
-use Fulfilment\Shipment\Application\Event\ShipmentReturnRejectedIntegrationEvent;
+use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnRejected\ShipmentReturnRejectedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\RejectOrderReturn\RejectOrderReturn;
 use Shared\Application\Command\CommandBusInterface;

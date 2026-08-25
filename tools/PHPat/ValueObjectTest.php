@@ -16,13 +16,13 @@ final class ValueObjectTest
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
-                Selector::withFilepath('#/Domain/ValueObject/#', true),
+                Selector::withFilepath('#/ValueObject/#', true),
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
                 Selector::Not(Selector::withFilepath('#/tests/#', true)),
                 Selector::Not(Selector::isInterface()),
                 Selector::Not(Selector::isEnum()),
             ))
             ->should()->beReadonly()
-            ->because('A Value Object is immutable — a named constructor validates it once, nothing mutates it after.');
+            ->because('Something validated once must never change after — or that validation no longer holds.');
     }
 }

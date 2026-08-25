@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.payment_failed')]
-final readonly class OrderPaymentFailed implements DomainEventInterface
+#[Event('sales.order.payment.failed')]
+final readonly class OrderPaymentFailed
 {
     public function __construct(
         public string $id,

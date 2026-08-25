@@ -7,31 +7,31 @@ namespace Api\Tests\Support;
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
 use Bootstrap\Kernel;
+use Iam\Authentication\Application\Credential\ApiKeyGenerator;
+use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Identity\Domain\Identity;
-use Iam\Identity\Domain\Service\SecretHasherInterface;
-use Iam\Tests\Access\Support\Factory\GrantTestFactory;
-use Iam\Tests\Identity\Support\Factory\ApiTokenCredentialTestFactory;
-use Iam\Tests\Identity\Support\Helpers\ApiTokenTrait;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Support\Helpers\EventSourcingTrait;
 use Support\Helpers\ServiceLocatorTrait;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractApiTestCase extends ApiTestCase
 {
-    use ApiTokenTrait;
     use EventSourcingTrait;
     use ServiceLocatorTrait;
 
     #[\Override]
     protected static ?bool $alwaysBootKernel = false;
 
-    private SecretHasherInterface $hasher;
+    private ApiKeyGenerator $apiKeyGenerator;
+    private ApiKeyHasherInterface $hasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->hasher = $this->service(SecretHasherInterface::class);
+        $this->apiKeyGenerator = $this->service(ApiKeyGenerator::class);
+        $this->hasher = $this->service(ApiKeyHasherInterface::class);
     }
 
     /**
@@ -47,66 +47,48 @@ abstract class AbstractApiTestCase extends ApiTestCase
         return self::clientWithApiKey(null);
     }
 
-    protected function authenticatedClient(Identity $identity, string ...$permissions): Client
+    protected function authenticatedClient(Identity $identity): Client
     {
-        $apiKey = $this->generateApiKey();
-        ApiTokenCredentialTestFactory::new()
+        $apiKey = $this->apiKeyGenerator->generate();
+        ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withIdentifier($apiKey->identifier)
+            ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
             ->store();
 
-        foreach ($permissions as $permission) {
-            GrantTestFactory::new()->withIdentityId($identity->id->toString())->withPermission($permission)->store();
-        }
-
-        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
+        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $apiKey->secret));
     }
 
     protected static function malformedApiKeyClient(): Client
     {
-        return self::clientWithApiKey(bin2hex(random_bytes(8)));
+        return self::clientWithApiKey('malformed-api-key');
     }
 
     protected function invalidApiKeyClient(Identity $identity): Client
     {
-        $apiKey = $this->generateApiKey();
-        ApiTokenCredentialTestFactory::new()
+        $apiKey = $this->apiKeyGenerator->generate();
+        ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withIdentifier($apiKey->identifier)
+            ->withKeyId($apiKey->keyId)
             ->withHasher($this->hasher)
             ->store();
 
-        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $this->generateApiKey()->secret));
+        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $this->apiKeyGenerator->generate()->secret));
     }
 
     protected function revokedApiKeyClient(Identity $identity): Client
     {
-        $apiKey = $this->generateApiKey();
-        ApiTokenCredentialTestFactory::new()
+        $apiKey = $this->apiKeyGenerator->generate();
+        ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withIdentifier($apiKey->identifier)
+            ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
             ->revoked()
             ->store();
 
-        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
-    }
-
-    protected function expiredApiKeyClient(Identity $identity): Client
-    {
-        $apiKey = $this->generateApiKey();
-        ApiTokenCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withIdentifier($apiKey->identifier)
-            ->withSecret($apiKey->secret)
-            ->withHasher($this->hasher)
-            ->withExpiresAt(new \DateTimeImmutable('-1 day +00:00'))
-            ->store();
-
-        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->identifier, $apiKey->secret));
+        return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $apiKey->secret));
     }
 
     private static function clientWithApiKey(?string $apiKey): Client

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('fulfilment.shipment.delivered')]
-final readonly class ShipmentDelivered implements DomainEventInterface
+#[Event('fulfilment.shipment.shipment.delivered')]
+final readonly class ShipmentDelivered
 {
     public function __construct(
         public string $id,

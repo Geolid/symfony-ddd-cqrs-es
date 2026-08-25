@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Processor;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;

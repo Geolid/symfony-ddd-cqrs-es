@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Finder\Product;
 
-use Shared\Application\Result\ResultInterface;
-
-final readonly class ProductResult implements ResultInterface
+final readonly class ProductResult
 {
     public function __construct(
         public string $id,

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\EventStore\Translator\Translator;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -17,7 +17,7 @@ return static function (ContainerConfigurator $container): void {
             'gap_detection' => null,
             'run_after_aggregate_save' => [
                 'enabled' => true,
-                'groups' => [Translator::GROUP, Processor::GROUP_SYNC],
+                'groups' => [Publisher::GROUP, Processor::GROUP_SYNC],
             ],
         ],
         'hydrator' => ['cryptography' => true],
@@ -30,7 +30,7 @@ return static function (ContainerConfigurator $container): void {
                 'throw_on_error' => true,
                 'run_after_aggregate_save' => [
                     'enabled' => true,
-                    'groups' => [Translator::GROUP, Projector::GROUP, Processor::GROUP, Processor::GROUP_SYNC],
+                    'groups' => [Publisher::GROUP, Projector::GROUP, Processor::GROUP, Processor::GROUP_SYNC],
                 ],
                 'rebuild_after_file_change' => true,
                 'auto_setup' => true,
@@ -47,7 +47,7 @@ return static function (ContainerConfigurator $container): void {
                 'throw_on_error' => true,
                 'run_after_aggregate_save' => [
                     'enabled' => true,
-                    'groups' => [Translator::GROUP, Projector::GROUP, Processor::GROUP_SYNC],
+                    'groups' => [Publisher::GROUP, Projector::GROUP, Processor::GROUP_SYNC],
                 ],
             ],
         ]);

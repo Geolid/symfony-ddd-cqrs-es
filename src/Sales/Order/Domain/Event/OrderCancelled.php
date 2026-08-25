@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('sales.order.cancelled')]
-final readonly class OrderCancelled implements DomainEventInterface
+#[Event('sales.order.order.cancelled')]
+final readonly class OrderCancelled
 {
     public function __construct(
         public string $id,

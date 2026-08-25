@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Identity\Application\Command\RehashPasswordCredential\RehashPasswordCredential;
+use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -29,12 +29,12 @@ final readonly class RehashPasswordCredentialOnLoginSuccess
             return;
         }
 
-        $secret = $event->getPassport()->getBadge(PlainSecretBadge::class)?->secret();
+        $password = $event->getPassport()->getBadge(PlainSecretBadge::class)?->secret();
 
-        if (null === $secret) {
+        if (null === $password) {
             return;
         }
 
-        $this->commandBus->dispatch(new RehashPasswordCredential($user->identityId(), $secret));
+        $this->commandBus->dispatch(new RehashPassword($user->identityId(), $password));
     }
 }

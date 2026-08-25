@@ -6,6 +6,7 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\OrderResource;
 use Api\Tests\Support\AbstractApiTestCase;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -19,7 +20,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'sales.order:read');
+        $client = $this->authenticatedClient($identity);
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->store();
 
@@ -43,7 +44,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'sales.order:read');
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', Uuid::uuid7()->toString()));
@@ -57,7 +58,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity, 'sales.order:read');
+        $client = $this->authenticatedClient($identity);
         OrderTestFactory::new()->withTotalAmountInCents(1_999)->store();
 
         // When
@@ -81,20 +82,6 @@ final class OrderResourceTest extends AbstractApiTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    }
-
-    #[Test]
-    public function itRejectsACallerWithoutTheReadGrant(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->authenticatedClient($identity);
-
-        // When
-        $client->request('GET', '/v1/sales/orders');
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     #[Test]
@@ -139,25 +126,13 @@ final class OrderResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itRejectsAnExpiredApiKey(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->store();
-        $client = $this->expiredApiKeyClient($identity);
-
-        // When
-        $client->request('GET', '/v1/sales/orders');
-
-        // Then
-        self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    }
-
-    #[Test]
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
-        $client = $this->authenticatedClient($identity, 'sales.order:read');
+        $identity = IdentityTestFactory::new()->store();
+        $client = $this->authenticatedClient($identity);
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $this->store($identity);
 
         // When
         $client->request('GET', '/v1/sales/orders');

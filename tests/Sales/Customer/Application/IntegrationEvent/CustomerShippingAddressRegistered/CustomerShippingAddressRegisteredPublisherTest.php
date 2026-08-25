@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered;
+
+use PHPUnit\Framework\Attributes\Test;
+use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\FullName;
+use Shared\Domain\ValueObject\PostalAddress;
+use Support\AbstractIntegrationTestCase;
+
+final class CustomerShippingAddressRegisteredPublisherTest extends AbstractIntegrationTestCase
+{
+    #[Test]
+    public function itPublishes(): void
+    {
+        // Given
+        $customer = CustomerTestFactory::new()
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->create();
+
+        // When
+        $this->store($customer);
+
+        // Then
+        $event = $this->publishedEventOfType(CustomerShippingAddressRegisteredIntegrationEvent::class);
+        self::assertSame($customer->id->toString(), $event->customerId);
+        self::assertSame(
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            $event->address,
+        );
+    }
+}

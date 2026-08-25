@@ -8,9 +8,9 @@ use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -30,7 +30,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresAnAlreadyErasedIdentity(): void
+    public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->erased()->store();
@@ -43,10 +43,10 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheIdentityDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = IdentityId::generate()->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);

@@ -10,7 +10,7 @@ use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Event\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCase

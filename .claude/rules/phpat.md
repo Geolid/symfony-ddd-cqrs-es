@@ -15,4 +15,4 @@ paths:
 
 ### Conventions
 - A new `*Test.php` file under `tools/PHPat/` is auto-discovered by `Tools\PHPat\ArchitectureSuite` (glob + reflection) — no manual registration needed.
-- Name a rule class after its subject (`ProjectorTest`), never after a vendor or a specific BC.
+- Name a rule class after its subject, never after a vendor or a specific BC.

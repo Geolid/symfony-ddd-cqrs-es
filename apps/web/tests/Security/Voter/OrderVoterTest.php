@@ -22,7 +22,7 @@ final class OrderVoterTest extends TestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $order = $this->summary($id);
-        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com', true, '2026-01-01T00:00:00+00:00'), 'main', ['ROLE_USER']);
 
         // When
         $vote = new OrderVoter()->vote($token, $order, [OrderVoter::VIEW]);
@@ -37,7 +37,7 @@ final class OrderVoterTest extends TestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $order = $this->summary(Uuid::uuid7()->toString());
-        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $token = new UsernamePasswordToken(new PasswordUser($id, 'buyer@example.com', true, '2026-01-01T00:00:00+00:00'), 'main', ['ROLE_USER']);
 
         // When
         $vote = new OrderVoter()->vote($token, $order, [OrderVoter::VIEW]);
@@ -50,7 +50,7 @@ final class OrderVoterTest extends TestCase
     public function itAbstainsOnASubjectThatIsNotAnOrderSummary(): void
     {
         // Given
-        $token = new UsernamePasswordToken(new PasswordUser(Uuid::uuid7()->toString(), 'buyer@example.com'), 'main', ['ROLE_USER']);
+        $token = new UsernamePasswordToken(new PasswordUser(Uuid::uuid7()->toString(), 'buyer@example.com', true, '2026-01-01T00:00:00+00:00'), 'main', ['ROLE_USER']);
 
         // When
         $vote = new OrderVoter()->vote($token, new \stdClass(), [OrderVoter::VIEW]);

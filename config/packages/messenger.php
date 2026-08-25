@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
-use Iam\Identity\Application\Command\RevokeApiTokenCredential\RevokeApiTokenCredential;
 use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
@@ -27,7 +26,6 @@ return static function (ContainerConfigurator $container): void {
                 AnonymizeExpiredOrder::class => 'async',
                 CancelOrphanedOrder::class => 'async',
                 PrepareShipment::class => 'async',
-                RevokeApiTokenCredential::class => 'async',
             ],
         ],
     ]);

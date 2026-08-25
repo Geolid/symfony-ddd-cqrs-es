@@ -30,9 +30,9 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
     }
 
-    public function reactivated(\DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
+    public function reactivated(string $reason = 'Appeal upheld', \DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
     {
-        return $this->withModifier(static fn (Identity $identity) => $identity->reactivate($reactivatedAt));
+        return $this->withModifier(static fn (Identity $identity) => $identity->reactivate(Reason::fromString($reason), $reactivatedAt));
     }
 
     public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self

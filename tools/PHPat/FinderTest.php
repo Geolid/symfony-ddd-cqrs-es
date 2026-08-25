@@ -14,11 +14,12 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 final class FinderTest
 {
     #[TestRule]
-    public function extendsTheDbalBase(): Rule
+    public function extendsDbalBase(): Rule
     {
         return PHPat::rule()
             ->classes(Selector::AllOf(
                 Selector::implements(FinderInterface::class),
+                Selector::classname('#^Dbal#', true),
                 Selector::withFilepath('#/Infrastructure/#', true),
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
                 Selector::Not(Selector::withFilepath('#/tests/#', true)),
@@ -27,6 +28,6 @@ final class FinderTest
             ))
             ->should()->extend()
             ->classes(Selector::classname(AbstractDbalFinder::class))
-            ->because('AbstractDbalFinder brings the read-model Connection wiring and the query()/mapRow() contract — outside it a Finder reimplements the fetch/map dance by hand and drifts.');
+            ->because('A read implementation rebuilt by hand each time drifts from every sibling doing the same job.');
     }
 }

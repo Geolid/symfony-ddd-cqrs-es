@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
-use Shared\Domain\Event\DomainEventInterface;
 
-#[Event('iam.identity.registered')]
-final readonly class IdentityRegistered implements DomainEventInterface
+#[Event('iam.identity.identity.registered')]
+final readonly class IdentityRegistered
 {
     public function __construct(
         public string $id,

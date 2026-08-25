@@ -21,7 +21,7 @@ use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.order_payments')]
+#[Projector('sales.order.project_order_payments')]
 final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_payment';

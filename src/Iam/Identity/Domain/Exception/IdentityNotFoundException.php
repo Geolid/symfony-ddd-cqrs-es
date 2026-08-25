@@ -10,6 +10,6 @@ final class IdentityNotFoundException extends AggregateNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Identity with ID "%s" not found.', $id));
+        return new self(\sprintf('Identity "%s" not found.', $id));
     }
 }

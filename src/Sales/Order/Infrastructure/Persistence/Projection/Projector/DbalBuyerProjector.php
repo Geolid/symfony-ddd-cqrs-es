@@ -9,14 +9,14 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Customer\Application\Event\CustomerBillingAddressRegisteredIntegrationEvent;
-use Sales\Customer\Application\Event\CustomerErasedIntegrationEvent;
-use Sales\Customer\Application\Event\CustomerRegisteredIntegrationEvent;
-use Sales\Customer\Application\Event\CustomerShippingAddressRegisteredIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerBillingAddressRegistered\CustomerBillingAddressRegisteredIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
+use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
-#[Projector('sales.order.buyers')]
+#[Projector('sales.order.project_buyers')]
 final readonly class DbalBuyerProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_buyer';
