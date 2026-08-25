@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Command\RegisterCustomerShippingAddress;
 
 use Psr\Clock\ClockInterface;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
@@ -25,7 +24,6 @@ final readonly class RegisterCustomerShippingAddressHandler
 
     /**
      * @throws CustomerNotFoundException
-     * @throws CustomerAlreadyErasedException
      */
     public function __invoke(RegisterCustomerShippingAddress $command): void
     {
