@@ -166,6 +166,25 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
         self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $otherScope), $keptOtherScope));
         self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE, $scope), $keptOtherDiscriminator));
     }
+
+    #[Test]
+    public function itReleasesOnlyTheGivenOwnerUnderTheKey(): void
+    {
+        // Given
+        $released = Uuid::uuid7()->toString();
+        $kept = Uuid::uuid7()->toString();
+        $ownerId = Uuid::uuid7()->toString();
+        $otherOwnerId = Uuid::uuid7()->toString();
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $released, $ownerId);
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $kept, $otherOwnerId);
+
+        // When
+        $this->registry->releaseAll(UniqueKey::for(DummyUniqueKey::EMAIL), $ownerId);
+
+        // Then
+        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $released));
+        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $kept));
+    }
 }
 
 enum DummyUniqueKey: string

@@ -38,12 +38,12 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
         return $existingOwnerId !== $excludeOwnerId;
     }
 
-    public function releaseAll(UniqueKey $key): void
+    public function releaseAll(UniqueKey $key, ?string $ownerId = null): void
     {
         $prefix = $key->toString().':';
 
-        foreach (array_keys($this->reserved) as $normalized) {
-            if (str_starts_with($normalized, $prefix)) {
+        foreach ($this->reserved as $normalized => $existingOwnerId) {
+            if (str_starts_with($normalized, $prefix) && (null === $ownerId || $ownerId === $existingOwnerId)) {
                 unset($this->reserved[$normalized]);
             }
         }

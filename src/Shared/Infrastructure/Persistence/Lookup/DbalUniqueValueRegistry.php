@@ -70,9 +70,15 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         return false !== $qb->fetchOne();
     }
 
-    public function releaseAll(UniqueKey $key): void
+    public function releaseAll(UniqueKey $key, ?string $ownerId = null): void
     {
-        $this->connection->delete(self::TABLE, ['key_type' => $key->toString()]);
+        $criteria = ['key_type' => $key->toString()];
+
+        if (null !== $ownerId) {
+            $criteria['owner_id'] = $ownerId;
+        }
+
+        $this->connection->delete(self::TABLE, $criteria);
     }
 
     /**

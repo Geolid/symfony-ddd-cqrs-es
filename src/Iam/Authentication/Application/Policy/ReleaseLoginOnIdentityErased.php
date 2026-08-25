@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Authentication\Application\Policy;
+
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
+use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\Policy\Policy;
+use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Domain\ValueObject\UniqueKey;
+
+#[Policy('iam.authentication.release_login_on_identity_erased')]
+final readonly class ReleaseLoginOnIdentityErased
+{
+    public function __construct(private UniqueValueRegistryInterface $uniqueValues)
+    {
+    }
+
+    #[Subscribe(IdentityErasedIntegrationEvent::class)]
+    public function __invoke(IdentityErasedIntegrationEvent $event): void
+    {
+        $this->uniqueValues->releaseAll(
+            UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
+            PasswordCredentialId::forIdentity($event->identityId)->toString(),
+        );
+    }
+}
