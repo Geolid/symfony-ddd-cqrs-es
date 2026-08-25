@@ -8,13 +8,15 @@ use Webmozart\Assert\Assert;
 
 final readonly class Login
 {
+    public const int MAX_LENGTH = 50;
+
     public string $value;
 
     private function __construct(string $value)
     {
         $value = trim($value);
         Assert::notEmpty($value, 'A login cannot be empty, %s given.');
-        Assert::maxLength($value, 50, 'A login cannot exceed %2$d characters, %s given.');
+        Assert::maxLength($value, self::MAX_LENGTH, 'A login cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

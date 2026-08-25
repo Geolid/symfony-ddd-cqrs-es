@@ -13,6 +13,7 @@ use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
+use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -74,7 +75,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
-        $table->addColumn('reason', Types::STRING, ['length' => 255, 'notnull' => false]);
+        $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('suspended_at', Types::DATETIME_MUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_MUTABLE, ['notnull' => false]);

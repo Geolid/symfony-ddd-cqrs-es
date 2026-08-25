@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
@@ -75,7 +76,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('login', Types::STRING, ['length' => 255]);
+        $table->addColumn('login', Types::STRING, ['length' => Login::MAX_LENGTH]);
         $table->addColumn('password_hash', Types::STRING, ['length' => 255]);
         $table->addColumn('defined_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('password_changed_at', Types::DATETIME_MUTABLE);

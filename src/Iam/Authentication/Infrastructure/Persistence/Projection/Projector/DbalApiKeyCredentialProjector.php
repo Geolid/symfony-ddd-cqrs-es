@@ -10,6 +10,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialIssued;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialRevoked;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
@@ -75,7 +76,7 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('label', Types::STRING, ['length' => 255]);
-        $table->addColumn('key_id', Types::STRING, ['length' => 20]);
+        $table->addColumn('key_id', Types::STRING, ['length' => KeyId::LENGTH]);
         $table->addColumn('secret_hash', Types::STRING, ['length' => 64]);
         $table->addColumn('issued_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('revoked', Types::BOOLEAN);

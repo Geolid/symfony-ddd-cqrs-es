@@ -9,12 +9,13 @@ use Webmozart\Assert\Assert;
 final readonly class KeyId
 {
     public const string PREFIX = 'key_';
+    public const int LENGTH = 20;
 
     public string $value;
 
     private function __construct(string $value)
     {
-        Assert::length($value, 20, 'A key ID must be exactly %2$d characters, %s given.');
+        Assert::length($value, self::LENGTH, 'A key ID must be exactly %2$d characters, %s given.');
         Assert::startsWith($value, self::PREFIX, 'A key ID must start with "'.self::PREFIX.'", %s given.');
 
         $this->value = $value;
