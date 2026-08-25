@@ -9,9 +9,9 @@ use Sales\Order\Domain\Exception\OrderPaymentAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class ConfirmOrderPaymentRefundHandler
 {
     public function __construct(

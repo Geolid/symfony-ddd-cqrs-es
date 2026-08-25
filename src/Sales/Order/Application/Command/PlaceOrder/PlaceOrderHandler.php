@@ -17,14 +17,14 @@ use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class PlaceOrderHandler
 {
     public function __construct(

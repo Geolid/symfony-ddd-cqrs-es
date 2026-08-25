@@ -9,9 +9,9 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class EraseIdentityHandler
 {
     public function __construct(

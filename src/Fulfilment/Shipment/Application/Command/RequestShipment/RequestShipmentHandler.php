@@ -9,12 +9,12 @@ use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class RequestShipmentHandler
 {
     public function __construct(

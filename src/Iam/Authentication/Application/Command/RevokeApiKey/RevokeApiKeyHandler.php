@@ -11,11 +11,11 @@ use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialReposi
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Domain\Service\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\UniqueKey;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class RevokeApiKeyHandler
 {
     public function __construct(

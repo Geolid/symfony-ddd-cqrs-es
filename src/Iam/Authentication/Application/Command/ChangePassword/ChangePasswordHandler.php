@@ -16,9 +16,9 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class ChangePasswordHandler
 {
     public function __construct(

@@ -7,10 +7,10 @@ namespace Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Shared\Application\Command\CommandBusInterface;
-use Shared\Application\Command\CommandHandler;
+use Shared\Application\Command\CommandUseCase;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-#[CommandHandler]
+#[CommandUseCase]
 final readonly class CancelOrphanedOrdersOfCustomerHandler
 {
     public function __construct(
