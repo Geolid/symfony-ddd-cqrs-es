@@ -53,7 +53,7 @@ final readonly class DefinePasswordCredentialHandler
         }
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString(), $command->identityId);
+            $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString());
         } catch (UniqueValueAlreadyTakenException $e) {
             throw LoginAlreadyTakenException::forLogin($login->value, $e);
         }

@@ -40,7 +40,7 @@ final readonly class IssueApiKeyCredentialHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString(), $command->identityId);
+            $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
         } catch (UniqueValueAlreadyTakenException $e) {
             throw LabelAlreadyTakenException::forLabel($label->value, $e);
         }

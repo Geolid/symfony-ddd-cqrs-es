@@ -143,24 +143,28 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReleasesReservationsOfAnErasedSubject(): void
+    public function itReleasesEveryValueUnderTheGivenKey(): void
     {
         // Given
-        $subjectId = Uuid::uuid7()->toString();
-        $erasedEmail = Uuid::uuid7()->toString();
-        $erasedPhone = Uuid::uuid7()->toString();
-        $kept = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $erasedEmail, Uuid::uuid7()->toString(), $subjectId);
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::PHONE), $erasedPhone, Uuid::uuid7()->toString(), $subjectId);
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::PHONE), $kept, Uuid::uuid7()->toString());
+        $scope = Uuid::uuid7()->toString();
+        $otherScope = Uuid::uuid7()->toString();
+        $first = Uuid::uuid7()->toString();
+        $second = Uuid::uuid7()->toString();
+        $keptOtherScope = Uuid::uuid7()->toString();
+        $keptOtherDiscriminator = Uuid::uuid7()->toString();
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $first, Uuid::uuid7()->toString());
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $second, Uuid::uuid7()->toString());
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $otherScope), $keptOtherScope, Uuid::uuid7()->toString());
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::PHONE, $scope), $keptOtherDiscriminator, Uuid::uuid7()->toString());
 
         // When
-        $this->registry->releaseAllForSubject($subjectId);
+        $this->registry->releaseAll(UniqueKey::for(DummyUniqueKey::EMAIL, $scope));
 
         // Then
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $erasedEmail));
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE), $erasedPhone));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE), $kept));
+        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $first));
+        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $second));
+        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $otherScope), $keptOtherScope));
+        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE, $scope), $keptOtherDiscriminator));
     }
 }
 

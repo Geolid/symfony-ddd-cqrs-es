@@ -26,7 +26,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     ) {
     }
 
-    public function reserve(UniqueKey $key, string $value, string $ownerId, ?string $subjectId = null): void
+    public function reserve(UniqueKey $key, string $value, string $ownerId): void
     {
         $keyType = $key->toString();
 
@@ -35,7 +35,6 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
                 'key_type' => $keyType,
                 'key_value' => $value,
                 'owner_id' => $ownerId,
-                'subject_id' => $subjectId,
             ]);
         } catch (UniqueConstraintViolationException) {
             if ($this->exists($key, $value, $ownerId)) {
@@ -71,9 +70,9 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         return false !== $qb->fetchOne();
     }
 
-    public function releaseAllForSubject(string $subjectId): void
+    public function releaseAll(UniqueKey $key): void
     {
-        $this->connection->delete(self::TABLE, ['subject_id' => $subjectId]);
+        $this->connection->delete(self::TABLE, ['key_type' => $key->toString()]);
     }
 
     /**
@@ -85,7 +84,6 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         $table->addColumn('key_type', Types::STRING, ['length' => 255]);
         $table->addColumn('key_value', Types::STRING, ['length' => 255]);
         $table->addColumn('owner_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('subject_id', Types::STRING, ['length' => 36, 'notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(
@@ -94,6 +92,5 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
                 )
                 ->create(),
         );
-        $table->addIndex(['subject_id']);
     }
 }
