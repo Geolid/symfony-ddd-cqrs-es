@@ -7,11 +7,11 @@ namespace Iam\Tests\Authentication\Infrastructure\Persistence\Projection\Project
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Persistence\Projection\Projector\DbalPasswordCredentialProjector;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,14 +22,14 @@ use Support\AbstractIntegrationTestCase;
  */
 final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestCase
 {
-    private PasswordPolicyInterface $policy;
+    private PasswordStrengthInterface $passwordStrength;
     private PasswordHasherInterface $hasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = new StubPasswordPolicy();
+        $this->passwordStrength = new StubPasswordStrength();
         $this->hasher = new StubPasswordHasher();
     }
 
@@ -40,7 +40,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialTestFactory::new()
             ->withLogin('ada.lovelace')
             ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
 
@@ -64,9 +64,9 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialTestFactory::new()
             ->withPassword('original-password')
             ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->changed('updated-password', $this->policy, $this->hasher, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
+            ->changed('updated-password', $this->passwordStrength, $this->hasher, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
             ->create();
 
         // When
@@ -91,7 +91,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $other = $this->otherCredential();
         $credential = PasswordCredentialTestFactory::new()
             ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->rehashed('original-password', $this->hasher, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
             ->create();
@@ -119,7 +119,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
 
@@ -145,7 +145,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
@@ -173,7 +173,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $identity = IdentityTestFactory::new()->store();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
 
@@ -192,7 +192,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword($password)
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
 

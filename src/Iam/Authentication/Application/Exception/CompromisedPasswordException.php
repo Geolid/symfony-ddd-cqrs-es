@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Domain\PasswordCredential\Exception;
+namespace Iam\Authentication\Application\Exception;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class CompromisedPasswordException extends \DomainException
+final class CompromisedPasswordException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forIdentity(string $identityId): self
     {

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\ChangePassword;
 
 use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
+use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Application\PasswordCredential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -25,7 +28,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->store();
 
@@ -51,13 +54,32 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenCompromisedPassword(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->store();
+        PasswordCredentialTestFactory::new()
+            ->withIdentityId($identity->id->toString())
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
+            ->withHasher($this->service(PasswordHasherInterface::class))
+            ->store();
+        self::getContainer()->set(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
+
+        // Then
+        $this->expectException(CompromisedPasswordException::class);
+
+        // When
+        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
+    }
+
+    #[Test]
     public function itFailsWhenWeakPassword(): void
     {
         // Given
         $identity = IdentityTestFactory::new()->store();
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->store();
 
@@ -76,7 +98,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->store();
 

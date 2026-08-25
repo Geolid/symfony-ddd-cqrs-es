@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Support\Factory;
 
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -39,9 +39,9 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['definedAt' => $definedAt]));
     }
 
-    public function withPolicy(PasswordPolicyInterface $policy): self
+    public function withPasswordStrength(PasswordStrengthInterface $passwordStrength): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['policy' => $policy]));
+        return $this->withAttributes(array_merge($this->attributes, ['passwordStrength' => $passwordStrength]));
     }
 
     public function withHasher(PasswordHasherInterface $hasher): self
@@ -51,16 +51,16 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 
     public function changed(
         string $newPassword,
-        ?PasswordPolicyInterface $policy = null,
+        ?PasswordStrengthInterface $passwordStrength = null,
         ?PasswordHasherInterface $hasher = null,
         \DateTimeImmutable $changedAt = new \DateTimeImmutable('now +00:00'),
     ): self {
-        $policy ??= $this->policy();
+        $passwordStrength ??= $this->passwordStrength();
         $hasher ??= $this->hasher();
 
         return $this->withModifier(static fn (PasswordCredential $credential) => $credential->change(
             Password::fromString($newPassword),
-            $policy,
+            $passwordStrength,
             $hasher,
             $changedAt,
         ));
@@ -102,18 +102,18 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
             $identityId,
             Login::fromString($login),
             Password::fromString($password),
-            $this->policy(),
+            $this->passwordStrength(),
             $this->hasher(),
             \DateTimeImmutable::createFromInterface($definedAt),
         );
     }
 
-    private function policy(): PasswordPolicyInterface
+    private function passwordStrength(): PasswordStrengthInterface
     {
-        Assert::keyExists($this->attributes, 'policy');
-        Assert::isInstanceOf($policy = $this->attributes['policy'], PasswordPolicyInterface::class);
+        Assert::keyExists($this->attributes, 'passwordStrength');
+        Assert::isInstanceOf($passwordStrength = $this->attributes['passwordStrength'], PasswordStrengthInterface::class);
 
-        return $policy;
+        return $passwordStrength;
     }
 
     private function hasher(): PasswordHasherInterface

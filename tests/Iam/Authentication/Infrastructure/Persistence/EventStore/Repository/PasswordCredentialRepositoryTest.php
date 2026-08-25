@@ -8,7 +8,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNot
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -30,7 +30,7 @@ final class PasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $credential = PasswordCredentialTestFactory::new()
-            ->withPolicy(new StubPasswordPolicy())
+            ->withPasswordStrength(new StubPasswordStrength())
             ->withHasher(new StubPasswordHasher())
             ->create();
 

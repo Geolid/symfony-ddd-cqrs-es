@@ -5,14 +5,16 @@ declare(strict_types=1);
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Application\PasswordCredential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Infrastructure\PasswordCredential\CompromisedPasswordGateway;
 use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalApiKeyCredentialFinder;
 use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
 use Iam\Authentication\Infrastructure\Security\ApiKeyHasher;
 use Iam\Authentication\Infrastructure\Security\PasswordHasher;
-use Iam\Authentication\Infrastructure\Security\PasswordPolicy;
+use Iam\Authentication\Infrastructure\Security\PasswordStrength;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalIdentityFinder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -38,6 +40,7 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
         $services->alias(PasswordCredentialFinderInterface::class, DbalPasswordCredentialFinder::class)->public();
         $services->alias(PasswordHasherInterface::class, PasswordHasher::class)->public();
-        $services->alias(PasswordPolicyInterface::class, PasswordPolicy::class)->public();
+        $services->alias(PasswordStrengthInterface::class, PasswordStrength::class)->public();
+        $services->alias(CompromisedPasswordGatewayInterface::class, CompromisedPasswordGateway::class)->public();
     }
 };

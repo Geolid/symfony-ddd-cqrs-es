@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -52,7 +52,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->store();
         CustomerTestFactory::new()->withId($identity->id->toString())->store();
 
@@ -79,7 +79,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer-remember@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->store();
         CustomerTestFactory::new()->withId($identity->id->toString())->store();
 
@@ -105,7 +105,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->store();
 
         // When
@@ -132,7 +132,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->store();
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);

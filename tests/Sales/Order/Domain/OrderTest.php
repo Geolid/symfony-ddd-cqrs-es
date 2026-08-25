@@ -25,8 +25,8 @@ use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
-use Sales\Order\Domain\Service\RetentionPolicy;
-use Sales\Order\Domain\Service\ReturnWindowPolicy;
+use Sales\Order\Domain\Service\RetentionWindow;
+use Sales\Order\Domain\Service\ReturnWindow;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
@@ -269,7 +269,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete($completedAt, new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->complete($completedAt, new ReturnWindow(14)))
             ->then(new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)));
     }
 
@@ -290,7 +290,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindow(14)))
             ->then();
     }
 
@@ -313,7 +313,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
                 new OrderCompleted($id, $completedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-03-01T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-03-01T00:00:00+00:00'), new ReturnWindow(14)))
             ->then();
     }
 
@@ -330,7 +330,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new ReturnWindow(14)))
             ->expectsException(OrderNotCompletableException::class);
     }
 
@@ -352,7 +352,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, new ReturnWindow(14)))
             ->then(new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)));
     }
 
@@ -375,7 +375,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
                 new OrderReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-11T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-11T00:00:00+00:00'), new ReturnWindow(14)))
             ->then();
     }
 
@@ -395,7 +395,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindow(14)))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
@@ -412,7 +412,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderConfirmed($id, $confirmedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), new ReturnWindow(14)))
             ->expectsException(OrderNotReturnableException::class);
     }
 
@@ -433,7 +433,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
                 new OrderDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-19T00:00:00+00:00'), new ReturnWindowPolicy(14)))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-19T00:00:00+00:00'), new ReturnWindow(14)))
             ->expectsException(OrderReturnWindowExpiredException::class);
     }
 
@@ -571,7 +571,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->anonymize($now, new RetentionPolicy(3650)))
+            ->when(static fn (Order $order) => $order->anonymize($now, new RetentionWindow(3650)))
             ->then(new OrderAnonymized($id, $now->format(\DateTimeInterface::ATOM)));
     }
 
@@ -584,7 +584,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this
             ->given($this->orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionWindow(3650)))
             ->then();
     }
 
@@ -601,7 +601,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->orderPlaced($id, $customerId, $placedAt),
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionWindow(3650)))
             ->then();
     }
 
@@ -620,7 +620,7 @@ final class OrderTest extends AggregateRootTestCase
                 new OrderCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
                 new OrderAnonymized($id, $anonymizedAt->format(\DateTimeInterface::ATOM)),
             )
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionPolicy(3650)))
+            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'), new RetentionWindow(3650)))
             ->then();
     }
 

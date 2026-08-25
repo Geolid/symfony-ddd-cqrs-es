@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Domain\PasswordCredential\Service;
+namespace Iam\Authentication\Application\PasswordCredential;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 
-interface PasswordPolicyInterface
+interface CompromisedPasswordGatewayInterface
 {
-    public function isStrongEnough(#[\SensitiveParameter] Password $password): bool;
-
     public function isCompromised(#[\SensitiveParameter] Password $password): bool;
 }

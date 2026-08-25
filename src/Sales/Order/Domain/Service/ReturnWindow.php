@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Domain\Service;
 
-final readonly class ReturnWindowPolicy
+final readonly class ReturnWindow
 {
     public function __construct(private int $days)
     {

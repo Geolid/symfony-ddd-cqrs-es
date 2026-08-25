@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\Query\GetPasswordCredentialByLogi
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -25,7 +25,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
             ->withIdentityId($identity->id->toString())
             ->withLogin('ada.lovelace')
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->store();
 

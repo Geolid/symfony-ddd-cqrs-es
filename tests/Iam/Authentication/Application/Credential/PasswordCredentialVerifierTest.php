@@ -9,7 +9,7 @@ use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -20,7 +20,7 @@ use Support\AbstractIntegrationTestCase;
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
     private PasswordHasherInterface $hasher;
-    private PasswordPolicyInterface $policy;
+    private PasswordStrengthInterface $passwordStrength;
     private PasswordCredentialVerifier $verifier;
 
     protected function setUp(): void
@@ -28,7 +28,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->hasher = $this->service(PasswordHasherInterface::class);
-        $this->policy = $this->service(PasswordPolicyInterface::class);
+        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
         $this->verifier = new PasswordCredentialVerifier($this->service(PasswordCredentialFinderInterface::class), $this->hasher);
     }
 
@@ -40,7 +40,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
 
@@ -67,7 +67,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->policy)
+            ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->store();
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));

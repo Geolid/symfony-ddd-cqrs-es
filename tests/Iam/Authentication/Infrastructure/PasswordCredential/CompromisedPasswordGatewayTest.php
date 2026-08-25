@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Infrastructure\Security;
+namespace Iam\Tests\Authentication\Infrastructure\PasswordCredential;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
-use Iam\Authentication\Infrastructure\Security\PasswordPolicy;
+use Iam\Authentication\Infrastructure\PasswordCredential\CompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Constraint;
@@ -15,29 +15,14 @@ use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-final class PasswordPolicyTest extends TestCase
+final class CompromisedPasswordGatewayTest extends TestCase
 {
     #[Test]
-    public function itEvaluatesStrength(): void
+    public function itDetects(): void
     {
         // Given
-        $policy = new PasswordPolicy(Validation::createValidator());
-
-        // When
-        $strong = $policy->isStrongEnough(Password::fromString('Xk9$mQ2vLp7&zR4w'));
-        $weak = $policy->isStrongEnough(Password::fromString(str_repeat('a', 12)));
-
-        // Then
-        self::assertTrue($strong);
-        self::assertFalse($weak);
-    }
-
-    #[Test]
-    public function itDetectsCompromise(): void
-    {
-        // Given
-        $compromised = new PasswordPolicy($this->validatorStubbingNotCompromised(violates: true));
-        $safe = new PasswordPolicy($this->validatorStubbingNotCompromised(violates: false));
+        $compromised = new CompromisedPasswordGateway($this->validatorStubbingNotCompromised(violates: true));
+        $safe = new CompromisedPasswordGateway($this->validatorStubbingNotCompromised(violates: false));
 
         // When
         $isCompromised = $compromised->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));

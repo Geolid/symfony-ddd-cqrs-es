@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Persistence\Projection\Finder;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordPolicy;
+use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -33,7 +33,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withLogin('ada.lovelace')
             ->withPassword('original-password')
             ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->withPolicy(new StubPasswordPolicy())
+            ->withPasswordStrength(new StubPasswordStrength())
             ->withHasher($hasher)
             ->store();
 
@@ -66,7 +66,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $identityId = Uuid::uuid7()->toString();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identityId)
-            ->withPolicy(new StubPasswordPolicy())
+            ->withPasswordStrength(new StubPasswordStrength())
             ->withHasher(new StubPasswordHasher())
             ->store();
 

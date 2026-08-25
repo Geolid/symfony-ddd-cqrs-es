@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Security\PasswordHasher;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -26,7 +26,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher(new PasswordHasher(new NativePasswordHasher(cost: 4)))
             ->store();
         self::getContainer()->set(PasswordHasherInterface::class, new PasswordHasher(new NativePasswordHasher(cost: 12)));
@@ -48,7 +48,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPolicy($this->service(PasswordPolicyInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->store();
         $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());

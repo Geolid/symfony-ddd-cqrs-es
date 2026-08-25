@@ -7,11 +7,11 @@ use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenExcep
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
+use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
-use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;

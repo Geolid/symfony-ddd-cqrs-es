@@ -7,7 +7,7 @@ namespace Sales\Order\Application\Query\ListOrdersPastRetentionPeriod;
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
-use Sales\Order\Domain\Service\RetentionPolicy;
+use Sales\Order\Domain\Service\RetentionWindow;
 use Shared\Application\Query\AsQueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
@@ -16,7 +16,7 @@ final readonly class ListOrdersPastRetentionPeriodHandler
 {
     public function __construct(
         private OrderFinderInterface $orderFinder,
-        private RetentionPolicy $retentionPolicy,
+        private RetentionWindow $retentionWindow,
         private ClockInterface $clock,
     ) {
     }
@@ -26,7 +26,7 @@ final readonly class ListOrdersPastRetentionPeriodHandler
      */
     public function __invoke(ListOrdersPastRetentionPeriod $query): StreamResult
     {
-        $cutoff = $this->retentionPolicy->cutoffFor($this->clock->now())->format(\DateTimeInterface::ATOM);
+        $cutoff = $this->retentionWindow->cutoffFor($this->clock->now())->format(\DateTimeInterface::ATOM);
 
         return new StreamResult($this->orderFinder->closedBefore($cutoff));
     }

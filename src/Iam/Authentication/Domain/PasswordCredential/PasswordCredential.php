@@ -7,11 +7,10 @@ namespace Iam\Authentication\Domain\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
-use Iam\Authentication\Domain\PasswordCredential\Exception\CompromisedPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordPolicyInterface;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -34,7 +33,6 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     /**
      * @throws WeakPasswordException
-     * @throws CompromisedPasswordException
      */
     public static function define(
         PasswordCredentialId $id,
@@ -42,16 +40,12 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         Login $login,
         #[\SensitiveParameter]
         Password $password,
-        PasswordPolicyInterface $policy,
+        PasswordStrengthInterface $passwordStrength,
         PasswordHasherInterface $hasher,
         \DateTimeImmutable $definedAt,
     ): self {
-        if (!$policy->isStrongEnough($password)) {
+        if (!$passwordStrength->isSufficient($password)) {
             throw WeakPasswordException::forIdentity($identityId);
-        }
-
-        if ($policy->isCompromised($password)) {
-            throw CompromisedPasswordException::forIdentity($identityId);
         }
 
         $self = new self();
@@ -68,17 +62,12 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     /**
      * @throws WeakPasswordException
-     * @throws CompromisedPasswordException
      * @throws SamePasswordException
      */
-    public function change(#[\SensitiveParameter] Password $password, PasswordPolicyInterface $policy, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
+    public function change(#[\SensitiveParameter] Password $password, PasswordStrengthInterface $passwordStrength, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
     {
-        if (!$policy->isStrongEnough($password)) {
+        if (!$passwordStrength->isSufficient($password)) {
             throw WeakPasswordException::forPasswordCredential($this->id);
-        }
-
-        if ($policy->isCompromised($password)) {
-            throw CompromisedPasswordException::forPasswordCredential($this->id);
         }
 
         if ($hasher->verify($this->passwordHash, $password->value)) {
