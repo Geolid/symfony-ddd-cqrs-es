@@ -30,19 +30,6 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = IdentityId::generate()->toString();
-
-        // Then
-        $this->expectException(IdentityNotFoundException::class);
-
-        // When
-        $this->dispatch(new ReactivateIdentity($id, 'Appeal upheld'));
-    }
-
-    #[Test]
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
@@ -53,5 +40,18 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = IdentityId::generate()->toString();
+
+        // Then
+        $this->expectException(IdentityNotFoundException::class);
+
+        // When
+        $this->dispatch(new ReactivateIdentity($id, 'Appeal upheld'));
     }
 }

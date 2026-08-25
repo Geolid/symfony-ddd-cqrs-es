@@ -30,19 +30,6 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = IdentityId::generate()->toString();
-
-        // Then
-        $this->expectException(IdentityNotFoundException::class);
-
-        // When
-        $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
-    }
-
-    #[Test]
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
@@ -53,5 +40,18 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = IdentityId::generate()->toString();
+
+        // Then
+        $this->expectException(IdentityNotFoundException::class);
+
+        // When
+        $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
     }
 }
