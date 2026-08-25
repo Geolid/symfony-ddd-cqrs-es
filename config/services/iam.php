@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Application\PasswordCredential\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Authentication\Infrastructure\PasswordCredential\CompromisedPasswordGateway;
+use Iam\Authentication\Infrastructure\Credential\CompromisedPasswordGateway;
 use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalApiKeyCredentialFinder;
 use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
 use Iam\Authentication\Infrastructure\Security\ApiKeyHasher;
