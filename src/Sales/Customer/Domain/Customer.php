@@ -14,7 +14,6 @@ use Sales\Customer\Domain\Event\CustomerBillingAddressRegistered;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\Address;
@@ -45,15 +44,8 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    /**
-     * @throws CustomerAlreadyErasedException
-     */
     public function registerShippingAddress(PostalAddress $shippingAddress, \DateTimeImmutable $registeredAt): void
     {
-        if ($this->erased) {
-            throw CustomerAlreadyErasedException::forId($this->id);
-        }
-
         if (true === $this->shippingAddress?->equals($shippingAddress)) {
             return;
         }
@@ -71,15 +63,8 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws CustomerAlreadyErasedException
-     */
     public function registerBillingAddress(PostalAddress $billingAddress, \DateTimeImmutable $registeredAt): void
     {
-        if ($this->erased) {
-            throw CustomerAlreadyErasedException::forId($this->id);
-        }
-
         if (true === $this->billingAddress?->equals($billingAddress)) {
             return;
         }

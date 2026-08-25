@@ -11,7 +11,6 @@ use Sales\Customer\Domain\Event\CustomerBillingAddressRegistered;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
 use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
-use Sales\Customer\Domain\Exception\CustomerAlreadyErasedException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\Address;
@@ -127,23 +126,6 @@ final class CustomerTest extends AggregateRootTestCase
             )
             ->when(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
-    }
-
-    #[Test]
-    public function itCannotRegisterAddressWhenErased(): void
-    {
-        $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
-
-        $this
-            ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt->format(\DateTimeInterface::ATOM)),
-                new CustomerErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
-            )
-            ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
-            ->expectsException(CustomerAlreadyErasedException::class);
     }
 
     protected function aggregateClass(): string
