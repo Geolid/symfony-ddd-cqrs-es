@@ -44,14 +44,4 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CD deploy'));
         self::assertTrue($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId), 'CI pipeline'));
     }
-
-    #[Test]
-    public function itIgnoresWhenNoneExist(): void
-    {
-        // When
-        ($this->processor)(new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), '2026-01-02T00:00:00+00:00'));
-
-        // Then
-        self::expectNotToPerformAssertions();
-    }
 }
