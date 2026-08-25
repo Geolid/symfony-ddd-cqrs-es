@@ -19,14 +19,14 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
 {
-    private RequestShipmentOnOrderConfirmed $processor;
+    private RequestShipmentOnOrderConfirmed $policy;
     private ShipmentFinderInterface $shipmentFinder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(RequestShipmentOnOrderConfirmed::class);
+        $this->policy = $this->service(RequestShipmentOnOrderConfirmed::class);
         $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
     }
 
@@ -37,7 +37,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         $order = $this->placedOrder();
 
         // When
-        ($this->processor)($this->orderConfirmed($order));
+        ($this->policy)($this->orderConfirmed($order));
 
         // Then
         $results = iterator_to_array($this->shipmentFinder, false);
@@ -63,10 +63,10 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     {
         // Given
         $order = $this->placedOrder();
-        ($this->processor)($this->orderConfirmed($order));
+        ($this->policy)($this->orderConfirmed($order));
 
         // When
-        ($this->processor)($this->orderConfirmed($order));
+        ($this->policy)($this->orderConfirmed($order));
 
         // Then
         self::assertCount(1, $this->shipmentFinder);

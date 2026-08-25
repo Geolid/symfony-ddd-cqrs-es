@@ -16,14 +16,14 @@ use Support\AbstractIntegrationTestCase;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLoginOnIdentityErased $processor;
+    private ReleaseLoginOnIdentityErased $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(ReleaseLoginOnIdentityErased::class);
+        $this->policy = $this->service(ReleaseLoginOnIdentityErased::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -36,7 +36,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', $ownerId);
 
         // When
-        ($this->processor)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace'));

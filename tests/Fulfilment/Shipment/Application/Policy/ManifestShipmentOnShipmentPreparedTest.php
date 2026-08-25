@@ -20,7 +20,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
 {
     private SpyCarrierGateway $carrier;
 
-    private ManifestShipmentOnShipmentPrepared $processor;
+    private ManifestShipmentOnShipmentPrepared $policy;
 
     protected function setUp(): void
     {
@@ -29,7 +29,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         $this->carrier = new SpyCarrierGateway();
         self::getContainer()->set(CarrierGatewayInterface::class, $this->carrier);
 
-        $this->processor = $this->service(ManifestShipmentOnShipmentPrepared::class);
+        $this->policy = $this->service(ManifestShipmentOnShipmentPrepared::class);
     }
 
     #[Test]
@@ -43,7 +43,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->store();
 
         // When
-        ($this->processor)(new ShipmentPrepared($shipment->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ShipmentPrepared($shipment->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);

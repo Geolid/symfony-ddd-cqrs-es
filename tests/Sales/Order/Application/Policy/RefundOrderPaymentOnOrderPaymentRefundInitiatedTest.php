@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 
 final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends AbstractIntegrationTestCase
 {
-    private RefundOrderPaymentOnOrderPaymentRefundInitiated $processor;
+    private RefundOrderPaymentOnOrderPaymentRefundInitiated $policy;
 
     private SpyRefundingPaymentGateway $paymentGateway;
 
@@ -26,7 +26,7 @@ final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends Abstract
         $this->paymentGateway = new SpyRefundingPaymentGateway();
         self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
 
-        $this->processor = $this->service(RefundOrderPaymentOnOrderPaymentRefundInitiated::class);
+        $this->policy = $this->service(RefundOrderPaymentOnOrderPaymentRefundInitiated::class);
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends Abstract
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderPaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new OrderPaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertSame($reference, $this->paymentGateway->refundedReference);

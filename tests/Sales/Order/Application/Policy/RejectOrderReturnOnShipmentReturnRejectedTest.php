@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegrationTestCase
 {
-    private RejectOrderReturnOnShipmentReturnRejected $processor;
+    private RejectOrderReturnOnShipmentReturnRejected $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(RejectOrderReturnOnShipmentReturnRejected::class);
+        $this->policy = $this->service(RejectOrderReturnOnShipmentReturnRejected::class);
     }
 
     #[Test]
@@ -31,7 +31,7 @@ final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegr
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        ($this->processor)(new ShipmentReturnRejectedIntegrationEvent(
+        ($this->policy)(new ShipmentReturnRejectedIntegrationEvent(
             Uuid::uuid7()->toString(),
             $order->id->toString(),
             'item damaged beyond resale',

@@ -17,13 +17,13 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
 {
     private const string CANCELLED_AT = '2026-01-02T00:00:00+00:00';
 
-    private CancelShipmentOnOrderCancelled $processor;
+    private CancelShipmentOnOrderCancelled $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CancelShipmentOnOrderCancelled::class);
+        $this->policy = $this->service(CancelShipmentOnOrderCancelled::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->store();
 
         // When
-        ($this->processor)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
+        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId), false);
@@ -49,7 +49,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
+        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
 
         // Then
         self::expectNotToPerformAssertions();

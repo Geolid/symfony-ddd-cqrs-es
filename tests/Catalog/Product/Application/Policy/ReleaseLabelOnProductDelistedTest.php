@@ -15,14 +15,14 @@ use Support\AbstractIntegrationTestCase;
 
 final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLabelOnProductDelisted $processor;
+    private ReleaseLabelOnProductDelisted $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(ReleaseLabelOnProductDelisted::class);
+        $this->policy = $this->service(ReleaseLabelOnProductDelisted::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -34,7 +34,7 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
         $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
 
         // When
-        ($this->processor)(new ProductDelisted($product->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ProductDelisted($product->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value));

@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegrationTestCase
 {
-    private CaptureOrderPaymentOnOrderDispatched $processor;
+    private CaptureOrderPaymentOnOrderDispatched $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CaptureOrderPaymentOnOrderDispatched::class);
+        $this->policy = $this->service(CaptureOrderPaymentOnOrderDispatched::class);
     }
 
     #[Test]
@@ -32,7 +32,7 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
         OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
 
         // When
-        ($this->processor)(new OrderDispatched($order->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new OrderDispatched($order->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');

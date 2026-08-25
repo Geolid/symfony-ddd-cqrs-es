@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractIntegrationTestCase
 {
-    private RequestShipmentReturnOnOrderReturnRequested $processor;
+    private RequestShipmentReturnOnOrderReturnRequested $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(RequestShipmentReturnOnOrderReturnRequested::class);
+        $this->policy = $this->service(RequestShipmentReturnOnOrderReturnRequested::class);
     }
 
     #[Test]
@@ -32,7 +32,7 @@ final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractInte
         $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->store();
 
         // When
-        ($this->processor)(new OrderReturnRequestedIntegrationEvent($orderId, '2026-01-10T00:00:00+00:00'));
+        ($this->policy)(new OrderReturnRequestedIntegrationEvent($orderId, '2026-01-10T00:00:00+00:00'));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

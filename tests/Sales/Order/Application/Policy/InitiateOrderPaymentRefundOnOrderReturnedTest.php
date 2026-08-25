@@ -17,13 +17,13 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
 {
     private const string RETURNED_AT = '2026-01-12T00:00:00+00:00';
 
-    private InitiateOrderPaymentRefundOnOrderReturned $processor;
+    private InitiateOrderPaymentRefundOnOrderReturned $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(InitiateOrderPaymentRefundOnOrderReturned::class);
+        $this->policy = $this->service(InitiateOrderPaymentRefundOnOrderReturned::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
         OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
 
         // When
-        ($this->processor)(new OrderReturned($order->id->toString(), self::RETURNED_AT));
+        ($this->policy)(new OrderReturned($order->id->toString(), self::RETURNED_AT));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');

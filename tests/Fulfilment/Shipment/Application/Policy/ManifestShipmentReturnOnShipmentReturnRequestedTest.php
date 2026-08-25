@@ -20,7 +20,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
 {
     private SpyReturnCarrierGateway $carrier;
 
-    private ManifestShipmentReturnOnShipmentReturnRequested $processor;
+    private ManifestShipmentReturnOnShipmentReturnRequested $policy;
 
     protected function setUp(): void
     {
@@ -29,7 +29,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
         $this->carrier = new SpyReturnCarrierGateway();
         self::getContainer()->set(CarrierGatewayInterface::class, $this->carrier);
 
-        $this->processor = $this->service(ManifestShipmentReturnOnShipmentReturnRequested::class);
+        $this->policy = $this->service(ManifestShipmentReturnOnShipmentReturnRequested::class);
     }
 
     #[Test]
@@ -43,7 +43,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        ($this->processor)(new ShipmentReturnRequested($shipment->id->toString(), '2026-01-10T00:00:00+00:00'));
+        ($this->policy)(new ShipmentReturnRequested($shipment->id->toString(), '2026-01-10T00:00:00+00:00'));
 
         // Then
         self::assertNotNull($this->carrier->pickupAddress);

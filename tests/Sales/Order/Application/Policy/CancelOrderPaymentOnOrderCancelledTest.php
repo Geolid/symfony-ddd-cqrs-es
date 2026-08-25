@@ -17,13 +17,13 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
 {
     private const string CANCELLED_AT = '2026-01-02T00:00:00+00:00';
 
-    private CancelOrderPaymentOnOrderCancelled $processor;
+    private CancelOrderPaymentOnOrderCancelled $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CancelOrderPaymentOnOrderCancelled::class);
+        $this->policy = $this->service(CancelOrderPaymentOnOrderCancelled::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
         OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->store();
 
         // When
-        ($this->processor)($this->orderCancelled($orderId));
+        ($this->policy)($this->orderCancelled($orderId));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
@@ -48,7 +48,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)($this->orderCancelled($orderId));
+        ($this->policy)($this->orderCancelled($orderId));
 
         // Then
         self::expectNotToPerformAssertions();

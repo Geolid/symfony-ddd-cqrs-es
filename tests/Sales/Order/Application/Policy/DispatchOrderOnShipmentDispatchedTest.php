@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {
-    private DispatchOrderOnShipmentDispatched $processor;
+    private DispatchOrderOnShipmentDispatched $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(DispatchOrderOnShipmentDispatched::class);
+        $this->policy = $this->service(DispatchOrderOnShipmentDispatched::class);
     }
 
     #[Test]
@@ -31,7 +31,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
         $order = OrderTestFactory::new()->confirmed()->store();
 
         // When
-        ($this->processor)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

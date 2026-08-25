@@ -17,13 +17,13 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
 {
     private const string ERASED_AT = '2026-01-02T00:00:00+00:00';
 
-    private CancelOrdersOnCustomerErased $processor;
+    private CancelOrdersOnCustomerErased $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(CancelOrdersOnCustomerErased::class);
+        $this->policy = $this->service(CancelOrdersOnCustomerErased::class);
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
 
         // When
-        ($this->processor)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
+        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
 
         // Then
         $finder = $this->service(OrderFinderInterface::class);
@@ -57,7 +57,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
 
         // When
-        ($this->processor)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
+        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
 
         // Then
         $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);

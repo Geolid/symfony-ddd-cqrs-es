@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 
 final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegrationTestCase
 {
-    private VoidOrderPaymentOnOrderPaymentVoided $processor;
+    private VoidOrderPaymentOnOrderPaymentVoided $policy;
 
     private SpyVoidingPaymentGateway $paymentGateway;
 
@@ -26,7 +26,7 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
         $this->paymentGateway = new SpyVoidingPaymentGateway();
         self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
 
-        $this->processor = $this->service(VoidOrderPaymentOnOrderPaymentVoided::class);
+        $this->policy = $this->service(VoidOrderPaymentOnOrderPaymentVoided::class);
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
 
         // When
-        ($this->processor)(new OrderPaymentVoided(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new OrderPaymentVoided(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertSame($reference, $this->paymentGateway->voidedReference);

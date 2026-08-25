@@ -15,13 +15,13 @@ use Support\AbstractIntegrationTestCase;
 
 final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractIntegrationTestCase
 {
-    private ConfirmOrderReturnOnShipmentReturnApproved $processor;
+    private ConfirmOrderReturnOnShipmentReturnApproved $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(ConfirmOrderReturnOnShipmentReturnApproved::class);
+        $this->policy = $this->service(ConfirmOrderReturnOnShipmentReturnApproved::class);
     }
 
     #[Test]
@@ -31,7 +31,7 @@ final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractInteg
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
 
         // When
-        ($this->processor)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-11T00:00:00+00:00'));
+        ($this->policy)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-11T00:00:00+00:00'));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

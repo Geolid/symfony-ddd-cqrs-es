@@ -15,14 +15,14 @@ use Support\AbstractIntegrationTestCase;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseApiKeyLabelsOnIdentityErased $processor;
+    private ReleaseApiKeyLabelsOnIdentityErased $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->processor = $this->service(ReleaseApiKeyLabelsOnIdentityErased::class);
+        $this->policy = $this->service(ReleaseApiKeyLabelsOnIdentityErased::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -37,7 +37,7 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId), 'CI pipeline', Uuid::uuid7()->toString());
 
         // When
-        ($this->processor)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CI pipeline'));
