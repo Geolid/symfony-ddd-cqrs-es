@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Validation;
 
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Shared\Application\Validation\ValidValueObject;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,8 +20,8 @@ final class ValidPassword extends Compound
         return [
             new Assert\NotBlank(),
             new Assert\Type('string'),
-            new Assert\Length(min: 12, max: 4096),
-            new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG),
+            new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH),
+            new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE),
             new NotCompromisedPassword(skipOnError: true),
             new ValidValueObject(Password::class, method: 'fromString'),
         ];

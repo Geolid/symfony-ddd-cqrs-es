@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Validation;
 
 use Iam\Authentication\Application\Validation\ValidPassword;
+use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -103,11 +105,11 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
 
     private static function length(): Assert\Length
     {
-        return new Assert\Length(min: 12, max: 4_096);
+        return new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH);
     }
 
     private static function passwordStrength(): PasswordStrength
     {
-        return new PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG);
+        return new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE);
     }
 }

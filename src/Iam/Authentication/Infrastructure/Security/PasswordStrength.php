@@ -17,7 +17,7 @@ final readonly class PasswordStrength implements PasswordStrengthInterface
 
     public function isSufficient(#[\SensitiveParameter] Password $password): bool
     {
-        $violations = $this->validator->validate($password->value, new PasswordStrengthConstraint(minScore: PasswordStrengthConstraint::STRENGTH_STRONG));
+        $violations = $this->validator->validate($password->value, new PasswordStrengthConstraint(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE));
 
         return 0 === $violations->count();
     }
