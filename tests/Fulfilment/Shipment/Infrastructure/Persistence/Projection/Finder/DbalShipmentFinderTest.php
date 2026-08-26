@@ -57,17 +57,18 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
+        $delivered = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->many(2)->create();
         $manifested = ShipmentTestFactory::new()->prepared()->manifested()->create();
         $dispatched = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
-        $delivered = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->many(2)->create();
         $this->store($manifested, $dispatched, ...$delivered);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus('manifested'));
+        $manifestedOnly = iterator_to_array($this->finder->byStatus('manifested'));
+        $manifestedAndDispatched = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
 
         // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
+        self::assertCount(1, $manifestedOnly);
+        $result = $manifestedOnly[0];
         self::assertSame($manifested->id->toString(), $result->id);
         self::assertSame($manifested->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
@@ -75,15 +76,10 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->createdAt);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-
-        // When
-        $results = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
-
-        // Then
-        self::assertCount(2, $results);
+        self::assertCount(2, $manifestedAndDispatched);
         self::assertEqualsCanonicalizing(
             [$manifested->id->toString(), $dispatched->id->toString()],
-            array_map(static fn (ShipmentResult $result): string => $result->id, $results),
+            array_map(static fn (ShipmentResult $result): string => $result->id, $manifestedAndDispatched),
         );
     }
 
