@@ -54,7 +54,7 @@ final readonly class PlaceOrderHandler
         $productIds = array_column($command->lines, 'productId');
 
         /** @var array<string, ListedProductResult> $currentProducts */
-        $currentProducts = iterator_to_array($this->listedProductFinder->byIds(...$productIds)->indexedBy(
+        $currentProducts = iterator_to_array($this->listedProductFinder->byIds(...$productIds)->indexBy(
             static fn (ListedProductResult $result): string => $result->productId,
         ));
 

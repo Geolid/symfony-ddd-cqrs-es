@@ -9,7 +9,7 @@ namespace Shared\Application\Finder;
  *
  * @extends \IteratorAggregate<int, TResult>
  */
-interface CollectionFinderInterface extends \IteratorAggregate, \Countable
+interface IterableFinderInterface extends \IteratorAggregate, \Countable
 {
     /**
      * @return \Iterator<int, TResult>
@@ -21,5 +21,5 @@ interface CollectionFinderInterface extends \IteratorAggregate, \Countable
      *
      * @return \Traversable<string, TResult>
      */
-    public function indexedBy(callable $keyExtractor): \Traversable;
+    public function indexBy(callable $keyExtractor): \Traversable;
 }

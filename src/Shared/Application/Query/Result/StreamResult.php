@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Application\Query\Result;
 
-use Shared\Application\Finder\CollectionFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
 
 /**
  * @template TResult of object
@@ -14,9 +14,9 @@ use Shared\Application\Finder\CollectionFinderInterface;
 final readonly class StreamResult implements \IteratorAggregate, \Countable
 {
     /**
-     * @param CollectionFinderInterface<TResult> $finder
+     * @param IterableFinderInterface<TResult> $finder
      */
-    public function __construct(private CollectionFinderInterface $finder)
+    public function __construct(private IterableFinderInterface $finder)
     {
     }
 

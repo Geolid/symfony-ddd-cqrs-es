@@ -68,7 +68,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
      *
      * @return \Traversable<string, TResult>
      */
-    public function indexedBy(callable $keyExtractor): \Traversable
+    public function indexBy(callable $keyExtractor): \Traversable
     {
         foreach ($this as $item) {
             yield $keyExtractor($item) => $item;

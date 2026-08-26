@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Sales\OrderSummary\Application\Finder\OrderSummary;
 
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
-use Shared\Application\Finder\CollectionFinderInterface;
-use Shared\Application\Finder\PaginableFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
+use Shared\Application\Finder\PaginatableFinderInterface;
 
 /**
- * @extends CollectionFinderInterface<OrderSummaryResult>
- * @extends PaginableFinderInterface<OrderSummaryResult>
+ * @extends IterableFinderInterface<OrderSummaryResult>
+ * @extends PaginatableFinderInterface<OrderSummaryResult>
  */
-interface OrderSummaryFinderInterface extends CollectionFinderInterface, PaginableFinderInterface
+interface OrderSummaryFinderInterface extends IterableFinderInterface, PaginatableFinderInterface
 {
     /**
      * @throws OrderSummaryResultNotFoundException

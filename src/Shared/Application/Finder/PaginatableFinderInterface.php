@@ -7,7 +7,7 @@ namespace Shared\Application\Finder;
 /**
  * @template TResult of object
  */
-interface PaginableFinderInterface
+interface PaginatableFinderInterface
 {
     /**
      * @return PaginatorInterface<TResult>

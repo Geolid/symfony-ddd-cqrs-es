@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\ListedProduct;
 
-use Shared\Application\Finder\CollectionFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
 
 /**
- * @extends CollectionFinderInterface<ListedProductResult>
+ * @extends IterableFinderInterface<ListedProductResult>
  */
-interface ListedProductFinderInterface extends CollectionFinderInterface
+interface ListedProductFinderInterface extends IterableFinderInterface
 {
     public function byIds(string ...$productIds): static;
 }

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Catalog\Product\Application\Finder\Product;
 
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
-use Shared\Application\Finder\CollectionFinderInterface;
-use Shared\Application\Finder\PaginableFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
+use Shared\Application\Finder\PaginatableFinderInterface;
 
 /**
- * @extends CollectionFinderInterface<ProductResult>
- * @extends PaginableFinderInterface<ProductResult>
+ * @extends IterableFinderInterface<ProductResult>
+ * @extends PaginatableFinderInterface<ProductResult>
  */
-interface ProductFinderInterface extends CollectionFinderInterface, PaginableFinderInterface
+interface ProductFinderInterface extends IterableFinderInterface, PaginatableFinderInterface
 {
     /**
      * @throws ProductResultNotFoundException
