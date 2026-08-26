@@ -47,13 +47,15 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects($this->path('sales_order_place'));
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
+        self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            $buyer->shippingAddress,
+            $this->postalAddress($buyer->shippingAddress),
         );
+        self::assertNotNull($buyer->billingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
-            $buyer->billingAddress,
+            $this->postalAddress($buyer->billingAddress),
         );
     }
 
@@ -71,13 +73,15 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         // Then
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
+        self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            $buyer->shippingAddress,
+            $this->postalAddress($buyer->shippingAddress),
         );
+        self::assertNotNull($buyer->billingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            $buyer->billingAddress,
+            $this->postalAddress($buyer->billingAddress),
         );
     }
 
@@ -96,13 +100,15 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects($this->path('sales_order_place'));
         $buyer = $this->service(BuyerFinderInterface::class)->ofIdOrNull($identity->id->toString());
         self::assertNotNull($buyer);
+        self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            $buyer->shippingAddress,
+            $this->postalAddress($buyer->shippingAddress),
         );
+        self::assertNotNull($buyer->billingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
-            $buyer->billingAddress,
+            $this->postalAddress($buyer->billingAddress),
         );
     }
 
@@ -176,5 +182,19 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         CustomerTestFactory::new()->withId($identity->id->toString())->withEmail($email)->store();
 
         return $identity;
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     */
+    private function postalAddress(PostalAddressResult $address): array
+    {
+        return [
+            'firstName' => $address->firstName,
+            'lastName' => $address->lastName,
+            'street' => $address->street,
+            'postalCode' => $address->postalCode,
+            'city' => $address->city,
+        ];
     }
 }

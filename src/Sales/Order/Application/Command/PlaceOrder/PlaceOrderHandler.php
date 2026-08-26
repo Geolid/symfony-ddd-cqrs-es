@@ -9,6 +9,7 @@ use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductResult;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -72,14 +73,11 @@ final readonly class PlaceOrderHandler
         $this->repository->save($order);
     }
 
-    /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
-     */
-    private function postalAddressOf(array $address): PostalAddress
+    private function postalAddressOf(PostalAddressResult $address): PostalAddress
     {
         return PostalAddress::of(
-            FullName::of($address['firstName'], $address['lastName']),
-            Address::of($address['street'], $address['postalCode'], $address['city']),
+            FullName::of($address->firstName, $address->lastName),
+            Address::of($address->street, $address->postalCode, $address->city),
         );
     }
 

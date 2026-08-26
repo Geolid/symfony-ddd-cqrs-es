@@ -16,16 +16,8 @@ use Support\AbstractIntegrationTestCase;
 /**
  * @phpstan-type Row array{
  *     customer_id: string,
- *     shipping_first_name: string|null,
- *     shipping_last_name: string|null,
- *     shipping_street: string|null,
- *     shipping_postal_code: string|null,
- *     shipping_city: string|null,
- *     billing_first_name: string|null,
- *     billing_last_name: string|null,
- *     billing_street: string|null,
- *     billing_postal_code: string|null,
- *     billing_city: string|null,
+ *     shipping_address: string|null,
+ *     billing_address: string|null,
  * }
  */
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
@@ -42,8 +34,8 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertNull($row['shipping_street']);
-        self::assertNull($row['billing_street']);
+        self::assertNull($row['shipping_address']);
+        self::assertNull($row['billing_address']);
     }
 
     #[Test]
@@ -60,8 +52,12 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('12 rue des Lilas', $row['shipping_street']);
-        self::assertNull($row['billing_street']);
+        self::assertNotNull($row['shipping_address']);
+        self::assertSame(
+            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '12 rue des Lilas', 'postal_code' => '75001', 'city' => 'Paris'],
+            $this->postalAddress($row['shipping_address']),
+        );
+        self::assertNull($row['billing_address']);
     }
 
     #[Test]
@@ -78,8 +74,12 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('8 avenue Foch', $row['billing_street']);
-        self::assertNull($row['shipping_street']);
+        self::assertNotNull($row['billing_address']);
+        self::assertSame(
+            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '8 avenue Foch', 'postal_code' => '75116', 'city' => 'Paris'],
+            $this->postalAddress($row['billing_address']),
+        );
+        self::assertNull($row['shipping_address']);
     }
 
     #[Test]
@@ -101,6 +101,17 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string}
+     */
+    private function postalAddress(string $json): array
+    {
+        /** @var array{first_name: string, last_name: string, street: string, postal_code: string, city: string} $decoded */
+        $decoded = json_decode($json, true);
+
+        return $decoded;
+    }
+
+    /**
      * @return Row|false
      */
     private function fetchRow(string $customerId): array|false
@@ -108,7 +119,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, shipping_first_name, shipping_last_name, shipping_street, shipping_postal_code, shipping_city, billing_first_name, billing_last_name, billing_street, billing_postal_code, billing_city FROM %s WHERE customer_id = :customerId',
+                'SELECT customer_id, shipping_address, billing_address FROM %s WHERE customer_id = :customerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['customerId' => $customerId],
