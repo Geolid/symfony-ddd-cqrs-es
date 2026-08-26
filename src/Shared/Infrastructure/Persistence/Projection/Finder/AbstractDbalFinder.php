@@ -82,11 +82,6 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
      */
     abstract protected function resultClass(): string;
 
-    protected function query(): QueryBuilder
-    {
-        return clone $this->queryBuilder;
-    }
-
     /**
      * @return TResult|null
      */
@@ -108,12 +103,17 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
         return $clone;
     }
 
+    private function query(): QueryBuilder
+    {
+        return clone $this->queryBuilder;
+    }
+
     /**
      * @param array<string, mixed> $row
      *
      * @return TResult
      */
-    protected function hydrate(array $row): object
+    private function hydrate(array $row): object
     {
         return $this->hydrator->hydrate($this->resultClass(), $row);
     }
