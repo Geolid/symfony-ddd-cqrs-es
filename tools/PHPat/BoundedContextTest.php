@@ -39,7 +39,7 @@ final class BoundedContextTest
             ->classes(
                 ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_MECHANISM_VENDOR_NAMESPACES),
             )
-            ->because('A Bounded Context coupled to its delivery mechanism loses the portability Ports & Adapters exists to give it.');
+            ->because('Delivery-mechanism coupling costs a Bounded Context the portability Ports & Adapters exists to give it.');
     }
 
     /**
@@ -69,7 +69,7 @@ final class BoundedContextTest
                     )),
                     Selector::implements(IntegrationEventInterface::class),
                 )
-                ->because('An Integration Event is this Bounded Context\'s own Event-Carried State Transfer, in its own Published Language — a bespoke integration per consumer would mean an internal change ripples across each one instead of staying behind one shared, published shape.');
+                ->because('Integration Events are this Bounded Context\'s Event-Carried State Transfer, in its own Published Language — bypassing them lets an internal change ripple into every consumer.');
         }
     }
 }

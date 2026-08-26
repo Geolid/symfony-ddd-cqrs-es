@@ -29,7 +29,7 @@ final class EventTest
                 $this->notInTests(),
             ))
             ->should()->beReadonly()
-            ->because('Event Sourcing treats every event as an immutable fact — once recorded or published, it never changes.');
+            ->because('An event is an immutable fact — once recorded or published, it never changes.');
     }
 
     /**
@@ -56,7 +56,7 @@ final class EventTest
                     Selector::withFilepath('#'.preg_quote($bcPath, '#').'/Domain/#', true),
                     $this->domainEvents(),
                 ))
-                ->because('A fact internal to a Bounded Context leaking into another couples the two beyond what either intended.');
+                ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');
         }
     }
 
@@ -71,7 +71,7 @@ final class EventTest
                 Selector::classname(DataSubjectErasureInterface::class),
                 ...$this->esMetadataSelectors(),
             )
-            ->because('A recorded fact must decode forever, even as other types evolve or disappear — and its personal data must stay erasable without rewriting history.');
+            ->because('A recorded fact must decode forever despite other types changing, and its personal data must stay erasable without rewriting history.');
     }
 
     #[TestRule]
@@ -81,7 +81,7 @@ final class EventTest
             ->classes($this->looksLikeIntegrationEvent())
             ->should()->implement()
             ->classes(Selector::classname(IntegrationEventInterface::class))
-            ->because('Whatever publishes a fact needs a reliable, checkable shape to trust — without one it can\'t tell a real fact from anything else handed to it.');
+            ->because('Publishing a fact needs a reliable, checkable shape — without one, nothing tells a real fact from anything else.');
     }
 
     #[TestRule]
@@ -95,7 +95,7 @@ final class EventTest
                 Selector::classname(IntegrationEventInterface::class),
                 ...$this->esMetadataSelectors(),
             )
-            ->because('A Published Language must decode forever regardless of how other types evolve; its erasure already happened at the source, redoing it here processes the same fact twice.');
+            ->because('A Published Language must decode forever regardless of other types; its erasure already happened at the source, redoing it here duplicates that fact.');
     }
 
     private function notInTests(): SelectorInterface

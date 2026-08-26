@@ -24,7 +24,7 @@ final class SubscriptionTest
         return PHPat::rule()
             ->classes($this->subscribers())
             ->should()->beReadonly()
-            ->because('A subscriber\'s own instance is reused across every dispatched message — a mutable one is a latent concurrency bug.');
+            ->because('A subscriber\'s instance is reused across dispatches — mutable state there is a concurrency bug.');
     }
 
     #[TestRule]
@@ -34,7 +34,7 @@ final class SubscriptionTest
             ->classes($this->subscribers())
             ->shouldNot()->dependOn()
             ->classes(Selector::classname(OnFailed::class))
-            ->because('A failure silently skipped lets state drift from the truth it was supposed to reflect, unnoticed.');
+            ->because('A silently skipped failure lets state drift from the truth it should reflect.');
     }
 
     #[TestRule]
@@ -74,7 +74,7 @@ final class SubscriptionTest
             ->classes($this->publishers())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Publisher::class))
-            ->because('A fact crossing a Bounded Context boundary needs its own dedicated, guaranteed processing group — a shared one can\'t promise that.');
+            ->because('A fact crossing a Bounded Context boundary needs its own guaranteed processing group — a shared one can\'t promise that.');
     }
 
     private function subscribers(): SelectorInterface

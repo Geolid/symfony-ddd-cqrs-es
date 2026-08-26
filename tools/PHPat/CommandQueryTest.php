@@ -28,7 +28,7 @@ final class CommandQueryTest
             ->canOnly()
             ->dependOn()
             ->classes(Selector::classname(CommandInterface::class))
-            ->because('Whoever dispatches it must be able to build it without knowing any internal type it doesn\'t own.');
+            ->because('Dispatching it must never require knowing a type it doesn\'t own.');
     }
 
     #[TestRule]
@@ -48,7 +48,7 @@ final class CommandQueryTest
                     Selector::withFilepath('#/Application/#', true),
                 ),
             )
-            ->because('Whoever asks it must be able to build it, and read its answer, without knowing any internal type it doesn\'t own.');
+            ->because('Asking it, and reading its answer, must never require knowing a type it doesn\'t own.');
     }
 
     #[TestRule]
@@ -63,7 +63,7 @@ final class CommandQueryTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname('#RepositoryInterface$#', true))
-            ->because('CQRS keeps reads and writes on separate paths — reading through the write side collapses that separation.');
+            ->because('CQRS keeps reads off the write side\'s own path.');
     }
 
     #[TestRule]
@@ -75,7 +75,7 @@ final class CommandQueryTest
                 Selector::appliesAttribute(QueryUseCase::class),
             ))
             ->should()->beReadonly()
-            ->because('A handler\'s own instance is reused across every dispatched command or query — a mutable one is a latent concurrency bug.');
+            ->because('A handler\'s instance is reused across dispatches — mutable state there is a concurrency bug.');
     }
 
     #[TestRule]

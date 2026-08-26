@@ -38,7 +38,7 @@ final class DeliveryMechanismTest
                 Selector::Not($this->projectCode()),
                 ...$this->drivingPortOutcomeSelectors(),
             )
-            ->because('Reaching past what a Bounded Context exposes lets its own rules be bypassed or duplicated outside it.');
+            ->because('Reaching past what a Bounded Context exposes bypasses or duplicates its own rules outside it.');
     }
 
     #[TestRule]
@@ -54,7 +54,7 @@ final class DeliveryMechanismTest
                 Selector::inNamespace('Doctrine\Persistence'),
                 Selector::inNamespace('Patchlevel\EventSourcing'),
             )
-            ->because('Touching storage directly bypasses every guarantee the owning Bounded Context already provides over it.');
+            ->because('Touching storage directly bypasses the guarantees its owning Bounded Context already provides.');
     }
 
     #[TestRule]

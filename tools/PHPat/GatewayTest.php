@@ -31,6 +31,6 @@ final class GatewayTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname(HttpClientInterface::class))
-            ->because('Reaching a vendor from more than one place scatters its auth, host, and error handling inconsistently.');
+            ->because('Reaching a vendor from more than one place scatters its auth, host, and error handling.');
     }
 }
