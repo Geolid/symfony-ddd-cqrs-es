@@ -43,9 +43,9 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsByCustomer(): void
     {
         // Given
+        $others = OrderTestFactory::new()->many(2)->create();
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $others = OrderTestFactory::new()->many(2)->create();
         $this->store($order, ...$others);
 
         // When
@@ -60,9 +60,9 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsByStatus(): void
     {
         // Given
-        $cancelled = OrderTestFactory::new()->cancelled()->create();
         $other = OrderTestFactory::new()->create();
-        $this->store($cancelled, $other);
+        $cancelled = OrderTestFactory::new()->cancelled()->create();
+        $this->store($other, $cancelled);
 
         // When
         $result = $this->ask(new ListOrderSummaries(status: OrderSummaryStatus::CANCELLED->value));

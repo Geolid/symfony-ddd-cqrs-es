@@ -27,9 +27,9 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
-        $this->store($product, $other);
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($other, $product);
 
         // When
         $results = iterator_to_array($this->finder);
