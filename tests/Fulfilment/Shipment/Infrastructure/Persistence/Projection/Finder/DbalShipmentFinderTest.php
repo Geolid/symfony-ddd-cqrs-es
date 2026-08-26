@@ -123,7 +123,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $tracked = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
-        ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->store();
+        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->store();
 
         // When
         $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
@@ -135,6 +135,12 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
+
+        // When
+        $otherResult = $this->finder->ofTrackingReference('ACME-OTHER');
+
+        // Then
+        self::assertSame($other->id->toString(), $otherResult->id);
     }
 
     #[Test]
@@ -151,14 +157,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itGetsByReturnTrackingReference(): void
     {
         // Given
-        ShipmentTestFactory::new()
-            ->prepared()
-            ->manifested('ACME-OTHER')
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested('ACME-RETURN-OTHER')
-            ->store();
         $tracked = ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-4Q7X2K9')
@@ -166,6 +164,14 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             ->delivered()
             ->returnRequested()
             ->returnManifested('ACME-RETURN-1')
+            ->store();
+        $other = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-OTHER')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-OTHER')
             ->store();
 
         // When
@@ -176,6 +182,12 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
         self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
+
+        // When
+        $otherResult = $this->finder->ofReturnTrackingReference('ACME-RETURN-OTHER');
+
+        // Then
+        self::assertSame($other->id->toString(), $otherResult->id);
     }
 
     #[Test]

@@ -29,7 +29,9 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $other = IdentityTestFactory::new()->create();
+        $this->store($identity, $other);
 
         // When
         $result = $this->finder->ofId($identity->id->toString());
@@ -40,6 +42,12 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         self::assertNull($result->reason);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
+
+        // When
+        $otherResult = $this->finder->ofId($other->id->toString());
+
+        // Then
+        self::assertSame($other->id->toString(), $otherResult->id);
     }
 
     #[Test]
