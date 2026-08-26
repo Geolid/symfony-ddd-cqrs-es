@@ -9,7 +9,7 @@ namespace Shared\Application\Finder;
  *
  * @extends \IteratorAggregate<int, TResult>
  */
-interface CollectionFinderInterface extends FinderInterface, \IteratorAggregate, \Countable
+interface CollectionFinderInterface extends \IteratorAggregate, \Countable
 {
     /**
      * @return \Iterator<int, TResult>

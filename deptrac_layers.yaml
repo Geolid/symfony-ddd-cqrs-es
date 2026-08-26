@@ -37,6 +37,7 @@ deptrac:
         - { type: classNameRegex, value: '#^Doctrine\\DBAL\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute|Subscription\\RunMode$).*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(Extension\\)?Cryptography\\(?!Attribute\\).*#' }
+        - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(?!(Extension\\)?Cryptography\\Attribute\\).*#' }
         - { type: classNameRegex, value: '#^Sentry\\.*#' }
         - { type: classNameRegex, value: '#^Symfony\\(?!Component\\Validator\\).*#' }
 

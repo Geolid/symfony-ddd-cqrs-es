@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shared\Infrastructure\Hydration\Normalizer;
+
+use Patchlevel\Hydrator\Normalizer\InvalidArgument;
+use Patchlevel\Hydrator\Normalizer\Normalizer;
+
+final readonly class UtcDateTimeImmutableNormalizer implements Normalizer
+{
+    public function __construct(private string $format = 'Y-m-d H:i:s')
+    {
+    }
+
+    public function normalize(mixed $value): ?string
+    {
+        if (null === $value) {
+            return null;
+        }
+
+        if (!$value instanceof \DateTimeImmutable) {
+            throw InvalidArgument::withWrongType('DateTimeImmutable|null', $value);
+        }
+
+        return $value->format($this->format);
+    }
+
+    public function denormalize(mixed $value): ?\DateTimeImmutable
+    {
+        if (null === $value) {
+            return null;
+        }
+
+        if (!\is_string($value)) {
+            throw InvalidArgument::withWrongType('string|null', $value);
+        }
+
+        return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+    }
+}
