@@ -15,7 +15,6 @@ use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Tools\PHPat\Helpers\BoundedContextDirs;
 
 final class EventTest
 {
@@ -30,34 +29,6 @@ final class EventTest
             ))
             ->should()->beReadonly()
             ->because('An event is an immutable fact — once recorded or published, it never changes.');
-    }
-
-    /**
-     * @return iterable<string, Rule>
-     */
-    #[TestRule]
-    public function domainEventsStayInternal(): iterable
-    {
-        $root = \dirname(__DIR__, 2);
-        $boundedContextDirs = BoundedContextDirs::all($root);
-
-        foreach ($boundedContextDirs as $boundedContextDir) {
-            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
-            $boundedContextPath = substr($boundedContextDir, \strlen($root));
-
-            yield $boundedContextName => PHPat::rule()
-                ->classes(Selector::AllOf(
-                    Selector::Not(Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/#', true)),
-                    $this->notInTests(),
-                ))
-                ->shouldNot()
-                ->dependOn()
-                ->classes(Selector::AllOf(
-                    Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/Domain/#', true),
-                    $this->domainEvents(),
-                ))
-                ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');
-        }
     }
 
     #[TestRule]

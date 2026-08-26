@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tools\PHPat;
 
+use Patchlevel\EventSourcing\Attribute\Event;
 use PHPat\Selector\ClassNamespace;
 use PHPat\Selector\Filepath;
 use PHPat\Selector\Selector;
@@ -70,6 +71,36 @@ final class BoundedContextTest
                     Selector::implements(IntegrationEventInterface::class),
                 )
                 ->because('Integration Events are this Bounded Context\'s Event-Carried State Transfer, in its own Published Language — bypassing them lets an internal change ripple into every consumer.');
+        }
+    }
+
+    /**
+     * @return iterable<string, Rule>
+     */
+    #[TestRule]
+    public function domainEventsStayInternal(): iterable
+    {
+        $root = \dirname(__DIR__, 2);
+        $boundedContextDirs = BoundedContextDirs::all($root);
+
+        foreach ($boundedContextDirs as $boundedContextDir) {
+            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
+            $boundedContextPath = substr($boundedContextDir, \strlen($root));
+
+            yield $boundedContextName => PHPat::rule()
+                ->classes(Selector::AllOf(
+                    Selector::Not(Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/#', true)),
+                    Selector::Not(Selector::withFilepath('#/tests/#', true)),
+                ))
+                ->shouldNot()
+                ->dependOn()
+                ->classes(Selector::AllOf(
+                    Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/Domain/#', true),
+                    Selector::appliesAttribute(Event::class),
+                    Selector::Not(Selector::implements(IntegrationEventInterface::class)),
+                    Selector::Not(Selector::isInterface()),
+                ))
+                ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');
         }
     }
 }
