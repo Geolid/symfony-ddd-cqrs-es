@@ -6,9 +6,9 @@ namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Query\Pagination\Pagination;
 use Shared\Application\Query\QueryUseCase;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 
 #[QueryUseCase]
 final readonly class ListOrderSummariesHandler
@@ -18,9 +18,9 @@ final readonly class ListOrderSummariesHandler
     }
 
     /**
-     * @return ListResult<OrderSummaryResult>
+     * @return PaginatedResult<OrderSummaryResult>
      */
-    public function __invoke(ListOrderSummaries $query): ListResult
+    public function __invoke(ListOrderSummaries $query): PaginatedResult
     {
         $finder = $this->orderSummaryFinder;
 
@@ -41,14 +41,6 @@ final readonly class ListOrderSummariesHandler
         /** @var list<OrderSummaryResult> $items */
         $items = iterator_to_array($paginator);
 
-        return new ListResult(
-            $items,
-            new PaginationInfo(
-                totalItems: $paginator->totalItems(),
-                currentPage: $paginator->currentPage(),
-                itemsPerPage: $paginator->itemsPerPage(),
-                lastPage: $paginator->lastPage(),
-            ),
-        );
+        return new PaginatedResult($items, Pagination::fromPaginator($paginator));
     }
 }

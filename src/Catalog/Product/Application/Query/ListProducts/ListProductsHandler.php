@@ -6,9 +6,9 @@ namespace Catalog\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
-use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Query\Pagination\Pagination;
 use Shared\Application\Query\QueryUseCase;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 
 #[QueryUseCase]
 final readonly class ListProductsHandler
@@ -18,23 +18,15 @@ final readonly class ListProductsHandler
     }
 
     /**
-     * @return ListResult<ProductResult>
+     * @return PaginatedResult<ProductResult>
      */
-    public function __invoke(ListProducts $query): ListResult
+    public function __invoke(ListProducts $query): PaginatedResult
     {
         $paginator = $this->productFinder->sortedByLabel()->paginate($query->page, $query->itemsPerPage);
 
         /** @var list<ProductResult> $items */
         $items = iterator_to_array($paginator);
 
-        return new ListResult(
-            $items,
-            new PaginationInfo(
-                totalItems: $paginator->totalItems(),
-                currentPage: $paginator->currentPage(),
-                itemsPerPage: $paginator->itemsPerPage(),
-                lastPage: $paginator->lastPage(),
-            ),
-        );
+        return new PaginatedResult($items, Pagination::fromPaginator($paginator));
     }
 }

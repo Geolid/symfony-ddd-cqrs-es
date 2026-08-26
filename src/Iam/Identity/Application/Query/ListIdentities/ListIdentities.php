@@ -6,10 +6,10 @@ namespace Iam\Identity\Application\Query\ListIdentities;
 
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Shared\Application\Query\QueryInterface;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 
 /**
- * @implements QueryInterface<ListResult<IdentityResult>>
+ * @implements QueryInterface<PaginatedResult<IdentityResult>>
  */
 final readonly class ListIdentities implements QueryInterface
 {

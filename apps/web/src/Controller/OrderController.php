@@ -24,7 +24,7 @@ use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -104,7 +104,7 @@ final class OrderController extends AbstractController
     #[Route(path: ['en' => '/place', 'fr' => '/commander'], name: 'sales_order_place', methods: ['GET', 'POST'])]
     public function place(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
-        /** @var ListResult<ProductResult> $products */
+        /** @var PaginatedResult<ProductResult> $products */
         $products = $this->queryBus->ask(new ListProducts(itemsPerPage: 100));
         $productChoices = [];
         $productPricesInCents = [];

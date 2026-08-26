@@ -9,6 +9,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
