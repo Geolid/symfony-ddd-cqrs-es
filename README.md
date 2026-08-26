@@ -64,7 +64,7 @@ Four Delivery Mechanisms (`apps/`) call the same Command/Query bus, sharing one
 | `apps/cli` | Console commands (bootstrap, `fulfilment:shipment:manifest-pending`) |
 | `apps/webhook` | An inbound carrier webhook (HMAC-verified) marking a shipment delivered |
 
-A Delivery Mechanism only ever depends on a BC's Open Host Service — its `#[AsDrivingPort]`
+A Delivery Mechanism only ever depends on a BC's own Driving Ports — its `#[AsDrivingPort]`
 behaviours and its published language (`PublishedLanguageInterface`: Commands, Queries, Results,
 Application exceptions, validation compounds, published vocabularies) — never on a Repository, a
 Finder implementation, or a persistence vendor directly. This and the BC isolation above are

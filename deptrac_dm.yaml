@@ -33,7 +33,7 @@ deptrac:
       collectors:
         - { type: directory, value: 'ui/src/.*' }
 
-  # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: Open Host Service only).
+  # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: through its own Driving Ports only).
   ruleset:
     Web:     [ Sales.Customer, Sales.Order, Sales.OrderSummary, Catalog.Product, Iam.Identity, Iam.Authentication, Shared, Vendors, Ui ]
     Api:     [ Sales.OrderSummary, Catalog.Product, Iam.Identity, Iam.Authentication, Shared, Vendors ]
