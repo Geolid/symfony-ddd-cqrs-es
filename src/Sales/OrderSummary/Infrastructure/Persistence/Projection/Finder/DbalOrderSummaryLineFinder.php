@@ -8,14 +8,12 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineResult;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryLineProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<OrderSummaryLineResult>
- *
- * @phpstan-type Row array{order_id: string, label: string, quantity: int|string, unit_amount_in_cents: int|string}
+ * @extends AbstractDbalFinder<OrderSummaryLineResult>
  */
-final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder implements OrderSummaryLineFinderInterface
+final class DbalOrderSummaryLineFinder extends AbstractDbalFinder implements OrderSummaryLineFinderInterface
 {
     public function byOrder(string $orderId): static
     {
@@ -34,16 +32,8 @@ final class DbalOrderSummaryLineFinder extends AbstractDbalCollectionFinder impl
             ->orderBy('position', 'ASC');
     }
 
-    /**
-     * @param Row $row
-     */
-    protected function mapRow(array $row): OrderSummaryLineResult
+    protected function resultClass(): string
     {
-        return new OrderSummaryLineResult(
-            orderId: $row['order_id'],
-            label: $row['label'],
-            quantity: (int) $row['quantity'],
-            unitAmountInCents: (int) $row['unit_amount_in_cents'],
-        );
+        return OrderSummaryLineResult::class;
     }
 }

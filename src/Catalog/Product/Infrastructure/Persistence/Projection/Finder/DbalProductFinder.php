@@ -9,29 +9,20 @@ use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Infrastructure\Persistence\Projection\Projector\DbalProductProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<ProductResult>
- *
- * @phpstan-type Row array{id: string, label: string, unit_amount_in_cents: int|string}
+ * @extends AbstractDbalFinder<ProductResult>
  */
-final class DbalProductFinder extends AbstractDbalCollectionFinder implements ProductFinderInterface
+final class DbalProductFinder extends AbstractDbalFinder implements ProductFinderInterface
 {
     public function ofId(string $id): ProductResult
     {
-        /** @var Row|false $row */
-        $row = $this->query()
-            ->andWhere('id = :id')
-            ->setParameter('id', $id)
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if (false === $row) {
-            throw ProductResultNotFoundException::forId($id);
-        }
-
-        return $this->mapRow($row);
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw ProductResultNotFoundException::forId($id);
     }
 
     public function sortedByLabel(): static
@@ -44,18 +35,12 @@ final class DbalProductFinder extends AbstractDbalCollectionFinder implements Pr
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'label', 'unit_amount_in_cents')
-            ->from(DbalProductProjector::TABLE);
+            ->from(DbalProductProjector::TABLE)
+            ->orderBy('id', 'ASC');
     }
 
-    /**
-     * @param Row $row
-     */
-    protected function mapRow(array $row): ProductResult
+    protected function resultClass(): string
     {
-        return new ProductResult(
-            id: $row['id'],
-            label: $row['label'],
-            unitAmountInCents: (int) $row['unit_amount_in_cents'],
-        );
+        return ProductResult::class;
     }
 }

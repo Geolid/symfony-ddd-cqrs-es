@@ -13,42 +13,27 @@ use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
  * @extends AbstractDbalFinder<CustomerResult>
- *
- * @phpstan-type Row array{id: string, email: string|null, registered_at: string}
  */
 final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFinderInterface
 {
     public function ofId(string $id): CustomerResult
     {
-        /** @var Row|false $row */
-        $row = $this->query()
-            ->andWhere('id = :id')
-            ->setParameter('id', $id)
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if (false === $row) {
-            throw CustomerResultNotFoundException::forId($id);
-        }
-
-        return $this->mapRow($row);
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw CustomerResultNotFoundException::forId($id);
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'email', 'registered_at')
-            ->from(DbalCustomerProjector::TABLE);
+            ->from(DbalCustomerProjector::TABLE)
+            ->orderBy('id', 'ASC');
     }
 
-    /**
-     * @param Row $row
-     */
-    protected function mapRow(array $row): CustomerResult
+    protected function resultClass(): string
     {
-        return new CustomerResult(
-            id: $row['id'],
-            email: $row['email'],
-            registeredAt: new \DateTimeImmutable($row['registered_at'], new \DateTimeZone('UTC')),
-        );
+        return CustomerResult::class;
     }
 }

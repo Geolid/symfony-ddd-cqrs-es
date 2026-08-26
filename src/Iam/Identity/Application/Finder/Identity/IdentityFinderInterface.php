@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Finder\Identity;
 
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
-use Shared\Application\Finder\PaginatedCollectionFinderInterface;
+use Shared\Application\Finder\CollectionFinderInterface;
+use Shared\Application\Finder\PaginableFinderInterface;
 
 /**
- * @extends PaginatedCollectionFinderInterface<IdentityResult>
+ * @extends CollectionFinderInterface<IdentityResult>
+ * @extends PaginableFinderInterface<IdentityResult>
  */
-interface IdentityFinderInterface extends PaginatedCollectionFinderInterface
+interface IdentityFinderInterface extends CollectionFinderInterface, PaginableFinderInterface
 {
     /**
      * @throws IdentityResultNotFoundException

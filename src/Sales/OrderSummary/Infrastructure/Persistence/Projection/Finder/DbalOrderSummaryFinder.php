@@ -8,31 +8,21 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<OrderSummaryResult>
- *
- * @phpstan-type Row array{order_id: string, customer_id: string, total_amount_in_cents: int|string, status: string, placed_at: string, cancelled_at: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string}
+ * @extends AbstractDbalFinder<OrderSummaryResult>
  */
-final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implements OrderSummaryFinderInterface
+final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSummaryFinderInterface
 {
     public function ofOrder(string $orderId): OrderSummaryResult
     {
-        /** @var Row|false $row */
-        $row = $this->query()
-            ->andWhere('order_id = :orderId')
-            ->setParameter('orderId', $orderId)
-            ->executeQuery()
-            ->fetchAssociative();
-
-        if (false === $row) {
-            throw OrderSummaryResultNotFoundException::forOrderId($orderId);
-        }
-
-        return $this->mapRow($row);
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($orderId): void {
+                $qb->andWhere('order_id = :orderId')->setParameter('orderId', $orderId);
+            },
+        )->one() ?? throw OrderSummaryResultNotFoundException::forOrderId($orderId);
     }
 
     public function byCustomer(string $customerId): static
@@ -79,28 +69,12 @@ final class DbalOrderSummaryFinder extends AbstractDbalCollectionFinder implemen
             'dispatched_at',
             'delivered_at',
         )
-            ->from(DbalOrderSummaryProjector::TABLE);
+            ->from(DbalOrderSummaryProjector::TABLE)
+            ->orderBy('order_id', 'ASC');
     }
 
-    /**
-     * @param Row $row
-     */
-    protected function mapRow(array $row): OrderSummaryResult
+    protected function resultClass(): string
     {
-        return new OrderSummaryResult(
-            orderId: $row['order_id'],
-            customerId: $row['customer_id'],
-            totalAmountInCents: (int) $row['total_amount_in_cents'],
-            status: OrderSummaryStatus::from($row['status']),
-            placedAt: new \DateTimeImmutable($row['placed_at'], new \DateTimeZone('UTC')),
-            cancelledAt: null !== $row['cancelled_at'] ? new \DateTimeImmutable($row['cancelled_at'], new \DateTimeZone('UTC')) : null,
-            paymentAmountInCents: null !== $row['payment_amount_in_cents'] ? (int) $row['payment_amount_in_cents'] : null,
-            paymentReference: $row['payment_reference'],
-            paymentCheckoutUrl: $row['payment_checkout_url'],
-            paidAt: null !== $row['paid_at'] ? new \DateTimeImmutable($row['paid_at'], new \DateTimeZone('UTC')) : null,
-            trackingReference: $row['tracking_reference'],
-            dispatchedAt: null !== $row['dispatched_at'] ? new \DateTimeImmutable($row['dispatched_at'], new \DateTimeZone('UTC')) : null,
-            deliveredAt: null !== $row['delivered_at'] ? new \DateTimeImmutable($row['delivered_at'], new \DateTimeZone('UTC')) : null,
-        );
+        return OrderSummaryResult::class;
     }
 }
