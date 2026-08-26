@@ -9,7 +9,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 /**
  * @template T of AggregateRoot
  */
-final readonly class AggregateCollectionTestFactory
+final readonly class AggregateListTestFactory
 {
     /**
      * @param AbstractAggregateTestFactory<T> $factory

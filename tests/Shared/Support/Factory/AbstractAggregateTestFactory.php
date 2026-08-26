@@ -42,13 +42,13 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
-     * @return AggregateCollectionTestFactory<T>
+     * @return AggregateListTestFactory<T>
      */
-    public function many(int $count): AggregateCollectionTestFactory
+    public function many(int $count): AggregateListTestFactory
     {
         Assert::positiveInteger($count);
 
-        return new AggregateCollectionTestFactory($this, $count);
+        return new AggregateListTestFactory($this, $count);
     }
 
     /**
