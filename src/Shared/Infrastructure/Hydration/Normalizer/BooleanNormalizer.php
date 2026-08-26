@@ -28,11 +28,11 @@ final readonly class BooleanNormalizer implements Normalizer
             return null;
         }
 
-        if (\in_array($value, [true, 1, '1'], true)) {
+        if (\in_array($value, [true, 1, '1', 'true'], true)) {
             return true;
         }
 
-        if (\in_array($value, [false, 0, '0'], true)) {
+        if (\in_array($value, [false, 0, '0', 'false'], true)) {
             return false;
         }
 
