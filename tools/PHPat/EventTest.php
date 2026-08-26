@@ -36,7 +36,7 @@ final class EventTest
      * @return iterable<string, Rule>
      */
     #[TestRule]
-    public function domainEventsStayInsideTheirBoundedContext(): iterable
+    public function domainEventsStayInternal(): iterable
     {
         $root = \dirname(__DIR__, 2);
         $boundedContextDirs = BoundedContextDirs::all($root);
