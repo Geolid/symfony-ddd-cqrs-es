@@ -15,7 +15,7 @@ use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Tools\PHPat\Helpers\BcDirs;
+use Tools\PHPat\Helpers\BoundedContextDirs;
 
 final class EventTest
 {
@@ -36,24 +36,24 @@ final class EventTest
      * @return iterable<string, Rule>
      */
     #[TestRule]
-    public function domainEventsStayInsideTheirBc(): iterable
+    public function domainEventsStayInsideTheirBoundedContext(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $bcDirs = BcDirs::all($root);
+        $boundedContextDirs = BoundedContextDirs::all($root);
 
-        foreach ($bcDirs as $bcDir) {
-            $bcName = str_replace('/', '.', substr($bcDir, \strlen($root.'/src/')));
-            $bcPath = substr($bcDir, \strlen($root));
+        foreach ($boundedContextDirs as $boundedContextDir) {
+            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
+            $boundedContextPath = substr($boundedContextDir, \strlen($root));
 
-            yield $bcName => PHPat::rule()
+            yield $boundedContextName => PHPat::rule()
                 ->classes(Selector::AllOf(
-                    Selector::Not(Selector::withFilepath('#'.preg_quote($bcPath, '#').'/#', true)),
+                    Selector::Not(Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/#', true)),
                     $this->notInTests(),
                 ))
                 ->shouldNot()
                 ->dependOn()
                 ->classes(Selector::AllOf(
-                    Selector::withFilepath('#'.preg_quote($bcPath, '#').'/Domain/#', true),
+                    Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/Domain/#', true),
                     $this->domainEvents(),
                 ))
                 ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');

@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints\Compound;
 final class DeliveryMechanismTest
 {
     #[TestRule]
-    public function onlyDependsOnOwnBcExposedSurface(): Rule
+    public function onlyDependsOnOwnBoundedContextExposedSurface(): Rule
     {
         return PHPat::rule()
             ->classes($this->deliveryMechanisms())

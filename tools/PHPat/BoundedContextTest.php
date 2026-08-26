@@ -11,7 +11,7 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Tools\PHPat\Helpers\BcDirs;
+use Tools\PHPat\Helpers\BoundedContextDirs;
 
 final class BoundedContextTest
 {
@@ -49,23 +49,23 @@ final class BoundedContextTest
     public function communicatesOnlyViaIntegrationEvents(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $bcDirs = BcDirs::all($root);
+        $boundedContextDirs = BoundedContextDirs::all($root);
 
-        foreach ($bcDirs as $bcDir) {
-            $bcName = str_replace('/', '.', substr($bcDir, \strlen($root.'/src/')));
-            $otherBcDirs = array_values(array_diff($bcDirs, [$bcDir]));
+        foreach ($boundedContextDirs as $boundedContextDir) {
+            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
+            $otherBoundedContextDirs = array_values(array_diff($boundedContextDirs, [$boundedContextDir]));
 
-            yield $bcName => PHPat::rule()
+            yield $boundedContextName => PHPat::rule()
                 ->classes(Selector::AllOf(
-                    Selector::withFilepath('#'.preg_quote(substr($bcDir, \strlen($root)), '#').'/#', true),
+                    Selector::withFilepath('#'.preg_quote(substr($boundedContextDir, \strlen($root)), '#').'/#', true),
                     Selector::Not(Selector::withFilepath('#/tests/#', true)),
                 ))
                 ->canOnly()
                 ->dependOn()
                 ->classes(
                     Selector::NoneOf(...array_map(
-                        static fn (string $otherBcDir): Filepath => Selector::withFilepath('#'.preg_quote(substr($otherBcDir, \strlen($root)), '#').'/#', true),
-                        $otherBcDirs,
+                        static fn (string $otherBoundedContextDir): Filepath => Selector::withFilepath('#'.preg_quote(substr($otherBoundedContextDir, \strlen($root)), '#').'/#', true),
+                        $otherBoundedContextDirs,
                     )),
                     Selector::implements(IntegrationEventInterface::class),
                 )

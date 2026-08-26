@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tools\PHPat\Helpers;
 
-final class BcDirs
+final class BoundedContextDirs
 {
     /**
      * @return list<string>
