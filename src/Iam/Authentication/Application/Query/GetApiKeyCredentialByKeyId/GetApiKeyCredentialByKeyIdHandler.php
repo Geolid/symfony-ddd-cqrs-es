@@ -7,9 +7,9 @@ namespace Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResult;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class GetApiKeyCredentialByKeyIdHandler
 {
     public function __construct(private ApiKeyCredentialFinderInterface $apiKeyCredentialFinder)

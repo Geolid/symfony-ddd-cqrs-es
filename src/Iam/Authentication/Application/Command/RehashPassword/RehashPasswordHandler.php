@@ -12,9 +12,9 @@ use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRe
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
-use Shared\Application\Command\CommandUseCase;
+use Shared\Application\Command\CommandHandler;
 
-#[CommandUseCase]
+#[CommandHandler]
 final readonly class RehashPasswordHandler
 {
     public function __construct(

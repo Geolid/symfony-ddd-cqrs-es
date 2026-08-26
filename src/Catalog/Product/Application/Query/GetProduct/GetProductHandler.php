@@ -7,9 +7,9 @@ namespace Catalog\Product\Application\Query\GetProduct;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class GetProductHandler
 {
     public function __construct(private ProductFinderInterface $productFinder)

@@ -7,10 +7,10 @@ namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\Pagination\Pagination;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class ListOrderSummariesHandler
 {
     public function __construct(private OrderSummaryFinderInterface $orderSummaryFinder)
