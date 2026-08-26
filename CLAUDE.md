@@ -33,7 +33,7 @@ castor assets [<dm>]                               # install assets (default: al
 - `config/` — global config + per-subdomain services.
 - `demo/` — Seeders
 - `tests/` — mirrors `src/`.
-- `tools/` — custom QA rules
+- `tools/` — QA rules and test tooling
 - `ui/` — Assets, shared Twig, i18n
 
 ## Memory

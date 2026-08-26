@@ -27,7 +27,7 @@ load_dot_env();
 #[AsTask(description: 'Show quick start guide', default: true)]
 function about(): void
 {
-    io()->title('DDD/CQRS/Event Sourcing showcase, Onion-layered with pluggable Delivery Mechanisms');
+    io()->title('DDD/CQRS/Event Sourcing showcase, Onion-layered with Ports & Adapters and pluggable Delivery Mechanisms');
 
     io()->section('Quick Start');
     io()->listing([
