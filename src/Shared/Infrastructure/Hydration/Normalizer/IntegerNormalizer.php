@@ -32,7 +32,7 @@ final readonly class IntegerNormalizer implements Normalizer
             return $value;
         }
 
-        if (is_numeric($value)) {
+        if (\is_string($value) && (string) (int) $value === $value) {
             return (int) $value;
         }
 
