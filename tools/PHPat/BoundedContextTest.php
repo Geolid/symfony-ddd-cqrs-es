@@ -12,7 +12,6 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Tools\PHPat\Helpers\BoundedContextDirs;
 
 final class BoundedContextTest
 {
@@ -50,7 +49,7 @@ final class BoundedContextTest
     public function communicatesOnlyViaIntegrationEvents(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $boundedContextDirs = BoundedContextDirs::all($root);
+        $boundedContextDirs = $this->boundedContextDirs($root);
 
         foreach ($boundedContextDirs as $boundedContextDir) {
             $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
@@ -81,7 +80,7 @@ final class BoundedContextTest
     public function domainEventsStayInternal(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $boundedContextDirs = BoundedContextDirs::all($root);
+        $boundedContextDirs = $this->boundedContextDirs($root);
 
         foreach ($boundedContextDirs as $boundedContextDir) {
             $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
@@ -102,5 +101,16 @@ final class BoundedContextTest
                 ))
                 ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function boundedContextDirs(string $root): array
+    {
+        return array_values(array_filter(
+            glob($root.'/src/*/*', \GLOB_ONLYDIR) ?: [],
+            static fn (string $dir): bool => 'Shared' !== basename(\dirname($dir)),
+        ));
     }
 }
