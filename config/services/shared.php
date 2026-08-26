@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Itspire\MonologLoki\Handler\LokiHandler;
-use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\Metadata\AttributeMetadataFactory;
 use Patchlevel\Hydrator\Metadata\EnrichingMetadataFactory;
-use Patchlevel\Hydrator\Metadata\MetadataFactory;
 use Patchlevel\Hydrator\MetadataHydrator;
 use Psr\Log\LogLevel;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
@@ -35,10 +33,7 @@ return static function (ContainerConfigurator $container): void {
     $queryBusAlias = $services->alias(QueryBusInterface::class, MessengerQueryBus::class);
     $services->alias(IntegrationEventPublisherInterface::class, IntegrationEventAppender::class);
 
-    // Distinct ids on purpose: patchlevel/event-sourcing-bundle already registers
-    // AttributeMetadataFactory/MetadataFactory/MetadataHydrator/Hydrator under their own
-    // FQCN for aggregate/event hydration and crypto-shredding — reusing those same ids
-    // here would silently replace that wiring instead of adding a second, DTO-only one.
+    // Distinct ids: the bundle already owns these FQCN for aggregate/event hydration and crypto-shredding; reusing them would silently clobber that wiring.
     $services->set('shared.hydration.metadata_factory', AttributeMetadataFactory::class);
     $services->set('shared.hydration.enriching_metadata_factory', EnrichingMetadataFactory::class)
         ->args([
