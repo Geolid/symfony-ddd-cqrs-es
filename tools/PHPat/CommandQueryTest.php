@@ -58,7 +58,7 @@ final class CommandQueryTest
             ->classes(Selector::AllOf(
                 Selector::withFilepath('#/Application/Query/#', true),
                 Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-                Selector::Not(Selector::withFilepath('#/tests/#', true)),
+                $this->notInTests(),
             ))
             ->shouldNot()
             ->dependOn()
@@ -75,7 +75,7 @@ final class CommandQueryTest
                 Selector::appliesAttribute(QueryUseCase::class),
             ))
             ->should()->beReadonly()
-            ->because('A handler holds no state — a mutable one is a latent concurrency bug.');
+            ->because('A handler\'s own instance is reused across every dispatched command or query — a mutable one is a latent concurrency bug.');
     }
 
     #[TestRule]
