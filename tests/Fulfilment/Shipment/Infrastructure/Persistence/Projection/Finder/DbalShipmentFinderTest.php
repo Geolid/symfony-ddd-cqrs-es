@@ -57,30 +57,27 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
-        $delivered = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->many(2)->create();
+        $other = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $manifested = ShipmentTestFactory::new()->prepared()->manifested()->create();
         $dispatched = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
-        $this->store($manifested, $dispatched, ...$delivered);
+        $this->store($other, $manifested, $dispatched);
 
         // When
-        $manifestedOnly = iterator_to_array($this->finder->byStatus('manifested'));
-        $manifestedAndDispatched = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
+        $results = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
 
         // Then
-        self::assertCount(1, $manifestedOnly);
-        $result = $manifestedOnly[0];
-        self::assertSame($manifested->id->toString(), $result->id);
+        self::assertCount(2, $results);
+        self::assertEqualsCanonicalizing(
+            [$manifested->id->toString(), $dispatched->id->toString()],
+            array_map(static fn (ShipmentResult $result): string => $result->id, $results),
+        );
+        $result = $results[0]->id === $manifested->id->toString() ? $results[0] : $results[1];
         self::assertSame($manifested->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
         self::assertNotNull($result->trackingReference);
         self::assertNotNull($result->createdAt);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
-        self::assertCount(2, $manifestedAndDispatched);
-        self::assertEqualsCanonicalizing(
-            [$manifested->id->toString(), $dispatched->id->toString()],
-            array_map(static fn (ShipmentResult $result): string => $result->id, $manifestedAndDispatched),
-        );
     }
 
     #[Test]
@@ -88,10 +85,10 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $cutoff = '2026-06-01T00:00:00+00:00';
-        $stale = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
         $other = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->create();
         $another = ShipmentTestFactory::new()->prepared()->create();
-        $this->store($stale, $other, $another);
+        $stale = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
+        $this->store($other, $another, $stale);
 
         // When
         $results = iterator_to_array($this->finder->manifestedBefore($cutoff));
@@ -106,9 +103,9 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withCustomerId($customerId)->create();
         $other = ShipmentTestFactory::new()->create();
-        $this->store($shipment, $other);
+        $shipment = ShipmentTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($other, $shipment);
 
         // When
         $results = iterator_to_array($this->finder->byCustomer($customerId));

@@ -17,9 +17,9 @@ final class PrepareShipmentCommandTest extends AbstractCliTestCase
     public function itPreparesARequestedShipment(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
         $other = ShipmentTestFactory::new()->create();
-        $this->store($shipment, $other);
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($other, $shipment);
         $tester = $this->tester();
 
         // When

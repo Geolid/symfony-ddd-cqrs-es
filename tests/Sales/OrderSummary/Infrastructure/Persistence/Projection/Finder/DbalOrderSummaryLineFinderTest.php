@@ -29,14 +29,14 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     public function itFiltersLinesByOrderInPositionOrder(): void
     {
         // Given
+        $other = OrderTestFactory::new()->withLines([
+            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gizmo'), Money::fromCents(2_000)), 5),
+        ])->create();
         $order = OrderTestFactory::new()->withLines([
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
         ])->create();
-        $other = OrderTestFactory::new()->withLines([
-            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gizmo'), Money::fromCents(2_000)), 5),
-        ])->create();
-        $this->store($order, $other);
+        $this->store($other, $order);
 
         // When
         $lines = iterator_to_array($this->finder->byOrder($order->id->toString()));

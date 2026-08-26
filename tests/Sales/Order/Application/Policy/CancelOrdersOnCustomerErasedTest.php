@@ -30,11 +30,10 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
     public function itCancelsPlaced(): void
     {
         // Given
+        $other = OrderTestFactory::new()->create();
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
-        $this->store($order, $other);
+        $this->store($other, $order);
 
         // When
         ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
@@ -45,8 +44,8 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $results[0]->id);
         self::assertSame(OrderStatus::CANCELLED, $results[0]->status);
 
-        $otherResults = iterator_to_array($finder->byCustomer($otherCustomerId), false);
-        self::assertSame(OrderStatus::PLACED, $otherResults[0]->status);
+        $otherResult = $finder->ofId($other->id->toString());
+        self::assertSame(OrderStatus::PLACED, $otherResult->status);
     }
 
     #[Test]

@@ -72,10 +72,10 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersOrderSummariesByCustomer(): void
     {
         // Given
+        $other = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->create();
-        $other = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
-        $this->store($order, $other);
+        $this->store($other, $order);
 
         // When
         $results = iterator_to_array($this->finder->byCustomer($customerId));
@@ -92,8 +92,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersOrderSummariesByStatus(): void
     {
         // Given
-        $cancelled = OrderTestFactory::new()->cancelled()->create();
         $others = OrderTestFactory::new()->many(2)->create();
+        $cancelled = OrderTestFactory::new()->cancelled()->create();
         $this->store($cancelled, ...$others);
 
         // When
