@@ -30,7 +30,8 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
@@ -46,7 +47,8 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
@@ -60,7 +62,8 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));

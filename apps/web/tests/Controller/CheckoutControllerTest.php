@@ -179,8 +179,9 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
     private function createCustomer(string $email): Identity
     {
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail($email)->store();
+        $identity = IdentityTestFactory::new()->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail($email)->create();
+        $this->store($identity, $customer);
 
         return $identity;
     }

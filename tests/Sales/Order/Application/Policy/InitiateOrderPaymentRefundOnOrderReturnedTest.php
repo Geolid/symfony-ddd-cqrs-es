@@ -30,8 +30,9 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
     public function itInitiates(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->create();
+        $this->store($order, $orderPayment);
 
         // When
         ($this->policy)(new OrderReturned($order->id->toString(), self::RETURNED_AT));

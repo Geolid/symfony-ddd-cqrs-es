@@ -27,7 +27,8 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
         $order = OrderTestFactory::new()->withLines([
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
-        ])->store();
+        ])->create();
+        $this->store($order);
 
         // Then
         $rows = $this->fetchRows($order->id->toString());

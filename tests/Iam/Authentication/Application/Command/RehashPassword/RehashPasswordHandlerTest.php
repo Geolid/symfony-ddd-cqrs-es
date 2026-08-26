@@ -22,13 +22,14 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itRehashes(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher(new PasswordHasher(new NativePasswordHasher(cost: 4)))
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
         self::getContainer()->set(PasswordHasherInterface::class, new PasswordHasher(new NativePasswordHasher(cost: 12)));
 
         // When
@@ -43,14 +44,15 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRehashNotNeeded(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $hasher = $this->service(PasswordHasherInterface::class);
-        PasswordCredentialTestFactory::new()
+        $this->store(PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
-            ->store();
+            ->create());
         $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
 
         // When
@@ -65,7 +67,8 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // Then
         $this->expectException(PasswordCredentialResultNotFoundException::class);

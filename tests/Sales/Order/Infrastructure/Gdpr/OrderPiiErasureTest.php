@@ -26,7 +26,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
-            ->store();
+            ->create();
+        $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
             static fn (OrderPlaced $event): bool => $event->id === $order->id->toString(),
@@ -48,7 +49,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsBillingAddressOnBillingRetentionExpiry(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
             static fn (OrderPlaced $event): bool => $event->id === $order->id->toString(),
@@ -71,9 +73,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
-        $this->store($orderPayment);
+        $this->store($order, $orderPayment);
         $serialized = $this->serializedEventOf(
             OrderPaymentCapturedIntegrationEvent::class,
             static fn (OrderPaymentCapturedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),

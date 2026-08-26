@@ -23,7 +23,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $shipment = ShipmentTestFactory::new()
             ->withCustomerId($customerId)
-            ->store();
+            ->create();
+        $this->store($shipment);
         $serialized = $this->serializedEventOf(
             ShipmentRequested::class,
             static fn (ShipmentRequested $event): bool => $event->id === $shipment->id->toString(),

@@ -85,7 +85,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->store();
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->create();
+        $this->store($customer);
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
@@ -106,7 +107,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         if ($withBillingAddress) {
             $customer = $customer->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')));
         }
-        $customer = $customer->store();
+        $customer = $customer->create();
+        $this->store($customer);
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
@@ -147,7 +149,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($cups);
 
         // Then
         $this->expectException(OutdatedOrderException::class);
@@ -165,8 +168,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
      */
     private function lines(): array
     {
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->store();
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
+        $this->store($cups, $saucer);
 
         return [
             ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_750],
@@ -176,11 +180,14 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function registeredCustomer(string $email): Customer
     {
-        return CustomerTestFactory::new()
+        $customer = CustomerTestFactory::new()
             ->withEmail($email)
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
             ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
-            ->store();
+            ->create();
+        $this->store($customer);
+
+        return $customer;
     }
 
     private function orderOf(string $id): Order

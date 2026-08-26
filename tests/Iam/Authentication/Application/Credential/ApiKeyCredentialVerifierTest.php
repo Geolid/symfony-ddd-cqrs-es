@@ -35,11 +35,11 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $keyId = KeyId::PREFIX.'0123456789abcdef';
-        ApiKeyCredentialTestFactory::new()
+        $this->store(ApiKeyCredentialTestFactory::new()
             ->withKeyId($keyId)
             ->withSecret('plain-secret')
             ->withHasher($this->hasher)
-            ->store();
+            ->create());
 
         // Then
         self::assertTrue($this->verifier->verify($keyId, 'plain-secret'));
@@ -61,12 +61,12 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $keyId = KeyId::PREFIX.'0123456789abcdef';
-        ApiKeyCredentialTestFactory::new()
+        $this->store(ApiKeyCredentialTestFactory::new()
             ->withKeyId($keyId)
             ->withSecret('plain-secret')
             ->withHasher($this->hasher)
             ->revoked()
-            ->store();
+            ->create());
 
         // Then
         $this->expectException(ApiKeyCredentialRevokedException::class);
@@ -79,14 +79,15 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $keyId = KeyId::PREFIX.'0123456789abcdef';
-        ApiKeyCredentialTestFactory::new()
+        $this->store(ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($keyId)
             ->withSecret('plain-secret')
             ->withHasher($this->hasher)
-            ->store();
+            ->create());
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 

@@ -28,7 +28,8 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new DeliverOrder($order->id->toString()));
@@ -42,7 +43,8 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->store();
+        $order = OrderTestFactory::new()->confirmed()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new DeliverOrder($order->id->toString()));

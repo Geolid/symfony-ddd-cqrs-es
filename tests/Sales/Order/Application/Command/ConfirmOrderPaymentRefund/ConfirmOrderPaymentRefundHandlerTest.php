@@ -21,8 +21,9 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     public function itConfirmsRefundWhenInitiated(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->refundInitiated()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->refundInitiated()->create();
+        $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new ConfirmOrderPaymentRefund($orderPayment->id->toString()));
@@ -36,8 +37,9 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     public function itIgnoresWhenNotRefunding(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new ConfirmOrderPaymentRefund($orderPayment->id->toString()));

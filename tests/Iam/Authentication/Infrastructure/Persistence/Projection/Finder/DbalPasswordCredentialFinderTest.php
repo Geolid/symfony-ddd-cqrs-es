@@ -35,7 +35,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->withPasswordStrength(new StubPasswordStrength())
             ->withHasher($hasher)
-            ->store();
+            ->create();
+        $this->store($credential);
 
         // When
         $result = $this->finder->ofLogin('ada.lovelace');
@@ -68,7 +69,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->withIdentityId($identityId)
             ->withPasswordStrength(new StubPasswordStrength())
             ->withHasher(new StubPasswordHasher())
-            ->store();
+            ->create();
+        $this->store($credential);
 
         // When
         $result = $this->finder->ofIdentityId($identityId);

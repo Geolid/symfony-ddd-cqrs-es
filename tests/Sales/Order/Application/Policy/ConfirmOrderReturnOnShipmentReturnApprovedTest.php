@@ -28,7 +28,8 @@ final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractInteg
     public function itConfirms(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($order);
 
         // When
         ($this->policy)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-11T00:00:00+00:00'));

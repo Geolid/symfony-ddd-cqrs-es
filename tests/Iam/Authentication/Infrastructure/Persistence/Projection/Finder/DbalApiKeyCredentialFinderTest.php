@@ -38,7 +38,8 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
             ->withSecret('plain-secret')
             ->withIssuedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->withHasher($hasher)
-            ->store();
+            ->create();
+        $this->store($credential);
 
         // When
         $result = $this->finder->ofKeyId($keyId);

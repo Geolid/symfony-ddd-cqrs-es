@@ -40,7 +40,8 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
             FullName::of('Ada', 'Lovelace'),
             Address::of('12 rue des Lilas', '75001', 'Paris'),
         );
-        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->store();
+        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->create();
+        $this->store($shipment);
 
         // When
         ($this->policy)(new ShipmentPrepared($shipment->id->toString(), '2026-01-02T00:00:00+00:00'));

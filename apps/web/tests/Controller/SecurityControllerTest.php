@@ -46,15 +46,16 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $passwordCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->store();
+            ->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->create();
+        $this->store($identity, $passwordCredential, $customer);
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
@@ -73,15 +74,16 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $passwordCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer-remember@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->store();
+            ->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->create();
+        $this->store($identity, $passwordCredential, $customer);
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
@@ -99,14 +101,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $passwordCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->store();
+            ->create();
+        $this->store($identity, $passwordCredential);
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));
@@ -126,14 +129,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $passwordCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->store();
+            ->create();
+        $this->store($identity, $passwordCredential);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 
@@ -154,7 +158,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $this->loginAs($client, $identity);
 
         // When

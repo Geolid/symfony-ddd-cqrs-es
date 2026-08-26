@@ -43,7 +43,8 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
             ->delivered($deliveredAt)
             ->completed($completedAt)
             ->anonymized($anonymizedAt)
-            ->store();
+            ->create();
+        $this->store($order);
 
         // When
         $result = $this->finder->ofId($order->id->toString());
@@ -78,8 +79,8 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order, OrderTestFactory::new()->create());
 
         // When
         $results = iterator_to_array($this->finder->byCustomer($customerId), false);
@@ -94,9 +95,12 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $cutoff = '2026-01-01T00:00:00+00:00';
-        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->store();
-        OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->store();
-        OrderTestFactory::new()->store();
+        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->create();
+        $this->store(
+            $expired,
+            OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->create(),
+            OrderTestFactory::new()->create(),
+        );
 
         // When
         $results = iterator_to_array($this->finder->closedBefore($cutoff), false);
@@ -113,11 +117,14 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $cutoff = '2026-01-15T00:00:00+00:00';
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->store();
-        OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
-            ->store();
-        OrderTestFactory::new()->confirmed()->dispatched()->store();
+            ->create();
+        $this->store(
+            $expired,
+            OrderTestFactory::new()->confirmed()->dispatched()
+                ->delivered(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
+                ->create(),
+            OrderTestFactory::new()->confirmed()->dispatched()->create(),
+        );
 
         // When
         $results = iterator_to_array($this->finder->deliveredBefore($cutoff), false);

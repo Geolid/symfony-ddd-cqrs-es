@@ -19,7 +19,8 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itReactivates(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity);
 
         // When
         $this->dispatch(new ReactivateIdentity($identity->id->toString(), 'Appeal upheld'));
@@ -33,7 +34,8 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // When
         $this->dispatch(new ReactivateIdentity($identity->id->toString(), 'Appeal upheld'));

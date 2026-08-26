@@ -24,7 +24,8 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
         // Given
         $client = self::createClient();
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
-            ->returnRequested()->returnManifested(self::RETURN_TRACKING_REFERENCE)->returnDispatched()->store();
+            ->returnRequested()->returnManifested(self::RETURN_TRACKING_REFERENCE)->returnDispatched()->create();
+        $this->store($shipment);
         $body = self::body(self::RETURN_TRACKING_REFERENCE);
 
         // When

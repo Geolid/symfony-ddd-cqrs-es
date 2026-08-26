@@ -21,7 +21,8 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsReturnWhenReceived(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
@@ -36,7 +37,8 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotReceived(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

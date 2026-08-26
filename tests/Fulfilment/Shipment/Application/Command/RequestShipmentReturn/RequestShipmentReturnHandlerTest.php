@@ -20,7 +20,8 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsReturnWhenDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
@@ -35,7 +36,8 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));

@@ -40,8 +40,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->store();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $other = IdentityTestFactory::new()->create();
+        $this->store($identity, $other);
 
         // When
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
@@ -65,8 +66,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivated(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->suspended()->store();
-        $identity = IdentityTestFactory::new()->suspended()->store();
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $other = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity, $other);
 
         // When
         $identity->reactivate(Reason::fromString('Appeal upheld'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00'));
@@ -90,8 +92,9 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErased(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->store();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $other = IdentityTestFactory::new()->create();
+        $this->store($identity, $other);
 
         // When
         $identity->erase(new \DateTimeImmutable('now +00:00'));

@@ -27,7 +27,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itGetsByReference(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
         $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
         $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
         $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
@@ -43,7 +43,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->captured($capturedAt)
             ->refundInitiated($refundInitiatedAt)
             ->refundConfirmed($refundedAt)
-            ->store();
+            ->create();
+        $this->store($order, $orderPayment);
 
         // When
         $result = $this->finder->ofReference('GLBX-9F3K2M1P');
@@ -78,8 +79,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
-        $requested = OrderPaymentTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->authorized()->store();
+        $requested = OrderPaymentTestFactory::new()->create();
+        $this->store($requested, OrderPaymentTestFactory::new()->authorized()->create());
 
         // When
         $results = iterator_to_array($this->finder->byStatus(OrderPaymentStatus::REQUESTED->value));
@@ -94,8 +95,8 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $cutoff = '2026-06-01T00:00:00+00:00';
-        $stale = OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->store();
-        OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->store();
+        $stale = OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
+        $this->store($stale, OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->create());
 
         // When
         $results = iterator_to_array($this->finder->requestedBefore($cutoff));

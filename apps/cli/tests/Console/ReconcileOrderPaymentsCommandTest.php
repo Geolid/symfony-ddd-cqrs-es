@@ -34,14 +34,14 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
         self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(OrderPaymentStatus::AUTHORIZED->value));
-        OrderPaymentTestFactory::new()
+        $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
             ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
-            ->store();
-        OrderPaymentTestFactory::new()
+            ->create());
+        $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-FRESH1234')
             ->withRequestedAt(new \DateTimeImmutable('2026-01-31T23:55:00+00:00'))
-            ->store();
+            ->create());
         $tester = $this->tester();
 
         // When
@@ -60,14 +60,14 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
         self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(OrderPaymentStatus::AUTHORIZED->value, failingReference: 'GLBX-UNREACHABLE'));
-        OrderPaymentTestFactory::new()
+        $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-UNREACHABLE')
             ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
-            ->store();
-        OrderPaymentTestFactory::new()
+            ->create());
+        $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
             ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
-            ->store();
+            ->create());
         $tester = $this->tester();
 
         // When
@@ -85,7 +85,7 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
+        $this->store(OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order-payment:reconcile');
         $lock->acquire();

@@ -21,7 +21,8 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDispatchesManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));
@@ -37,7 +38,8 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);
@@ -50,7 +52,8 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

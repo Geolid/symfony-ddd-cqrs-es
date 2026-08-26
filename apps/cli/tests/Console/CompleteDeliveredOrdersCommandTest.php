@@ -33,10 +33,11 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->store();
+            ->create();
         $withinWindow = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-30T00:00:00+00:00'))
-            ->store();
+            ->create();
+        $this->store($expired, $withinWindow);
         $tester = $this->tester();
 
         // When
@@ -53,7 +54,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
+        $this->store(OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order:complete-delivered');
         $lock->acquire();

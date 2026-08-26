@@ -28,8 +28,8 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
     public function itCaptures(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create());
 
         // When
         ($this->policy)(new OrderDispatched($order->id->toString(), '2026-01-02T00:00:00+00:00'));

@@ -28,12 +28,4 @@ final readonly class AggregateListTestFactory
     {
         return array_map($this->factory->create(...), range(1, $this->count));
     }
-
-    /**
-     * @return list<T>
-     */
-    public function store(): array
-    {
-        return array_map($this->factory->store(...), range(1, $this->count));
-    }
 }

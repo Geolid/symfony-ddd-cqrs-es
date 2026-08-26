@@ -33,7 +33,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
@@ -49,7 +50,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
@@ -77,7 +79,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderNotCancellableException::class);
@@ -90,7 +93,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
@@ -104,8 +108,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create());
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));

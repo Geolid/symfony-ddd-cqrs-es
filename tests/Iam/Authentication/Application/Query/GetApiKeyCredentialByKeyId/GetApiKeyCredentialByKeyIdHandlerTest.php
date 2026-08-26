@@ -19,7 +19,8 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
     public function itGets(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $keyId = KeyId::PREFIX.'0123456789abcdef';
         $hasher = $this->service(ApiKeyHasherInterface::class);
         $credential = ApiKeyCredentialTestFactory::new()
@@ -28,7 +29,8 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
             ->withKeyId($keyId)
             ->withSecret('plain-secret')
             ->withHasher($hasher)
-            ->store();
+            ->create();
+        $this->store($credential);
 
         // When
         $result = $this->ask(new GetApiKeyCredentialByKeyId($keyId));

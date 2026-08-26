@@ -28,7 +28,8 @@ final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegration
     public function itConfirms(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
 
         // When
         ($this->policy)(new OrderPaymentAuthorized(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));

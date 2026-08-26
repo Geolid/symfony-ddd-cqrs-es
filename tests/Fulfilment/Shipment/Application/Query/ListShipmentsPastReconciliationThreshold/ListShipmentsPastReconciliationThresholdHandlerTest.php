@@ -19,14 +19,15 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
         self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
         $stuck = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
-            ->store();
-        ShipmentTestFactory::new()->prepared()
+            ->create();
+        $this->store($stuck);
+        $this->store(ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-09T12:00:00+00:00'))
-            ->store();
-        ShipmentTestFactory::new()->prepared()
+            ->create());
+        $this->store(ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
             ->dispatched()
-            ->store();
+            ->create());
 
         // When
         $results = iterator_to_array($this->ask(new ListShipmentsPastReconciliationThreshold()), false);

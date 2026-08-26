@@ -34,7 +34,8 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itManifestsPrepared(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
@@ -50,7 +51,8 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', $shipment->id->toString());
 
         // When
@@ -66,7 +68,8 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyTrackedUnderAnotherReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentAlreadyTrackedException::class);
@@ -80,7 +83,8 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', Uuid::uuid7()->toString());
-        $shipment = ShipmentTestFactory::new()->prepared()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(TrackingReferenceAlreadyTakenException::class);

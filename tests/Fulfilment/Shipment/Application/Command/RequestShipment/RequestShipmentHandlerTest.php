@@ -70,11 +70,11 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId)->toString();
-        ShipmentTestFactory::new()
+        $this->store(ShipmentTestFactory::new()
             ->withOrderId($orderId)
             ->withCustomerId($customerId)
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
-            ->store();
+            ->create());
 
         // When
         $this->dispatch(new RequestShipment(

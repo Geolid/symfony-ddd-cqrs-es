@@ -21,7 +21,8 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itReceivesReturnWhenDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
@@ -36,7 +37,8 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itReceivesReturnWhenManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
@@ -50,7 +52,8 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

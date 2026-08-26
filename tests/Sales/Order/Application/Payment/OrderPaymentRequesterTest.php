@@ -43,7 +43,8 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itRequestsWhenPlaced(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->store();
+        $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->create();
+        $this->store($order);
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
@@ -91,8 +92,8 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itReturnsExistingWhenAlreadyRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->create());
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
@@ -106,7 +107,8 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled()->store();
+        $order = OrderTestFactory::new()->cancelled()->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderAlreadyCancelledException::class);

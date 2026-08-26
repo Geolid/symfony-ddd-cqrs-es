@@ -23,8 +23,9 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference(self::REFERENCE)->authorized()->captured()->refundInitiated()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference(self::REFERENCE)->authorized()->captured()->refundInitiated()->create();
+        $this->store($order, $orderPayment);
         $body = self::body(self::REFERENCE);
 
         // When

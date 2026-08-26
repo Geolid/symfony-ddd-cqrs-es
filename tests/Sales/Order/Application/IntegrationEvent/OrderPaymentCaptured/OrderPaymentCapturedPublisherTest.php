@@ -19,7 +19,8 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->authorized()

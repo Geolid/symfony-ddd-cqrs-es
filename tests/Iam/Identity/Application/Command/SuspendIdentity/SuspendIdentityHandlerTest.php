@@ -19,7 +19,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itSuspends(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // When
         $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
@@ -33,7 +34,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->store();
+        $identity = IdentityTestFactory::new()->suspended()->create();
+        $this->store($identity);
 
         // When
         $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));

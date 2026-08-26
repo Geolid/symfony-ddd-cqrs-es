@@ -22,7 +22,8 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $id = Uuid::uuid7()->toString();
         $keyId = KeyId::PREFIX.'0123456789abcdef';
 
@@ -42,7 +43,8 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
             'CI pipeline',

@@ -25,7 +25,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itDefines(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // When
         $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
@@ -40,7 +41,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenLoginAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', Uuid::uuid7()->toString());
 
         // Then
@@ -54,7 +56,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         self::getContainer()->set(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
         // Then
@@ -68,7 +71,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenWeakPassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // Then
         $this->expectException(WeakPasswordException::class);

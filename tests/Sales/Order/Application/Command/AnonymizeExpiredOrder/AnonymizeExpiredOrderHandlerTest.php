@@ -21,7 +21,8 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))->store();
+        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
@@ -36,7 +37,8 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotClosed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));

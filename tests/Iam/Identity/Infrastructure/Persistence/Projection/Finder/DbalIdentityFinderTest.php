@@ -58,7 +58,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $identities = IdentityTestFactory::new()->many(5)->store();
+        $identities = IdentityTestFactory::new()->many(5)->create();
+        $this->store(...$identities);
 
         // When
         $results = iterator_to_array($this->finder);
@@ -81,7 +82,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $identities = IdentityTestFactory::new()->many(5)->store();
+        $identities = IdentityTestFactory::new()->many(5)->create();
+        $this->store(...$identities);
 
         // When
         $firstPage = $this->finder->paginate(page: 1, itemsPerPage: 2);

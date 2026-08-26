@@ -33,7 +33,8 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
@@ -49,7 +50,8 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
@@ -62,7 +64,8 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderBelongsToAnotherCustomerException::class);
@@ -76,7 +79,8 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderNotReturnableException::class);
@@ -95,7 +99,8 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
             ->confirmed()
             ->dispatched()
             ->delivered(new \DateTimeImmutable('2020-01-01T00:00:00+00:00'))
-            ->store();
+            ->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderReturnWindowExpiredException::class);

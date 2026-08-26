@@ -28,7 +28,8 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itConfirmsReturnWhenRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new ConfirmOrderReturn($order->id->toString()));
@@ -42,7 +43,8 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new ConfirmOrderReturn($order->id->toString()));

@@ -28,7 +28,8 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
     public function itDispatches(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->store();
+        $order = OrderTestFactory::new()->confirmed()->create();
+        $this->store($order);
 
         // When
         ($this->policy)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));

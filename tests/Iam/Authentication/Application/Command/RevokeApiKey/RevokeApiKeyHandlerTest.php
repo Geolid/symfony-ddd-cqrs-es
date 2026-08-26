@@ -34,9 +34,11 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itRevokes(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()->withIdentityId($identity->id->toString())->withKeyId($keyId)->withLabel('CI pipeline')->withHasher($this->hasher)->store();
+        $credential = ApiKeyCredentialTestFactory::new()->withIdentityId($identity->id->toString())->withKeyId($keyId)->withLabel('CI pipeline')->withHasher($this->hasher)->create();
+        $this->store($credential);
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
             'CI pipeline',
@@ -56,8 +58,9 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRevoked(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
-        $credential = ApiKeyCredentialTestFactory::new()->withIdentityId($identity->id->toString())->withHasher($this->hasher)->revoked()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $credential = ApiKeyCredentialTestFactory::new()->withIdentityId($identity->id->toString())->withHasher($this->hasher)->revoked()->create();
+        $this->store($identity, $credential);
 
         // When
         $this->dispatch(new RevokeApiKey($credential->id->toString(), $identity->id->toString()));
@@ -71,7 +74,8 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ApiKeyCredentialId::generate();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // Then
         $this->expectException(ApiKeyCredentialNotFoundException::class);
@@ -84,8 +88,9 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOwnedByAnotherIdentity(): void
     {
         // Given
-        $credential = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->store();
-        $identity = IdentityTestFactory::new()->store();
+        $credential = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($credential, $identity);
 
         // Then
         $this->expectException(ApiKeyCredentialOwnedByAnotherIdentityException::class);

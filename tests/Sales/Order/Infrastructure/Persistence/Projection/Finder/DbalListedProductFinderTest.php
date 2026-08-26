@@ -25,8 +25,9 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByIds(): void
     {
         // Given
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->withLabel('Untouched')->withUnitAmountInCents(500)->store();
+        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductTestFactory::new()->withLabel('Untouched')->withUnitAmountInCents(500)->create();
+        $this->store($cups, $other);
 
         // When
         $results = iterator_to_array($this->finder->byIds($cups->id->toString(), Uuid::uuid7()->toString()));

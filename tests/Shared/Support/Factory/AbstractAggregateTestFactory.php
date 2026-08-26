@@ -7,9 +7,6 @@ namespace Shared\Tests\Support\Factory;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Patchlevel\EventSourcing\Repository\RepositoryManager;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Tools\PHPUnit\KernelTestCaseHelper;
 use Webmozart\Assert\Assert;
 
 /**
@@ -57,24 +54,6 @@ abstract class AbstractAggregateTestFactory
     public function create(): AggregateRoot
     {
         return $this->instantiate();
-    }
-
-    /**
-     * @return T
-     */
-    public function store(): AggregateRoot
-    {
-        $aggregate = $this->create();
-
-        // Kernel/container statics live on KernelTestCase itself, never redeclared by any
-        // subclass — this reaches whichever one the running test already booted.
-        $manager = KernelTestCaseHelper::getContainer(KernelTestCase::class)
-            ->get(RepositoryManager::class);
-        \assert($manager instanceof RepositoryManager);
-
-        $manager->get($aggregate::class)->save($aggregate);
-
-        return $aggregate;
     }
 
     /**

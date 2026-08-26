@@ -23,7 +23,8 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested(self::TRACKING_REFERENCE)->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested(self::TRACKING_REFERENCE)->dispatched()->create();
+        $this->store($shipment);
         $body = self::body(self::TRACKING_REFERENCE);
 
         // When
