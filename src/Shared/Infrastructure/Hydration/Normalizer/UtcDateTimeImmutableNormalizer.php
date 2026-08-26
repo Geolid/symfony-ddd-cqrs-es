@@ -36,6 +36,10 @@ final readonly class UtcDateTimeImmutableNormalizer implements Normalizer
             throw InvalidArgument::withWrongType('string|null', $value);
         }
 
-        return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+        try {
+            return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+        } catch (\Exception $exception) {
+            throw InvalidArgument::fromThrowable($exception);
+        }
     }
 }

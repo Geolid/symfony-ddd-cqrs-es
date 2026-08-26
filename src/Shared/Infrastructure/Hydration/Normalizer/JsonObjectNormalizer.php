@@ -8,6 +8,7 @@ use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\Normalizer\HydratorAwareNormalizer;
 use Patchlevel\Hydrator\Normalizer\InvalidArgument;
 use Patchlevel\Hydrator\Normalizer\Normalizer;
+use Webmozart\Assert\Assert;
 
 final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
 {
@@ -26,11 +27,15 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             return null;
         }
 
-        if (!\is_object($value) || null === $this->hydrator) {
+        if (!$value instanceof $this->className || null === $this->hydrator) {
             throw InvalidArgument::withWrongType($this->className.'|null', $value);
         }
 
-        return json_encode($this->hydrator->extract($value), \JSON_THROW_ON_ERROR);
+        try {
+            return json_encode($this->hydrator->extract($value), \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw InvalidArgument::fromThrowable($exception);
+        }
     }
 
     public function denormalize(mixed $value): ?object
@@ -43,8 +48,17 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             throw InvalidArgument::withWrongType('string|null', $value);
         }
 
-        /** @var array<string, mixed> $decoded */
-        $decoded = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+        try {
+            $decoded = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw InvalidArgument::fromThrowable($exception);
+        }
+
+        try {
+            $decoded = Assert::isMap($decoded);
+        } catch (\InvalidArgumentException) {
+            throw InvalidArgument::withWrongType('array<string, mixed>', $decoded);
+        }
 
         return $this->hydrator->hydrate($this->className, $decoded);
     }
