@@ -31,6 +31,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         $identityId = Uuid::uuid7()->toString();
         $keyId = KeyId::PREFIX.'0123456789abcdef';
         $hasher = new StubApiKeyHasher();
+        $other = ApiKeyCredentialTestFactory::new()->withKeyId(KeyId::PREFIX.'fedcba9876543210')->withHasher($hasher)->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identityId)
             ->withLabel('CI pipeline')
@@ -39,7 +40,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
             ->withIssuedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->withHasher($hasher)
             ->create();
-        $this->store($credential);
+        $this->store($other, $credential);
 
         // When
         $result = $this->finder->ofKeyId($keyId);
