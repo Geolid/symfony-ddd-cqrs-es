@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit;
+namespace Tools\PHPUnit;
 
 use PHPUnit\Runner\Extension\Extension;
 use PHPUnit\Runner\Extension\Facade;
 use PHPUnit\Runner\Extension\ParameterCollection;
 use PHPUnit\TextUI\Configuration\Configuration;
-use Support\PHPUnit\EventSourcing\BootSubscriptionsOnTestSuiteStarted;
-use Support\PHPUnit\EventSourcing\CreateSchemaOnTestSuiteStarted;
-use Support\PHPUnit\EventSourcing\ResetDatabasesOnTestSuiteStarted;
-use Support\PHPUnit\EventSourcing\ResetStateOnPreparationStarted;
+use Tools\PHPUnit\EventSourcing\BootSubscriptionsOnTestSuiteStarted;
+use Tools\PHPUnit\EventSourcing\CreateSchemaOnTestSuiteStarted;
+use Tools\PHPUnit\EventSourcing\ResetDatabasesOnTestSuiteStarted;
+use Tools\PHPUnit\EventSourcing\ResetStateOnPreparationStarted;
 
 /**
  * Registers event-sourcing test subscribers in dependency order — PHPUnit notifies same-event subscribers

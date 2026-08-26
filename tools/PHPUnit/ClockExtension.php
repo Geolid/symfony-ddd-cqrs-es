@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit;
+namespace Tools\PHPUnit;
 
 use PHPUnit\Runner\Extension\Extension;
 use PHPUnit\Runner\Extension\Facade;
 use PHPUnit\Runner\Extension\ParameterCollection;
 use PHPUnit\TextUI\Configuration\Configuration;
-use Support\PHPUnit\Clock\FreezeClockOnTestSuiteStarted;
+use Tools\PHPUnit\Clock\FreezeClockOnTestSuiteStarted;
 
 /**
  * Registers the subscriber that freezes the global Clock before the test suite starts.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit;
+namespace Tools\PHPUnit;
 
 use Bootstrap\Kernel;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;

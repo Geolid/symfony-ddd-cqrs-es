@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit\EventSourcing;
+namespace Tools\PHPUnit\EventSourcing;
 
 use Bootstrap\Kernel;
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;
-use Support\PHPUnit\ThrowawayKernelHelper;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
+use Tools\PHPUnit\ThrowawayKernelHelper;
 
 /**
  * Drops and recreates the event sourcing and read model databases once before the test suite starts.

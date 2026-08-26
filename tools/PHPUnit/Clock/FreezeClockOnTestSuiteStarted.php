@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit\Clock;
+namespace Tools\PHPUnit\Clock;
 
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;

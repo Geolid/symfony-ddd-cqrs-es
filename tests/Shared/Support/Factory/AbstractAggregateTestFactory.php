@@ -8,8 +8,8 @@ use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
-use Support\Helpers\KernelTestCaseHelper;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Tools\PHPUnit\KernelTestCaseHelper;
 use Webmozart\Assert\Assert;
 
 /**

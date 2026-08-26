@@ -16,11 +16,14 @@ parameters:
         - castor.php
         - .castor/
 
-    # Deliberately-invalid fixtures for custom rule tests — tools/ is analysed too, so
-    # without this exclusion a rule (global via services tag) would flag its own fixture
-    # for real, on top of the isolated RuleTestCase run.
     excludePaths:
+        # Deliberately-invalid fixtures for custom rule tests — tools/ is analysed too, so
+        # without this exclusion a rule (global via services tag) would flag its own fixture
+        # for real, on top of the isolated RuleTestCase run.
         - tools/PHPStan/Tests/data/*
+        # Needs the test container (test.service_container, InMemoryStore...) — analysed by
+        # tests/phpstan.neon instead, which points at it.
+        - tools/PHPUnit/*
 
     # Castor is a standalone binary, not a Composer dependency.
     # This generated stub provides all IDE type-hinting for castor.php and .castor/.
