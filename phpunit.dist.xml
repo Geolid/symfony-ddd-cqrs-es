@@ -92,7 +92,6 @@
 
     <extensions>
         <bootstrap class="Support\PHPUnit\EventSourcingExtension"/>
-        <bootstrap class="Support\PHPUnit\AggregateFactoryExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
         <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension"/>
     </extensions>
