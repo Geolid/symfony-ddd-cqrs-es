@@ -6,7 +6,7 @@ e-commerce flow: customers, orders, shipping, catalog, identity.
 ## Stack & Architecture
 
 - PHP, Symfony — versions: `composer.json`
-- DDD, CQRS, Event Sourcing (`patchlevel`), Onion layering, Delivery Mechanism (DM)
+- DDD, CQRS, Event Sourcing (`patchlevel`), Onion layering, Ports & Adapters (driving/driven), Delivery Mechanism (DM)
 
 ## Commands (Castor = Docker proxy)
 

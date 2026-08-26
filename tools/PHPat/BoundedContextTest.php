@@ -39,7 +39,7 @@ final class BoundedContextTest
             ->classes(
                 ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_MECHANISM_VENDOR_NAMESPACES),
             )
-            ->because('A Bounded Context coupled to its delivery mechanism loses the portability Onion layering exists to give it.');
+            ->because('A Bounded Context coupled to its delivery mechanism loses the portability Ports & Adapters exists to give it.');
     }
 
     /**
