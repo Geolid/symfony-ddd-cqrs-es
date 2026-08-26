@@ -69,7 +69,7 @@ final class BoundedContextTest
                     )),
                     Selector::implements(IntegrationEventInterface::class),
                 )
-                ->because('This is a Bounded Context\'s Open Host Service — a shared, uniform protocol for every consumer; a bespoke integration per consumer would mean an internal change ripples across each one.');
+                ->because('An Integration Event is this Bounded Context\'s own Event-Carried State Transfer, in its own Published Language — a bespoke integration per consumer would mean an internal change ripples across each one instead of staying behind one shared, published shape.');
         }
     }
 }
