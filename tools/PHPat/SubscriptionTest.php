@@ -54,7 +54,7 @@ final class SubscriptionTest
             ->classes($this->processors())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Processor::class))
-            ->because('A cross-cutting reaction spanning every Bounded Context never wired up silently never runs.');
+            ->because('A technical reaction to an event never wired up silently never fires.');
     }
 
     #[TestRule]
@@ -74,7 +74,7 @@ final class SubscriptionTest
             ->classes($this->publishers())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Publisher::class))
-            ->because('A fact crossing a Bounded Context boundary needs its own guaranteed processing group — a shared one can\'t promise that.');
+            ->because('Publishing needs its own group — sharing Policy\'s, Processor\'s, or Projector\'s would break store()\'s guarantee of when a fact actually crosses the boundary.');
     }
 
     private function subscribers(): SelectorInterface
