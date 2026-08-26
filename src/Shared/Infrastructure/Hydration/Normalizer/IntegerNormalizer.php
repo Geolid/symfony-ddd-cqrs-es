@@ -15,11 +15,11 @@ final readonly class IntegerNormalizer implements Normalizer
             return null;
         }
 
-        if (!\is_scalar($value)) {
+        if (!\is_int($value)) {
             throw InvalidArgument::withWrongType('int|null', $value);
         }
 
-        return (int) $value;
+        return $value;
     }
 
     public function denormalize(mixed $value): ?int
@@ -28,10 +28,14 @@ final readonly class IntegerNormalizer implements Normalizer
             return null;
         }
 
-        if (!\is_scalar($value)) {
-            throw InvalidArgument::withWrongType('int|null', $value);
+        if (\is_int($value)) {
+            return $value;
         }
 
-        return (int) $value;
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        throw InvalidArgument::withWrongType('int|null', $value);
     }
 }

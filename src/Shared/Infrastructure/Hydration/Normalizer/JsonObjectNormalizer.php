@@ -30,7 +30,11 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             throw InvalidArgument::withWrongType($this->className.'|null', $value);
         }
 
-        return json_encode($this->hydrator->extract($value), \JSON_THROW_ON_ERROR);
+        try {
+            return json_encode($this->hydrator->extract($value), \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw InvalidArgument::fromThrowable($exception);
+        }
     }
 
     public function denormalize(mixed $value): ?object
@@ -43,10 +47,14 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             throw InvalidArgument::withWrongType('string|null', $value);
         }
 
-        /** @var array<string, mixed> $decoded */
-        $decoded = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+        try {
+            /** @var array<string, mixed> $decoded */
+            $decoded = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
 
-        return $this->hydrator->hydrate($this->className, $decoded);
+            return $this->hydrator->hydrate($this->className, $decoded);
+        } catch (\JsonException $exception) {
+            throw InvalidArgument::fromThrowable($exception);
+        }
     }
 
     public function setHydrator(Hydrator $hydrator): void

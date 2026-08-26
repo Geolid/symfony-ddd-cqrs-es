@@ -9,21 +9,33 @@ use Patchlevel\Hydrator\Normalizer\Normalizer;
 
 final readonly class BooleanNormalizer implements Normalizer
 {
-    public function normalize(mixed $value): bool
+    public function normalize(mixed $value): ?bool
     {
-        if (!\is_scalar($value)) {
-            throw InvalidArgument::withWrongType('bool', $value);
+        if (null === $value) {
+            return null;
         }
 
-        return (bool) $value;
+        if (!\is_bool($value)) {
+            throw InvalidArgument::withWrongType('bool|null', $value);
+        }
+
+        return $value;
     }
 
-    public function denormalize(mixed $value): bool
+    public function denormalize(mixed $value): ?bool
     {
-        if (!\is_scalar($value)) {
-            throw InvalidArgument::withWrongType('bool', $value);
+        if (null === $value) {
+            return null;
         }
 
-        return (bool) $value;
+        if (\in_array($value, [true, 1, '1'], true)) {
+            return true;
+        }
+
+        if (\in_array($value, [false, 0, '0'], true)) {
+            return false;
+        }
+
+        throw InvalidArgument::withWrongType('bool|null', $value);
     }
 }
