@@ -23,7 +23,7 @@ final class ShipmentReturnApprovedPublisherTest extends AbstractIntegrationTestC
         $this->store($shipment);
 
         // Then
-        $event = $this->publishedEventOfType(ShipmentReturnApprovedIntegrationEvent::class);
+        $event = $this->publishedEventOf(ShipmentReturnApprovedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
     }

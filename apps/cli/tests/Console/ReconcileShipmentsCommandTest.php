@@ -35,16 +35,17 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
         self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(ShipmentStatus::DISPATCHED->value));
-        $order = OrderTestFactory::new()->store();
-        ShipmentTestFactory::new()
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $this->store(ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()
             ->manifested('ACME-STUCK9999', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
-            ->store();
-        ShipmentTestFactory::new()
+            ->create());
+        $this->store(ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-FRESH9999', new \DateTimeImmutable('2026-02-09T12:00:00+00:00'))
-            ->store();
+            ->create());
         $tester = $this->tester();
 
         // When
@@ -63,14 +64,14 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Given
         self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
         self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(ShipmentStatus::DISPATCHED->value, failingReference: 'ACME-UNREACHABLE'));
-        ShipmentTestFactory::new()
+        $this->store(ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-UNREACHABLE', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
-            ->store();
-        ShipmentTestFactory::new()
+            ->create());
+        $this->store(ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-STUCK9999', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
-            ->store();
+            ->create());
         $tester = $this->tester();
 
         // When
@@ -88,7 +89,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
+        $this->store(ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('fulfilment:shipment:reconcile');
         $lock->acquire();

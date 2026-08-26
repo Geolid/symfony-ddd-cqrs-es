@@ -19,7 +19,8 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $this->store($order);
 
         // When
         $result = $this->ask(new GetOrderSummary($order->id->toString()));

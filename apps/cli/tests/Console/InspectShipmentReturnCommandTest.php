@@ -26,7 +26,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itApprovesAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $this->store($shipment);
         $tester = $this->tester();
 
         // When
@@ -42,7 +43,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itRejectsAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $this->store($shipment);
         $tester = $this->tester();
 
         // When
@@ -58,7 +60,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itFailsWhenNeitherApproveNorRejectIsGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $this->store($shipment);
         $tester = $this->tester();
 
         // When
@@ -72,7 +75,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itFailsWhenBothApproveAndRejectAreGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $this->store($shipment);
         $tester = $this->tester();
 
         // When

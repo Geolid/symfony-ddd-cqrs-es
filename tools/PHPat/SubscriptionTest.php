@@ -13,7 +13,6 @@ use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy\Policy;
 use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
 final class SubscriptionTest
@@ -68,16 +67,6 @@ final class SubscriptionTest
     }
 
     #[TestRule]
-    public function projectorsExtendDbalBase(): Rule
-    {
-        return PHPat::rule()
-            ->classes(Selector::AllOf($this->projectors(), Selector::classname('#^Dbal#', true)))
-            ->should()->extend()
-            ->classes(Selector::classname(AbstractDbalProjector::class))
-            ->because('A materialized view whose storage is never created can\'t materialize anything.');
-    }
-
-    #[TestRule]
     public function publishersApplyOwnAttribute(): Rule
     {
         return PHPat::rule()
@@ -96,10 +85,7 @@ final class SubscriptionTest
                 Selector::appliesAttribute(Projector::class),
                 Selector::appliesAttribute(Publisher::class),
             ),
-            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-            Selector::Not(Selector::withFilepath('#/tests/#', true)),
-            Selector::Not(Selector::isAbstract()),
-            Selector::Not(Selector::isInterface()),
+            ...$this->concreteImplementation(),
         );
     }
 
@@ -108,10 +94,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Policy/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-            Selector::Not(Selector::withFilepath('#/tests/#', true)),
-            Selector::Not(Selector::isAbstract()),
-            Selector::Not(Selector::isInterface()),
+            ...$this->concreteImplementation(),
         );
     }
 
@@ -120,10 +103,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Processor/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-            Selector::Not(Selector::withFilepath('#/tests/#', true)),
-            Selector::Not(Selector::isAbstract()),
-            Selector::Not(Selector::isInterface()),
+            ...$this->concreteImplementation(),
         );
     }
 
@@ -132,10 +112,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Infrastructure/Persistence/Projection/Projector/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-            Selector::Not(Selector::withFilepath('#/tests/#', true)),
-            Selector::Not(Selector::isAbstract()),
-            Selector::Not(Selector::isInterface()),
+            ...$this->concreteImplementation(),
         );
     }
 
@@ -145,10 +122,20 @@ final class SubscriptionTest
             Selector::classname('#Publisher$#', true),
             Selector::withFilepath('#/Application/IntegrationEvent/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
+            ...$this->concreteImplementation(),
+        );
+    }
+
+    /**
+     * @return list<SelectorInterface>
+     */
+    private function concreteImplementation(): array
+    {
+        return [
             Selector::Not(Selector::withFilepath('#/vendor/#', true)),
             Selector::Not(Selector::withFilepath('#/tests/#', true)),
             Selector::Not(Selector::isAbstract()),
             Selector::Not(Selector::isInterface()),
-        );
+        ];
     }
 }

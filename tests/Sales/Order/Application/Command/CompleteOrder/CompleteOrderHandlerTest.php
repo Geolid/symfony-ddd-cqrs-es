@@ -35,7 +35,8 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
             ->confirmed()
             ->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->store();
+            ->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CompleteOrder($order->id->toString()));
@@ -55,7 +56,8 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
             ->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->completed(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
-            ->store();
+            ->create();
+        $this->store($order);
 
         // When
         $this->dispatch(new CompleteOrder($order->id->toString()));
@@ -68,7 +70,8 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotCompletable(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $this->store($order);
 
         // Then
         $this->expectException(OrderNotCompletableException::class);

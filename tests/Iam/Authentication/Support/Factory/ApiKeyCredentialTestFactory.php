@@ -11,6 +11,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -53,10 +54,11 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
     }
 
-    public function revoked(?string $identityId = null, \DateTimeImmutable $revokedAt = new \DateTimeImmutable('now +00:00')): self
+    public function revoked(?string $identityId = null, ?\DateTimeImmutable $revokedAt = null): self
     {
         $identityId ??= $this->attributes['identityId'] ?? Uuid::uuid7()->toString();
         \assert(\is_string($identityId));
+        $revokedAt ??= Clock::get()->now();
 
         return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]))
             ->withModifier(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt));

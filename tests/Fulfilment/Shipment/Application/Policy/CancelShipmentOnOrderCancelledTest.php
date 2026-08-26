@@ -31,7 +31,8 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->create();
+        $this->store($shipment);
 
         // When
         ($this->policy)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));

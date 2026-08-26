@@ -63,7 +63,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderConfirmed(): void
     {
         // Given
-        $other = OrderTestFactory::new()->store();
+        $other = OrderTestFactory::new()->create();
+        $this->store($other);
         $order = OrderTestFactory::new()->confirmed()->create();
 
         // When
@@ -84,7 +85,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDispatched(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->store();
+        $other = OrderTestFactory::new()->confirmed()->create();
+        $this->store($other);
         $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
 
         // When
@@ -124,7 +126,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $other = OrderTestFactory::new()->store();
+        $other = OrderTestFactory::new()->create();
+        $this->store($other);
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
 
         // When
@@ -145,7 +148,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCompleted(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->store();
+        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $this->store($other);
         $order = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
             ->completed(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'))
@@ -171,7 +175,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered();
-        $other = $order->store();
+        $other = $order->create();
+        $this->store($other);
         $order = $order->returnRequested()->create();
 
         // When
@@ -193,7 +198,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
-        $other = $order->store();
+        $other = $order->create();
+        $this->store($other);
         $order = $order->returned()->create();
 
         // When
@@ -216,7 +222,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
-        $other = $order->store();
+        $other = $order->create();
+        $this->store($other);
         $order = $order->returnRejected('item damaged beyond resale')->create();
 
         // When

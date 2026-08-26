@@ -30,7 +30,8 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     public function itReleases(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->store();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
+        $this->store($product);
         $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
 
         // When

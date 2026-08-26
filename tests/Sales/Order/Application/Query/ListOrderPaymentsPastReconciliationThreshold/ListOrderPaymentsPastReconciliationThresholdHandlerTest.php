@@ -19,14 +19,17 @@ final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends Abst
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
         $stuck = OrderPaymentTestFactory::new()
             ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
-            ->store();
-        OrderPaymentTestFactory::new()
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T23:55:00+00:00'))
-            ->store();
-        OrderPaymentTestFactory::new()
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
-            ->authorized()
-            ->store();
+            ->create();
+        $this->store(
+            $stuck,
+            OrderPaymentTestFactory::new()
+                ->withRequestedAt(new \DateTimeImmutable('2026-01-31T23:55:00+00:00'))
+                ->create(),
+            OrderPaymentTestFactory::new()
+                ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+                ->authorized()
+                ->create(),
+        );
 
         // When
         $results = iterator_to_array($this->ask(new ListOrderPaymentsPastReconciliationThreshold()), false);

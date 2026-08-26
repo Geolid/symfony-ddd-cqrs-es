@@ -17,9 +17,12 @@ final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegration
     {
         // Given
         self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->store();
-        OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->store();
-        OrderTestFactory::new()->store();
+        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create();
+        $this->store(
+            $expired,
+            OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->create(),
+            OrderTestFactory::new()->create(),
+        );
 
         // When
         $results = iterator_to_array($this->ask(new ListOrdersPastRetentionPeriod()), false);

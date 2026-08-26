@@ -19,7 +19,8 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->authorized()
@@ -30,7 +31,7 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         $this->store($orderPayment);
 
         // Then
-        $event = $this->publishedEventOfType(OrderPaymentCapturedIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderPaymentCapturedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);

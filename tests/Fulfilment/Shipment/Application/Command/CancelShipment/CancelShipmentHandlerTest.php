@@ -20,7 +20,8 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPending(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new CancelShipment($shipment->id->toString()));
@@ -36,7 +37,8 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsCancellationWhenAlreadyDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new CancelShipment($shipment->id->toString()));

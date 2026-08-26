@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit\EventSourcing;
+namespace Tools\PHPUnit\EventSourcing;
 
 use Bootstrap\Kernel;
 use Patchlevel\EventSourcing\Schema\SchemaDirector;
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;
-use Support\PHPUnit\ThrowawayKernelHelper;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Tools\PHPUnit\ThrowawayKernelHelper;
 
 /**
  * Creates the event sourcing schema once before the test suite starts.

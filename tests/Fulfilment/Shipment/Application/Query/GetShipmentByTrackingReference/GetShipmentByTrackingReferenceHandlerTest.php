@@ -17,8 +17,9 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
     public function itGetsByTrackingReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->store();
-        ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $this->store($shipment);
+        $this->store(ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create());
 
         // When
         $result = $this->ask(new GetShipmentByTrackingReference('ACME-4Q7X2K9'));

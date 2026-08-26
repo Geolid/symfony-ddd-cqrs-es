@@ -36,13 +36,14 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itVerifies(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         // Then
         self::assertTrue($this->verifier->verify($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
@@ -63,13 +64,14 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
-        PasswordCredentialTestFactory::new()
+        $identity = IdentityTestFactory::new()->create();
+        $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 

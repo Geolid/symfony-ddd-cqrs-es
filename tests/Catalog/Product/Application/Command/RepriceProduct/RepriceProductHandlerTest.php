@@ -19,7 +19,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ProductId::generate()->toString();
-        ProductTestFactory::new()->withId($id)->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $this->store(ProductTestFactory::new()->withId($id)->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create());
 
         // When
         $this->dispatch(new RepriceProduct($id, 1_950));

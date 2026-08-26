@@ -155,8 +155,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->store();
+        $identity = IdentityTestFactory::new()->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->create();
+        $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
         // When
@@ -179,8 +180,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->store();
+        $identity = IdentityTestFactory::new()->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->create();
+        $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
         // When
@@ -196,8 +198,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->store();
+        $identity = IdentityTestFactory::new()->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->create();
+        $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
         // When
@@ -223,8 +226,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->store();
-        CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->store();
+        $identity = IdentityTestFactory::new()->create();
+        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->create();
+        $this->store($identity, $customer);
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
         // When

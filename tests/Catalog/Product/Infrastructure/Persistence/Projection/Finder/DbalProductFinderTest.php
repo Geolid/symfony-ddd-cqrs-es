@@ -27,8 +27,9 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
+        $this->store($product, $other);
 
         // When
         $results = iterator_to_array($this->finder);
@@ -46,8 +47,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itListsSortedByLabel(): void
     {
         // Given
-        ProductTestFactory::new()->withLabel('Zebra mug')->store();
-        ProductTestFactory::new()->withLabel('Apple crate')->store();
+        $this->store(ProductTestFactory::new()->withLabel('Zebra mug')->create());
+        $this->store(ProductTestFactory::new()->withLabel('Apple crate')->create());
 
         // When
         $results = iterator_to_array($this->finder->sortedByLabel());
@@ -63,7 +64,9 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
+        $other = ProductTestFactory::new()->withLabel('Saucer')->create();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($other, $product);
 
         // When
         $result = $this->finder->ofId($product->id->toString());

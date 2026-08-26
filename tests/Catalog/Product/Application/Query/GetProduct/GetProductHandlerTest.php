@@ -17,8 +17,9 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->store();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductTestFactory::new()->create();
+        $this->store($product, $other);
 
         // When
         $result = $this->ask(new GetProduct($product->id->toString()));

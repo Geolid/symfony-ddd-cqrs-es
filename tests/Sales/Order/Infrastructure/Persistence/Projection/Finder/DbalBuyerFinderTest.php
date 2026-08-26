@@ -32,7 +32,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         $customer = CustomerTestFactory::new()
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
             ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
-            ->store();
+            ->create();
+        $this->store($customer);
 
         // When
         $result = $this->finder->ofIdOrNull($customer->id->toString());
@@ -40,13 +41,27 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($customer->id->toString(), $result->customerId);
+        self::assertNotNull($result->shippingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
-            $result->shippingAddress,
+            [
+                'firstName' => $result->shippingAddress->firstName,
+                'lastName' => $result->shippingAddress->lastName,
+                'street' => $result->shippingAddress->street,
+                'postalCode' => $result->shippingAddress->postalCode,
+                'city' => $result->shippingAddress->city,
+            ],
         );
+        self::assertNotNull($result->billingAddress);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
-            $result->billingAddress,
+            [
+                'firstName' => $result->billingAddress->firstName,
+                'lastName' => $result->billingAddress->lastName,
+                'street' => $result->billingAddress->street,
+                'postalCode' => $result->billingAddress->postalCode,
+                'city' => $result->billingAddress->city,
+            ],
         );
     }
 
@@ -54,7 +69,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithNoAddress(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->store();
+        $customer = CustomerTestFactory::new()->create();
+        $this->store($customer);
 
         // When
         $result = $this->finder->ofIdOrNull($customer->id->toString());
@@ -72,7 +88,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerTestFactory::new()
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
-            ->store();
+            ->create();
+        $this->store($customer);
 
         // When
         $result = $this->finder->ofIdOrNull($customer->id->toString());

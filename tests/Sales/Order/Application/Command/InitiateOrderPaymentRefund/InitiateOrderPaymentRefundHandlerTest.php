@@ -21,8 +21,9 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itInitiatesRefundWhenCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->create();
+        $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));
@@ -36,7 +37,8 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itIgnoresWhenUncaptured(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->store();
+        $orderPayment = OrderPaymentTestFactory::new()->create();
+        $this->store($orderPayment);
 
         // When
         $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));

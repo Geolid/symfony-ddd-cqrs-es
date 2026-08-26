@@ -19,9 +19,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itReturnsAProduct(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->store();
+        $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->create();
+        $this->store($product);
 
         // When
         $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
@@ -41,7 +43,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownProduct(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -55,10 +58,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itReturnsTheProducts(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        ProductTestFactory::new()->withLabel('Wireless mouse')->store();
-        ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->store();
+        $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
+        $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -100,7 +104,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsAnInvalidApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->invalidApiKeyClient($identity);
 
         // When
@@ -114,7 +119,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsARevokedApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->revokedApiKeyClient($identity);
 
         // When
@@ -128,7 +134,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
@@ -144,7 +151,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsAProductToListForSale(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -167,7 +175,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptANegativeUnitAmount(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -183,7 +192,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptABlankLabel(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -199,9 +209,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsAReprice(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->store();
+        $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->create();
+        $this->store($product);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
@@ -219,9 +231,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToAcceptANegativeReprice(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $product = ProductTestFactory::new()->store();
+        $product = ProductTestFactory::new()->create();
+        $this->store($product);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
@@ -236,7 +250,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToRepriceAnUnknownProduct(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -252,9 +267,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsADelisting(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $product = ProductTestFactory::new()->store();
+        $product = ProductTestFactory::new()->create();
+        $this->store($product);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
@@ -270,7 +287,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itFailsToDelistAnUnknownProduct(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -284,9 +302,11 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itAcceptsADelistingOnAProductAlreadyDelisted(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $product = ProductTestFactory::new()->delisted()->store();
+        $product = ProductTestFactory::new()->delisted()->create();
+        $this->store($product);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));

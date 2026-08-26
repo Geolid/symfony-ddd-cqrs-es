@@ -24,7 +24,8 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->store();
+            ->create();
+        $this->store($orderPayment);
 
         // When
         $result = $this->ask(new GetOrderPaymentByReference('GLBX-9F3K2M1P'));

@@ -10,6 +10,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -42,33 +43,45 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['requestedAt' => $requestedAt]));
     }
 
-    public function authorized(\DateTimeImmutable $authorizedAt = new \DateTimeImmutable('now +00:00')): self
+    public function authorized(?\DateTimeImmutable $authorizedAt = null): self
     {
+        $authorizedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt));
     }
 
-    public function failed(\DateTimeImmutable $failedAt = new \DateTimeImmutable('now +00:00')): self
+    public function failed(?\DateTimeImmutable $failedAt = null): self
     {
+        $failedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt));
     }
 
-    public function captured(\DateTimeImmutable $capturedAt = new \DateTimeImmutable('now +00:00')): self
+    public function captured(?\DateTimeImmutable $capturedAt = null): self
     {
+        $capturedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
     }
 
-    public function cancelled(\DateTimeImmutable $cancelledAt = new \DateTimeImmutable('now +00:00')): self
+    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
+        $cancelledAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
     }
 
-    public function refundInitiated(\DateTimeImmutable $initiatedAt = new \DateTimeImmutable('now +00:00')): self
+    public function refundInitiated(?\DateTimeImmutable $initiatedAt = null): self
     {
+        $initiatedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt));
     }
 
-    public function refundConfirmed(\DateTimeImmutable $refundedAt = new \DateTimeImmutable('now +00:00')): self
+    public function refundConfirmed(?\DateTimeImmutable $refundedAt = null): self
     {
+        $refundedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($refundedAt));
     }
 

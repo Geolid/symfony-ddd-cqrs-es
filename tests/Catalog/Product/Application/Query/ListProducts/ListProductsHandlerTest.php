@@ -15,8 +15,9 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
-        ProductTestFactory::new()->withLabel('Saucer')->delisted()->store();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
+        $this->store($product, $other);
 
         // When
         $result = $this->ask(new ListProducts());
@@ -36,7 +37,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        ProductTestFactory::new()->many(5)->store();
+        $this->store(...ProductTestFactory::new()->many(5)->create());
 
         // When
         $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));

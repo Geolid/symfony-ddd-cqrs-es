@@ -34,8 +34,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->withEmail('other@example.com')->store();
         $customer = CustomerTestFactory::new()->erased()->create();
+        $other = CustomerTestFactory::new()->withEmail('other@example.com')->create();
+        $this->store($other);
 
         // When
         $this->store($customer);

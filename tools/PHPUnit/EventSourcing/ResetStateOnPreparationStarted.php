@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Support\PHPUnit\EventSourcing;
+namespace Tools\PHPUnit\EventSourcing;
 
 use Patchlevel\EventSourcing\Store\InMemoryStore;
 use Patchlevel\EventSourcingBundle\Subscription\StaticInMemorySubscriptionStoreFactory;
 use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\Test\PreparationStarted;
 use PHPUnit\Event\Test\PreparationStartedSubscriber;
-use Support\Helpers\KernelTestCaseHelper;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Tools\PHPUnit\KernelTestCaseHelper;
 
 /**
  * Resets in-memory event and subscription stores before each test.

@@ -17,6 +17,7 @@ use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -65,62 +66,78 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['placedAt' => $placedAt]));
     }
 
-    public function cancelled(\DateTimeImmutable $cancelledAt = new \DateTimeImmutable('now +00:00')): self
+    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
+        $cancelledAt ??= Clock::get()->now();
 
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
             ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
     }
 
-    public function confirmed(\DateTimeImmutable $confirmedAt = new \DateTimeImmutable('now +00:00')): self
+    public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
     {
+        $confirmedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->confirm($confirmedAt));
     }
 
-    public function dispatched(\DateTimeImmutable $dispatchedAt = new \DateTimeImmutable('now +00:00')): self
+    public function dispatched(?\DateTimeImmutable $dispatchedAt = null): self
     {
+        $dispatchedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
     }
 
-    public function delivered(\DateTimeImmutable $deliveredAt = new \DateTimeImmutable('now +00:00')): self
+    public function delivered(?\DateTimeImmutable $deliveredAt = null): self
     {
+        $deliveredAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
     }
 
     public function completed(
-        \DateTimeImmutable $now = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $now = null,
         ReturnWindow $returnWindow = new ReturnWindow(14),
     ): self {
+        $now ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->complete($now, $returnWindow));
     }
 
     public function returnRequested(
-        \DateTimeImmutable $requestedAt = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $requestedAt = null,
         ReturnWindow $returnWindow = new ReturnWindow(14),
     ): self {
         Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
+        $requestedAt ??= Clock::get()->now();
 
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
             ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, $returnWindow));
     }
 
-    public function returned(\DateTimeImmutable $returnedAt = new \DateTimeImmutable('now +00:00')): self
+    public function returned(?\DateTimeImmutable $returnedAt = null): self
     {
+        $returnedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->confirmReturn($returnedAt));
     }
 
     public function returnRejected(
         string $reason = 'item damaged beyond resale',
-        \DateTimeImmutable $rejectedAt = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $rejectedAt = null,
     ): self {
+        $rejectedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
     }
 
     public function anonymized(
-        \DateTimeImmutable $now = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $now = null,
         RetentionWindow $retentionWindow = new RetentionWindow(3650),
     ): self {
+        $now ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Order $order) => $order->anonymize($now, $retentionWindow));
     }
 

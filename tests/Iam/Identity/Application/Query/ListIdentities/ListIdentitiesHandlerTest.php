@@ -17,12 +17,13 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $active = IdentityTestFactory::new()->store();
+        $active = IdentityTestFactory::new()->create();
         $suspended = IdentityTestFactory::new()
             ->suspended('Suspected fraudulent activity', new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
-            ->store();
-        $others = IdentityTestFactory::new()->many(3)->store();
+            ->create();
+        $others = IdentityTestFactory::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
+        $this->store(...$identities);
 
         // When
         $firstPage = $this->ask(new ListIdentities(page: 1, itemsPerPage: 2));

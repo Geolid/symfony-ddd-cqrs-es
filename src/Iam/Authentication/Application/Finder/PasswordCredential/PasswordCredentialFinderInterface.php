@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Finder\PasswordCredential;
 
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
-use Shared\Application\Finder\FinderInterface;
 
-interface PasswordCredentialFinderInterface extends FinderInterface
+interface PasswordCredentialFinderInterface
 {
     /**
      * @throws PasswordCredentialResultNotFoundException

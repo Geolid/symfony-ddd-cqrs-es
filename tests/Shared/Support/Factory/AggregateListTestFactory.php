@@ -9,7 +9,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 /**
  * @template T of AggregateRoot
  */
-final readonly class AggregateCollectionTestFactory
+final readonly class AggregateListTestFactory
 {
     /**
      * @param AbstractAggregateTestFactory<T> $factory
@@ -27,13 +27,5 @@ final readonly class AggregateCollectionTestFactory
     public function create(): array
     {
         return array_map($this->factory->create(...), range(1, $this->count));
-    }
-
-    /**
-     * @return list<T>
-     */
-    public function store(): array
-    {
-        return array_map($this->factory->store(...), range(1, $this->count));
     }
 }

@@ -19,10 +19,13 @@ final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTes
         self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->store();
-        OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-30T00:00:00+00:00'))
-            ->store();
+            ->create();
+        $this->store(
+            $expired,
+            OrderTestFactory::new()->confirmed()->dispatched()
+                ->delivered(new \DateTimeImmutable('2026-01-30T00:00:00+00:00'))
+                ->create(),
+        );
 
         // When
         $results = iterator_to_array($this->ask(new ListOrdersPastReturnWindow()), false);

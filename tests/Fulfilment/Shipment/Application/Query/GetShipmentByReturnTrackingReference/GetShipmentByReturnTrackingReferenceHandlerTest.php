@@ -24,15 +24,16 @@ final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractInte
             ->delivered()
             ->returnRequested()
             ->returnManifested('ACME-RETURN-1')
-            ->store();
-        ShipmentTestFactory::new()
+            ->create();
+        $this->store($shipment);
+        $this->store(ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-OTHER')
             ->dispatched()
             ->delivered()
             ->returnRequested()
             ->returnManifested('ACME-RETURN-OTHER')
-            ->store();
+            ->create());
 
         // When
         $result = $this->ask(new GetShipmentByReturnTrackingReference('ACME-RETURN-1'));

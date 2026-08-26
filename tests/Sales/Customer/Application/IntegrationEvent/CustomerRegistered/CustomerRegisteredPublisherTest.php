@@ -21,7 +21,7 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $event = $this->publishedEventOfType(CustomerRegisteredIntegrationEvent::class);
+        $event = $this->publishedEventOf(CustomerRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame('buyer@example.com', $event->email);
     }

@@ -6,10 +6,10 @@ namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Shared\Application\Query\QueryInterface;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 
 /**
- * @implements QueryInterface<ListResult<OrderSummaryResult>>
+ * @implements QueryInterface<PaginatedResult<OrderSummaryResult>>
  */
 final readonly class ListOrderSummaries implements QueryInterface
 {

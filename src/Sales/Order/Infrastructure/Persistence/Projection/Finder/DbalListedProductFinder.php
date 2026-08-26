@@ -9,14 +9,12 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductResult;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalListedProductProjector;
-use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalCollectionFinder;
+use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
 /**
- * @extends AbstractDbalCollectionFinder<ListedProductResult>
- *
- * @phpstan-type Row array{product_id: string, label: string, unit_amount_in_cents: int}
+ * @extends AbstractDbalFinder<ListedProductResult>
  */
-final class DbalListedProductFinder extends AbstractDbalCollectionFinder implements ListedProductFinderInterface
+final class DbalListedProductFinder extends AbstractDbalFinder implements ListedProductFinderInterface
 {
     public function byIds(string ...$productIds): static
     {
@@ -31,18 +29,12 @@ final class DbalListedProductFinder extends AbstractDbalCollectionFinder impleme
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('product_id', 'label', 'unit_amount_in_cents')
-            ->from(DbalListedProductProjector::TABLE);
+            ->from(DbalListedProductProjector::TABLE)
+            ->orderBy('product_id', 'ASC');
     }
 
-    /**
-     * @param Row $row
-     */
-    protected function mapRow(array $row): ListedProductResult
+    protected function resultClass(): string
     {
-        return new ListedProductResult(
-            productId: $row['product_id'],
-            label: $row['label'],
-            unitAmountInCents: $row['unit_amount_in_cents'],
-        );
+        return ListedProductResult::class;
     }
 }

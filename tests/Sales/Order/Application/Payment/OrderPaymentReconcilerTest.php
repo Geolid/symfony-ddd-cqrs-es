@@ -28,7 +28,8 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenAuthorized(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-AUTH0001')->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-AUTH0001')->create();
+        $this->store($orderPayment);
         $service = new OrderPaymentReconciler(new StubPaymentGateway(OrderPaymentStatus::AUTHORIZED->value), $this->service(CommandBusInterface::class));
 
         // When
@@ -43,7 +44,8 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenFailed(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-FAIL0001')->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-FAIL0001')->create();
+        $this->store($orderPayment);
         $service = new OrderPaymentReconciler(new StubPaymentGateway(OrderPaymentStatus::FAILED->value), $this->service(CommandBusInterface::class));
 
         // When
@@ -58,7 +60,8 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenStillPending(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-PEND0001')->store();
+        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-PEND0001')->create();
+        $this->store($orderPayment);
         $service = new OrderPaymentReconciler(new StubPaymentGateway(OrderPaymentStatus::REQUESTED->value), $this->service(CommandBusInterface::class));
 
         // When

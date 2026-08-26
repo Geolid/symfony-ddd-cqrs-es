@@ -34,14 +34,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            [
-                'shipping_first_name' => $event->address['firstName'],
-                'shipping_last_name' => $event->address['lastName'],
-                'shipping_street' => $event->address['street'],
-                'shipping_postal_code' => $event->address['postalCode'],
-                'shipping_city' => $event->address['city'],
-            ],
+            ['shipping_address' => $this->normalizePostalAddress($event->address)],
             ['customer_id' => $event->customerId],
+            ['shipping_address' => Types::JSON],
         );
     }
 
@@ -50,14 +45,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            [
-                'billing_first_name' => $event->address['firstName'],
-                'billing_last_name' => $event->address['lastName'],
-                'billing_street' => $event->address['street'],
-                'billing_postal_code' => $event->address['postalCode'],
-                'billing_city' => $event->address['city'],
-            ],
+            ['billing_address' => $this->normalizePostalAddress($event->address)],
             ['customer_id' => $event->customerId],
+            ['billing_address' => Types::JSON],
         );
     }
 
@@ -74,20 +64,28 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('shipping_first_name', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('shipping_last_name', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('shipping_street', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('shipping_postal_code', Types::STRING, ['length' => 20, 'notnull' => false, 'default' => null]);
-        $table->addColumn('shipping_city', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('billing_first_name', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('billing_last_name', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('billing_street', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('billing_postal_code', Types::STRING, ['length' => 20, 'notnull' => false, 'default' => null]);
-        $table->addColumn('billing_city', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
+        $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
+        $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('customer_id'))
                 ->create(),
         );
+    }
+
+    /**
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
+     *
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string}
+     */
+    private function normalizePostalAddress(array $address): array
+    {
+        return [
+            'first_name' => $address['firstName'],
+            'last_name' => $address['lastName'],
+            'street' => $address['street'],
+            'postal_code' => $address['postalCode'],
+            'city' => $address['city'],
+        ];
     }
 }

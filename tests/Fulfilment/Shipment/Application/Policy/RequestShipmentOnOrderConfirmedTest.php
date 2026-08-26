@@ -74,10 +74,13 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
 
     private function placedOrder(): Order
     {
-        return OrderTestFactory::new()
+        $order = OrderTestFactory::new()
             ->withCustomerId(Uuid::uuid7()->toString())
             ->withTotalAmountInCents(4_200)
-            ->store();
+            ->create();
+        $this->store($order);
+
+        return $order;
     }
 
     private function orderConfirmed(Order $order): OrderConfirmedIntegrationEvent

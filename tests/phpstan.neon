@@ -6,6 +6,7 @@ parameters:
 
     paths:
         - '%currentWorkingDirectory%/tests/'
+        - '%currentWorkingDirectory%/tools/PHPUnit/'
 
     symfony:
         containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml

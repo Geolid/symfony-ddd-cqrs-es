@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
-use Shared\Application\Finder\CollectionFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
 
 /**
- * @extends CollectionFinderInterface<ShipmentResult>
+ * @extends IterableFinderInterface<ShipmentResult>
  */
-interface ShipmentFinderInterface extends CollectionFinderInterface
+interface ShipmentFinderInterface extends IterableFinderInterface
 {
     /**
      * @throws ShipmentResultNotFoundException

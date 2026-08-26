@@ -21,7 +21,7 @@ final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // Then
-        $event = $this->publishedEventOfType(IdentityReactivatedIntegrationEvent::class);
+        $event = $this->publishedEventOf(IdentityReactivatedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame('2026-01-03T00:00:00+00:00', $event->reactivatedAt);
     }

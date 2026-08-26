@@ -40,7 +40,8 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
             FullName::of('Ada', 'Lovelace'),
             Address::of('12 rue des Lilas', '75001', 'Paris'),
         );
-        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
+        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($shipment);
 
         // When
         ($this->policy)(new ShipmentReturnRequested($shipment->id->toString(), '2026-01-10T00:00:00+00:00'));

@@ -116,12 +116,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         // When
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
@@ -142,12 +143,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $other = $this->otherCredential(suspended: true);
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 
@@ -170,12 +172,13 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         // When
         $identity->erase(new \DateTimeImmutable('now +00:00'));
@@ -188,13 +191,14 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
 
     private function otherCredential(bool $suspended = false, string $password = 'other-password'): PasswordCredential
     {
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         if ($suspended) {
             $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));

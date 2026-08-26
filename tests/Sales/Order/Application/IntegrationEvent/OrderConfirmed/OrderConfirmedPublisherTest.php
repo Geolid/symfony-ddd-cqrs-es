@@ -24,7 +24,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $event = $this->publishedEventOfType(OrderConfirmedIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderConfirmedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);

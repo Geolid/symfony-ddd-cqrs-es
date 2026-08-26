@@ -21,7 +21,7 @@ final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase
         $this->store($customer);
 
         // Then
-        $event = $this->publishedEventOfType(CustomerErasedIntegrationEvent::class);
+        $event = $this->publishedEventOf(CustomerErasedIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
     }
 }

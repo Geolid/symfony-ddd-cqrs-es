@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Finder\OrderPayment;
 
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
-use Shared\Application\Finder\CollectionFinderInterface;
+use Shared\Application\Finder\IterableFinderInterface;
 
 /**
- * @extends CollectionFinderInterface<OrderPaymentResult>
+ * @extends IterableFinderInterface<OrderPaymentResult>
  */
-interface OrderPaymentFinderInterface extends CollectionFinderInterface
+interface OrderPaymentFinderInterface extends IterableFinderInterface
 {
     /**
      * @throws OrderPaymentResultNotFoundException

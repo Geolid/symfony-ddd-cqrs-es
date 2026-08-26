@@ -21,7 +21,8 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));
@@ -37,7 +38,8 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);

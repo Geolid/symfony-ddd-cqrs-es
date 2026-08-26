@@ -7,10 +7,6 @@ namespace Shared\Tests\Support\Factory;
 use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Patchlevel\EventSourcing\Repository\RepositoryManager;
-use Ramsey\Uuid\Uuid;
-use Support\Helpers\KernelTestCaseHelper;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Webmozart\Assert\Assert;
 
 /**
@@ -22,10 +18,6 @@ abstract class AbstractAggregateTestFactory
 {
     /** @var list<callable(T): void> */
     private array $modifiers = [];
-
-    private bool $useIncrementalIds = true;
-
-    private static ?StrictIncrementalUuidFactory $incrementalFactory = null;
 
     /** @var array<string, Generator> */
     private static array $fakers = [];
@@ -47,13 +39,13 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
-     * @return AggregateCollectionTestFactory<T>
+     * @return AggregateListTestFactory<T>
      */
-    public function many(int $count): AggregateCollectionTestFactory
+    public function many(int $count): AggregateListTestFactory
     {
         Assert::positiveInteger($count);
 
-        return new AggregateCollectionTestFactory($this, $count);
+        return new AggregateListTestFactory($this, $count);
     }
 
     /**
@@ -61,52 +53,7 @@ abstract class AbstractAggregateTestFactory
      */
     public function create(): AggregateRoot
     {
-        $factory = fn (): AggregateRoot => $this->instantiate();
-
-        if ($this->useIncrementalIds) {
-            return $this->wrapWithIncrementalIds($factory);
-        }
-
-        return $factory();
-    }
-
-    /**
-     * @return T
-     */
-    public function store(): AggregateRoot
-    {
-        $aggregate = $this->create();
-
-        // Kernel/container statics live on KernelTestCase itself, never redeclared by any
-        // subclass — this reaches whichever one the running test already booted.
-        $manager = KernelTestCaseHelper::getContainer(KernelTestCase::class)
-            ->get(RepositoryManager::class);
-        \assert($manager instanceof RepositoryManager);
-
-        $manager->get($aggregate::class)->save($aggregate);
-
-        return $aggregate;
-    }
-
-    public function withIncrementalIds(): static
-    {
-        $clone = clone $this;
-        $clone->useIncrementalIds = true;
-
-        return $clone;
-    }
-
-    public function withoutIncrementalIds(): static
-    {
-        $clone = clone $this;
-        $clone->useIncrementalIds = false;
-
-        return $clone;
-    }
-
-    public static function resetSequence(): void
-    {
-        self::$incrementalFactory?->reset();
+        return $this->instantiate();
     }
 
     /**
@@ -128,7 +75,6 @@ abstract class AbstractAggregateTestFactory
     {
         $clone = static::new($attributes);
         $clone->modifiers = $this->modifiers;
-        $clone->useIncrementalIds = $this->useIncrementalIds;
 
         return $clone;
     }
@@ -162,26 +108,5 @@ abstract class AbstractAggregateTestFactory
         }
 
         return $aggregate;
-    }
-
-    /**
-     * @template R
-     *
-     * @param callable(): R $callback
-     *
-     * @return R
-     */
-    private function wrapWithIncrementalIds(callable $callback): mixed
-    {
-        $original = Uuid::getFactory();
-        self::$incrementalFactory ??= new StrictIncrementalUuidFactory();
-
-        Uuid::setFactory(self::$incrementalFactory);
-
-        try {
-            return $callback();
-        } finally {
-            Uuid::setFactory($original);
-        }
     }
 }

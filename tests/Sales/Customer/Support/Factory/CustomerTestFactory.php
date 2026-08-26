@@ -9,6 +9,7 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -31,22 +32,28 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
     }
 
-    public function withShippingAddress(PostalAddress $shippingAddress, \DateTimeImmutable $registeredAt = new \DateTimeImmutable('now +00:00')): self
+    public function withShippingAddress(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
+        $registeredAt ??= Clock::get()->now();
+
         return $this->withModifier(
             static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $registeredAt),
         );
     }
 
-    public function withBillingAddress(PostalAddress $billingAddress, \DateTimeImmutable $registeredAt = new \DateTimeImmutable('now +00:00')): self
+    public function withBillingAddress(PostalAddress $billingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
+        $registeredAt ??= Clock::get()->now();
+
         return $this->withModifier(
             static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $registeredAt),
         );
     }
 
-    public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
+        $erasedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Customer $customer) => $customer->erase($erasedAt));
     }
 

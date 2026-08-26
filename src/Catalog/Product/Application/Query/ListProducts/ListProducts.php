@@ -6,10 +6,10 @@ namespace Catalog\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Shared\Application\Query\QueryInterface;
-use Shared\Application\Query\Result\ListResult;
+use Shared\Application\Query\Result\PaginatedResult;
 
 /**
- * @implements QueryInterface<ListResult<ProductResult>>
+ * @implements QueryInterface<PaginatedResult<ProductResult>>
  */
 final readonly class ListProducts implements QueryInterface
 {

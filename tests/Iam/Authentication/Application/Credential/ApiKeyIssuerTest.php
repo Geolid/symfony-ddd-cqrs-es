@@ -30,7 +30,8 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
 
         // When
         $apiKey = $this->issuer->issueFor($identity->id->toString(), 'CI pipeline');
@@ -46,7 +47,8 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
             'CI pipeline',

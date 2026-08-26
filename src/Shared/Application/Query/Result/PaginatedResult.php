@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Shared\Application\Query\Result;
 
-use Shared\Application\Query\Pagination\PaginationInfo;
+use Shared\Application\Query\Pagination\Pagination;
 
 /**
  * @template TResult of object
  *
  * @implements \IteratorAggregate<int, TResult>
  */
-final readonly class ListResult implements \IteratorAggregate, \Countable
+final readonly class PaginatedResult implements \IteratorAggregate, \Countable
 {
     /**
      * @param list<TResult> $items
      */
     public function __construct(
         public array $items,
-        public PaginationInfo $pagination,
+        public Pagination $pagination,
     ) {
     }
 

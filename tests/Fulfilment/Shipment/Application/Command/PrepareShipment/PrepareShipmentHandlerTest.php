@@ -20,7 +20,8 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itPreparesRequested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->store();
+        $shipment = ShipmentTestFactory::new()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new PrepareShipment($shipment->id->toString()));

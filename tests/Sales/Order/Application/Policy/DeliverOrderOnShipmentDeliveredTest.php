@@ -28,7 +28,8 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
     public function itDelivers(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->store();
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $this->store($order);
 
         // When
         ($this->policy)(new ShipmentDeliveredIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));

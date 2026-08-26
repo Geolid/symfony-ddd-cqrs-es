@@ -29,7 +29,8 @@ final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractInte
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->store();
+        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
 
         // When
         ($this->policy)(new OrderReturnRequestedIntegrationEvent($orderId, '2026-01-10T00:00:00+00:00'));

@@ -7,7 +7,7 @@ namespace Shared\Application\Finder;
 /**
  * @template TResult of object
  *
- * @extends \IteratorAggregate<array-key, TResult>
+ * @extends \IteratorAggregate<int, TResult>
  */
 interface PaginatorInterface extends \IteratorAggregate, \Countable
 {

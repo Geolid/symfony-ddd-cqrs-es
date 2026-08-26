@@ -72,11 +72,12 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     {
         // Given
         $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher(new StubApiKeyHasher())
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         // When
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
@@ -97,11 +98,12 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     {
         // Given
         $other = $this->otherCredential(suspended: true);
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher(new StubApiKeyHasher())
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);
 
@@ -124,11 +126,12 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     {
         // Given
         $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher(new StubApiKeyHasher())
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         // When
         $identity->erase(new \DateTimeImmutable('now +00:00'));
@@ -141,11 +144,12 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
 
     private function otherCredential(bool $suspended = false): ApiKeyCredential
     {
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher(new StubApiKeyHasher())
-            ->store();
+            ->create();
+        $this->store($identity, $credential);
 
         if ($suspended) {
             $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));

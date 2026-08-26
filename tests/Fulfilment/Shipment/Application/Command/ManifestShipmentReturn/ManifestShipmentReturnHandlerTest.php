@@ -34,7 +34,8 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($shipment);
 
         // When
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
@@ -50,7 +51,8 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->create();
+        $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', $shipment->id->toString());
 
         // When
@@ -65,7 +67,8 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itFailsWhenAlreadyTrackedUnderAnotherReturnReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentAlreadyTrackedException::class);
@@ -79,7 +82,8 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     {
         // Given
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', Uuid::uuid7()->toString());
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->store();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $this->store($shipment);
 
         // Then
         $this->expectException(TrackingReferenceAlreadyTakenException::class);

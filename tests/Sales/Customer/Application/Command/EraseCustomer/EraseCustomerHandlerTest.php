@@ -22,7 +22,8 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->store();
+        $customer = CustomerTestFactory::new()->create();
+        $this->store($customer);
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value, $customer->id->toString());
 
         // Then
@@ -38,7 +39,8 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->erased()->store();
+        $customer = CustomerTestFactory::new()->erased()->create();
+        $this->store($customer);
 
         // When
         $this->dispatch(new EraseCustomer($customer->id->toString()));

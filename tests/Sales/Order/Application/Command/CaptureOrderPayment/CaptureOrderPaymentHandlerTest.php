@@ -18,8 +18,9 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itCapturesWhenAuthorized(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create();
+        $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));
@@ -33,8 +34,9 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->store();
+        $order = OrderTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));

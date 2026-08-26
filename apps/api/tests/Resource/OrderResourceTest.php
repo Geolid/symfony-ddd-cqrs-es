@@ -19,10 +19,12 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsAnOrder(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
+        $this->store($order);
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', $order->id->toString()));
@@ -43,7 +45,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownOrder(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
         // When
@@ -57,9 +60,10 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsTheOrders(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        OrderTestFactory::new()->withTotalAmountInCents(1_999)->store();
+        $this->store(OrderTestFactory::new()->withTotalAmountInCents(1_999)->create());
 
         // When
         $client->request('GET', '/v1/sales/orders');
@@ -101,7 +105,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsAnInvalidApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->invalidApiKeyClient($identity);
 
         // When
@@ -115,7 +120,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsARevokedApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->revokedApiKeyClient($identity);
 
         // When
@@ -129,7 +135,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->store();
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
         $client = $this->authenticatedClient($identity);
         $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
         $this->store($identity);

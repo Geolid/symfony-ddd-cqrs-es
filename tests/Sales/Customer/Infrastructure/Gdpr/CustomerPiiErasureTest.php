@@ -25,7 +25,8 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsEmailOnErasure(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->store();
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $this->store($customer);
         $serialized = $this->serializedEventOf(
             CustomerRegistered::class,
             static fn (CustomerRegistered $event): bool => $event->id === $customer->id->toString(),
@@ -49,7 +50,8 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerTestFactory::new()
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
-            ->store();
+            ->create();
+        $this->store($customer);
         $serialized = $this->serializedEventOf(
             CustomerShippingAddressRegistered::class,
             static fn (CustomerShippingAddressRegistered $event): bool => $event->id === $customer->id->toString(),
@@ -72,7 +74,8 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerTestFactory::new()
             ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
-            ->store();
+            ->create();
+        $this->store($customer);
         $serialized = $this->serializedEventOf(
             CustomerBillingAddressRegistered::class,
             static fn (CustomerBillingAddressRegistered $event): bool => $event->id === $customer->id->toString(),

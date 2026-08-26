@@ -22,7 +22,8 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderTestFactory::new()
             ->withLines([OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_500)), 2)])
-            ->store();
+            ->create();
+        $this->store($order);
 
         // When
         $results = $this->ask(new GetOrderSummaryLines($order->id->toString()));

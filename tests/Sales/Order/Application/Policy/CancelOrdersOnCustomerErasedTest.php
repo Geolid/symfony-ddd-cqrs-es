@@ -31,9 +31,10 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $otherCustomerId = Uuid::uuid7()->toString();
-        OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
+        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $this->store($order, $other);
 
         // When
         ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
@@ -54,7 +55,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $otherCustomerId = Uuid::uuid7()->toString();
-        OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
+        $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
 
         // When
         ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));

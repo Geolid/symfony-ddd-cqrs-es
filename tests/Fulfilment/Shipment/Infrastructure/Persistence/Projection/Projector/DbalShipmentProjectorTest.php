@@ -23,7 +23,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->withCustomerId($customerId)
@@ -44,7 +45,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentPrepared(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
         $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->create();
 
         // When
@@ -60,7 +62,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentManifested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()
@@ -82,8 +85,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->cancelled()->create();
 
         // When
@@ -105,8 +110,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()
@@ -130,8 +137,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnManifested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()
@@ -156,8 +165,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()
@@ -182,8 +193,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnReceived(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()
@@ -208,8 +221,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnApproved(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
@@ -234,8 +249,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentReturnRejected(): void
     {
         // Given
-        $order = OrderTestFactory::new()->store();
-        $other = ShipmentTestFactory::new()->store();
+        $order = OrderTestFactory::new()->create();
+        $this->store($order);
+        $other = ShipmentTestFactory::new()->create();
+        $this->store($other);
         $shipment = ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()

@@ -20,12 +20,13 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->store();
-        $withCapturedPayment = OrderTestFactory::new()->withCustomerId($customerId)->store();
-        OrderPaymentTestFactory::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->store();
-        $placed = OrderTestFactory::new()->withCustomerId($customerId)->store();
+        $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
+        $withCapturedPayment = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
+        $placed = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($alreadyCancelled, $withCapturedPayment, $orderPayment, $placed);
         $otherCustomerId = Uuid::uuid7()->toString();
-        OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
+        $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
@@ -50,7 +51,7 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         // Given
         $customerId = Uuid::uuid7()->toString();
         $otherCustomerId = Uuid::uuid7()->toString();
-        OrderTestFactory::new()->withCustomerId($otherCustomerId)->store();
+        $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
