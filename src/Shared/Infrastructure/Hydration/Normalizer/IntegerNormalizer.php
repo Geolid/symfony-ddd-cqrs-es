@@ -4,21 +4,34 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\Hydration\Normalizer;
 
+use Patchlevel\Hydrator\Normalizer\InvalidArgument;
 use Patchlevel\Hydrator\Normalizer\Normalizer;
 
 final readonly class IntegerNormalizer implements Normalizer
 {
     public function normalize(mixed $value): ?int
     {
-        \assert(null === $value || \is_scalar($value));
+        if (null === $value) {
+            return null;
+        }
 
-        return null !== $value ? (int) $value : null;
+        if (!\is_scalar($value)) {
+            throw InvalidArgument::withWrongType('int|null', $value);
+        }
+
+        return (int) $value;
     }
 
     public function denormalize(mixed $value): ?int
     {
-        \assert(null === $value || \is_scalar($value));
+        if (null === $value) {
+            return null;
+        }
 
-        return null !== $value ? (int) $value : null;
+        if (!\is_scalar($value)) {
+            throw InvalidArgument::withWrongType('int|null', $value);
+        }
+
+        return (int) $value;
     }
 }
