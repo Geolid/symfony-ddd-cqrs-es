@@ -78,7 +78,12 @@ final class EventTest
     public function integrationEventsImplementContract(): Rule
     {
         return PHPat::rule()
-            ->classes($this->looksLikeIntegrationEvent())
+            ->classes(Selector::AllOf(
+                Selector::classname('#IntegrationEvent$#', true),
+                Selector::withFilepath('#/Application/IntegrationEvent/#', true),
+                Selector::Not(Selector::isInterface()),
+                $this->notInTests(),
+            ))
             ->should()->implement()
             ->classes(Selector::classname(IntegrationEventInterface::class))
             ->because('Publishing a fact needs a reliable, checkable shape — without one, nothing tells a real fact from anything else.');
@@ -108,16 +113,6 @@ final class EventTest
         return Selector::AllOf(
             Selector::appliesAttribute(Event::class),
             Selector::Not(Selector::implements(IntegrationEventInterface::class)),
-            Selector::Not(Selector::isInterface()),
-            $this->notInTests(),
-        );
-    }
-
-    private function looksLikeIntegrationEvent(): SelectorInterface
-    {
-        return Selector::AllOf(
-            Selector::classname('#IntegrationEvent$#', true),
-            Selector::withFilepath('#/Application/IntegrationEvent/#', true),
             Selector::Not(Selector::isInterface()),
             $this->notInTests(),
         );
