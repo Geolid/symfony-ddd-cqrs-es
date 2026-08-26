@@ -21,7 +21,7 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        $event = $this->publishedEventOfType(ProductDelistedIntegrationEvent::class);
+        $event = $this->publishedEventOf(ProductDelistedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
     }
 }

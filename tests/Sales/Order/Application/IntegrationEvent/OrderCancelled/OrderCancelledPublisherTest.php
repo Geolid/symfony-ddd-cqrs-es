@@ -21,7 +21,7 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $event = $this->publishedEventOfType(OrderCancelledIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderCancelledIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
     }
 }

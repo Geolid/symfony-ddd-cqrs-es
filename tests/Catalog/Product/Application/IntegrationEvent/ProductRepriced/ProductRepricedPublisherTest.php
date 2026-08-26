@@ -21,7 +21,7 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        $event = $this->publishedEventOfType(ProductRepricedIntegrationEvent::class);
+        $event = $this->publishedEventOf(ProductRepricedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame(2_000, $event->unitAmountInCents);
     }

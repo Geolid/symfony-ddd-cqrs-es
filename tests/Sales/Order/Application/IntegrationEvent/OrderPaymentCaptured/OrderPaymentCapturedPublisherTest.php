@@ -30,7 +30,7 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         $this->store($orderPayment);
 
         // Then
-        $event = $this->publishedEventOfType(OrderPaymentCapturedIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderPaymentCapturedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);

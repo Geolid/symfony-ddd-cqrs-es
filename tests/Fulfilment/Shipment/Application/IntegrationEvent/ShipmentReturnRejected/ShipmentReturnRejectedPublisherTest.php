@@ -23,7 +23,7 @@ final class ShipmentReturnRejectedPublisherTest extends AbstractIntegrationTestC
         $this->store($shipment);
 
         // Then
-        $event = $this->publishedEventOfType(ShipmentReturnRejectedIntegrationEvent::class);
+        $event = $this->publishedEventOf(ShipmentReturnRejectedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($orderId, $event->orderId);
         self::assertSame('item damaged beyond resale', $event->reason);

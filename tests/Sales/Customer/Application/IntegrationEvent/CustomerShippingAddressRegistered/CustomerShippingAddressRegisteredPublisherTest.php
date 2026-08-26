@@ -26,7 +26,7 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
         $this->store($customer);
 
         // Then
-        $event = $this->publishedEventOfType(CustomerShippingAddressRegisteredIntegrationEvent::class);
+        $event = $this->publishedEventOf(CustomerShippingAddressRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],

@@ -28,7 +28,7 @@ final class OrderPaymentRequestedPublisherTest extends AbstractIntegrationTestCa
         $this->store($orderPayment);
 
         // Then
-        $event = $this->publishedEventOfType(OrderPaymentRequestedIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderPaymentRequestedIntegrationEvent::class);
         self::assertSame($orderId, $event->orderId);
         self::assertSame(2_500, $event->amountInCents);
         self::assertSame('GLBX-ABC12345', $event->reference);

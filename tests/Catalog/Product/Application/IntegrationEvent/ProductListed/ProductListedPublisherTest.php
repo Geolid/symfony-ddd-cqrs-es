@@ -21,7 +21,7 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // Then
-        $event = $this->publishedEventOfType(ProductListedIntegrationEvent::class);
+        $event = $this->publishedEventOf(ProductListedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame('Espresso cups, set of 6', $event->label);
         self::assertSame(1_750, $event->unitAmountInCents);

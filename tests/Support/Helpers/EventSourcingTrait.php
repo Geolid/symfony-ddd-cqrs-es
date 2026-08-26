@@ -37,7 +37,7 @@ trait EventSourcingTrait
      *
      * @return T
      */
-    protected function publishedEventOfType(string $eventClass): object
+    protected function publishedEventOf(string $eventClass): object
     {
         foreach ($this->service(Store::class)->load() as $message) {
             $event = $message->event();

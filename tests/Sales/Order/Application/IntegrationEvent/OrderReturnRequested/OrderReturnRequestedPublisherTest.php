@@ -21,7 +21,7 @@ final class OrderReturnRequestedPublisherTest extends AbstractIntegrationTestCas
         $this->store($order);
 
         // Then
-        $event = $this->publishedEventOfType(OrderReturnRequestedIntegrationEvent::class);
+        $event = $this->publishedEventOf(OrderReturnRequestedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
     }
 }
