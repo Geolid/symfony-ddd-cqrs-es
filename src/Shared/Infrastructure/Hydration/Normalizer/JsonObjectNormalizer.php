@@ -8,6 +8,7 @@ use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\Normalizer\HydratorAwareNormalizer;
 use Patchlevel\Hydrator\Normalizer\InvalidArgument;
 use Patchlevel\Hydrator\Normalizer\Normalizer;
+use Webmozart\Assert\Assert;
 
 final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
 {
@@ -53,8 +54,10 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             throw InvalidArgument::fromThrowable($exception);
         }
 
-        if (!\is_array($decoded)) {
-            throw InvalidArgument::withWrongType('array', $decoded);
+        try {
+            $decoded = Assert::isMap($decoded);
+        } catch (\InvalidArgumentException) {
+            throw InvalidArgument::withWrongType('array<string, mixed>', $decoded);
         }
 
         return $this->hydrator->hydrate($this->className, $decoded);
