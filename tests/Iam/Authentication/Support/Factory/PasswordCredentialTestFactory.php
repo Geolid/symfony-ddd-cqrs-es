@@ -12,6 +12,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -53,10 +54,11 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         string $newPassword,
         ?PasswordStrengthInterface $passwordStrength = null,
         ?PasswordHasherInterface $hasher = null,
-        \DateTimeImmutable $changedAt = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $changedAt = null,
     ): self {
         $passwordStrength ??= $this->passwordStrength();
         $hasher ??= $this->hasher();
+        $changedAt ??= Clock::get()->now();
 
         return $this->withModifier(static fn (PasswordCredential $credential) => $credential->change(
             Password::fromString($newPassword),
@@ -69,9 +71,10 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     public function rehashed(
         string $plainPassword,
         ?PasswordHasherInterface $hasher = null,
-        \DateTimeImmutable $rehashedAt = new \DateTimeImmutable('now +00:00'),
+        ?\DateTimeImmutable $rehashedAt = null,
     ): self {
         $hasher ??= $this->hasher();
+        $rehashedAt ??= Clock::get()->now();
 
         return $this->withModifier(static fn (PasswordCredential $credential) => $credential->rehash(
             $plainPassword,

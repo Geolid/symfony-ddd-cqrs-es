@@ -8,6 +8,7 @@ use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
@@ -25,18 +26,24 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
     }
 
-    public function suspended(string $reason = 'Suspected fraudulent activity', \DateTimeImmutable $suspendedAt = new \DateTimeImmutable('now +00:00')): self
+    public function suspended(string $reason = 'Suspected fraudulent activity', ?\DateTimeImmutable $suspendedAt = null): self
     {
+        $suspendedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
     }
 
-    public function reactivated(string $reason = 'Appeal upheld', \DateTimeImmutable $reactivatedAt = new \DateTimeImmutable('now +00:00')): self
+    public function reactivated(string $reason = 'Appeal upheld', ?\DateTimeImmutable $reactivatedAt = null): self
     {
+        $reactivatedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Identity $identity) => $identity->reactivate(Reason::fromString($reason), $reactivatedAt));
     }
 
-    public function erased(\DateTimeImmutable $erasedAt = new \DateTimeImmutable('now +00:00')): self
+    public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
+        $erasedAt ??= Clock::get()->now();
+
         return $this->withModifier(static fn (Identity $identity) => $identity->erase($erasedAt));
     }
 
