@@ -10,7 +10,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final class GatewayTest
+final class HttpClientTest
 {
     #[TestRule]
     public function rawHttpClientStaysInVendorClient(): Rule
