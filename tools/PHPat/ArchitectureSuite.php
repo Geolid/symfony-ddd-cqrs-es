@@ -10,28 +10,51 @@ use PHPat\Test\Builder\Rule;
 final class ArchitectureSuite
 {
     /**
-     * @return iterable<Rule>
+     * @return iterable<string, Rule>
      */
     #[TestRule]
     public function suite(): iterable
+    {
+        foreach ($this->testClasses() as $shortName => $class) {
+            yield from $this->rulesOf($shortName, $class);
+        }
+    }
+
+    /**
+     * @return iterable<string, class-string>
+     */
+    private function testClasses(): iterable
     {
         foreach (glob(__DIR__.'/*Test.php') ?: [] as $file) {
             $shortName = basename($file, '.php');
             /** @var class-string $class */
             $class = __NAMESPACE__.'\\'.$shortName;
-            $instance = new $class();
 
-            foreach (new \ReflectionClass($class)->getMethods() as $method) {
-                if ([] !== $method->getAttributes(TestRule::class)) {
-                    $result = $method->invoke($instance);
-                    $rules = is_iterable($result) ? $result : [$result];
+            yield $shortName => $class;
+        }
+    }
 
-                    foreach ($rules as $key => $rule) {
-                        \assert($rule instanceof Rule);
+    /**
+     * @param class-string $class
+     *
+     * @return iterable<string, Rule>
+     */
+    private function rulesOf(string $shortName, string $class): iterable
+    {
+        $instance = new $class();
 
-                        yield $shortName.'_'.$method->getName().(\is_string($key) ? '_'.$key : '') => $rule;
-                    }
-                }
+        foreach (new \ReflectionClass($class)->getMethods() as $method) {
+            if ([] === $method->getAttributes(TestRule::class)) {
+                continue;
+            }
+
+            $result = $method->invoke($instance);
+            $rules = is_iterable($result) ? $result : [$result];
+
+            foreach ($rules as $key => $rule) {
+                \assert($rule instanceof Rule);
+
+                yield $shortName.'_'.$method->getName().(\is_string($key) ? '_'.$key : '') => $rule;
             }
         }
     }
