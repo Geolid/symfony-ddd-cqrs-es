@@ -151,14 +151,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itGetsByReturnTrackingReference(): void
     {
         // Given
-        $tracked = ShipmentTestFactory::new()
-            ->prepared()
-            ->manifested('ACME-4Q7X2K9')
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested('ACME-RETURN-1')
-            ->store();
         ShipmentTestFactory::new()
             ->prepared()
             ->manifested('ACME-OTHER')
@@ -166,6 +158,14 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             ->delivered()
             ->returnRequested()
             ->returnManifested('ACME-RETURN-OTHER')
+            ->store();
+        $tracked = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-4Q7X2K9')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-1')
             ->store();
 
         // When

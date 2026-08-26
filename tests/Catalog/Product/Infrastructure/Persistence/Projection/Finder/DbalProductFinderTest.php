@@ -63,6 +63,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
+        ProductTestFactory::new()->withLabel('Saucer')->store();
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->store();
 
         // When
