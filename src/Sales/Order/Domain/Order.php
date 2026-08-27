@@ -96,6 +96,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
             billingAddress: [
                 'firstName' => $billingAddress->fullName->firstName,
@@ -103,6 +104,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                 'street' => $billingAddress->address->street,
                 'postalCode' => $billingAddress->address->postalCode,
                 'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
             ],
             lines: array_values(array_map(
                 static fn (OrderLine $line): array => [
@@ -280,11 +282,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->customerId = $event->customerId;
         $this->shippingAddress = PostalAddress::of(
             FullName::of($event->shippingAddress['firstName'], $event->shippingAddress['lastName']),
-            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
+            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),
         );
         $this->billingAddress = PostalAddress::of(
             FullName::of($event->billingAddress['firstName'], $event->billingAddress['lastName']),
-            Address::of($event->billingAddress['street'], $event->billingAddress['postalCode'], $event->billingAddress['city']),
+            Address::of($event->billingAddress['street'], $event->billingAddress['postalCode'], $event->billingAddress['city'], $event->billingAddress['countryCode']),
         );
         $this->totalAmountInCents = $event->totalAmountInCents;
         $this->state = OrderState::PLACED;

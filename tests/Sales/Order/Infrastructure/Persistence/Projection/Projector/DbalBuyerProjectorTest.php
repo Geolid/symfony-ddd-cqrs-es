@@ -43,7 +43,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
 
         // When
@@ -54,7 +54,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '12 rue des Lilas', 'postal_code' => '75001', 'city' => 'Paris'],
+            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '12 rue des Lilas', 'postal_code' => '75001', 'city' => 'Paris', 'country_code' => 'FR'],
             $this->postalAddress($row['shipping_address']),
         );
         self::assertNull($row['billing_address']);
@@ -65,7 +65,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
 
         // When
@@ -76,7 +76,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '8 avenue Foch', 'postal_code' => '75116', 'city' => 'Paris'],
+            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '8 avenue Foch', 'postal_code' => '75116', 'city' => 'Paris', 'country_code' => 'FR'],
             $this->postalAddress($row['billing_address']),
         );
         self::assertNull($row['shipping_address']);
@@ -102,11 +102,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string}
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
     private function postalAddress(string $json): array
     {
-        /** @var array{first_name: string, last_name: string, street: string, postal_code: string, city: string} $decoded */
+        /** @var array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);
 
         return $decoded;

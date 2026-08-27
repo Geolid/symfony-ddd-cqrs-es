@@ -40,7 +40,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
             $id,
             $orderId,
             Uuid::uuid7()->toString(),
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
         ));
 
         // Then
@@ -52,13 +52,14 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = $this->repository->load(ShipmentId::fromString($id));
         $shippingAddress = $shipment->shippingAddress;
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             [
                 'firstName' => $shippingAddress->fullName->firstName,
                 'lastName' => $shippingAddress->fullName->lastName,
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
         );
     }
@@ -73,7 +74,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->store(ShipmentTestFactory::new()
             ->withOrderId($orderId)
             ->withCustomerId($customerId)
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create());
 
         // When
@@ -81,19 +82,20 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
             $id,
             $orderId,
             $customerId,
-            ['firstName' => 'Someone', 'lastName' => 'Else', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris'],
+            ['firstName' => 'Someone', 'lastName' => 'Else', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
         ));
 
         // Then
         $shippingAddress = $this->repository->load(ShipmentId::fromString($id))->shippingAddress;
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             [
                 'firstName' => $shippingAddress->fullName->firstName,
                 'lastName' => $shippingAddress->fullName->lastName,
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
         );
     }

@@ -49,7 +49,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
         $serialized = $this->serializedEventOf(
@@ -73,7 +73,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris')))
+            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
         $serialized = $this->serializedEventOf(
@@ -93,10 +93,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function erasedAddress(): array
     {
-        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased'];
+        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
     }
 }

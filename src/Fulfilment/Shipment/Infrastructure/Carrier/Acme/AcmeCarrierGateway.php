@@ -18,14 +18,16 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 
     public function __construct(
         private AcmeClient $acmeClient,
-        #[Autowire(param: 'fulfilment.return_address_name')]
-        private string $returnAddressName,
+        #[Autowire(param: 'fulfilment.return_address_recipient')]
+        private string $returnAddressRecipient,
         #[Autowire(param: 'fulfilment.return_address_street')]
         private string $returnAddressStreet,
         #[Autowire(param: 'fulfilment.return_address_postal_code')]
         private string $returnAddressPostalCode,
         #[Autowire(param: 'fulfilment.return_address_city')]
         private string $returnAddressCity,
+        #[Autowire(param: 'fulfilment.return_address_country_code')]
+        private string $returnAddressCountryCode,
     ) {
     }
 
@@ -41,6 +43,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
                 'street' => $deliveryAddress->address->street,
                 'postalCode' => $deliveryAddress->address->postalCode,
                 'city' => $deliveryAddress->address->city,
+                'countryCode' => $deliveryAddress->address->countryCode->value,
             ],
         ], $shipmentId);
 
@@ -58,7 +61,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
      */
     public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
     {
-        $returnAddress = Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity);
+        $returnAddress = Address::of($this->returnAddressStreet, $this->returnAddressPostalCode, $this->returnAddressCity, $this->returnAddressCountryCode);
 
         $response = $this->acmeClient->post(self::RETURN_PATH, [
             'clientReferenceId' => $shipmentId,
@@ -67,12 +70,14 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
                 'street' => $pickupAddress->address->street,
                 'postalCode' => $pickupAddress->address->postalCode,
                 'city' => $pickupAddress->address->city,
+                'countryCode' => $pickupAddress->address->countryCode->value,
             ],
             'destination' => [
-                'recipient' => $this->returnAddressName,
+                'recipient' => $this->returnAddressRecipient,
                 'street' => $returnAddress->street,
                 'postalCode' => $returnAddress->postalCode,
                 'city' => $returnAddress->city,
+                'countryCode' => $returnAddress->countryCode->value,
             ],
         ], $shipmentId);
 

@@ -13,7 +13,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class ShipmentRequested
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
      */
     public function __construct(
         public string $id,
@@ -26,6 +26,7 @@ final readonly class ShipmentRequested
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
+            'countryCode' => 'ZZ',
         ]))]
         public array $shippingAddress,
         public string $createdAt,

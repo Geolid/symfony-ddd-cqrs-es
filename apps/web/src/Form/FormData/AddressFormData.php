@@ -14,12 +14,19 @@ final class AddressFormData
 
     public ?string $city = null;
 
+    public ?string $countryCode = null;
+
     /**
-     * @return array{street: ?string, postalCode: ?string, city: ?string}
+     * @return array{street: ?string, postalCode: ?string, city: ?string, countryCode: ?string}
      */
     #[ValidAddress]
     public function getAddressData(): array
     {
-        return ['street' => $this->street, 'postalCode' => $this->postalCode, 'city' => $this->city];
+        return [
+            'street' => $this->street,
+            'postalCode' => $this->postalCode,
+            'city' => $this->city,
+            'countryCode' => $this->countryCode,
+        ];
     }
 }

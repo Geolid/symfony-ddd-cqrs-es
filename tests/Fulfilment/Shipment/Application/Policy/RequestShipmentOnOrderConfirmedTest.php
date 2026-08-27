@@ -47,13 +47,14 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
         $shippingAddress = $this->shipmentOf($order)->shippingAddress;
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             [
                 'firstName' => $shippingAddress->fullName->firstName,
                 'lastName' => $shippingAddress->fullName->lastName,
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
         );
     }
@@ -88,7 +89,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         return new OrderConfirmedIntegrationEvent(
             orderId: $order->id->toString(),
             customerId: Uuid::uuid7()->toString(),
-            shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             confirmedAt: '2026-01-01T00:00:00+00:00',
         );
     }

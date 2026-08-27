@@ -74,9 +74,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $address
      *
-     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string}
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
     private function normalizePostalAddress(array $address): array
     {
@@ -86,6 +86,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
             'street' => $address['street'],
             'postal_code' => $address['postalCode'],
             'city' => $address['city'],
+            'country_code' => $address['countryCode'],
         ];
     }
 }

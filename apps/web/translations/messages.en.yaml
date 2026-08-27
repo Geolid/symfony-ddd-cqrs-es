@@ -115,6 +115,7 @@ sales:
                 label_street: Street
                 label_postal_code: Postal code
                 label_city: City
+                label_country: Country
         profile:
             title: Profile
             subtitle: Manage your security settings and personal data.

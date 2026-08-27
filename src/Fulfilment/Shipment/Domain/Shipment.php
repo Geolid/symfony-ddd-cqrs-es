@@ -64,6 +64,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
             createdAt: $createdAt->format(\DateTimeInterface::ATOM),
         ));
@@ -278,7 +279,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->customerId = $event->customerId;
         $this->shippingAddress = PostalAddress::of(
             FullName::of($event->shippingAddress['firstName'], $event->shippingAddress['lastName']),
-            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city']),
+            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),
         );
         $this->trackingReference = null;
         $this->returnTrackingReference = null;

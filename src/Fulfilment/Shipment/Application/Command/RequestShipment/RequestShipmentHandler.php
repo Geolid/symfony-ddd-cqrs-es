@@ -37,7 +37,7 @@ final readonly class RequestShipmentHandler
             customerId: $command->customerId,
             shippingAddress: PostalAddress::of(
                 FullName::of($command->shippingAddress['firstName'], $command->shippingAddress['lastName']),
-                Address::of($command->shippingAddress['street'], $command->shippingAddress['postalCode'], $command->shippingAddress['city']),
+                Address::of($command->shippingAddress['street'], $command->shippingAddress['postalCode'], $command->shippingAddress['city'], $command->shippingAddress['countryCode']),
             ),
             createdAt: $this->clock->now(),
         );

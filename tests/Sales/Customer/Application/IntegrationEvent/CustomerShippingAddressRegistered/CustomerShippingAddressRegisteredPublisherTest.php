@@ -19,7 +19,7 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris')))
+            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
 
         // When
@@ -29,7 +29,7 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
         $event = $this->publishedEventOf(CustomerShippingAddressRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $event->address,
         );
     }

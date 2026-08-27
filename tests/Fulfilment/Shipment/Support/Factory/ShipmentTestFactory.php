@@ -152,7 +152,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
             'customerId' => Uuid::uuid7()->toString(),
             'shippingAddress' => PostalAddress::of(
                 FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
             ),
             'createdAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];

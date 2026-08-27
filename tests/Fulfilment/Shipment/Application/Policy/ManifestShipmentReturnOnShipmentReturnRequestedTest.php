@@ -38,7 +38,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
         // Given
         $shippingAddress = PostalAddress::of(
             FullName::of('Ada', 'Lovelace'),
-            Address::of('12 rue des Lilas', '75001', 'Paris'),
+            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);

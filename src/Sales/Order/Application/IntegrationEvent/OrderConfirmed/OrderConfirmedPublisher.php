@@ -40,7 +40,7 @@ final readonly class OrderConfirmedPublisher
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function normalizePostalAddress(PostalAddress $address): array
     {
@@ -50,6 +50,7 @@ final readonly class OrderConfirmedPublisher
             'street' => $address->address->street,
             'postalCode' => $address->address->postalCode,
             'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
         ];
     }
 }
