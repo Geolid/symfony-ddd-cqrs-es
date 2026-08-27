@@ -5,7 +5,9 @@ RUN apk add --no-cache icu-dev git $PHPIZE_DEPS \
     && docker-php-ext-install intl pdo_mysql \
     && pecl install pcov \
     && docker-php-ext-enable pcov \
-    && apk del $PHPIZE_DEPS
+    && apk del $PHPIZE_DEPS \
+    && git config --system --add safe.directory /srv \
+    && adduser -D -u 1000 -h /home/app app
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
