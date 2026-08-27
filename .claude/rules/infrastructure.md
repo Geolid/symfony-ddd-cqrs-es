@@ -10,6 +10,7 @@ paths:
 
 **ALWAYS**
 - Rehydrating a date from the database: `new \DateTimeImmutable($value, new \DateTimeZone('UTC'))` — an explicit timezone, otherwise the behavior silently depends on the server's local timezone.
+- Binding a `\DateTimeImmutable` into a query (a `WHERE` filter, an `insert()`/`update()` value) passes the object itself with `Doctrine\DBAL\Types\Types::DATETIME_IMMUTABLE` as the parameter type (`setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE)`) — never a hand-formatted string, which duplicates the format Doctrine's own type already owns.
 - An Event Store repository's `load()` catches `AggregateNotFound` and re-throws the BC's own `<Aggregate>NotFoundException` — otherwise a vendor exception leaks out as a raw 500 instead of a mapped domain failure.
 - A Projector extends `AbstractDbalProjector` — outside that base class it isn't in the `projector` group and its schema is never created.
 - A Finder reads `from(<Projector>::TABLE)`, never a re-declared table-name literal — otherwise it silently drifts if the projector's table changes.

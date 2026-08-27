@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Types\Types;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
@@ -41,7 +42,7 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
                 $qb->andWhere('closed_at < :cutoff')
-                    ->setParameter('cutoff', $cutoff->format('Y-m-d H:i:s'));
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }
@@ -53,7 +54,7 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
                 $qb->andWhere('status = :status')
                     ->andWhere('delivered_at < :cutoff')
                     ->setParameter('status', OrderStatus::DELIVERED->value)
-                    ->setParameter('cutoff', $cutoff->format('Y-m-d H:i:s'));
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }
