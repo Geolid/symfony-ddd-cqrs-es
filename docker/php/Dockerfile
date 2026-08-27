@@ -1,13 +1,18 @@
 FROM php:8.5-fpm-alpine
 
-RUN apk add --no-cache icu-dev git $PHPIZE_DEPS \
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN apk add --no-cache icu-dev git sudo $PHPIZE_DEPS \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo_mysql \
     && pecl install pcov \
     && docker-php-ext-enable pcov \
     && apk del $PHPIZE_DEPS \
     && git config --system --add safe.directory /srv \
-    && adduser -D -u 1000 -h /home/app app
+    && addgroup -g ${GROUP_ID} app \
+    && adduser -D -u ${USER_ID} -G app -h /home/app app \
+    && echo 'app ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/app
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
