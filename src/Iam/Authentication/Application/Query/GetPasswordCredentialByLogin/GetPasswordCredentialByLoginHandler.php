@@ -7,9 +7,9 @@ namespace Iam\Authentication\Application\Query\GetPasswordCredentialByLogin;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialResult;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class GetPasswordCredentialByLoginHandler
 {
     public function __construct(private PasswordCredentialFinderInterface $passwordCredentialFinder)

@@ -10,9 +10,9 @@ use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Shared\Application\Command\CommandUseCase;
+use Shared\Application\Command\CommandHandler;
 
-#[CommandUseCase]
+#[CommandHandler]
 final readonly class CancelOrphanedOrderHandler
 {
     public function __construct(

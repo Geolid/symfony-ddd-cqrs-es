@@ -25,7 +25,7 @@ final class AggregateTest
                 Selector::classname(AggregateRoot::class),
                 Selector::classname(AggregateRootMetadataAware::class),
             )
-            ->because('Event Sourcing requires an aggregate to be rebuildable from its own recorded history.');
+            ->because('An aggregate must be rebuildable from its own recorded history.');
     }
 
     #[TestRule]
@@ -35,6 +35,6 @@ final class AggregateTest
             ->classes(Selector::appliesAttribute(Aggregate::class))
             ->should()->include()
             ->classes(Selector::classname(AggregateRootAttributeBehaviour::class))
-            ->because('Event Sourcing requires an aggregate to record and replay facts to rebuild its own state.');
+            ->because('An aggregate replays its own recorded facts to rebuild its state.');
     }
 }

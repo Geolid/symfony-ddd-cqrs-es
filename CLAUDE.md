@@ -6,7 +6,7 @@ e-commerce flow: customers, orders, shipping, catalog, identity.
 ## Stack & Architecture
 
 - PHP, Symfony — versions: `composer.json`
-- DDD, CQRS, Event Sourcing (`patchlevel`), Onion layering, Delivery Mechanism (DM)
+- DDD, CQRS, Event Sourcing (`patchlevel`), Onion layering, Ports & Adapters (driving/driven), Delivery Mechanism (DM)
 
 ## Commands (Castor = Docker proxy)
 
@@ -33,7 +33,7 @@ castor assets [<dm>]                               # install assets (default: al
 - `config/` — global config + per-subdomain services.
 - `demo/` — Seeders
 - `tests/` — mirrors `src/`.
-- `tools/` — custom QA rules
+- `tools/` — QA rules and test tooling
 - `ui/` — Assets, shared Twig, i18n
 
 ## Memory

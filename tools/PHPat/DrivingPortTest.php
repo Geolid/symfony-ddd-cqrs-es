@@ -18,7 +18,7 @@ final class DrivingPortTest
         return PHPat::rule()
             ->classes(Selector::appliesAttribute(DrivingPort::class))
             ->should()->beInterface()
-            ->because('Marking an implementation instead of its contract exposes internals as if they were the stable surface.');
+            ->because('Marking an implementation instead of its contract exposes internals as the stable surface.');
     }
 
     #[TestRule]

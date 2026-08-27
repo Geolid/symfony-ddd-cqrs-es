@@ -10,7 +10,7 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final class GatewayTest
+final class HttpClientTest
 {
     #[TestRule]
     public function rawHttpClientStaysInVendorClient(): Rule
@@ -31,6 +31,6 @@ final class GatewayTest
             ->shouldNot()
             ->dependOn()
             ->classes(Selector::classname(HttpClientInterface::class))
-            ->because('Reaching a vendor from more than one place scatters its auth, host, and error handling inconsistently.');
+            ->because('Reaching a vendor from more than one place scatters its auth, host, and error handling.');
     }
 }

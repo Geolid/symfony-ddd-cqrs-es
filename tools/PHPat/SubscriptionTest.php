@@ -14,6 +14,7 @@ use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy\Policy;
 use Shared\Application\Processor\Processor;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
+use Tools\PHPat\Helpers\ConcreteImplementation;
 
 final class SubscriptionTest
 {
@@ -23,7 +24,7 @@ final class SubscriptionTest
         return PHPat::rule()
             ->classes($this->subscribers())
             ->should()->beReadonly()
-            ->because('A subscriber holds no state — a mutable one is a latent concurrency bug.');
+            ->because('A subscriber\'s instance is reused across dispatches — mutable state there is a concurrency bug.');
     }
 
     #[TestRule]
@@ -33,7 +34,7 @@ final class SubscriptionTest
             ->classes($this->subscribers())
             ->shouldNot()->dependOn()
             ->classes(Selector::classname(OnFailed::class))
-            ->because('A failure silently skipped lets state drift from the truth it was supposed to reflect, unnoticed.');
+            ->because('A silently skipped failure lets state drift from the truth it should reflect.');
     }
 
     #[TestRule]
@@ -43,7 +44,7 @@ final class SubscriptionTest
             ->classes($this->policies())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Policy::class))
-            ->because('A side effect never wired up silently never runs.');
+            ->because('A business reaction to an event never wired up silently never fires.');
     }
 
     #[TestRule]
@@ -53,7 +54,7 @@ final class SubscriptionTest
             ->classes($this->processors())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Processor::class))
-            ->because('A side effect never wired up silently never runs.');
+            ->because('A technical reaction to an event never wired up silently never fires.');
     }
 
     #[TestRule]
@@ -63,7 +64,7 @@ final class SubscriptionTest
             ->classes($this->projectors())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Projector::class))
-            ->because('A materialized view never wired up stays silently empty.');
+            ->because('A Projection never wired up stays silently empty.');
     }
 
     #[TestRule]
@@ -73,7 +74,7 @@ final class SubscriptionTest
             ->classes($this->publishers())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Publisher::class))
-            ->because('A fact crossing a Bounded Context boundary needs its own dedicated, guaranteed processing group — a shared one can\'t promise that.');
+            ->because('Publishing needs its own group — sharing Policy\'s, Processor\'s, or Projector\'s would break store()\'s guarantee of when a fact actually crosses the boundary.');
     }
 
     private function subscribers(): SelectorInterface
@@ -85,7 +86,7 @@ final class SubscriptionTest
                 Selector::appliesAttribute(Projector::class),
                 Selector::appliesAttribute(Publisher::class),
             ),
-            ...$this->concreteImplementation(),
+            ...ConcreteImplementation::selectors(),
         );
     }
 
@@ -94,7 +95,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Policy/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            ...$this->concreteImplementation(),
+            ...ConcreteImplementation::selectors(),
         );
     }
 
@@ -103,7 +104,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Processor/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            ...$this->concreteImplementation(),
+            ...ConcreteImplementation::selectors(),
         );
     }
 
@@ -112,7 +113,7 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Infrastructure/Persistence/Projection/Projector/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            ...$this->concreteImplementation(),
+            ...ConcreteImplementation::selectors(),
         );
     }
 
@@ -122,20 +123,7 @@ final class SubscriptionTest
             Selector::classname('#Publisher$#', true),
             Selector::withFilepath('#/Application/IntegrationEvent/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            ...$this->concreteImplementation(),
+            ...ConcreteImplementation::selectors(),
         );
-    }
-
-    /**
-     * @return list<SelectorInterface>
-     */
-    private function concreteImplementation(): array
-    {
-        return [
-            Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-            Selector::Not(Selector::withFilepath('#/tests/#', true)),
-            Selector::Not(Selector::isAbstract()),
-            Selector::Not(Selector::isInterface()),
-        ];
     }
 }

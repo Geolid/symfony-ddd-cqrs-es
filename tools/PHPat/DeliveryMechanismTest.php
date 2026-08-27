@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints\Compound;
 final class DeliveryMechanismTest
 {
     #[TestRule]
-    public function onlyDependsOnOwnBcExposedSurface(): Rule
+    public function onlyDependsOnOwnBoundedContextExposedSurface(): Rule
     {
         return PHPat::rule()
             ->classes($this->deliveryMechanisms())
@@ -38,7 +38,7 @@ final class DeliveryMechanismTest
                 Selector::Not($this->projectCode()),
                 ...$this->drivingPortOutcomeSelectors(),
             )
-            ->because('Reaching past what a Bounded Context exposes lets its own rules be bypassed or duplicated outside it.');
+            ->because('Reaching past what a Bounded Context exposes bypasses or duplicates its own rules outside it.');
     }
 
     #[TestRule]
@@ -54,7 +54,7 @@ final class DeliveryMechanismTest
                 Selector::inNamespace('Doctrine\Persistence'),
                 Selector::inNamespace('Patchlevel\EventSourcing'),
             )
-            ->because('Touching storage directly bypasses every guarantee the owning Bounded Context already provides over it.');
+            ->because('Touching storage directly bypasses the guarantees its owning Bounded Context already provides.');
     }
 
     #[TestRule]
@@ -94,10 +94,30 @@ final class DeliveryMechanismTest
      */
     private function drivingPortOutcomeSelectors(): array
     {
-        $root = \dirname(__DIR__, 2);
         /** @var array<class-string, SelectorInterface> $selectors */
         $selectors = [];
 
+        foreach ($this->projectClasses() as $class) {
+            $reflection = new \ReflectionClass($class);
+
+            if ([] === $reflection->getAttributes(DrivingPort::class)) {
+                continue;
+            }
+
+            foreach ($this->customReturnTypeNames($reflection) as $name) {
+                $selectors[$name] = Selector::AnyOf(Selector::classname($name), Selector::implements($name));
+            }
+        }
+
+        return array_values($selectors);
+    }
+
+    /**
+     * @return iterable<class-string>
+     */
+    private function projectClasses(): iterable
+    {
+        $root = \dirname(__DIR__, 2);
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root.'/src', \FilesystemIterator::SKIP_DOTS));
 
         foreach ($files as $file) {
@@ -109,29 +129,30 @@ final class DeliveryMechanismTest
 
             $class = str_replace('/', '\\', substr($file->getPathname(), \strlen($root.'/src/'), -4));
 
-            if (!interface_exists($class) && !class_exists($class)) {
-                continue;
-            }
-
-            $reflection = new \ReflectionClass($class);
-
-            if ([] === $reflection->getAttributes(DrivingPort::class)) {
-                continue;
-            }
-
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                $returnType = $method->getReturnType();
-
-                if (!$returnType instanceof \ReflectionNamedType || $returnType->isBuiltin()) {
-                    continue;
-                }
-
-                $name = $returnType->getName();
-                \assert('' !== $name);
-                $selectors[$name] = Selector::AnyOf(Selector::classname($name), Selector::implements($name));
+            if (interface_exists($class) || class_exists($class)) {
+                yield $class;
             }
         }
+    }
 
-        return array_values($selectors);
+    /**
+     * @param \ReflectionClass<object> $reflection
+     *
+     * @return iterable<non-empty-string>
+     */
+    private function customReturnTypeNames(\ReflectionClass $reflection): iterable
+    {
+        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            $returnType = $method->getReturnType();
+
+            if (!$returnType instanceof \ReflectionNamedType || $returnType->isBuiltin()) {
+                continue;
+            }
+
+            $name = $returnType->getName();
+            \assert('' !== $name);
+
+            yield $name;
+        }
     }
 }

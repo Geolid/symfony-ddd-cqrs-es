@@ -8,6 +8,7 @@ use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Tools\PHPat\Helpers\ConcreteImplementation;
 
 final class DrivenPortTest
 {
@@ -24,14 +25,11 @@ final class DrivenPortTest
                 ->classes(Selector::AllOf(
                     Selector::classname('#'.$suffix.'$#', true),
                     Selector::withFilepath('#/Infrastructure/#', true),
-                    Selector::Not(Selector::withFilepath('#/vendor/#', true)),
-                    Selector::Not(Selector::withFilepath('#/tests/#', true)),
-                    Selector::Not(Selector::isInterface()),
-                    Selector::Not(Selector::isAbstract()),
+                    ...ConcreteImplementation::selectors(),
                 ))
                 ->should()->implement()
                 ->classes(Selector::classname('#'.$suffix.'Interface$#', true))
-                ->because('An implementation that never commits to its own contract can never be swapped for another.');
+                ->because('An implementation committing to no contract can never be swapped for another.');
         }
     }
 }

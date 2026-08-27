@@ -7,10 +7,10 @@ namespace Iam\Identity\Application\Query\ListIdentities;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Shared\Application\Query\Pagination\Pagination;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class ListIdentitiesHandler
 {
     public function __construct(private IdentityFinderInterface $identityFinder)

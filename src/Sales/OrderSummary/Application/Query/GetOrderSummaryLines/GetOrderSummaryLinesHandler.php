@@ -6,9 +6,9 @@ namespace Sales\OrderSummary\Application\Query\GetOrderSummaryLines;
 
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineResult;
-use Shared\Application\Query\QueryUseCase;
+use Shared\Application\Query\QueryHandler;
 
-#[QueryUseCase]
+#[QueryHandler]
 final readonly class GetOrderSummaryLinesHandler
 {
     public function __construct(private OrderSummaryLineFinderInterface $orderSummaryLineFinder)

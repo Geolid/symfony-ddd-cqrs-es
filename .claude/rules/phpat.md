@@ -16,3 +16,4 @@ paths:
 ### Conventions
 - A new `*Test.php` file under `tools/PHPat/` is auto-discovered by `Tools\PHPat\ArchitectureSuite` (glob + reflection) — no manual registration needed.
 - Name a rule class after its subject, never after a vendor or a specific BC.
+- A `because()` message states the bare why, naming the underlying principle only where useful — never restates the mechanical failure PHPStan's own output already shows.

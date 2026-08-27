@@ -30,6 +30,6 @@ final class ConcreteClassTest
                 Selector::isEnum(),
             )
             ->should()->beFinal()
-            ->because('The Open/Closed Principle keeps concrete classes closed to modification to prevent unplanned subclassing.');
+            ->because('Open/Closed keeps a concrete class closed to unplanned subclassing.');
     }
 }

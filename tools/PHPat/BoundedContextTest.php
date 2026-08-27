@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tools\PHPat;
 
+use Patchlevel\EventSourcing\Attribute\Event;
 use PHPat\Selector\ClassNamespace;
 use PHPat\Selector\Filepath;
 use PHPat\Selector\Selector;
@@ -11,7 +12,6 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Tools\PHPat\Helpers\BcDirs;
 
 final class BoundedContextTest
 {
@@ -39,7 +39,7 @@ final class BoundedContextTest
             ->classes(
                 ...array_map(static fn (string $namespace): ClassNamespace => Selector::inNamespace($namespace), self::DELIVERY_MECHANISM_VENDOR_NAMESPACES),
             )
-            ->because('A Bounded Context coupled to its delivery mechanism loses its Hexagonal portability.');
+            ->because('Delivery-mechanism coupling costs a Bounded Context the portability Ports & Adapters exists to give it.');
     }
 
     /**
@@ -49,27 +49,68 @@ final class BoundedContextTest
     public function communicatesOnlyViaIntegrationEvents(): iterable
     {
         $root = \dirname(__DIR__, 2);
-        $bcDirs = BcDirs::all($root);
+        $boundedContextDirs = $this->boundedContextDirs($root);
 
-        foreach ($bcDirs as $bcDir) {
-            $bcName = str_replace('/', '.', substr($bcDir, \strlen($root.'/src/')));
-            $otherBcDirs = array_values(array_diff($bcDirs, [$bcDir]));
+        foreach ($boundedContextDirs as $boundedContextDir) {
+            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
+            $otherBoundedContextDirs = array_values(array_diff($boundedContextDirs, [$boundedContextDir]));
 
-            yield $bcName => PHPat::rule()
+            yield $boundedContextName => PHPat::rule()
                 ->classes(Selector::AllOf(
-                    Selector::withFilepath('#'.preg_quote(substr($bcDir, \strlen($root)), '#').'/#', true),
+                    Selector::withFilepath('#'.preg_quote(substr($boundedContextDir, \strlen($root)), '#').'/#', true),
                     Selector::Not(Selector::withFilepath('#/tests/#', true)),
                 ))
                 ->canOnly()
                 ->dependOn()
                 ->classes(
                     Selector::NoneOf(...array_map(
-                        static fn (string $otherBcDir): Filepath => Selector::withFilepath('#'.preg_quote(substr($otherBcDir, \strlen($root)), '#').'/#', true),
-                        $otherBcDirs,
+                        static fn (string $otherBoundedContextDir): Filepath => Selector::withFilepath('#'.preg_quote(substr($otherBoundedContextDir, \strlen($root)), '#').'/#', true),
+                        $otherBoundedContextDirs,
                     )),
                     Selector::implements(IntegrationEventInterface::class),
                 )
-                ->because('This is a Bounded Context\'s Open Host Service — a shared, uniform protocol for every consumer; a bespoke integration per consumer would mean an internal change ripples across each one.');
+                ->because('Integration Events are this Bounded Context\'s Event-Carried State Transfer, in its own Published Language — bypassing them lets an internal change ripple into every consumer.');
         }
+    }
+
+    /**
+     * @return iterable<string, Rule>
+     */
+    #[TestRule]
+    public function domainEventsStayInternal(): iterable
+    {
+        $root = \dirname(__DIR__, 2);
+        $boundedContextDirs = $this->boundedContextDirs($root);
+
+        foreach ($boundedContextDirs as $boundedContextDir) {
+            $boundedContextName = str_replace('/', '.', substr($boundedContextDir, \strlen($root.'/src/')));
+            $boundedContextPath = substr($boundedContextDir, \strlen($root));
+
+            yield $boundedContextName => PHPat::rule()
+                ->classes(Selector::AllOf(
+                    Selector::Not(Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/#', true)),
+                    Selector::Not(Selector::withFilepath('#/tests/#', true)),
+                ))
+                ->shouldNot()
+                ->dependOn()
+                ->classes(Selector::AllOf(
+                    Selector::withFilepath('#'.preg_quote($boundedContextPath, '#').'/Domain/#', true),
+                    Selector::appliesAttribute(Event::class),
+                    Selector::Not(Selector::implements(IntegrationEventInterface::class)),
+                    Selector::Not(Selector::isInterface()),
+                ))
+                ->because('An internal fact leaking into another Bounded Context couples the two beyond intent.');
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function boundedContextDirs(string $root): array
+    {
+        return array_values(array_filter(
+            glob($root.'/src/*/*', \GLOB_ONLYDIR) ?: [],
+            static fn (string $dir): bool => 'Shared' !== basename(\dirname($dir)),
+        ));
     }
 }
