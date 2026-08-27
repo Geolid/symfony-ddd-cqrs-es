@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Doubles\StubDataSubjectErased;
 use Support\AbstractIntegrationTestCase;
 
@@ -31,7 +31,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new StubDataSubjectErased($customerId)),
         );
 

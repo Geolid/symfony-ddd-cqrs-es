@@ -16,7 +16,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Support\AbstractIntegrationTestCase;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
@@ -33,7 +33,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
@@ -58,7 +58,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 
@@ -82,7 +82,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
         );
 

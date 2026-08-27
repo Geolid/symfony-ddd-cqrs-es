@@ -13,7 +13,7 @@ use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCa
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Doubles\StubDataSubjectErased;
 use Support\AbstractIntegrationTestCase;
 
@@ -34,7 +34,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new StubDataSubjectErased($customerId)),
         );
 
@@ -57,7 +57,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new StubDataSubjectErased($order->id->toString())),
         );
 
@@ -82,7 +82,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new StubDataSubjectErased($customerId)),
         );
 
@@ -105,7 +105,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraser::class))(
+        ($this->service(DataSubjectEraserProcessor::class))(
             Message::create(new StubDataSubjectErased($customerId)),
         );
 
