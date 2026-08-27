@@ -7,7 +7,6 @@ namespace Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThres
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
-use Sales\Order\Application\Status\OrderPaymentStatus;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
@@ -31,9 +30,7 @@ final readonly class ListOrderPaymentsPastReconciliationThresholdHandler
             ->format(\DateTimeInterface::ATOM);
 
         return new StreamResult(
-            $this->orderPaymentFinder
-                ->byStatus(OrderPaymentStatus::REQUESTED->value)
-                ->requestedBefore($cutoff),
+            $this->orderPaymentFinder->stalledBefore($cutoff),
         );
     }
 }

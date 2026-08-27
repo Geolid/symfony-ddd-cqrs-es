@@ -45,7 +45,7 @@ final class ReconcileOrderPaymentsCommand
 
             foreach ($stuck as $orderPayment) {
                 try {
-                    if ($this->orderPaymentReconciler->reconcile($orderPayment->id, $orderPayment->reference)) {
+                    if ($this->orderPaymentReconciler->reconcile($orderPayment->id, $orderPayment->status->value, $orderPayment->reference)) {
                         ++$reconciled;
                         $io->writeln(\sprintf('Reconciled order payment %s', $orderPayment->id));
                     }

@@ -4,31 +4,37 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Carrier;
 
-use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
-use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class ShipmentReconciler implements ShipmentReconcilerInterface
 {
-    public function __construct(
-        private CarrierGatewayInterface $carrierGateway,
-        private CommandBusInterface $commandBus,
-    ) {
+    /**
+     * @param iterable<ShipmentStatusReconcilerInterface> $reconcilers
+     */
+    public function __construct(private iterable $reconcilers)
+    {
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, string $reference): bool
+    public function reconcile(string $id, string $status, ?string $trackingReference, ?string $returnTrackingReference): bool
     {
-        if (ShipmentStatus::DISPATCHED->value !== $this->carrierGateway->checkStatus($reference)) {
-            return false;
+        $reference = match ($status) {
+            ShipmentStatus::RETURN_MANIFESTED->value, ShipmentStatus::RETURN_DISPATCHED->value => $returnTrackingReference,
+            default => $trackingReference,
+        };
+
+        \assert(null !== $reference);
+
+        foreach ($this->reconcilers as $reconciler) {
+            if ($reconciler->supports($status)) {
+                return $reconciler->reconcile($id, $reference);
+            }
         }
 
-        $this->commandBus->dispatch(new DispatchShipment($id));
-
-        return true;
+        return false;
     }
 }

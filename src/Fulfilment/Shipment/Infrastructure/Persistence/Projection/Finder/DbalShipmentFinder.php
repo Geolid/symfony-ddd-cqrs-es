@@ -9,6 +9,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Persistence\Projection\Projector\DbalShipmentProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
@@ -55,19 +56,25 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
-    public function manifestedBefore(string $cutoff): static
+    public function stalledBefore(string $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('manifested_at < :cutoff')
-                    ->setParameter('cutoff', $cutoff);
+                $cutoffParam = $qb->createNamedParameter($cutoff);
+
+                $qb->andWhere($qb->expr()->or(
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::MANIFESTED->value)), "manifested_at < {$cutoffParam}"),
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::DISPATCHED->value)), "dispatched_at < {$cutoffParam}"),
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::RETURN_MANIFESTED->value)), "return_manifested_at < {$cutoffParam}"),
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::RETURN_DISPATCHED->value)), "return_dispatched_at < {$cutoffParam}"),
+                ));
             },
         );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
+        $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_manifested_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
             ->from(DbalShipmentProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

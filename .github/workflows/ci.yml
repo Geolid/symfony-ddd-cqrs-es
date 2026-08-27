@@ -10,6 +10,7 @@ permissions:
 
 env:
   APP_ENV: test
+  APP_DEBUG: '0'
   EVENT_STORE_URL: mysql://root@127.0.0.1:3306/event_store?serverVersion=mariadb-11.8.0&charset=utf8mb4
   READ_MODEL_URL: mysql://root@127.0.0.1:3306/read_model?serverVersion=mariadb-11.8.0&charset=utf8mb4
   MESSENGER_URL: mysql://root@127.0.0.1:3306/messenger?serverVersion=mariadb-11.8.0&charset=utf8mb4

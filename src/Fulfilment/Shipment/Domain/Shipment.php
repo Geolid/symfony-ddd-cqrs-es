@@ -19,6 +19,8 @@ use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipment\Domain\Specification\CanTransitionToSpecification;
+use Fulfilment\Shipment\Domain\Specification\ReachesSpecification;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
@@ -36,6 +38,22 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
+
+    /** @var array<string, list<ShipmentState>> */
+    private const array TRANSITIONS = [
+        'requested' => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
+        'prepared' => [ShipmentState::MANIFESTED, ShipmentState::CANCELLED],
+        'cancelled' => [],
+        'manifested' => [ShipmentState::DISPATCHED],
+        'dispatched' => [ShipmentState::DELIVERED],
+        'delivered' => [ShipmentState::RETURN_REQUESTED],
+        'return_requested' => [ShipmentState::RETURN_MANIFESTED],
+        'return_manifested' => [ShipmentState::RETURN_DISPATCHED],
+        'return_dispatched' => [ShipmentState::RETURN_RECEIVED],
+        'return_received' => [ShipmentState::RETURN_APPROVED, ShipmentState::RETURN_REJECTED],
+        'return_approved' => [],
+        'return_rejected' => [],
+    ];
 
     #[Id]
     public private(set) ShipmentId $id;
@@ -74,7 +92,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function prepare(\DateTimeImmutable $preparedAt): void
     {
-        if (!$this->state->isRequested()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::PREPARED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -86,11 +104,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if ($this->state->isCancelled()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isCancellable()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
             $this->recordThat(new ShipmentCancellationRejected(
                 id: $this->id->toString(),
                 status: $this->state->value,
@@ -122,7 +140,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->value);
         }
 
-        if (!$this->state->isPrepared()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotManifest($this->state);
         }
 
@@ -138,7 +156,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->state->isManifested()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::DISPATCHED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::DISPATCHED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotDispatch($this->state);
         }
 
@@ -153,7 +175,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->state->isDispatched()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::DELIVERED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (!new ReachesSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotDeliver($this->state);
         }
 
@@ -165,7 +191,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function requestReturn(\DateTimeImmutable $requestedAt): void
     {
-        if (!$this->state->isDelivered()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -191,7 +217,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             throw ShipmentAlreadyTrackedException::forReference($this->returnTrackingReference->value);
         }
 
-        if (!$this->state->isReturnRequested()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotManifestReturn($this->state);
         }
 
@@ -207,11 +233,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function dispatchReturn(\DateTimeImmutable $dispatchedAt): void
     {
-        if ($this->state->isReturnDispatchedOrLater()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::RETURN_DISPATCHED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isReturnManifested()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_DISPATCHED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotDispatchReturn($this->state);
         }
 
@@ -226,11 +252,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function receiveReturn(\DateTimeImmutable $receivedAt): void
     {
-        if ($this->state->isReturnReceived() || $this->state->isReturnApproved() || $this->state->isReturnRejected()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::RETURN_RECEIVED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isReturnManifestedOrLater()) {
+        if (!new ReachesSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->state);
         }
 
@@ -245,7 +271,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function approveReturn(\DateTimeImmutable $approvedAt): void
     {
-        if (!$this->state->isReturnReceived()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::RETURN_APPROVED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_APPROVED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotApproveReturn($this->state);
         }
 
@@ -260,7 +290,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function rejectReturn(string $reason, \DateTimeImmutable $rejectedAt): void
     {
-        if (!$this->state->isReturnReceived()) {
+        if (new ReachesSpecification(self::TRANSITIONS, ShipmentState::RETURN_REJECTED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REJECTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotRejectReturn($this->state);
         }
 

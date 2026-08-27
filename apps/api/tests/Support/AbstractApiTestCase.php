@@ -39,7 +39,11 @@ abstract class AbstractApiTestCase extends ApiTestCase
      */
     protected static function createKernel(array $options = []): KernelInterface
     {
-        return new Kernel('test', false, 'api');
+        return new Kernel(
+            $options['environment'] ?? 'test',
+            $options['debug'] ?? (bool) ($_SERVER['APP_DEBUG'] ?? true),
+            'api',
+        );
     }
 
     protected static function unauthenticatedClient(): Client

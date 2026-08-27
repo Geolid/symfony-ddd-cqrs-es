@@ -34,6 +34,21 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itIgnoresWhenAlreadyRejected(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertSame(ShipmentStatus::RETURN_REJECTED, $results[0]->status);
+    }
+
+    #[Test]
     public function itFailsWhenNotReceived(): void
     {
         // Given

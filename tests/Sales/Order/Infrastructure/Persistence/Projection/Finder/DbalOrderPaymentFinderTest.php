@@ -7,10 +7,12 @@ namespace Sales\Tests\Order\Infrastructure\Persistence\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
 {
@@ -91,18 +93,39 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersRequestedBefore(): void
+    public function itFiltersStalledBefore(): void
     {
         // Given
-        $cutoff = '2026-06-01T00:00:00+00:00';
-        $stale = OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
-        $this->store($stale, OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->create());
+        $now = Clock::get()->now();
+        $cutoff = $now->format(\DateTimeInterface::ATOM);
+        $freshRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
+        $staleRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $staleOrder = OrderTestFactory::new()->create();
+        $staleRefundInitiated = OrderPaymentTestFactory::new()
+            ->withOrderId($staleOrder->id->toString())
+            ->withRequestedAt($now->modify('-4 days'))
+            ->authorized($now->modify('-4 days')->modify('+10 minutes'))
+            ->captured($now->modify('-3 days'))
+            ->refundInitiated($now->modify('-1 day'))
+            ->create();
+        $freshOrder = OrderTestFactory::new()->create();
+        $freshRefundInitiated = OrderPaymentTestFactory::new()
+            ->withOrderId($freshOrder->id->toString())
+            ->withRequestedAt($now->modify('-4 days'))
+            ->authorized($now->modify('-4 days')->modify('+10 minutes'))
+            ->captured($now->modify('-3 days'))
+            ->refundInitiated($now->modify('+1 day'))
+            ->create();
+        $this->store($staleOrder, $freshOrder, $freshRequested, $staleRequested, $staleRefundInitiated, $freshRefundInitiated);
 
         // When
-        $results = iterator_to_array($this->finder->requestedBefore($cutoff));
+        $results = iterator_to_array($this->finder->stalledBefore($cutoff));
 
         // Then
-        self::assertCount(1, $results);
-        self::assertSame($stale->id->toString(), $results[0]->id);
+        self::assertCount(2, $results);
+        self::assertEqualsCanonicalizing(
+            [$staleRequested->id->toString(), $staleRefundInitiated->id->toString()],
+            array_map(static fn (OrderPaymentResult $result): string => $result->id, $results),
+        );
     }
 }

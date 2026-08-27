@@ -9,6 +9,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderPaymentProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
@@ -36,12 +37,16 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         );
     }
 
-    public function requestedBefore(string $cutoff): static
+    public function stalledBefore(string $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('requested_at < :cutoff')
-                    ->setParameter('cutoff', $cutoff);
+                $cutoffParam = $qb->createNamedParameter($cutoff);
+
+                $qb->andWhere($qb->expr()->or(
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(OrderPaymentStatus::REQUESTED->value)), "requested_at < {$cutoffParam}"),
+                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(OrderPaymentStatus::REFUND_INITIATED->value)), "refund_initiated_at < {$cutoffParam}"),
+                ));
             },
         );
     }

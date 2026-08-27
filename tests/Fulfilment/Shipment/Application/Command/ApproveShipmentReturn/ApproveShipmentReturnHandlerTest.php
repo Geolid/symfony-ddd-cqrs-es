@@ -34,6 +34,21 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itIgnoresWhenAlreadyApproved(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new ApproveShipmentReturn($shipment->id->toString()));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertSame(ShipmentStatus::RETURN_APPROVED, $results[0]->status);
+    }
+
+    #[Test]
     public function itFailsWhenNotReceived(): void
     {
         // Given

@@ -44,17 +44,15 @@ final class ReconcileShipmentsCommand
             $reconciled = 0;
 
             foreach ($stuck as $shipment) {
-                \assert(null !== $shipment->trackingReference);
-
                 try {
-                    if ($this->shipmentReconciler->reconcile($shipment->id, $shipment->trackingReference)) {
+                    if ($this->shipmentReconciler->reconcile($shipment->id, $shipment->status->value, $shipment->trackingReference, $shipment->returnTrackingReference)) {
                         ++$reconciled;
                         $io->writeln(\sprintf('Reconciled shipment %s', $shipment->id));
                     }
                 } catch (\Throwable $e) {
                     $this->logger->error('Failed to reconcile shipment {id}', [
                         'id' => $shipment->id,
-                        'reference' => $shipment->trackingReference,
+                        'reference' => $shipment->trackingReference ?? $shipment->returnTrackingReference,
                         'exception' => $e,
                     ]);
                     $io->error(\sprintf('Failed to reconcile shipment %s: %s', $shipment->id, $e->getMessage()));

@@ -10,8 +10,11 @@ use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class StubPaymentGateway implements PaymentGatewayInterface
 {
+    /**
+     * @param array<string, string> $statusByReference
+     */
     public function __construct(
-        private string $status,
+        private array $statusByReference,
         private ?string $failingReference = null,
     ) {
     }
@@ -37,6 +40,6 @@ final readonly class StubPaymentGateway implements PaymentGatewayInterface
             throw new \RuntimeException('Provider unreachable.');
         }
 
-        return $this->status;
+        return $this->statusByReference[$reference] ?? throw new \LogicException(\sprintf('No stubbed status for reference "%s".', $reference));
     }
 }

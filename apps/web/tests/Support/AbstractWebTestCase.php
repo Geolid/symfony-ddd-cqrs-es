@@ -28,7 +28,11 @@ abstract class AbstractWebTestCase extends WebTestCase
      */
     protected static function createKernel(array $options = []): KernelInterface
     {
-        return new Kernel('test', false, 'web');
+        return new Kernel(
+            $options['environment'] ?? 'test',
+            $options['debug'] ?? (bool) ($_SERVER['APP_DEBUG'] ?? true),
+            'web',
+        );
     }
 
     protected static function browser(): KernelBrowser

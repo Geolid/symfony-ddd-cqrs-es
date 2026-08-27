@@ -254,6 +254,24 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itDoesNotDispatchWhenAlreadyDispatched(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
     public function itCannotDispatchWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
@@ -283,7 +301,42 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotDeliverWhenNotDispatched(): void
+    public function itDeliversWhenManifested(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->deliver($deliveredAt))
+            ->then(new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotDeliverWhenAlreadyDelivered(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->deliver(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotDeliverWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
         $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
@@ -563,6 +616,28 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itDoesNotApproveReturnWhenAlreadyApproved(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $approvedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->then();
+    }
+
+    #[Test]
     public function itCannotApproveReturnWhenNotReceived(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
@@ -599,6 +674,28 @@ final class ShipmentTest extends AggregateRootTestCase
             )
             ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', $rejectedAt))
             ->then(new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)));
+    }
+
+    #[Test]
+    public function itDoesNotRejectReturnWhenAlreadyRejected(): void
+    {
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+
+        $this
+            ->given(
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)),
+            )
+            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->then();
     }
 
     #[Test]

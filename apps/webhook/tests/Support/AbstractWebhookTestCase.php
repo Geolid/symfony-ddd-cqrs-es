@@ -22,7 +22,11 @@ abstract class AbstractWebhookTestCase extends WebTestCase
      */
     protected static function createKernel(array $options = []): KernelInterface
     {
-        return new Kernel('test', false, 'webhook');
+        return new Kernel(
+            $options['environment'] ?? 'test',
+            $options['debug'] ?? (bool) ($_SERVER['APP_DEBUG'] ?? true),
+            'webhook',
+        );
     }
 
     protected static function sign(string $body, string $secretEnvVar): string

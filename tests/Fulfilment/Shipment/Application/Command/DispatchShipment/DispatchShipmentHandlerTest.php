@@ -35,17 +35,18 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyDispatched(): void
+    public function itIgnoresWhenAlreadyDispatched(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
-        // Then
-        $this->expectException(ShipmentInvalidTransitionException::class);
-
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertSame(ShipmentStatus::DISPATCHED, $results[0]->status);
     }
 
     #[Test]

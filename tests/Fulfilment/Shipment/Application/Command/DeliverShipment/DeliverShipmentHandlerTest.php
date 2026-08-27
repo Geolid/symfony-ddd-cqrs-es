@@ -35,7 +35,37 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotDispatched(): void
+    public function itDeliversWhenManifested(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new DeliverShipment($shipment->id->toString()));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertSame(ShipmentStatus::DELIVERED, $results[0]->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenAlreadyDelivered(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new DeliverShipment($shipment->id->toString()));
+
+        // Then
+        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
+        self::assertSame(ShipmentStatus::DELIVERED, $results[0]->status);
+    }
+
+    #[Test]
+    public function itFailsWhenNotManifested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->create();

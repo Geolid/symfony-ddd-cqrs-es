@@ -12,10 +12,10 @@ if ('' === $reference) {
     exit(1);
 }
 
-$pickups = fake_api_store_read('acme-pickups');
+$shipments = fake_api_store_read('acme-shipments');
 
-if (isset($pickups[$reference])) {
-    $status = $pickups[$reference]['status'];
+if (isset($shipments[$reference])) {
+    $status = $shipments[$reference]['status'];
     assert(is_string($status));
 
     $next = match ($status) {
@@ -32,7 +32,7 @@ if (isset($pickups[$reference])) {
     [$nextStatus, $eventType] = $next;
 
     fake_api_call_webhook('CARRIER_WEBHOOK_SECRET', 'X-Carrier-Signature', $eventType, ['trackingReference' => $reference]);
-    fake_api_store_transition_status('acme-pickups', $reference, $nextStatus);
+    fake_api_store_transition_status('acme-shipments', $reference, $nextStatus);
 
     echo sprintf("Shipment \"%s\": %s -> %s.\n", $reference, $status, $nextStatus);
     exit(0);
@@ -45,8 +45,8 @@ if (isset($returns[$reference])) {
     assert(is_string($status));
 
     $next = match ($status) {
-        'requested' => ['picked-up', 'carrier-return-picked-up'],
-        'picked-up' => ['received', 'carrier-return-received'],
+        'requested' => ['return_dispatched', 'carrier-return-picked-up'],
+        'return_dispatched' => ['return_received', 'carrier-return-received'],
         default => null,
     };
 

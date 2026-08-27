@@ -12,7 +12,7 @@ e-commerce flow: customers, orders, shipping, catalog, identity.
 
 ```bash
 castor list                                        # tasks
-castor sh ["<cmd>"]                                # shell in app container
+castor sh [<cmd>]                                  # shell in app container
 castor cc [<dm>]                                   # cache clear + warmup (default: all DMs)
 castor qa:test [options] [<target>]                # PHPUnit
 castor qa:mutation [--coverage]                    # Infection, diff-scoped

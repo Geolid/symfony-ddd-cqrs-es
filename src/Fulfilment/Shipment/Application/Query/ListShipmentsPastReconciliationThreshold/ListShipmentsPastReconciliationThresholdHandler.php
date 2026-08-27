@@ -6,7 +6,6 @@ namespace Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationT
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
@@ -31,9 +30,7 @@ final readonly class ListShipmentsPastReconciliationThresholdHandler
             ->format(\DateTimeInterface::ATOM);
 
         return new StreamResult(
-            $this->shipmentFinder
-                ->byStatus(ShipmentStatus::MANIFESTED->value)
-                ->manifestedBefore($cutoff),
+            $this->shipmentFinder->stalledBefore($cutoff),
         );
     }
 }
