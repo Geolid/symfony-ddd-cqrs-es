@@ -25,7 +25,7 @@ function start(): void
 /**
  * @param array<string> $args
  */
-#[AsTask(description: 'Open shell in app container, run a shell-interpreted command, or (after --) exec raw argv for tooling like captainhook')]
+#[AsTask(description: 'Open shell in app container, run a shell-interpreted command, or (after --) exec raw argv')]
 function sh(
     #[AsArgument(description: 'Command to run instead of an interactive shell (shell-interpreted, e.g. "ls | grep x")')]
     ?string $cmd = null,
