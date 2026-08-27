@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Web\Form;
 
-use Shared\Domain\ValueObject\CountryCode;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Intl\Countries;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Web\Form\FormData\AddressFormData;
 
@@ -32,11 +32,10 @@ final class AddressType extends AbstractType
                 'label' => 'sales.customer.checkout_addresses.address.label_city',
                 'translation_domain' => 'messages',
             ])
-            ->add('countryCode', EnumType::class, [
-                'class' => CountryCode::class,
+            ->add('countryCode', ChoiceType::class, [
                 'label' => 'sales.customer.checkout_addresses.address.label_country',
                 'translation_domain' => 'messages',
-                'choice_label' => static fn (CountryCode $countryCode): string => $countryCode->value,
+                'choices' => array_flip(Countries::getNames()),
             ]);
     }
 
