@@ -12,7 +12,7 @@ use Sales\Order\Domain\Specification\RetentionExpiredSpecification;
 final class RetentionExpiredSpecificationTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideExpiryChecks')]
+    #[DataProvider('provideThreshold')]
     public function itIsSatisfiedBy(\DateTimeImmutable $closedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
@@ -28,7 +28,7 @@ final class RetentionExpiredSpecificationTest extends TestCase
     /**
      * @return iterable<string, array{\DateTimeImmutable, \DateTimeImmutable, bool}>
      */
-    public static function provideExpiryChecks(): iterable
+    public static function provideThreshold(): iterable
     {
         $closedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 

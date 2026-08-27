@@ -12,7 +12,7 @@ use Sales\Order\Domain\Specification\ReturnWindowExpiredSpecification;
 final class ReturnWindowExpiredSpecificationTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideExpiryChecks')]
+    #[DataProvider('provideThreshold')]
     public function itIsSatisfiedBy(\DateTimeImmutable $deliveredAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
@@ -28,7 +28,7 @@ final class ReturnWindowExpiredSpecificationTest extends TestCase
     /**
      * @return iterable<string, array{\DateTimeImmutable, \DateTimeImmutable, bool}>
      */
-    public static function provideExpiryChecks(): iterable
+    public static function provideThreshold(): iterable
     {
         $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
