@@ -32,10 +32,10 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
             'label' => $event->label,
             'key_id' => $event->keyId,
             'secret_hash' => $event->secretHash,
-            'issued_at' => new \DateTimeImmutable($event->issuedAt)->format('Y-m-d H:i:s'),
+            'issued_at' => new \DateTimeImmutable($event->issuedAt),
             'revoked' => false,
             'identity_authenticatable' => true,
-        ], ['revoked' => Types::BOOLEAN, 'identity_authenticatable' => Types::BOOLEAN]);
+        ], ['issued_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN, 'identity_authenticatable' => Types::BOOLEAN]);
     }
 
     #[Subscribe(ApiKeyCredentialRevoked::class)]
@@ -43,9 +43,9 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['revoked' => true, 'revoked_at' => new \DateTimeImmutable($event->revokedAt)->format('Y-m-d H:i:s')],
+            ['revoked' => true, 'revoked_at' => new \DateTimeImmutable($event->revokedAt)],
             ['id' => $event->id],
-            ['revoked' => Types::BOOLEAN],
+            ['revoked' => Types::BOOLEAN, 'revoked_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 

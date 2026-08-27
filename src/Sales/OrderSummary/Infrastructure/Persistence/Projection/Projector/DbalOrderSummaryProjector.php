@@ -36,24 +36,28 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     #[Subscribe(OrderPlacedIntegrationEvent::class)]
     public function onOrderPlaced(OrderPlacedIntegrationEvent $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'order_id' => $event->orderId,
-            'customer_id' => $event->customerId,
-            'total_amount_in_cents' => $event->totalAmountInCents,
-            'order_status' => 'placed',
-            'placed_at' => new \DateTimeImmutable($event->placedAt)->format('Y-m-d H:i:s'),
-            'payment_status' => null,
-            'shipment_status' => null,
-            'status' => $this->statusTransformer->compute('placed', null, null)->value,
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'order_id' => $event->orderId,
+                'customer_id' => $event->customerId,
+                'total_amount_in_cents' => $event->totalAmountInCents,
+                'order_status' => 'placed',
+                'placed_at' => new \DateTimeImmutable($event->placedAt),
+                'payment_status' => null,
+                'shipment_status' => null,
+                'status' => $this->statusTransformer->compute('placed', null, null)->value,
+            ],
+            ['placed_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(OrderCancelledIntegrationEvent::class)]
     public function onOrderCancelled(OrderCancelledIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
-        ], orderStatus: 'cancelled');
+            'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
+        ], orderStatus: 'cancelled', types: ['cancelled_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     #[Subscribe(OrderPaymentRequestedIntegrationEvent::class)]
@@ -70,16 +74,16 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onOrderPaymentCaptured(OrderPaymentCapturedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'paid_at' => new \DateTimeImmutable($event->capturedAt)->format('Y-m-d H:i:s'),
-        ], paymentStatus: 'captured');
+            'paid_at' => new \DateTimeImmutable($event->capturedAt),
+        ], paymentStatus: 'captured', types: ['paid_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     #[Subscribe(ShipmentDispatchedIntegrationEvent::class)]
     public function onShipmentDispatched(ShipmentDispatchedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
-        ], shipmentStatus: 'dispatched');
+            'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
+        ], shipmentStatus: 'dispatched', types: ['dispatched_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     #[Subscribe(ShipmentManifestedIntegrationEvent::class)]
@@ -94,8 +98,8 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onShipmentDelivered(ShipmentDeliveredIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'delivered_at' => new \DateTimeImmutable($event->deliveredAt)->format('Y-m-d H:i:s'),
-        ], shipmentStatus: 'delivered');
+            'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
+        ], shipmentStatus: 'delivered', types: ['delivered_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     /**
@@ -108,17 +112,17 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('order_status', Types::STRING, ['length' => 10]);
-        $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
-        $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('payment_status', Types::STRING, ['length' => 10, 'notnull' => false, 'default' => null]);
         $table->addColumn('payment_amount_in_cents', Types::INTEGER, ['notnull' => false, 'default' => null]);
         $table->addColumn('payment_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('payment_checkout_url', Types::STRING, ['length' => 2048, 'notnull' => false, 'default' => null]);
-        $table->addColumn('paid_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('paid_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('shipment_status', Types::STRING, ['length' => 10, 'notnull' => false, 'default' => null]);
         $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
-        $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
@@ -130,7 +134,8 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array<string, mixed> $changes
+     * @param array<string, mixed>  $changes
+     * @param array<string, string> $types
      */
     private function recompute(
         string $orderId,
@@ -138,6 +143,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         ?string $orderStatus = null,
         ?string $paymentStatus = null,
         ?string $shipmentStatus = null,
+        array $types = [],
     ): void {
         /** @var array{order_status: string, payment_status: string|null, shipment_status: string|null}|false $row */
         $row = $this->connection->fetchAssociative(
@@ -165,6 +171,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
                 'status' => $this->statusTransformer->compute($orderStatus, $paymentStatus, $shipmentStatus)->value,
             ],
             ['order_id' => $orderId],
+            $types,
         );
     }
 }

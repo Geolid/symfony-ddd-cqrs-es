@@ -32,16 +32,25 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
             'identity_id' => $event->identityId,
             'login' => $event->login,
             'password_hash' => $event->passwordHash,
-            'defined_at' => new \DateTimeImmutable($event->definedAt)->format('Y-m-d H:i:s'),
-            'password_changed_at' => new \DateTimeImmutable($event->definedAt)->format('Y-m-d H:i:s'),
+            'defined_at' => new \DateTimeImmutable($event->definedAt),
+            'password_changed_at' => new \DateTimeImmutable($event->definedAt),
             'identity_authenticatable' => true,
-        ], ['identity_authenticatable' => Types::BOOLEAN]);
+        ], [
+            'defined_at' => Types::DATETIME_IMMUTABLE,
+            'password_changed_at' => Types::DATETIME_IMMUTABLE,
+            'identity_authenticatable' => Types::BOOLEAN,
+        ]);
     }
 
     #[Subscribe(PasswordCredentialChanged::class)]
     public function onPasswordCredentialChanged(PasswordCredentialChanged $event): void
     {
-        $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash, 'password_changed_at' => new \DateTimeImmutable($event->changedAt)->format('Y-m-d H:i:s')], ['id' => $event->id]);
+        $this->connection->update(
+            self::TABLE,
+            ['password_hash' => $event->passwordHash, 'password_changed_at' => new \DateTimeImmutable($event->changedAt)],
+            ['id' => $event->id],
+            ['password_changed_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(PasswordCredentialRehashed::class)]
@@ -79,7 +88,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $table->addColumn('login', Types::STRING, ['length' => Login::MAX_LENGTH]);
         $table->addColumn('password_hash', Types::STRING, ['length' => 255]);
         $table->addColumn('defined_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('password_changed_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('password_changed_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

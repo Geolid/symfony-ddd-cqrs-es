@@ -31,13 +31,17 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     #[Subscribe(OrderPlaced::class)]
     public function onOrderPlaced(OrderPlaced $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
-            'customer_id' => $event->customerId,
-            'total_amount_in_cents' => $event->totalAmountInCents,
-            'status' => OrderStatus::PLACED->value,
-            'placed_at' => new \DateTimeImmutable($event->placedAt)->format('Y-m-d H:i:s'),
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'id' => $event->id,
+                'customer_id' => $event->customerId,
+                'total_amount_in_cents' => $event->totalAmountInCents,
+                'status' => OrderStatus::PLACED->value,
+                'placed_at' => new \DateTimeImmutable($event->placedAt),
+            ],
+            ['placed_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(OrderCancelled::class)]
@@ -47,10 +51,11 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
-                'closed_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
+                'closed_at' => new \DateTimeImmutable($event->cancelledAt),
             ],
             ['id' => $event->id],
+            ['cancelled_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -61,9 +66,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::CONFIRMED->value,
-                'confirmed_at' => new \DateTimeImmutable($event->confirmedAt)->format('Y-m-d H:i:s'),
+                'confirmed_at' => new \DateTimeImmutable($event->confirmedAt),
             ],
             ['id' => $event->id],
+            ['confirmed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -74,9 +80,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::DISPATCHED->value,
-                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
             ],
             ['id' => $event->id],
+            ['dispatched_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -87,9 +94,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::DELIVERED->value,
-                'delivered_at' => new \DateTimeImmutable($event->deliveredAt)->format('Y-m-d H:i:s'),
+                'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
             ],
             ['id' => $event->id],
+            ['delivered_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -100,10 +108,11 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::COMPLETED->value,
-                'completed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
-                'closed_at' => new \DateTimeImmutable($event->completedAt)->format('Y-m-d H:i:s'),
+                'completed_at' => new \DateTimeImmutable($event->completedAt),
+                'closed_at' => new \DateTimeImmutable($event->completedAt),
             ],
             ['id' => $event->id],
+            ['completed_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -114,9 +123,10 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURN_REQUESTED->value,
-                'return_requested_at' => new \DateTimeImmutable($event->requestedAt)->format('Y-m-d H:i:s'),
+                'return_requested_at' => new \DateTimeImmutable($event->requestedAt),
             ],
             ['id' => $event->id],
+            ['return_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -127,10 +137,11 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURNED->value,
-                'returned_at' => new \DateTimeImmutable($event->returnedAt)->format('Y-m-d H:i:s'),
-                'closed_at' => new \DateTimeImmutable($event->returnedAt)->format('Y-m-d H:i:s'),
+                'returned_at' => new \DateTimeImmutable($event->returnedAt),
+                'closed_at' => new \DateTimeImmutable($event->returnedAt),
             ],
             ['id' => $event->id],
+            ['returned_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -141,11 +152,12 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURN_REJECTED->value,
-                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
+                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt),
                 'return_rejection_reason' => $event->reason,
-                'closed_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
+                'closed_at' => new \DateTimeImmutable($event->rejectedAt),
             ],
             ['id' => $event->id],
+            ['return_rejected_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -154,8 +166,9 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['anonymized_at' => new \DateTimeImmutable($event->anonymizedAt)->format('Y-m-d H:i:s')],
+            ['anonymized_at' => new \DateTimeImmutable($event->anonymizedAt)],
             ['id' => $event->id],
+            ['anonymized_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -169,18 +182,18 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 17]);
-        $table->addColumn('placed_at', Types::DATETIME_MUTABLE);
-        $table->addColumn('confirmed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('completed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_requested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('returned_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('completed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('returned_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejected_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('closed_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('anonymized_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('closed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('anonymized_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

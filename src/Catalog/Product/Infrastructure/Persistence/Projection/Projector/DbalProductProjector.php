@@ -12,6 +12,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Domain\ValueObject\Label;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
 
@@ -53,7 +54,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('label', Types::STRING, ['length' => 255]);
+        $table->addColumn('label', Types::STRING, ['length' => Label::MAX_LENGTH]);
         $table->addColumn('unit_amount_in_cents', Types::INTEGER);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

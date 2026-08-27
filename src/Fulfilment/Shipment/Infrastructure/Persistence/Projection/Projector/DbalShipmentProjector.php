@@ -21,6 +21,7 @@ use Fulfilment\Shipment\Domain\Event\ShipmentReturnManifested;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnReceived;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Persistence\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
@@ -33,13 +34,17 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     #[Subscribe(ShipmentRequested::class)]
     public function onShipmentRequested(ShipmentRequested $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
-            'order_id' => $event->orderId,
-            'customer_id' => $event->customerId,
-            'status' => ShipmentStatus::REQUESTED->value,
-            'created_at' => new \DateTimeImmutable($event->createdAt)->format('Y-m-d H:i:s'),
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'id' => $event->id,
+                'order_id' => $event->orderId,
+                'customer_id' => $event->customerId,
+                'status' => ShipmentStatus::REQUESTED->value,
+                'created_at' => new \DateTimeImmutable($event->createdAt),
+            ],
+            ['created_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(ShipmentPrepared::class)]
@@ -60,9 +65,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'status' => ShipmentStatus::MANIFESTED->value,
                 'tracking_reference' => $event->trackingReference,
-                'manifested_at' => new \DateTimeImmutable($event->manifestedAt)->format('Y-m-d H:i:s'),
+                'manifested_at' => new \DateTimeImmutable($event->manifestedAt),
             ],
             ['id' => $event->id],
+            ['manifested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -73,9 +79,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::DISPATCHED->value,
-                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
             ],
             ['id' => $event->id],
+            ['dispatched_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -86,9 +93,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::DELIVERED->value,
-                'delivered_at' => new \DateTimeImmutable($event->deliveredAt)->format('Y-m-d H:i:s'),
+                'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
             ],
             ['id' => $event->id],
+            ['delivered_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -99,9 +107,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt)->format('Y-m-d H:i:s'),
+                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
             ],
             ['id' => $event->id],
+            ['cancelled_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -135,9 +144,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_DISPATCHED->value,
-                'return_dispatched_at' => new \DateTimeImmutable($event->dispatchedAt)->format('Y-m-d H:i:s'),
+                'return_dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
             ],
             ['id' => $event->id],
+            ['return_dispatched_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -148,9 +158,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_RECEIVED->value,
-                'return_received_at' => new \DateTimeImmutable($event->receivedAt)->format('Y-m-d H:i:s'),
+                'return_received_at' => new \DateTimeImmutable($event->receivedAt),
             ],
             ['id' => $event->id],
+            ['return_received_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -161,9 +172,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_APPROVED->value,
-                'return_approved_at' => new \DateTimeImmutable($event->approvedAt)->format('Y-m-d H:i:s'),
+                'return_approved_at' => new \DateTimeImmutable($event->approvedAt),
             ],
             ['id' => $event->id],
+            ['return_approved_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -174,10 +186,11 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_REJECTED->value,
-                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt)->format('Y-m-d H:i:s'),
+                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt),
                 'return_rejection_reason' => $event->reason,
             ],
             ['id' => $event->id],
+            ['return_rejected_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -191,17 +204,17 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 17]);
-        $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
-        $table->addColumn('return_tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
-        $table->addColumn('created_at', Types::DATETIME_MUTABLE);
-        $table->addColumn('manifested_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('delivered_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('cancelled_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_dispatched_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_received_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_approved_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_rejected_at', Types::DATETIME_MUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('tracking_reference', Types::STRING, ['length' => TrackingReference::MAX_LENGTH, 'notnull' => false, 'default' => null]);
+        $table->addColumn('return_tracking_reference', Types::STRING, ['length' => TrackingReference::MAX_LENGTH, 'notnull' => false, 'default' => null]);
+        $table->addColumn('created_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('manifested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_received_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_approved_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('return_rejected_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('return_rejection_reason', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
