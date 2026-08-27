@@ -13,4 +13,4 @@ parameters:
         - '%currentWorkingDirectory%/tools/PHPat/'
 
     symfony:
-        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/%env.APP_ID%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
+        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/%env.APP_ID%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%%env.APP_DEBUG_SUFFIX%Container.xml

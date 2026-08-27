@@ -9,7 +9,7 @@ parameters:
         - '%currentWorkingDirectory%/tools/PHPUnit/'
 
     symfony:
-        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
+        containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%%env.APP_DEBUG_SUFFIX%Container.xml
 
     ignoreErrors:
         -

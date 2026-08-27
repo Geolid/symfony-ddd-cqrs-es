@@ -40,7 +40,10 @@ function about(): void
 #[AsContext(default: true)]
 function default_context(): Context
 {
-    return new Context(environment: ['APP_ENV' => is_string($_SERVER['APP_ENV'] ?? null) ? $_SERVER['APP_ENV'] : 'dev']);
+    return new Context(environment: [
+        'APP_ENV' => is_string($_SERVER['APP_ENV'] ?? null) ? $_SERVER['APP_ENV'] : 'dev',
+        'APP_DEBUG' => is_string($_SERVER['APP_DEBUG'] ?? null) ? $_SERVER['APP_DEBUG'] : '1',
+    ]);
 }
 
 /**
@@ -88,6 +91,11 @@ function console(array $args, ?bool $tty = null): void
 function app_env(string $default = 'dev'): string
 {
     return (string) (context()->environment['APP_ENV'] ?? $default);
+}
+
+function app_debug(): bool
+{
+    return (bool) (context()->environment['APP_DEBUG'] ?? true);
 }
 
 /**
