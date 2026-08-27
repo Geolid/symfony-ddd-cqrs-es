@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Validation\ValidPaymentReference;
+use Sales\Order\Domain\ValueObject\PaymentReference;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -47,7 +48,7 @@ final class ValidPaymentReferenceTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
-        yield 'longer than the provider can issue' => [str_repeat('A', 65), [new Assert\Length(max: 64)]];
+        yield 'longer than the provider can issue' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1), [new Assert\Length(max: PaymentReference::MAX_LENGTH)]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
     }
 

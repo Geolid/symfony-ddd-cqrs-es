@@ -16,7 +16,7 @@ final readonly class KeyId
     private function __construct(string $value)
     {
         Assert::length($value, self::LENGTH, 'A key ID must be exactly %2$d characters, %s given.');
-        Assert::startsWith($value, self::PREFIX, 'A key ID must start with "'.self::PREFIX.'", %s given.');
+        Assert::startsWith($value, self::PREFIX, 'A key ID must start with "%2$s", %s given.');
 
         $this->value = $value;
     }

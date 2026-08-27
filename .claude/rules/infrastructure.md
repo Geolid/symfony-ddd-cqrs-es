@@ -16,7 +16,7 @@ paths:
 - Native `\assert()` narrows a value already guaranteed correct by the calling code, never external/user input. `Webmozart\Assert` stays reserved for a real invariant that must hold in production and throw a catchable exception.
 
 **NEVER**
-- Use a raw `HttpClientInterface` outside `Shared\Infrastructure\Gateway` — enforced by `Tools\PHPat\GatewayTest`.
+- Use a raw `HttpClientInterface` outside `Shared\Infrastructure\Gateway`.
 
 ### Conventions
 - `Infrastructure/`'s top-level folders name a technical concern (`Persistence/`, `Monitoring/`, `Security/`...), never a vendor mechanism — the mechanism stays visible in the class name's own suffix instead, not the path.

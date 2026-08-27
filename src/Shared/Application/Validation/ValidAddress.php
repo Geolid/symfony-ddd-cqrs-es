@@ -19,15 +19,15 @@ final class ValidAddress extends Compound
                     fields: [
                         'street' => [
                             new Assert\NotBlank(normalizer: 'trim'),
-                            new Assert\Length(max: 255),
+                            new Assert\Length(max: Address::STREET_MAX_LENGTH),
                         ],
                         'postalCode' => [
                             new Assert\NotBlank(normalizer: 'trim'),
-                            new Assert\Length(max: 20),
+                            new Assert\Length(max: Address::POSTAL_CODE_MAX_LENGTH),
                         ],
                         'city' => [
                             new Assert\NotBlank(normalizer: 'trim'),
-                            new Assert\Length(max: 255),
+                            new Assert\Length(max: Address::CITY_MAX_LENGTH),
                         ],
                     ],
                     allowMissingFields: false,

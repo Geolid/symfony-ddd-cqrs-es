@@ -12,16 +12,6 @@
             "ignoreSourceCodeByRegex": [
                 ".*Types::BOOLEAN\\].*"
             ]
-        },
-        "Concat": {
-            "ignoreSourceCodeByRegex": [
-                ".*Assert::.*"
-            ]
-        },
-        "ConcatOperandRemoval": {
-            "ignoreSourceCodeByRegex": [
-                ".*Assert::.*"
-            ]
         }
     },
     "testFramework": "phpunit"

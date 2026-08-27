@@ -34,7 +34,7 @@ final readonly class OrderPaymentCapturedPublisher
         $this->publisher->publish(Order::class, $event->orderId, new OrderPaymentCapturedIntegrationEvent(
             orderId: $event->orderId,
             customerId: $order->customerId,
-            shippingAddress: $this->normalizeAddress($order->shippingAddress),
+            shippingAddress: $this->normalizePostalAddress($order->shippingAddress),
             capturedAt: $event->capturedAt,
         ));
     }
@@ -42,7 +42,7 @@ final readonly class OrderPaymentCapturedPublisher
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private function normalizeAddress(PostalAddress $address): array
+    private function normalizePostalAddress(PostalAddress $address): array
     {
         return [
             'firstName' => $address->fullName->firstName,

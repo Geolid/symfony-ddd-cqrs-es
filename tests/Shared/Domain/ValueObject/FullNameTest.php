@@ -41,10 +41,10 @@ final class FullNameTest extends TestCase
     {
         yield 'empty first name' => ['', 'Lovelace'];
         yield 'whitespace-only first name' => ['   ', 'Lovelace'];
-        yield 'too long first name' => [str_repeat('a', 256), 'Lovelace'];
+        yield 'too long first name' => [str_repeat('a', FullName::MAX_LENGTH + 1), 'Lovelace'];
         yield 'empty last name' => ['Ada', ''];
         yield 'whitespace-only last name' => ['Ada', '   '];
-        yield 'too long last name' => ['Ada', str_repeat('a', 256)];
+        yield 'too long last name' => ['Ada', str_repeat('a', FullName::MAX_LENGTH + 1)];
     }
 
     #[Test]

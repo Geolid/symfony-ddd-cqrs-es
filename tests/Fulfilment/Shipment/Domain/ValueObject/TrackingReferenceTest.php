@@ -28,7 +28,7 @@ final class TrackingReferenceTest extends TestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'reference' => ['ACME-4Q7X2K9'];
-        yield 'maximum length' => [str_repeat('A', 64)];
+        yield 'maximum length' => [str_repeat('A', TrackingReference::MAX_LENGTH)];
     }
 
     #[Test]
@@ -48,7 +48,7 @@ final class TrackingReferenceTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
-        yield 'longer than the carrier can issue' => [str_repeat('A', 65)];
+        yield 'longer than the carrier can issue' => [str_repeat('A', TrackingReference::MAX_LENGTH + 1)];
     }
 
     #[Test]

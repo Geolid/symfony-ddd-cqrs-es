@@ -7,6 +7,7 @@ namespace Shared\Tests\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidAddress;
+use Shared\Domain\ValueObject\Address;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
@@ -49,16 +50,16 @@ final class ValidAddressTest extends CompoundConstraintTestCase
         yield 'whitespace only street' => [['street' => '   ', 'postalCode' => '75001', 'city' => 'Paris']];
         yield 'empty postal code' => [['street' => '12 rue des Lilas', 'postalCode' => '', 'city' => 'Paris']];
         yield 'empty city' => [['street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => '']];
-        yield 'street too long' => [['street' => str_repeat('a', 256), 'postalCode' => '75001', 'city' => 'Paris']];
-        yield 'postal code too long' => [['street' => '12 rue des Lilas', 'postalCode' => str_repeat('1', 21), 'city' => 'Paris']];
-        yield 'city too long' => [['street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => str_repeat('a', 256)]];
+        yield 'street too long' => [['street' => str_repeat('a', Address::STREET_MAX_LENGTH + 1), 'postalCode' => '75001', 'city' => 'Paris']];
+        yield 'postal code too long' => [['street' => '12 rue des Lilas', 'postalCode' => str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH + 1), 'city' => 'Paris']];
+        yield 'city too long' => [['street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => str_repeat('a', Address::CITY_MAX_LENGTH + 1)]];
     }
 
     #[Test]
     public function itDoesNotStopAtTheFirstInvalidField(): void
     {
         // When
-        $this->validateValue(['street' => '', 'postalCode' => '75001', 'city' => str_repeat('a', 256)]);
+        $this->validateValue(['street' => '', 'postalCode' => '75001', 'city' => str_repeat('a', Address::CITY_MAX_LENGTH + 1)]);
 
         // Then
         $this->assertViolationsCount(2);
@@ -87,15 +88,15 @@ final class ValidAddressTest extends CompoundConstraintTestCase
             fields: [
                 'street' => [
                     new Assert\NotBlank(normalizer: 'trim'),
-                    new Assert\Length(max: 255),
+                    new Assert\Length(max: Address::STREET_MAX_LENGTH),
                 ],
                 'postalCode' => [
                     new Assert\NotBlank(normalizer: 'trim'),
-                    new Assert\Length(max: 20),
+                    new Assert\Length(max: Address::POSTAL_CODE_MAX_LENGTH),
                 ],
                 'city' => [
                     new Assert\NotBlank(normalizer: 'trim'),
-                    new Assert\Length(max: 255),
+                    new Assert\Length(max: Address::CITY_MAX_LENGTH),
                 ],
             ],
             allowMissingFields: false,
