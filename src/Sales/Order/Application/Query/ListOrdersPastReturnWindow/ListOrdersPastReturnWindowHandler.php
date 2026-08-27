@@ -7,7 +7,7 @@ namespace Sales\Order\Application\Query\ListOrdersPastReturnWindow;
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
-use Sales\Order\Domain\Service\ReturnWindow;
+use Sales\Order\Domain\Specification\ReturnWindowExpiredSpecification;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 
@@ -16,7 +16,6 @@ final readonly class ListOrdersPastReturnWindowHandler
 {
     public function __construct(
         private OrderFinderInterface $orderFinder,
-        private ReturnWindow $returnWindow,
         private ClockInterface $clock,
     ) {
     }
@@ -26,7 +25,7 @@ final readonly class ListOrdersPastReturnWindowHandler
      */
     public function __invoke(ListOrdersPastReturnWindow $query): StreamResult
     {
-        $cutoff = $this->returnWindow->cutoffFor($this->clock->now())->format(\DateTimeInterface::ATOM);
+        $cutoff = $this->clock->now()->modify(\sprintf('-%d days', ReturnWindowExpiredSpecification::DAYS));
 
         return new StreamResult($this->orderFinder->deliveredBefore($cutoff));
     }

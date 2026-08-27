@@ -19,7 +19,7 @@ interface OrderFinderInterface extends IterableFinderInterface
 
     public function byCustomer(string $customerId): static;
 
-    public function closedBefore(string $cutoff): static;
+    public function closedBefore(\DateTimeImmutable $cutoff): static;
 
-    public function deliveredBefore(string $cutoff): static;
+    public function deliveredBefore(\DateTimeImmutable $cutoff): static;
 }

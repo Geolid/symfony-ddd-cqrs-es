@@ -11,6 +11,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 {
@@ -94,11 +95,12 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itFiltersClosedBefore(): void
     {
         // Given
-        $cutoff = '2026-01-01T00:00:00+00:00';
-        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2015-01-01T00:00:00+00:00'))->create();
+        $now = Clock::get()->now();
+        $cutoff = $now->modify('-30 days');
+        $expired = OrderTestFactory::new()->cancelled($now->modify('-60 days'))->create();
         $this->store(
             $expired,
-            OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2026-06-01T00:00:00+00:00'))->create(),
+            OrderTestFactory::new()->cancelled($now->modify('-10 days'))->create(),
             OrderTestFactory::new()->create(),
         );
 
@@ -114,14 +116,15 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itFiltersDeliveredBefore(): void
     {
         // Given
-        $cutoff = '2026-01-15T00:00:00+00:00';
+        $now = Clock::get()->now();
+        $cutoff = $now->modify('-14 days');
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->delivered($now->modify('-20 days'))
             ->create();
         $this->store(
             $expired,
             OrderTestFactory::new()->confirmed()->dispatched()
-                ->delivered(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
+                ->delivered($now->modify('-5 days'))
                 ->create(),
             OrderTestFactory::new()->confirmed()->dispatched()->create(),
         );
