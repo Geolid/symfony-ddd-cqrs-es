@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Castor\Attribute\AsArgsAfterOptionEnd;
 use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsTask;
 
@@ -21,11 +22,22 @@ function start(): void
     assets();
 }
 
-#[AsTask(description: 'Open shell in app container')]
+/**
+ * @param array<string> $args
+ */
+#[AsTask(description: 'Open shell in app container, run a shell-interpreted command, or (after --) exec raw argv')]
 function sh(
-    #[AsArgument(description: 'Command to run instead of an interactive shell')]
+    #[AsArgument(description: 'Command to run instead of an interactive shell (shell-interpreted, e.g. "ls | grep x")')]
     ?string $cmd = null,
+    #[AsArgsAfterOptionEnd]
+    array $args = [],
 ): void {
+    if ([] !== $args) {
+        compose_exec($args);
+
+        return;
+    }
+
     compose_exec(null !== $cmd ? ['/bin/sh', '-c', $cmd] : ['/bin/sh']);
 }
 
