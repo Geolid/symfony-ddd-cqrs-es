@@ -24,7 +24,7 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    $services->instanceof(OrderPaymentStatusReconcilerInterface::class)->tag('sales.order_payment_status_reconciler');
+    $services->instanceof(OrderPaymentStatusReconcilerInterface::class)->tag('sales.order.payment_status_reconciler');
 
     SubdomainServiceLoader::load($services, 'Sales');
 
@@ -32,7 +32,7 @@ return static function (ContainerConfigurator $container): void {
     $services->get(ReturnWindow::class)->arg('$days', '%sales.return_window_days%');
     $services->get(ListOrderPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdMinutes', '%sales.order_payment.reconciliation_threshold_minutes%');
 
-    $services->get(OrderPaymentReconciler::class)->arg('$reconcilers', tagged_iterator('sales.order_payment_status_reconciler'));
+    $services->get(OrderPaymentReconciler::class)->arg('$reconcilers', tagged_iterator('sales.order.payment_status_reconciler'));
 
     // 2 implementations exist (itself + its decorator) — autowire is ambiguous without this.
     $orderPaymentRequesterAlias = $services->alias(OrderPaymentRequesterInterface::class, OrderPaymentRequester::class);

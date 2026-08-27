@@ -8,10 +8,10 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
@@ -163,36 +163,5 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         } finally {
             $lock->release();
         }
-    }
-}
-
-final readonly class StubCarrierGateway implements CarrierGatewayInterface
-{
-    /**
-     * @param array<string, string> $statusByReference
-     */
-    public function __construct(
-        private array $statusByReference,
-        private ?string $failingReference = null,
-    ) {
-    }
-
-    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function checkStatus(string $reference): string
-    {
-        if ($reference === $this->failingReference) {
-            throw new \RuntimeException('Carrier unreachable.');
-        }
-
-        return $this->statusByReference[$reference] ?? throw new \LogicException(\sprintf('No stubbed status for reference "%s".', $reference));
     }
 }

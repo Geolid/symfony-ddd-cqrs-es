@@ -14,12 +14,12 @@ final class CanTransitionToSpecificationTest extends TestCase
 {
     /** @var array<string, list<ShipmentState>> */
     private const array TRANSITIONS = [
-        'requested' => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
-        'prepared' => [ShipmentState::MANIFESTED],
-        'manifested' => [ShipmentState::DISPATCHED],
-        'dispatched' => [ShipmentState::DELIVERED],
-        'delivered' => [],
-        'cancelled' => [],
+        ShipmentState::REQUESTED->value => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
+        ShipmentState::PREPARED->value => [ShipmentState::MANIFESTED],
+        ShipmentState::MANIFESTED->value => [ShipmentState::DISPATCHED],
+        ShipmentState::DISPATCHED->value => [ShipmentState::DELIVERED],
+        ShipmentState::DELIVERED->value => [],
+        ShipmentState::CANCELLED->value => [],
     ];
 
     #[Test]

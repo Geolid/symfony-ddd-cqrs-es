@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Domain\Specification;
 
-use Fulfilment\Shipment\Domain\Specification\ReachesSpecification;
+use Fulfilment\Shipment\Domain\Specification\HasReachedSpecification;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class ReachesSpecificationTest extends TestCase
+final class HasReachedSpecificationTest extends TestCase
 {
     /** @var array<string, list<ShipmentState>> */
     private const array TRANSITIONS = [
-        'requested' => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
-        'prepared' => [ShipmentState::MANIFESTED],
-        'manifested' => [ShipmentState::DISPATCHED],
-        'dispatched' => [ShipmentState::DELIVERED],
-        'delivered' => [],
-        'cancelled' => [],
+        ShipmentState::REQUESTED->value => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
+        ShipmentState::PREPARED->value => [ShipmentState::MANIFESTED],
+        ShipmentState::MANIFESTED->value => [ShipmentState::DISPATCHED],
+        ShipmentState::DISPATCHED->value => [ShipmentState::DELIVERED],
+        ShipmentState::DELIVERED->value => [],
+        ShipmentState::CANCELLED->value => [],
     ];
 
     #[Test]
@@ -27,7 +27,7 @@ final class ReachesSpecificationTest extends TestCase
     public function itIsSatisfiedBy(ShipmentState $candidate, ShipmentState $target, bool $expected): void
     {
         // Given
-        $specification = new ReachesSpecification(self::TRANSITIONS, $target);
+        $specification = new HasReachedSpecification(self::TRANSITIONS, $target);
 
         // When
         $result = $specification->isSatisfiedBy($candidate);

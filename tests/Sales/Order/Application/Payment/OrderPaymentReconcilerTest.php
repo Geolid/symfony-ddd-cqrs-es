@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\OrderPaymentStatusReconcilerInterface;
 use Sales\Order\Application\Status\OrderPaymentStatus;
@@ -13,26 +14,26 @@ use Support\AbstractIntegrationTestCase;
 final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDelegatesToTheSupportingReconciler(): void
+    public function itDelegatesToSupportingReconciler(): void
     {
         // Given
         $router = new OrderPaymentReconciler([new StubUnsupportingReconciler(), new StubMatchingReconciler()]);
 
         // When
-        $result = $router->reconcile('order-payment-id', OrderPaymentStatus::REQUESTED->value, 'GLBX-0001');
+        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::REQUESTED->value, 'GLBX-9F3K2M1P');
 
         // Then
         self::assertTrue($result);
     }
 
     #[Test]
-    public function itIgnoresWhenNoReconcilerSupportsTheStatus(): void
+    public function itIgnoresWhenNoReconcilerSupportsStatus(): void
     {
         // Given
         $router = new OrderPaymentReconciler([]);
 
         // When
-        $result = $router->reconcile('order-payment-id', OrderPaymentStatus::CAPTURED->value, 'GLBX-0001');
+        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED->value, 'GLBX-9F3K2M1P');
 
         // Then
         self::assertFalse($result);

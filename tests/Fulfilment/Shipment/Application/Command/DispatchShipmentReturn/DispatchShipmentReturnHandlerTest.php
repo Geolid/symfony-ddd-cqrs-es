@@ -21,16 +21,16 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itDispatchesReturnWhenManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 
     #[Test]
@@ -51,15 +51,16 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresReturnAlreadyDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 
     #[Test]

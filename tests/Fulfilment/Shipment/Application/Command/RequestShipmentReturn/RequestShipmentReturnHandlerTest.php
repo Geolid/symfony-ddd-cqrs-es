@@ -20,31 +20,32 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsReturnWhenDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_REQUESTED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::RETURN_REQUESTED, $result->status);
     }
 
     #[Test]
     public function itIgnoresWhenNotDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertSame(ShipmentStatus::DISPATCHED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
     }
 
     #[Test]

@@ -23,11 +23,11 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    $services->instanceof(ShipmentStatusReconcilerInterface::class)->tag('fulfilment.shipment_status_reconciler');
+    $services->instanceof(ShipmentStatusReconcilerInterface::class)->tag('fulfilment.shipment.status_reconciler');
 
     SubdomainServiceLoader::load($services, 'Fulfilment');
 
-    $services->get(ShipmentReconciler::class)->arg('$reconcilers', tagged_iterator('fulfilment.shipment_status_reconciler'));
+    $services->get(ShipmentReconciler::class)->arg('$reconcilers', tagged_iterator('fulfilment.shipment.status_reconciler'));
 
     $services->get(ListShipmentsPastReconciliationThresholdHandler::class)->arg('$thresholdHours', '%fulfilment.shipment.reconciliation_threshold_hours%');
 

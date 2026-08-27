@@ -34,33 +34,33 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
+        $returnTrackingReference = 'ACME-RETURN-1';
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $results[0]->status);
-        self::assertSame('ACME-RETURN-1', $results[0]->returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
     #[Test]
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', $shipment->id->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
     #[Test]

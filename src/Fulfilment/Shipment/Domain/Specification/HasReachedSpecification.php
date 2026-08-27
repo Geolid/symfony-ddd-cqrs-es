@@ -6,7 +6,7 @@ namespace Fulfilment\Shipment\Domain\Specification;
 
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
 
-final readonly class ReachesSpecification
+final readonly class HasReachedSpecification
 {
     /**
      * @param array<string, list<ShipmentState>> $transitions
