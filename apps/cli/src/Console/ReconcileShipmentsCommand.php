@@ -52,7 +52,7 @@ final class ReconcileShipmentsCommand
                 } catch (\Throwable $e) {
                     $this->logger->error('Failed to reconcile shipment {id}', [
                         'id' => $shipment->id,
-                        'reference' => $shipment->trackingReference ?? $shipment->returnTrackingReference,
+                        'reference' => $shipment->returnTrackingReference ?? $shipment->trackingReference,
                         'exception' => $e,
                     ]);
                     $io->error(\sprintf('Failed to reconcile shipment %s: %s', $shipment->id, $e->getMessage()));

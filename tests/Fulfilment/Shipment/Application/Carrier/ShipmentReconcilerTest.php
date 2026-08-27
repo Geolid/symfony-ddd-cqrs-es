@@ -6,6 +6,7 @@ namespace Fulfilment\Tests\Shipment\Application\Carrier;
 
 use Fulfilment\Shipment\Application\Carrier\ShipmentReconciler;
 use Fulfilment\Shipment\Application\Carrier\ShipmentStatusReconcilerInterface;
+use Fulfilment\Shipment\Application\Exception\UnsupportedShipmentStatusException;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,16 +29,16 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNoReconcilerSupportsStatus(): void
+    public function itFailsWhenNoReconcilerSupportsStatus(): void
     {
         // Given
         $router = new ShipmentReconciler([]);
 
-        // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED->value, 'ACME-4Q7X2K9', null);
-
         // Then
-        self::assertFalse($result);
+        $this->expectException(UnsupportedShipmentStatusException::class);
+
+        // When
+        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED->value, 'ACME-4Q7X2K9', null);
     }
 
     #[Test]

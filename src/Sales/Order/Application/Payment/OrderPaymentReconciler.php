@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Payment;
 
+use Sales\Order\Application\Exception\UnsupportedOrderPaymentStatusException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class OrderPaymentReconciler implements OrderPaymentReconcilerInterface
@@ -27,6 +28,6 @@ final readonly class OrderPaymentReconciler implements OrderPaymentReconcilerInt
             }
         }
 
-        return false;
+        throw UnsupportedOrderPaymentStatusException::forStatus($status);
     }
 }

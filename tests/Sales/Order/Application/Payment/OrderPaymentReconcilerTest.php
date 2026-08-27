@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Exception\UnsupportedOrderPaymentStatusException;
 use Sales\Order\Application\Payment\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\OrderPaymentStatusReconcilerInterface;
 use Sales\Order\Application\Status\OrderPaymentStatus;
@@ -27,16 +28,16 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNoReconcilerSupportsStatus(): void
+    public function itFailsWhenNoReconcilerSupportsStatus(): void
     {
         // Given
         $router = new OrderPaymentReconciler([]);
 
-        // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED->value, 'GLBX-9F3K2M1P');
-
         // Then
-        self::assertFalse($result);
+        $this->expectException(UnsupportedOrderPaymentStatusException::class);
+
+        // When
+        $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED->value, 'GLBX-9F3K2M1P');
     }
 }
 

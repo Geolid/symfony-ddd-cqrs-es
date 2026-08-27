@@ -179,6 +179,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
+        // Tolerates skipping DISPATCHED — a missed carrier transit scan still delivers.
         if (!new HasReachedSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotDeliver($this->state);
         }
@@ -256,6 +257,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
+        // Tolerates skipping RETURN_DISPATCHED — a missed carrier transit scan still receives.
         if (!new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
             throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->state);
         }

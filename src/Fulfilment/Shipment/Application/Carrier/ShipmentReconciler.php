@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Carrier;
 
+use Fulfilment\Shipment\Application\Exception\UnsupportedShipmentStatusException;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
@@ -35,6 +36,6 @@ final readonly class ShipmentReconciler implements ShipmentReconcilerInterface
             }
         }
 
-        return false;
+        throw UnsupportedShipmentStatusException::forStatus($status);
     }
 }
