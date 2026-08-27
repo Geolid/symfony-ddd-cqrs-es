@@ -52,6 +52,7 @@ final class CheckoutController extends AbstractController
                 street: (string) $formData->shipping->address->street,
                 postalCode: (string) $formData->shipping->address->postalCode,
                 city: (string) $formData->shipping->address->city,
+                countryCode: (string) $formData->shipping->address->countryCode?->value,
             ));
             $this->commandBus->dispatch(new RegisterCustomerBillingAddress(
                 customerId: $user->identityId(),
@@ -60,6 +61,7 @@ final class CheckoutController extends AbstractController
                 street: (string) $formData->billing->address->street,
                 postalCode: (string) $formData->billing->address->postalCode,
                 city: (string) $formData->billing->address->city,
+                countryCode: (string) $formData->billing->address->countryCode?->value,
             ));
 
             return $this->redirectToRoute($queryString->returnTo);

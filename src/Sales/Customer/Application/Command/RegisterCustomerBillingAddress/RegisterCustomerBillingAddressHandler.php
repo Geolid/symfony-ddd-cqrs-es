@@ -32,7 +32,7 @@ final readonly class RegisterCustomerBillingAddressHandler
         $customer->registerBillingAddress(
             PostalAddress::of(
                 FullName::of($command->firstName, $command->lastName),
-                Address::of($command->street, $command->postalCode, $command->city),
+                Address::of($command->street, $command->postalCode, $command->city, $command->countryCode),
             ),
             $this->clock->now(),
         );

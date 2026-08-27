@@ -38,7 +38,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         // Given
         $shippingAddress = PostalAddress::of(
             FullName::of('Ada', 'Lovelace'),
-            Address::of('12 rue des Lilas', '75001', 'Paris'),
+            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
         $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->create();
         $this->store($shipment);
@@ -49,13 +49,14 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             [
                 'firstName' => $this->carrier->deliveryAddress->fullName->firstName,
                 'lastName' => $this->carrier->deliveryAddress->fullName->lastName,
                 'street' => $this->carrier->deliveryAddress->address->street,
                 'postalCode' => $this->carrier->deliveryAddress->address->postalCode,
                 'city' => $this->carrier->deliveryAddress->address->city,
+                'countryCode' => $this->carrier->deliveryAddress->address->countryCode->value,
             ],
         );
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

@@ -14,7 +14,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class CustomerBillingAddressRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $address
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $address
      */
     public function __construct(
         #[DataSubjectId]
@@ -25,6 +25,7 @@ final readonly class CustomerBillingAddressRegisteredIntegrationEvent implements
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
+            'countryCode' => 'ZZ',
         ]))]
         public array $address,
         public string $setAt,

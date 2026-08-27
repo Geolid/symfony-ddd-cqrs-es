@@ -31,7 +31,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function address(PostalAddress $address): array
     {
@@ -41,6 +41,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
             'street' => $address->address->street,
             'postalCode' => $address->address->postalCode,
             'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
         ];
     }
 }

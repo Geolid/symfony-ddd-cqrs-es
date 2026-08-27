@@ -32,6 +32,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
                 'street' => $billingAddress->address->street,
                 'postalCode' => $billingAddress->address->postalCode,
                 'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
             ],
         ], $orderId);
 

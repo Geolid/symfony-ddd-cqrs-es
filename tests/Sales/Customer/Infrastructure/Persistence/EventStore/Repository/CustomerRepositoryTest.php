@@ -29,8 +29,8 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
     public function itLoadsSaved(): void
     {
         // Given
-        $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
-        $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris'));
+        $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
         $customer = CustomerTestFactory::new()
             ->withEmail('buyer@example.com')
             ->withShippingAddress($shippingAddress)
@@ -53,6 +53,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
             [
                 'firstName' => $reloaded->shippingAddress->fullName->firstName,
@@ -60,6 +61,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $reloaded->shippingAddress->address->street,
                 'postalCode' => $reloaded->shippingAddress->address->postalCode,
                 'city' => $reloaded->shippingAddress->address->city,
+                'countryCode' => $reloaded->shippingAddress->address->countryCode->value,
             ],
         );
         self::assertNotNull($reloaded->billingAddress);
@@ -70,6 +72,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $billingAddress->address->street,
                 'postalCode' => $billingAddress->address->postalCode,
                 'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
             ],
             [
                 'firstName' => $reloaded->billingAddress->fullName->firstName,
@@ -77,6 +80,7 @@ final class CustomerRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $reloaded->billingAddress->address->street,
                 'postalCode' => $reloaded->billingAddress->address->postalCode,
                 'city' => $reloaded->billingAddress->address->city,
+                'countryCode' => $reloaded->billingAddress->address->countryCode->value,
             ],
         );
     }

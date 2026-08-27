@@ -63,6 +63,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
                 'street' => $billingAddress->address->street,
                 'postalCode' => $billingAddress->address->postalCode,
                 'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
             ],
             [
                 'firstName' => $this->paymentGateway->billingAddress->fullName->firstName,
@@ -70,6 +71,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
                 'street' => $this->paymentGateway->billingAddress->address->street,
                 'postalCode' => $this->paymentGateway->billingAddress->address->postalCode,
                 'city' => $this->paymentGateway->billingAddress->address->city,
+                'countryCode' => $this->paymentGateway->billingAddress->address->countryCode->value,
             ],
         );
 

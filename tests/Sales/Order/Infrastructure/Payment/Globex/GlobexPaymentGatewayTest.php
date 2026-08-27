@@ -49,6 +49,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
+                    'countryCode' => 'FR',
                 ],
             ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
@@ -220,7 +221,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     {
         return PostalAddress::of(
             FullName::of('Ada', 'Lovelace'),
-            Address::of('12 rue des Lilas', '75001', 'Paris'),
+            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
     }
 }

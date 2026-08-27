@@ -43,6 +43,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
             [
                 'firstName' => $reloadedShippingAddress->fullName->firstName,
@@ -50,6 +51,7 @@ final class OrderRepositoryTest extends AbstractIntegrationTestCase
                 'street' => $reloadedShippingAddress->address->street,
                 'postalCode' => $reloadedShippingAddress->address->postalCode,
                 'city' => $reloadedShippingAddress->address->city,
+                'countryCode' => $reloadedShippingAddress->address->countryCode->value,
             ],
         );
     }

@@ -17,7 +17,7 @@ final class PostalAddressTest extends TestCase
     {
         // Given
         $fullName = FullName::of('Ada', 'Lovelace');
-        $address = Address::of('12 rue des Lilas', '75001', 'Paris');
+        $address = Address::of('12 rue des Lilas', '75001', 'Paris', 'FR');
 
         // When
         $postalAddress = PostalAddress::of($fullName, $address);
@@ -28,17 +28,17 @@ final class PostalAddressTest extends TestCase
         self::assertSame('12 rue des Lilas', $postalAddress->address->street);
         self::assertSame('75001', $postalAddress->address->postalCode);
         self::assertSame('Paris', $postalAddress->address->city);
-        self::assertSame('Ada Lovelace, 12 rue des Lilas, 75001 Paris', $postalAddress->toString());
+        self::assertSame('Ada Lovelace, 12 rue des Lilas, 75001 Paris, FR', $postalAddress->toString());
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
         // Given
-        $a = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
-        $b = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
-        $otherName = PostalAddress::of(FullName::of('Grace', 'Hopper'), Address::of('12 rue des Lilas', '75001', 'Paris'));
-        $otherAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris'));
+        $a = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        $b = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        $otherName = PostalAddress::of(FullName::of('Grace', 'Hopper'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        $otherAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
 
         // When
         $equalResult = $a->equals($b);

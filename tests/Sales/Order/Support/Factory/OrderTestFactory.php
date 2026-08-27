@@ -148,11 +148,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             'customerId' => Uuid::uuid7()->toString(),
             'shippingAddress' => PostalAddress::of(
                 FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
             ),
             'billingAddress' => PostalAddress::of(
                 FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city()),
+                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
             ),
             'lines' => [OrderLine::of(
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(self::faker()->sentence(3)), Money::fromCents(self::faker()->numberBetween(500, 5_000))),

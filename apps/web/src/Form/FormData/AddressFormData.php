@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Web\Form\FormData;
 
 use Shared\Application\Validation\ValidAddress;
+use Shared\Domain\ValueObject\CountryCode;
 
 final class AddressFormData
 {
@@ -14,12 +15,19 @@ final class AddressFormData
 
     public ?string $city = null;
 
+    public ?CountryCode $countryCode = null;
+
     /**
-     * @return array{street: ?string, postalCode: ?string, city: ?string}
+     * @return array{street: ?string, postalCode: ?string, city: ?string, countryCode: ?string}
      */
     #[ValidAddress]
     public function getAddressData(): array
     {
-        return ['street' => $this->street, 'postalCode' => $this->postalCode, 'city' => $this->city];
+        return [
+            'street' => $this->street,
+            'postalCode' => $this->postalCode,
+            'city' => $this->city,
+            'countryCode' => $this->countryCode?->value,
+        ];
     }
 }

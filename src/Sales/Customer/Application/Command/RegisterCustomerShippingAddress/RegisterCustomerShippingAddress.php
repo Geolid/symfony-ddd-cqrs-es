@@ -15,6 +15,7 @@ final readonly class RegisterCustomerShippingAddress implements CommandInterface
         public string $street,
         public string $postalCode,
         public string $city,
+        public string $countryCode,
     ) {
     }
 }

@@ -14,7 +14,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderPaymentCapturedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string} $shippingAddress
+     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
      */
     public function __construct(
         public string $orderId,
@@ -26,6 +26,7 @@ final readonly class OrderPaymentCapturedIntegrationEvent implements Integration
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
+            'countryCode' => 'ZZ',
         ]))]
         public array $shippingAddress,
         public string $capturedAt,

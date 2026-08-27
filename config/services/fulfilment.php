@@ -9,10 +9,11 @@ use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThresho
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
-    $container->parameters()->set('fulfilment.return_address_name', '%env(FULFILMENT_RETURN_ADDRESS_NAME)%');
+    $container->parameters()->set('fulfilment.return_address_recipient', '%env(FULFILMENT_RETURN_ADDRESS_RECIPIENT)%');
     $container->parameters()->set('fulfilment.return_address_street', '%env(FULFILMENT_RETURN_ADDRESS_STREET)%');
     $container->parameters()->set('fulfilment.return_address_postal_code', '%env(FULFILMENT_RETURN_ADDRESS_POSTAL_CODE)%');
     $container->parameters()->set('fulfilment.return_address_city', '%env(FULFILMENT_RETURN_ADDRESS_CITY)%');
+    $container->parameters()->set('fulfilment.return_address_country_code', '%env(FULFILMENT_RETURN_ADDRESS_COUNTRY_CODE)%');
     $container->parameters()->set('fulfilment.shipment.reconciliation_threshold_hours', 48);
 
     $services = $container->services();

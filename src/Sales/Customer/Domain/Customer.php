@@ -58,6 +58,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
                 'street' => $shippingAddress->address->street,
                 'postalCode' => $shippingAddress->address->postalCode,
                 'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
             ],
             setAt: $registeredAt->format(\DateTimeInterface::ATOM),
         ));
@@ -77,6 +78,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
                 'street' => $billingAddress->address->street,
                 'postalCode' => $billingAddress->address->postalCode,
                 'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
             ],
             setAt: $registeredAt->format(\DateTimeInterface::ATOM),
         ));
@@ -107,7 +109,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->shippingAddress = PostalAddress::of(
             FullName::of($event->address['firstName'], $event->address['lastName']),
-            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city']),
+            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city'], $event->address['countryCode']),
         );
     }
 
@@ -116,7 +118,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->billingAddress = PostalAddress::of(
             FullName::of($event->address['firstName'], $event->address['lastName']),
-            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city']),
+            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city'], $event->address['countryCode']),
         );
     }
 

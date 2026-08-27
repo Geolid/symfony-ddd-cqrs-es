@@ -42,6 +42,7 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
+                    'countryCode' => 'FR',
                 ],
             ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
@@ -70,12 +71,14 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
+                    'countryCode' => 'FR',
                 ],
                 'destination' => [
                     'recipient' => 'Returns Department',
                     'street' => "1 rue de l'Entrepot",
                     'postalCode' => '75012',
                     'city' => 'Paris',
+                    'countryCode' => 'FR',
                 ],
             ],
             json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
@@ -189,12 +192,13 @@ final class AcmeCarrierGatewayTest extends TestCase
             "1 rue de l'Entrepot",
             '75012',
             'Paris',
+            'FR',
         );
     }
 
     private function deliveryAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private static function jsonResponse(mixed $body, int $statusCode = 200): MockResponse

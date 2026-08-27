@@ -694,7 +694,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
     private static function shippingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris'));
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private static function shipmentRequested(string $id, string $orderId, string $customerId, \DateTimeImmutable $createdAt): ShipmentRequested
@@ -703,7 +703,7 @@ final class ShipmentTest extends AggregateRootTestCase
             $id,
             $orderId,
             $customerId,
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris'],
+            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $createdAt->format(\DateTimeInterface::ATOM),
         );
     }

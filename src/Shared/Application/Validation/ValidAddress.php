@@ -29,6 +29,9 @@ final class ValidAddress extends Compound
                             new Assert\NotBlank(normalizer: 'trim'),
                             new Assert\Length(max: Address::CITY_MAX_LENGTH),
                         ],
+                        'countryCode' => [
+                            new ValidCountryCode(),
+                        ],
                     ],
                     allowMissingFields: false,
                 ),
