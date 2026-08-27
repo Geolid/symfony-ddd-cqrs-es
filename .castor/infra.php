@@ -8,9 +8,11 @@ use Castor\Attribute\AsTask;
 use Castor\Fingerprint\FileHashStrategy;
 use Symfony\Component\Console\Input\InputOption;
 
+use function Castor\context;
 use function Castor\fingerprint;
 use function Castor\hasher;
 use function Castor\io;
+use function Castor\with;
 
 #[AsTask(description: 'Install PHP dependencies')]
 function vendor(
@@ -54,12 +56,13 @@ function warmup(
     #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
+    // Forced: Symfony only dumps the container XML phpstan-symfony needs when debug=true.
     io()->comment('shared');
-    console(['cache:warmup']);
+    with(static fn () => console(['cache:warmup']), environment: ['APP_DEBUG' => '1'], context: context());
 
     foreach (resolve_apps($app) as $app) {
         io()->comment("DM: {$app}");
-        console(['cache:warmup', "--appId={$app}"]);
+        with(static fn () => console(['cache:warmup', "--appId={$app}"]), environment: ['APP_DEBUG' => '1'], context: context());
     }
 }
 
