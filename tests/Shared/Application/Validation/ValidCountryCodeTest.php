@@ -55,6 +55,6 @@ final class ValidCountryCodeTest extends CompoundConstraintTestCase
 
     private static function choice(): Assert\Choice
     {
-        return new Assert\Choice(callback: static fn (): array => array_column(CountryCode::cases(), 'value'));
+        return new Assert\Choice(callback: CountryCode::values(...));
     }
 }

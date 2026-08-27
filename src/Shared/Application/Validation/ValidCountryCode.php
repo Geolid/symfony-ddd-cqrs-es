@@ -16,7 +16,7 @@ final class ValidCountryCode extends Compound
         return [
             new Assert\Sequentially([
                 new Assert\NotBlank(),
-                new Assert\Choice(callback: static fn (): array => array_column(CountryCode::cases(), 'value')),
+                new Assert\Choice(callback: CountryCode::values(...)),
                 new ValidValueObject(CountryCode::class, method: 'from'),
             ]),
         ];

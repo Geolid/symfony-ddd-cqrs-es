@@ -31,7 +31,7 @@ final readonly class Address
         Assert::maxLength($postalCode, self::POSTAL_CODE_MAX_LENGTH, 'A postal code cannot exceed %2$d characters, %s given.');
         Assert::notEmpty($city, 'A city cannot be empty, %s given.');
         Assert::maxLength($city, self::CITY_MAX_LENGTH, 'A city cannot exceed %2$d characters, %s given.');
-        Assert::oneOf($countryCode, array_column(CountryCode::cases(), 'value'), 'A country code must be a valid ISO 3166-1 alpha-2 code, %s given.');
+        Assert::oneOf($countryCode, CountryCode::values(), 'A country code must be a valid ISO 3166-1 alpha-2 code, %s given.');
 
         $this->street = $street;
         $this->postalCode = $postalCode;
