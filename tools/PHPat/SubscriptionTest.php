@@ -14,6 +14,7 @@ use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy\Policy;
 use Shared\Application\Processor\Processor;
 use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
+use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Tools\PHPat\Helpers\ConcreteImplementation;
 
 final class SubscriptionTest
@@ -102,8 +103,10 @@ final class SubscriptionTest
     private function processors(): SelectorInterface
     {
         return Selector::AllOf(
-            Selector::withFilepath('#/Application/Processor/#', true),
-            Selector::Not(Selector::withFilepath('#/Shared/#', true)),
+            Selector::classname('#Processor$#', true),
+            Selector::Not(Selector::classname(Processor::class)),
+            Selector::Not(Selector::implements(EnvVarProcessorInterface::class)),
+            Selector::Not(Selector::withFilepath('#/apps/#', true)),
             ...ConcreteImplementation::selectors(),
         );
     }

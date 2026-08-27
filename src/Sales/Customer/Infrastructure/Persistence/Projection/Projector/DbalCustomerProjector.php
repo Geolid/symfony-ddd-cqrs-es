@@ -22,11 +22,15 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
     #[Subscribe(CustomerRegistered::class)]
     public function onCustomerRegistered(CustomerRegistered $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
-            'email' => $event->email,
-            'registered_at' => new \DateTimeImmutable($event->registeredAt)->format('Y-m-d H:i:s'),
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'id' => $event->id,
+                'email' => $event->email,
+                'registered_at' => new \DateTimeImmutable($event->registeredAt),
+            ],
+            ['registered_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(CustomerErased::class)]
@@ -43,7 +47,7 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('email', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
-        $table->addColumn('registered_at', Types::DATETIME_MUTABLE);
+        $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

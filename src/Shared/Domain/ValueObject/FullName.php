@@ -8,6 +8,8 @@ use Webmozart\Assert\Assert;
 
 final readonly class FullName
 {
+    public const int MAX_LENGTH = 255;
+
     public string $firstName;
 
     public string $lastName;
@@ -17,9 +19,9 @@ final readonly class FullName
         $firstName = trim($firstName);
         $lastName = trim($lastName);
         Assert::notEmpty($firstName, 'A first name cannot be empty, %s given.');
-        Assert::maxLength($firstName, 255, 'A first name cannot exceed %2$d characters, %s given.');
+        Assert::maxLength($firstName, self::MAX_LENGTH, 'A first name cannot exceed %2$d characters, %s given.');
         Assert::notEmpty($lastName, 'A last name cannot be empty, %s given.');
-        Assert::maxLength($lastName, 255, 'A last name cannot exceed %2$d characters, %s given.');
+        Assert::maxLength($lastName, self::MAX_LENGTH, 'A last name cannot exceed %2$d characters, %s given.');
 
         $this->firstName = $firstName;
         $this->lastName = $lastName;

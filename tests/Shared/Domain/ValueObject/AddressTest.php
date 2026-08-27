@@ -41,11 +41,11 @@ final class AddressTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty street' => ['', '75001', 'Paris'];
-        yield 'too long street' => [str_repeat('a', 256), '75001', 'Paris'];
+        yield 'too long street' => [str_repeat('a', Address::STREET_MAX_LENGTH + 1), '75001', 'Paris'];
         yield 'empty postal code' => ['12 rue des Lilas', '', 'Paris'];
-        yield 'too long postal code' => ['12 rue des Lilas', str_repeat('1', 21), 'Paris'];
+        yield 'too long postal code' => ['12 rue des Lilas', str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH + 1), 'Paris'];
         yield 'empty city' => ['12 rue des Lilas', '75001', ''];
-        yield 'too long city' => ['12 rue des Lilas', '75001', str_repeat('a', 256)];
+        yield 'too long city' => ['12 rue des Lilas', '75001', str_repeat('a', Address::CITY_MAX_LENGTH + 1)];
     }
 
     #[Test]

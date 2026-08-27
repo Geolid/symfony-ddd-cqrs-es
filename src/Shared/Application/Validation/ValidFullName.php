@@ -19,11 +19,11 @@ final class ValidFullName extends Compound
                     fields: [
                         'firstName' => [
                             new Assert\NotBlank(normalizer: 'trim'),
-                            new Assert\Length(max: 255),
+                            new Assert\Length(max: FullName::MAX_LENGTH),
                         ],
                         'lastName' => [
                             new Assert\NotBlank(normalizer: 'trim'),
-                            new Assert\Length(max: 255),
+                            new Assert\Length(max: FullName::MAX_LENGTH),
                         ],
                     ],
                     allowMissingFields: false,

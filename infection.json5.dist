@@ -10,17 +10,7 @@
         "@default": true,
         "ArrayItemRemoval": {
             "ignoreSourceCodeByRegex": [
-                ".*Types::BOOLEAN\\].*"
-            ]
-        },
-        "Concat": {
-            "ignoreSourceCodeByRegex": [
-                ".*Assert::.*"
-            ]
-        },
-        "ConcatOperandRemoval": {
-            "ignoreSourceCodeByRegex": [
-                ".*Assert::.*"
+                ".*Types::BOOLEAN.*"
             ]
         }
     },

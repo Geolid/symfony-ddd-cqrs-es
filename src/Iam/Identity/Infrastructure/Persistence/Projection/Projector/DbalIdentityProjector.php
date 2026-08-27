@@ -26,11 +26,15 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     #[Subscribe(IdentityRegistered::class)]
     public function onIdentityRegistered(IdentityRegistered $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
-            'status' => IdentityState::ACTIVE->value,
-            'registered_at' => new \DateTimeImmutable($event->registeredAt)->format('Y-m-d H:i:s'),
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'id' => $event->id,
+                'status' => IdentityState::ACTIVE->value,
+                'registered_at' => new \DateTimeImmutable($event->registeredAt),
+            ],
+            ['registered_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(IdentitySuspended::class)]
@@ -41,9 +45,10 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             [
                 'status' => IdentityState::SUSPENDED->value,
                 'reason' => $event->reason,
-                'suspended_at' => new \DateTimeImmutable($event->suspendedAt)->format('Y-m-d H:i:s'),
+                'suspended_at' => new \DateTimeImmutable($event->suspendedAt),
             ],
             ['id' => $event->id],
+            ['suspended_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -55,9 +60,10 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             [
                 'status' => IdentityState::ACTIVE->value,
                 'reason' => $event->reason,
-                'reactivated_at' => new \DateTimeImmutable($event->reactivatedAt)->format('Y-m-d H:i:s'),
+                'reactivated_at' => new \DateTimeImmutable($event->reactivatedAt),
             ],
             ['id' => $event->id],
+            ['reactivated_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -77,8 +83,8 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('suspended_at', Types::DATETIME_MUTABLE, ['notnull' => false]);
-        $table->addColumn('reactivated_at', Types::DATETIME_MUTABLE, ['notnull' => false]);
+        $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
+        $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

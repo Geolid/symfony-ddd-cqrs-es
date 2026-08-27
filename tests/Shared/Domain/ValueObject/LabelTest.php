@@ -28,7 +28,7 @@ final class LabelTest extends TestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'label' => ['Espresso cups, set of 6', 'Espresso cups, set of 6'];
-        yield 'maximum length' => [str_repeat('a', 255), str_repeat('a', 255)];
+        yield 'maximum length' => [str_repeat('a', Label::MAX_LENGTH), str_repeat('a', Label::MAX_LENGTH)];
         yield 'surrounding whitespace' => ['  Espresso cups, set of 6  ', 'Espresso cups, set of 6'];
     }
 
@@ -50,7 +50,7 @@ final class LabelTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_repeat('a', 256)];
+        yield 'too long' => [str_repeat('a', Label::MAX_LENGTH + 1)];
     }
 
     #[Test]

@@ -28,7 +28,7 @@ final class PaymentReferenceTest extends TestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'reference' => ['GLBX-9F3K2M1P'];
-        yield 'maximum length' => [str_repeat('A', 64)];
+        yield 'maximum length' => [str_repeat('A', PaymentReference::MAX_LENGTH)];
     }
 
     #[Test]
@@ -48,7 +48,7 @@ final class PaymentReferenceTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
-        yield 'longer than the provider can issue' => [str_repeat('A', 65)];
+        yield 'longer than the provider can issue' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1)];
     }
 
     #[Test]

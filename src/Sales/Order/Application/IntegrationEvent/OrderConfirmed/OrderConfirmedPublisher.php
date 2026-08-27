@@ -34,7 +34,7 @@ final readonly class OrderConfirmedPublisher
         $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
             orderId: $event->id,
             customerId: $order->customerId,
-            shippingAddress: $this->normalizeAddress($order->shippingAddress),
+            shippingAddress: $this->normalizePostalAddress($order->shippingAddress),
             confirmedAt: $event->confirmedAt,
         ));
     }
@@ -42,7 +42,7 @@ final readonly class OrderConfirmedPublisher
     /**
      * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string}
      */
-    private function normalizeAddress(PostalAddress $address): array
+    private function normalizePostalAddress(PostalAddress $address): array
     {
         return [
             'firstName' => $address->fullName->firstName,

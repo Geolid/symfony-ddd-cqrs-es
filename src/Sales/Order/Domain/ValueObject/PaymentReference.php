@@ -8,12 +8,14 @@ use Webmozart\Assert\Assert;
 
 final readonly class PaymentReference
 {
+    public const int MAX_LENGTH = 64;
+
     public string $value;
 
     private function __construct(string $value)
     {
         Assert::notEmpty($value, 'A payment reference cannot be empty, %s given.');
-        Assert::maxLength($value, 64, 'A payment reference cannot exceed %2$d characters, %s given.');
+        Assert::maxLength($value, self::MAX_LENGTH, 'A payment reference cannot exceed %2$d characters, %s given.');
 
         $this->value = $value;
     }

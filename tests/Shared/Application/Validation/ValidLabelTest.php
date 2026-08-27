@@ -7,6 +7,7 @@ namespace Shared\Tests\Application\Validation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Validation\ValidLabel;
+use Shared\Domain\ValueObject\Label;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
@@ -33,7 +34,7 @@ final class ValidLabelTest extends CompoundConstraintTestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'label' => ['Espresso cups, set of 6'];
-        yield 'maximum length' => [str_repeat('a', 255)];
+        yield 'maximum length' => [str_repeat('a', Label::MAX_LENGTH)];
     }
 
     /**
@@ -59,7 +60,7 @@ final class ValidLabelTest extends CompoundConstraintTestCase
         yield 'empty string' => ['', [self::notBlank()]];
         yield 'whitespace only' => ['   ', [self::notBlank()]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
-        yield 'too long' => [str_repeat('a', 256), [new Assert\Length(max: 255)]];
+        yield 'too long' => [str_repeat('a', Label::MAX_LENGTH + 1), [new Assert\Length(max: Label::MAX_LENGTH)]];
     }
 
     protected function createCompound(): ValidLabel

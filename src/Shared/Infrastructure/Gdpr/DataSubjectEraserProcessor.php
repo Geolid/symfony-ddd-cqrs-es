@@ -11,7 +11,7 @@ use Shared\Application\Processor\Processor;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 
 #[Processor('shared.gdpr.data_subject_eraser')]
-final readonly class DataSubjectEraser
+final readonly class DataSubjectEraserProcessor
 {
     public function __construct(private CipherKeyStore $cipherKeyStore)
     {

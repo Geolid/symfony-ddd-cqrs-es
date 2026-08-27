@@ -9,11 +9,11 @@ use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\Gdpr\DataSubjectEraser;
+use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Doubles\StubDataSubjectErased;
 use Support\Doubles\DummyMessage;
 
-final class DataSubjectEraserTest extends TestCase
+final class DataSubjectEraserProcessorTest extends TestCase
 {
     /** @var list<string> */
     private array $dropped = [];
@@ -38,7 +38,7 @@ final class DataSubjectEraserTest extends TestCase
         $event = new StubDataSubjectErased($subjectId);
 
         // When
-        (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
+        (new DataSubjectEraserProcessor($this->cipherKeyStore))(Message::create($event));
 
         // Then
         self::assertSame([$subjectId], $this->dropped);
@@ -51,7 +51,7 @@ final class DataSubjectEraserTest extends TestCase
         $event = new DummyMessage();
 
         // When
-        (new DataSubjectEraser($this->cipherKeyStore))(Message::create($event));
+        (new DataSubjectEraserProcessor($this->cipherKeyStore))(Message::create($event));
 
         // Then
         self::assertSame([], $this->dropped);
