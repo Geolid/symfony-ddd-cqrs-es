@@ -10,7 +10,7 @@
         "@default": true,
         "ArrayItemRemoval": {
             "ignoreSourceCodeByRegex": [
-                ".*Types::BOOLEAN\\].*"
+                ".*Types::BOOLEAN.*"
             ]
         }
     },
