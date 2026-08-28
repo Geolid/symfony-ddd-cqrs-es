@@ -38,24 +38,24 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId);
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
 
         $this
             ->given()
-            ->when(static fn (): Shipment => Shipment::request($id, $orderId, $customerId, self::shippingAddress(), $createdAt))
-            ->then(self::shipmentRequested($id->toString(), $orderId, $customerId, $createdAt));
+            ->when(static fn (): Shipment => Shipment::request($id, $orderId, $customerId, self::shippingAddress(), $now))
+            ->then(self::shipmentRequested($id->toString(), $orderId, $customerId, $now));
     }
 
     #[Test]
     public function itPreparesRequested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $preparedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $preparedAt = $now->modify('+4 hours');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
             ->when(static fn (Shipment $shipment) => $shipment->prepare($preparedAt))
             ->then(new ShipmentPrepared($id, $preparedAt));
     }
@@ -64,15 +64,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotPrepareWhenAlreadyPrepared(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $preparedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $preparedAt = $now->modify('+4 hours');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentPrepared($id, $preparedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->prepare(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->prepare($now->modify('+1 day')))
             ->then();
     }
 
@@ -80,11 +80,11 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCancelsRequested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+2 hours');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
             ->then(new ShipmentCancelled($id, $cancelledAt));
     }
@@ -93,13 +93,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCancelsPrepared(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $preparedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $preparedAt = $now->modify('+4 hours');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentPrepared($id, $preparedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
@@ -110,13 +110,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itRejectsCancellationWhenManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
+        $cancelledAt = $now->modify('+2 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
@@ -127,13 +127,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itRejectsCancellationWhenDispatched(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $cancelledAt = $now->modify('+3 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
@@ -144,15 +144,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+2 hours');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentCancelled($id, $cancelledAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->cancel($now->modify('+1 day')))
             ->then();
     }
 
@@ -160,14 +160,14 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itRejectsCancellationWhenDelivered(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $cancelledAt = $now->modify('+6 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
@@ -179,13 +179,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itManifestsPrepared(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $preparedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $preparedAt = $now->modify('+4 hours');
+        $manifestedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentPrepared($id, $preparedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), $manifestedAt))
@@ -196,11 +196,11 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotManifestWhenRequested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
-            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
+            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), $now->modify('+1 day')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -208,15 +208,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotManifestWhenAlreadyManifestedWithSameReference(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), $now->modify('+2 days')))
             ->then();
     }
 
@@ -224,15 +224,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotManifestWhenAlreadyManifestedWithDifferentReference(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-OTHER'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-OTHER'), $now->modify('+2 days')))
             ->expectsException(ShipmentAlreadyTrackedException::class);
     }
 
@@ -240,13 +240,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDispatchesManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
+        $dispatchedAt = $now->modify('+2 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
@@ -257,17 +257,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotDispatchWhenAlreadyDispatched(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
+        $dispatchedAt = $now->modify('+2 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
                 new ShipmentDispatched($id, $dispatchedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->dispatch($now->modify('+3 days')))
             ->then();
     }
 
@@ -275,11 +275,11 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotDispatchWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
-            ->when(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
+            ->when(static fn (Shipment $shipment) => $shipment->dispatch($now->modify('+1 day')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -287,13 +287,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDeliversWhenDispatched(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->deliver($deliveredAt))
@@ -304,13 +304,13 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDeliversWhenManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $manifestedAt = $now->modify('+1 day');
+        $deliveredAt = $now->modify('+4 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->deliver($deliveredAt))
@@ -321,17 +321,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotDeliverWhenAlreadyDelivered(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->deliver(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->deliver($now->modify('+6 days')))
             ->then();
     }
 
@@ -339,11 +339,11 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotDeliverWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
-            ->when(static fn (Shipment $shipment) => $shipment->deliver(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
+            ->when(static fn (Shipment $shipment) => $shipment->deliver($now->modify('+1 day')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -351,14 +351,14 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itRequestsReturnWhenDelivered(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
@@ -370,11 +370,11 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotRequestReturnWhenNotDelivered(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
-            ->when(static fn (Shipment $shipment) => $shipment->requestReturn(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now))
+            ->when(static fn (Shipment $shipment) => $shipment->requestReturn($now->modify('+1 day')))
             ->then();
     }
 
@@ -382,15 +382,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itManifestsReturnWhenRequested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
@@ -403,17 +403,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotManifestReturnWhenNotRequested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), $now->modify('+12 days')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -421,21 +421,21 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotManifestReturnWhenAlreadyManifestedWithSameReference(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
                 new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), $now->modify('+14 days')))
             ->then();
     }
 
@@ -443,21 +443,21 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotManifestReturnWhenAlreadyManifestedWithDifferentReference(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
                 new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-OTHER'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-OTHER'), $now->modify('+14 days')))
             ->expectsException(ShipmentAlreadyTrackedException::class);
     }
 
@@ -465,16 +465,16 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDispatchesReturnWhenManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
-        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
+        $returnDispatchedAt = $now->modify('+14 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
@@ -488,17 +488,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotDispatchReturnWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn($now->modify('+14 days')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -509,9 +509,11 @@ final class ShipmentTest extends AggregateRootTestCase
     #[DataProvider('provideReturnAlreadyDispatchedOrLaterStates')]
     public function itDoesNotDispatchReturnWhenAlreadyDispatched(array $events): void
     {
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
         $this
             ->given(...$events)
-            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn(new \DateTimeImmutable('2026-01-15T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn($now->modify('+18 days')))
             ->then();
     }
 
@@ -519,17 +521,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itReceivesReturnWhenDispatched(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
-        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
+        $returnDispatchedAt = $now->modify('+14 days');
+        $receivedAt = $now->modify('+16 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
@@ -544,16 +546,16 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itReceivesReturnWhenManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
+        $receivedAt = $now->modify('+15 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnRequested($id, $requestedAt),
@@ -567,17 +569,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotReceiveReturnWhenNotManifested(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn(new \DateTimeImmutable('2026-01-13T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($now->modify('+12 days')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -588,9 +590,11 @@ final class ShipmentTest extends AggregateRootTestCase
     #[DataProvider('provideReturnAlreadyReceivedOrLaterStates')]
     public function itDoesNotReceiveReturnWhenAlreadyReceived(array $events): void
     {
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+
         $this
             ->given(...$events)
-            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn(new \DateTimeImmutable('2026-01-15T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($now->modify('+17 days')))
             ->then();
     }
 
@@ -598,15 +602,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itApprovesReturnWhenReceived(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $approvedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $receivedAt = $now->modify('+12 days');
+        $approvedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnReceived($id, $receivedAt),
@@ -619,21 +623,21 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotApproveReturnWhenAlreadyApproved(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $approvedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $receivedAt = $now->modify('+12 days');
+        $approvedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnReceived($id, $receivedAt),
                 new ShipmentReturnApproved($id, $approvedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->approveReturn($now->modify('+14 days')))
             ->then();
     }
 
@@ -641,17 +645,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotApproveReturnWhenNotReceived(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->approveReturn($now->modify('+12 days')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -659,15 +663,15 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itRejectsReturnWhenReceived(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $receivedAt = $now->modify('+12 days');
+        $rejectedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnReceived($id, $receivedAt),
@@ -680,21 +684,21 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itDoesNotRejectReturnWhenAlreadyRejected(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $receivedAt = $now->modify('+12 days');
+        $rejectedAt = $now->modify('+13 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
                 new ShipmentReturnReceived($id, $receivedAt),
                 new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', $now->modify('+14 days')))
             ->then();
     }
 
@@ -702,17 +706,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public function itCannotRejectReturnWhenNotReceived(): void
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+                self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
                 new ShipmentDispatched($id, $dispatchedAt),
                 new ShipmentDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', $now->modify('+12 days')))
             ->expectsException(ShipmentInvalidTransitionException::class);
     }
 
@@ -722,18 +726,18 @@ final class ShipmentTest extends AggregateRootTestCase
     public static function provideReturnAlreadyDispatchedOrLaterStates(): iterable
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
-        $returnDispatchedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
-        $approvedAt = new \DateTimeImmutable('2026-01-14T00:00:00+00:00');
-        $rejectedAt = new \DateTimeImmutable('2026-01-14T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
+        $returnDispatchedAt = $now->modify('+14 days');
+        $receivedAt = $now->modify('+16 days');
+        $approvedAt = $now->modify('+17 days');
+        $rejectedAt = $now->modify('+17 days');
 
         $base = [
-            self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+            self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
             new ShipmentDispatched($id, $dispatchedAt),
             new ShipmentDelivered($id, $deliveredAt),
             new ShipmentReturnRequested($id, $requestedAt),
@@ -761,17 +765,17 @@ final class ShipmentTest extends AggregateRootTestCase
     public static function provideReturnAlreadyReceivedOrLaterStates(): iterable
     {
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-        $createdAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $manifestedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
-        $receivedAt = new \DateTimeImmutable('2026-01-13T00:00:00+00:00');
-        $approvedAt = new \DateTimeImmutable('2026-01-14T00:00:00+00:00');
-        $rejectedAt = new \DateTimeImmutable('2026-01-14T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $now->modify('+12 days');
+        $manifestedAt = $now->modify('+13 days');
+        $receivedAt = $now->modify('+15 days');
+        $approvedAt = $now->modify('+16 days');
+        $rejectedAt = $now->modify('+16 days');
 
         $base = [
-            self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
+            self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $now),
             new ShipmentDispatched($id, $dispatchedAt),
             new ShipmentDelivered($id, $deliveredAt),
             new ShipmentReturnRequested($id, $requestedAt),

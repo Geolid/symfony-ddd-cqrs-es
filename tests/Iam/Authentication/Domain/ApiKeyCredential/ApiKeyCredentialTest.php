@@ -25,7 +25,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
         $keyId = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
         $hasher = new StubApiKeyHasher();
-        $issuedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
@@ -36,7 +36,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 $keyId,
                 'plain-secret',
                 $hasher,
-                $issuedAt,
+                $now,
             ))
             ->then(new ApiKeyCredentialIssued(
                 $id->toString(),
@@ -44,7 +44,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 $keyId->value,
                 $hasher->hash('plain-secret'),
-                $issuedAt,
+                $now,
             ));
     }
 
@@ -53,7 +53,8 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         $id = ApiKeyCredentialId::generate();
         $identityId = Uuid::uuid7()->toString();
-        $revokedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $revokedAt = $now->modify('+1 day');
 
         $this
             ->given(new ApiKeyCredentialIssued(
@@ -62,7 +63,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 KeyId::PREFIX.'0123456789abcdef',
                 'hashed:plain-secret',
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt))
             ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt));
@@ -72,6 +73,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
     {
         $id = ApiKeyCredentialId::generate();
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(new ApiKeyCredentialIssued(
@@ -80,9 +82,9 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 KeyId::PREFIX.'0123456789abcdef',
                 'hashed:plain-secret',
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(Uuid::uuid7()->toString(), $now->modify('+1 day')))
             ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
     }
 
@@ -91,6 +93,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         $id = ApiKeyCredentialId::generate();
         $identityId = Uuid::uuid7()->toString();
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
@@ -100,11 +103,11 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                     'CI pipeline',
                     KeyId::PREFIX.'0123456789abcdef',
                     'hashed:plain-secret',
-                    new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                    $now,
                 ),
-                new ApiKeyCredentialRevoked($id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')),
+                new ApiKeyCredentialRevoked($id->toString(), $now->modify('+1 day')),
             )
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $now->modify('+2 days')))
             ->then();
     }
 

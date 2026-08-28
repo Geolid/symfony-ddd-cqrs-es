@@ -107,9 +107,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderAnonymized(): void
     {
         // Given
+        $cancelledAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $order = OrderTestFactory::new()
-            ->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))
-            ->anonymized(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'))
+            ->cancelled($cancelledAt)
+            ->anonymized($cancelledAt->modify('+11 years'))
             ->create();
 
         // When
@@ -150,9 +151,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($other);
+        $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $order = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->completed(new \DateTimeImmutable('2026-02-01T00:00:00+00:00'))
+            ->delivered($deliveredAt)
+            ->completed($deliveredAt->modify('+1 month'))
             ->create();
 
         // When

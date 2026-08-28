@@ -29,7 +29,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId);
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
@@ -39,9 +39,9 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 Money::fromCents(4_200),
                 PaymentReference::fromString(self::REFERENCE),
                 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
-                $requestedAt,
+                $now,
             ))
-            ->then($this->orderPaymentRequested($id->toString(), $orderId, $requestedAt));
+            ->then($this->orderPaymentRequested($id->toString(), $orderId, $now));
     }
 
     #[Test]
@@ -49,11 +49,11 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
 
         $this
-            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $now))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt))
             ->then(new OrderPaymentAuthorized($id, $orderId, $authorizedAt));
     }
@@ -63,15 +63,15 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($now->modify('+6 minutes')))
             ->then();
     }
 
@@ -80,13 +80,13 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $lateAuthorizedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+10 minutes');
+        $lateAuthorizedAt = $now->modify('+15 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentCancelled($id, $orderId, $cancelledAt),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
@@ -98,11 +98,11 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $failedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $failedAt = $now->modify('+5 minutes');
 
         $this
-            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $now))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt))
             ->then(new OrderPaymentFailed($id, $orderId, $failedAt));
     }
@@ -112,15 +112,15 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->fail(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->fail($now->modify('+10 minutes')))
             ->then();
     }
 
@@ -129,13 +129,13 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt))
@@ -147,11 +147,11 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given($this->orderPaymentRequested($id, $orderId, $now))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($now->modify('+1 hour')))
             ->then();
     }
 
@@ -160,17 +160,17 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->capture($now->modify('+1 day +1 hour')))
             ->then();
     }
 
@@ -179,11 +179,11 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 hour');
 
         $this
-            ->given($this->orderPaymentRequested($id, $orderId, $requestedAt))
+            ->given($this->orderPaymentRequested($id, $orderId, $now))
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt))
             ->then(new OrderPaymentCancelled($id, $orderId, $cancelledAt));
     }
@@ -193,13 +193,13 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $cancelledAt = $now->modify('+10 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
             )
             ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt))
@@ -211,14 +211,14 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
+        $cancelledAt = $now->modify('+3 days');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt),
             )
@@ -231,15 +231,15 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $failedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $failedAt = $now->modify('+5 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentFailed($id, $orderId, $failedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($now->modify('+10 minutes')))
             ->then();
     }
 
@@ -248,14 +248,14 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $initiatedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
+        $initiatedAt = $now->modify('+3 days');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt),
             )
@@ -268,15 +268,15 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($now->modify('+10 minutes')))
             ->then();
     }
 
@@ -285,15 +285,15 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $refundInitiatedAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $refundedAt = new \DateTimeImmutable('2026-01-05T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
+        $refundInitiatedAt = $now->modify('+3 days');
+        $refundedAt = $now->modify('+7 days');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt),
                 new OrderPaymentRefundInitiated($id, $orderId, self::REFERENCE, $refundInitiatedAt),
@@ -307,17 +307,17 @@ final class OrderPaymentTest extends AggregateRootTestCase
     {
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $authorizedAt = $now->modify('+5 minutes');
+        $capturedAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPaymentRequested($id, $orderId, $requestedAt),
+                $this->orderPaymentRequested($id, $orderId, $now),
                 new OrderPaymentAuthorized($id, $orderId, $authorizedAt),
                 new OrderPaymentCaptured($id, $orderId, $capturedAt),
             )
-            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($now->modify('+2 days')))
             ->then();
     }
 
