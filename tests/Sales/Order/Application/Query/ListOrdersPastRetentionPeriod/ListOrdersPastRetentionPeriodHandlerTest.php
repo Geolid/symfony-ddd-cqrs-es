@@ -18,11 +18,9 @@ final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegration
         // Given
         $now = Clock::get()->now();
         $expired = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
-        $this->store(
-            OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create(),
-            OrderTestFactory::new()->create(),
-            $expired,
-        );
+        $withinRetention = OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create();
+        $notClosed = OrderTestFactory::new()->create();
+        $this->store($withinRetention, $notClosed, $expired);
 
         // When
         $results = iterator_to_array($this->ask(new ListOrdersPastRetentionPeriod()), false);

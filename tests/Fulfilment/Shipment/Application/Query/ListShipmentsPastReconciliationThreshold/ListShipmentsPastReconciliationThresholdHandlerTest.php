@@ -20,14 +20,14 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
         $stuck = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-3 days'))
             ->create();
-        $this->store($stuck);
-        $this->store(ShipmentTestFactory::new()->prepared()
+        $fresh = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-12 hours'))
-            ->create());
-        $this->store(ShipmentTestFactory::new()->prepared()
+            ->create();
+        $dispatched = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-3 days'))
             ->dispatched()
-            ->create());
+            ->create();
+        $this->store($fresh, $dispatched, $stuck);
 
         // When
         $results = iterator_to_array($this->ask(new ListShipmentsPastReconciliationThreshold()), false);

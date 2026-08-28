@@ -20,12 +20,10 @@ final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTes
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered($now->modify('-19 days'))
             ->create();
-        $this->store(
-            OrderTestFactory::new()->confirmed()->dispatched()
-                ->delivered($now->modify('-2 days'))
-                ->create(),
-            $expired,
-        );
+        $withinWindow = OrderTestFactory::new()->confirmed()->dispatched()
+            ->delivered($now->modify('-2 days'))
+            ->create();
+        $this->store($withinWindow, $expired);
 
         // When
         $results = iterator_to_array($this->ask(new ListOrdersPastReturnWindow()), false);

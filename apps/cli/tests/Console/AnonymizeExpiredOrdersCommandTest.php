@@ -32,7 +32,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
         $now = Clock::get()->now();
         $other = OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create();
         $order = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
-        $this->store($order, $other);
+        $this->store($other, $order);
         $tester = $this->tester();
 
         // When

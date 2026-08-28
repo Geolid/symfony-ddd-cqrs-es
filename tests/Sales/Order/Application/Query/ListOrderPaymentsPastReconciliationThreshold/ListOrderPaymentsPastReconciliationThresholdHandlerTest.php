@@ -20,16 +20,14 @@ final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends Abst
         $stuck = OrderPaymentTestFactory::new()
             ->withRequestedAt($now->modify('-90 minutes'))
             ->create();
-        $this->store(
-            OrderPaymentTestFactory::new()
-                ->withRequestedAt($now->modify('-5 minutes'))
-                ->create(),
-            OrderPaymentTestFactory::new()
-                ->withRequestedAt($now->modify('-90 minutes'))
-                ->authorized()
-                ->create(),
-            $stuck,
-        );
+        $fresh = OrderPaymentTestFactory::new()
+            ->withRequestedAt($now->modify('-5 minutes'))
+            ->create();
+        $authorized = OrderPaymentTestFactory::new()
+            ->withRequestedAt($now->modify('-90 minutes'))
+            ->authorized()
+            ->create();
+        $this->store($fresh, $authorized, $stuck);
 
         // When
         $results = iterator_to_array($this->ask(new ListOrderPaymentsPastReconciliationThreshold()), false);
