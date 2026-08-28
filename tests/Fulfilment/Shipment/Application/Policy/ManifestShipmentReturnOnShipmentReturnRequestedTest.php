@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Policy\ManifestShipmentReturnOnShipmentReturnRequested;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
@@ -74,7 +75,7 @@ final class SpyReturnCarrierGateway implements CarrierGatewayInterface
         return self::RETURN_TRACKING_REFERENCE;
     }
 
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): CarrierGatewayStatus
     {
         throw new \LogicException('Not exercised by this test.');
     }

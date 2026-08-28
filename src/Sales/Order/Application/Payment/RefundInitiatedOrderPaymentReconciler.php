@@ -28,7 +28,7 @@ final readonly class RefundInitiatedOrderPaymentReconciler implements OrderPayme
      */
     public function reconcile(string $id, string $reference): bool
     {
-        if (OrderPaymentStatus::REFUNDED->value !== $this->paymentGateway->checkStatus($reference)) {
+        if (PaymentGatewayStatus::REFUNDED !== $this->paymentGateway->checkStatus($reference)) {
             return false;
         }
 

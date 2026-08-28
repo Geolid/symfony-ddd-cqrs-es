@@ -8,6 +8,7 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
@@ -35,8 +36,8 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         // Given
         $now = Clock::get()->now();
         self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway([
-            'GLBX-STUCK1234' => OrderPaymentStatus::AUTHORIZED->value,
-            'GLBX-REFUND-STUCK' => OrderPaymentStatus::REFUNDED->value,
+            'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED,
+            'GLBX-REFUND-STUCK' => PaymentGatewayStatus::REFUNDED,
         ]));
         $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
@@ -88,7 +89,7 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         // Given
         $now = Clock::get()->now();
         self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(
-            ['GLBX-UNREACHABLE' => OrderPaymentStatus::AUTHORIZED->value, 'GLBX-STUCK1234' => OrderPaymentStatus::AUTHORIZED->value],
+            ['GLBX-UNREACHABLE' => PaymentGatewayStatus::AUTHORIZED, 'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED],
             failingReference: 'GLBX-UNREACHABLE',
         ));
         $this->store(OrderPaymentTestFactory::new()

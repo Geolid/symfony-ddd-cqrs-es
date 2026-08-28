@@ -28,7 +28,7 @@ final readonly class ReturnDispatchedShipmentReconciler implements ShipmentStatu
      */
     public function reconcile(string $id, string $reference): bool
     {
-        if (ShipmentStatus::RETURN_RECEIVED->value !== $this->carrierGateway->checkStatus($reference)) {
+        if (CarrierGatewayStatus::RETURN_RECEIVED !== $this->carrierGateway->checkStatus($reference)) {
             return false;
         }
 

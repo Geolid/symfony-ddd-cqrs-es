@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Support\Doubles;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class StubCarrierGateway implements CarrierGatewayInterface
 {
     /**
-     * @param array<string, string> $statusByReference
+     * @param array<string, CarrierGatewayStatus> $statusByReference
      */
     public function __construct(
         private array $statusByReference,
@@ -28,7 +29,7 @@ final readonly class StubCarrierGateway implements CarrierGatewayInterface
         throw new \LogicException('Not needed by this test.');
     }
 
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): CarrierGatewayStatus
     {
         if ($reference === $this->failingReference) {
             throw new \RuntimeException('Carrier unreachable.');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Infrastructure\Carrier\Acme;
 
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeCarrierGateway;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeClient;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
@@ -148,7 +149,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         $status = $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
 
         // Then
-        self::assertSame('dispatched', $status);
+        self::assertSame(CarrierGatewayStatus::DISPATCHED, $status);
         self::assertSame('https://carrier.acme.test/trackers/ACME-4Q7X2K9', $response->getRequestUrl());
     }
 
@@ -166,6 +167,19 @@ final class AcmeCarrierGatewayTest extends TestCase
     #[DataProvider('provideUnreadableStatusResponses')]
     public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
     {
+        // Then
+        $this->expectException(AcmeClientException::class);
+
+        // When
+        $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
+    }
+
+    #[Test]
+    public function itThrowsWhenStatusUnrecognized(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => 'teleported']);
+
         // Then
         $this->expectException(AcmeClientException::class);
 

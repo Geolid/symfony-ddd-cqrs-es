@@ -6,6 +6,7 @@ namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
@@ -35,10 +36,10 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Given
         $now = Clock::get()->now();
         self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway([
-            'ACME-STUCK9999' => ShipmentStatus::DISPATCHED->value,
-            'ACME-DISPATCHED-STUCK' => ShipmentStatus::DELIVERED->value,
-            'ACME-RETURN-STUCK' => ShipmentStatus::RETURN_DISPATCHED->value,
-            'ACME-RETURN-DISPATCHED-STUCK' => ShipmentStatus::RETURN_RECEIVED->value,
+            'ACME-STUCK9999' => CarrierGatewayStatus::DISPATCHED,
+            'ACME-DISPATCHED-STUCK' => CarrierGatewayStatus::DELIVERED,
+            'ACME-RETURN-STUCK' => CarrierGatewayStatus::RETURN_DISPATCHED,
+            'ACME-RETURN-DISPATCHED-STUCK' => CarrierGatewayStatus::RETURN_RECEIVED,
         ]));
         $order = OrderTestFactory::new()->create();
         $this->store($order);
@@ -119,7 +120,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Given
         $now = Clock::get()->now();
         self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(
-            ['ACME-UNREACHABLE' => ShipmentStatus::DISPATCHED->value, 'ACME-STUCK9999' => ShipmentStatus::DISPATCHED->value],
+            ['ACME-UNREACHABLE' => CarrierGatewayStatus::DISPATCHED, 'ACME-STUCK9999' => CarrierGatewayStatus::DISPATCHED],
             failingReference: 'ACME-UNREACHABLE',
         ));
         $this->store(ShipmentTestFactory::new()

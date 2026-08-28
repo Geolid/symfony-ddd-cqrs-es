@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -93,7 +94,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     /**
      * @throws AcmeClientException
      */
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): CarrierGatewayStatus
     {
         $response = $this->acmeClient->get(self::TRACKER_PATH.'/'.$reference);
 
@@ -103,6 +104,10 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
             throw AcmeClientException::invalidResponse(self::TRACKER_PATH, 'A status response carries a non-empty "status".');
         }
 
-        return $status;
+        try {
+            return CarrierGatewayStatus::from($status);
+        } catch (\ValueError) {
+            throw AcmeClientException::invalidResponse(self::TRACKER_PATH, \sprintf('A status response carries a recognized "status", got "%s".', $status));
+        }
     }
 }

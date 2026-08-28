@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\RefundInitiatedOrderPaymentReconciler;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
@@ -33,7 +34,7 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
         $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-REFD0001')->authorized()->captured()->refundInitiated()->create();
         $this->store($orderPayment);
-        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-REFD0001' => OrderPaymentStatus::REFUNDED->value]), $this->service(CommandBusInterface::class));
+        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-REFD0001' => PaymentGatewayStatus::REFUNDED]), $this->service(CommandBusInterface::class));
 
         // When
         $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-REFD0001');
@@ -51,7 +52,7 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
         $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-PEND0002')->authorized()->captured()->refundInitiated()->create();
         $this->store($orderPayment);
-        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0002' => 'refunding']), $this->service(CommandBusInterface::class));
+        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0002' => PaymentGatewayStatus::REFUNDING]), $this->service(CommandBusInterface::class));
 
         // When
         $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-PEND0002');

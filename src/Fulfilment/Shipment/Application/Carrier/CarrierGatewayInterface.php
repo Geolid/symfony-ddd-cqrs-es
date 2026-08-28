@@ -18,8 +18,5 @@ interface CarrierGatewayInterface
      */
     public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string;
 
-    /**
-     * @return string the carrier's own current status for this tracking reference
-     */
-    public function checkStatus(string $reference): string;
+    public function checkStatus(string $reference): CarrierGatewayStatus;
 }
