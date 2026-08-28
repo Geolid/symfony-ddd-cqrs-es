@@ -12,7 +12,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class OrderPaymentRepositoryTest extends AbstractIntegrationTestCase
+final class EventSourcingOrderPaymentRepositoryTest extends AbstractIntegrationTestCase
 {
     private OrderPaymentRepositoryInterface $repository;
 

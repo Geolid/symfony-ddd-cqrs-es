@@ -11,7 +11,7 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
-final class OrderRepositoryTest extends AbstractIntegrationTestCase
+final class EventSourcingOrderRepositoryTest extends AbstractIntegrationTestCase
 {
     private OrderRepositoryInterface $repository;
 

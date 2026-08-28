@@ -11,7 +11,7 @@ use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
-final class ProductRepositoryTest extends AbstractIntegrationTestCase
+final class EventSourcingProductRepositoryTest extends AbstractIntegrationTestCase
 {
     private ProductRepositoryInterface $repository;
 

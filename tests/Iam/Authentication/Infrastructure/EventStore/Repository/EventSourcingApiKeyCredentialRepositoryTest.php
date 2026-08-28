@@ -12,7 +12,7 @@ use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
-final class ApiKeyCredentialRepositoryTest extends AbstractIntegrationTestCase
+final class EventSourcingApiKeyCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private ApiKeyCredentialRepositoryInterface $repository;
 
