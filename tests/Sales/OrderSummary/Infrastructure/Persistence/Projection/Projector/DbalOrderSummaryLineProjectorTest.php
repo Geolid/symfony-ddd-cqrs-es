@@ -21,7 +21,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsEachLineOnOrderPlaced(): void
+    public function itProjectsOnOrderPlaced(): void
     {
         // When
         $order = OrderTestFactory::new()->withLines([

@@ -10,6 +10,6 @@ final class ShipmentNotFoundException extends AggregateNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Shipment with ID "%s" not found.', $id));
+        return new self(\sprintf('Shipment "%s" not found.', $id));
     }
 }

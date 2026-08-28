@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Customer\Domain\Repository;
 
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\Exception\CustomerAlreadyExistsException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 
@@ -17,5 +18,8 @@ interface CustomerRepositoryInterface
      */
     public function load(CustomerId $id): Customer;
 
+    /**
+     * @throws CustomerAlreadyExistsException
+     */
     public function save(Customer $customer): void;
 }

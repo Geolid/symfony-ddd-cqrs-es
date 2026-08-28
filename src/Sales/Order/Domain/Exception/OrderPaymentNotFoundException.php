@@ -10,6 +10,6 @@ final class OrderPaymentNotFoundException extends AggregateNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('OrderPayment with ID "%s" not found.', $id));
+        return new self(\sprintf('OrderPayment "%s" not found.', $id));
     }
 }

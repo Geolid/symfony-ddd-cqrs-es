@@ -82,16 +82,6 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Then
-        $this->expectException(OrderNotFoundException::class);
-
-        // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');
-    }
-
-    #[Test]
     public function itReturnsExistingWhenAlreadyRequested(): void
     {
         // Given
@@ -104,6 +94,16 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame('https://fake-checkout.test/?ref=existing', $checkoutUrl);
         self::assertNull($this->paymentGateway->orderId);
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Then
+        $this->expectException(OrderNotFoundException::class);
+
+        // When
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'https://web.test/sales/orders');
     }
 
     #[Test]

@@ -50,6 +50,19 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
+        // When
+        $this->dispatch(new ApproveShipmentReturn($id));
+    }
+
+    #[Test]
     public function itFailsWhenNotReceived(): void
     {
         // Given
@@ -61,18 +74,5 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ApproveShipmentReturn($shipment->id->toString()));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
-
-        // When
-        $this->dispatch(new ApproveShipmentReturn($id));
     }
 }

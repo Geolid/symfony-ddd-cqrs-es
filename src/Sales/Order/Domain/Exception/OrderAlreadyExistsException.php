@@ -6,10 +6,10 @@ namespace Sales\Order\Domain\Exception;
 
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 
-final class OrderPaymentAlreadyExistsException extends AggregateAlreadyExistsException
+final class OrderAlreadyExistsException extends AggregateAlreadyExistsException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('OrderPayment "%s" already exists.', $id));
+        return new self(\sprintf('Order "%s" already exists.', $id));
     }
 }

@@ -61,6 +61,19 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = OrderId::generate()->toString();
+
+        // Then
+        $this->expectException(OrderNotFoundException::class);
+
+        // When
+        $this->dispatch(new RequestOrderReturn($id, Uuid::uuid7()->toString()));
+    }
+
+    #[Test]
     public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
@@ -107,18 +120,5 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RequestOrderReturn($order->id->toString(), $customerId));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = OrderId::generate()->toString();
-
-        // Then
-        $this->expectException(OrderNotFoundException::class);
-
-        // When
-        $this->dispatch(new RequestOrderReturn($id, Uuid::uuid7()->toString()));
     }
 }

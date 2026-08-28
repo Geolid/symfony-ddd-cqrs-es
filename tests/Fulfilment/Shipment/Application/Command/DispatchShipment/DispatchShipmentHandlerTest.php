@@ -51,6 +51,19 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
+        // When
+        $this->dispatch(new DispatchShipment($id));
+    }
+
+    #[Test]
     public function itFailsWhenNotManifested(): void
     {
         // Given
@@ -62,18 +75,5 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
-
-        // When
-        $this->dispatch(new DispatchShipment($id));
     }
 }

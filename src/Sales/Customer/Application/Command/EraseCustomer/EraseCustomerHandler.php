@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Customer\Application\Command\EraseCustomer;
 
 use Psr\Clock\ClockInterface;
+use Sales\Customer\Domain\Exception\CustomerAlreadyExistsException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
@@ -25,6 +26,7 @@ final readonly class EraseCustomerHandler
 
     /**
      * @throws CustomerNotFoundException
+     * @throws CustomerAlreadyExistsException
      */
     public function __invoke(EraseCustomer $command): void
     {

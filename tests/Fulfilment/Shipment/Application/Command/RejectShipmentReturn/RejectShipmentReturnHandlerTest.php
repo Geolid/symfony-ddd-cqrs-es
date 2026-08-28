@@ -50,6 +50,19 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
+        // When
+        $this->dispatch(new RejectShipmentReturn($id, 'item damaged beyond resale'));
+    }
+
+    #[Test]
     public function itFailsWhenNotReceived(): void
     {
         // Given
@@ -61,18 +74,5 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
-
-        // When
-        $this->dispatch(new RejectShipmentReturn($id, 'item damaged beyond resale'));
     }
 }

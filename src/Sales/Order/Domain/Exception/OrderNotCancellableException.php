@@ -10,6 +10,6 @@ final class OrderNotCancellableException extends \DomainException
 {
     public static function forId(OrderId $id): self
     {
-        return new self(\sprintf('Order with ID "%s" can no longer be cancelled.', $id->toString()));
+        return new self(\sprintf('Order "%s" can no longer be cancelled.', $id->toString()));
     }
 }

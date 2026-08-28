@@ -10,6 +10,6 @@ final class OrderNotCompletableException extends \DomainException
 {
     public static function forId(OrderId $id): self
     {
-        return new self(\sprintf('Order with ID "%s" is not eligible for completion.', $id->toString()));
+        return new self(\sprintf('Order "%s" is not eligible for completion.', $id->toString()));
     }
 }

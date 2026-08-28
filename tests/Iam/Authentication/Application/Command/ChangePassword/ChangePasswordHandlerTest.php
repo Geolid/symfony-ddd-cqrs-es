@@ -42,20 +42,6 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-
-        // Then
-        $this->expectException(PasswordCredentialNotFoundException::class);
-
-        // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
-    }
-
-    #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
@@ -70,6 +56,20 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
+
+        // When
+        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+
+        // Then
+        $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
         $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));

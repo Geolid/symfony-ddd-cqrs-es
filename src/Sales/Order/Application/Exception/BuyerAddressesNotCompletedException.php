@@ -11,7 +11,7 @@ final class BuyerAddressesNotCompletedException extends \RuntimeException implem
     public static function forId(string $customerId): self
     {
         return new self(
-            message: \sprintf('Buyer with ID "%s" has not completed their shipping and billing addresses yet.', $customerId),
+            message: \sprintf('Buyer "%s" has not completed their shipping and billing addresses yet.', $customerId),
         );
     }
 }

@@ -10,6 +10,6 @@ final class ShipmentAlreadyExistsException extends AggregateAlreadyExistsExcepti
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Shipment with ID "%s" already exists.', $id));
+        return new self(\sprintf('Shipment "%s" already exists.', $id));
     }
 }

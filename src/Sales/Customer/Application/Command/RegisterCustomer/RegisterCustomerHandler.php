@@ -7,6 +7,7 @@ namespace Sales\Customer\Application\Command\RegisterCustomer;
 use Psr\Clock\ClockInterface;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\Exception\CustomerAlreadyExistsException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
@@ -28,6 +29,7 @@ final readonly class RegisterCustomerHandler
 
     /**
      * @throws CustomerEmailAlreadyRegisteredException
+     * @throws CustomerAlreadyExistsException
      */
     public function __invoke(RegisterCustomer $command): void
     {

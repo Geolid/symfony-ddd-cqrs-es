@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Product\Application\Command\ListProductForSale;
 
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
+use Catalog\Product\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
@@ -29,6 +30,7 @@ final readonly class ListProductForSaleHandler
 
     /**
      * @throws ProductLabelAlreadyTakenException
+     * @throws ProductAlreadyExistsException
      */
     public function __invoke(ListProductForSale $command): void
     {

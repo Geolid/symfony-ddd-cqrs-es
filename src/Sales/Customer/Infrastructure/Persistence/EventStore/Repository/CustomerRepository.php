@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Sales\Customer\Infrastructure\Persistence\EventStore\Repository;
 
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\Exception\CustomerAlreadyExistsException;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
@@ -39,6 +41,10 @@ final readonly class CustomerRepository implements CustomerRepositoryInterface
 
     public function save(Customer $customer): void
     {
-        $this->repository->save($customer);
+        try {
+            $this->repository->save($customer);
+        } catch (AggregateAlreadyExists) {
+            throw CustomerAlreadyExistsException::forId($customer->id->toString());
+        }
     }
 }
