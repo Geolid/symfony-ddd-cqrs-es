@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Support\Doubles;
 
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class StubPaymentGateway implements PaymentGatewayInterface
 {
     /**
-     * @param array<string, string> $statusByReference
+     * @param array<string, PaymentGatewayStatus> $statusByReference
      */
     public function __construct(
         private array $statusByReference,
@@ -34,7 +35,7 @@ final readonly class StubPaymentGateway implements PaymentGatewayInterface
         throw new \LogicException('Not needed by this test.');
     }
 
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): PaymentGatewayStatus
     {
         if ($reference === $this->failingReference) {
             throw new \RuntimeException('Provider unreachable.');

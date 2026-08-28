@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Payment\Globex;
 
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -69,7 +70,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws GlobexClientException
      */
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): PaymentGatewayStatus
     {
         $response = $this->globexClient->get(self::CHARGES_PATH.'/'.$reference);
 
@@ -79,6 +80,10 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
             throw GlobexClientException::invalidResponse(self::CHARGES_PATH, 'A status response carries a non-empty "status".');
         }
 
-        return $status;
+        try {
+            return PaymentGatewayStatus::from($status);
+        } catch (\ValueError) {
+            throw GlobexClientException::invalidResponse(self::CHARGES_PATH, \sprintf('A status response carries a recognized "status", got "%s".', $status));
+        }
     }
 }

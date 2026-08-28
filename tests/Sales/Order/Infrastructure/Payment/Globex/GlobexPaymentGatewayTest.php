@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexClient;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexPaymentGateway;
@@ -165,7 +166,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $status = $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame('authorized', $status);
+        self::assertSame(PaymentGatewayStatus::AUTHORIZED, $status);
         self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $response->getRequestUrl());
     }
 
@@ -183,6 +184,19 @@ final class GlobexPaymentGatewayTest extends TestCase
     #[DataProvider('provideUnreadableStatusResponses')]
     public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
     {
+        // Then
+        $this->expectException(GlobexClientException::class);
+
+        // When
+        $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');
+    }
+
+    #[Test]
+    public function itThrowsWhenStatusUnrecognized(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'teleported']);
+
         // Then
         $this->expectException(GlobexClientException::class);
 

@@ -30,8 +30,8 @@ final readonly class RequestedOrderPaymentReconciler implements OrderPaymentStat
     public function reconcile(string $id, string $reference): bool
     {
         return match ($this->paymentGateway->checkStatus($reference)) {
-            OrderPaymentStatus::AUTHORIZED->value => $this->authorize($id),
-            OrderPaymentStatus::FAILED->value => $this->fail($id),
+            PaymentGatewayStatus::AUTHORIZED => $this->authorize($id),
+            PaymentGatewayStatus::DECLINED => $this->fail($id),
             default => false,
         };
     }

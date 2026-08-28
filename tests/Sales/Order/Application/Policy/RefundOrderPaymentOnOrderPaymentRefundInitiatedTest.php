@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Application\Policy;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Policy\RefundOrderPaymentOnOrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
@@ -62,7 +63,7 @@ final class SpyRefundingPaymentGateway implements PaymentGatewayInterface
         $this->refundedReference = $reference;
     }
 
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): PaymentGatewayStatus
     {
         throw new \LogicException('Not needed by this test.');
     }

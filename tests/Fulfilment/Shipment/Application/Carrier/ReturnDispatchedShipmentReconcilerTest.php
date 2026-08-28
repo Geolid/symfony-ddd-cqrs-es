@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Carrier;
 
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Carrier\ReturnDispatchedShipmentReconciler;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
@@ -39,7 +40,7 @@ final class ReturnDispatchedShipmentReconcilerTest extends AbstractIntegrationTe
             ->returnDispatched()
             ->create();
         $this->store($shipment);
-        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => ShipmentStatus::RETURN_RECEIVED->value]), $this->service(CommandBusInterface::class));
+        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => CarrierGatewayStatus::RETURN_RECEIVED]), $this->service(CommandBusInterface::class));
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $returnTrackingReference);
@@ -64,7 +65,7 @@ final class ReturnDispatchedShipmentReconcilerTest extends AbstractIntegrationTe
             ->returnDispatched()
             ->create();
         $this->store($shipment);
-        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => ShipmentStatus::RETURN_DISPATCHED->value]), $this->service(CommandBusInterface::class));
+        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => CarrierGatewayStatus::RETURN_DISPATCHED]), $this->service(CommandBusInterface::class));
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $returnTrackingReference);

@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
@@ -152,7 +153,7 @@ final class SpyPaymentGateway implements PaymentGatewayInterface
     {
     }
 
-    public function checkStatus(string $reference): string
+    public function checkStatus(string $reference): PaymentGatewayStatus
     {
         throw new \LogicException('Not needed by this test.');
     }
