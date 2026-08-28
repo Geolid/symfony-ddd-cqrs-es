@@ -12,7 +12,7 @@ final readonly class ProductDelistedIntegrationEvent implements IntegrationEvent
 {
     public function __construct(
         public string $productId,
-        public string $delistedAt,
+        public \DateTimeImmutable $delistedAt,
     ) {
     }
 }

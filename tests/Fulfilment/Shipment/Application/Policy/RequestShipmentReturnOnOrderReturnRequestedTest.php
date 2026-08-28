@@ -33,7 +33,7 @@ final class RequestShipmentReturnOnOrderReturnRequestedTest extends AbstractInte
         $this->store($shipment);
 
         // When
-        ($this->policy)(new OrderReturnRequestedIntegrationEvent($orderId, '2026-01-10T00:00:00+00:00'));
+        ($this->policy)(new OrderReturnRequestedIntegrationEvent($orderId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00')));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);

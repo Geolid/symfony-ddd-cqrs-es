@@ -12,7 +12,7 @@ final readonly class ProductRepriced
     public function __construct(
         public string $id,
         public int $unitAmountInCents,
-        public string $repricedAt,
+        public \DateTimeImmutable $repricedAt,
     ) {
     }
 }

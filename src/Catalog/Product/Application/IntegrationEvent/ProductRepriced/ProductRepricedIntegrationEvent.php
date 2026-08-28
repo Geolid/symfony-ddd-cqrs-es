@@ -13,7 +13,7 @@ final readonly class ProductRepricedIntegrationEvent implements IntegrationEvent
     public function __construct(
         public string $productId,
         public int $unitAmountInCents,
-        public string $repricedAt,
+        public \DateTimeImmutable $repricedAt,
     ) {
     }
 }

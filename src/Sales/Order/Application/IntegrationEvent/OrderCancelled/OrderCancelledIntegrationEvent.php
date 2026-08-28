@@ -12,7 +12,7 @@ final readonly class OrderCancelledIntegrationEvent implements IntegrationEventI
 {
     public function __construct(
         public string $orderId,
-        public string $cancelledAt,
+        public \DateTimeImmutable $cancelledAt,
     ) {
     }
 }

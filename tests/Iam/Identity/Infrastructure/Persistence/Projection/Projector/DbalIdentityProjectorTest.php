@@ -11,6 +11,7 @@ use Iam\Identity\Infrastructure\Persistence\Projection\Projector\DbalIdentityPro
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null}
@@ -21,7 +22,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityRegistered(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->withRegisteredAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
+        $now = Clock::get()->now();
+        $identity = IdentityTestFactory::new()->withRegisteredAt($now)->create();
 
         // When
         $this->store($identity);
@@ -31,7 +33,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
         self::assertNull($row['reason']);
-        self::assertSame('2026-01-01 00:00:00', $row['registered_at']);
+        self::assertSame($now->format('Y-m-d H:i:s'), $row['registered_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
     }
@@ -40,12 +42,14 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given
+        $now = Clock::get()->now();
+        $suspendedAt = $now->modify('+1 day');
         $other = IdentityTestFactory::new()->create();
         $identity = IdentityTestFactory::new()->create();
         $this->store($other, $identity);
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt);
         $this->store($identity);
 
         // Then
@@ -53,7 +57,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
         self::assertSame('Suspected fraudulent activity', $row['reason']);
-        self::assertSame('2026-01-02 00:00:00', $row['suspended_at']);
+        self::assertSame($suspendedAt->format('Y-m-d H:i:s'), $row['suspended_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -66,12 +70,14 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivated(): void
     {
         // Given
+        $now = Clock::get()->now();
+        $reactivatedAt = $now->modify('+1 day');
         $other = IdentityTestFactory::new()->suspended()->create();
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($other, $identity);
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00'));
+        $identity->reactivate(Reason::fromString('Appeal upheld'), $reactivatedAt);
         $this->store($identity);
 
         // Then
@@ -79,7 +85,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
         self::assertSame('Appeal upheld', $row['reason']);
-        self::assertSame('2026-01-03 00:00:00', $row['reactivated_at']);
+        self::assertSame($reactivatedAt->format('Y-m-d H:i:s'), $row['reactivated_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -97,7 +103,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $identity);
 
         // When
-        $identity->erase(new \DateTimeImmutable('now +00:00'));
+        $identity->erase(Clock::get()->now());
         $this->store($identity);
 
         // Then

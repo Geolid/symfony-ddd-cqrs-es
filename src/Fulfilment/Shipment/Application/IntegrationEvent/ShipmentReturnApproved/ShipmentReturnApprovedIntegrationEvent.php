@@ -13,7 +13,7 @@ final readonly class ShipmentReturnApprovedIntegrationEvent implements Integrati
     public function __construct(
         public string $shipmentId,
         public string $orderId,
-        public string $approvedAt,
+        public \DateTimeImmutable $approvedAt,
     ) {
     }
 }

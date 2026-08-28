@@ -29,7 +29,7 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
             'countryCode' => 'ZZ',
         ]))]
         public array $shippingAddress,
-        public string $confirmedAt,
+        public \DateTimeImmutable $confirmedAt,
     ) {
     }
 }

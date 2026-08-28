@@ -31,7 +31,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'status' => IdentityState::ACTIVE->value,
-                'registered_at' => new \DateTimeImmutable($event->registeredAt),
+                'registered_at' => $event->registeredAt,
             ],
             ['registered_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -45,7 +45,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             [
                 'status' => IdentityState::SUSPENDED->value,
                 'reason' => $event->reason,
-                'suspended_at' => new \DateTimeImmutable($event->suspendedAt),
+                'suspended_at' => $event->suspendedAt,
             ],
             ['id' => $event->id],
             ['suspended_at' => Types::DATETIME_IMMUTABLE],
@@ -60,7 +60,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             [
                 'status' => IdentityState::ACTIVE->value,
                 'reason' => $event->reason,
-                'reactivated_at' => new \DateTimeImmutable($event->reactivatedAt),
+                'reactivated_at' => $event->reactivatedAt,
             ],
             ['id' => $event->id],
             ['reactivated_at' => Types::DATETIME_IMMUTABLE],

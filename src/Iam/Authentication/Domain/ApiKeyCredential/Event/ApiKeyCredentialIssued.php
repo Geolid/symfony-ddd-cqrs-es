@@ -20,7 +20,7 @@ final readonly class ApiKeyCredentialIssued
         public string $label,
         public string $keyId,
         public string $secretHash,
-        public string $issuedAt,
+        public \DateTimeImmutable $issuedAt,
     ) {
     }
 }

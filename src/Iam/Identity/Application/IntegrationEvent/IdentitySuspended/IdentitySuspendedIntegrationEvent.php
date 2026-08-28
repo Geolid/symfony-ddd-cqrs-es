@@ -12,7 +12,7 @@ final readonly class IdentitySuspendedIntegrationEvent implements IntegrationEve
 {
     public function __construct(
         public string $identityId,
-        public string $suspendedAt,
+        public \DateTimeImmutable $suspendedAt,
     ) {
     }
 }

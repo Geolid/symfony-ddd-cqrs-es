@@ -12,7 +12,7 @@ final readonly class IdentityErased implements DataSubjectErasureInterface
 {
     public function __construct(
         public string $id,
-        public string $erasedAt,
+        public \DateTimeImmutable $erasedAt,
     ) {
     }
 

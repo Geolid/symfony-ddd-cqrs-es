@@ -12,7 +12,7 @@ final readonly class PasswordCredentialChanged
     public function __construct(
         public string $id,
         public string $passwordHash,
-        public string $changedAt,
+        public \DateTimeImmutable $changedAt,
     ) {
     }
 }

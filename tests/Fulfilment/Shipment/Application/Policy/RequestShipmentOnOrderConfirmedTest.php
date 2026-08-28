@@ -90,7 +90,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
             orderId: $order->id->toString(),
             customerId: Uuid::uuid7()->toString(),
             shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            confirmedAt: '2026-01-01T00:00:00+00:00',
+            confirmedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
         );
     }
 

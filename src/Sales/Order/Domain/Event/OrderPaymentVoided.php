@@ -13,7 +13,7 @@ final readonly class OrderPaymentVoided
         public string $id,
         public string $orderId,
         public string $reference,
-        public string $voidedAt,
+        public \DateTimeImmutable $voidedAt,
     ) {
     }
 }

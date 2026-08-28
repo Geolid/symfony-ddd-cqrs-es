@@ -17,7 +17,7 @@ final readonly class IdentitySuspended
         public string $id,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased'))]
         public string $reason,
-        public string $suspendedAt,
+        public \DateTimeImmutable $suspendedAt,
     ) {
     }
 }

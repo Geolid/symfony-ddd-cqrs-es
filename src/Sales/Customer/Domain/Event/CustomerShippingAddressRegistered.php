@@ -27,7 +27,7 @@ final readonly class CustomerShippingAddressRegistered
             'countryCode' => 'ZZ',
         ]))]
         public array $address,
-        public string $setAt,
+        public \DateTimeImmutable $setAt,
     ) {
     }
 }

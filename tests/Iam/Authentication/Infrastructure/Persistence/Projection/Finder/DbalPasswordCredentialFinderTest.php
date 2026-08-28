@@ -45,8 +45,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame('ada.lovelace', $result->login);
         self::assertSame($hasher->hash('original-password'), $result->passwordHash);
-        self::assertSame('2026-01-01T00:00:00+00:00', $result->definedAt->format('c'));
-        self::assertSame('2026-01-01T00:00:00+00:00', $result->passwordChangedAt->format('c'));
+        self::assertSame('2026-01-01T00:00:00+00:00', $result->definedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame('2026-01-01T00:00:00+00:00', $result->passwordChangedAt->format(\DateTimeImmutable::ATOM));
         self::assertTrue($result->identityAuthenticatable);
     }
 

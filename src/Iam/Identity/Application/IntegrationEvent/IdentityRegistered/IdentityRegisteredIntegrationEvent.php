@@ -12,7 +12,7 @@ final readonly class IdentityRegisteredIntegrationEvent implements IntegrationEv
 {
     public function __construct(
         public string $identityId,
-        public string $registeredAt,
+        public \DateTimeImmutable $registeredAt,
     ) {
     }
 }

@@ -36,7 +36,7 @@ final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegration
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
 
         // When
-        ($this->policy)(new OrderPaymentVoided(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new OrderPaymentVoided(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::assertSame($reference, $this->paymentGateway->voidedReference);

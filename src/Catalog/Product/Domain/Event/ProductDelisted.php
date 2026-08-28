@@ -11,7 +11,7 @@ final readonly class ProductDelisted
 {
     public function __construct(
         public string $id,
-        public string $delistedAt,
+        public \DateTimeImmutable $delistedAt,
     ) {
     }
 }

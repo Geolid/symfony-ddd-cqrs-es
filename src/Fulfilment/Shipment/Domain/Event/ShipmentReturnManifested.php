@@ -12,7 +12,7 @@ final readonly class ShipmentReturnManifested
     public function __construct(
         public string $id,
         public string $returnTrackingReference,
-        public string $manifestedAt,
+        public \DateTimeImmutable $manifestedAt,
     ) {
     }
 }

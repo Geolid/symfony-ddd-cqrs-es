@@ -12,7 +12,7 @@ final readonly class IdentityErasedIntegrationEvent implements IntegrationEventI
 {
     public function __construct(
         public string $identityId,
-        public string $erasedAt,
+        public \DateTimeImmutable $erasedAt,
     ) {
     }
 }

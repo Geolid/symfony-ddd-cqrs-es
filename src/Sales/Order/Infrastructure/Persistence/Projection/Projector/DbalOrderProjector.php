@@ -38,7 +38,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'customer_id' => $event->customerId,
                 'total_amount_in_cents' => $event->totalAmountInCents,
                 'status' => OrderStatus::PLACED->value,
-                'placed_at' => new \DateTimeImmutable($event->placedAt),
+                'placed_at' => $event->placedAt,
             ],
             ['placed_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -51,8 +51,8 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
-                'closed_at' => new \DateTimeImmutable($event->cancelledAt),
+                'cancelled_at' => $event->cancelledAt,
+                'closed_at' => $event->cancelledAt,
             ],
             ['id' => $event->id],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
@@ -66,7 +66,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::CONFIRMED->value,
-                'confirmed_at' => new \DateTimeImmutable($event->confirmedAt),
+                'confirmed_at' => $event->confirmedAt,
             ],
             ['id' => $event->id],
             ['confirmed_at' => Types::DATETIME_IMMUTABLE],
@@ -80,7 +80,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::DISPATCHED->value,
-                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
+                'dispatched_at' => $event->dispatchedAt,
             ],
             ['id' => $event->id],
             ['dispatched_at' => Types::DATETIME_IMMUTABLE],
@@ -94,7 +94,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::DELIVERED->value,
-                'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
+                'delivered_at' => $event->deliveredAt,
             ],
             ['id' => $event->id],
             ['delivered_at' => Types::DATETIME_IMMUTABLE],
@@ -108,8 +108,8 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::COMPLETED->value,
-                'completed_at' => new \DateTimeImmutable($event->completedAt),
-                'closed_at' => new \DateTimeImmutable($event->completedAt),
+                'completed_at' => $event->completedAt,
+                'closed_at' => $event->completedAt,
             ],
             ['id' => $event->id],
             ['completed_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
@@ -123,7 +123,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURN_REQUESTED->value,
-                'return_requested_at' => new \DateTimeImmutable($event->requestedAt),
+                'return_requested_at' => $event->requestedAt,
             ],
             ['id' => $event->id],
             ['return_requested_at' => Types::DATETIME_IMMUTABLE],
@@ -137,8 +137,8 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURNED->value,
-                'returned_at' => new \DateTimeImmutable($event->returnedAt),
-                'closed_at' => new \DateTimeImmutable($event->returnedAt),
+                'returned_at' => $event->returnedAt,
+                'closed_at' => $event->returnedAt,
             ],
             ['id' => $event->id],
             ['returned_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
@@ -152,9 +152,9 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderStatus::RETURN_REJECTED->value,
-                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt),
+                'return_rejected_at' => $event->rejectedAt,
                 'return_rejection_reason' => $event->reason,
-                'closed_at' => new \DateTimeImmutable($event->rejectedAt),
+                'closed_at' => $event->rejectedAt,
             ],
             ['id' => $event->id],
             ['return_rejected_at' => Types::DATETIME_IMMUTABLE, 'closed_at' => Types::DATETIME_IMMUTABLE],
@@ -166,7 +166,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['anonymized_at' => new \DateTimeImmutable($event->anonymizedAt)],
+            ['anonymized_at' => $event->anonymizedAt],
             ['id' => $event->id],
             ['anonymized_at' => Types::DATETIME_IMMUTABLE],
         );

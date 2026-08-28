@@ -15,7 +15,7 @@ final readonly class OrderPaymentRequested
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,
-        public string $requestedAt,
+        public \DateTimeImmutable $requestedAt,
     ) {
     }
 }

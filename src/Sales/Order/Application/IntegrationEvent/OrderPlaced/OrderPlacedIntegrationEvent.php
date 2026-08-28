@@ -18,7 +18,7 @@ final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInte
         public string $customerId,
         public array $lines,
         public int $totalAmountInCents,
-        public string $placedAt,
+        public \DateTimeImmutable $placedAt,
     ) {
     }
 }

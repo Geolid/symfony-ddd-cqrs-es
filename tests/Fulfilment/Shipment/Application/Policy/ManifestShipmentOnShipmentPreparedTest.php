@@ -44,7 +44,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
         $this->store($shipment);
 
         // When
-        ($this->policy)(new ShipmentPrepared($shipment->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ShipmentPrepared($shipment->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::assertNotNull($this->carrier->deliveryAddress);

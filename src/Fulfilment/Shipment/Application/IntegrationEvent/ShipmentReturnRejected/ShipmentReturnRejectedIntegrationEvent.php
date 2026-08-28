@@ -14,7 +14,7 @@ final readonly class ShipmentReturnRejectedIntegrationEvent implements Integrati
         public string $shipmentId,
         public string $orderId,
         public string $reason,
-        public string $rejectedAt,
+        public \DateTimeImmutable $rejectedAt,
     ) {
     }
 }

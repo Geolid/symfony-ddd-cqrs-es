@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Support\Factory;
 
-use Faker\Factory as Faker;
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Tools\PHPUnit\Faker\SeededFaker;
 use Webmozart\Assert\Assert;
 
 /**
@@ -18,9 +18,6 @@ abstract class AbstractAggregateTestFactory
 {
     /** @var list<callable(T): void> */
     private array $modifiers = [];
-
-    /** @var array<string, Generator> */
-    private static array $fakers = [];
 
     /**
      * @param array<string, mixed> $attributes
@@ -90,9 +87,9 @@ abstract class AbstractAggregateTestFactory
         return $clone;
     }
 
-    protected static function faker(string $locale = Faker::DEFAULT_LOCALE): Generator
+    protected static function faker(): Generator
     {
-        return self::$fakers[$locale] ??= Faker::create($locale);
+        return SeededFaker::get();
     }
 
     /**

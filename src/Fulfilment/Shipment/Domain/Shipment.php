@@ -84,7 +84,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 'city' => $shippingAddress->address->city,
                 'countryCode' => $shippingAddress->address->countryCode->value,
             ],
-            createdAt: $createdAt->format(\DateTimeInterface::ATOM),
+            createdAt: $createdAt,
         ));
 
         return $self;
@@ -98,7 +98,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentPrepared(
             id: $this->id->toString(),
-            preparedAt: $preparedAt->format(\DateTimeInterface::ATOM),
+            preparedAt: $preparedAt,
         ));
     }
 
@@ -112,7 +112,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new ShipmentCancellationRejected(
                 id: $this->id->toString(),
                 status: $this->state->value,
-                rejectedAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+                rejectedAt: $cancelledAt,
             ));
 
             return;
@@ -120,7 +120,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentCancelled(
             id: $this->id->toString(),
-            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            cancelledAt: $cancelledAt,
         ));
     }
 
@@ -147,7 +147,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new ShipmentManifested(
             id: $this->id->toString(),
             trackingReference: $trackingReference->value,
-            manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
+            manifestedAt: $manifestedAt,
         ));
     }
 
@@ -166,7 +166,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentDispatched(
             id: $this->id->toString(),
-            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
+            dispatchedAt: $dispatchedAt,
         ));
     }
 
@@ -186,7 +186,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentDelivered(
             id: $this->id->toString(),
-            deliveredAt: $deliveredAt->format(\DateTimeInterface::ATOM),
+            deliveredAt: $deliveredAt,
         ));
     }
 
@@ -198,7 +198,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentReturnRequested(
             id: $this->id->toString(),
-            requestedAt: $requestedAt->format(\DateTimeInterface::ATOM),
+            requestedAt: $requestedAt,
         ));
     }
 
@@ -225,7 +225,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new ShipmentReturnManifested(
             id: $this->id->toString(),
             returnTrackingReference: $returnTrackingReference->value,
-            manifestedAt: $manifestedAt->format(\DateTimeInterface::ATOM),
+            manifestedAt: $manifestedAt,
         ));
     }
 
@@ -244,7 +244,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentReturnDispatched(
             id: $this->id->toString(),
-            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
+            dispatchedAt: $dispatchedAt,
         ));
     }
 
@@ -264,7 +264,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentReturnReceived(
             id: $this->id->toString(),
-            receivedAt: $receivedAt->format(\DateTimeInterface::ATOM),
+            receivedAt: $receivedAt,
         ));
     }
 
@@ -283,7 +283,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentReturnApproved(
             id: $this->id->toString(),
-            approvedAt: $approvedAt->format(\DateTimeInterface::ATOM),
+            approvedAt: $approvedAt,
         ));
     }
 
@@ -303,7 +303,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new ShipmentReturnRejected(
             id: $this->id->toString(),
             reason: $reason,
-            rejectedAt: $rejectedAt->format(\DateTimeInterface::ATOM),
+            rejectedAt: $rejectedAt,
         ));
     }
 

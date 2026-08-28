@@ -27,7 +27,7 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'email' => $event->email,
-                'registered_at' => new \DateTimeImmutable($event->registeredAt),
+                'registered_at' => $event->registeredAt,
             ],
             ['registered_at' => Types::DATETIME_IMMUTABLE],
         );

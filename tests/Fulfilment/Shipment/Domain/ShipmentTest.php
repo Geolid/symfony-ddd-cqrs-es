@@ -57,7 +57,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
             ->when(static fn (Shipment $shipment) => $shipment->prepare($preparedAt))
-            ->then(new ShipmentPrepared($id, $preparedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentPrepared($id, $preparedAt));
     }
 
     #[Test]
@@ -70,7 +70,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentPrepared($id, $preparedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentPrepared($id, $preparedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->prepare(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -86,7 +86,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt))
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancelled($id, $cancelledAt));
     }
 
     #[Test]
@@ -100,10 +100,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentPrepared($id, $preparedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentPrepared($id, $preparedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancelled($id, $cancelledAt));
     }
 
     #[Test]
@@ -117,10 +117,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::MANIFESTED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::MANIFESTED->value, $cancelledAt));
     }
 
     #[Test]
@@ -134,10 +134,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::DISPATCHED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DISPATCHED->value, $cancelledAt));
     }
 
     #[Test]
@@ -150,7 +150,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentCancelled($id, $cancelledAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentCancelled($id, $cancelledAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -168,11 +168,11 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED->value, $cancelledAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED->value, $cancelledAt));
     }
 
     #[Test]
@@ -186,10 +186,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentPrepared($id, $preparedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentPrepared($id, $preparedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), $manifestedAt))
-            ->then(new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt));
     }
 
     #[Test]
@@ -214,7 +214,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-4Q7X2K9'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();
@@ -230,7 +230,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString('ACME-OTHER'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->expectsException(ShipmentAlreadyTrackedException::class);
@@ -247,10 +247,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt))
-            ->then(new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentDispatched($id, $dispatchedAt));
     }
 
     #[Test]
@@ -264,8 +264,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
+                new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->dispatch(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
             ->then();
@@ -294,10 +294,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->deliver($deliveredAt))
-            ->then(new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentDelivered($id, $deliveredAt));
     }
 
     #[Test]
@@ -311,10 +311,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->deliver($deliveredAt))
-            ->then(new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentDelivered($id, $deliveredAt));
     }
 
     #[Test]
@@ -328,8 +328,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->deliver(new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
             ->then();
@@ -359,11 +359,11 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt))
-            ->then(new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnRequested($id, $requestedAt));
     }
 
     #[Test]
@@ -391,12 +391,12 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), $manifestedAt))
-            ->then(new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt));
     }
 
     #[Test]
@@ -410,8 +410,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
@@ -430,10 +430,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-1'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
             ->then();
@@ -452,10 +452,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString('ACME-RETURN-OTHER'), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
             ->expectsException(ShipmentAlreadyTrackedException::class);
@@ -475,13 +475,13 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn($returnDispatchedAt))
-            ->then(new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnDispatched($id, $returnDispatchedAt));
     }
 
     #[Test]
@@ -495,8 +495,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->dispatchReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
@@ -530,14 +530,14 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
+                new ShipmentReturnDispatched($id, $returnDispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt))
-            ->then(new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnReceived($id, $receivedAt));
     }
 
     #[Test]
@@ -554,13 +554,13 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnRequested($id, $requestedAt),
+                new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt))
-            ->then(new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnReceived($id, $receivedAt));
     }
 
     #[Test]
@@ -574,8 +574,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->receiveReturn(new \DateTimeImmutable('2026-01-13T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
@@ -607,12 +607,12 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnReceived($id, $receivedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt))
-            ->then(new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnApproved($id, $approvedAt));
     }
 
     #[Test]
@@ -628,10 +628,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnReceived($id, $receivedAt),
+                new ShipmentReturnApproved($id, $approvedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
             ->then();
@@ -648,8 +648,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->approveReturn(new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
@@ -668,12 +668,12 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnReceived($id, $receivedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', $rejectedAt))
-            ->then(new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt));
     }
 
     #[Test]
@@ -689,10 +689,10 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
+                new ShipmentReturnReceived($id, $receivedAt),
+                new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-12T00:00:00+00:00')))
             ->then();
@@ -709,8 +709,8 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-                new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-                new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
+                new ShipmentDispatched($id, $dispatchedAt),
+                new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
             ->expectsException(ShipmentInvalidTransitionException::class);
@@ -734,24 +734,24 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $base = [
             self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-            new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnDispatched($id, $returnDispatchedAt->format(\DateTimeInterface::ATOM)),
+            new ShipmentDispatched($id, $dispatchedAt),
+            new ShipmentDelivered($id, $deliveredAt),
+            new ShipmentReturnRequested($id, $requestedAt),
+            new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
+            new ShipmentReturnDispatched($id, $returnDispatchedAt),
         ];
 
         yield 'return dispatched' => [$base];
-        yield 'return received' => [[...$base, new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM))]];
+        yield 'return received' => [[...$base, new ShipmentReturnReceived($id, $receivedAt)]];
         yield 'return approved' => [[
             ...$base,
-            new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM)),
+            new ShipmentReturnReceived($id, $receivedAt),
+            new ShipmentReturnApproved($id, $approvedAt),
         ]];
         yield 'return rejected' => [[
             ...$base,
-            new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM)),
+            new ShipmentReturnReceived($id, $receivedAt),
+            new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt),
         ]];
     }
 
@@ -772,16 +772,16 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $base = [
             self::shipmentRequested($id, Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $createdAt),
-            new ShipmentDispatched($id, $dispatchedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentDelivered($id, $deliveredAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnRequested($id, $requestedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt->format(\DateTimeInterface::ATOM)),
-            new ShipmentReturnReceived($id, $receivedAt->format(\DateTimeInterface::ATOM)),
+            new ShipmentDispatched($id, $dispatchedAt),
+            new ShipmentDelivered($id, $deliveredAt),
+            new ShipmentReturnRequested($id, $requestedAt),
+            new ShipmentReturnManifested($id, 'ACME-RETURN-1', $manifestedAt),
+            new ShipmentReturnReceived($id, $receivedAt),
         ];
 
         yield 'return received' => [$base];
-        yield 'return approved' => [[...$base, new ShipmentReturnApproved($id, $approvedAt->format(\DateTimeInterface::ATOM))]];
-        yield 'return rejected' => [[...$base, new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt->format(\DateTimeInterface::ATOM))]];
+        yield 'return approved' => [[...$base, new ShipmentReturnApproved($id, $approvedAt)]];
+        yield 'return rejected' => [[...$base, new ShipmentReturnRejected($id, 'item damaged beyond resale', $rejectedAt)]];
     }
 
     protected function aggregateClass(): string
@@ -801,7 +801,7 @@ final class ShipmentTest extends AggregateRootTestCase
             $orderId,
             $customerId,
             ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            $createdAt->format(\DateTimeInterface::ATOM),
+            $createdAt,
         );
     }
 }

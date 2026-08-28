@@ -21,40 +21,39 @@ final class IdentityTest extends AggregateRootTestCase
     public function itRegisters(): void
     {
         $id = IdentityId::generate();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn (): Identity => Identity::register($id, $registeredAt))
-            ->then(new IdentityRegistered($id->toString(), $registeredAt->format(\DateTimeInterface::ATOM)));
+            ->when(static fn (): Identity => Identity::register($id, $now))
+            ->then(new IdentityRegistered($id->toString(), $now));
     }
 
     #[Test]
     public function itSuspends(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $suspendedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $suspendedAt = $now->modify('+1 day');
 
         $this
-            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
+            ->given(new IdentityRegistered($id, $now))
             ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt))
-            ->then(new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt));
     }
 
     #[Test]
     public function itDoesNotSuspendWhenAlreadySuspended(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $suspendedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentityRegistered($id, $now),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Manual request'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Manual request'), $now->modify('+2 days')))
             ->then();
     }
 
@@ -62,15 +61,14 @@ final class IdentityTest extends AggregateRootTestCase
     public function itCannotSuspendWhenErased(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+                new IdentityRegistered($id, $now),
+                new IdentityErased($id, $now->modify('+1 day')),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $now->modify('+2 days')))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -78,28 +76,27 @@ final class IdentityTest extends AggregateRootTestCase
     public function itReactivatesWhenSuspended(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $suspendedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $reactivatedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $reactivatedAt = $now->modify('+2 days');
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
+                new IdentityRegistered($id, $now),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $reactivatedAt))
-            ->then(new IdentityReactivated($id, 'Appeal upheld', $reactivatedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new IdentityReactivated($id, 'Appeal upheld', $reactivatedAt));
     }
 
     #[Test]
     public function itDoesNotReactivateWhenNotSuspended(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
-            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given(new IdentityRegistered($id, $now))
+            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $now->modify('+1 day')))
             ->then();
     }
 
@@ -107,17 +104,15 @@ final class IdentityTest extends AggregateRootTestCase
     public function itCannotReactivateWhenErased(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $suspendedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt->format(\DateTimeInterface::ATOM)),
-                new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+                new IdentityRegistered($id, $now),
+                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
+                new IdentityErased($id, $now->modify('+2 days')),
             )
-            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $now->modify('+3 days')))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -125,28 +120,27 @@ final class IdentityTest extends AggregateRootTestCase
     public function itErases(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = $now->modify('+1 day');
 
         $this
-            ->given(new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)))
+            ->given(new IdentityRegistered($id, $now))
             ->when(static fn (Identity $identity) => $identity->erase($erasedAt))
-            ->then(new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new IdentityErased($id, $erasedAt));
     }
 
     #[Test]
     public function itDoesNotEraseWhenAlreadyErased(): void
     {
         $id = IdentityId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new IdentityRegistered($id, $registeredAt->format(\DateTimeInterface::ATOM)),
-                new IdentityErased($id, $erasedAt->format(\DateTimeInterface::ATOM)),
+                new IdentityRegistered($id, $now),
+                new IdentityErased($id, $now->modify('+1 day')),
             )
-            ->when(static fn (Identity $identity) => $identity->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Identity $identity) => $identity->erase($now->modify('+2 days')))
             ->then();
     }
 

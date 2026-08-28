@@ -12,7 +12,7 @@ final readonly class OrderReturnRequestedIntegrationEvent implements Integration
 {
     public function __construct(
         public string $orderId,
-        public string $requestedAt,
+        public \DateTimeImmutable $requestedAt,
     ) {
     }
 }

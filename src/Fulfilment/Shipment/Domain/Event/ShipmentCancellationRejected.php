@@ -12,7 +12,7 @@ final readonly class ShipmentCancellationRejected
     public function __construct(
         public string $id,
         public string $status,
-        public string $rejectedAt,
+        public \DateTimeImmutable $rejectedAt,
     ) {
     }
 }

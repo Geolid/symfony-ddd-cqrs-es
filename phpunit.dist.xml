@@ -93,6 +93,7 @@
     <extensions>
         <bootstrap class="Tools\PHPUnit\EventSourcingExtension"/>
         <bootstrap class="Tools\PHPUnit\ClockExtension"/>
+        <bootstrap class="Tools\PHPUnit\FakerSeedExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
         <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension"/>
     </extensions>
