@@ -10,6 +10,6 @@ final class OrderNotFoundException extends AggregateNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Order with ID "%s" not found.', $id));
+        return new self(\sprintf('Order "%s" not found.', $id));
     }
 }

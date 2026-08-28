@@ -10,6 +10,6 @@ final class ProductNotFoundException extends AggregateNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Product with ID "%s" not found.', $id));
+        return new self(\sprintf('Product "%s" not found.', $id));
     }
 }

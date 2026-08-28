@@ -10,6 +10,6 @@ final class OrderAlreadyCancelledException extends \DomainException
 {
     public static function forId(OrderId $id): self
     {
-        return new self(\sprintf('Order with ID "%s" is already cancelled.', $id->toString()));
+        return new self(\sprintf('Order "%s" is already cancelled.', $id->toString()));
     }
 }

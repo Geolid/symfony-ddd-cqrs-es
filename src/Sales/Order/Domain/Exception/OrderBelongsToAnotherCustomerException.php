@@ -10,6 +10,6 @@ final class OrderBelongsToAnotherCustomerException extends \DomainException
 {
     public static function forId(OrderId $id): self
     {
-        return new self(\sprintf('Order with ID "%s" does not belong to that customer.', $id->toString()));
+        return new self(\sprintf('Order "%s" does not belong to that customer.', $id->toString()));
     }
 }
