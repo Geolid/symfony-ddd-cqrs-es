@@ -7,11 +7,9 @@ namespace Api\Tests\Resource;
 use Api\Resource\ProductResource;
 use Api\Tests\Support\AbstractApiTestCase;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
-use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ProductResourceTest extends AbstractApiTestCase
@@ -21,10 +19,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->create();
-        $this->store($product);
+        $this->store($identity, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
@@ -60,11 +57,10 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $delisted = ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create();
         $product = ProductTestFactory::new()->withLabel('Wireless mouse')->create();
-        $this->store($delisted, $product);
+        $this->store($identity, $delisted, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', '/v1/catalog/products');
@@ -136,10 +132,8 @@ final class ProductResourceTest extends AbstractApiTestCase
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $client = $this->authenticatedClient($identity);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // When
@@ -212,10 +206,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->withUnitAmountInCents(2_999)->create();
-        $this->store($product);
+        $this->store($identity, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
@@ -234,10 +227,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->create();
-        $this->store($product);
+        $this->store($identity, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
@@ -270,10 +262,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->create();
-        $this->store($product);
+        $this->store($identity, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));
@@ -305,10 +296,9 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $product = ProductTestFactory::new()->delisted()->create();
-        $this->store($product);
+        $this->store($identity, $product);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/delist', $product->id->toString()));

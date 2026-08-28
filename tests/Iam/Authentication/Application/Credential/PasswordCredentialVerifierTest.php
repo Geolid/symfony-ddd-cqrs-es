@@ -10,13 +10,11 @@ use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundExc
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -65,16 +63,14 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->store($identity, $credential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);

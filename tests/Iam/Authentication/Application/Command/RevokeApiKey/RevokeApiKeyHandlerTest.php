@@ -35,10 +35,9 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $keyId = KeyId::PREFIX.'0123456789abcdef';
         $credential = ApiKeyCredentialTestFactory::new()->withIdentityId($identity->id->toString())->withKeyId($keyId)->withLabel('CI pipeline')->withHasher($this->hasher)->create();
-        $this->store($credential);
+        $this->store($identity, $credential);
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
             'CI pipeline',

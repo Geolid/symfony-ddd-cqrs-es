@@ -11,12 +11,10 @@ use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
-use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -82,8 +80,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $keyId = KeyId::PREFIX.'0123456789abcdef';
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
@@ -91,9 +88,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withSecret('plain-secret')
             ->withHasher($this->hasher)
             ->create();
-        $this->store($credential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
