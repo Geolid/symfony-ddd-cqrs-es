@@ -111,7 +111,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
             $this->recordThat(new ShipmentCancellationRejected(
                 id: $this->id->toString(),
-                status: $this->state->value,
+                state: $this->state,
                 rejectedAt: $cancelledAt,
             ));
 
