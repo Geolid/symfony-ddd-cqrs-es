@@ -61,6 +61,22 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itCancelsWhenPaymentRequestedButNotCaptured(): void
+    {
+        // Given
+        $customerId = Uuid::uuid7()->toString();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create());
+
+        // When
+        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
+
+        // Then
+        $result = $this->finder->ofId($order->id->toString());
+        self::assertSame(OrderStatus::CANCELLED, $result->status);
+    }
+
+    #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
@@ -72,21 +88,6 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new CancelOrder($id, $customerId));
-    }
-
-    #[Test]
-    public function itFailsWhenNotCancellable(): void
-    {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
-        $this->store($order);
-
-        // Then
-        $this->expectException(OrderNotCancellableException::class);
-
-        // When
-        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
     }
 
     #[Test]
@@ -104,18 +105,17 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCancelsWhenPaymentRequestedButNotCaptured(): void
+    public function itFailsWhenNotCancellable(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create());
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $this->store($order);
+
+        // Then
+        $this->expectException(OrderNotCancellableException::class);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
-
-        // Then
-        $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 }

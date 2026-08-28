@@ -65,6 +65,19 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = OrderId::generate()->toString();
+
+        // Then
+        $this->expectException(OrderNotFoundException::class);
+
+        // When
+        $this->dispatch(new CompleteOrder($id));
+    }
+
+    #[Test]
     public function itFailsWhenNotCompletable(): void
     {
         // Given
@@ -76,18 +89,5 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new CompleteOrder($order->id->toString()));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = OrderId::generate()->toString();
-
-        // Then
-        $this->expectException(OrderNotFoundException::class);
-
-        // When
-        $this->dispatch(new CompleteOrder($id));
     }
 }

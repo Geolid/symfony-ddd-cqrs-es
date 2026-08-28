@@ -38,21 +38,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itFailsWhenLoginAlreadyTaken(): void
-    {
-        // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', Uuid::uuid7()->toString());
-
-        // Then
-        $this->expectException(LoginAlreadyTakenException::class);
-
-        // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
-    }
-
-    #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
@@ -62,6 +47,21 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
+
+        // When
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
+    }
+
+    #[Test]
+    public function itFailsWhenLoginAlreadyTaken(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->store($identity);
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', Uuid::uuid7()->toString());
+
+        // Then
+        $this->expectException(LoginAlreadyTakenException::class);
 
         // When
         $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));

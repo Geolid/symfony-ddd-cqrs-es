@@ -64,6 +64,19 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
+        // When
+        $this->dispatch(new ManifestShipment($id, 'ACME-4Q7X2K9'));
+    }
+
+    #[Test]
     public function itFailsWhenAlreadyTrackedUnderAnotherReference(): void
     {
         // Given
@@ -90,18 +103,5 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
-
-        // When
-        $this->dispatch(new ManifestShipment($id, 'ACME-4Q7X2K9'));
     }
 }

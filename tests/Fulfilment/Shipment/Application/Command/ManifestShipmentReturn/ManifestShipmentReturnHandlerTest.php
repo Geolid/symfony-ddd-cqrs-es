@@ -64,6 +64,19 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
+        // When
+        $this->dispatch(new ManifestShipmentReturn($id, 'ACME-RETURN-1'));
+    }
+
+    #[Test]
     public function itFailsWhenAlreadyTrackedUnderAnotherReturnReference(): void
     {
         // Given
@@ -90,18 +103,5 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
 
         // When
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
-    }
-
-    #[Test]
-    public function itFailsWhenNotFound(): void
-    {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
-
-        // When
-        $this->dispatch(new ManifestShipmentReturn($id, 'ACME-RETURN-1'));
     }
 }
