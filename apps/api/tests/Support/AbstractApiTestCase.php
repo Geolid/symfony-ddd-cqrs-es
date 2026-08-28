@@ -54,12 +54,13 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function authenticatedClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $this->store(ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
-            ->create());
+            ->create();
+        $this->store($credential);
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $apiKey->secret));
     }
@@ -72,11 +73,12 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function invalidApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $this->store(ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withHasher($this->hasher)
-            ->create());
+            ->create();
+        $this->store($credential);
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $this->apiKeyGenerator->generate()->secret));
     }
@@ -84,13 +86,14 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function revokedApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $this->store(ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)
             ->withHasher($this->hasher)
             ->revoked()
-            ->create());
+            ->create();
+        $this->store($credential);
 
         return self::clientWithApiKey(\sprintf('%s.%s', $apiKey->keyId, $apiKey->secret));
     }

@@ -39,36 +39,35 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
             'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED,
             'GLBX-REFUND-STUCK' => PaymentGatewayStatus::REFUNDED,
         ]));
-        $this->store(OrderPaymentTestFactory::new()
+        $stuck = OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
             ->withRequestedAt($now->modify('-90 minutes'))
-            ->create());
-        $this->store(OrderPaymentTestFactory::new()
+            ->create();
+        $fresh = OrderPaymentTestFactory::new()
             ->withReference('GLBX-FRESH1234')
             ->withRequestedAt($now->modify('-5 minutes'))
-            ->create());
+            ->create();
         $refundStuckOrder = OrderTestFactory::new()->create();
-        $this->store($refundStuckOrder);
         $refundStuckRequestedAt = $now->modify('-3 days');
-        $this->store(OrderPaymentTestFactory::new()
+        $refundStuck = OrderPaymentTestFactory::new()
             ->withOrderId($refundStuckOrder->id->toString())
             ->withReference('GLBX-REFUND-STUCK')
             ->withRequestedAt($refundStuckRequestedAt)
             ->authorized($refundStuckRequestedAt->modify('+10 minutes'))
             ->captured($refundStuckRequestedAt->modify('+1 day'))
             ->refundInitiated($now->modify('-90 minutes'))
-            ->create());
+            ->create();
         $refundFreshOrder = OrderTestFactory::new()->create();
-        $this->store($refundFreshOrder);
         $refundFreshRequestedAt = $now->modify('-3 days');
-        $this->store(OrderPaymentTestFactory::new()
+        $refundFresh = OrderPaymentTestFactory::new()
             ->withOrderId($refundFreshOrder->id->toString())
             ->withReference('GLBX-REFUND-FRESH')
             ->withRequestedAt($refundFreshRequestedAt)
             ->authorized($refundFreshRequestedAt->modify('+10 minutes'))
             ->captured($refundFreshRequestedAt->modify('+1 day'))
             ->refundInitiated($now->modify('-5 minutes'))
-            ->create());
+            ->create();
+        $this->store($stuck, $fresh, $refundStuckOrder, $refundStuck, $refundFreshOrder, $refundFresh);
         $tester = $this->tester();
 
         // When
@@ -92,14 +91,15 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
             ['GLBX-UNREACHABLE' => PaymentGatewayStatus::AUTHORIZED, 'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED],
             failingReference: 'GLBX-UNREACHABLE',
         ));
-        $this->store(OrderPaymentTestFactory::new()
+        $unreachable = OrderPaymentTestFactory::new()
             ->withReference('GLBX-UNREACHABLE')
             ->withRequestedAt($now->modify('-90 minutes'))
-            ->create());
-        $this->store(OrderPaymentTestFactory::new()
+            ->create();
+        $stuck = OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
             ->withRequestedAt($now->modify('-90 minutes'))
-            ->create());
+            ->create();
+        $this->store($unreachable, $stuck);
         $tester = $this->tester();
 
         // When
@@ -117,7 +117,8 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $this->store(OrderPaymentTestFactory::new()->withRequestedAt(Clock::get()->now()->modify('-90 minutes'))->create());
+        $orderPayment = OrderPaymentTestFactory::new()->withRequestedAt(Clock::get()->now()->modify('-90 minutes'))->create();
+        $this->store($orderPayment);
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order-payment:reconcile');
         $lock->acquire();

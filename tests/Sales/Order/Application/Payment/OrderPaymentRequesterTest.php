@@ -86,7 +86,8 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->create());
+        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->create();
+        $this->store($order, $payment);
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');

@@ -30,11 +30,11 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $requestedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
-        $authorizedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
-        $capturedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
-        $refundInitiatedAt = new \DateTimeImmutable('2026-01-03T11:00:00+00:00');
-        $refundedAt = new \DateTimeImmutable('2026-01-04T12:00:00+00:00');
+        $requestedAt = Clock::get()->now()->modify('-4 days');
+        $authorizedAt = $requestedAt->modify('+1 hour');
+        $capturedAt = $requestedAt->modify('+1 day 2 hours');
+        $refundInitiatedAt = $requestedAt->modify('+2 days 3 hours');
+        $refundedAt = $requestedAt->modify('+3 days 4 hours');
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->withReference('GLBX-9F3K2M1P')
@@ -81,8 +81,9 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
+        $authorized = OrderPaymentTestFactory::new()->authorized()->create();
         $requested = OrderPaymentTestFactory::new()->create();
-        $this->store($requested, OrderPaymentTestFactory::new()->authorized()->create());
+        $this->store($authorized, $requested);
 
         // When
         $results = iterator_to_array($this->finder->byStatus(OrderPaymentStatus::REQUESTED));

@@ -26,7 +26,8 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         $placed = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($alreadyCancelled, $withCapturedPayment, $orderPayment, $placed);
         $otherCustomerId = Uuid::uuid7()->toString();
-        $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
+        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $this->store($other);
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
@@ -51,7 +52,8 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         // Given
         $customerId = Uuid::uuid7()->toString();
         $otherCustomerId = Uuid::uuid7()->toString();
-        $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
+        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $this->store($other);
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));

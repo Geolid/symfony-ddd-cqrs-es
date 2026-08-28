@@ -54,7 +54,8 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $this->store(OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create());
+        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $this->store($order);
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order:complete-delivered');
         $lock->acquire();

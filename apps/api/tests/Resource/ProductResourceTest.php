@@ -62,8 +62,9 @@ final class ProductResourceTest extends AbstractApiTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $this->store(ProductTestFactory::new()->withLabel('Wireless mouse')->create());
-        $this->store(ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create());
+        $delisted = ProductTestFactory::new()->withLabel('Delisted keyboard')->delisted()->create();
+        $product = ProductTestFactory::new()->withLabel('Wireless mouse')->create();
+        $this->store($delisted, $product);
 
         // When
         $client->request('GET', '/v1/catalog/products');

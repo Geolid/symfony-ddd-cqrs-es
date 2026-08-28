@@ -66,7 +66,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create());
+        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create();
+        $this->store($order, $payment);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
