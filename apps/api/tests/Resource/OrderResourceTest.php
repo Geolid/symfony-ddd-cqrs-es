@@ -6,12 +6,10 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\OrderResource;
 use Api\Tests\Support\AbstractApiTestCase;
-use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpFoundation\Response;
 
 final class OrderResourceTest extends AbstractApiTestCase
@@ -21,11 +19,10 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
-        $this->store($order);
+        $this->store($identity, $order);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', \sprintf('/v1/sales/orders/%s', $order->id->toString()));
@@ -62,10 +59,9 @@ final class OrderResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $client = $this->authenticatedClient($identity);
         $order = OrderTestFactory::new()->withTotalAmountInCents(1_999)->create();
-        $this->store($order);
+        $this->store($identity, $order);
+        $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('GET', '/v1/sales/orders');
@@ -137,10 +133,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $client = $this->authenticatedClient($identity);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // When

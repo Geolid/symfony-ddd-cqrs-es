@@ -169,10 +169,9 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityTestFactory::new()->create();
         $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-9@example.com')->create();
-        $this->store($identity, $customer);
-        $this->loginAs($client, $identity);
         $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($product);
+        $this->store($identity, $customer, $product);
+        $this->loginAs($client, $identity);
 
         // When
         $crawler = $client->request('GET', $this->path('sales_order_place'));

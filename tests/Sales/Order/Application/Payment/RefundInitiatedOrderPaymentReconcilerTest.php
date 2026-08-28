@@ -31,9 +31,8 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-REFD0001')->authorized()->captured()->refundInitiated()->create();
-        $this->store($orderPayment);
+        $this->store($order, $orderPayment);
         $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-REFD0001' => PaymentGatewayStatus::REFUNDED]), $this->service(CommandBusInterface::class));
 
         // When
@@ -49,9 +48,8 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $this->store($order);
         $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-PEND0002')->authorized()->captured()->refundInitiated()->create();
-        $this->store($orderPayment);
+        $this->store($order, $orderPayment);
         $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0002' => PaymentGatewayStatus::REFUNDING]), $this->service(CommandBusInterface::class));
 
         // When

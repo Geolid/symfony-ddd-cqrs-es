@@ -45,7 +45,6 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $hasher = $this->service(PasswordHasherInterface::class);
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
@@ -53,7 +52,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->create();
-        $this->store($credential);
+        $this->store($identity, $credential);
         $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
 
         // When

@@ -99,14 +99,12 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     {
         // Given
         $other = $this->otherCredential(suspended: true);
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher(new StubApiKeyHasher())
             ->create();
-        $this->store($identity, $credential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // When
         $identity->reactivate(Reason::fromString('Appeal upheld'), Clock::get()->now());

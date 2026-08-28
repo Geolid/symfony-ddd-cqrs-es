@@ -6,13 +6,11 @@ namespace Web\Tests\Controller;
 
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Symfony\Component\Clock\Clock;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class SecurityControllerTest extends AbstractWebTestCase
@@ -130,7 +128,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $passwordCredential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
@@ -138,9 +136,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->create();
-        $this->store($identity, $passwordCredential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($passwordCredential, $identity);
 
         // When
         $crawler = $client->request('GET', $this->path('security_login'));

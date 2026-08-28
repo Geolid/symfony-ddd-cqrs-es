@@ -20,7 +20,6 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
     {
         // Given
         $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
         $hasher = $this->service(PasswordHasherInterface::class);
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
@@ -29,7 +28,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->create();
-        $this->store($credential);
+        $this->store($identity, $credential);
 
         // When
         $result = $this->ask(new GetPasswordCredentialByLogin('ada.lovelace'));
