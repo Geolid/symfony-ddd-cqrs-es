@@ -19,7 +19,7 @@ final readonly class PasswordCredentialDefined
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-%s'))]
         public string $login,
         public string $passwordHash,
-        public string $definedAt,
+        public \DateTimeImmutable $definedAt,
     ) {
     }
 }

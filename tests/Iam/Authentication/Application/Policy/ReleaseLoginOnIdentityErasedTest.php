@@ -36,7 +36,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', $ownerId);
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace'));

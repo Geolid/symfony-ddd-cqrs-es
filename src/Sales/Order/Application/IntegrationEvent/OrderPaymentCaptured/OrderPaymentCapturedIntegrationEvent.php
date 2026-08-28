@@ -29,7 +29,7 @@ final readonly class OrderPaymentCapturedIntegrationEvent implements Integration
             'countryCode' => 'ZZ',
         ]))]
         public array $shippingAddress,
-        public string $capturedAt,
+        public \DateTimeImmutable $capturedAt,
     ) {
     }
 }

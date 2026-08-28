@@ -16,12 +16,14 @@ use Support\AbstractIntegrationTestCase;
 final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
     private EraseCustomerOnIdentityErased $policy;
+    private \DateTimeImmutable $erasedAt;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->policy = $this->service(EraseCustomerOnIdentityErased::class);
+        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
     }
 
     #[Test]
@@ -35,7 +37,7 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
         $this->expectException(CustomerResultNotFoundException::class);
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($id, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent($id, $this->erasedAt));
         $this->service(CustomerFinderInterface::class)->ofId($id);
     }
 
@@ -43,7 +45,7 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
     public function itIgnoresWhenNoneExist(): void
     {
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), $this->erasedAt));
 
         // Then
         self::expectNotToPerformAssertions();

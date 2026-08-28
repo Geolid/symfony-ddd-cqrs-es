@@ -13,7 +13,7 @@ final readonly class ProductListed
         public string $id,
         public string $label,
         public int $unitAmountInCents,
-        public string $listedAt,
+        public \DateTimeImmutable $listedAt,
     ) {
     }
 }

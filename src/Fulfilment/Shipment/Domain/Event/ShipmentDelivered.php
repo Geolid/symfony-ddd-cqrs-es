@@ -11,7 +11,7 @@ final readonly class ShipmentDelivered
 {
     public function __construct(
         public string $id,
-        public string $deliveredAt,
+        public \DateTimeImmutable $deliveredAt,
     ) {
     }
 }

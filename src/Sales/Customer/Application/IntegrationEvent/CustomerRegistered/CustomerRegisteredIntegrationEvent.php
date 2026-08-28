@@ -18,7 +18,7 @@ final readonly class CustomerRegisteredIntegrationEvent implements IntegrationEv
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('%s@erased.invalid'))]
         public string $email,
-        public string $registeredAt,
+        public \DateTimeImmutable $registeredAt,
     ) {
     }
 }

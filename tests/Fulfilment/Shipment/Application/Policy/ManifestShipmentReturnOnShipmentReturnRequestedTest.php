@@ -44,7 +44,7 @@ final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends Abstract
         $this->store($shipment);
 
         // When
-        ($this->policy)(new ShipmentReturnRequested($shipment->id->toString(), '2026-01-10T00:00:00+00:00'));
+        ($this->policy)(new ShipmentReturnRequested($shipment->id->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00')));
 
         // Then
         self::assertNotNull($this->carrier->pickupAddress);

@@ -12,7 +12,7 @@ final readonly class IdentityReactivatedIntegrationEvent implements IntegrationE
 {
     public function __construct(
         public string $identityId,
-        public string $reactivatedAt,
+        public \DateTimeImmutable $reactivatedAt,
     ) {
     }
 }

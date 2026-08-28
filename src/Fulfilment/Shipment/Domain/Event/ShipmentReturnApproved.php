@@ -11,7 +11,7 @@ final readonly class ShipmentReturnApproved
 {
     public function __construct(
         public string $id,
-        public string $approvedAt,
+        public \DateTimeImmutable $approvedAt,
     ) {
     }
 }

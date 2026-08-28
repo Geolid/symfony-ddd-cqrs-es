@@ -11,7 +11,7 @@ final readonly class OrderCompleted
 {
     public function __construct(
         public string $id,
-        public string $completedAt,
+        public \DateTimeImmutable $completedAt,
     ) {
     }
 }

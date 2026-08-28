@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
-    private const string CANCELLED_AT = '2026-01-02T00:00:00+00:00';
-
     private CancelShipmentOnOrderCancelled $policy;
 
     protected function setUp(): void
@@ -35,7 +33,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         $this->store($shipment);
 
         // When
-        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
+        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId), false);
@@ -50,7 +48,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, self::CANCELLED_AT));
+        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::expectNotToPerformAssertions();

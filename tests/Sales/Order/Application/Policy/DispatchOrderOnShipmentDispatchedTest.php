@@ -32,7 +32,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
         $this->store($order);
 
         // When
-        ($this->policy)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

@@ -39,7 +39,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
                 'reference' => $event->reference,
                 'checkout_url' => $event->checkoutUrl,
                 'status' => OrderPaymentStatus::REQUESTED->value,
-                'requested_at' => new \DateTimeImmutable($event->requestedAt),
+                'requested_at' => $event->requestedAt,
             ],
             ['requested_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -52,7 +52,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::AUTHORIZED->value,
-                'authorized_at' => new \DateTimeImmutable($event->authorizedAt),
+                'authorized_at' => $event->authorizedAt,
             ],
             ['id' => $event->id],
             ['authorized_at' => Types::DATETIME_IMMUTABLE],
@@ -66,7 +66,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::FAILED->value,
-                'failed_at' => new \DateTimeImmutable($event->failedAt),
+                'failed_at' => $event->failedAt,
             ],
             ['id' => $event->id],
             ['failed_at' => Types::DATETIME_IMMUTABLE],
@@ -80,7 +80,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::CAPTURED->value,
-                'captured_at' => new \DateTimeImmutable($event->capturedAt),
+                'captured_at' => $event->capturedAt,
             ],
             ['id' => $event->id],
             ['captured_at' => Types::DATETIME_IMMUTABLE],
@@ -94,7 +94,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
+                'cancelled_at' => $event->cancelledAt,
             ],
             ['id' => $event->id],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE],
@@ -108,7 +108,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->voidedAt),
+                'cancelled_at' => $event->voidedAt,
             ],
             ['id' => $event->id],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE],
@@ -122,7 +122,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::REFUND_INITIATED->value,
-                'refund_initiated_at' => new \DateTimeImmutable($event->initiatedAt),
+                'refund_initiated_at' => $event->initiatedAt,
             ],
             ['id' => $event->id],
             ['refund_initiated_at' => Types::DATETIME_IMMUTABLE],
@@ -136,7 +136,7 @@ final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => OrderPaymentStatus::REFUNDED->value,
-                'refunded_at' => new \DateTimeImmutable($event->refundedAt),
+                'refunded_at' => $event->refundedAt,
             ],
             ['id' => $event->id],
             ['refunded_at' => Types::DATETIME_IMMUTABLE],

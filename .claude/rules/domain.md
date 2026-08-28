@@ -11,7 +11,7 @@ paths:
 **ALWAYS**
 - An event's persisted shape evolves via an upcaster — never retroactively (breaks replay of existing streams).
 - Aggregate: private constructor; creation is a named static factory that only does `new self()` + `recordThat()`; state is mutated exclusively inside `#[Apply]` methods.
-- `recordThat()` carries primitives only (a VO's primitive is read off its own public property, an `AggregateRootId` off its mandatory `toString()`, a `\DateTimeImmutable` via `format('c')`); `#[Apply]` rebuilds each VO through its named constructor (`fromString()`, `::from()`...).
+- `recordThat()` carries a Value Object's data as its own primitive property, read off directly (an `AggregateRootId` via its mandatory `toString()`) — a Value Object itself never crosses onto an event field, since it carries write-side invariant-enforcing construction the read side/replay must stay independent of. A `\DateTimeImmutable` or a backed enum stays typed as-is instead of pre-formatted to a string: neither carries invariant-enforcing behavior, and the store's own hydrator normalizes both automatically, the same way `Doctrine\DBAL\Types\Types::DATETIME_IMMUTABLE` does at the Projector/Finder boundary. `#[Apply]` rebuilds each Value Object through its named constructor (`fromString()`, `::from()`...).
 - An event field carrying personal data is tagged `#[SensitiveData(fallbackCallable: ...)]`, plus one `#[DataSubjectId]` field on the same event — otherwise personal data sits in clear text in an immutable event store forever.
 - Autowiring only loads `Domain/Repository/` and `Domain/Service/` — a concrete class anywhere else in `Domain/` is silently never registered as a service.
 

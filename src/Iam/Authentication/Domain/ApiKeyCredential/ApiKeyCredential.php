@@ -46,7 +46,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
             label: $label->value,
             keyId: $keyId->value,
             secretHash: $hasher->hash($secret),
-            issuedAt: $issuedAt->format(\DateTimeInterface::ATOM),
+            issuedAt: $issuedAt,
         ));
 
         return $self;
@@ -67,7 +67,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
 
         $this->recordThat(new ApiKeyCredentialRevoked(
             id: $this->id->toString(),
-            revokedAt: $revokedAt->format(\DateTimeInterface::ATOM),
+            revokedAt: $revokedAt,
         ));
     }
 

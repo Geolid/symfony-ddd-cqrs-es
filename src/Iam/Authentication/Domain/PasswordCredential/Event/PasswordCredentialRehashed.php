@@ -12,7 +12,7 @@ final readonly class PasswordCredentialRehashed
     public function __construct(
         public string $id,
         public string $passwordHash,
-        public string $rehashedAt,
+        public \DateTimeImmutable $rehashedAt,
     ) {
     }
 }

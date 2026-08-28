@@ -32,8 +32,8 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
             'identity_id' => $event->identityId,
             'login' => $event->login,
             'password_hash' => $event->passwordHash,
-            'defined_at' => new \DateTimeImmutable($event->definedAt),
-            'password_changed_at' => new \DateTimeImmutable($event->definedAt),
+            'defined_at' => $event->definedAt,
+            'password_changed_at' => $event->definedAt,
             'identity_authenticatable' => true,
         ], [
             'defined_at' => Types::DATETIME_IMMUTABLE,
@@ -47,7 +47,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     {
         $this->connection->update(
             self::TABLE,
-            ['password_hash' => $event->passwordHash, 'password_changed_at' => new \DateTimeImmutable($event->changedAt)],
+            ['password_hash' => $event->passwordHash, 'password_changed_at' => $event->changedAt],
             ['id' => $event->id],
             ['password_changed_at' => Types::DATETIME_IMMUTABLE],
         );

@@ -11,7 +11,7 @@ final readonly class OrderDispatched
 {
     public function __construct(
         public string $id,
-        public string $dispatchedAt,
+        public \DateTimeImmutable $dispatchedAt,
     ) {
     }
 }

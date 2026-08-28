@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
-    private const string CANCELLED_AT = '2026-01-02T00:00:00+00:00';
-
     private CancelOrderPaymentOnOrderCancelled $policy;
 
     protected function setUp(): void
@@ -56,6 +54,6 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
 
     private function orderCancelled(string $orderId): OrderCancelled
     {
-        return new OrderCancelled($orderId, self::CANCELLED_AT);
+        return new OrderCancelled($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
     }
 }

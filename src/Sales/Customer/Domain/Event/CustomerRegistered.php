@@ -17,7 +17,7 @@ final readonly class CustomerRegistered
         public string $id,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('%s@erased.invalid'))]
         public string $email,
-        public string $registeredAt,
+        public \DateTimeImmutable $registeredAt,
     ) {
     }
 }

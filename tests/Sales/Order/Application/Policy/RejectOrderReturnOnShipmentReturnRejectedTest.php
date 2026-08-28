@@ -36,7 +36,7 @@ final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegr
             Uuid::uuid7()->toString(),
             $order->id->toString(),
             'item damaged beyond resale',
-            '2026-01-11T00:00:00+00:00',
+            new \DateTimeImmutable('2026-01-11T00:00:00+00:00'),
         ));
 
         // Then

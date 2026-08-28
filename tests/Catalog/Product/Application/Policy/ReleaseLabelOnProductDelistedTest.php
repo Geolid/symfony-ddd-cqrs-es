@@ -35,7 +35,7 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
         $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
 
         // When
-        ($this->policy)(new ProductDelisted($product->id->toString(), '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new ProductDelisted($product->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value));

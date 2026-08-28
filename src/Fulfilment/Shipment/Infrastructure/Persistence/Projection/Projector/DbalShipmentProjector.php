@@ -41,7 +41,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'order_id' => $event->orderId,
                 'customer_id' => $event->customerId,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'created_at' => new \DateTimeImmutable($event->createdAt),
+                'created_at' => $event->createdAt,
             ],
             ['created_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -65,7 +65,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'status' => ShipmentStatus::MANIFESTED->value,
                 'tracking_reference' => $event->trackingReference,
-                'manifested_at' => new \DateTimeImmutable($event->manifestedAt),
+                'manifested_at' => $event->manifestedAt,
             ],
             ['id' => $event->id],
             ['manifested_at' => Types::DATETIME_IMMUTABLE],
@@ -79,7 +79,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::DISPATCHED->value,
-                'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
+                'dispatched_at' => $event->dispatchedAt,
             ],
             ['id' => $event->id],
             ['dispatched_at' => Types::DATETIME_IMMUTABLE],
@@ -93,7 +93,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::DELIVERED->value,
-                'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
+                'delivered_at' => $event->deliveredAt,
             ],
             ['id' => $event->id],
             ['delivered_at' => Types::DATETIME_IMMUTABLE],
@@ -107,7 +107,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::CANCELLED->value,
-                'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
+                'cancelled_at' => $event->cancelledAt,
             ],
             ['id' => $event->id],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE],
@@ -132,7 +132,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'status' => ShipmentStatus::RETURN_MANIFESTED->value,
                 'return_tracking_reference' => $event->returnTrackingReference,
-                'return_manifested_at' => new \DateTimeImmutable($event->manifestedAt),
+                'return_manifested_at' => $event->manifestedAt,
             ],
             ['id' => $event->id],
             ['return_manifested_at' => Types::DATETIME_IMMUTABLE],
@@ -146,7 +146,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_DISPATCHED->value,
-                'return_dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
+                'return_dispatched_at' => $event->dispatchedAt,
             ],
             ['id' => $event->id],
             ['return_dispatched_at' => Types::DATETIME_IMMUTABLE],
@@ -160,7 +160,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_RECEIVED->value,
-                'return_received_at' => new \DateTimeImmutable($event->receivedAt),
+                'return_received_at' => $event->receivedAt,
             ],
             ['id' => $event->id],
             ['return_received_at' => Types::DATETIME_IMMUTABLE],
@@ -174,7 +174,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_APPROVED->value,
-                'return_approved_at' => new \DateTimeImmutable($event->approvedAt),
+                'return_approved_at' => $event->approvedAt,
             ],
             ['id' => $event->id],
             ['return_approved_at' => Types::DATETIME_IMMUTABLE],
@@ -188,7 +188,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::RETURN_REJECTED->value,
-                'return_rejected_at' => new \DateTimeImmutable($event->rejectedAt),
+                'return_rejected_at' => $event->rejectedAt,
                 'return_rejection_reason' => $event->reason,
             ],
             ['id' => $event->id],

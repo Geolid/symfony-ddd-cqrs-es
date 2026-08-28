@@ -14,7 +14,7 @@ final readonly class ProductListedIntegrationEvent implements IntegrationEventIn
         public string $productId,
         public string $label,
         public int $unitAmountInCents,
-        public string $listedAt,
+        public \DateTimeImmutable $listedAt,
     ) {
     }
 }

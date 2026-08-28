@@ -44,7 +44,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 $keyId->value,
                 $hasher->hash('plain-secret'),
-                $issuedAt->format(\DateTimeInterface::ATOM),
+                $issuedAt,
             ));
     }
 
@@ -62,10 +62,10 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 KeyId::PREFIX.'0123456789abcdef',
                 'hashed:plain-secret',
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt))
-            ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt->format(\DateTimeInterface::ATOM)));
+            ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt));
     }
 
     #[Test]
@@ -80,7 +80,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                 'CI pipeline',
                 KeyId::PREFIX.'0123456789abcdef',
                 'hashed:plain-secret',
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
             ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
@@ -100,9 +100,9 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
                     'CI pipeline',
                     KeyId::PREFIX.'0123456789abcdef',
                     'hashed:plain-secret',
-                    '2026-01-01T00:00:00+00:00',
+                    new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
                 ),
-                new ApiKeyCredentialRevoked($id->toString(), '2026-01-02T00:00:00+00:00'),
+                new ApiKeyCredentialRevoked($id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')),
             )
             ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
             ->then();

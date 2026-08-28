@@ -13,7 +13,7 @@ final readonly class ShipmentCancelledIntegrationEvent implements IntegrationEve
     public function __construct(
         public string $shipmentId,
         public string $orderId,
-        public string $cancelledAt,
+        public \DateTimeImmutable $cancelledAt,
     ) {
     }
 }

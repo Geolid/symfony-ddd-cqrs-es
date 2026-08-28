@@ -116,7 +116,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                 $lines,
             )),
             totalAmountInCents: $total->cents,
-            placedAt: $placedAt->format(\DateTimeInterface::ATOM),
+            placedAt: $placedAt,
         ));
 
         return $self;
@@ -130,7 +130,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderConfirmed(
             id: $this->id->toString(),
-            confirmedAt: $confirmedAt->format(\DateTimeInterface::ATOM),
+            confirmedAt: $confirmedAt,
         ));
     }
 
@@ -154,7 +154,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderCancelled(
             id: $this->id->toString(),
-            cancelledAt: $cancelledAt->format(\DateTimeInterface::ATOM),
+            cancelledAt: $cancelledAt,
         ));
     }
 
@@ -166,7 +166,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderDispatched(
             id: $this->id->toString(),
-            dispatchedAt: $dispatchedAt->format(\DateTimeInterface::ATOM),
+            dispatchedAt: $dispatchedAt,
         ));
     }
 
@@ -178,7 +178,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderDelivered(
             id: $this->id->toString(),
-            deliveredAt: $deliveredAt->format(\DateTimeInterface::ATOM),
+            deliveredAt: $deliveredAt,
         ));
     }
 
@@ -201,7 +201,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderCompleted(
             id: $this->id->toString(),
-            completedAt: $now->format(\DateTimeInterface::ATOM),
+            completedAt: $now,
         ));
     }
 
@@ -230,7 +230,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderReturnRequested(
             id: $this->id->toString(),
-            requestedAt: $now->format(\DateTimeInterface::ATOM),
+            requestedAt: $now,
         ));
     }
 
@@ -242,7 +242,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderReturned(
             id: $this->id->toString(),
-            returnedAt: $returnedAt->format(\DateTimeInterface::ATOM),
+            returnedAt: $returnedAt,
         ));
     }
 
@@ -255,7 +255,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new OrderReturnRejected(
             id: $this->id->toString(),
             reason: $reason,
-            rejectedAt: $rejectedAt->format(\DateTimeInterface::ATOM),
+            rejectedAt: $rejectedAt,
         ));
     }
 
@@ -271,7 +271,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new OrderAnonymized(
             id: $this->id->toString(),
-            anonymizedAt: $now->format(\DateTimeInterface::ATOM),
+            anonymizedAt: $now,
         ));
     }
 
@@ -304,7 +304,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyCancelled(OrderCancelled $event): void
     {
         $this->state = OrderState::CANCELLED;
-        $this->closedAt = new \DateTimeImmutable($event->cancelledAt);
+        $this->closedAt = $event->cancelledAt;
     }
 
     #[Apply]
@@ -317,14 +317,14 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyDelivered(OrderDelivered $event): void
     {
         $this->state = OrderState::DELIVERED;
-        $this->deliveredAt = new \DateTimeImmutable($event->deliveredAt);
+        $this->deliveredAt = $event->deliveredAt;
     }
 
     #[Apply]
     private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
-        $this->closedAt = new \DateTimeImmutable($event->completedAt);
+        $this->closedAt = $event->completedAt;
     }
 
     #[Apply]
@@ -337,19 +337,19 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyReturned(OrderReturned $event): void
     {
         $this->state = OrderState::RETURNED;
-        $this->closedAt = new \DateTimeImmutable($event->returnedAt);
+        $this->closedAt = $event->returnedAt;
     }
 
     #[Apply]
     private function applyReturnRejected(OrderReturnRejected $event): void
     {
         $this->state = OrderState::RETURN_REJECTED;
-        $this->closedAt = new \DateTimeImmutable($event->rejectedAt);
+        $this->closedAt = $event->rejectedAt;
     }
 
     #[Apply]
     private function applyAnonymized(OrderAnonymized $event): void
     {
-        $this->anonymizedAt = new \DateTimeImmutable($event->anonymizedAt);
+        $this->anonymizedAt = $event->anonymizedAt;
     }
 }

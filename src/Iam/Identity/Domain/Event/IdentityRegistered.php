@@ -11,7 +11,7 @@ final readonly class IdentityRegistered
 {
     public function __construct(
         public string $id,
-        public string $registeredAt,
+        public \DateTimeImmutable $registeredAt,
     ) {
     }
 }

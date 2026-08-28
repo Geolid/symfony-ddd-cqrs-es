@@ -28,7 +28,7 @@ final readonly class CustomerShippingAddressRegisteredIntegrationEvent implement
             'countryCode' => 'ZZ',
         ]))]
         public array $address,
-        public string $setAt,
+        public \DateTimeImmutable $setAt,
     ) {
     }
 }

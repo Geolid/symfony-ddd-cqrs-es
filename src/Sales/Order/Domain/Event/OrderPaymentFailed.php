@@ -12,7 +12,7 @@ final readonly class OrderPaymentFailed
     public function __construct(
         public string $id,
         public string $orderId,
-        public string $failedAt,
+        public \DateTimeImmutable $failedAt,
     ) {
     }
 }

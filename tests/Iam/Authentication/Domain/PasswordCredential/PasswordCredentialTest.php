@@ -45,7 +45,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                $definedAt->format(\DateTimeInterface::ATOM),
+                $definedAt,
             ));
     }
 
@@ -82,7 +82,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
@@ -93,7 +93,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->then(new PasswordCredentialChanged(
                 $id->toString(),
                 $hasher->hash('updated-password'),
-                $changedAt->format(\DateTimeInterface::ATOM),
+                $changedAt,
             ));
     }
 
@@ -110,7 +110,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
@@ -134,7 +134,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('original-password'),
@@ -159,7 +159,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                '2026-01-01T00:00:00+00:00',
+                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->rehash(
                 'original-password',
@@ -169,7 +169,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->then(new PasswordCredentialRehashed(
                 $id->toString(),
                 $hasher->hash('original-password'),
-                $rehashedAt->format(\DateTimeInterface::ATOM),
+                $rehashedAt,
             ));
     }
 

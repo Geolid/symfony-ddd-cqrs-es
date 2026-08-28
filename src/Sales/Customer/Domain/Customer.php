@@ -38,7 +38,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new CustomerRegistered(
             id: $id->toString(),
             email: $email->value,
-            registeredAt: $registeredAt->format(\DateTimeInterface::ATOM),
+            registeredAt: $registeredAt,
         ));
 
         return $self;
@@ -60,7 +60,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
                 'city' => $shippingAddress->address->city,
                 'countryCode' => $shippingAddress->address->countryCode->value,
             ],
-            setAt: $registeredAt->format(\DateTimeInterface::ATOM),
+            setAt: $registeredAt,
         ));
     }
 
@@ -80,7 +80,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
                 'city' => $billingAddress->address->city,
                 'countryCode' => $billingAddress->address->countryCode->value,
             ],
-            setAt: $registeredAt->format(\DateTimeInterface::ATOM),
+            setAt: $registeredAt,
         ));
     }
 
@@ -92,7 +92,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new CustomerErased(
             id: $this->id->toString(),
-            erasedAt: $erasedAt->format(\DateTimeInterface::ATOM),
+            erasedAt: $erasedAt,
         ));
     }
 

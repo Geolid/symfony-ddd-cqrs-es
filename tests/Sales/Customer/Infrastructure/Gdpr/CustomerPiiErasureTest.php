@@ -21,6 +21,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 {
+    private \DateTimeImmutable $erasedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+    }
+
     #[Test]
     public function itCryptoShredsEmailOnErasure(): void
     {
@@ -34,7 +43,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
         );
 
         // Then
@@ -59,7 +68,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
         );
 
         // Then
@@ -83,7 +92,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), '2026-01-02T00:00:00+00:00')),
+            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
         );
 
         // Then

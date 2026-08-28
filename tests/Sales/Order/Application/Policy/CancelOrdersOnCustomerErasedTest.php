@@ -15,15 +15,15 @@ use Support\AbstractIntegrationTestCase;
 
 final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
 {
-    private const string ERASED_AT = '2026-01-02T00:00:00+00:00';
-
     private CancelOrdersOnCustomerErased $policy;
+    private \DateTimeImmutable $erasedAt;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->policy = $this->service(CancelOrdersOnCustomerErased::class);
+        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
     }
 
     #[Test]
@@ -36,7 +36,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
+        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, $this->erasedAt));
 
         // Then
         $finder = $this->service(OrderFinderInterface::class);
@@ -57,7 +57,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         $this->store(OrderTestFactory::new()->withCustomerId($otherCustomerId)->create());
 
         // When
-        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, self::ERASED_AT));
+        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, $this->erasedAt));
 
         // Then
         $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);

@@ -6,12 +6,14 @@ namespace Tools\PHPUnit\Clock;
 
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;
+use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Clock\MockClock;
 
 /**
- * Freezes the global Clock to a fixed instant once before the test suite starts, so a Test
- * Factory's own Clock::get()->now() default stays deterministic without needing the Kernel/container.
+ * Freezes the global Clock to a fixed instant once before the test suite starts, so any
+ * Clock::get()->now() read stays deterministic, and synchronizes ClockMock to intercept
+ * native PHP time functions.
  */
 final class FreezeClockOnTestSuiteStarted implements StartedSubscriber
 {
@@ -24,6 +26,7 @@ final class FreezeClockOnTestSuiteStarted implements StartedSubscriber
         }
 
         Clock::set(new MockClock('2030-01-01T00:00:00+00:00'));
+        ClockMock::withClockMock(Clock::get()->now()->getTimestamp());
 
         self::$hasBeenFrozen = true;
     }

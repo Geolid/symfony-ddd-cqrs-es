@@ -12,7 +12,7 @@ final readonly class OrderAnonymized implements DataSubjectErasureInterface
 {
     public function __construct(
         public string $id,
-        public string $anonymizedAt,
+        public \DateTimeImmutable $anonymizedAt,
     ) {
     }
 

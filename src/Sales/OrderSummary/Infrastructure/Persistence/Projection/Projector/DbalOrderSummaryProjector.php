@@ -43,7 +43,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
                 'customer_id' => $event->customerId,
                 'total_amount_in_cents' => $event->totalAmountInCents,
                 'order_status' => 'placed',
-                'placed_at' => new \DateTimeImmutable($event->placedAt),
+                'placed_at' => $event->placedAt,
                 'payment_status' => null,
                 'shipment_status' => null,
                 'status' => $this->statusTransformer->compute('placed', null, null)->value,
@@ -56,7 +56,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onOrderCancelled(OrderCancelledIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'cancelled_at' => new \DateTimeImmutable($event->cancelledAt),
+            'cancelled_at' => $event->cancelledAt,
         ], orderStatus: 'cancelled', types: ['cancelled_at' => Types::DATETIME_IMMUTABLE]);
     }
 
@@ -74,7 +74,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onOrderPaymentCaptured(OrderPaymentCapturedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'paid_at' => new \DateTimeImmutable($event->capturedAt),
+            'paid_at' => $event->capturedAt,
         ], paymentStatus: 'captured', types: ['paid_at' => Types::DATETIME_IMMUTABLE]);
     }
 
@@ -82,7 +82,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onShipmentDispatched(ShipmentDispatchedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'dispatched_at' => new \DateTimeImmutable($event->dispatchedAt),
+            'dispatched_at' => $event->dispatchedAt,
         ], shipmentStatus: 'dispatched', types: ['dispatched_at' => Types::DATETIME_IMMUTABLE]);
     }
 
@@ -98,7 +98,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     public function onShipmentDelivered(ShipmentDeliveredIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
-            'delivered_at' => new \DateTimeImmutable($event->deliveredAt),
+            'delivered_at' => $event->deliveredAt,
         ], shipmentStatus: 'delivered', types: ['delivered_at' => Types::DATETIME_IMMUTABLE]);
     }
 

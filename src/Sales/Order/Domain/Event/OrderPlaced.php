@@ -42,7 +42,7 @@ final readonly class OrderPlaced
         public array $billingAddress,
         public array $lines,
         public int $totalAmountInCents,
-        public string $placedAt,
+        public \DateTimeImmutable $placedAt,
     ) {
     }
 }

@@ -13,7 +13,7 @@ final readonly class OrderPaymentRefundInitiated
         public string $id,
         public string $orderId,
         public string $reference,
-        public string $initiatedAt,
+        public \DateTimeImmutable $initiatedAt,
     ) {
     }
 }

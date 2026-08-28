@@ -11,7 +11,7 @@ final readonly class OrderCancelled
 {
     public function __construct(
         public string $id,
-        public string $cancelledAt,
+        public \DateTimeImmutable $cancelledAt,
     ) {
     }
 }

@@ -93,7 +93,10 @@
     <extensions>
         <bootstrap class="Tools\PHPUnit\EventSourcingExtension"/>
         <bootstrap class="Tools\PHPUnit\ClockExtension"/>
+        <bootstrap class="Tools\PHPUnit\FakerSeedExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
-        <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension"/>
+        <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
+            <parameter name="clock-mock-namespaces" value="Faker\Provider"/>
+        </bootstrap>
     </extensions>
 </phpunit>

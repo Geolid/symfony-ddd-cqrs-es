@@ -29,7 +29,7 @@ final readonly class ShipmentRequested
             'countryCode' => 'ZZ',
         ]))]
         public array $shippingAddress,
-        public string $createdAt,
+        public \DateTimeImmutable $createdAt,
     ) {
     }
 }

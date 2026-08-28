@@ -10,6 +10,7 @@ use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 {
@@ -17,9 +18,10 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
+        $suspendedAt = Clock::get()->now()->modify('+1 day');
         $active = IdentityTestFactory::new()->create();
         $suspended = IdentityTestFactory::new()
-            ->suspended('Suspected fraudulent activity', new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
+            ->suspended('Suspected fraudulent activity', $suspendedAt)
             ->create();
         $others = IdentityTestFactory::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
@@ -43,7 +45,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($suspended->id->toString(), $suspendedResult->id);
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
         self::assertSame('Suspected fraudulent activity', $suspendedResult->reason);
-        self::assertSame('2026-01-02T00:00:00+00:00', $suspendedResult->suspendedAt?->format('c'));
+        self::assertSame($suspendedAt->format(\DateTimeImmutable::ATOM), $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM));
         self::assertNull($suspendedResult->reactivatedAt);
 
         self::assertSame($this->ids($active, $suspended), array_column($firstPage->items, 'id'));

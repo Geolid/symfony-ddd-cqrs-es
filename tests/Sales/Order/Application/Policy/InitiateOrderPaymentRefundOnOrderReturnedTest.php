@@ -15,8 +15,6 @@ use Support\AbstractIntegrationTestCase;
 
 final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegrationTestCase
 {
-    private const string RETURNED_AT = '2026-01-12T00:00:00+00:00';
-
     private InitiateOrderPaymentRefundOnOrderReturned $policy;
 
     protected function setUp(): void
@@ -35,7 +33,7 @@ final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegr
         $this->store($order, $orderPayment);
 
         // When
-        ($this->policy)(new OrderReturned($order->id->toString(), self::RETURNED_AT));
+        ($this->policy)(new OrderReturned($order->id->toString(), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')));
 
         // Then
         $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');

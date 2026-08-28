@@ -37,7 +37,7 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId), 'CI pipeline', Uuid::uuid7()->toString());
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, '2026-01-02T00:00:00+00:00'));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CI pipeline'));
