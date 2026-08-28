@@ -192,7 +192,7 @@ header('Content-Type: text/html; charset=utf-8');
         <form method="post">
             <input type="hidden" name="ref" value="<?php echo htmlspecialchars($reference); ?>">
             <input type="hidden" name="returnUrl" value="<?php echo htmlspecialchars($returnUrl); ?>">
-            <button type="submit" class="checkout__button checkout__button--pay">Authorize & Pay</button>
+            <button type="submit" class="checkout__button checkout__button--pay">Pay</button>
         </form>
         <a href="<?php echo htmlspecialchars($returnUrl); ?>" class="checkout__button checkout__button--cancel">Cancel</a>
 
