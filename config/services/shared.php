@@ -30,7 +30,6 @@ return static function (ContainerConfigurator $container): void {
     $queryBusAlias = $services->alias(QueryBusInterface::class, MessengerQueryBus::class);
     $services->alias(IntegrationEventPublisherInterface::class, IntegrationEventAppender::class);
 
-    // StackHydratorBuilder is fluent, not constructor-injectable — assembled through HydratorFactory instead.
     $services->set('shared.hydration.result_hydrator', StackHydrator::class)
         ->factory([service(HydratorFactory::class), 'create']);
 
