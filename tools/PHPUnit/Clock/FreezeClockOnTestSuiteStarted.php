@@ -25,7 +25,7 @@ final class FreezeClockOnTestSuiteStarted implements StartedSubscriber
             return;
         }
 
-        Clock::set(new MockClock('2030-01-01T00:00:00+00:00'));
+        Clock::set(new MockClock('2026-01-01T00:00:00+00:00'));
         ClockMock::withClockMock(Clock::get()->now()->getTimestamp());
 
         self::$hasBeenFrozen = true;

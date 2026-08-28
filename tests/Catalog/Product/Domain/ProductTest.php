@@ -20,23 +20,23 @@ final class ProductTest extends AggregateRootTestCase
     public function itLists(): void
     {
         $id = ProductId::generate();
-        $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn (): Product => Product::list($id, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750), $listedAt))
-            ->then(new ProductListed($id->toString(), 'Espresso cups, set of 6', 1_750, $listedAt));
+            ->when(static fn (): Product => Product::list($id, Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750), $now))
+            ->then(new ProductListed($id->toString(), 'Espresso cups, set of 6', 1_750, $now));
     }
 
     #[Test]
     public function itReprices(): void
     {
         $id = ProductId::generate()->toString();
-        $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $repricedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $repricedAt = $now->modify('+1 day');
 
         $this
-            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt))
+            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $now))
             ->when(static fn (Product $product) => $product->reprice(Money::fromCents(1_950), $repricedAt))
             ->then(new ProductRepriced($id, 1_950, $repricedAt));
     }
@@ -45,11 +45,11 @@ final class ProductTest extends AggregateRootTestCase
     public function itDelists(): void
     {
         $id = ProductId::generate()->toString();
-        $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $delistedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $delistedAt = $now->modify('+1 day');
 
         $this
-            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt))
+            ->given(new ProductListed($id, 'Espresso cups, set of 6', 1_750, $now))
             ->when(static fn (Product $product) => $product->delist($delistedAt))
             ->then(new ProductDelisted($id, $delistedAt));
     }
@@ -58,15 +58,14 @@ final class ProductTest extends AggregateRootTestCase
     public function itDoesNotDelistAnAlreadyDelisted(): void
     {
         $id = ProductId::generate()->toString();
-        $listedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $delistedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new ProductListed($id, 'Espresso cups, set of 6', 1_750, $listedAt),
-                new ProductDelisted($id, $delistedAt),
+                new ProductListed($id, 'Espresso cups, set of 6', 1_750, $now),
+                new ProductDelisted($id, $now->modify('+1 day')),
             )
-            ->when(static fn (Product $product) => $product->delist(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Product $product) => $product->delist($now->modify('+2 days')))
             ->then();
     }
 

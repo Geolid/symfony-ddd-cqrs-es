@@ -117,7 +117,7 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $this->store(OrderPaymentTestFactory::new()->withRequestedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create());
+        $this->store(OrderPaymentTestFactory::new()->withRequestedAt(Clock::get()->now()->modify('-90 minutes'))->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order-payment:reconcile');
         $lock->acquire();

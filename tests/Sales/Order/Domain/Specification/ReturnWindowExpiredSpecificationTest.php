@@ -32,8 +32,8 @@ final class ReturnWindowExpiredSpecificationTest extends TestCase
     {
         $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
-        yield 'within window' => [$deliveredAt, new \DateTimeImmutable('2026-01-10T00:00:00+00:00'), false];
+        yield 'within window' => [$deliveredAt, $deliveredAt->modify('+9 days'), false];
         yield 'at window boundary' => [$deliveredAt, $deliveredAt->modify('+14 days'), false];
-        yield 'past window' => [$deliveredAt, new \DateTimeImmutable('2026-01-20T00:00:00+00:00'), true];
+        yield 'past window' => [$deliveredAt, $deliveredAt->modify('+19 days'), true];
     }
 }

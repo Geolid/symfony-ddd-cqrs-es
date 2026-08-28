@@ -16,6 +16,7 @@ use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -88,7 +89,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withSecret('plain-secret')
             ->withHasher($this->hasher)
             ->create());
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // Then

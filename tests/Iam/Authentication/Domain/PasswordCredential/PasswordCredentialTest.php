@@ -26,7 +26,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $identityId = Uuid::uuid7()->toString();
         $id = PasswordCredentialId::forIdentity($identityId);
-        $definedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $hasher = new StubPasswordHasher();
 
         $this
@@ -38,14 +38,14 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('original-password'),
                 new StubPasswordStrength(),
                 $hasher,
-                $definedAt,
+                $now,
             ))
             ->then(new PasswordCredentialDefined(
                 $id->toString(),
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                $definedAt,
+                $now,
             ));
     }
 
@@ -53,6 +53,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     public function itCannotDefineWithWeakPassword(): void
     {
         $identityId = Uuid::uuid7()->toString();
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
@@ -63,7 +64,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('original-password'),
                 new StubPasswordStrength(sufficient: false),
                 new StubPasswordHasher(),
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -74,7 +75,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
         $id = PasswordCredentialId::forIdentity($identityId);
         $hasher = new StubPasswordHasher();
-        $changedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $changedAt = $now->modify('+1 day');
 
         $this
             ->given(new PasswordCredentialDefined(
@@ -82,7 +84,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
@@ -103,6 +105,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
         $id = PasswordCredentialId::forIdentity($identityId);
         $hasher = new StubPasswordHasher();
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(new PasswordCredentialDefined(
@@ -110,13 +113,13 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
                 new StubPasswordStrength(sufficient: false),
                 $hasher,
-                new \DateTimeImmutable('2026-01-02T00:00:00+00:00'),
+                $now->modify('+1 day'),
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -127,6 +130,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
         $id = PasswordCredentialId::forIdentity($identityId);
         $hasher = new StubPasswordHasher();
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(new PasswordCredentialDefined(
@@ -134,13 +138,13 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('original-password'),
                 new StubPasswordStrength(),
                 $hasher,
-                new \DateTimeImmutable('2026-01-02T00:00:00+00:00'),
+                $now->modify('+1 day'),
             ))
             ->expectsException(SamePasswordException::class);
     }
@@ -151,7 +155,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $identityId = Uuid::uuid7()->toString();
         $id = PasswordCredentialId::forIdentity($identityId);
         $hasher = new StubPasswordHasher();
-        $rehashedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $rehashedAt = $now->modify('+1 day');
 
         $this
             ->given(new PasswordCredentialDefined(
@@ -159,7 +164,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $identityId,
                 'ada.lovelace',
                 $hasher->hash('original-password'),
-                new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+                $now,
             ))
             ->when(static fn (PasswordCredential $credential) => $credential->rehash(
                 'original-password',

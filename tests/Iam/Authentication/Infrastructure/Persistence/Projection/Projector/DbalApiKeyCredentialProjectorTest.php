@@ -13,6 +13,7 @@ use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{label: string, issued_at: string, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
@@ -80,7 +81,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $this->store($identity, $credential);
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // Then
@@ -104,11 +105,11 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
             ->withHasher(new StubApiKeyHasher())
             ->create();
         $this->store($identity, $credential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), new \DateTimeImmutable('now +00:00'));
+        $identity->reactivate(Reason::fromString('Appeal upheld'), Clock::get()->now());
         $this->store($identity);
 
         // Then
@@ -134,7 +135,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $this->store($identity, $credential);
 
         // When
-        $identity->erase(new \DateTimeImmutable('now +00:00'));
+        $identity->erase(Clock::get()->now());
         $this->store($identity);
 
         // Then
@@ -152,7 +153,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $this->store($identity, $credential);
 
         if ($suspended) {
-            $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+            $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
             $this->store($identity);
         }
 

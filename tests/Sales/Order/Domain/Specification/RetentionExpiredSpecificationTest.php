@@ -32,8 +32,8 @@ final class RetentionExpiredSpecificationTest extends TestCase
     {
         $closedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
-        yield 'within retention period' => [$closedAt, new \DateTimeImmutable('2030-01-01T00:00:00+00:00'), false];
+        yield 'within retention period' => [$closedAt, $closedAt->modify('+4 years'), false];
         yield 'at retention period boundary' => [$closedAt, $closedAt->modify('+3650 days'), false];
-        yield 'past retention period' => [$closedAt, new \DateTimeImmutable('2036-01-01T00:00:00+00:00'), true];
+        yield 'past retention period' => [$closedAt, $closedAt->modify('+10 years'), true];
     }
 }

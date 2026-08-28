@@ -12,6 +12,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Symfony\Component\Clock\Clock;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class SecurityControllerTest extends AbstractWebTestCase
@@ -138,7 +139,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->create();
         $this->store($identity, $passwordCredential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // When

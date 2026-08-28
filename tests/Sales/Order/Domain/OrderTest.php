@@ -40,13 +40,13 @@ final class OrderTest extends AggregateRootTestCase
     public function itPlacesDerivingTotalFromLines(): void
     {
         $id = OrderId::generate();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $customerId = Uuid::uuid7()->toString();
         $lines = $this->lines();
 
         $this
             ->given()
-            ->when(static fn (): Order => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $placedAt))
+            ->when(static fn (): Order => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $now))
             ->then(new OrderPlaced(
                 $id->toString(),
                 $customerId,
@@ -54,7 +54,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->primitiveBillingAddress(),
                 $this->primitiveLines($lines),
                 1_999,
-                $placedAt,
+                $now,
             ));
     }
 
@@ -62,11 +62,11 @@ final class OrderTest extends AggregateRootTestCase
     public function itCannotPlaceWithoutLine(): void
     {
         $id = OrderId::generate();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn (): Order => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $placedAt))
+            ->when(static fn (): Order => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $now))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -75,11 +75,11 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
 
         $this
-            ->given($this->orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $now))
             ->when(static fn (Order $order) => $order->confirm($confirmedAt))
             ->then(new OrderConfirmed($id, $confirmedAt));
     }
@@ -89,15 +89,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
-            ->when(static fn (Order $order) => $order->confirm(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->confirm($confirmedAt->modify('+1 hour')))
             ->then();
     }
 
@@ -106,11 +106,11 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
-            ->given($this->orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $now))
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
             ->then(new OrderCancelled($id, $cancelledAt));
     }
@@ -120,15 +120,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderCancelled($id, $cancelledAt),
             )
-            ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt->modify('+1 day')))
             ->then();
     }
 
@@ -137,13 +137,13 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
             ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
@@ -155,17 +155,17 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
             )
-            ->when(static fn (Order $order) => $order->cancel($customerId, new \DateTimeImmutable('2026-01-04T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->cancel($customerId, $dispatchedAt->modify('+1 day')))
             ->expectsException(OrderNotCancellableException::class);
     }
 
@@ -173,11 +173,11 @@ final class OrderTest extends AggregateRootTestCase
     public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given($this->orderPlaced($id, Uuid::uuid7()->toString(), $placedAt))
-            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given($this->orderPlaced($id, Uuid::uuid7()->toString(), $now))
+            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), $now->modify('+1 day')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
@@ -186,13 +186,13 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
             ->when(static fn (Order $order) => $order->dispatch($dispatchedAt))
@@ -204,11 +204,11 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given($this->orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->dispatch(new \DateTimeImmutable('2026-01-02T00:00:00+00:00')))
+            ->given($this->orderPlaced($id, $customerId, $now))
+            ->when(static fn (Order $order) => $order->dispatch($now->modify('+2 days')))
             ->then();
     }
 
@@ -217,14 +217,14 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
             )
@@ -237,15 +237,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
-            ->when(static fn (Order $order) => $order->deliver(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->deliver($now->modify('+2 days')))
             ->then();
     }
 
@@ -254,15 +254,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $completedAt = $deliveredAt->modify('+30 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
@@ -276,19 +276,19 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-01-10T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->complete($deliveredAt->modify('+6 days')))
             ->then();
     }
 
@@ -297,21 +297,21 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $completedAt = $deliveredAt->modify('+30 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
                 new OrderCompleted($id, $completedAt),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-03-01T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->complete($completedAt->modify('+30 days')))
             ->then();
     }
 
@@ -320,15 +320,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
-            ->when(static fn (Order $order) => $order->complete(new \DateTimeImmutable('2026-02-01T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->complete($confirmedAt->modify('+30 days')))
             ->expectsException(OrderNotCompletableException::class);
     }
 
@@ -337,15 +337,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $deliveredAt->modify('+6 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
@@ -359,21 +359,21 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $deliveredAt->modify('+6 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
                 new OrderReturnRequested($id, $requestedAt),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt->modify('+1 day')))
             ->then();
     }
 
@@ -381,19 +381,19 @@ final class OrderTest extends AggregateRootTestCase
     public function itCannotRequestReturnWhenBelongingToAnotherCustomer(): void
     {
         $id = OrderId::generate()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, Uuid::uuid7()->toString(), $placedAt),
+                $this->orderPlaced($id, Uuid::uuid7()->toString(), $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), $deliveredAt->modify('+6 days')))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
@@ -402,15 +402,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-10T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, $confirmedAt->modify('+6 days')))
             ->expectsException(OrderNotReturnableException::class);
     }
 
@@ -419,19 +419,19 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, new \DateTimeImmutable('2026-01-19T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->requestReturn($customerId, $deliveredAt->modify('+15 days')))
             ->expectsException(OrderReturnWindowExpiredException::class);
     }
 
@@ -440,16 +440,16 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $returnedAt = new \DateTimeImmutable('2026-01-12T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $deliveredAt->modify('+6 days');
+        $returnedAt = $requestedAt->modify('+2 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
@@ -464,19 +464,19 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Order $order) => $order->confirmReturn(new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->confirmReturn($deliveredAt->modify('+6 days')))
             ->then();
     }
 
@@ -485,16 +485,16 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
-        $requestedAt = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
-        $rejectedAt = new \DateTimeImmutable('2026-01-11T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
+        $requestedAt = $deliveredAt->modify('+6 days');
+        $rejectedAt = $requestedAt->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
@@ -509,19 +509,19 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-03T00:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-04T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $confirmedAt = $now->modify('+2 hours');
+        $dispatchedAt = $now->modify('+2 days');
+        $deliveredAt = $now->modify('+5 days');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderConfirmed($id, $confirmedAt),
                 new OrderDispatched($id, $dispatchedAt),
                 new OrderDelivered($id, $deliveredAt),
             )
-            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', new \DateTimeImmutable('2026-01-11T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', $deliveredAt->modify('+6 days')))
             ->then();
     }
 
@@ -530,10 +530,10 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given($this->orderPlaced($id, $customerId, $placedAt))
+            ->given($this->orderPlaced($id, $customerId, $now))
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
             ->then();
     }
@@ -543,12 +543,12 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderCancelled($id, $cancelledAt),
             )
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
@@ -560,17 +560,17 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2016-01-02T00:00:00+00:00');
-        $now = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
+        $anonymizedAt = $now->modify('+11 years');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderCancelled($id, $cancelledAt),
             )
-            ->when(static fn (Order $order) => $order->anonymize($now))
-            ->then(new OrderAnonymized($id, $now));
+            ->when(static fn (Order $order) => $order->anonymize($anonymizedAt))
+            ->then(new OrderAnonymized($id, $anonymizedAt));
     }
 
     #[Test]
@@ -578,11 +578,11 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
-            ->given($this->orderPlaced($id, $customerId, $placedAt))
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00')))
+            ->given($this->orderPlaced($id, $customerId, $now))
+            ->when(static fn (Order $order) => $order->anonymize($now->modify('+11 years')))
             ->then();
     }
 
@@ -591,15 +591,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderCancelled($id, $cancelledAt),
             )
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->anonymize($cancelledAt->modify('+1 month')))
             ->then();
     }
 
@@ -608,17 +608,17 @@ final class OrderTest extends AggregateRootTestCase
     {
         $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2016-01-01T00:00:00+00:00');
-        $cancelledAt = new \DateTimeImmutable('2016-01-02T00:00:00+00:00');
-        $anonymizedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $cancelledAt = $now->modify('+1 day');
+        $anonymizedAt = $now->modify('+11 years');
 
         $this
             ->given(
-                $this->orderPlaced($id, $customerId, $placedAt),
+                $this->orderPlaced($id, $customerId, $now),
                 new OrderCancelled($id, $cancelledAt),
                 new OrderAnonymized($id, $anonymizedAt),
             )
-            ->when(static fn (Order $order) => $order->anonymize(new \DateTimeImmutable('2026-02-01T00:00:00+00:00')))
+            ->when(static fn (Order $order) => $order->anonymize($anonymizedAt->modify('+1 day')))
             ->then();
     }
 

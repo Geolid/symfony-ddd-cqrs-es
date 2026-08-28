@@ -23,24 +23,24 @@ final class CustomerTest extends AggregateRootTestCase
     public function itRegisters(): void
     {
         $id = CustomerId::generate();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given()
-            ->when(static fn (): Customer => Customer::register($id, Email::fromString('Buyer@Example.COM'), $registeredAt))
-            ->then(new CustomerRegistered($id->toString(), 'buyer@example.com', $registeredAt));
+            ->when(static fn (): Customer => Customer::register($id, Email::fromString('Buyer@Example.COM'), $now))
+            ->then(new CustomerRegistered($id->toString(), 'buyer@example.com', $now));
     }
 
     #[Test]
     public function itRegistersShippingAddress(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $setAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $setAt = $now->modify('+1 day');
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
 
         $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt))
+            ->given(new CustomerRegistered($id, 'buyer@example.com', $now))
             ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $setAt))
             ->then(new CustomerShippingAddressRegistered(
                 id: $id,
@@ -53,15 +53,15 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotRegisterWhenIdenticalShippingAddress(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
 
         $this
             ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt),
-                new CustomerShippingAddressRegistered($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'], $registeredAt),
+                new CustomerRegistered($id, 'buyer@example.com', $now),
+                new CustomerShippingAddressRegistered($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'], $now),
             )
-            ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $now->modify('+2 days')))
             ->then();
     }
 
@@ -69,12 +69,12 @@ final class CustomerTest extends AggregateRootTestCase
     public function itRegistersBillingAddress(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $setAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $setAt = $now->modify('+1 day');
         $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
 
         $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt))
+            ->given(new CustomerRegistered($id, 'buyer@example.com', $now))
             ->when(static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $setAt))
             ->then(new CustomerBillingAddressRegistered(
                 id: $id,
@@ -87,15 +87,15 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotRegisterWhenIdenticalBillingAddress(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
         $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
 
         $this
             ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt),
-                new CustomerBillingAddressRegistered($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'], $registeredAt),
+                new CustomerRegistered($id, 'buyer@example.com', $now),
+                new CustomerBillingAddressRegistered($id, ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'], $now),
             )
-            ->when(static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $now->modify('+2 days')))
             ->then();
     }
 
@@ -103,11 +103,11 @@ final class CustomerTest extends AggregateRootTestCase
     public function itErases(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $erasedAt = $now->modify('+1 day');
 
         $this
-            ->given(new CustomerRegistered($id, 'buyer@example.com', $registeredAt))
+            ->given(new CustomerRegistered($id, 'buyer@example.com', $now))
             ->when(static fn (Customer $customer) => $customer->erase($erasedAt))
             ->then(new CustomerErased($id, $erasedAt));
     }
@@ -116,15 +116,14 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotEraseWhenAlreadyErased(): void
     {
         $id = CustomerId::generate()->toString();
-        $registeredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
 
         $this
             ->given(
-                new CustomerRegistered($id, 'buyer@example.com', $registeredAt),
-                new CustomerErased($id, $erasedAt),
+                new CustomerRegistered($id, 'buyer@example.com', $now),
+                new CustomerErased($id, $now->modify('+1 day')),
             )
-            ->when(static fn (Customer $customer) => $customer->erase(new \DateTimeImmutable('2026-01-03T00:00:00+00:00')))
+            ->when(static fn (Customer $customer) => $customer->erase($now->modify('+2 days')))
             ->then();
     }
 
