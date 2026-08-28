@@ -10,6 +10,6 @@ final class CustomerAlreadyExistsException extends AggregateAlreadyExistsExcepti
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Customer with ID "%s" already exists.', $id));
+        return new self(\sprintf('Customer "%s" already exists.', $id));
     }
 }

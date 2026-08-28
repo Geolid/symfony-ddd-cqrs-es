@@ -10,6 +10,6 @@ final class OrderAlreadyExistsException extends AggregateAlreadyExistsException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Order with ID "%s" already exists.', $id));
+        return new self(\sprintf('Order "%s" already exists.', $id));
     }
 }

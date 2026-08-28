@@ -10,6 +10,6 @@ final class ProductAlreadyExistsException extends AggregateAlreadyExistsExceptio
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Product with ID "%s" already exists.', $id));
+        return new self(\sprintf('Product "%s" already exists.', $id));
     }
 }
