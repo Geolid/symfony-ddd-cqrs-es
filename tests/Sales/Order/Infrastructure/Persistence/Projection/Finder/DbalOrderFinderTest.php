@@ -29,12 +29,13 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $placedAt = new \DateTimeImmutable('2026-01-01T08:00:00+00:00');
-        $confirmedAt = new \DateTimeImmutable('2026-01-01T09:00:00+00:00');
-        $dispatchedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
-        $deliveredAt = new \DateTimeImmutable('2026-01-05T11:00:00+00:00');
-        $completedAt = new \DateTimeImmutable('2026-02-01T00:00:00+00:00');
-        $anonymizedAt = new \DateTimeImmutable('2036-02-02T12:00:00+00:00');
+        $now = Clock::get()->now();
+        $placedAt = $now->modify('-11 years');
+        $confirmedAt = $placedAt->modify('+1 hour');
+        $dispatchedAt = $placedAt->modify('+1 day 2 hours');
+        $deliveredAt = $placedAt->modify('+4 days 3 hours');
+        $completedAt = $placedAt->modify('+1 month');
+        $anonymizedAt = $now;
         $order = OrderTestFactory::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)

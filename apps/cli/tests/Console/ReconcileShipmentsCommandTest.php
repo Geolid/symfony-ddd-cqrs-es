@@ -148,7 +148,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $this->store(ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create());
+        $this->store(ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: Clock::get()->now()->modify('-3 days'))->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('fulfilment:shipment:reconcile');
         $lock->acquire();

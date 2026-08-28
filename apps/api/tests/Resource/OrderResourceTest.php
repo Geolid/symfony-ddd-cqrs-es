@@ -11,6 +11,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpFoundation\Response;
 
 final class OrderResourceTest extends AbstractApiTestCase
@@ -138,7 +139,7 @@ final class OrderResourceTest extends AbstractApiTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // When

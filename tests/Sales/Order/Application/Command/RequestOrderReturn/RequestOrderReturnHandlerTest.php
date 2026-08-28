@@ -16,6 +16,7 @@ use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
 {
@@ -111,7 +112,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
             ->withCustomerId($customerId)
             ->confirmed()
             ->dispatched()
-            ->delivered(new \DateTimeImmutable('2020-01-01T00:00:00+00:00'))
+            ->delivered(Clock::get()->now()->modify('-30 days'))
             ->create();
         $this->store($order);
 

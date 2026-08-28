@@ -16,6 +16,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -72,7 +73,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withHasher($this->hasher)
             ->create();
         $this->store($identity, $credential);
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), new \DateTimeImmutable('now +00:00'));
+        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
         $this->store($identity);
 
         // Then

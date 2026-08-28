@@ -49,7 +49,7 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $this->store(OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create());
+        $this->store(OrderTestFactory::new()->withPlacedAt(Clock::get()->now()->modify('-11 years'))->create());
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order:anonymize-expired');
         $lock->acquire();
