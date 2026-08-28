@@ -15,7 +15,17 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<ApiKeyCredential>
+ * @phpstan-type Attributes = array{
+ *     id: string,
+ *     identityId?: string,
+ *     label: string,
+ *     keyId: string,
+ *     secret: string,
+ *     issuedAt: \DateTimeInterface,
+ *     hasher?: ApiKeyHasherInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<ApiKeyCredential, Attributes>
  */
 final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
 {
@@ -66,10 +76,12 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
 
     protected function defaults(): array
     {
+        Assert::string($label = self::faker()->words(2, true));
+
         return [
             'id' => ApiKeyCredentialId::generate()->toString(),
             'identityId' => Uuid::uuid7()->toString(),
-            'label' => self::faker()->words(2, true),
+            'label' => $label,
             'keyId' => KeyId::PREFIX.bin2hex(random_bytes(8)),
             'secret' => bin2hex(random_bytes(32)),
             'issuedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
@@ -79,12 +91,11 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
     protected function build(array $attributes): ApiKeyCredential
     {
         Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($identityId = $attributes['identityId']);
+        Assert::stringNotEmpty($identityId = $attributes['identityId'] ?? null);
         Assert::stringNotEmpty($label = $attributes['label']);
         Assert::stringNotEmpty($keyId = $attributes['keyId']);
         Assert::stringNotEmpty($secret = $attributes['secret']);
-        Assert::keyExists($attributes, 'hasher');
-        Assert::isInstanceOf($hasher = $attributes['hasher'], ApiKeyHasherInterface::class);
+        Assert::isInstanceOf($hasher = $attributes['hasher'] ?? null, ApiKeyHasherInterface::class);
         Assert::isInstanceOf($issuedAt = $attributes['issuedAt'], \DateTimeInterface::class);
 
         return ApiKeyCredential::issue(

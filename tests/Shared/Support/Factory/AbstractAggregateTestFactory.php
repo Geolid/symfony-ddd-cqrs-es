@@ -11,6 +11,7 @@ use Webmozart\Assert\Assert;
 
 /**
  * @template T of AggregateRoot
+ * @template TAttributes of array<string, mixed> = array<string, mixed>
  *
  * @phpstan-consistent-constructor
  */
@@ -20,23 +21,23 @@ abstract class AbstractAggregateTestFactory
     private array $modifiers = [];
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param TAttributes $attributes
      */
     final public function __construct(protected readonly array $attributes = [])
     {
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param TAttributes $attributes
      */
     public static function new(array $attributes = []): static
     {
-        /** @var static<T> */ // @phpstan-ignore varTag.nativeType
+        /** @var static */ // @phpstan-ignore varTag.nativeType
         return new static($attributes);
     }
 
     /**
-     * @return AggregateListTestFactory<T>
+     * @return AggregateListTestFactory<T, TAttributes>
      */
     public function many(int $count): AggregateListTestFactory
     {
@@ -54,19 +55,19 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
-     * @return array<string, mixed>
+     * @return TAttributes
      */
     abstract protected function defaults(): array;
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param TAttributes $attributes
      *
      * @return T
      */
     abstract protected function build(array $attributes): AggregateRoot;
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param TAttributes $attributes
      */
     protected function withAttributes(array $attributes): static
     {
@@ -97,6 +98,7 @@ abstract class AbstractAggregateTestFactory
      */
     private function instantiate(): AggregateRoot
     {
+        /** @var TAttributes */
         $attributes = array_merge($this->defaults(), $this->attributes);
         $aggregate = $this->build($attributes);
 

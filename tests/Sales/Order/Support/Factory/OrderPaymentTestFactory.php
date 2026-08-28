@@ -14,7 +14,15 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<OrderPayment>
+ * @phpstan-type Attributes = array{
+ *     orderId: string,
+ *     amountInCents: int,
+ *     reference: string,
+ *     checkoutUrl: string,
+ *     requestedAt: \DateTimeInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<OrderPayment, Attributes>
  */
 final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
 {

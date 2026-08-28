@@ -8,12 +8,13 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 
 /**
  * @template T of AggregateRoot
+ * @template TAttributes of array<string, mixed> = array<string, mixed>
  */
 final readonly class AggregateListTestFactory
 {
     /**
-     * @param AbstractAggregateTestFactory<T> $factory
-     * @param int<1, max>                     $count
+     * @param AbstractAggregateTestFactory<T, TAttributes> $factory
+     * @param int<1, max>                                  $count
      */
     public function __construct(
         private AbstractAggregateTestFactory $factory,

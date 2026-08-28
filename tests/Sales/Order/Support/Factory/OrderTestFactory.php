@@ -19,7 +19,16 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<Order>
+ * @phpstan-type Attributes = array{
+ *     id: string,
+ *     customerId?: string,
+ *     shippingAddress: PostalAddress,
+ *     billingAddress: PostalAddress,
+ *     lines: list<OrderLine>,
+ *     placedAt: \DateTimeInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<Order, Attributes>
  */
 final class OrderTestFactory extends AbstractAggregateTestFactory
 {
@@ -157,7 +166,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     protected function build(array $attributes): Order
     {
         Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($customerId = $attributes['customerId']);
+        Assert::stringNotEmpty($customerId = $attributes['customerId'] ?? null);
         Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
         Assert::isInstanceOf($billingAddress = $attributes['billingAddress'], PostalAddress::class);
         Assert::isList($lines = $attributes['lines']);
