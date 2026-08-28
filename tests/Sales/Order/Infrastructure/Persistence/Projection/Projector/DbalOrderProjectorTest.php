@@ -11,6 +11,7 @@ use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Infrastructure\Persistence\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, delivered_at: ?string, completed_at: ?string, return_requested_at: ?string, returned_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string, cancelled_at: ?string, closed_at: ?string, anonymized_at: ?string}
@@ -107,10 +108,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderAnonymized(): void
     {
         // Given
-        $cancelledAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = Clock::get()->now();
         $order = OrderTestFactory::new()
-            ->cancelled($cancelledAt)
-            ->anonymized($cancelledAt->modify('+11 years'))
+            ->cancelled($now->modify('-11 years'))
+            ->anonymized($now)
             ->create();
 
         // When
@@ -151,10 +152,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($other);
-        $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = Clock::get()->now();
         $order = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered($deliveredAt)
-            ->completed($deliveredAt->modify('+1 month'))
+            ->delivered($now->modify('-1 month'))
+            ->completed($now)
             ->create();
 
         // When
