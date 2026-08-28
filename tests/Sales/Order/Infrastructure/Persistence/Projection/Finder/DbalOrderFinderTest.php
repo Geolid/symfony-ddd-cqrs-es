@@ -81,8 +81,9 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
+        $other = OrderTestFactory::new()->create();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $this->store($order, OrderTestFactory::new()->create());
+        $this->store($other, $order);
 
         // When
         $results = iterator_to_array($this->finder->byCustomer($customerId), false);
@@ -98,12 +99,10 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $cutoff = $now->modify('-30 days');
+        $withinCutoff = OrderTestFactory::new()->cancelled($now->modify('-10 days'))->create();
+        $notClosed = OrderTestFactory::new()->create();
         $expired = OrderTestFactory::new()->cancelled($now->modify('-60 days'))->create();
-        $this->store(
-            $expired,
-            OrderTestFactory::new()->cancelled($now->modify('-10 days'))->create(),
-            OrderTestFactory::new()->create(),
-        );
+        $this->store($withinCutoff, $notClosed, $expired);
 
         // When
         $results = iterator_to_array($this->finder->closedBefore($cutoff), false);
@@ -119,16 +118,14 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $cutoff = $now->modify('-14 days');
+        $withinCutoff = OrderTestFactory::new()->confirmed()->dispatched()
+            ->delivered($now->modify('-5 days'))
+            ->create();
+        $notDelivered = OrderTestFactory::new()->confirmed()->dispatched()->create();
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
             ->delivered($now->modify('-20 days'))
             ->create();
-        $this->store(
-            $expired,
-            OrderTestFactory::new()->confirmed()->dispatched()
-                ->delivered($now->modify('-5 days'))
-                ->create(),
-            OrderTestFactory::new()->confirmed()->dispatched()->create(),
-        );
+        $this->store($withinCutoff, $notDelivered, $expired);
 
         // When
         $results = iterator_to_array($this->finder->deliveredBefore($cutoff), false);

@@ -37,7 +37,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $this->store(...ProductTestFactory::new()->many(5)->create());
+        $products = ProductTestFactory::new()->many(5)->create();
+        $this->store(...$products);
 
         // When
         $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));

@@ -64,7 +64,8 @@ final class OrderResourceTest extends AbstractApiTestCase
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
         $client = $this->authenticatedClient($identity);
-        $this->store(OrderTestFactory::new()->withTotalAmountInCents(1_999)->create());
+        $order = OrderTestFactory::new()->withTotalAmountInCents(1_999)->create();
+        $this->store($order);
 
         // When
         $client->request('GET', '/v1/sales/orders');

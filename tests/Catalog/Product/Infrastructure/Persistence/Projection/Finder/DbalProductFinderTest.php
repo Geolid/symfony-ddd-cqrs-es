@@ -47,8 +47,9 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itListsSortedByLabel(): void
     {
         // Given
-        $this->store(ProductTestFactory::new()->withLabel('Zebra mug')->create());
-        $this->store(ProductTestFactory::new()->withLabel('Apple crate')->create());
+        $zebraMug = ProductTestFactory::new()->withLabel('Zebra mug')->create();
+        $appleCrate = ProductTestFactory::new()->withLabel('Apple crate')->create();
+        $this->store($zebraMug, $appleCrate);
 
         // When
         $results = iterator_to_array($this->finder->sortedByLabel());

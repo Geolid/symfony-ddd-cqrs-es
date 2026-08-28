@@ -41,7 +41,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-locale@example.com');
         $this->loginAs($client, $identity);
-        $this->store(OrderTestFactory::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create());
+        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create();
+        $this->store($order);
 
         // When
         $client->request('GET', $path);

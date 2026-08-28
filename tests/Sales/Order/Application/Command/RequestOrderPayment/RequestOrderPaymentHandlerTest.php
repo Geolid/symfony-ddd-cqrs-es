@@ -56,12 +56,13 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $orderId = Uuid::uuid7()->toString();
         $id = OrderPaymentId::forOrder($orderId)->toString();
-        $this->store(OrderPaymentTestFactory::new()
+        $payment = OrderPaymentTestFactory::new()
             ->withOrderId($orderId)
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
             ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create());
+            ->create();
+        $this->store($payment);
 
         // When
         $this->dispatch(new RequestOrderPayment(

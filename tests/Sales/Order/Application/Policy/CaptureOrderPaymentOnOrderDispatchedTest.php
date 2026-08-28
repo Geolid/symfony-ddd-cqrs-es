@@ -29,7 +29,8 @@ final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegration
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $this->store($order, OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create());
+        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create();
+        $this->store($order, $payment);
 
         // When
         ($this->policy)(new OrderDispatched($order->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
