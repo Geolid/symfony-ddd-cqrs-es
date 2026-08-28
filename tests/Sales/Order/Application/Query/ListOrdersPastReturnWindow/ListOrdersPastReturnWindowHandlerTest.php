@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrdersPastReturnWindow\ListOrdersPastReturnWindow;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTestCase
 {
@@ -16,15 +16,15 @@ final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTes
     public function itLists(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
+        $now = Clock::get()->now();
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->delivered($now->modify('-19 days'))
             ->create();
         $this->store(
-            $expired,
             OrderTestFactory::new()->confirmed()->dispatched()
-                ->delivered(new \DateTimeImmutable('2026-01-30T00:00:00+00:00'))
+                ->delivered($now->modify('-2 days'))
                 ->create(),
+            $expired,
         );
 
         // When

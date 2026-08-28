@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
@@ -30,12 +30,12 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     public function itCompletesPastTheReturnWindow(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
+        $now = Clock::get()->now();
         $expired = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->delivered($now->modify('-20 days'))
             ->create();
         $withinWindow = OrderTestFactory::new()->confirmed()->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-30T00:00:00+00:00'))
+            ->delivered($now->modify('-2 days'))
             ->create();
         $this->store($expired, $withinWindow);
         $tester = $this->tester();

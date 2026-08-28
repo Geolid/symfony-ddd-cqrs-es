@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThreshold;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends AbstractIntegrationTestCase
 {
@@ -16,19 +16,19 @@ final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends Abst
     public function itLists(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
+        $now = Clock::get()->now();
         $stuck = OrderPaymentTestFactory::new()
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+            ->withRequestedAt($now->modify('-90 minutes'))
             ->create();
         $this->store(
-            $stuck,
             OrderPaymentTestFactory::new()
-                ->withRequestedAt(new \DateTimeImmutable('2026-01-31T23:55:00+00:00'))
+                ->withRequestedAt($now->modify('-5 minutes'))
                 ->create(),
             OrderPaymentTestFactory::new()
-                ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+                ->withRequestedAt($now->modify('-90 minutes'))
                 ->authorized()
                 ->create(),
+            $stuck,
         );
 
         // When

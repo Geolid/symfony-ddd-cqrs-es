@@ -8,7 +8,7 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
@@ -29,9 +29,9 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
     public function itAnonymizesPastTheRetentionPeriod(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $other = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->create();
-        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create();
+        $now = Clock::get()->now();
+        $other = OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create();
+        $order = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
         $this->store($order, $other);
         $tester = $this->tester();
 

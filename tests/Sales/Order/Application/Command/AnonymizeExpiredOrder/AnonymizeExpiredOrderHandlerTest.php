@@ -12,7 +12,7 @@ use Sales\Order\Application\Status\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -20,8 +20,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $order = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2016-01-01T00:00:00+00:00'))->create();
+        $order = OrderTestFactory::new()->cancelled(Clock::get()->now()->modify('-11 years'))->create();
         $this->store($order);
 
         // When

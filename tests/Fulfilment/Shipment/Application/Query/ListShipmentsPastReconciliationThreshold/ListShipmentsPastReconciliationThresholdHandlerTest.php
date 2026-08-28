@@ -8,7 +8,7 @@ use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThresho
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class ListShipmentsPastReconciliationThresholdHandlerTest extends AbstractIntegrationTestCase
 {
@@ -16,16 +16,16 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
     public function itLists(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
+        $now = Clock::get()->now();
         $stuck = ShipmentTestFactory::new()->prepared()
-            ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
+            ->manifested(manifestedAt: $now->modify('-3 days'))
             ->create();
         $this->store($stuck);
         $this->store(ShipmentTestFactory::new()->prepared()
-            ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-09T12:00:00+00:00'))
+            ->manifested(manifestedAt: $now->modify('-12 hours'))
             ->create());
         $this->store(ShipmentTestFactory::new()->prepared()
-            ->manifested(manifestedAt: new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
+            ->manifested(manifestedAt: $now->modify('-3 days'))
             ->dispatched()
             ->create());
 
