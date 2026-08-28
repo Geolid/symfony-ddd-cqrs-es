@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Exception;
 
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class UnsupportedOrderPaymentStatusException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forStatus(string $status): self
+    public static function forStatus(OrderPaymentStatus $status): self
     {
-        return new self(\sprintf('No reconciler supports order payment status "%s".', $status));
+        return new self(\sprintf('No reconciler supports order payment status "%s".', $status->value));
     }
 }

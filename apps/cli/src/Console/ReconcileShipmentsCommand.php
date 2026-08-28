@@ -45,7 +45,7 @@ final class ReconcileShipmentsCommand
 
             foreach ($stuck as $shipment) {
                 try {
-                    if ($this->shipmentReconciler->reconcile($shipment->id, $shipment->status->value, $shipment->trackingReference, $shipment->returnTrackingReference)) {
+                    if ($this->shipmentReconciler->reconcile($shipment->id, $shipment->status, $shipment->trackingReference, $shipment->returnTrackingReference)) {
                         ++$reconciled;
                         $io->writeln(\sprintf('Reconciled shipment %s', $shipment->id));
                     }

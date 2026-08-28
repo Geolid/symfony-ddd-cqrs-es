@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Exception\UnsupportedOrderPaymentStatusException;
+use Sales\Order\Application\Status\OrderPaymentStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class OrderPaymentReconciler implements OrderPaymentReconcilerInterface
@@ -20,7 +21,7 @@ final readonly class OrderPaymentReconciler implements OrderPaymentReconcilerInt
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, string $status, string $reference): bool
+    public function reconcile(string $id, OrderPaymentStatus $status, string $reference): bool
     {
         foreach ($this->reconcilers as $reconciler) {
             if ($reconciler->supports($status)) {

@@ -21,7 +21,7 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
         $router = new OrderPaymentReconciler([new StubUnsupportingReconciler(), new StubMatchingReconciler()]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::REQUESTED->value, 'GLBX-9F3K2M1P');
+        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::REQUESTED, 'GLBX-9F3K2M1P');
 
         // Then
         self::assertTrue($result);
@@ -37,15 +37,15 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedOrderPaymentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED->value, 'GLBX-9F3K2M1P');
+        $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED, 'GLBX-9F3K2M1P');
     }
 }
 
 final class StubMatchingReconciler implements OrderPaymentStatusReconcilerInterface
 {
-    public function supports(string $status): bool
+    public function supports(OrderPaymentStatus $status): bool
     {
-        return OrderPaymentStatus::REQUESTED->value === $status;
+        return OrderPaymentStatus::REQUESTED === $status;
     }
 
     public function reconcile(string $id, string $reference): bool
@@ -56,7 +56,7 @@ final class StubMatchingReconciler implements OrderPaymentStatusReconcilerInterf
 
 final class StubUnsupportingReconciler implements OrderPaymentStatusReconcilerInterface
 {
-    public function supports(string $status): bool
+    public function supports(OrderPaymentStatus $status): bool
     {
         return false;
     }
