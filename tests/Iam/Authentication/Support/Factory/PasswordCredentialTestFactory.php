@@ -16,7 +16,16 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<PasswordCredential>
+ * @phpstan-type Attributes = array{
+ *     identityId: string,
+ *     login: string,
+ *     password: string,
+ *     definedAt: \DateTimeInterface,
+ *     passwordStrength?: PasswordStrengthInterface,
+ *     hasher?: PasswordHasherInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<PasswordCredential, Attributes>
  */
 final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 {
@@ -113,16 +122,14 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 
     private function passwordStrength(): PasswordStrengthInterface
     {
-        Assert::keyExists($this->attributes, 'passwordStrength');
-        Assert::isInstanceOf($passwordStrength = $this->attributes['passwordStrength'], PasswordStrengthInterface::class);
+        Assert::isInstanceOf($passwordStrength = $this->attributes['passwordStrength'] ?? null, PasswordStrengthInterface::class);
 
         return $passwordStrength;
     }
 
     private function hasher(): PasswordHasherInterface
     {
-        Assert::keyExists($this->attributes, 'hasher');
-        Assert::isInstanceOf($hasher = $this->attributes['hasher'], PasswordHasherInterface::class);
+        Assert::isInstanceOf($hasher = $this->attributes['hasher'] ?? null, PasswordHasherInterface::class);
 
         return $hasher;
     }

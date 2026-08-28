@@ -12,7 +12,12 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<Identity>
+ * @phpstan-type Attributes = array{
+ *     id: string,
+ *     registeredAt: \DateTimeInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<Identity, Attributes>
  */
 final class IdentityTestFactory extends AbstractAggregateTestFactory
 {

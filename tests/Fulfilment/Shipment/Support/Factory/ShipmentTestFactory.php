@@ -16,7 +16,14 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<Shipment>
+ * @phpstan-type Attributes = array{
+ *     orderId: string,
+ *     customerId: string,
+ *     shippingAddress: PostalAddress,
+ *     createdAt: \DateTimeInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<Shipment, Attributes>
  */
 final class ShipmentTestFactory extends AbstractAggregateTestFactory
 {

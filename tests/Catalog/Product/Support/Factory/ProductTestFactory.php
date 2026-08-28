@@ -13,7 +13,14 @@ use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
 /**
- * @extends AbstractAggregateTestFactory<Product>
+ * @phpstan-type Attributes = array{
+ *     id: string,
+ *     label: string,
+ *     unitAmountInCents: int,
+ *     listedAt: \DateTimeInterface,
+ * }
+ *
+ * @extends AbstractAggregateTestFactory<Product, Attributes>
  */
 final class ProductTestFactory extends AbstractAggregateTestFactory
 {
@@ -56,9 +63,11 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
 
     protected function defaults(): array
     {
+        Assert::string($label = self::faker()->words(3, true));
+
         return [
             'id' => ProductId::generate()->toString(),
-            'label' => self::faker()->words(3, true),
+            'label' => $label,
             'unitAmountInCents' => self::faker()->numberBetween(500, 5_000),
             'listedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
         ];
