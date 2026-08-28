@@ -13,7 +13,7 @@ use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy\Policy;
 use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
+use Shared\Infrastructure\Projection\Projector\Projector;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Tools\PHPat\Helpers\ConcreteImplementation;
 
@@ -114,7 +114,7 @@ final class SubscriptionTest
     private function projectors(): SelectorInterface
     {
         return Selector::AllOf(
-            Selector::withFilepath('#/Infrastructure/Persistence/Projection/Projector/#', true),
+            Selector::withFilepath('#/Infrastructure/Projection/Projector/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
             ...ConcreteImplementation::selectors(),
         );

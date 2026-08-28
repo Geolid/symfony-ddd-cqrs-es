@@ -12,8 +12,8 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[CommandHandler]
 final readonly class RevokeApiKeyHandler

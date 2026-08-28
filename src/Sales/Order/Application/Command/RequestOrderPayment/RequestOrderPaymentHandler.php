@@ -13,10 +13,10 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\UniqueKey;
 
 #[CommandHandler]
 final readonly class RequestOrderPaymentHandler

@@ -19,9 +19,9 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialI
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[CommandHandler]
 final readonly class DefinePasswordCredentialHandler

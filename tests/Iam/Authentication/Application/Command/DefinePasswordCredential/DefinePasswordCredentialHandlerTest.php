@@ -15,8 +15,8 @@ use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestCase

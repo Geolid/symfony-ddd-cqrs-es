@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Application\Validation;
 
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;

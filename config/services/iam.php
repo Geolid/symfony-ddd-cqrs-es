@@ -10,13 +10,13 @@ use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Credential\CompromisedPasswordGateway;
-use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalApiKeyCredentialFinder;
-use Iam\Authentication\Infrastructure\Persistence\Projection\Finder\DbalPasswordCredentialFinder;
+use Iam\Authentication\Infrastructure\Projection\Finder\DbalApiKeyCredentialFinder;
+use Iam\Authentication\Infrastructure\Projection\Finder\DbalPasswordCredentialFinder;
 use Iam\Authentication\Infrastructure\Security\ApiKeyHasher;
 use Iam\Authentication\Infrastructure\Security\PasswordHasher;
 use Iam\Authentication\Infrastructure\Security\PasswordStrength;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Infrastructure\Persistence\Projection\Finder\DbalIdentityFinder;
+use Iam\Identity\Infrastructure\Projection\Finder\DbalIdentityFinder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 

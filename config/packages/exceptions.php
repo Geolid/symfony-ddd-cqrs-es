@@ -31,9 +31,9 @@ use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Exception\ResultNotFoundException;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
 

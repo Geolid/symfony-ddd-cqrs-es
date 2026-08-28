@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Support\Doubles;
 
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
 {

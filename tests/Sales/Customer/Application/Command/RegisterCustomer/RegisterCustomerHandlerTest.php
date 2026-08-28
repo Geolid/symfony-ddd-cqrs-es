@@ -10,8 +10,8 @@ use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase

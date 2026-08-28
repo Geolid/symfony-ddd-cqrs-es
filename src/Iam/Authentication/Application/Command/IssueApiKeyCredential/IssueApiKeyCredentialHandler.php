@@ -14,10 +14,10 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqu
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\UniqueKey;
 
 #[CommandHandler]
 final readonly class IssueApiKeyCredentialHandler

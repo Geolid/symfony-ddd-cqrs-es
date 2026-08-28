@@ -15,9 +15,9 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\Exception\UniqueValueAlreadyTakenException;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[CommandHandler]
 final readonly class ManifestShipmentHandler

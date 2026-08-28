@@ -12,8 +12,8 @@ use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\Exception\CustomerNotFoundException;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase

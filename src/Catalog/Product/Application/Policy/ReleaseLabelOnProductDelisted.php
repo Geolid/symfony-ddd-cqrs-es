@@ -11,8 +11,8 @@ use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Policy\Policy;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[Policy('catalog.product.release_label_on_product_delisted')]
 final readonly class ReleaseLabelOnProductDelisted
