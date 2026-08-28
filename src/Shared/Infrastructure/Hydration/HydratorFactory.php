@@ -7,8 +7,8 @@ namespace Shared\Infrastructure\Hydration;
 use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\StackHydrator;
 use Patchlevel\Hydrator\StackHydratorBuilder;
-use Shared\Infrastructure\Hydration\Metadata\SnakeCaseFieldNameEnricher;
-use Shared\Infrastructure\Hydration\Metadata\TypeBasedNormalizerEnricher;
+use Shared\Infrastructure\Hydration\Patchlevel\Metadata\SnakeCaseFieldNameEnricher;
+use Shared\Infrastructure\Hydration\Patchlevel\Metadata\TypeBasedNormalizerEnricher;
 
 final readonly class HydratorFactory
 {

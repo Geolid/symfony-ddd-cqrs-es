@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Web\Monitoring\Sentry;
+namespace Api\Monitoring;
 
+use Api\Security\ApiUser;
 use Sentry\SentrySdk;
 use Sentry\State\Scope;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Web\Security\PasswordUser;
 
 #[AsEventListener]
 final readonly class SentryUserContextListener
@@ -26,7 +26,7 @@ final readonly class SentryUserContextListener
 
         $user = $this->tokenStorage->getToken()?->getUser();
 
-        if (!$user instanceof PasswordUser) {
+        if (!$user instanceof ApiUser) {
             return;
         }
 

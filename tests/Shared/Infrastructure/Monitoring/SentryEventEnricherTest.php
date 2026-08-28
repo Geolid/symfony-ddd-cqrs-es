@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Infrastructure\Monitoring\Sentry;
+namespace Shared\Tests\Infrastructure\Monitoring;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sentry\Event;
-use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
+use Shared\Infrastructure\Monitoring\SentryEventEnricher;
 
 final class SentryEventEnricherTest extends TestCase
 {

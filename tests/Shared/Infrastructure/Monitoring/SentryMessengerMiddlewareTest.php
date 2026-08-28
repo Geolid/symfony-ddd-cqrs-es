@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Infrastructure\Monitoring\Sentry;
+namespace Shared\Tests\Infrastructure\Monitoring;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -11,7 +11,7 @@ use Sentry\SentrySdk;
 use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
-use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
+use Shared\Infrastructure\Monitoring\SentryMessengerMiddleware;
 use Support\Doubles\DummyMessage;
 use Support\Doubles\StubNextMiddleware;
 use Support\Doubles\StubStack;

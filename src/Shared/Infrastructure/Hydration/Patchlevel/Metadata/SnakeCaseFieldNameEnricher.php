@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Hydration\Metadata;
+namespace Shared\Infrastructure\Hydration\Patchlevel\Metadata;
 
 use Patchlevel\Hydrator\Metadata\ClassMetadata;
 use Patchlevel\Hydrator\Metadata\MetadataEnricher;

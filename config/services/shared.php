@@ -15,7 +15,7 @@ use Shared\Infrastructure\EventStore\Publisher\PatchlevelIntegrationEventPublish
 use Shared\Infrastructure\Hydration\HydratorFactory;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
-use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
+use Shared\Infrastructure\Monitoring\SentryEventEnricher;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;

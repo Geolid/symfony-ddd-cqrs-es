@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Hydration\Metadata;
+namespace Shared\Infrastructure\Hydration\Patchlevel\Metadata;
 
 use Patchlevel\Hydrator\Metadata\ClassMetadata;
 use Patchlevel\Hydrator\Metadata\MetadataEnricher;
-use Shared\Infrastructure\Hydration\Normalizer\BooleanNormalizer;
-use Shared\Infrastructure\Hydration\Normalizer\IntegerNormalizer;
-use Shared\Infrastructure\Hydration\Normalizer\JsonObjectNormalizer;
-use Shared\Infrastructure\Hydration\Normalizer\UtcDateTimeImmutableNormalizer;
+use Shared\Infrastructure\Hydration\Patchlevel\Normalizer\BooleanNormalizer;
+use Shared\Infrastructure\Hydration\Patchlevel\Normalizer\IntegerNormalizer;
+use Shared\Infrastructure\Hydration\Patchlevel\Normalizer\JsonObjectNormalizer;
+use Shared\Infrastructure\Hydration\Patchlevel\Normalizer\UtcDateTimeImmutableNormalizer;
 
 final class TypeBasedNormalizerEnricher implements MetadataEnricher
 {

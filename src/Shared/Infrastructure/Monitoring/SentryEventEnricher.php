@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Monitoring\Sentry;
+namespace Shared\Infrastructure\Monitoring;
 
 use Sentry\Event;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
