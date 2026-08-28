@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tools\PHPUnit\Faker;
+namespace Tools\Faker;
 
 use Faker\Factory;
 use Faker\Generator;
 
 /**
- * One Faker Generator for the whole suite, seeded from `FAKER_SEED` (a CI run pins and logs it,
- * replay locally with that same value) or a fresh random one otherwise, locale from `FAKER_LOCALE`
- * — both printed so a failure stays reproducible either way. A Test Factory's own `faker()` is a
- * shortcut onto this, never a separate cache — every caller shares this single seeded instance.
+ * One Faker Generator for the whole suite — seed from `FAKER_SEED`, locale from `FAKER_LOCALE`,
+ * both printed on suite start so a failure stays reproducible.
  */
 final class SeededFaker
 {

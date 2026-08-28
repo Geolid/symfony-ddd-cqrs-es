@@ -6,6 +6,7 @@ namespace Tools\PHPUnit\Faker;
 
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;
+use Tools\Faker\SeededFaker;
 
 final class PrintSeedOnTestSuiteStarted implements StartedSubscriber
 {
@@ -18,11 +19,13 @@ final class PrintSeedOnTestSuiteStarted implements StartedSubscriber
         }
 
         $seed = SeededFaker::seed();
+        $locale = SeededFaker::locale();
         fwrite(\STDERR, \sprintf(
-            "Faker seed: %d, locale: %s (rerun with FAKER_SEED=%d to reproduce)\n",
+            "Faker seed: %d, locale: %s (rerun with FAKER_SEED=%d FAKER_LOCALE=%s to reproduce)\n",
             $seed,
-            SeededFaker::locale(),
+            $locale,
             $seed,
+            $locale,
         ));
 
         self::$hasPrinted = true;

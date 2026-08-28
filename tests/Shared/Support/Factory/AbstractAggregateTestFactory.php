@@ -6,7 +6,7 @@ namespace Shared\Tests\Support\Factory;
 
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Tools\PHPUnit\Faker\SeededFaker;
+use Tools\Faker\SeededFaker;
 use Webmozart\Assert\Assert;
 
 /**
