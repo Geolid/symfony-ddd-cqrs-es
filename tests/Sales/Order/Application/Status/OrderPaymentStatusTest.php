@@ -11,7 +11,7 @@ use Sales\Order\Application\Status\OrderPaymentStatus;
 final class OrderPaymentStatusTest extends TestCase
 {
     #[Test]
-    public function itIsCapturedOnlyWhenCaptured(): void
+    public function itIsCaptured(): void
     {
         foreach (OrderPaymentStatus::cases() as $status) {
             self::assertSame(OrderPaymentStatus::CAPTURED === $status, $status->isCaptured(), $status->value);

@@ -30,7 +30,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheNewPriceOnProductRepriced(): void
+    public function itProjectsOnProductRepriced(): void
     {
         // Given
         $other = ProductTestFactory::new()->withUnitAmountInCents(500)->create();
@@ -51,7 +51,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDeletesOnProductDelisted(): void
+    public function itRemovesOnProductDelisted(): void
     {
         // When
         $product = ProductTestFactory::new()->delisted()->create();

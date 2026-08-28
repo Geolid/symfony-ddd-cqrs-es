@@ -19,7 +19,7 @@ use Support\AbstractIntegrationTestCase;
 final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsThePlacementOnOrderPlaced(): void
+    public function itProjectsOnOrderPlaced(): void
     {
         // When
         $customerId = Uuid::uuid7()->toString();
@@ -38,7 +38,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheRequestOnOrderPaymentRequested(): void
+    public function itProjectsOnOrderPaymentRequested(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -63,11 +63,13 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCaptureOnOrderPaymentCapturedWithoutLosingTheOrderStatus(): void
+    public function itProjectsOnOrderPaymentCaptured(): void
     {
         // Given
+        $untouchedCustomerId = Uuid::uuid7()->toString();
+        $untouchedOrder = OrderTestFactory::new()->withCustomerId($untouchedCustomerId)->create();
         $order = OrderTestFactory::new()->create();
-        $this->store($order);
+        $this->store($untouchedOrder, $order);
 
         // When
         $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create());
@@ -79,10 +81,17 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['paid_at']);
         self::assertSame('placed', $row['order_status']);
         self::assertSame('preparing', $row['status']);
+
+        $untouchedRow = $this->fetchRow($untouchedOrder->id->toString());
+        self::assertNotFalse($untouchedRow);
+        self::assertSame($untouchedCustomerId, $untouchedRow['customer_id']);
+        self::assertSame('placed', $untouchedRow['order_status']);
+        self::assertNull($untouchedRow['payment_status']);
+        self::assertSame('placed', $untouchedRow['status']);
     }
 
     #[Test]
-    public function itProjectsTheDispatchOnShipmentDispatched(): void
+    public function itProjectsOnShipmentDispatched(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -99,7 +108,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheTrackingReferenceOnShipmentManifested(): void
+    public function itProjectsOnShipmentManifested(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -115,7 +124,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheDeliveryOnShipmentDelivered(): void
+    public function itProjectsOnShipmentDelivered(): void
     {
         // Given
         $order = OrderTestFactory::new()->create();
@@ -132,7 +141,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsTheCancellationOnOrderCancelledWithoutLosingThePaymentAndShipmentStatus(): void
+    public function itProjectsOnOrderCancelled(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -153,27 +162,6 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         self::assertSame('requested', $row['payment_status']);
         self::assertSame('dispatched', $row['shipment_status']);
         self::assertSame('cancelled', $row['status']);
-    }
-
-    #[Test]
-    public function itProjectsTheCaptureOnOrderPaymentCapturedWithoutTouchingAnotherOrder(): void
-    {
-        // Given
-        $untouchedCustomerId = Uuid::uuid7()->toString();
-        $untouchedOrder = OrderTestFactory::new()->withCustomerId($untouchedCustomerId)->create();
-        $order = OrderTestFactory::new()->create();
-        $this->store($untouchedOrder, $order);
-
-        // When
-        $this->store(OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create());
-
-        // Then
-        $row = $this->fetchRow($untouchedOrder->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame($untouchedCustomerId, $row['customer_id']);
-        self::assertSame('placed', $row['order_status']);
-        self::assertNull($row['payment_status']);
-        self::assertSame('placed', $row['status']);
     }
 
     /**
