@@ -12,6 +12,7 @@ use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductResult;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -41,6 +42,7 @@ final readonly class PlaceOrderHandler
      * @throws BuyerNotRegisteredException
      * @throws OutdatedOrderException
      * @throws OrderWithoutLineException
+     * @throws OrderAlreadyExistsException
      */
     public function __invoke(PlaceOrder $command): void
     {

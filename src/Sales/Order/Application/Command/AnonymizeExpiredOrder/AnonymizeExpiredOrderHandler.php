@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\AnonymizeExpiredOrder;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -21,6 +22,7 @@ final readonly class AnonymizeExpiredOrderHandler
 
     /**
      * @throws OrderNotFoundException
+     * @throws OrderAlreadyExistsException
      */
     public function __invoke(AnonymizeExpiredOrder $command): void
     {

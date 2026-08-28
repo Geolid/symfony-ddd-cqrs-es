@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CancelOrder;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -25,6 +26,7 @@ final readonly class CancelOrderHandler
      * @throws OrderNotFoundException
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
+     * @throws OrderAlreadyExistsException
      */
     public function __invoke(CancelOrder $command): void
     {

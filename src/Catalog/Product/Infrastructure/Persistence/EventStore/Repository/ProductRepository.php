@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Infrastructure\Persistence\EventStore\Repository;
 
+use Catalog\Product\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +41,10 @@ final readonly class ProductRepository implements ProductRepositoryInterface
 
     public function save(Product $product): void
     {
-        $this->repository->save($product);
+        try {
+            $this->repository->save($product);
+        } catch (AggregateAlreadyExists) {
+            throw ProductAlreadyExistsException::forId($product->id->toString());
+        }
     }
 }

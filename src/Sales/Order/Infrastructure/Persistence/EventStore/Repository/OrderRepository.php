@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Persistence\EventStore\Repository;
 
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -39,6 +41,10 @@ final readonly class OrderRepository implements OrderRepositoryInterface
 
     public function save(Order $order): void
     {
-        $this->repository->save($order);
+        try {
+            $this->repository->save($order);
+        } catch (AggregateAlreadyExists) {
+            throw OrderAlreadyExistsException::forId($order->id->toString());
+        }
     }
 }

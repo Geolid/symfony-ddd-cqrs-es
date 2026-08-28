@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\RequestOrderReturn;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
@@ -27,6 +28,7 @@ final readonly class RequestOrderReturnHandler
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotReturnableException
      * @throws OrderReturnWindowExpiredException
+     * @throws OrderAlreadyExistsException
      */
     public function __invoke(RequestOrderReturn $command): void
     {

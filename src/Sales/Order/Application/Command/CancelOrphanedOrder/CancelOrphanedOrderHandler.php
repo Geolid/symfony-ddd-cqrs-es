@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\CancelOrphanedOrder;
 
 use Psr\Clock\ClockInterface;
+use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
@@ -24,6 +25,7 @@ final readonly class CancelOrphanedOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderBelongsToAnotherCustomerException
+     * @throws OrderAlreadyExistsException
      */
     public function __invoke(CancelOrphanedOrder $command): void
     {
