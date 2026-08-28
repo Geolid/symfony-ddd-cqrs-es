@@ -97,7 +97,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         $this->store($cancelled, ...$others);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus('cancelled'));
+        $results = iterator_to_array($this->finder->byStatus(OrderSummaryStatus::CANCELLED));
 
         // Then
         self::assertCount(1, $results);

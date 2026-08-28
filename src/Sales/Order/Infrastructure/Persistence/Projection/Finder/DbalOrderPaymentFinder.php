@@ -6,6 +6,7 @@ namespace Sales\Order\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Types\Types;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
@@ -27,7 +28,7 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         )->one() ?? throw OrderPaymentResultNotFoundException::forReference($reference);
     }
 
-    public function byStatus(string ...$statuses): static
+    public function byStatus(OrderPaymentStatus ...$statuses): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($statuses): void {
@@ -37,16 +38,18 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         );
     }
 
-    public function stalledBefore(string $cutoff): static
+    public function stalledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $cutoffParam = $qb->createNamedParameter($cutoff);
+                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
+                $requestedParam = $qb->createNamedParameter(OrderPaymentStatus::REQUESTED);
+                $refundInitiatedParam = $qb->createNamedParameter(OrderPaymentStatus::REFUND_INITIATED);
 
-                $qb->andWhere($qb->expr()->or(
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(OrderPaymentStatus::REQUESTED->value)), "requested_at < {$cutoffParam}"),
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(OrderPaymentStatus::REFUND_INITIATED->value)), "refund_initiated_at < {$cutoffParam}"),
-                ));
+                $qb->andWhere(
+                    "(status = {$requestedParam} AND requested_at < {$cutoffParam})
+                    OR (status = {$refundInitiatedParam} AND refund_initiated_at < {$cutoffParam})",
+                );
             },
         );
     }

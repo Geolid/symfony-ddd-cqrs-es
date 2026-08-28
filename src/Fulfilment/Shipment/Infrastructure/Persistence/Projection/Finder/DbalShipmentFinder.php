@@ -6,6 +6,7 @@ namespace Fulfilment\Shipment\Infrastructure\Persistence\Projection\Finder;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
@@ -36,7 +37,7 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         )->one() ?? throw ShipmentResultNotFoundException::forReturnTrackingReference($returnTrackingReference);
     }
 
-    public function byStatus(string ...$statuses): static
+    public function byStatus(ShipmentStatus ...$statuses): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($statuses): void {
@@ -56,18 +57,22 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
-    public function stalledBefore(string $cutoff): static
+    public function stalledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $cutoffParam = $qb->createNamedParameter($cutoff);
+                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
+                $manifestedParam = $qb->createNamedParameter(ShipmentStatus::MANIFESTED);
+                $dispatchedParam = $qb->createNamedParameter(ShipmentStatus::DISPATCHED);
+                $returnManifestedParam = $qb->createNamedParameter(ShipmentStatus::RETURN_MANIFESTED);
+                $returnDispatchedParam = $qb->createNamedParameter(ShipmentStatus::RETURN_DISPATCHED);
 
-                $qb->andWhere($qb->expr()->or(
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::MANIFESTED->value)), "manifested_at < {$cutoffParam}"),
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::DISPATCHED->value)), "dispatched_at < {$cutoffParam}"),
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::RETURN_MANIFESTED->value)), "return_manifested_at < {$cutoffParam}"),
-                    $qb->expr()->and($qb->expr()->eq('status', $qb->createNamedParameter(ShipmentStatus::RETURN_DISPATCHED->value)), "return_dispatched_at < {$cutoffParam}"),
-                ));
+                $qb->andWhere(
+                    "(status = {$manifestedParam} AND manifested_at < {$cutoffParam})
+                    OR (status = {$dispatchedParam} AND dispatched_at < {$cutoffParam})
+                    OR (status = {$returnManifestedParam} AND return_manifested_at < {$cutoffParam})
+                    OR (status = {$returnDispatchedParam} AND return_dispatched_at < {$cutoffParam})",
+                );
             },
         );
     }

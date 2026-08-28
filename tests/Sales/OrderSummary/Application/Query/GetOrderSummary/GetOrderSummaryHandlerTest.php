@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -29,7 +30,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($customerId, $result->customerId);
         self::assertSame(4_200, $result->totalAmountInCents);
-        self::assertSame('placed', $result->status->value);
+        self::assertSame(OrderSummaryStatus::PLACED, $result->status);
         self::assertNotNull($result->placedAt);
         self::assertNull($result->cancelledAt);
         self::assertNull($result->paymentAmountInCents);

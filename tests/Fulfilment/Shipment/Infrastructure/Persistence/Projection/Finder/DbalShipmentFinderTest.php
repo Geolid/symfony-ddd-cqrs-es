@@ -64,7 +64,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $manifested, $dispatched);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus('manifested', 'dispatched'));
+        $results = iterator_to_array($this->finder->byStatus(ShipmentStatus::MANIFESTED, ShipmentStatus::DISPATCHED));
 
         // Then
         self::assertCount(2, $results);
@@ -86,7 +86,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $cutoff = $now->format(\DateTimeInterface::ATOM);
         $freshManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
         $notManifested = ShipmentTestFactory::new()->prepared()->create();
         $staleManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
@@ -115,7 +114,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched, $staleReturnManifested, $staleReturnDispatched);
 
         // When
-        $results = iterator_to_array($this->finder->stalledBefore($cutoff));
+        $results = iterator_to_array($this->finder->stalledBefore($now));
 
         // Then
         self::assertCount(4, $results);

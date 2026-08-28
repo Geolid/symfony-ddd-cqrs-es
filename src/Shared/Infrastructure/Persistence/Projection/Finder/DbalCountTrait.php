@@ -14,15 +14,17 @@ trait DbalCountTrait
     private ?int $cachedTotal = null;
 
     /**
+     * @param \Closure(): QueryBuilder $query
+     *
      * @return int<0, max>
      */
-    private function countTotalItems(Connection $connection, QueryBuilder $queryBuilder): int
+    private function countTotalItems(Connection $connection, \Closure $query): int
     {
         if (null !== $this->cachedTotal) {
             return $this->cachedTotal;
         }
 
-        $qb = clone $queryBuilder;
+        $qb = $query();
         $qb->resetOrderBy()
             ->setFirstResult(0)
             ->setMaxResults(null);

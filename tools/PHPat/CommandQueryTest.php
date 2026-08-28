@@ -27,7 +27,10 @@ final class CommandQueryTest
             ))
             ->canOnly()
             ->dependOn()
-            ->classes(Selector::classname(CommandInterface::class))
+            ->classes(
+                Selector::classname(CommandInterface::class),
+                $this->applicationEnum(),
+            )
             ->because('Dispatching it must never require knowing a type it doesn\'t own.');
     }
 
@@ -47,6 +50,7 @@ final class CommandQueryTest
                     Selector::classname('#Result$#', true),
                     Selector::withFilepath('#/Application/#', true),
                 ),
+                $this->applicationEnum(),
             )
             ->because('Asking it, and reading its answer, must never require knowing a type it doesn\'t own.');
     }
@@ -98,5 +102,13 @@ final class CommandQueryTest
     private function notInTests(): SelectorInterface
     {
         return Selector::Not(Selector::withFilepath('#/tests/#', true));
+    }
+
+    private function applicationEnum(): SelectorInterface
+    {
+        return Selector::AllOf(
+            Selector::isEnum(),
+            Selector::withFilepath('#/Application/#', true),
+        );
     }
 }

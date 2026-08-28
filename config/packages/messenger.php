@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
 use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
+use Shared\Infrastructure\Database\Transaction\DbalTransactionMessengerMiddleware;
 use Shared\Infrastructure\Monitoring\Sentry\SentryMessengerMiddleware;
-use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {

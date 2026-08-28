@@ -28,7 +28,7 @@ final class PrepareShipmentCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('prepared', $tester->getDisplay());
-        $ids = array_column(iterator_to_array($this->service(ShipmentFinderInterface::class)->byStatus(ShipmentStatus::PREPARED->value), false), 'id');
+        $ids = array_column(iterator_to_array($this->service(ShipmentFinderInterface::class)->byStatus(ShipmentStatus::PREPARED), false), 'id');
         self::assertContains($shipment->id->toString(), $ids);
         self::assertNotContains($other->id->toString(), $ids);
     }

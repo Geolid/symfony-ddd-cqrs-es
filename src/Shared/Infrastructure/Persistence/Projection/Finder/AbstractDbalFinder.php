@@ -19,20 +19,18 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
 {
     use DbalCountTrait;
 
-    protected QueryBuilder $queryBuilder;
+    /** @var list<callable(QueryBuilder): void> */
+    private array $filters = [];
 
     public function __construct(
         protected readonly Connection $connection,
         #[Autowire(service: 'shared.hydration.result_hydrator')]
         private readonly Hydrator $hydrator,
     ) {
-        $this->queryBuilder = $this->connection->createQueryBuilder();
-        $this->buildBaseQuery($this->queryBuilder);
     }
 
-    protected function __clone()
+    protected function __clone(): void
     {
-        $this->queryBuilder = clone $this->queryBuilder;
         $this->cachedTotal = null;
     }
 
@@ -42,7 +40,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     public function paginate(int $page, int $itemsPerPage): PaginatorInterface
     {
         /** @var DbalPaginator<TResult> */
-        return new DbalPaginator($this->connection, $this->query(), $this->hydrate(...))
+        return new DbalPaginator($this->connection, $this->query(...), $this->hydrate(...))
             ->withPagination($page, $itemsPerPage);
     }
 
@@ -60,7 +58,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
 
     public function count(): int
     {
-        return $this->countTotalItems($this->connection, $this->query());
+        return $this->countTotalItems($this->connection, $this->query(...));
     }
 
     /**
@@ -98,14 +96,21 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     protected function filter(callable $filter): static
     {
         $clone = clone $this;
-        $filter($clone->queryBuilder);
+        $clone->filters[] = $filter;
 
         return $clone;
     }
 
     private function query(): QueryBuilder
     {
-        return clone $this->queryBuilder;
+        $qb = $this->connection->createQueryBuilder();
+        $this->buildBaseQuery($qb);
+
+        foreach ($this->filters as $filter) {
+            $filter($qb);
+        }
+
+        return $qb;
     }
 
     /**

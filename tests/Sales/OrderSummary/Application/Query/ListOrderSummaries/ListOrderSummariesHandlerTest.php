@@ -65,7 +65,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
         $this->store($other, $cancelled);
 
         // When
-        $result = $this->ask(new ListOrderSummaries(status: OrderSummaryStatus::CANCELLED->value));
+        $result = $this->ask(new ListOrderSummaries(status: OrderSummaryStatus::CANCELLED));
 
         // Then
         self::assertCount(1, $result);

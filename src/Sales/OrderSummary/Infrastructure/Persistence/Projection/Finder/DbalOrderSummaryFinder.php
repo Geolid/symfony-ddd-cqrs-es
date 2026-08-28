@@ -8,6 +8,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Persistence\Projection\Projector\DbalOrderSummaryProjector;
 use Shared\Infrastructure\Persistence\Projection\Finder\AbstractDbalFinder;
 
@@ -35,7 +36,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSu
         );
     }
 
-    public function byStatus(string $status): static
+    public function byStatus(OrderSummaryStatus $status): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($status): void {

@@ -85,7 +85,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($requested, OrderPaymentTestFactory::new()->authorized()->create());
 
         // When
-        $results = iterator_to_array($this->finder->byStatus(OrderPaymentStatus::REQUESTED->value));
+        $results = iterator_to_array($this->finder->byStatus(OrderPaymentStatus::REQUESTED));
 
         // Then
         self::assertCount(1, $results);
@@ -97,7 +97,6 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $cutoff = $now->format(\DateTimeInterface::ATOM);
         $freshRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
         $staleRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
         $staleOrder = OrderTestFactory::new()->create();
@@ -119,7 +118,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($staleOrder, $freshOrder, $freshRequested, $staleRequested, $staleRefundInitiated, $freshRefundInitiated);
 
         // When
-        $results = iterator_to_array($this->finder->stalledBefore($cutoff));
+        $results = iterator_to_array($this->finder->stalledBefore($now));
 
         // Then
         self::assertCount(2, $results);
