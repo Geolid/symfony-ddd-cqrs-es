@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrdersPastRetentionPeriod\ListOrdersPastRetentionPeriod;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegrationTestCase
 {
@@ -16,13 +16,11 @@ final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegration
     public function itListsPastRetentionPeriod(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2036-01-01T00:00:00+00:00'));
-        $expired = OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2010-01-01T00:00:00+00:00'))->create();
-        $this->store(
-            $expired,
-            OrderTestFactory::new()->cancelled(new \DateTimeImmutable('2035-01-01T00:00:00+00:00'))->create(),
-            OrderTestFactory::new()->create(),
-        );
+        $now = Clock::get()->now();
+        $expired = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
+        $withinRetention = OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create();
+        $notClosed = OrderTestFactory::new()->create();
+        $this->store($withinRetention, $notClosed, $expired);
 
         // When
         $results = iterator_to_array($this->ask(new ListOrdersPastRetentionPeriod()), false);

@@ -13,7 +13,7 @@ use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -30,11 +30,10 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itCompletesWhenReturnWindowHasElapsed(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-01-20T00:00:00+00:00'));
         $order = OrderTestFactory::new()
             ->confirmed()
             ->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+            ->delivered(Clock::get()->now()->modify('-19 days'))
             ->create();
         $this->store($order);
 
@@ -50,12 +49,11 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCompleted(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-01-20T00:00:00+00:00'));
         $order = OrderTestFactory::new()
             ->confirmed()
             ->dispatched()
-            ->delivered(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->completed(new \DateTimeImmutable('2026-01-20T00:00:00+00:00'))
+            ->delivered(Clock::get()->now()->modify('-19 days'))
+            ->completed()
             ->create();
         $this->store($order);
 
