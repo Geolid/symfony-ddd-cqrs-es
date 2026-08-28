@@ -17,9 +17,9 @@ final readonly class RefundInitiatedOrderPaymentReconciler implements OrderPayme
     ) {
     }
 
-    public function supports(string $status): bool
+    public function supports(OrderPaymentStatus $status): bool
     {
-        return OrderPaymentStatus::REFUND_INITIATED->value === $status;
+        return OrderPaymentStatus::REFUND_INITIATED === $status;
     }
 
     /**

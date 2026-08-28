@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Exception;
 
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class UnsupportedShipmentStatusException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forStatus(string $status): self
+    public static function forStatus(ShipmentStatus $status): self
     {
-        return new self(\sprintf('No reconciler supports shipment status "%s".', $status));
+        return new self(\sprintf('No reconciler supports shipment status "%s".', $status->value));
     }
 }

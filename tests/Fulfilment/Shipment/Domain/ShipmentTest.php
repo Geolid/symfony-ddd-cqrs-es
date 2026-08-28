@@ -120,7 +120,7 @@ final class ShipmentTest extends AggregateRootTestCase
                 new ShipmentManifested($id, 'ACME-4Q7X2K9', $manifestedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::MANIFESTED->value, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::MANIFESTED, $cancelledAt));
     }
 
     #[Test]
@@ -137,7 +137,7 @@ final class ShipmentTest extends AggregateRootTestCase
                 new ShipmentDispatched($id, $dispatchedAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::DISPATCHED->value, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DISPATCHED, $cancelledAt));
     }
 
     #[Test]
@@ -172,7 +172,7 @@ final class ShipmentTest extends AggregateRootTestCase
                 new ShipmentDelivered($id, $deliveredAt),
             )
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED->value, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($id, ShipmentState::DELIVERED, $cancelledAt));
     }
 
     #[Test]

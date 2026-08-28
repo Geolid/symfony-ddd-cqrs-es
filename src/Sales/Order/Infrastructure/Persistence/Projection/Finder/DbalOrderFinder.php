@@ -51,10 +51,11 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('status = :status')
-                    ->andWhere('delivered_at < :cutoff')
-                    ->setParameter('status', OrderStatus::DELIVERED->value)
-                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
+                $statusParam = $qb->createNamedParameter(OrderStatus::DELIVERED);
+                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
+
+                $qb->andWhere("status = {$statusParam}")
+                    ->andWhere("delivered_at < {$cutoffParam}");
             },
         );
     }

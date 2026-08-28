@@ -17,9 +17,9 @@ final readonly class ReturnManifestedShipmentReconciler implements ShipmentStatu
     ) {
     }
 
-    public function supports(string $status): bool
+    public function supports(ShipmentStatus $status): bool
     {
-        return ShipmentStatus::RETURN_MANIFESTED->value === $status;
+        return ShipmentStatus::RETURN_MANIFESTED === $status;
     }
 
     /**

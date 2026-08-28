@@ -40,6 +40,10 @@ final class EventTest
             ->dependOn()
             ->classes(
                 Selector::classname(DataSubjectErasureInterface::class),
+                Selector::AllOf(
+                    Selector::isEnum(),
+                    Selector::withFilepath('#/Domain/#', true),
+                ),
                 ...$this->esMetadataSelectors(),
             )
             ->because('A recorded fact must decode forever despite other types changing, and its personal data must stay erasable without rewriting history.');

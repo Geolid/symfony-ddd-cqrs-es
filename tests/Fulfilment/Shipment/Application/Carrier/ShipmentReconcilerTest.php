@@ -22,7 +22,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
         $router = new ShipmentReconciler([new StubUnsupportingReconciler(), new StubMatchingReconciler()]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED->value, 'ACME-4Q7X2K9', null);
+        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, 'ACME-4Q7X2K9', null);
 
         // Then
         self::assertTrue($result);
@@ -38,12 +38,12 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedShipmentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED->value, 'ACME-4Q7X2K9', null);
+        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, 'ACME-4Q7X2K9', null);
     }
 
     #[Test]
     #[DataProvider('provideReferenceResolution')]
-    public function itForwardsReferenceForStatus(string $status, string $expectedReference): void
+    public function itForwardsReferenceForStatus(ShipmentStatus $status, string $expectedReference): void
     {
         // Given
         $reconciler = new SpyReconciler($status);
@@ -57,21 +57,21 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{ShipmentStatus, string}>
      */
     public static function provideReferenceResolution(): iterable
     {
-        yield 'return manifested uses return tracking reference' => [ShipmentStatus::RETURN_MANIFESTED->value, 'ACME-RETURN-1'];
-        yield 'return dispatched uses return tracking reference' => [ShipmentStatus::RETURN_DISPATCHED->value, 'ACME-RETURN-1'];
-        yield 'dispatched uses tracking reference' => [ShipmentStatus::DISPATCHED->value, 'ACME-4Q7X2K9'];
+        yield 'return manifested uses return tracking reference' => [ShipmentStatus::RETURN_MANIFESTED, 'ACME-RETURN-1'];
+        yield 'return dispatched uses return tracking reference' => [ShipmentStatus::RETURN_DISPATCHED, 'ACME-RETURN-1'];
+        yield 'dispatched uses tracking reference' => [ShipmentStatus::DISPATCHED, 'ACME-4Q7X2K9'];
     }
 }
 
 final class StubMatchingReconciler implements ShipmentStatusReconcilerInterface
 {
-    public function supports(string $status): bool
+    public function supports(ShipmentStatus $status): bool
     {
-        return ShipmentStatus::MANIFESTED->value === $status;
+        return ShipmentStatus::MANIFESTED === $status;
     }
 
     public function reconcile(string $id, string $reference): bool
@@ -82,7 +82,7 @@ final class StubMatchingReconciler implements ShipmentStatusReconcilerInterface
 
 final class StubUnsupportingReconciler implements ShipmentStatusReconcilerInterface
 {
-    public function supports(string $status): bool
+    public function supports(ShipmentStatus $status): bool
     {
         return false;
     }
@@ -97,11 +97,11 @@ final class SpyReconciler implements ShipmentStatusReconcilerInterface
 {
     public ?string $receivedReference = null;
 
-    public function __construct(private readonly string $supportedStatus)
+    public function __construct(private readonly ShipmentStatus $supportedStatus)
     {
     }
 
-    public function supports(string $status): bool
+    public function supports(ShipmentStatus $status): bool
     {
         return $this->supportedStatus === $status;
     }

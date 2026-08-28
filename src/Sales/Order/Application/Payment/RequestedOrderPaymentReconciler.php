@@ -18,9 +18,9 @@ final readonly class RequestedOrderPaymentReconciler implements OrderPaymentStat
     ) {
     }
 
-    public function supports(string $status): bool
+    public function supports(OrderPaymentStatus $status): bool
     {
-        return OrderPaymentStatus::REQUESTED->value === $status;
+        return OrderPaymentStatus::REQUESTED === $status;
     }
 
     /**
