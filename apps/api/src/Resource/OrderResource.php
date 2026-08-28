@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
+use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 
 #[ApiResource(
     shortName: 'Order',
@@ -50,7 +51,7 @@ final class OrderResource
         #[ApiProperty(description: 'The total amount of the order, in cents.', example: 3500)]
         public ?int $totalAmountInCents = null,
         #[ApiProperty(description: 'The current status of the order.', example: 'placed')]
-        public ?string $status = null,
+        public ?OrderSummaryStatus $status = null,
         #[ApiProperty(description: 'The date and time when the order was placed.', example: '2026-01-14T09:30:00+00:00')]
         public ?\DateTimeImmutable $placedAt = null,
         #[ApiProperty(description: 'The date and time when the order was cancelled, if it was.', example: '2026-01-15T14:20:00+00:00')]
@@ -68,7 +69,7 @@ final class OrderResource
             id: $result->orderId,
             customerId: $result->customerId,
             totalAmountInCents: $result->totalAmountInCents,
-            status: $result->status->value,
+            status: $result->status,
             placedAt: $result->placedAt,
             cancelledAt: $result->cancelledAt,
             paymentReference: $result->paymentReference,
