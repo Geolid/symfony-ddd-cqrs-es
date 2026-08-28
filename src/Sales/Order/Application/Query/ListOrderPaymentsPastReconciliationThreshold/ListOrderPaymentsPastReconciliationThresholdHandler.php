@@ -26,8 +26,7 @@ final readonly class ListOrderPaymentsPastReconciliationThresholdHandler
     public function __invoke(ListOrderPaymentsPastReconciliationThreshold $query): StreamResult
     {
         $cutoff = $this->clock->now()
-            ->sub(new \DateInterval(\sprintf('PT%dM', $this->thresholdMinutes)))
-            ->format(\DateTimeInterface::ATOM);
+            ->sub(new \DateInterval(\sprintf('PT%dM', $this->thresholdMinutes)));
 
         return new StreamResult(
             $this->orderPaymentFinder->stalledBefore($cutoff),

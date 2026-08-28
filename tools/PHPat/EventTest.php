@@ -69,6 +69,10 @@ final class EventTest
             ->dependOn()
             ->classes(
                 Selector::classname(IntegrationEventInterface::class),
+                Selector::AllOf(
+                    Selector::isEnum(),
+                    Selector::withFilepath('#/Application/#', true),
+                ),
                 ...$this->esMetadataSelectors(),
             )
             ->because('A Published Language must decode forever regardless of other types; its erasure already happened at the source, redoing it here duplicates that fact.');

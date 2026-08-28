@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Infrastructure\Persistence\Transaction;
+namespace Shared\Tests\Infrastructure\Database\Transaction;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\Persistence\Transaction\DbalTransactionMessengerMiddleware;
+use Shared\Infrastructure\Database\Transaction\DbalTransactionMessengerMiddleware;
 use Support\AbstractIntegrationTestCase;
 use Support\Doubles\DummyMessage;
 use Support\Doubles\StubNextMiddleware;
