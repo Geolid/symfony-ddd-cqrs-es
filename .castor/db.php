@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Castor\Attribute\AsTask;
 
-use function Castor\fs;
 use function Castor\io;
 
 #[AsTask(name: 'create', namespace: 'db', description: 'Create database and run full setup')]
@@ -39,6 +38,5 @@ function db_reset(): void
     console(['event-sourcing:database:drop', '--force', '--if-exists', '--no-interaction']);
     console(['doctrine:database:drop', '--connection=read_model', '--force', '--if-exists', '--no-interaction']);
     console(['doctrine:database:drop', '--connection=messenger', '--force', '--if-exists', '--no-interaction']);
-    fs()->remove(glob(__DIR__.'/../sandbox/data/*.json') ?: []);
     db_create();
 }

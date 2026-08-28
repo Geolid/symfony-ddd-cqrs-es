@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsTask;
 
+use function Castor\fs;
 use function Castor\run;
 
 #[AsTask(name: 'advance', namespace: 'sandbox', description: 'Advance a sandbox record to its next status, firing the matching webhook')]
@@ -17,4 +18,10 @@ function sandbox_advance(
     assert_one_of($provider, ['acme', 'globex'], 'provider');
 
     run(['docker', 'compose', 'exec', '-T', 'sandbox', 'php', "/var/www/sandbox/{$provider}/cli/advance.php", $reference]);
+}
+
+#[AsTask(name: 'reset', namespace: 'sandbox', description: 'Clear every fake provider record')]
+function sandbox_reset(): void
+{
+    fs()->remove(glob(__DIR__.'/../sandbox/data/*.json') ?: []);
 }
