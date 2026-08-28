@@ -14,7 +14,7 @@ use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingCustomerRepository implements CustomerRepositoryInterface
+final readonly class PatchlevelCustomerRepository implements CustomerRepositoryInterface
 {
     /**
      * @param Repository<Customer> $repository

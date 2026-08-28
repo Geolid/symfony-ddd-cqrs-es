@@ -11,7 +11,7 @@ use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
-final class EventSourcingIdentityRepositoryTest extends AbstractIntegrationTestCase
+final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
 {
     private IdentityRepositoryInterface $repository;
 

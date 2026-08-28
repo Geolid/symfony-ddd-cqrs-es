@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
-final class EventSourcingPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
+final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private PasswordCredentialRepositoryInterface $repository;
 

@@ -14,7 +14,7 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 
-final class EventSourcingCustomerRepositoryTest extends AbstractIntegrationTestCase
+final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
 {
     private CustomerRepositoryInterface $repository;
 

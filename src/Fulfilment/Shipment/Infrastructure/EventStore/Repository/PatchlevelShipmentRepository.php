@@ -14,7 +14,7 @@ use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingShipmentRepository implements ShipmentRepositoryInterface
+final readonly class PatchlevelShipmentRepository implements ShipmentRepositoryInterface
 {
     /**
      * @param Repository<Shipment> $repository

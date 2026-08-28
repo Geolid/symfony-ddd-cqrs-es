@@ -17,18 +17,18 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Infrastructure\EventStore\Publisher\EventSourcingIntegrationEventPublisher;
+use Shared\Infrastructure\EventStore\Publisher\PatchlevelIntegrationEventPublisher;
 use Symfony\Component\Clock\MockClock;
 
-final class EventSourcingIntegrationEventPublisherTest extends TestCase
+final class PatchlevelIntegrationEventPublisherTest extends TestCase
 {
     private InMemoryStore $store;
-    private EventSourcingIntegrationEventPublisher $publisher;
+    private PatchlevelIntegrationEventPublisher $publisher;
 
     protected function setUp(): void
     {
         $this->store = new InMemoryStore();
-        $this->publisher = new EventSourcingIntegrationEventPublisher($this->store, new MockClock('2026-01-01T00:00:00+00:00'));
+        $this->publisher = new PatchlevelIntegrationEventPublisher($this->store, new MockClock('2026-01-01T00:00:00+00:00'));
     }
 
     #[Test]

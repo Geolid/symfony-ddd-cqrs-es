@@ -19,7 +19,7 @@ use Webmozart\Assert\Assert;
  * whose playhead column is nullable with a unique index on (stream, playhead) — standard SQL
  * never treats NULL as equal to NULL, so concurrent appends on the same stream never collide.
  */
-final readonly class EventSourcingIntegrationEventPublisher implements IntegrationEventPublisherInterface
+final readonly class PatchlevelIntegrationEventPublisher implements IntegrationEventPublisherInterface
 {
     public function __construct(
         private Store $store,

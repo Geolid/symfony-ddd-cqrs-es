@@ -11,10 +11,10 @@ use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Infrastructure\EventStore\Publisher\EventSourcingIntegrationEventPublisher;
+use Shared\Infrastructure\EventStore\Publisher\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Hydration\HydratorFactory;
-use Shared\Infrastructure\Messaging\MessengerCommandBus;
-use Shared\Infrastructure\Messaging\MessengerQueryBus;
+use Shared\Infrastructure\Messaging\SymfonyCommandBus;
+use Shared\Infrastructure\Messaging\SymfonyQueryBus;
 use Shared\Infrastructure\Monitoring\Sentry\SentryEventEnricher;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -26,9 +26,9 @@ return static function (ContainerConfigurator $container): void {
 
     SubdomainServiceLoader::load($services, 'Shared');
 
-    $commandBusAlias = $services->alias(CommandBusInterface::class, MessengerCommandBus::class);
-    $queryBusAlias = $services->alias(QueryBusInterface::class, MessengerQueryBus::class);
-    $services->alias(IntegrationEventPublisherInterface::class, EventSourcingIntegrationEventPublisher::class);
+    $commandBusAlias = $services->alias(CommandBusInterface::class, SymfonyCommandBus::class);
+    $queryBusAlias = $services->alias(QueryBusInterface::class, SymfonyQueryBus::class);
+    $services->alias(IntegrationEventPublisherInterface::class, PatchlevelIntegrationEventPublisher::class);
 
     $services->set('shared.hydration.result_hydrator', StackHydrator::class)
         ->factory([service(HydratorFactory::class), 'create']);

@@ -14,7 +14,7 @@ use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingOrderRepository implements OrderRepositoryInterface
+final readonly class PatchlevelOrderRepository implements OrderRepositoryInterface
 {
     /**
      * @param Repository<Order> $repository

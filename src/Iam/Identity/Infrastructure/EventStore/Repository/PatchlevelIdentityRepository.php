@@ -14,7 +14,7 @@ use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingIdentityRepository implements IdentityRepositoryInterface
+final readonly class PatchlevelIdentityRepository implements IdentityRepositoryInterface
 {
     /**
      * @param Repository<Identity> $repository

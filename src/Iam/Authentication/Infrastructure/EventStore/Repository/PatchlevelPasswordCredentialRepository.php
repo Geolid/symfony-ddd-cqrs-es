@@ -14,7 +14,7 @@ use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingPasswordCredentialRepository implements PasswordCredentialRepositoryInterface
+final readonly class PatchlevelPasswordCredentialRepository implements PasswordCredentialRepositoryInterface
 {
     /**
      * @param Repository<PasswordCredential> $repository

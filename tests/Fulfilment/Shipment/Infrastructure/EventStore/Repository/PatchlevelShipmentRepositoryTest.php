@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
-final class EventSourcingShipmentRepositoryTest extends AbstractIntegrationTestCase
+final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
 {
     private ShipmentRepositoryInterface $repository;
 

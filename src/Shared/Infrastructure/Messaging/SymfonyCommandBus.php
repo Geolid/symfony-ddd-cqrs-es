@@ -11,10 +11,10 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-final class MessengerCommandBus implements CommandBusInterface
+final class SymfonyCommandBus implements CommandBusInterface
 {
     use HandleTrait;
-    use UnwrapsMessengerExceptionTrait;
+    use UnwrapsSymfonyExceptionTrait;
 
     public function __construct(#[Autowire(service: 'command.bus')] MessageBusInterface $messageBus)
     {

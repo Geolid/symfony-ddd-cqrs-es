@@ -11,10 +11,10 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-final class MessengerQueryBus implements QueryBusInterface
+final class SymfonyQueryBus implements QueryBusInterface
 {
     use HandleTrait;
-    use UnwrapsMessengerExceptionTrait;
+    use UnwrapsSymfonyExceptionTrait;
 
     public function __construct(#[Autowire(service: 'query.bus')] MessageBusInterface $messageBus)
     {

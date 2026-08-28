@@ -14,7 +14,7 @@ use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class EventSourcingApiKeyCredentialRepository implements ApiKeyCredentialRepositoryInterface
+final readonly class PatchlevelApiKeyCredentialRepository implements ApiKeyCredentialRepositoryInterface
 {
     /**
      * @param Repository<ApiKeyCredential> $repository
