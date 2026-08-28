@@ -34,10 +34,10 @@ function qa_stan(
     stan_analyse(null);
 
     io()->comment('tests/');
-    stan_exec('tests/phpstan.neon', null, ['APP_ENV' => 'test', 'APP_ENV_UCFIRST' => 'Test', 'APP_DEBUG_SUFFIX' => app_debug() ? 'Debug' : '']);
+    stan_exec('tests/phpstan.neon', null, ['APP_ENV' => 'test', 'APP_ENV_UCFIRST' => 'Test']);
 
     io()->comment('sandbox/');
-    stan_exec('phpstan.sandbox.neon', null, ['APP_ENV_UCFIRST' => ucfirst(app_env()), 'APP_DEBUG_SUFFIX' => app_debug() ? 'Debug' : '']);
+    stan_exec('phpstan.sandbox.neon', null, ['APP_ENV_UCFIRST' => ucfirst(app_env())]);
 
     foreach (apps() as $dm) {
         stan_analyse($dm);
@@ -57,7 +57,7 @@ function stan_analyse(?string $app, ?string $target = null): void
 
     io()->comment((null !== $app ? "DM: {$app}" : 'src/')." ({$config})");
 
-    stan_exec($config, $target, [...(null !== $app ? ['APP_ID' => $app] : []), 'APP_ENV_UCFIRST' => ucfirst(app_env()), 'APP_DEBUG_SUFFIX' => app_debug() ? 'Debug' : '']);
+    stan_exec($config, $target, [...(null !== $app ? ['APP_ID' => $app] : []), 'APP_ENV_UCFIRST' => ucfirst(app_env())]);
 }
 
 /**

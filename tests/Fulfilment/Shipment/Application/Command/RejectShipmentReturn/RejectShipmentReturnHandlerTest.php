@@ -21,16 +21,32 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsReturnWhenReceived(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_REJECTED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenAlreadyRejected(): void
+    {
+        // Given
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->returnRejected()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
+
+        // Then
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
     #[Test]

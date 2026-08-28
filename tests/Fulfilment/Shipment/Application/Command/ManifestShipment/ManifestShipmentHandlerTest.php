@@ -36,32 +36,31 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->create();
         $this->store($shipment);
+        $trackingReference = 'ACME-4Q7X2K9';
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);
-        self::assertSame('ACME-4Q7X2K9', $results[0]->trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
     }
 
     #[Test]
     public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
         $this->store($shipment);
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), 'ACME-4Q7X2K9', $shipment->id->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);
-        self::assertSame('ACME-4Q7X2K9', $results[0]->trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
     }
 
     #[Test]

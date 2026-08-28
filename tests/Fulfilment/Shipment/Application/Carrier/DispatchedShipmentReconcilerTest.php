@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fulfilment\Tests\Shipment\Application\Carrier;
+
+use Fulfilment\Shipment\Application\Carrier\DispatchedShipmentReconciler;
+use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
+use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Command\CommandBusInterface;
+use Support\AbstractIntegrationTestCase;
+
+final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
+{
+    private ShipmentFinderInterface $shipmentFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+    }
+
+    #[Test]
+    public function itReconcilesWhenDelivered(): void
+    {
+        // Given
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $this->store($shipment);
+        $reconciler = new DispatchedShipmentReconciler(new StubCarrierGateway([$trackingReference => ShipmentStatus::DELIVERED->value]), $this->service(CommandBusInterface::class));
+
+        // When
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingReference);
+
+        // Then
+        self::assertTrue($reconciled);
+        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofTrackingReference($trackingReference)->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenStillDispatched(): void
+    {
+        // Given
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $this->store($shipment);
+        $reconciler = new DispatchedShipmentReconciler(new StubCarrierGateway([$trackingReference => ShipmentStatus::DISPATCHED->value]), $this->service(CommandBusInterface::class));
+
+        // When
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingReference);
+
+        // Then
+        self::assertFalse($reconciled);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference($trackingReference)->status);
+    }
+}

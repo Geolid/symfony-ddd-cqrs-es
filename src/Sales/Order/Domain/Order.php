@@ -27,8 +27,8 @@ use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
-use Sales\Order\Domain\Service\RetentionWindow;
-use Sales\Order\Domain\Service\ReturnWindow;
+use Sales\Order\Domain\Specification\RetentionExpiredSpecification;
+use Sales\Order\Domain\Specification\ReturnWindowExpiredSpecification;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
@@ -185,7 +185,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws OrderNotCompletableException
      */
-    public function complete(\DateTimeImmutable $now, ReturnWindow $returnWindow): void
+    public function complete(\DateTimeImmutable $now): void
     {
         if ($this->state->isCompleted()) {
             return;
@@ -195,7 +195,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderNotCompletableException::forId($this->id);
         }
 
-        if (!$returnWindow->hasExpired($this->deliveredAt, $now)) {
+        if (!new ReturnWindowExpiredSpecification($now)->isSatisfiedBy($this->deliveredAt)) {
             return;
         }
 
@@ -210,7 +210,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      * @throws OrderNotReturnableException
      * @throws OrderReturnWindowExpiredException
      */
-    public function requestReturn(string $customerId, \DateTimeImmutable $now, ReturnWindow $returnWindow): void
+    public function requestReturn(string $customerId, \DateTimeImmutable $now): void
     {
         if ($this->customerId !== $customerId) {
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
@@ -224,7 +224,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderNotReturnableException::forId($this->id);
         }
 
-        if ($returnWindow->hasExpired($this->deliveredAt, $now)) {
+        if (new ReturnWindowExpiredSpecification($now)->isSatisfiedBy($this->deliveredAt)) {
             throw OrderReturnWindowExpiredException::forId($this->id);
         }
 
@@ -259,13 +259,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function anonymize(\DateTimeImmutable $now, RetentionWindow $retentionWindow): void
+    public function anonymize(\DateTimeImmutable $now): void
     {
         if (null !== $this->anonymizedAt) {
             return;
         }
 
-        if (null === $this->closedAt || !$retentionWindow->hasExpired($this->closedAt, $now)) {
+        if (null === $this->closedAt || !new RetentionExpiredSpecification($now)->isSatisfiedBy($this->closedAt)) {
             return;
         }
 

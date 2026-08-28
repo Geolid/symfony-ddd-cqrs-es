@@ -21,21 +21,53 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::DELIVERED, $results[0]->status);
-        self::assertNotNull($results[0]->deliveredAt);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DELIVERED, $result->status);
+        self::assertNotNull($result->deliveredAt);
     }
 
     #[Test]
-    public function itFailsWhenNotDispatched(): void
+    public function itDeliversWhenManifested(): void
+    {
+        // Given
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new DeliverShipment($shipment->id->toString()));
+
+        // Then
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DELIVERED, $result->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenAlreadyDelivered(): void
+    {
+        // Given
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
+        $this->store($shipment);
+
+        // When
+        $this->dispatch(new DeliverShipment($shipment->id->toString()));
+
+        // Then
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DELIVERED, $result->status);
+    }
+
+    #[Test]
+    public function itFailsWhenNotManifested(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->create();

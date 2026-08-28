@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 {
@@ -81,21 +82,47 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersManifestedBefore(): void
+    public function itFiltersStalledBefore(): void
     {
         // Given
-        $cutoff = '2026-06-01T00:00:00+00:00';
-        $other = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-06-15T00:00:00+00:00'))->create();
-        $another = ShipmentTestFactory::new()->prepared()->create();
-        $stale = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))->create();
-        $this->store($other, $another, $stale);
+        $now = Clock::get()->now();
+        $cutoff = $now->format(\DateTimeInterface::ATOM);
+        $freshManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
+        $notManifested = ShipmentTestFactory::new()->prepared()->create();
+        $staleManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
+        $staleDispatched = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-2 days'))
+            ->dispatched($now->modify('-1 day'))
+            ->create();
+        $staleReturnManifested = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-5 days'))
+            ->dispatched($now->modify('-4 days'))
+            ->delivered($now->modify('-3 days'))
+            ->returnRequested($now->modify('-2 days'))
+            ->returnManifested(manifestedAt: $now->modify('-1 day'))
+            ->create();
+        $staleReturnDispatched = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-6 days'))
+            ->dispatched($now->modify('-5 days'))
+            ->delivered($now->modify('-4 days'))
+            ->returnRequested($now->modify('-3 days'))
+            ->returnManifested(manifestedAt: $now->modify('-2 days'))
+            ->returnDispatched($now->modify('-1 day'))
+            ->create();
+        $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched, $staleReturnManifested, $staleReturnDispatched);
 
         // When
-        $results = iterator_to_array($this->finder->manifestedBefore($cutoff));
+        $results = iterator_to_array($this->finder->stalledBefore($cutoff));
 
         // Then
-        self::assertCount(1, $results);
-        self::assertSame($stale->id->toString(), $results[0]->id);
+        self::assertCount(4, $results);
+        self::assertEqualsCanonicalizing(
+            [$staleManifested->id->toString(), $staleDispatched->id->toString(), $staleReturnManifested->id->toString(), $staleReturnDispatched->id->toString()],
+            array_map(static fn (ShipmentResult $result): string => $result->id, $results),
+        );
     }
 
     #[Test]

@@ -11,7 +11,8 @@ use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Symfony\Component\Clock\MockClock;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
@@ -32,15 +33,40 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     public function itReconcilesPastTheThreshold(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
-        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(OrderPaymentStatus::AUTHORIZED->value));
+        $now = Clock::get()->now();
+        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway([
+            'GLBX-STUCK1234' => OrderPaymentStatus::AUTHORIZED->value,
+            'GLBX-REFUND-STUCK' => OrderPaymentStatus::REFUNDED->value,
+        ]));
         $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+            ->withRequestedAt($now->modify('-90 minutes'))
             ->create());
         $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-FRESH1234')
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T23:55:00+00:00'))
+            ->withRequestedAt($now->modify('-5 minutes'))
+            ->create());
+        $refundStuckOrder = OrderTestFactory::new()->create();
+        $this->store($refundStuckOrder);
+        $refundStuckRequestedAt = $now->modify('-3 days');
+        $this->store(OrderPaymentTestFactory::new()
+            ->withOrderId($refundStuckOrder->id->toString())
+            ->withReference('GLBX-REFUND-STUCK')
+            ->withRequestedAt($refundStuckRequestedAt)
+            ->authorized($refundStuckRequestedAt->modify('+10 minutes'))
+            ->captured($refundStuckRequestedAt->modify('+1 day'))
+            ->refundInitiated($now->modify('-90 minutes'))
+            ->create());
+        $refundFreshOrder = OrderTestFactory::new()->create();
+        $this->store($refundFreshOrder);
+        $refundFreshRequestedAt = $now->modify('-3 days');
+        $this->store(OrderPaymentTestFactory::new()
+            ->withOrderId($refundFreshOrder->id->toString())
+            ->withReference('GLBX-REFUND-FRESH')
+            ->withRequestedAt($refundFreshRequestedAt)
+            ->authorized($refundFreshRequestedAt->modify('+10 minutes'))
+            ->captured($refundFreshRequestedAt->modify('+1 day'))
+            ->refundInitiated($now->modify('-5 minutes'))
             ->create());
         $tester = $this->tester();
 
@@ -49,24 +75,29 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 order payment(s) reconciled.', $tester->getDisplay());
+        self::assertStringContainsString('2 order payment(s) reconciled.', $tester->getDisplay());
         self::assertSame(OrderPaymentStatus::AUTHORIZED, $this->orderPaymentFinder->ofReference('GLBX-STUCK1234')->status);
         self::assertSame(OrderPaymentStatus::REQUESTED, $this->orderPaymentFinder->ofReference('GLBX-FRESH1234')->status);
+        self::assertSame(OrderPaymentStatus::REFUNDED, $this->orderPaymentFinder->ofReference('GLBX-REFUND-STUCK')->status);
+        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $this->orderPaymentFinder->ofReference('GLBX-REFUND-FRESH')->status);
     }
 
     #[Test]
     public function itReconcilesWhenSomeFail(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-01T00:00:00+00:00'));
-        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(OrderPaymentStatus::AUTHORIZED->value, failingReference: 'GLBX-UNREACHABLE'));
+        $now = Clock::get()->now();
+        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(
+            ['GLBX-UNREACHABLE' => OrderPaymentStatus::AUTHORIZED->value, 'GLBX-STUCK1234' => OrderPaymentStatus::AUTHORIZED->value],
+            failingReference: 'GLBX-UNREACHABLE',
+        ));
         $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-UNREACHABLE')
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+            ->withRequestedAt($now->modify('-90 minutes'))
             ->create());
         $this->store(OrderPaymentTestFactory::new()
             ->withReference('GLBX-STUCK1234')
-            ->withRequestedAt(new \DateTimeImmutable('2026-01-31T22:00:00+00:00'))
+            ->withRequestedAt($now->modify('-90 minutes'))
             ->create());
         $tester = $this->tester();
 

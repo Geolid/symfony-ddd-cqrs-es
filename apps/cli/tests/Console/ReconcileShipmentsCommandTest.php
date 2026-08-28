@@ -8,11 +8,11 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Shared\Domain\ValueObject\PostalAddress;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
@@ -33,18 +33,67 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     public function itReconcilesPastTheThreshold(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
-        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(ShipmentStatus::DISPATCHED->value));
+        $now = Clock::get()->now();
+        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway([
+            'ACME-STUCK9999' => ShipmentStatus::DISPATCHED->value,
+            'ACME-DISPATCHED-STUCK' => ShipmentStatus::DELIVERED->value,
+            'ACME-RETURN-STUCK' => ShipmentStatus::RETURN_DISPATCHED->value,
+            'ACME-RETURN-DISPATCHED-STUCK' => ShipmentStatus::RETURN_RECEIVED->value,
+        ]));
         $order = OrderTestFactory::new()->create();
         $this->store($order);
         $this->store(ShipmentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->prepared()
-            ->manifested('ACME-STUCK9999', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
+            ->manifested('ACME-STUCK9999', $now->modify('-3 days'))
             ->create());
         $this->store(ShipmentTestFactory::new()
             ->prepared()
-            ->manifested('ACME-FRESH9999', new \DateTimeImmutable('2026-02-09T12:00:00+00:00'))
+            ->manifested('ACME-FRESH9999', $now->modify('-12 hours'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-DISPATCHED-STUCK', $now->modify('-4 days'))
+            ->dispatched($now->modify('-3 days'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-DISPATCHED-FRESH', $now->modify('-4 days'))
+            ->dispatched($now->modify('-12 hours'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-5 days'))
+            ->dispatched($now->modify('-4 days 12 hours'))
+            ->delivered($now->modify('-4 days'))
+            ->returnRequested($now->modify('-4 days'))
+            ->returnManifested('ACME-RETURN-STUCK', $now->modify('-3 days'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-5 days'))
+            ->dispatched($now->modify('-4 days 12 hours'))
+            ->delivered($now->modify('-4 days'))
+            ->returnRequested($now->modify('-4 days'))
+            ->returnManifested('ACME-RETURN-FRESH', $now->modify('-12 hours'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-6 days'))
+            ->dispatched($now->modify('-5 days 12 hours'))
+            ->delivered($now->modify('-5 days'))
+            ->returnRequested($now->modify('-5 days'))
+            ->returnManifested('ACME-RETURN-DISPATCHED-STUCK', $now->modify('-4 days'))
+            ->returnDispatched($now->modify('-3 days'))
+            ->create());
+        $this->store(ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-6 days'))
+            ->dispatched($now->modify('-5 days 12 hours'))
+            ->delivered($now->modify('-5 days'))
+            ->returnRequested($now->modify('-5 days'))
+            ->returnManifested('ACME-RETURN-DISPATCHED-FRESH', $now->modify('-4 days'))
+            ->returnDispatched($now->modify('-12 hours'))
             ->create());
         $tester = $this->tester();
 
@@ -53,24 +102,33 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 shipment(s) reconciled.', $tester->getDisplay());
+        self::assertStringContainsString('4 shipment(s) reconciled.', $tester->getDisplay());
         self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference('ACME-STUCK9999')->status);
         self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofTrackingReference('ACME-FRESH9999')->status);
+        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofTrackingReference('ACME-DISPATCHED-STUCK')->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference('ACME-DISPATCHED-FRESH')->status);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-STUCK')->status);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-FRESH')->status);
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-DISPATCHED-STUCK')->status);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-DISPATCHED-FRESH')->status);
     }
 
     #[Test]
     public function itReconcilesWhenSomeFail(): void
     {
         // Given
-        self::getContainer()->set('clock', new MockClock('2026-02-10T00:00:00+00:00'));
-        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(ShipmentStatus::DISPATCHED->value, failingReference: 'ACME-UNREACHABLE'));
+        $now = Clock::get()->now();
+        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(
+            ['ACME-UNREACHABLE' => ShipmentStatus::DISPATCHED->value, 'ACME-STUCK9999' => ShipmentStatus::DISPATCHED->value],
+            failingReference: 'ACME-UNREACHABLE',
+        ));
         $this->store(ShipmentTestFactory::new()
             ->prepared()
-            ->manifested('ACME-UNREACHABLE', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
+            ->manifested('ACME-UNREACHABLE', $now->modify('-3 days'))
             ->create());
         $this->store(ShipmentTestFactory::new()
             ->prepared()
-            ->manifested('ACME-STUCK9999', new \DateTimeImmutable('2026-02-07T00:00:00+00:00'))
+            ->manifested('ACME-STUCK9999', $now->modify('-3 days'))
             ->create());
         $tester = $this->tester();
 
@@ -105,33 +163,5 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         } finally {
             $lock->release();
         }
-    }
-}
-
-final readonly class StubCarrierGateway implements CarrierGatewayInterface
-{
-    public function __construct(
-        private string $status,
-        private ?string $failingReference = null,
-    ) {
-    }
-
-    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function checkStatus(string $reference): string
-    {
-        if ($reference === $this->failingReference) {
-            throw new \RuntimeException('Carrier unreachable.');
-        }
-
-        return $this->status;
     }
 }

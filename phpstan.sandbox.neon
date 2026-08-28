@@ -8,4 +8,4 @@ parameters:
         - sandbox/
 
     symfony:
-        containerXmlPath: var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%%env.APP_DEBUG_SUFFIX%Container.xml
+        containerXmlPath: var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml

@@ -19,5 +19,5 @@ interface OrderPaymentFinderInterface extends IterableFinderInterface
 
     public function byStatus(string ...$statuses): static;
 
-    public function requestedBefore(string $cutoff): static;
+    public function stalledBefore(string $cutoff): static;
 }

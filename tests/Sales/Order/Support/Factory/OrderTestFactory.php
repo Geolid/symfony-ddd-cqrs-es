@@ -6,8 +6,6 @@ namespace Sales\Tests\Order\Support\Factory;
 
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Order;
-use Sales\Order\Domain\Service\RetentionWindow;
-use Sales\Order\Domain\Service\ReturnWindow;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
@@ -96,24 +94,20 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
     }
 
-    public function completed(
-        ?\DateTimeImmutable $now = null,
-        ReturnWindow $returnWindow = new ReturnWindow(14),
-    ): self {
+    public function completed(?\DateTimeImmutable $now = null): self
+    {
         $now ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->complete($now, $returnWindow));
+        return $this->withModifier(static fn (Order $order) => $order->complete($now));
     }
 
-    public function returnRequested(
-        ?\DateTimeImmutable $requestedAt = null,
-        ReturnWindow $returnWindow = new ReturnWindow(14),
-    ): self {
+    public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
         Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
         $requestedAt ??= Clock::get()->now();
 
         return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
-            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt, $returnWindow));
+            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt));
     }
 
     public function returned(?\DateTimeImmutable $returnedAt = null): self
@@ -132,13 +126,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         return $this->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
     }
 
-    public function anonymized(
-        ?\DateTimeImmutable $now = null,
-        RetentionWindow $retentionWindow = new RetentionWindow(3650),
-    ): self {
+    public function anonymized(?\DateTimeImmutable $now = null): self
+    {
         $now ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->anonymize($now, $retentionWindow));
+        return $this->withModifier(static fn (Order $order) => $order->anonymize($now));
     }
 
     protected function defaults(): array

@@ -19,6 +19,7 @@ final readonly class ShipmentResult
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $returnManifestedAt,
         public ?\DateTimeImmutable $returnDispatchedAt,
         public ?\DateTimeImmutable $returnReceivedAt,
         public ?\DateTimeImmutable $returnApprovedAt,

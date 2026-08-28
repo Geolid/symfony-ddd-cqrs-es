@@ -93,9 +93,9 @@ function app_env(string $default = 'dev'): string
     return (string) (context()->environment['APP_ENV'] ?? $default);
 }
 
-function app_debug(): bool
+function app_debug(bool $default = true): bool
 {
-    return (bool) (context()->environment['APP_DEBUG'] ?? true);
+    return (bool) (context()->environment['APP_DEBUG'] ?? $default);
 }
 
 /**

@@ -21,31 +21,32 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itReceivesReturnWhenDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 
     #[Test]
     public function itReceivesReturnWhenManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
+        $returnTrackingReference = 'ACME-RETURN-1';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 
     #[Test]

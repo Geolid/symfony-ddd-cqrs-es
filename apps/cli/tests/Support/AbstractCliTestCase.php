@@ -25,7 +25,11 @@ abstract class AbstractCliTestCase extends AbstractIntegrationTestCase
      */
     protected static function createKernel(array $options = []): KernelInterface
     {
-        return new Kernel('test', false, 'cli');
+        return new Kernel(
+            $options['environment'] ?? 'test',
+            $options['debug'] ?? (bool) ($_SERVER['APP_DEBUG'] ?? true),
+            'cli',
+        );
     }
 
     protected function tester(): ApplicationTester

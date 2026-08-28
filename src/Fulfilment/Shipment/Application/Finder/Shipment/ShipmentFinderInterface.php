@@ -26,5 +26,5 @@ interface ShipmentFinderInterface extends IterableFinderInterface
 
     public function byCustomer(string $customerId): static;
 
-    public function manifestedBefore(string $cutoff): static;
+    public function stalledBefore(string $cutoff): static;
 }

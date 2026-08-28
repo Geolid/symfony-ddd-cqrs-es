@@ -21,31 +21,33 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDispatchesManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::DISPATCHED, $results[0]->status);
-        self::assertNotNull($results[0]->dispatchedAt);
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+        self::assertNotNull($result->dispatchedAt);
     }
 
     #[Test]
-    public function itFailsWhenAlreadyDispatched(): void
+    public function itIgnoresWhenAlreadyDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
         $this->store($shipment);
-
-        // Then
-        $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));
+
+        // Then
+        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
     }
 
     #[Test]
