@@ -81,7 +81,8 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
     {
         $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_manifested_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
             ->from(DbalShipmentProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->orderBy('created_at', 'ASC')
+            ->addOrderBy('id', 'ASC');
     }
 
     protected function resultClass(): string

@@ -56,7 +56,8 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
     {
         $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_initiated_at', 'refunded_at')
             ->from(DbalOrderPaymentProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->orderBy('requested_at', 'ASC')
+            ->addOrderBy('id', 'ASC');
     }
 
     protected function resultClass(): string
