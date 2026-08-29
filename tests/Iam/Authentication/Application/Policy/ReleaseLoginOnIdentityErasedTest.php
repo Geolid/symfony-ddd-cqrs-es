@@ -10,8 +10,8 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialU
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase

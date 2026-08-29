@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Infrastructure\Persistence\Projection\Finder\DbalCustomerFinder;
+use Sales\Customer\Infrastructure\Projection\Finder\DbalCustomerFinder;
 use Sales\Order\Application\Payment\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;

@@ -11,7 +11,7 @@ use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.customer.erase_customer_on_identity_erased')]
 final readonly class EraseCustomerOnIdentityErased

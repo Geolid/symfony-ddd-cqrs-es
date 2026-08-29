@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bootstrap\DependencyInjection\CompilerPass;
 
-use Shared\Application\Port\DrivingPort;
+use Shared\Application\DrivingPort;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 

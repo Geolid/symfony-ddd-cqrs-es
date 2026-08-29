@@ -8,9 +8,9 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialI
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy\Policy;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Policy;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[Policy('iam.authentication.release_login_on_identity_erased')]
 final readonly class ReleaseLoginOnIdentityErased

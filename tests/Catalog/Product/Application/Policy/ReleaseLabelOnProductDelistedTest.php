@@ -9,8 +9,8 @@ use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
 
 final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCase

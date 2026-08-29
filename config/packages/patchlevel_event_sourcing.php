@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Shared\Application\IntegrationEvent\Publisher;
-use Shared\Application\Policy\Policy;
-use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Persistence\Projection\Projector\Projector;
+use Shared\Application\Policy;
+use Shared\Application\Processor;
+use Shared\Infrastructure\Projection\Projector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {

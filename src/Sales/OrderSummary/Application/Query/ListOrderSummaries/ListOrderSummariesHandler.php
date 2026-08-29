@@ -6,7 +6,7 @@ namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Shared\Application\Query\Pagination\Pagination;
+use Shared\Application\Query\Pagination;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 

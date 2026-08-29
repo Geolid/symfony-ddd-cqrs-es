@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Payment;
 
 use Sales\Order\Application\Status\OrderPaymentStatus;
-use Shared\Application\Port\DrivingPort;
+use Shared\Application\DrivingPort;
 
 #[DrivingPort]
 interface OrderPaymentReconcilerInterface

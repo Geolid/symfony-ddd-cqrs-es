@@ -7,9 +7,9 @@ namespace Iam\Authentication\Application\Policy;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy\Policy;
-use Shared\Domain\Service\UniqueValueRegistryInterface;
-use Shared\Domain\ValueObject\UniqueKey;
+use Shared\Application\Policy;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[Policy('iam.authentication.release_api_key_labels_on_identity_erased')]
 final readonly class ReleaseApiKeyLabelsOnIdentityErased

@@ -9,7 +9,7 @@ use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.confirm_order_on_order_payment_authorized')]
 final readonly class ConfirmOrderOnOrderPaymentAuthorized

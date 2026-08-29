@@ -7,7 +7,7 @@ namespace Sales\Order\Application\Policy;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.refund_order_payment_on_order_payment_refund_initiated')]
 final readonly class RefundOrderPaymentOnOrderPaymentRefundInitiated
