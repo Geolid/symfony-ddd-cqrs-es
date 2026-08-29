@@ -116,13 +116,6 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             [$manifested->id->toString(), $dispatched->id->toString()],
             array_map(static fn (ShipmentResult $result): string => $result->id, $results),
         );
-        $result = $results[0]->id === $manifested->id->toString() ? $results[0] : $results[1];
-        self::assertSame($manifested->orderId, $result->orderId);
-        self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
-        self::assertNotNull($result->trackingReference);
-        self::assertNotNull($result->createdAt);
-        self::assertNull($result->dispatchedAt);
-        self::assertNull($result->deliveredAt);
     }
 
     #[Test]

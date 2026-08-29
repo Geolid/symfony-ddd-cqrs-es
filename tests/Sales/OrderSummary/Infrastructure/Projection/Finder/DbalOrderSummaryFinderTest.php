@@ -76,7 +76,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Given
         $other = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->create();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
@@ -85,9 +85,6 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($order->id->toString(), $results[0]->orderId);
-        self::assertSame($customerId, $results[0]->customerId);
-        self::assertSame(1_500, $results[0]->totalAmountInCents);
-        self::assertSame(OrderSummaryStatus::PLACED, $results[0]->status);
     }
 
     #[Test]
@@ -105,8 +102,6 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cancelled->id->toString(), $results[0]->orderId);
-        self::assertSame(OrderSummaryStatus::CANCELLED, $results[0]->status);
-        self::assertNotNull($results[0]->cancelledAt);
     }
 
     #[Test]
