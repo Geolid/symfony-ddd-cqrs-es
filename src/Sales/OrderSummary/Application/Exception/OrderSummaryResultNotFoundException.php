@@ -8,7 +8,7 @@ use Shared\Application\Exception\ResultNotFoundException;
 
 final class OrderSummaryResultNotFoundException extends ResultNotFoundException
 {
-    public static function forOrderId(string $orderId): self
+    public static function forOrder(string $orderId): self
     {
         return new self(\sprintf('Order summary of order "%s" not found.', $orderId));
     }

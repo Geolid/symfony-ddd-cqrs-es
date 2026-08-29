@@ -37,7 +37,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
         self::assertTrue($this->service(PasswordHasherInterface::class)->verify($result->passwordHash, 'Qm3&nJ8wXv5Tz1p!'));
     }
 

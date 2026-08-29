@@ -32,7 +32,7 @@ final readonly class RehashPasswordHandler
      */
     public function __invoke(RehashPassword $command): void
     {
-        $current = $this->passwordCredentialFinder->ofIdentityId($command->identityId);
+        $current = $this->passwordCredentialFinder->ofIdentity($command->identityId);
 
         if (!$this->hasher->needsRehash($current->passwordHash)) {
             return;

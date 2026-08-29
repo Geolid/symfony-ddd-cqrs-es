@@ -23,7 +23,7 @@ final readonly class PasswordCredentialVerifier implements PasswordCredentialVer
      */
     public function verify(string $identityId, #[\SensitiveParameter] string $plainPassword): bool
     {
-        $credential = $this->passwordCredentialFinder->ofIdentityId($identityId);
+        $credential = $this->passwordCredentialFinder->ofIdentity($identityId);
 
         if (!$credential->identityAuthenticatable) {
             throw IdentityNotAuthenticatableException::forIdentity($identityId);

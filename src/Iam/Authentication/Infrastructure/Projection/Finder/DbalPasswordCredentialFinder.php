@@ -25,7 +25,7 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
         )->one() ?? throw PasswordCredentialResultNotFoundException::forLogin($login);
     }
 
-    public function ofIdentityId(string $identityId): PasswordCredentialResult
+    public function ofIdentity(string $identityId): PasswordCredentialResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId): void {

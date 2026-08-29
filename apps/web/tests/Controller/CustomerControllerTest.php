@@ -243,7 +243,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
-        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
+        $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
         self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
     }
 

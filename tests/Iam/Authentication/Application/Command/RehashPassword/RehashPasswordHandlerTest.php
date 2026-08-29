@@ -36,7 +36,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
         self::assertFalse($this->service(PasswordHasherInterface::class)->needsRehash($result->passwordHash));
     }
 
@@ -53,13 +53,13 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
             ->withHasher($hasher)
             ->create();
         $this->store($identity, $credential);
-        $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
+        $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
 
         // When
         $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
 
         // Then
-        $after = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityId($identity->id->toString());
+        $after = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
         self::assertSame($before->passwordHash, $after->passwordHash);
     }
 

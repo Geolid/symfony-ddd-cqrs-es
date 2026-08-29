@@ -21,6 +21,6 @@ final readonly class GetOrderSummaryHandler
      */
     public function __invoke(GetOrderSummary $query): OrderSummaryResult
     {
-        return $this->orderSummaryFinder->ofOrderId($query->orderId);
+        return $this->orderSummaryFinder->ofOrder($query->orderId);
     }
 }

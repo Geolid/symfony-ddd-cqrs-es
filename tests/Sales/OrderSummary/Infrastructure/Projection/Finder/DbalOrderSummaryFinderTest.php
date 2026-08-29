@@ -28,7 +28,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByOrderId(): void
+    public function itGetsByOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -43,7 +43,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         $this->store($order, $payment, $shipment);
 
         // When
-        $result = $this->finder->ofOrderId($order->id->toString());
+        $result = $this->finder->ofOrder($order->id->toString());
 
         // Then
         self::assertSame($order->id->toString(), $result->orderId);
@@ -61,13 +61,13 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsWhenOrderIdNotFound(): void
+    public function itThrowsWhenOrderNotFound(): void
     {
         // Then
         $this->expectException(OrderSummaryResultNotFoundException::class);
 
         // When
-        $this->finder->ofOrderId(Uuid::uuid7()->toString());
+        $this->finder->ofOrder(Uuid::uuid7()->toString());
     }
 
     #[Test]

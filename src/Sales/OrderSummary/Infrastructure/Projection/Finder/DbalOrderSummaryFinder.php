@@ -17,13 +17,13 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSummaryFinderInterface
 {
-    public function ofOrderId(string $orderId): OrderSummaryResult
+    public function ofOrder(string $orderId): OrderSummaryResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($orderId): void {
                 $qb->andWhere('order_id = :orderId')->setParameter('orderId', $orderId);
             },
-        )->one() ?? throw OrderSummaryResultNotFoundException::forOrderId($orderId);
+        )->one() ?? throw OrderSummaryResultNotFoundException::forOrder($orderId);
     }
 
     public function byCustomer(string $customerId): static

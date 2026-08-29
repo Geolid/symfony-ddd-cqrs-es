@@ -61,7 +61,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByIdentityId(): void
+    public function itGetsByIdentity(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
@@ -73,7 +73,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $this->store($credential);
 
         // When
-        $result = $this->finder->ofIdentityId($identityId);
+        $result = $this->finder->ofIdentity($identityId);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
@@ -87,6 +87,6 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofIdentityId(Uuid::uuid7()->toString());
+        $this->finder->ofIdentity(Uuid::uuid7()->toString());
     }
 }

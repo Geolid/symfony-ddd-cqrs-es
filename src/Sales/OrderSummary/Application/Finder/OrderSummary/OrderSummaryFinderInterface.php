@@ -18,7 +18,7 @@ interface OrderSummaryFinderInterface extends IterableFinderInterface, Paginatab
     /**
      * @throws OrderSummaryResultNotFoundException
      */
-    public function ofOrderId(string $orderId): OrderSummaryResult;
+    public function ofOrder(string $orderId): OrderSummaryResult;
 
     public function byCustomer(string $customerId): static;
 
