@@ -25,6 +25,33 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itGetsById(): void
+    {
+        // Given
+        $other = ProductTestFactory::new()->withLabel('Saucer')->create();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $this->store($other, $product);
+
+        // When
+        $result = $this->finder->ofId($product->id->toString());
+
+        // Then
+        self::assertSame($product->id->toString(), $result->id);
+        self::assertSame('Espresso cups, set of 6', $result->label);
+        self::assertSame(1_750, $result->unitAmountInCents);
+    }
+
+    #[Test]
+    public function itThrowsWhenIdNotFound(): void
+    {
+        // Then
+        $this->expectException(ProductResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
     public function itLists(): void
     {
         // Given
@@ -70,33 +97,6 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
             ['Apple crate', 'Zebra mug'],
             array_map(static fn (ProductResult $result): string => $result->label, $results),
         );
-    }
-
-    #[Test]
-    public function itGetsById(): void
-    {
-        // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($other, $product);
-
-        // When
-        $result = $this->finder->ofId($product->id->toString());
-
-        // Then
-        self::assertSame($product->id->toString(), $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
-    }
-
-    #[Test]
-    public function itThrowsWhenIdNotFound(): void
-    {
-        // Then
-        $this->expectException(ProductResultNotFoundException::class);
-
-        // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]

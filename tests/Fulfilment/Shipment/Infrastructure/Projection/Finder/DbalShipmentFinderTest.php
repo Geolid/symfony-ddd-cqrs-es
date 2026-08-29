@@ -27,27 +27,75 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLists(): void
+    public function itGetsByTrackingReference(): void
     {
         // Given
-        $shipments = ShipmentTestFactory::new()->many(5)->create();
-        $this->store(...$shipments);
+        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
+        $tracked = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $this->store($other, $tracked);
 
         // When
-        $results = iterator_to_array($this->finder);
+        $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
 
         // Then
-        self::assertEqualsCanonicalizing($this->shipmentIds(...$shipments), $this->resultIds($results));
+        self::assertSame($tracked->id->toString(), $result->id);
+        self::assertSame($tracked->orderId, $result->orderId);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
+        self::assertNotNull($result->dispatchedAt);
+        self::assertNull($result->deliveredAt);
     }
 
     #[Test]
-    public function itListsWhenEmpty(): void
+    public function itThrowsWhenTrackingReferenceNotFound(): void
     {
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
         // When
-        $results = iterator_to_array($this->finder);
+        $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');
+    }
+
+    #[Test]
+    public function itGetsByReturnTrackingReference(): void
+    {
+        // Given
+        $other = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-OTHER')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-OTHER')
+            ->create();
+        $tracked = ShipmentTestFactory::new()
+            ->prepared()
+            ->manifested('ACME-4Q7X2K9')
+            ->dispatched()
+            ->delivered()
+            ->returnRequested()
+            ->returnManifested('ACME-RETURN-1')
+            ->create();
+        $this->store($other, $tracked);
+
+        // When
+        $result = $this->finder->ofReturnTrackingReference('ACME-RETURN-1');
 
         // Then
-        self::assertEmpty($results);
+        self::assertSame($tracked->id->toString(), $result->id);
+        self::assertSame($tracked->orderId, $result->orderId);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
+        self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
+    }
+
+    #[Test]
+    public function itThrowsWhenReturnTrackingReferenceNotFound(): void
+    {
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
     }
 
     #[Test]
@@ -138,75 +186,27 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByTrackingReference(): void
+    public function itLists(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
-        $tracked = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
-        $this->store($other, $tracked);
+        $shipments = ShipmentTestFactory::new()->many(5)->create();
+        $this->store(...$shipments);
 
         // When
-        $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
+        $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($tracked->orderId, $result->orderId);
-        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
-        self::assertNotNull($result->dispatchedAt);
-        self::assertNull($result->deliveredAt);
+        self::assertEqualsCanonicalizing($this->shipmentIds(...$shipments), $this->resultIds($results));
     }
 
     #[Test]
-    public function itThrowsWhenTrackingReferenceNotFound(): void
+    public function itListsWhenEmpty(): void
     {
-        // Then
-        $this->expectException(ShipmentResultNotFoundException::class);
-
         // When
-        $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');
-    }
-
-    #[Test]
-    public function itGetsByReturnTrackingReference(): void
-    {
-        // Given
-        $other = ShipmentTestFactory::new()
-            ->prepared()
-            ->manifested('ACME-OTHER')
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested('ACME-RETURN-OTHER')
-            ->create();
-        $tracked = ShipmentTestFactory::new()
-            ->prepared()
-            ->manifested('ACME-4Q7X2K9')
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested('ACME-RETURN-1')
-            ->create();
-        $this->store($other, $tracked);
-
-        // When
-        $result = $this->finder->ofReturnTrackingReference('ACME-RETURN-1');
+        $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($tracked->orderId, $result->orderId);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
-    }
-
-    #[Test]
-    public function itThrowsWhenReturnTrackingReferenceNotFound(): void
-    {
-        // Then
-        $this->expectException(ShipmentResultNotFoundException::class);
-
-        // When
-        $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
+        self::assertEmpty($results);
     }
 
     /**
