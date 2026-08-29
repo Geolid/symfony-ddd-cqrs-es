@@ -15,8 +15,8 @@ use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedInteg
 use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('iam.authentication.project_api_key_credentials')]
 final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector

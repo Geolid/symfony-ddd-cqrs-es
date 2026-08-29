@@ -6,7 +6,7 @@ namespace Catalog\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
-use Shared\Application\Query\Pagination\Pagination;
+use Shared\Application\Query\Pagination;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 

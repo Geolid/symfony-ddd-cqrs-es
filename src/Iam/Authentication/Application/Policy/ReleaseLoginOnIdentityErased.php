@@ -8,7 +8,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialI
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 

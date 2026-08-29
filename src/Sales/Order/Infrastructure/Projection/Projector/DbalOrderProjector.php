@@ -20,8 +20,8 @@ use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderReturned;
 use Sales\Order\Domain\Event\OrderReturnRejected;
 use Sales\Order\Domain\Event\OrderReturnRequested;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order.project_orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector

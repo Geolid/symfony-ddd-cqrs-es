@@ -10,8 +10,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order_summary.order_summary_lines')]
 final readonly class DbalOrderSummaryLineProjector extends AbstractDbalProjector

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Application\Command;
 
+use Shared\Application\DrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Port\DrivingPort;
 
 #[DrivingPort]
 interface CommandBusInterface

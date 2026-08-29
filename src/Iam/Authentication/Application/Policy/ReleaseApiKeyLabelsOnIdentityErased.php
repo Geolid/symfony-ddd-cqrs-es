@@ -7,7 +7,7 @@ namespace Iam\Authentication\Application\Policy;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 

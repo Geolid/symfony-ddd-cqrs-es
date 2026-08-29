@@ -7,7 +7,7 @@ namespace Sales\Order\Application\Policy;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.void_order_payment_on_order_payment_voided')]
 final readonly class VoidOrderPaymentOnOrderPaymentVoided

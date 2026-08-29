@@ -10,7 +10,7 @@ use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 

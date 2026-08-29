@@ -11,11 +11,11 @@ use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Infrastructure\EventStore\Publisher\PatchlevelIntegrationEventPublisher;
-use Shared\Infrastructure\Hydration\HydratorFactory;
+use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
-use Shared\Infrastructure\Monitoring\SentryEventEnricher;
+use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
+use Shared\Infrastructure\Sentry\AppIdTagger;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -42,7 +42,7 @@ return static function (ContainerConfigurator $container): void {
     if ('prod' === $container->env()) {
         $services->set('sentry.callback.before_send', Closure::class)
             ->public()
-            ->factory([service(SentryEventEnricher::class), 'beforeSend']);
+            ->factory([service(AppIdTagger::class), 'beforeSend']);
 
         $services->set(ExceptionToSentryIssueHandler::class)
             ->args([service(HubInterface::class), LogLevel::ERROR]);

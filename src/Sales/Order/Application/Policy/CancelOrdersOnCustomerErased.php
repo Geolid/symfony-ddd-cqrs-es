@@ -9,7 +9,7 @@ use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedInt
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.cancel_orders_on_customer_erased')]
 final readonly class CancelOrdersOnCustomerErased

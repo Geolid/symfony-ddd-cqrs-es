@@ -9,7 +9,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.deliver_order_on_shipment_delivered')]
 final readonly class DeliverOrderOnShipmentDelivered

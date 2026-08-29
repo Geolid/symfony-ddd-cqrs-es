@@ -23,8 +23,8 @@ use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('fulfilment.shipment.project_shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector

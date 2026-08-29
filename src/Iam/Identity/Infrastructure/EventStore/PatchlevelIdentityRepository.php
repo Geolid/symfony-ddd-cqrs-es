@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Identity\Infrastructure\EventStore;
+
+use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
+use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Identity\Domain\ValueObject\IdentityId;
+use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
+use Patchlevel\EventSourcing\Repository\AggregateNotFound;
+use Patchlevel\EventSourcing\Repository\Repository;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class PatchlevelIdentityRepository implements IdentityRepositoryInterface
+{
+    /**
+     * @param Repository<Identity> $repository
+     */
+    public function __construct(
+        #[Autowire(service: 'event_sourcing.iam.identity.identity.repository')]
+        private Repository $repository,
+    ) {
+    }
+
+    public function has(IdentityId $id): bool
+    {
+        return $this->repository->has($id);
+    }
+
+    public function load(IdentityId $id): Identity
+    {
+        try {
+            return $this->repository->load($id);
+        } catch (AggregateNotFound) {
+            throw IdentityNotFoundException::forId($id->toString());
+        }
+    }
+
+    public function save(Identity $identity): void
+    {
+        try {
+            $this->repository->save($identity);
+        } catch (AggregateAlreadyExists) {
+            throw IdentityAlreadyExistsException::forId($identity->id->toString());
+        }
+    }
+}

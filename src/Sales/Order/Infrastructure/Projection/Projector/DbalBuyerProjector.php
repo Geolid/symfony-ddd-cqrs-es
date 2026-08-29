@@ -13,8 +13,8 @@ use Sales\Customer\Application\IntegrationEvent\CustomerBillingAddressRegistered
 use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
 use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order.project_buyers')]
 final readonly class DbalBuyerProjector extends AbstractDbalProjector

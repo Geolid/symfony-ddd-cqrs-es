@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Application\Query\Result;
 
-use Shared\Application\Query\Pagination\Pagination;
+use Shared\Application\Query\Pagination;
 
 /**
  * @template TResult of object

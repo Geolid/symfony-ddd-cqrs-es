@@ -13,7 +13,7 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('fulfilment.shipment.manifest_shipment_on_shipment_prepared')]
 final readonly class ManifestShipmentOnShipmentPrepared

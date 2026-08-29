@@ -11,8 +11,8 @@ use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
+use Shared\Application\DrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Port\DrivingPort;
 use Shared\Application\Query\QueryInterface;
 use Symfony\Component\Validator\Constraints\Compound;
 

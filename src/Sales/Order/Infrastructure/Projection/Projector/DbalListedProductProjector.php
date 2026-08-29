@@ -13,8 +13,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Domain\ValueObject\Label;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order.project_listed_products')]
 final readonly class DbalListedProductProjector extends AbstractDbalProjector

@@ -15,8 +15,8 @@ use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('iam.identity.project_identities')]
 final readonly class DbalIdentityProjector extends AbstractDbalProjector

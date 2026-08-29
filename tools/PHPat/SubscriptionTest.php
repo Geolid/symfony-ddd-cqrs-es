@@ -11,9 +11,9 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\Publisher;
-use Shared\Application\Policy\Policy;
-use Shared\Application\Processor\Processor;
-use Shared\Infrastructure\Projection\Projector\Projector;
+use Shared\Application\Policy;
+use Shared\Application\Processor;
+use Shared\Infrastructure\Projection\Projector;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Tools\PHPat\Helpers\ConcreteImplementation;
 

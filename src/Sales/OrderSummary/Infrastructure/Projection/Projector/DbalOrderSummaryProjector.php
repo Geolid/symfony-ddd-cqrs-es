@@ -18,8 +18,8 @@ use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCa
 use Sales\Order\Application\IntegrationEvent\OrderPaymentRequested\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\OrderSummary\Infrastructure\Projection\Transformer\OrderSummaryStatusTransformer;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order_summary.order_summaries')]
 final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector

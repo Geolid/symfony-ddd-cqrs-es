@@ -10,7 +10,7 @@ use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Application\Policy\Policy;
+use Shared\Application\Policy;
 
 #[Policy('sales.order.capture_order_payment_on_order_dispatched')]
 final readonly class CaptureOrderPaymentOnOrderDispatched

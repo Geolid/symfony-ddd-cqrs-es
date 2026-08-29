@@ -11,8 +11,8 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Customer\Domain\Event\CustomerErased;
 use Sales\Customer\Domain\Event\CustomerRegistered;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.customer.project_customers')]
 final readonly class DbalCustomerProjector extends AbstractDbalProjector

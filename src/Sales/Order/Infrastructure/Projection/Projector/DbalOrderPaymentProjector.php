@@ -19,8 +19,8 @@ use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRequested;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Sales\Order\Domain\ValueObject\PaymentReference;
+use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shared\Infrastructure\Projection\Projector\Projector;
 
 #[Projector('sales.order.project_order_payments')]
 final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
