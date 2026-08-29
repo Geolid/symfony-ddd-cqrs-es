@@ -31,7 +31,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheProductDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ProductId::generate()->toString();

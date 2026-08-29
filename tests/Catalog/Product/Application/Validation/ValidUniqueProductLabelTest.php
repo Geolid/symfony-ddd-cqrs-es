@@ -41,7 +41,7 @@ final class ValidUniqueProductLabelTest extends CompoundConstraintTestCase
     }
 
     #[Test]
-    public function itRefusesALabelAlreadyReserved(): void
+    public function itRefuses(): void
     {
         // Given
         $this->registry->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'mug', 'owner-id');

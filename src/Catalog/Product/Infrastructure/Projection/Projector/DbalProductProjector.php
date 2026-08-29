@@ -24,11 +24,16 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
     #[Subscribe(ProductListed::class)]
     public function onProductListed(ProductListed $event): void
     {
-        $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
-            'label' => $event->label,
-            'unit_amount_in_cents' => $event->unitAmountInCents,
-        ]);
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'id' => $event->id,
+                'label' => $event->label,
+                'unit_amount_in_cents' => $event->unitAmountInCents,
+                'listed_at' => $event->listedAt,
+            ],
+            ['listed_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(ProductRepriced::class)]
@@ -36,8 +41,12 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['unit_amount_in_cents' => $event->unitAmountInCents],
+            [
+                'unit_amount_in_cents' => $event->unitAmountInCents,
+                'repriced_at' => $event->repricedAt,
+            ],
             ['id' => $event->id],
+            ['repriced_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -56,6 +65,8 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('label', Types::STRING, ['length' => Label::MAX_LENGTH]);
         $table->addColumn('unit_amount_in_cents', Types::INTEGER);
+        $table->addColumn('listed_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('repriced_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

@@ -21,10 +21,9 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = CustomerId::generate()->toString();
-        $command = new RegisterCustomer($id, 'Buyer@Example.COM');
 
         // When
-        $this->dispatch($command);
+        $this->dispatch(new RegisterCustomer($id, 'Buyer@Example.COM'));
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofId($id);

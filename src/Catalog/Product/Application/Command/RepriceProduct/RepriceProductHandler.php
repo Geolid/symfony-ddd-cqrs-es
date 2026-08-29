@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Product\Application\Command\RepriceProduct;
 
+use Catalog\Product\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Product\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
@@ -23,6 +24,7 @@ final readonly class RepriceProductHandler
 
     /**
      * @throws ProductNotFoundException
+     * @throws ProductAlreadyDelistedException
      * @throws ProductAlreadyExistsException
      */
     public function __invoke(RepriceProduct $command): void

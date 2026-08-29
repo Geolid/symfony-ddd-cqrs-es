@@ -29,7 +29,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsForOrder(): void
+    public function itRequests(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();

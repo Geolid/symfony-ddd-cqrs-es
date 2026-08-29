@@ -9,9 +9,10 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Infrastructure\Projection\Projector\DbalCustomerProjector;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
- * @phpstan-type Row array{email: ?string}
+ * @phpstan-type Row array{email: string, registered_at: string}
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -19,7 +20,8 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $now = Clock::get()->now();
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
 
         // When
         $this->store($customer);
@@ -28,6 +30,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertSame('buyer@example.com', $row['email']);
+        self::assertSame($now->format('Y-m-d H:i:s'), $row['registered_at']);
     }
 
     #[Test]
@@ -36,10 +39,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = CustomerTestFactory::new()->withEmail('other@example.com')->create();
         $customer = CustomerTestFactory::new()->erased()->create();
-        $this->store($other);
-
-        // When
-        $this->store($customer);
+        $this->store($other, $customer);
 
         // Then
         self::assertFalse($this->fetchRow($customer->id->toString()));
@@ -56,7 +56,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     {
         /** @var Row|false */
         return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
-            \sprintf('SELECT email FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
+            \sprintf('SELECT email, registered_at FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
             ['id' => $id],
         );
     }

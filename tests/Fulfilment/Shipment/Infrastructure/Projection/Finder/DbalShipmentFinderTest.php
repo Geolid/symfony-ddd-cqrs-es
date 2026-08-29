@@ -11,7 +11,6 @@ use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -30,14 +29,13 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
         $shipment = ShipmentTestFactory::new()
-            ->withOrderId($order->id->toString())
+            ->withOrderId(Uuid::uuid7()->toString())
             ->prepared()
             ->manifested('ACME-4Q7X2K9')
             ->dispatched()
             ->create();
-        $this->store($order, $shipment);
+        $this->store($shipment);
 
         // When
         $results = iterator_to_array($this->finder);
@@ -52,6 +50,16 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
+    }
+
+    #[Test]
+    public function itListsWhenEmpty(): void
+    {
+        // When
+        $results = iterator_to_array($this->finder);
+
+        // Then
+        self::assertEmpty($results);
     }
 
     #[Test]
@@ -162,7 +170,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnUnknownTrackingReference(): void
+    public function itThrowsWhenTrackingReferenceNotFound(): void
     {
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
@@ -204,7 +212,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnUnknownReturnTrackingReference(): void
+    public function itThrowsWhenReturnTrackingReferenceNotFound(): void
     {
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);

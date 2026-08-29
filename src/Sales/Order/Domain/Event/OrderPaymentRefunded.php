@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('sales.order.payment.refunded')]
+#[Event('sales.order.order_payment.refunded')]
 final readonly class OrderPaymentRefunded
 {
     public function __construct(

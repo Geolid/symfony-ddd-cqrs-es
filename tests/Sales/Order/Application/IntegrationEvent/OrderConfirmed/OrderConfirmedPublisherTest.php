@@ -10,6 +10,7 @@ use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegr
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -18,7 +19,8 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->create();
+        $now = Clock::get()->now();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed($now)->create();
 
         // When
         $this->store($order);
@@ -28,6 +30,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);
+        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->confirmedAt->format(\DateTimeImmutable::ATOM));
     }
 
     /**

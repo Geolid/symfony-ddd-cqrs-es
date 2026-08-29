@@ -26,12 +26,12 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->store($customer);
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value, $customer->id->toString());
 
-        // Then
-        $this->expectException(CustomerResultNotFoundException::class);
-
         // When
         $this->dispatch(new EraseCustomer($customer->id->toString()));
+
+        // Then
         self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value));
+        $this->expectException(CustomerResultNotFoundException::class);
         $this->service(CustomerFinderInterface::class)->ofId($customer->id->toString());
     }
 

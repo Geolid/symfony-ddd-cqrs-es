@@ -57,7 +57,7 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnUnsaved(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate();

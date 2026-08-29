@@ -23,7 +23,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsASavedProduct(): void
+    public function itSavesAndLoads(): void
     {
         // Given
         $product = ProductTestFactory::new()->create();
@@ -34,11 +34,11 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $product->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
     }
 
     #[Test]
-    public function itThrowsOnAnUnsavedProduct(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = ProductId::generate();

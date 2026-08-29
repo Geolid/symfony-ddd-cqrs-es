@@ -11,6 +11,7 @@ use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -21,10 +22,11 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         $customerId = Uuid::uuid7()->toString();
         $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($order);
+        $now = Clock::get()->now();
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->authorized()
-            ->captured()
+            ->captured($now)
             ->create();
 
         // When
@@ -35,6 +37,7 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($customerId, $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);
+        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->capturedAt->format(\DateTimeImmutable::ATOM));
     }
 
     /**

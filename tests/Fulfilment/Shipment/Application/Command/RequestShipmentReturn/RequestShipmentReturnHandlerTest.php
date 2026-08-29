@@ -7,6 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Command\RequestShipmentReturn;
 use Fulfilment\Shipment\Application\Command\RequestShipmentReturn\RequestShipmentReturn;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
@@ -33,22 +34,6 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotDelivered(): void
-    {
-        // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
-        $this->store($shipment);
-
-        // When
-        $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
-
-        // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
-        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-    }
-
-    #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
@@ -59,5 +44,20 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RequestShipmentReturn($id));
+    }
+
+    #[Test]
+    public function itFailsWhenNotDelivered(): void
+    {
+        // Given
+        $trackingReference = 'ACME-4Q7X2K9';
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $this->store($shipment);
+
+        // Then
+        $this->expectException(ShipmentInvalidTransitionException::class);
+
+        // When
+        $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
     }
 }

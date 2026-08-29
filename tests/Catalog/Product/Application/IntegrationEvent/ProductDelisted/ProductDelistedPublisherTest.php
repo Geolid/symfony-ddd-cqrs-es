@@ -8,6 +8,7 @@ use Catalog\Product\Application\IntegrationEvent\ProductDelisted\ProductDelisted
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -15,7 +16,8 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $product = ProductTestFactory::new()->delisted()->create();
+        $delistedAt = Clock::get()->now();
+        $product = ProductTestFactory::new()->delisted($delistedAt)->create();
 
         // When
         $this->store($product);
@@ -23,5 +25,6 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ProductDelistedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
+        self::assertSame($delistedAt->format(\DateTimeImmutable::ATOM), $event->delistedAt->format(\DateTimeImmutable::ATOM));
     }
 }

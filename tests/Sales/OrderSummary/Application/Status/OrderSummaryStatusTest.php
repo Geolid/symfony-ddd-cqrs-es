@@ -11,37 +11,37 @@ use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 final class OrderSummaryStatusTest extends TestCase
 {
     #[Test]
-    public function itIsPlacedOnlyWhenPlaced(): void
+    public function itIsPlaced(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::PLACED, static fn (OrderSummaryStatus $status): bool => $status->isPlaced());
     }
 
     #[Test]
-    public function itIsCancelledOnlyWhenCancelled(): void
+    public function itIsCancelled(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::CANCELLED, static fn (OrderSummaryStatus $status): bool => $status->isCancelled());
     }
 
     #[Test]
-    public function itIsPaymentPendingOnlyWhenPaymentPending(): void
+    public function itIsPaymentPending(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::PAYMENT_PENDING, static fn (OrderSummaryStatus $status): bool => $status->isPaymentPending());
     }
 
     #[Test]
-    public function itIsPreparingOnlyWhenPreparing(): void
+    public function itIsPreparing(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::PREPARING, static fn (OrderSummaryStatus $status): bool => $status->isPreparing());
     }
 
     #[Test]
-    public function itIsDispatchedOnlyWhenDispatched(): void
+    public function itIsDispatched(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::DISPATCHED, static fn (OrderSummaryStatus $status): bool => $status->isDispatched());
     }
 
     #[Test]
-    public function itIsDeliveredOnlyWhenDelivered(): void
+    public function itIsDelivered(): void
     {
         $this->assertOnlyTrueFor(OrderSummaryStatus::DELIVERED, static fn (OrderSummaryStatus $status): bool => $status->isDelivered());
     }

@@ -21,7 +21,7 @@ use Sales\OrderSummary\Infrastructure\Projection\Transformer\OrderSummaryStatusT
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
-#[Projector('sales.order_summary.order_summaries')]
+#[Projector('sales.order_summary.project_order_summaries')]
 final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_summary';
@@ -34,7 +34,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(OrderPlacedIntegrationEvent::class)]
-    public function onOrderPlaced(OrderPlacedIntegrationEvent $event): void
+    public function onOrderPlacedIntegrationEvent(OrderPlacedIntegrationEvent $event): void
     {
         $this->connection->insert(
             self::TABLE,
@@ -53,7 +53,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(OrderCancelledIntegrationEvent::class)]
-    public function onOrderCancelled(OrderCancelledIntegrationEvent $event): void
+    public function onOrderCancelledIntegrationEvent(OrderCancelledIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'cancelled_at' => $event->cancelledAt,
@@ -61,7 +61,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(OrderPaymentRequestedIntegrationEvent::class)]
-    public function onOrderPaymentRequested(OrderPaymentRequestedIntegrationEvent $event): void
+    public function onOrderPaymentRequestedIntegrationEvent(OrderPaymentRequestedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'payment_amount_in_cents' => $event->amountInCents,
@@ -71,7 +71,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(OrderPaymentCapturedIntegrationEvent::class)]
-    public function onOrderPaymentCaptured(OrderPaymentCapturedIntegrationEvent $event): void
+    public function onOrderPaymentCapturedIntegrationEvent(OrderPaymentCapturedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'paid_at' => $event->capturedAt,
@@ -79,7 +79,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(ShipmentDispatchedIntegrationEvent::class)]
-    public function onShipmentDispatched(ShipmentDispatchedIntegrationEvent $event): void
+    public function onShipmentDispatchedIntegrationEvent(ShipmentDispatchedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'dispatched_at' => $event->dispatchedAt,
@@ -87,7 +87,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(ShipmentManifestedIntegrationEvent::class)]
-    public function onShipmentManifested(ShipmentManifestedIntegrationEvent $event): void
+    public function onShipmentManifestedIntegrationEvent(ShipmentManifestedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'tracking_reference' => $event->trackingReference,
@@ -95,7 +95,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
-    public function onShipmentDelivered(ShipmentDeliveredIntegrationEvent $event): void
+    public function onShipmentDeliveredIntegrationEvent(ShipmentDeliveredIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'delivered_at' => $event->deliveredAt,

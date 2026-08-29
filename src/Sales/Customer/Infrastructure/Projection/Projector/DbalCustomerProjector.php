@@ -46,7 +46,7 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('email', Types::STRING, ['length' => 255, 'notnull' => false, 'default' => null]);
+        $table->addColumn('email', Types::STRING, ['length' => 254]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

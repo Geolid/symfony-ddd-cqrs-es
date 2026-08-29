@@ -17,7 +17,7 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSummaryFinderInterface
 {
-    public function ofOrder(string $orderId): OrderSummaryResult
+    public function ofOrderId(string $orderId): OrderSummaryResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($orderId): void {

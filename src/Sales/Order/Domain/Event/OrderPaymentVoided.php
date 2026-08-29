@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('sales.order.payment.voided')]
+#[Event('sales.order.order_payment.voided')]
 final readonly class OrderPaymentVoided
 {
     public function __construct(

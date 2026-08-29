@@ -13,28 +13,13 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 final class OrderPaymentIdTest extends TestCase
 {
     #[Test]
-    public function itDerivesSameIdForSameOrder(): void
-    {
-        // Given
-        $orderId = Uuid::uuid7()->toString();
-
-        // When
-        $a = OrderPaymentId::forOrder($orderId);
-        $b = OrderPaymentId::forOrder($orderId);
-
-        // Then
-        self::assertTrue($a->equals($b));
-    }
-
-    #[Test]
-    public function itDerivesDifferentIdForDifferentOrder(): void
+    public function itDerivesKnownId(): void
     {
         // When
-        $a = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
-        $b = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
+        $id = OrderPaymentId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b7');
 
         // Then
-        self::assertFalse($a->equals($b));
+        self::assertSame('35a17cdc-4f76-5c72-93c7-4ec8000e0c08', $id->toString());
     }
 
     #[Test]
@@ -55,5 +40,20 @@ final class OrderPaymentIdTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'invalid uuid' => ['not-a-uuid'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
+        // When
+        $a = OrderPaymentId::forOrder($orderId);
+        $b = OrderPaymentId::forOrder($orderId);
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals(OrderPaymentId::forOrder(Uuid::uuid7()->toString())));
     }
 }

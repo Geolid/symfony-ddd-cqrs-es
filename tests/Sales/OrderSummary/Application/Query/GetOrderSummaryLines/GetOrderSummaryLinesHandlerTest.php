@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsTheLinesOfAnOrder(): void
+    public function itGets(): void
     {
         // Given
         $order = OrderTestFactory::new()
@@ -37,7 +37,7 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsNoLinesForAnUnknownOrder(): void
+    public function itGetsWhenOrderIdNotFound(): void
     {
         // When
         $results = $this->ask(new GetOrderSummaryLines(Uuid::uuid7()->toString()));

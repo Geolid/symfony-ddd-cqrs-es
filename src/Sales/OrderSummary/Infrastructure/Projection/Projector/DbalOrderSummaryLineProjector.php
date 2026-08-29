@@ -13,7 +13,7 @@ use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationE
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
-#[Projector('sales.order_summary.order_summary_lines')]
+#[Projector('sales.order_summary.project_order_summary_lines')]
 final readonly class DbalOrderSummaryLineProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_summary_line';

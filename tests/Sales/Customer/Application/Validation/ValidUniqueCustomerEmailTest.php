@@ -25,6 +25,7 @@ final class ValidUniqueCustomerEmailTest extends CompoundConstraintTestCase
 
     protected function setUp(): void
     {
+        // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
         $this->registry = new FakeUniqueValueRegistry();
 
         parent::setUp();
@@ -41,7 +42,7 @@ final class ValidUniqueCustomerEmailTest extends CompoundConstraintTestCase
     }
 
     #[Test]
-    public function itRefusesWhenAlreadyReserved(): void
+    public function itRefuses(): void
     {
         // Given
         $this->registry->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');

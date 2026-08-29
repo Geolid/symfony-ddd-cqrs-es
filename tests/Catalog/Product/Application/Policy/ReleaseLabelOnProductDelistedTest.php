@@ -7,8 +7,8 @@ namespace Catalog\Tests\Product\Application\Policy;
 use Catalog\Product\Application\Policy\ReleaseLabelOnProductDelisted;
 use Catalog\Product\Domain\Event\ProductDelisted;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -30,14 +30,13 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     public function itReleases(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->create();
-        $this->store($product);
-        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value, $product->id->toString());
+        $productId = Uuid::uuid7()->toString();
+        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', $productId);
 
         // When
-        ($this->policy)(new ProductDelisted($product->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        ($this->policy)(new ProductDelisted($productId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), $product->label->value));
+        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6'));
     }
 }

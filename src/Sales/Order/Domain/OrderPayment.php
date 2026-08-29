@@ -23,7 +23,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentState;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 
-#[Aggregate('sales.order.payment')]
+#[Aggregate('sales.order.order_payment')]
 final class OrderPayment implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;

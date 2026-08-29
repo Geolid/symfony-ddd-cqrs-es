@@ -28,7 +28,6 @@ use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
-use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Exception\ResultNotFoundException;
 use Shared\Application\Exception\UniqueValueAlreadyTakenException;
@@ -73,7 +72,6 @@ return static function (ContainerConfigurator $container): void {
             OrderPaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderSummaryResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

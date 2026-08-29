@@ -22,7 +22,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     public const string TABLE = 'sales_order_buyer';
 
     #[Subscribe(CustomerRegisteredIntegrationEvent::class)]
-    public function onCustomerRegistered(CustomerRegisteredIntegrationEvent $event): void
+    public function onCustomerRegisteredIntegrationEvent(CustomerRegisteredIntegrationEvent $event): void
     {
         $this->connection->insert(self::TABLE, [
             'customer_id' => $event->customerId,
@@ -30,7 +30,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(CustomerShippingAddressRegisteredIntegrationEvent::class)]
-    public function onCustomerShippingAddressRegistered(CustomerShippingAddressRegisteredIntegrationEvent $event): void
+    public function onCustomerShippingAddressRegisteredIntegrationEvent(CustomerShippingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
@@ -41,7 +41,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(CustomerBillingAddressRegisteredIntegrationEvent::class)]
-    public function onCustomerBillingAddressRegistered(CustomerBillingAddressRegisteredIntegrationEvent $event): void
+    public function onCustomerBillingAddressRegisteredIntegrationEvent(CustomerBillingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
@@ -52,7 +52,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(CustomerErasedIntegrationEvent::class)]
-    public function onCustomerErased(CustomerErasedIntegrationEvent $event): void
+    public function onCustomerErasedIntegrationEvent(CustomerErasedIntegrationEvent $event): void
     {
         $this->connection->delete(self::TABLE, ['customer_id' => $event->customerId]);
     }

@@ -47,21 +47,4 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         $otherResult = $finder->ofId($other->id->toString());
         self::assertSame(OrderStatus::PLACED, $otherResult->status);
     }
-
-    #[Test]
-    public function itIgnoresWhenNoneExist(): void
-    {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $otherCustomerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
-        $this->store($order);
-
-        // When
-        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, $this->erasedAt));
-
-        // Then
-        $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);
-        self::assertSame(OrderStatus::PLACED, $results[0]->status);
-    }
 }

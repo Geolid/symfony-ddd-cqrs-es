@@ -16,7 +16,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsAnOrderSummary(): void
+    public function itGets(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -43,7 +43,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheOrderSummaryDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = OrderId::generate()->toString();

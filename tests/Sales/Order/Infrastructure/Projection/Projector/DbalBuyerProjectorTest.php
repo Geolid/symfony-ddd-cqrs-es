@@ -43,7 +43,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->registeredShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
 
         // When
@@ -65,7 +65,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->registeredBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
 
         // When

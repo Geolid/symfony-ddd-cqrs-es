@@ -18,7 +18,7 @@ interface OrderPaymentFinderInterface extends IterableFinderInterface
      */
     public function ofReference(string $reference): OrderPaymentResult;
 
-    public function byStatus(OrderPaymentStatus ...$statuses): static;
+    public function byStatus(OrderPaymentStatus $status): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;
 }

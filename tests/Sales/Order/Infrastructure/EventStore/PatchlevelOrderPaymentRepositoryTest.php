@@ -24,7 +24,7 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
     }
 
     #[Test]
-    public function itLoadsSaved(): void
+    public function itSavesAndLoads(): void
     {
         // Given
         $orderPayment = OrderPaymentTestFactory::new()->create();
@@ -35,11 +35,21 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
         // Then
         $id = $orderPayment->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        $reloaded = $this->repository->load($id);
+        self::assertSame(
+            [
+                'id' => $id->toString(),
+                'checkoutUrl' => $orderPayment->checkoutUrl,
+            ],
+            [
+                'id' => $reloaded->id->toString(),
+                'checkoutUrl' => $reloaded->checkoutUrl,
+            ],
+        );
     }
 
     #[Test]
-    public function itThrowsOnUnsaved(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString());

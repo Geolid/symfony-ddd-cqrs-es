@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
@@ -55,5 +56,19 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
+    }
+
+    #[Test]
+    public function itFailsWhenAlreadyErased(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->erased()->create();
+        $this->store($identity);
+
+        // Then
+        $this->expectException(IdentityAlreadyErasedException::class);
+
+        // When
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
     }
 }

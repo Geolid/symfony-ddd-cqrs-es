@@ -44,6 +44,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
         $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));
         $secondPage = $this->ask(new ListProducts(page: 2, itemsPerPage: 2));
         $lastPage = $this->ask(new ListProducts(page: 3, itemsPerPage: 2));
+        $outOfBoundsPage = $this->ask(new ListProducts(page: 4, itemsPerPage: 2));
 
         // Then
         self::assertCount(2, $firstPage->items);
@@ -57,5 +58,22 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
 
         self::assertCount(1, $lastPage->items);
         self::assertSame(3, $lastPage->pagination->currentPage);
+
+        self::assertEmpty($outOfBoundsPage->items);
+        self::assertSame(4, $outOfBoundsPage->pagination->currentPage);
+    }
+
+    #[Test]
+    public function itListsWhenEmpty(): void
+    {
+        // When
+        $result = $this->ask(new ListProducts());
+
+        // Then
+        self::assertCount(0, $result->items);
+        self::assertSame(0, $result->pagination->totalItems);
+        self::assertSame(1, $result->pagination->currentPage);
+        self::assertSame(20, $result->pagination->itemsPerPage);
+        self::assertSame(1, $result->pagination->lastPage);
     }
 }
