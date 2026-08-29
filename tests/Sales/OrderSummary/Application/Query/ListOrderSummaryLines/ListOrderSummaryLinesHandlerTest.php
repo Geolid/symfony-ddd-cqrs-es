@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\OrderSummary\Application\Query\GetOrderSummaryLines;
+namespace Sales\Tests\OrderSummary\Application\Query\ListOrderSummaryLines;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
-use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
+use Sales\OrderSummary\Application\Query\ListOrderSummaryLines\ListOrderSummaryLines;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\AbstractIntegrationTestCase;
 
-final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
+final class ListOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGets(): void
+    public function itLists(): void
     {
         // Given
         $order = OrderTestFactory::new()
@@ -26,7 +26,7 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // When
-        $results = $this->ask(new GetOrderSummaryLines($order->id->toString()));
+        $results = $this->ask(new ListOrderSummaryLines($order->id->toString()));
 
         // Then
         self::assertCount(1, $results);
@@ -37,10 +37,10 @@ final class GetOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsWhenOrderIdNotFound(): void
+    public function itListsWhenEmpty(): void
     {
         // When
-        $results = $this->ask(new GetOrderSummaryLines(Uuid::uuid7()->toString()));
+        $results = $this->ask(new ListOrderSummaryLines(Uuid::uuid7()->toString()));
 
         // Then
         self::assertSame([], $results);

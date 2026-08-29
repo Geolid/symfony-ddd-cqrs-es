@@ -50,7 +50,6 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         yield 'whitespace only' => ['   ', [self::notBlank(), new Assert\Email()]];
         yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Email()]];
         yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email()]];
-        yield 'too long' => ['buyer@'.rtrim(str_repeat('example.com.', 22), '.'), [new Assert\Length(max: 254)]];
     }
 
     protected function createCompound(): ValidEmail

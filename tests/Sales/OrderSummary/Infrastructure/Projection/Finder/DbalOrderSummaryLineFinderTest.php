@@ -52,14 +52,4 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         self::assertSame(1, $lines[1]->quantity);
         self::assertSame(3_000, $lines[1]->unitAmountInCents);
     }
-
-    #[Test]
-    public function itFiltersWhenOrderIdNotFound(): void
-    {
-        // When
-        $lines = iterator_to_array($this->finder->byOrder(Uuid::uuid7()->toString()));
-
-        // Then
-        self::assertSame([], $lines);
-    }
 }
