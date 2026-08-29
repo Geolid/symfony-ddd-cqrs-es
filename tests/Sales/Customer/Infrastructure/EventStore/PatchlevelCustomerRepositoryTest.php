@@ -33,8 +33,8 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
         $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
         $customer = CustomerTestFactory::new()
             ->withEmail('buyer@example.com')
-            ->registeredShippingAddress($shippingAddress)
-            ->registeredBillingAddress($billingAddress)
+            ->shippingAddressRegistered($shippingAddress)
+            ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When

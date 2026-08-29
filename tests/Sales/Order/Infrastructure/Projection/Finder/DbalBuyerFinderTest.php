@@ -30,8 +30,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->registeredShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->registeredBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
 
@@ -89,7 +89,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->registeredShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
 

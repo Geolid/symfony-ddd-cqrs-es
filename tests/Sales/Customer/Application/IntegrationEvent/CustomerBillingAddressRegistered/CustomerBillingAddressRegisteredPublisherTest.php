@@ -19,7 +19,7 @@ final class CustomerBillingAddressRegisteredPublisherTest extends AbstractIntegr
     {
         // Given
         $customer = CustomerTestFactory::new()
-            ->registeredBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
 
         // When

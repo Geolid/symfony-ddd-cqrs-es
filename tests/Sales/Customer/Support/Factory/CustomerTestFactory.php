@@ -38,7 +38,7 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
         return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
     }
 
-    public function registeredShippingAddress(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
+    public function shippingAddressRegistered(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
         $registeredAt ??= Clock::get()->now();
 
@@ -47,7 +47,7 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
         );
     }
 
-    public function registeredBillingAddress(PostalAddress $billingAddress, ?\DateTimeImmutable $registeredAt = null): self
+    public function billingAddressRegistered(PostalAddress $billingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
         $registeredAt ??= Clock::get()->now();
 

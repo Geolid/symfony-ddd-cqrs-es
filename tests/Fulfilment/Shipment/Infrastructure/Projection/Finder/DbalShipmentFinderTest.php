@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -29,27 +30,14 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()
-            ->withOrderId(Uuid::uuid7()->toString())
-            ->prepared()
-            ->manifested('ACME-4Q7X2K9')
-            ->dispatched()
-            ->create();
-        $this->store($shipment);
+        $shipments = ShipmentTestFactory::new()->many(5)->create();
+        $this->store(...$shipments);
 
         // When
         $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
-        self::assertInstanceOf(ShipmentResult::class, $result);
-        self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($shipment->orderId, $result->orderId);
-        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
-        self::assertNotNull($result->dispatchedAt);
-        self::assertNull($result->deliveredAt);
+        self::assertEqualsCanonicalizing($this->shipmentIds(...$shipments), $this->resultIds($results));
     }
 
     #[Test]
@@ -219,5 +207,33 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // When
         $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function shipmentIds(Shipment ...$shipments): array
+    {
+        $ids = [];
+        foreach ($shipments as $shipment) {
+            $ids[] = $shipment->id->toString();
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param iterable<ShipmentResult> $results
+     *
+     * @return list<string>
+     */
+    private function resultIds(iterable $results): array
+    {
+        $ids = [];
+        foreach ($results as $result) {
+            $ids[] = $result->id;
+        }
+
+        return $ids;
     }
 }
