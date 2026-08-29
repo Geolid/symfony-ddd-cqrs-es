@@ -104,10 +104,10 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerTestFactory::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $customer = $customer->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')));
+            $customer = $customer->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')));
         }
         if ($withBillingAddress) {
-            $customer = $customer->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')));
+            $customer = $customer->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')));
         }
         $customer = $customer->create();
         $this->store($customer);
@@ -184,8 +184,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         $customer = CustomerTestFactory::new()
             ->withEmail($email)
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->withBillingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
 

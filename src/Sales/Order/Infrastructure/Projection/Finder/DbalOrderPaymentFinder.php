@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Projection\Finder;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
@@ -28,12 +27,11 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         )->one() ?? throw OrderPaymentResultNotFoundException::forReference($reference);
     }
 
-    public function byStatus(OrderPaymentStatus ...$statuses): static
+    public function byStatus(OrderPaymentStatus $status): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($statuses): void {
-                $qb->andWhere('status IN (:statuses)')
-                    ->setParameter('statuses', $statuses, ArrayParameterType::STRING);
+            static function (QueryBuilder $qb) use ($status): void {
+                $qb->andWhere('status = :status')->setParameter('status', $status);
             },
         );
     }
@@ -58,7 +56,8 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
     {
         $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_initiated_at', 'refunded_at')
             ->from(DbalOrderPaymentProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->orderBy('requested_at', 'ASC')
+            ->addOrderBy('id', 'ASC');
     }
 
     protected function resultClass(): string

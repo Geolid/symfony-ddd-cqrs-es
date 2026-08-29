@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
 {
@@ -15,7 +16,8 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled()->create();
+        $now = Clock::get()->now();
+        $order = OrderTestFactory::new()->cancelled($now)->create();
 
         // When
         $this->store($order);
@@ -23,5 +25,6 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(OrderCancelledIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
+        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->cancelledAt->format(\DateTimeImmutable::ATOM));
     }
 }

@@ -12,23 +12,23 @@ use Sales\Customer\Domain\ValueObject\Email;
 final class EmailTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideAcceptedValues')]
-    public function itCreates(string $value, string $expected): void
+    public function itCreates(): void
     {
         // When
-        $email = Email::fromString($value);
+        $email = Email::fromString('buyer@example.com');
 
         // Then
-        self::assertSame($expected, $email->value);
+        self::assertSame('buyer@example.com', $email->value);
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function provideAcceptedValues(): iterable
+    #[Test]
+    public function itNormalizes(): void
     {
-        yield 'email' => ['buyer@example.com', 'buyer@example.com'];
-        yield 'mixed case and surrounding whitespace' => ['  Buyer@Example.COM  ', 'buyer@example.com'];
+        // When
+        $email = Email::fromString('  Buyer@Example.COM  ');
+
+        // Then
+        self::assertSame('buyer@example.com', $email->value);
     }
 
     #[Test]

@@ -14,7 +14,7 @@ final class OrderSummaryStatusTransformerTest extends TestCase
 {
     #[Test]
     #[DataProvider('provideStatuses')]
-    public function itComputesTheCompositeStatus(string $orderStatus, ?string $paymentStatus, ?string $shipmentStatus, OrderSummaryStatus $expected): void
+    public function itComputesCompositeStatus(string $orderStatus, ?string $paymentStatus, ?string $shipmentStatus, OrderSummaryStatus $expected): void
     {
         // Given
         $transformer = new OrderSummaryStatusTransformer();

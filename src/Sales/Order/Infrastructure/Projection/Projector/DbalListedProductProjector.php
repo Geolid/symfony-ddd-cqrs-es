@@ -22,7 +22,7 @@ final readonly class DbalListedProductProjector extends AbstractDbalProjector
     public const string TABLE = 'sales_order_listed_products';
 
     #[Subscribe(ProductListedIntegrationEvent::class)]
-    public function onProductListed(ProductListedIntegrationEvent $event): void
+    public function onProductListedIntegrationEvent(ProductListedIntegrationEvent $event): void
     {
         $this->connection->insert(self::TABLE, [
             'product_id' => $event->productId,
@@ -32,7 +32,7 @@ final readonly class DbalListedProductProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(ProductRepricedIntegrationEvent::class)]
-    public function onProductRepriced(ProductRepricedIntegrationEvent $event): void
+    public function onProductRepricedIntegrationEvent(ProductRepricedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
@@ -42,7 +42,7 @@ final readonly class DbalListedProductProjector extends AbstractDbalProjector
     }
 
     #[Subscribe(ProductDelistedIntegrationEvent::class)]
-    public function onProductDelisted(ProductDelistedIntegrationEvent $event): void
+    public function onProductDelistedIntegrationEvent(ProductDelistedIntegrationEvent $event): void
     {
         $this->connection->delete(self::TABLE, ['product_id' => $event->productId]);
     }

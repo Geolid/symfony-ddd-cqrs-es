@@ -26,15 +26,15 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsSaved(): void
+    public function itSavesAndLoads(): void
     {
         // Given
         $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
         $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
         $customer = CustomerTestFactory::new()
             ->withEmail('buyer@example.com')
-            ->withShippingAddress($shippingAddress)
-            ->withBillingAddress($billingAddress)
+            ->shippingAddressRegistered($shippingAddress)
+            ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When
@@ -86,7 +86,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnUnsaved(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = CustomerId::generate();

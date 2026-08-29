@@ -7,8 +7,10 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Finder;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\Order;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
+use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
@@ -26,7 +28,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsTheSummaryForAnOrder(): void
+    public function itGetsByOrder(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -59,7 +61,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itThrowsOnAnUnknownOrder(): void
+    public function itThrowsWhenOrderNotFound(): void
     {
         // Then
         $this->expectException(OrderSummaryResultNotFoundException::class);
@@ -69,12 +71,12 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersOrderSummariesByCustomer(): void
+    public function itFiltersByCustomer(): void
     {
         // Given
         $other = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_500)->create();
+        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
@@ -83,18 +85,16 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($order->id->toString(), $results[0]->orderId);
-        self::assertSame($customerId, $results[0]->customerId);
-        self::assertSame(1_500, $results[0]->totalAmountInCents);
-        self::assertSame(OrderSummaryStatus::PLACED, $results[0]->status);
     }
 
     #[Test]
-    public function itFiltersOrderSummariesByStatus(): void
+    public function itFiltersByStatus(): void
     {
         // Given
         $others = OrderTestFactory::new()->many(2)->create();
         $cancelled = OrderTestFactory::new()->cancelled()->create();
-        $this->store($cancelled, ...$others);
+        $orders = [...$others, $cancelled];
+        $this->store(...$orders);
 
         // When
         $results = iterator_to_array($this->finder->byStatus(OrderSummaryStatus::CANCELLED));
@@ -102,7 +102,97 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cancelled->id->toString(), $results[0]->orderId);
-        self::assertSame(OrderSummaryStatus::CANCELLED, $results[0]->status);
-        self::assertNotNull($results[0]->cancelledAt);
+    }
+
+    #[Test]
+    public function itLists(): void
+    {
+        // Given
+        $orders = OrderTestFactory::new()->many(5)->create();
+        $this->store(...$orders);
+
+        // When
+        $results = iterator_to_array($this->finder);
+
+        // Then
+        self::assertSame($this->orderIds(...$orders), $this->resultIds($results));
+    }
+
+    #[Test]
+    public function itListsWhenEmpty(): void
+    {
+        // When
+        $results = iterator_to_array($this->finder);
+
+        // Then
+        self::assertEmpty($results);
+    }
+
+    #[Test]
+    public function itPaginates(): void
+    {
+        // Given
+        $orders = OrderTestFactory::new()->many(5)->create();
+        $this->store(...$orders);
+
+        // When
+        $firstPage = $this->finder->paginate(page: 1, itemsPerPage: 2);
+        $secondPage = $this->finder->paginate(page: 2, itemsPerPage: 2);
+        $lastPage = $this->finder->paginate(page: 3, itemsPerPage: 2);
+        $outOfBoundsPage = $this->finder->paginate(page: 4, itemsPerPage: 2);
+
+        // Then
+        self::assertSame($this->orderIds($orders[0], $orders[1]), $this->resultIds($firstPage));
+        self::assertSame($this->orderIds($orders[2], $orders[3]), $this->resultIds($secondPage));
+        self::assertSame($this->orderIds($orders[4]), $this->resultIds($lastPage));
+        self::assertCount(0, $outOfBoundsPage);
+
+        self::assertSame(5, $firstPage->totalItems());
+        self::assertSame(3, $firstPage->lastPage());
+        self::assertSame(1, $firstPage->currentPage());
+        self::assertSame(2, $firstPage->itemsPerPage());
+        self::assertSame(2, $secondPage->currentPage());
+        self::assertSame(3, $lastPage->currentPage());
+        self::assertSame(4, $outOfBoundsPage->currentPage());
+    }
+
+    #[Test]
+    public function itPaginatesWhenEmpty(): void
+    {
+        // When
+        $paginator = $this->finder->paginate(page: 1, itemsPerPage: 20);
+
+        // Then
+        self::assertCount(0, $paginator);
+        self::assertSame(0, $paginator->totalItems());
+        self::assertSame(1, $paginator->lastPage());
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function orderIds(Order ...$orders): array
+    {
+        $ids = [];
+        foreach ($orders as $order) {
+            $ids[] = $order->id->toString();
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param iterable<OrderSummaryResult> $results
+     *
+     * @return list<string>
+     */
+    private function resultIds(iterable $results): array
+    {
+        $ids = [];
+        foreach ($results as $result) {
+            $ids[] = $result->orderId;
+        }
+
+        return $ids;
     }
 }

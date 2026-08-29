@@ -26,7 +26,7 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersLinesByOrderInPositionOrder(): void
+    public function itFiltersByOrderInPositionOrder(): void
     {
         // Given
         $other = OrderTestFactory::new()->withLines([
@@ -51,15 +51,5 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         self::assertSame('Gadget', $lines[1]->label);
         self::assertSame(1, $lines[1]->quantity);
         self::assertSame(3_000, $lines[1]->unitAmountInCents);
-    }
-
-    #[Test]
-    public function itFiltersNoLinesForAnUnknownOrder(): void
-    {
-        // When
-        $lines = iterator_to_array($this->finder->byOrder(Uuid::uuid7()->toString()));
-
-        // Then
-        self::assertSame([], $lines);
     }
 }

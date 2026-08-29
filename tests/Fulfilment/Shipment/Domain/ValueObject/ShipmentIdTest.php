@@ -13,28 +13,13 @@ use Ramsey\Uuid\Uuid;
 final class ShipmentIdTest extends TestCase
 {
     #[Test]
-    public function itDerivesSameIdForSameOrder(): void
-    {
-        // Given
-        $orderId = Uuid::uuid7()->toString();
-
-        // When
-        $a = ShipmentId::forOrder($orderId);
-        $b = ShipmentId::forOrder($orderId);
-
-        // Then
-        self::assertTrue($a->equals($b));
-    }
-
-    #[Test]
-    public function itDerivesDifferentIdForDifferentOrder(): void
+    public function itDerivesKnownId(): void
     {
         // When
-        $a = ShipmentId::forOrder(Uuid::uuid7()->toString());
-        $b = ShipmentId::forOrder(Uuid::uuid7()->toString());
+        $id = ShipmentId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b7');
 
         // Then
-        self::assertFalse($a->equals($b));
+        self::assertSame('df2b83ff-c193-53b1-b4f0-ebba2dd89d08', $id->toString());
     }
 
     #[Test]
@@ -55,5 +40,21 @@ final class ShipmentIdTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'invalid uuid' => ['not-a-uuid'];
+    }
+
+    #[Test]
+    public function itComparesEquality(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
+        // When
+        $a = ShipmentId::forOrder($orderId);
+        $b = ShipmentId::forOrder($orderId);
+        $other = ShipmentId::forOrder(Uuid::uuid7()->toString());
+
+        // Then
+        self::assertTrue($a->equals($b));
+        self::assertFalse($a->equals($other));
     }
 }

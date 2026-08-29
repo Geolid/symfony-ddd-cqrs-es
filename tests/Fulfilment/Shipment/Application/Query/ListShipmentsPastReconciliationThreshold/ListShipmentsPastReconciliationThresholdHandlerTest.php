@@ -17,15 +17,15 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
     {
         // Given
         $now = Clock::get()->now();
-        $stuck = ShipmentTestFactory::new()->prepared()
-            ->manifested(manifestedAt: $now->modify('-3 days'))
-            ->create();
         $fresh = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-12 hours'))
             ->create();
         $dispatched = ShipmentTestFactory::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-3 days'))
             ->dispatched()
+            ->create();
+        $stuck = ShipmentTestFactory::new()->prepared()
+            ->manifested(manifestedAt: $now->modify('-3 days'))
             ->create();
         $this->store($fresh, $dispatched, $stuck);
 
@@ -35,5 +35,15 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
         // Then
         self::assertCount(1, $results);
         self::assertSame($stuck->id->toString(), $results[0]->id);
+    }
+
+    #[Test]
+    public function itListsWhenEmpty(): void
+    {
+        // When
+        $results = iterator_to_array($this->ask(new ListShipmentsPastReconciliationThreshold()), false);
+
+        // Then
+        self::assertEmpty($results);
     }
 }

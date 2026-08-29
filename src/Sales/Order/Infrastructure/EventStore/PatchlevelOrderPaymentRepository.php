@@ -20,7 +20,7 @@ final readonly class PatchlevelOrderPaymentRepository implements OrderPaymentRep
      * @param Repository<OrderPayment> $repository
      */
     public function __construct(
-        #[Autowire(service: 'event_sourcing.sales.order.payment.repository')]
+        #[Autowire(service: 'event_sourcing.sales.order.order_payment.repository')]
         private Repository $repository,
     ) {
     }

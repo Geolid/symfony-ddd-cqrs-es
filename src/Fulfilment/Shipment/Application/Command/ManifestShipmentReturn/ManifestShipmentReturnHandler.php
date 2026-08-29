@@ -30,9 +30,9 @@ final readonly class ManifestShipmentReturnHandler
     }
 
     /**
+     * @throws ShipmentNotFoundException
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
-     * @throws ShipmentNotFoundException
      * @throws TrackingReferenceAlreadyTakenException
      * @throws ShipmentAlreadyExistsException
      */

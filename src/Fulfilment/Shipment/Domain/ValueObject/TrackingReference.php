@@ -14,6 +14,8 @@ final readonly class TrackingReference
 
     private function __construct(string $value)
     {
+        $value = trim($value);
+
         Assert::notEmpty($value, 'A tracking reference cannot be empty, %s given.');
         Assert::maxLength($value, self::MAX_LENGTH, 'A tracking reference cannot exceed %2$d characters, %s given.');
 

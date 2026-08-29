@@ -8,6 +8,7 @@ use Catalog\Product\Application\IntegrationEvent\ProductListed\ProductListedInte
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ProductListedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -15,7 +16,8 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $listedAt = Clock::get()->now();
+        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->withListedAt($listedAt)->create();
 
         // When
         $this->store($product);
@@ -25,5 +27,6 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame('Espresso cups, set of 6', $event->label);
         self::assertSame(1_750, $event->unitAmountInCents);
+        self::assertSame($listedAt->format(\DateTimeImmutable::ATOM), $event->listedAt->format(\DateTimeImmutable::ATOM));
     }
 }

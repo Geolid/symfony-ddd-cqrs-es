@@ -9,6 +9,7 @@ use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenExcep
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Status\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
+use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
@@ -88,6 +89,20 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
 
         // When
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-OTHER'));
+    }
+
+    #[Test]
+    public function itFailsWhenNotRequested(): void
+    {
+        // Given
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($shipment);
+
+        // Then
+        $this->expectException(ShipmentInvalidTransitionException::class);
+
+        // When
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
     }
 
     #[Test]

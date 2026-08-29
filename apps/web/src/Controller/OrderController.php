@@ -19,8 +19,8 @@ use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
-use Sales\OrderSummary\Application\Query\GetOrderSummaryLines\GetOrderSummaryLines;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
+use Sales\OrderSummary\Application\Query\ListOrderSummaryLines\ListOrderSummaryLines;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -93,7 +93,7 @@ final class OrderController extends AbstractController
 
         return $this->render('sales/order/show.html.twig', [
             'order' => $summary,
-            'lines' => $this->queryBus->ask(new GetOrderSummaryLines($id)),
+            'lines' => $this->queryBus->ask(new ListOrderSummaryLines($id)),
         ]);
     }
 

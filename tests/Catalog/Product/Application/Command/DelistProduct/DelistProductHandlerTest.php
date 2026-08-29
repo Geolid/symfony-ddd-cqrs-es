@@ -31,20 +31,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheProductDoesNotExist(): void
-    {
-        // Given
-        $id = ProductId::generate()->toString();
-
-        // Then
-        $this->expectException(ProductNotFoundException::class);
-
-        // When
-        $this->dispatch(new DelistProduct($id));
-    }
-
-    #[Test]
-    public function itIgnoresAnAlreadyDelisted(): void
+    public function itIgnoresWhenAlreadyDelisted(): void
     {
         // Given
         $product = ProductTestFactory::new()->delisted()->create();
@@ -55,5 +42,18 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $id = ProductId::generate()->toString();
+
+        // Then
+        $this->expectException(ProductNotFoundException::class);
+
+        // When
+        $this->dispatch(new DelistProduct($id));
     }
 }

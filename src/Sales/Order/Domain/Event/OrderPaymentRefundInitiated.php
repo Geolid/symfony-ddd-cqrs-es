@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('sales.order.payment.refund_initiated')]
+#[Event('sales.order.order_payment.refund_initiated')]
 final readonly class OrderPaymentRefundInitiated
 {
     public function __construct(

@@ -32,6 +32,16 @@ final class TrackingReferenceTest extends TestCase
     }
 
     #[Test]
+    public function itNormalizes(): void
+    {
+        // When
+        $reference = TrackingReference::fromString('  ACME-4Q7X2K9  ');
+
+        // Then
+        self::assertSame('ACME-4Q7X2K9', $reference->value);
+    }
+
+    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -48,6 +58,7 @@ final class TrackingReferenceTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
+        yield 'whitespace only' => ['   '];
         yield 'longer than the carrier can issue' => [str_repeat('A', TrackingReference::MAX_LENGTH + 1)];
     }
 

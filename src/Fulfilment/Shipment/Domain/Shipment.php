@@ -137,11 +137,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 return;
             }
 
-            throw ShipmentAlreadyTrackedException::forReference($this->trackingReference->value);
+            throw ShipmentAlreadyTrackedException::forReference($this->id, $this->trackingReference->value);
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotManifest($this->state);
+            throw ShipmentInvalidTransitionException::cannotManifest($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentManifested(
@@ -161,7 +161,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::DISPATCHED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotDispatch($this->state);
+            throw ShipmentInvalidTransitionException::cannotDispatch($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentDispatched(
@@ -181,7 +181,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         // Tolerates skipping DISPATCHED — a missed carrier transit scan still delivers.
         if (!new HasReachedSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotDeliver($this->state);
+            throw ShipmentInvalidTransitionException::cannotDeliver($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentDelivered(
@@ -190,10 +190,17 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws ShipmentInvalidTransitionException
+     */
     public function requestReturn(\DateTimeImmutable $requestedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
+        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
             return;
+        }
+
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
+            throw ShipmentInvalidTransitionException::cannotRequestReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnRequested(
@@ -215,11 +222,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
                 return;
             }
 
-            throw ShipmentAlreadyTrackedException::forReference($this->returnTrackingReference->value);
+            throw ShipmentAlreadyTrackedException::forReference($this->id, $this->returnTrackingReference->value);
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotManifestReturn($this->state);
+            throw ShipmentInvalidTransitionException::cannotManifestReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnManifested(
@@ -239,7 +246,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_DISPATCHED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotDispatchReturn($this->state);
+            throw ShipmentInvalidTransitionException::cannotDispatchReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnDispatched(
@@ -259,7 +266,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         // Tolerates skipping RETURN_DISPATCHED — a missed carrier transit scan still receives.
         if (!new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->state);
+            throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnReceived(
@@ -278,7 +285,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_APPROVED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotApproveReturn($this->state);
+            throw ShipmentInvalidTransitionException::cannotApproveReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnApproved(
@@ -297,7 +304,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REJECTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotRejectReturn($this->state);
+            throw ShipmentInvalidTransitionException::cannotRejectReturn($this->id, $this->state);
         }
 
         $this->recordThat(new ShipmentReturnRejected(

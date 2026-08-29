@@ -14,7 +14,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsByReturnTrackingReference(): void
+    public function itGets(): void
     {
         // Given
         $other = ShipmentTestFactory::new()

@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
 {
@@ -15,7 +16,8 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $now = Clock::get()->now();
+        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
 
         // When
         $this->store($customer);
@@ -24,5 +26,6 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(CustomerRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame('buyer@example.com', $event->email);
+        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->registeredAt->format(\DateTimeImmutable::ATOM));
     }
 }

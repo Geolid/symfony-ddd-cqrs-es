@@ -11,7 +11,7 @@ final class CustomerEmailAlreadyRegisteredException extends \RuntimeException im
     public static function forEmail(string $email, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('An email "%s" is already registered.', $email),
+            message: \sprintf('Email "%s" is already registered.', $email),
             previous: $previous,
         );
     }

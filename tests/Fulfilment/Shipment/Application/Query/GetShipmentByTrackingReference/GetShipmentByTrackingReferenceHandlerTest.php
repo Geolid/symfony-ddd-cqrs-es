@@ -14,7 +14,7 @@ use Support\AbstractIntegrationTestCase;
 final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsByTrackingReference(): void
+    public function itGets(): void
     {
         // Given
         $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();

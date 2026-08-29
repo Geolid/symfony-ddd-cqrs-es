@@ -23,7 +23,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSu
             static function (QueryBuilder $qb) use ($orderId): void {
                 $qb->andWhere('order_id = :orderId')->setParameter('orderId', $orderId);
             },
-        )->one() ?? throw OrderSummaryResultNotFoundException::forOrderId($orderId);
+        )->one() ?? throw OrderSummaryResultNotFoundException::forOrder($orderId);
     }
 
     public function byCustomer(string $customerId): static

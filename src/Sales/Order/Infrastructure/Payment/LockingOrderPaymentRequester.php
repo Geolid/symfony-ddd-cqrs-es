@@ -41,7 +41,7 @@ final readonly class LockingOrderPaymentRequester implements OrderPaymentRequest
                 fn (): string => $this->inner->requestFor($orderId, $returnUrl),
             );
         } catch (LockNotAcquiredException $e) {
-            throw OrderPaymentRequestInProgressException::forOrderId($orderId, $e);
+            throw OrderPaymentRequestInProgressException::forOrder($orderId, $e);
         }
     }
 

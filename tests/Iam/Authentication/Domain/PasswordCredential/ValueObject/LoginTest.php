@@ -12,13 +12,23 @@ use PHPUnit\Framework\TestCase;
 final class LoginTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
         // When
-        $login = Login::fromString('ada.lovelace');
+        $login = Login::fromString($value);
 
         // Then
-        self::assertSame('ada.lovelace', $login->value);
+        self::assertSame($value, $login->value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'login' => ['ada.lovelace'];
+        yield 'maximum length' => [str_repeat('a', Login::MAX_LENGTH)];
     }
 
     #[Test]
@@ -39,7 +49,7 @@ final class LoginTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_repeat('a', 51)];
+        yield 'too long' => [str_repeat('a', Login::MAX_LENGTH + 1)];
     }
 
     #[Test]

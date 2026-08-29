@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itListsAProduct(): void
+    public function itLists(): void
     {
         // Given
         $id = ProductId::generate()->toString();
@@ -35,7 +35,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheLabelIsAlreadyTaken(): void
+    public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', Uuid::uuid7()->toString());

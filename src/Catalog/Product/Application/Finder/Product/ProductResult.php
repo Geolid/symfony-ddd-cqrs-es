@@ -10,6 +10,8 @@ final readonly class ProductResult
         public string $id,
         public string $label,
         public int $unitAmountInCents,
+        public \DateTimeImmutable $listedAt,
+        public ?\DateTimeImmutable $repricedAt,
     ) {
     }
 }

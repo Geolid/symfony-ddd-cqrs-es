@@ -18,7 +18,7 @@ use Support\AbstractIntegrationTestCase;
 final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itDispatchesManifested(): void
+    public function itDispatchesWhenManifested(): void
     {
         // Given
         $trackingReference = 'ACME-4Q7X2K9';

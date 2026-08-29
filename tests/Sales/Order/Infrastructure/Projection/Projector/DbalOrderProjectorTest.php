@@ -47,6 +47,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCancelled(): void
     {
         // Given
+        $other = OrderTestFactory::new()->create();
+        $this->store($other);
         $order = OrderTestFactory::new()->cancelled()->create();
 
         // When
@@ -58,6 +60,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['cancelled_at']);
         self::assertNotNull($row['closed_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
     }
 
     #[Test]
@@ -109,6 +115,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
+        $other = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
+        $this->store($other);
         $order = OrderTestFactory::new()
             ->cancelled($now->modify('-11 years'))
             ->anonymized($now)
@@ -122,6 +130,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
         self::assertNotNull($row['anonymized_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['anonymized_at']);
     }
 
     #[Test]

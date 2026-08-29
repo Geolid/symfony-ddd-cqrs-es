@@ -6,7 +6,7 @@ namespace Sales\Order\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('sales.order.payment.failed')]
+#[Event('sales.order.order_payment.failed')]
 final readonly class OrderPaymentFailed
 {
     public function __construct(

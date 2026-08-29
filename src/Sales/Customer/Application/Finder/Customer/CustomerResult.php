@@ -8,7 +8,7 @@ final readonly class CustomerResult
 {
     public function __construct(
         public string $id,
-        public ?string $email,
+        public string $email,
         public \DateTimeImmutable $registeredAt,
     ) {
     }

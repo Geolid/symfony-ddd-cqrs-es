@@ -7,7 +7,7 @@ namespace Sales\Order\Application\IntegrationEvent\OrderPaymentRequested;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 
-#[Event('integration.sales.order.payment.requested')]
+#[Event('integration.sales.order.order_payment.requested')]
 final readonly class OrderPaymentRequestedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(

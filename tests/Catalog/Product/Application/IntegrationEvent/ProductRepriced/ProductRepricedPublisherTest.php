@@ -8,6 +8,7 @@ use Catalog\Product\Application\IntegrationEvent\ProductRepriced\ProductRepriced
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -15,7 +16,8 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $product = ProductTestFactory::new()->repriced(2_000)->create();
+        $repricedAt = Clock::get()->now();
+        $product = ProductTestFactory::new()->repriced(2_000, $repricedAt)->create();
 
         // When
         $this->store($product);
@@ -24,5 +26,6 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(ProductRepricedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame(2_000, $event->unitAmountInCents);
+        self::assertSame($repricedAt->format(\DateTimeImmutable::ATOM), $event->repricedAt->format(\DateTimeImmutable::ATOM));
     }
 }

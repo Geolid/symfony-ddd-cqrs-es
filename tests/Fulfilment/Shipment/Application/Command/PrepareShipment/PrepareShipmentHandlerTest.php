@@ -17,7 +17,7 @@ use Support\AbstractIntegrationTestCase;
 final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPreparesRequested(): void
+    public function itPrepares(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->create();

@@ -11,7 +11,7 @@ final class ProductLabelAlreadyTakenException extends \RuntimeException implemen
     public static function forLabel(string $label, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('A product with label "%s" is already listed.', $label),
+            message: \sprintf('Label "%s" is already in use.', $label),
             previous: $previous,
         );
     }

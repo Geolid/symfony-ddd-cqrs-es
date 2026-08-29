@@ -15,7 +15,7 @@ use Support\AbstractIntegrationTestCase;
 final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itRepricesAProduct(): void
+    public function itReprices(): void
     {
         // Given
         $id = ProductId::generate()->toString();
@@ -31,7 +31,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTheProductDoesNotExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $id = ProductId::generate()->toString();

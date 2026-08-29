@@ -24,7 +24,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsSaved(): void
+    public function itSavesAndLoads(): void
     {
         // Given
         $shipment = ShipmentTestFactory::new()->create();
@@ -35,11 +35,15 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
         // Then
         $id = $shipment->id;
         self::assertTrue($this->repository->has($id));
-        $this->repository->load($id);
+        $loaded = $this->repository->load($id);
+        self::assertSame($shipment->id->toString(), $loaded->id->toString());
+        self::assertSame($shipment->orderId, $loaded->orderId);
+        self::assertSame($shipment->customerId, $loaded->customerId);
+        self::assertTrue($shipment->shippingAddress->equals($loaded->shippingAddress));
     }
 
     #[Test]
-    public function itThrowsOnUnsaved(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Given
         $id = ShipmentId::forOrder(Uuid::uuid7()->toString());
