@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Web\Security\PasswordUser;
 
 /**
- * @extends Voter<string, mixed>
+ * @extends Voter<string, OrderSummaryResult>
  */
 final class OrderVoter extends Voter
 {
@@ -24,8 +24,6 @@ final class OrderVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        \assert($subject instanceof OrderSummaryResult);
-
         $user = $token->getUser();
         \assert($user instanceof PasswordUser);
 
