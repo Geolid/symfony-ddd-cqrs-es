@@ -6,6 +6,7 @@ namespace Shared\Tests\Support\Factory;
 
 use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Symfony\Component\Clock\Clock;
 use Tools\Faker\SeededFaker;
 use Webmozart\Assert\Assert;
 
@@ -20,11 +21,18 @@ abstract class AbstractAggregateTestFactory
     /** @var list<callable(T): void> */
     private array $modifiers = [];
 
+    private static int $sequence = 0;
+
     /**
      * @param TAttributes $attributes
      */
     final public function __construct(protected readonly array $attributes = [])
     {
+    }
+
+    public static function resetSequence(): void
+    {
+        self::$sequence = 0;
     }
 
     /**
@@ -65,6 +73,11 @@ abstract class AbstractAggregateTestFactory
      * @return T
      */
     abstract protected function build(array $attributes): AggregateRoot;
+
+    protected static function nextCreationInstant(): \DateTimeImmutable
+    {
+        return Clock::get()->now()->modify(\sprintf('+%d seconds', ++self::$sequence));
+    }
 
     /**
      * @param TAttributes $attributes

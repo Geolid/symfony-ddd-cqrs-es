@@ -56,7 +56,7 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'id' => IdentityId::generate()->toString(),
-            'registeredAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'registeredAt' => self::nextCreationInstant(),
         ];
     }
 

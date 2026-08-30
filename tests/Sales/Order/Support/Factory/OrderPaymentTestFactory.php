@@ -100,7 +100,7 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
             'amountInCents' => self::faker()->numberBetween(500, 5_000),
             'reference' => 'GLBX-'.self::faker()->bothify('????????'),
             'checkoutUrl' => 'https://fake-checkout.test/?ref='.self::faker()->bothify('????????'),
-            'requestedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'requestedAt' => self::nextCreationInstant(),
         ];
     }
 

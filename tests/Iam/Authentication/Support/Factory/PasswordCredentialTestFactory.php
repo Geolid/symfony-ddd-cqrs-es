@@ -98,7 +98,7 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
             'identityId' => Uuid::uuid7()->toString(),
             'login' => self::faker()->userName(),
             'password' => 'Xk9$mQ2vLp7&zR4w',
-            'definedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'definedAt' => self::nextCreationInstant(),
         ];
     }
 

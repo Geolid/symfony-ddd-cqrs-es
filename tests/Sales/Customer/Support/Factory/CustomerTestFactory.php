@@ -68,7 +68,7 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
         return [
             'id' => CustomerId::generate()->toString(),
             'email' => self::faker()->unique()->safeEmail(),
-            'registeredAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'registeredAt' => self::nextCreationInstant(),
         ];
     }
 

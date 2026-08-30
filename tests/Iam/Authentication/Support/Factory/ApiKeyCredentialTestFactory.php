@@ -84,7 +84,7 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
             'label' => $label,
             'keyId' => KeyId::PREFIX.bin2hex(random_bytes(8)),
             'secret' => bin2hex(random_bytes(32)),
-            'issuedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'issuedAt' => self::nextCreationInstant(),
         ];
     }
 

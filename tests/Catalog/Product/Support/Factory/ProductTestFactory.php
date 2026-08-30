@@ -69,7 +69,7 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
             'id' => ProductId::generate()->toString(),
             'label' => $label,
             'unitAmountInCents' => self::faker()->numberBetween(500, 5_000),
-            'listedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'listedAt' => self::nextCreationInstant(),
         ];
     }
 

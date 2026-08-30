@@ -189,7 +189,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertEqualsCanonicalizing($this->shipmentIds(...$shipments), $this->resultIds($results));
+        self::assertSame($this->shipmentIds(...$shipments), $this->resultIds($results));
     }
 
     #[Test]

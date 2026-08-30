@@ -159,7 +159,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(self::faker()->sentence(3)), Money::fromCents(self::faker()->numberBetween(500, 5_000))),
                 self::faker()->numberBetween(1, 5),
             )],
-            'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'placedAt' => self::nextCreationInstant(),
         ];
     }
 
