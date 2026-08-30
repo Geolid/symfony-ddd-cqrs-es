@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Infrastructure\CompromisedPassword\Symfony;
+namespace Iam\Tests\Authentication\Infrastructure\CompromisedPassword;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
-use Iam\Authentication\Infrastructure\CompromisedPassword\Symfony\SymfonyCompromisedPasswordGateway;
+use Iam\Authentication\Infrastructure\CompromisedPassword\SymfonyCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

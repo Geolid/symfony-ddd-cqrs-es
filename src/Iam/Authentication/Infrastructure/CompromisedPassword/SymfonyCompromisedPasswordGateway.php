@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Infrastructure\CompromisedPassword\Symfony;
+namespace Iam\Authentication\Infrastructure\CompromisedPassword;
 
 use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
