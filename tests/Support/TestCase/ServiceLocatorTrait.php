@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Helpers;
+namespace Support\TestCase;
 
 use Psr\Container\ContainerInterface;
 

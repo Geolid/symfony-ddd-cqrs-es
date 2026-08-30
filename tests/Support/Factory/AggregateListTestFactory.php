@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Support\Factory;
+namespace Support\Factory;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 

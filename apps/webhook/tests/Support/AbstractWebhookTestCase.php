@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Webhook\Tests\Support;
 
 use Bootstrap\Kernel;
-use Support\Helpers\EventSourcingTrait;
-use Support\Helpers\ServiceLocatorTrait;
+use Support\TestCase\EventSourcingTrait;
+use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;

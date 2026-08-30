@@ -7,7 +7,8 @@ namespace Iam\Tests\Identity\Support\Factory;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -56,7 +57,7 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'id' => IdentityId::generate()->toString(),
-            'registeredAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'registeredAt' => ClockSequence::next(),
         ];
     }
 

@@ -8,7 +8,9 @@ use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -63,13 +65,13 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
 
     protected function defaults(): array
     {
-        Assert::string($label = self::faker()->words(3, true));
+        Assert::string($label = SeededFaker::get()->words(3, true));
 
         return [
             'id' => ProductId::generate()->toString(),
             'label' => $label,
-            'unitAmountInCents' => self::faker()->numberBetween(500, 5_000),
-            'listedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'unitAmountInCents' => SeededFaker::get()->numberBetween(500, 5_000),
+            'listedAt' => ClockSequence::next(),
         ];
     }
 

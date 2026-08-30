@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Support\Factory;
+namespace Support\Factory;
 
-use Faker\Generator;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Tools\Faker\SeededFaker;
 use Webmozart\Assert\Assert;
 
 /**
@@ -86,11 +84,6 @@ abstract class AbstractAggregateTestFactory
         $clone->modifiers[] = $modifier;
 
         return $clone;
-    }
-
-    protected static function faker(): Generator
-    {
-        return SeededFaker::get();
     }
 
     /**

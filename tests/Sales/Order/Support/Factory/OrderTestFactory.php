@@ -14,7 +14,9 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -148,18 +150,18 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
             'id' => OrderId::generate()->toString(),
             'customerId' => Uuid::uuid7()->toString(),
             'shippingAddress' => PostalAddress::of(
-                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
+                FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'billingAddress' => PostalAddress::of(
-                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
+                FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'lines' => [OrderLine::of(
-                Product::of(Uuid::uuid7()->toString(), Label::fromString(self::faker()->sentence(3)), Money::fromCents(self::faker()->numberBetween(500, 5_000))),
-                self::faker()->numberBetween(1, 5),
+                Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
+                SeededFaker::get()->numberBetween(1, 5),
             )],
-            'placedAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'placedAt' => ClockSequence::next(),
         ];
     }
 

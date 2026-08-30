@@ -11,7 +11,9 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -158,10 +160,10 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
             'orderId' => Uuid::uuid7()->toString(),
             'customerId' => Uuid::uuid7()->toString(),
             'shippingAddress' => PostalAddress::of(
-                FullName::of(self::faker()->firstName(), self::faker()->lastName()),
-                Address::of(self::faker()->streetAddress(), self::faker()->postcode(), self::faker()->city(), self::faker()->countryCode()),
+                FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'createdAt' => self::faker()->dateTimeBetween('-1 year', '-1 day'),
+            'createdAt' => ClockSequence::next(),
         ];
     }
 
