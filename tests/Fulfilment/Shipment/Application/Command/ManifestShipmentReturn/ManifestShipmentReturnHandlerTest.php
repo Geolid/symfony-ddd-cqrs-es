@@ -11,7 +11,6 @@ use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -25,11 +24,14 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
 {
     private UniqueValueRegistryInterface $uniqueValues;
 
+    private ShipmentFinderInterface $finder;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->finder = $this->service(ShipmentFinderInterface::class);
     }
 
     #[Test]
@@ -44,7 +46,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
@@ -61,7 +63,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
@@ -69,13 +71,13 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentTestFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($id, 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($id, SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}')));
     }
 
     #[Test]
@@ -103,14 +105,15 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}')));
     }
 
     #[Test]
     public function itFailsWhenReturnTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', Uuid::uuid7()->toString());
+        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, Uuid::uuid7()->toString());
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
@@ -118,6 +121,6 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(TrackingReferenceAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
     }
 }

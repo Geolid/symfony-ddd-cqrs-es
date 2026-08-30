@@ -16,17 +16,16 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
 {
     private const string PATH = '/webhooks/carrier-return-picked-up';
 
-    private const string RETURN_TRACKING_REFERENCE = 'ACME-RETURN-4Q7X2K9';
-
     #[Test]
     public function itAcceptsACarrierReturnPickup(): void
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
-            ->returnRequested()->returnManifested(self::RETURN_TRACKING_REFERENCE)->create();
+        $shipmentFactory = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
+            ->returnRequested()->returnManifested();
+        $shipment = $shipmentFactory->create();
         $this->store($shipment);
-        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+        $body = self::body($shipmentFactory->attribute('returnTrackingReference'));
 
         // When
         $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
@@ -42,7 +41,7 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+        $body = self::body(self::anyReturnTrackingReference());
 
         // When
         $client->request('POST', self::PATH, server: $this->headers($signature), content: $body);
@@ -107,7 +106,7 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::RETURN_TRACKING_REFERENCE)];
+        yield 'method is not POST' => ['GET', self::body(self::anyReturnTrackingReference())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -142,6 +141,11 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
     private static function body(string $returnTrackingReference): string
     {
         return json_encode(['returnTrackingReference' => $returnTrackingReference], \JSON_THROW_ON_ERROR);
+    }
+
+    private static function anyReturnTrackingReference(): string
+    {
+        return ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference');
     }
 
     private function statusOf(string $id): ShipmentStatus

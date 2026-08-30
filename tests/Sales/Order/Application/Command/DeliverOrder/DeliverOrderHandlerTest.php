@@ -9,7 +9,6 @@ use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -57,7 +56,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderId::generate()->toString();
+        $id = OrderTestFactory::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

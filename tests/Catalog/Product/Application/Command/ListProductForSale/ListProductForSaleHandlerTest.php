@@ -7,8 +7,8 @@ namespace Catalog\Tests\Product\Application\Command\ListProductForSale;
 use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
+use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -21,7 +21,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
+        $id = ProductTestFactory::new()->attribute('id')->toString();
         $command = new ListProductForSale($id, 'Espresso cups, set of 6', 1_750);
 
         // When
@@ -44,6 +44,6 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductLabelAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ListProductForSale(ProductId::generate()->toString(), 'Espresso cups, set of 6', 1_950));
+        $this->dispatch(new ListProductForSale(ProductTestFactory::new()->attribute('id')->toString(), 'Espresso cups, set of 6', 1_950));
     }
 }

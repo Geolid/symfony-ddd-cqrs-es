@@ -7,9 +7,7 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -20,6 +18,7 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -32,7 +31,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $id = OrderId::generate()->toString();
+        $id = OrderTestFactory::new()->attribute('id')->toString();
 
         // When
         $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $this->lines()));
@@ -74,13 +73,13 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
-        $customerId = CustomerId::generate()->toString();
+        $customerId = CustomerTestFactory::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customerId, $this->lines()));
     }
 
     #[Test]
@@ -94,7 +93,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -116,7 +115,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
     }
 
     /**
@@ -140,9 +139,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderId::generate()->toString(),
+            OrderTestFactory::new()->attribute('id')->toString(),
             $customer->id->toString(),
-            [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
+            [['productId' => ProductTestFactory::new()->attribute('id')->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
         ));
     }
 
@@ -159,7 +158,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderId::generate()->toString(),
+            OrderTestFactory::new()->attribute('id')->toString(),
             $customer->id->toString(),
             [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
         ));

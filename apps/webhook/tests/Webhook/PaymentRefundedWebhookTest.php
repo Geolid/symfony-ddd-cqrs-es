@@ -16,17 +16,17 @@ use Webhook\Webhook\PaymentRefundedParser;
 
 final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
 {
-    private const string REFERENCE = 'GLBX-9F3K2M1P';
-
     #[Test]
     public function itAcceptsAPaymentRefundConfirmation(): void
     {
         // Given
         $client = self::createClient();
         $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference(self::REFERENCE)->authorized()->captured()->refundInitiated()->create();
+        $paymentFactory = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated();
+        $orderPayment = $paymentFactory->create();
+        $reference = $paymentFactory->attribute('reference')->value;
         $this->store($order, $orderPayment);
-        $body = self::body(self::REFERENCE);
+        $body = self::body($reference);
 
         // When
         $client->request('POST', $this->path(), server: $this->headers(self::sign($body, 'PAYMENT_WEBHOOK_SECRET')), content: $body);
@@ -42,7 +42,7 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::REFERENCE);
+        $body = self::body(self::anyReference());
 
         // When
         $client->request('POST', $this->path(), server: $this->headers($signature), content: $body);
@@ -107,7 +107,7 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::REFERENCE)];
+        yield 'method is not POST' => ['GET', self::body(self::anyReference())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -149,14 +149,13 @@ final class PaymentRefundedWebhookTest extends AbstractWebhookTestCase
         return json_encode(['paymentReference' => $paymentReference], \JSON_THROW_ON_ERROR);
     }
 
+    private static function anyReference(): string
+    {
+        return OrderPaymentTestFactory::new()->attribute('reference')->value;
+    }
+
     private function statusOf(string $id): OrderPaymentStatus
     {
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference(self::REFERENCE);
-
-        if ($id !== $result->id) {
-            self::fail(\sprintf('OrderPayment "%s" was not projected.', $id));
-        }
-
-        return $result->status;
+        return $this->service(OrderPaymentFinderInterface::class)->ofId($id)->status;
     }
 }

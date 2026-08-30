@@ -22,7 +22,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class GlobexPaymentGatewayTest extends TestCase
 {
     #[Test]
-    public function itChargesOrderAndReadsProviderSession(): void
+    public function itRequestsPayment(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -37,6 +37,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
         self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
+
         self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
         self::assertContains('Idempotency-Key: '.$orderId, $response->getRequestOptions()['headers']);
         self::assertSame(
@@ -53,7 +54,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -115,7 +116,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame('https://payments.globex.test/void', $response->getRequestUrl());
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -142,7 +143,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame('https://payments.globex.test/refund', $response->getRequestUrl());
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -237,5 +238,16 @@ final class GlobexPaymentGatewayTest extends TestCase
             FullName::of('Ada', 'Lovelace'),
             Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestBody(MockResponse $response): array
+    {
+        /** @var array<string, mixed> $body */
+        $body = json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR);
+
+        return $body;
     }
 }

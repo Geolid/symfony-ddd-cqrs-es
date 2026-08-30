@@ -6,10 +6,8 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\EventStore;
 
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
@@ -46,7 +44,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itThrowsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString());
+        $id = ShipmentTestFactory::new()->create()->id;
 
         // Then
         self::assertFalse($this->repository->has($id));

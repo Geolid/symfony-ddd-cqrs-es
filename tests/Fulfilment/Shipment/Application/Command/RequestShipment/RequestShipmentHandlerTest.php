@@ -44,11 +44,10 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame($id, $results[0]->id);
-        self::assertSame($orderId, $results[0]->orderId);
-        self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($id);
+        self::assertSame($id, $result->id);
+        self::assertSame($orderId, $result->orderId);
+        self::assertSame(ShipmentStatus::REQUESTED, $result->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
         $shippingAddress = $shipment->shippingAddress;
         self::assertSame(

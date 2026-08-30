@@ -10,6 +10,7 @@ use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
+use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -20,7 +21,7 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = CustomerId::generate()->toString();
+        $id = CustomerTestFactory::new()->attribute('id')->toString();
 
         // When
         $this->dispatch(new RegisterCustomer($id, 'Buyer@Example.COM'));
@@ -41,6 +42,6 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CustomerEmailAlreadyRegisteredException::class);
 
         // When
-        $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'BUYER@example.com'));
+        $this->dispatch(new RegisterCustomer(CustomerTestFactory::new()->attribute('id')->toString(), 'BUYER@example.com'));
     }
 }

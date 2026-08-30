@@ -9,14 +9,21 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
+    private ShipmentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(ShipmentFinderInterface::class);
+    }
+
     #[Test]
     public function itRejectsReturnWhenReceived(): void
     {
@@ -28,7 +35,7 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
@@ -43,7 +50,7 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
@@ -51,7 +58,7 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentTestFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);

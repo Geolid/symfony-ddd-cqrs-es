@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Command\InitiateOrderPaymentRefund;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\InitiateOrderPaymentRefund\InitiateOrderPaymentRefund;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
-use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
@@ -22,14 +20,15 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->create();
+        $paymentFactory = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured();
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory->attribute('reference')->value);
         self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $result->status);
     }
 
@@ -51,7 +50,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = OrderPaymentTestFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(OrderPaymentNotFoundException::class);

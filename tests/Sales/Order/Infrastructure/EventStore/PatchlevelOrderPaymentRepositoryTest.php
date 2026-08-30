@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
-use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Support\AbstractIntegrationTestCase;
 
@@ -52,7 +50,7 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
     public function itThrowsWhenNotFound(): void
     {
         // Given
-        $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
+        $id = OrderPaymentTestFactory::new()->create()->id;
 
         // Then
         self::assertFalse($this->repository->has($id));

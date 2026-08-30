@@ -8,10 +8,8 @@ use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -27,16 +25,15 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PrepareShipment($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::PREPARED, $results[0]->status);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::PREPARED, $result->status);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentTestFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);

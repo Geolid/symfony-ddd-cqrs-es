@@ -13,7 +13,6 @@ use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
-use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -65,7 +64,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderId::generate()->toString();
+        $id = OrderTestFactory::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

@@ -16,16 +16,16 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 {
     private const string PATH = '/webhooks/carrier-delivery';
 
-    private const string TRACKING_REFERENCE = 'ACME-4Q7X2K9';
-
     #[Test]
     public function itAcceptsACarrierDelivery(): void
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested(self::TRACKING_REFERENCE)->dispatched()->create();
+        $shipmentFactory = ShipmentTestFactory::new()->prepared()->manifested()->dispatched();
+        $shipment = $shipmentFactory->create();
+        $trackingReference = $shipmentFactory->attribute('trackingReference');
         $this->store($shipment);
-        $body = self::body(self::TRACKING_REFERENCE);
+        $body = self::body($trackingReference);
 
         // When
         $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
@@ -41,7 +41,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::TRACKING_REFERENCE);
+        $body = self::body(self::anyTrackingReference());
 
         // When
         $client->request('POST', self::PATH, server: $this->headers($signature), content: $body);
@@ -106,7 +106,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::TRACKING_REFERENCE)];
+        yield 'method is not POST' => ['GET', self::body(self::anyTrackingReference())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -141,5 +141,10 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     private static function body(string $trackingReference): string
     {
         return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
+    }
+
+    private static function anyTrackingReference(): string
+    {
+        return ShipmentTestFactory::new()->manifested()->attribute('trackingReference');
     }
 }

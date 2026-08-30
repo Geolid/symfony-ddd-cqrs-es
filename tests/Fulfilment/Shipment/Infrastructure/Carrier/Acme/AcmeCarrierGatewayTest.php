@@ -22,7 +22,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class AcmeCarrierGatewayTest extends TestCase
 {
     #[Test]
-    public function itManifestsAndReadsCarrierReference(): void
+    public function itManifests(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -33,6 +33,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame('ACME-4Q7X2K9', $trackingReference);
+
         self::assertSame('https://carrier.acme.test/shipments', $response->getRequestUrl());
         self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
         self::assertSame(
@@ -46,12 +47,12 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
     #[Test]
-    public function itManifestsReturnAndReadsCarrierReference(): void
+    public function itManifestsReturn(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -62,6 +63,7 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
+
         self::assertSame('https://carrier.acme.test/returns', $response->getRequestUrl());
         self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
         self::assertSame(
@@ -82,7 +84,7 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -224,5 +226,16 @@ final class AcmeCarrierGatewayTest extends TestCase
                 'response_headers' => ['content-type' => 'application/json'],
             ],
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestBody(MockResponse $response): array
+    {
+        /** @var array<string, mixed> $body */
+        $body = json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR);
+
+        return $body;
     }
 }

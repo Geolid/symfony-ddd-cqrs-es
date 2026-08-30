@@ -6,7 +6,6 @@ namespace Catalog\Tests\Product\Application\Query\GetProduct;
 
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
-use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -34,7 +33,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
+        $id = ProductTestFactory::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(ProductResultNotFoundException::class);

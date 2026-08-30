@@ -26,6 +26,32 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itGetsById(): void
+    {
+        // Given
+        $other = OrderPaymentTestFactory::new()->create();
+        $orderPayment = OrderPaymentTestFactory::new()->authorized()->create();
+        $this->store($other, $orderPayment);
+
+        // When
+        $result = $this->finder->ofId($orderPayment->id->toString());
+
+        // Then
+        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $result->status);
+    }
+
+    #[Test]
+    public function itThrowsWhenIdNotFound(): void
+    {
+        // Then
+        $this->expectException(OrderPaymentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(OrderPaymentTestFactory::new()->create()->id->toString());
+    }
+
+    #[Test]
     public function itGetsByReference(): void
     {
         // Given
@@ -35,28 +61,28 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
         $refundInitiatedAt = $requestedAt->modify('+2 days 3 hours');
         $refundedAt = $requestedAt->modify('+3 days 4 hours');
-        $orderPayment = OrderPaymentTestFactory::new()
+        $paymentFactory = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
-            ->withReference('GLBX-9F3K2M1P')
-            ->withAmountInCents(4_200)
-            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-9F3K2M1P')
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($capturedAt)
             ->refundInitiated($refundInitiatedAt)
-            ->refundConfirmed($refundedAt)
-            ->create();
+            ->refundConfirmed($refundedAt);
+        $orderPayment = $paymentFactory->create();
+        $reference = $paymentFactory->attribute('reference')->value;
+        $checkoutUrl = $paymentFactory->attribute('checkoutUrl');
+        $amountInCents = $paymentFactory->attribute('amount')->cents;
         $this->store($order, $orderPayment);
 
         // When
-        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
+        $result = $this->finder->ofReference($reference);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame(4_200, $result->amountInCents);
-        self::assertSame('GLBX-9F3K2M1P', $result->reference);
-        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $result->checkoutUrl);
+        self::assertSame($amountInCents, $result->amountInCents);
+        self::assertSame($reference, $result->reference);
+        self::assertSame($checkoutUrl, $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));

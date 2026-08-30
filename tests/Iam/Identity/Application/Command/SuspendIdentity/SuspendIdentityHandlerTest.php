@@ -9,7 +9,6 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -49,7 +48,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = IdentityId::generate()->toString();
+        $id = IdentityTestFactory::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);

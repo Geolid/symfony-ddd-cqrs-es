@@ -6,7 +6,6 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -42,7 +41,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itThrowsWhenNotFound(): void
     {
         // Given
-        $id = ApiKeyCredentialId::generate();
+        $id = ApiKeyCredentialTestFactory::new()->attribute('id');
 
         // Then
         self::assertFalse($this->repository->has($id));
