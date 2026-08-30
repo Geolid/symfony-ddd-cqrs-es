@@ -11,7 +11,9 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -96,9 +98,9 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'identityId' => Uuid::uuid7()->toString(),
-            'login' => self::faker()->userName(),
+            'login' => SeededFaker::get()->userName(),
             'password' => 'Xk9$mQ2vLp7&zR4w',
-            'definedAt' => self::nextCreationInstant(),
+            'definedAt' => ClockSequence::next(),
         ];
     }
 

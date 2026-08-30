@@ -9,7 +9,9 @@ use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -97,10 +99,10 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'orderId' => Uuid::uuid7()->toString(),
-            'amountInCents' => self::faker()->numberBetween(500, 5_000),
-            'reference' => 'GLBX-'.self::faker()->bothify('????????'),
-            'checkoutUrl' => 'https://fake-checkout.test/?ref='.self::faker()->bothify('????????'),
-            'requestedAt' => self::nextCreationInstant(),
+            'amountInCents' => SeededFaker::get()->numberBetween(500, 5_000),
+            'reference' => 'GLBX-'.SeededFaker::get()->bothify('????????'),
+            'checkoutUrl' => 'https://fake-checkout.test/?ref='.SeededFaker::get()->bothify('????????'),
+            'requestedAt' => ClockSequence::next(),
         ];
     }
 

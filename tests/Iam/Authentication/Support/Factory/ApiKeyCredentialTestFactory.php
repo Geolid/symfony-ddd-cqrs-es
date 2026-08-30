@@ -10,7 +10,9 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -76,7 +78,7 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
 
     protected function defaults(): array
     {
-        Assert::string($label = self::faker()->words(2, true));
+        Assert::string($label = SeededFaker::get()->words(2, true));
 
         return [
             'id' => ApiKeyCredentialId::generate()->toString(),
@@ -84,7 +86,7 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
             'label' => $label,
             'keyId' => KeyId::PREFIX.bin2hex(random_bytes(8)),
             'secret' => bin2hex(random_bytes(32)),
-            'issuedAt' => self::nextCreationInstant(),
+            'issuedAt' => ClockSequence::next(),
         ];
     }
 

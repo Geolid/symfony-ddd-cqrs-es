@@ -11,8 +11,8 @@ use Iam\Authentication\Application\Credential\ApiKeyGenerator;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
-use Support\Helpers\EventSourcingTrait;
-use Support\Helpers\ServiceLocatorTrait;
+use Support\TestCase\EventSourcingTrait;
+use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class AbstractApiTestCase extends ApiTestCase

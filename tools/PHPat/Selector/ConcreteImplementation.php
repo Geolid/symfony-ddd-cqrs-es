@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tools\PHPat\Helpers;
+namespace Tools\PHPat\Selector;
 
 use PHPat\Selector\Selector;
 use PHPat\Selector\SelectorInterface;

@@ -8,7 +8,9 @@ use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Tests\Support\Factory\AbstractAggregateTestFactory;
+use Support\ClockSequence;
+use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -67,8 +69,8 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'id' => CustomerId::generate()->toString(),
-            'email' => self::faker()->unique()->safeEmail(),
-            'registeredAt' => self::nextCreationInstant(),
+            'email' => SeededFaker::get()->unique()->safeEmail(),
+            'registeredAt' => ClockSequence::next(),
         ];
     }
 

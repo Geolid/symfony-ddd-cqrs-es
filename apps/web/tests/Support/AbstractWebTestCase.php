@@ -10,8 +10,8 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Support\Helpers\EventSourcingTrait;
-use Support\Helpers\ServiceLocatorTrait;
+use Support\TestCase\EventSourcingTrait;
+use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;

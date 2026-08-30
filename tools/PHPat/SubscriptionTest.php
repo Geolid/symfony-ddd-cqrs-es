@@ -15,7 +15,7 @@ use Shared\Application\Policy;
 use Shared\Application\Processor;
 use Shared\Infrastructure\Projection\Projector;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
-use Tools\PHPat\Helpers\ConcreteImplementation;
+use Tools\PHPat\Selector\ConcreteImplementation;
 
 final class SubscriptionTest
 {

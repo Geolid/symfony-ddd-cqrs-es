@@ -8,7 +8,7 @@ use PHPat\Selector\Selector;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
-use Tools\PHPat\Helpers\ConcreteImplementation;
+use Tools\PHPat\Selector\ConcreteImplementation;
 
 final class DrivenPortTest
 {
