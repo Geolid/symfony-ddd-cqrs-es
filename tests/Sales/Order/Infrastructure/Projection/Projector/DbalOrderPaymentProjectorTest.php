@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;

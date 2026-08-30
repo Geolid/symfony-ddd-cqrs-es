@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Projection\Finder;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;

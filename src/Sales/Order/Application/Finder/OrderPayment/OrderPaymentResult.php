@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\OrderPayment;
 
-use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Order\Application\OrderPaymentStatus;
 
 final readonly class OrderPaymentResult
 {

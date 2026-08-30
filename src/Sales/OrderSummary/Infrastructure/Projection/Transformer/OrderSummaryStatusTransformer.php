@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\OrderSummary\Infrastructure\Projection\Transformer;
 
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 
 final readonly class OrderSummaryStatusTransformer
 {

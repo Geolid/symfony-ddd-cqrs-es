@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
-use Iam\Identity\Application\Status\IdentityStatus;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;

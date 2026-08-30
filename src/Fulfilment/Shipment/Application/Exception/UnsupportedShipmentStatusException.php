@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Exception;
 
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class UnsupportedShipmentStatusException extends \RuntimeException implements ApplicationExceptionInterface

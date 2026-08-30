@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 

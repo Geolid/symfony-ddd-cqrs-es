@@ -6,7 +6,7 @@ namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;

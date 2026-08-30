@@ -6,8 +6,8 @@ namespace Sales\Tests\Order\Application\Policy;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Policy\InitiateOrderPaymentRefundOnOrderReturned;
-use Sales\Order\Application\Status\OrderPaymentStatus;
 use Sales\Order\Domain\Event\OrderReturned;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;

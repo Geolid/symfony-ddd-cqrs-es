@@ -7,7 +7,7 @@ namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Transformer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Projection\Transformer\OrderSummaryStatusTransformer;
 
 final class OrderSummaryStatusTransformerTest extends TestCase

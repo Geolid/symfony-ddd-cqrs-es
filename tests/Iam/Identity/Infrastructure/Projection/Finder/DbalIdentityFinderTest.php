@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Infrastructure\Projection\Finder;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;

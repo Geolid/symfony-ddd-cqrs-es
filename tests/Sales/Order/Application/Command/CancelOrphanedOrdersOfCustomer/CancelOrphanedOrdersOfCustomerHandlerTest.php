@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;

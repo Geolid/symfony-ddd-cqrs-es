@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentCancelled;
 use Sales\Order\Domain\Event\OrderPaymentCaptured;

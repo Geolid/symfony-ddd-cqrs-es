@@ -8,7 +8,7 @@ use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Policy\ManifestShipmentReturnOnShipmentReturnRequested;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;

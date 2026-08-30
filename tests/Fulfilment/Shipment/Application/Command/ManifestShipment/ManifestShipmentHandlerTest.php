@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Command\ManifestShipment;
 use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;

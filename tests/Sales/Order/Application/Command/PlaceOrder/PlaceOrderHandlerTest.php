@@ -15,7 +15,7 @@ use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;

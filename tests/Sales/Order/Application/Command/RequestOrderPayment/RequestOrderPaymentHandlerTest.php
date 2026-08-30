@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\RequestOrderPayment\RequestOrderPayment;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;

@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 
 #[ApiResource(
     shortName: 'Order',

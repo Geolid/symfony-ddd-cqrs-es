@@ -8,8 +8,8 @@ use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnApproved\Ship
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\ConfirmOrderReturnOnShipmentReturnApproved;
-use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

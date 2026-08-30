@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;

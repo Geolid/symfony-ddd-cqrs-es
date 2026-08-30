@@ -6,8 +6,8 @@ namespace Sales\Tests\OrderSummary\Application\Query\ListOrderSummaries;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

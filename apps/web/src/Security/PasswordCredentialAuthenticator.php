@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Security;
 
-use Iam\Authentication\Application\Credential\PasswordCredentialVerifierInterface;
+use Iam\Authentication\Application\Credential\Password\PasswordCredentialVerifierInterface;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Symfony\Component\HttpFoundation\RedirectResponse;

@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;

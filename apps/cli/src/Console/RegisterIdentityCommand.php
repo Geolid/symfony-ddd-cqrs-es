@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Cli\Console\Input\RegisterIdentityInput;
-use Iam\Authentication\Application\Credential\ApiKeyIssuerInterface;
+use Iam\Authentication\Application\Credential\ApiKey\ApiKeyIssuerInterface;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;

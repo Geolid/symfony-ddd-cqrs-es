@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;

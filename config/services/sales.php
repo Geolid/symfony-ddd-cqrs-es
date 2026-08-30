@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Infrastructure\Projection\Finder\DbalCustomerFinder;
-use Sales\Order\Application\Payment\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
-use Sales\Order\Application\Payment\OrderPaymentStatusReconcilerInterface;
+use Sales\Order\Application\Payment\Reconciliation\OrderPaymentReconciler;
+use Sales\Order\Application\Payment\Reconciliation\OrderPaymentStatusReconcilerInterface;
 use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThresholdHandler;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 

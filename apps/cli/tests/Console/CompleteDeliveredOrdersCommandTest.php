@@ -7,7 +7,7 @@ namespace Cli\Tests\Console;
 use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;

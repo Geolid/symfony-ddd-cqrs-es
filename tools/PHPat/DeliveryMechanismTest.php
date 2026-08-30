@@ -34,7 +34,7 @@ final class DeliveryMechanismTest
                 Selector::implements(ApplicationExceptionInterface::class),
                 Selector::extends(\DomainException::class),
                 Selector::extends(Compound::class),
-                Selector::AllOf(Selector::isEnum(), Selector::withFilepath('#/Application/Status/#', true)),
+                Selector::AllOf(Selector::isEnum(), Selector::classname('#Status$#', true), Selector::withFilepath('#/Application/#', true)),
                 Selector::Not($this->projectCode()),
                 ...$this->drivingPortOutcomeSelectors(),
             )

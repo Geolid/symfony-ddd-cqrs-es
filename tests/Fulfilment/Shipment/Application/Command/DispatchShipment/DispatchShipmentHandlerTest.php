@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipment\Application\Command\DispatchShipment;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;

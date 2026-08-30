@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\Identity;
 
-use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Application\IdentityStatus;
 
 final readonly class IdentityResult
 {

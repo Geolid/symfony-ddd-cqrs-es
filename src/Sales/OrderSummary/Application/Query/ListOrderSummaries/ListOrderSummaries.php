@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Shared\Application\Query\QueryInterface;
 use Shared\Application\Query\Result\PaginatedResult;
 

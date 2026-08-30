@@ -8,8 +8,8 @@ use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDispatched\Shipment
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\DispatchOrderOnShipmentDispatched;
-use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 
