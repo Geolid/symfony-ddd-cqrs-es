@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;

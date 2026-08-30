@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\Carrier\Acme;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeCarrierGateway;
 use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeClient;
-use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
+use Fulfilment\Shipment\Infrastructure\Carrier\Acme\AcmeClientException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

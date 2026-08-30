@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Order\Infrastructure\Payment\Globex\Exception;
+namespace Sales\Order\Infrastructure\Payment\Globex;
 
 final class GlobexClientException extends \RuntimeException
 {
