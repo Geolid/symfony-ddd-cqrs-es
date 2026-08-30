@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Api\Security;
 
-use Iam\Authentication\Application\Credential\ApiKey\ApiKeyCredentialVerifierInterface;
+use Iam\Authentication\Application\ApiKey\ApiKeyCredentialVerifierInterface;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
-use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
