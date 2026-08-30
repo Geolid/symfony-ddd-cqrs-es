@@ -16,6 +16,11 @@ interface ShipmentFinderInterface extends IterableFinderInterface
     /**
      * @throws ShipmentResultNotFoundException
      */
+    public function ofId(string $id): ShipmentResult;
+
+    /**
+     * @throws ShipmentResultNotFoundException
+     */
     public function ofTrackingReference(string $trackingReference): ShipmentResult;
 
     /**

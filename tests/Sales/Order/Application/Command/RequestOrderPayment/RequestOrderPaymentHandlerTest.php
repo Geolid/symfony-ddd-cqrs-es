@@ -41,7 +41,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             orderId: $orderId,
             amountInCents: 4_200,
             reference: 'GLBX-9F3K2M1P',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            checkoutUrl: 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ));
 
         // Then
@@ -60,7 +60,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             ->withOrderId($orderId)
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-9F3K2M1P')
             ->create();
         $this->store($payment);
 
@@ -70,7 +70,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             orderId: $orderId,
             amountInCents: 4_200,
             reference: 'GLBX-OTHER',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-OTHER',
+            checkoutUrl: 'https://checkout.globex.test/pay/GLBX-OTHER',
         ));
 
         // Then
@@ -95,7 +95,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             orderId: $orderId,
             amountInCents: 4_200,
             reference: $reference,
-            checkoutUrl: \sprintf('https://fake-checkout.test/?ref=%s', $reference),
+            checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));
     }
 }

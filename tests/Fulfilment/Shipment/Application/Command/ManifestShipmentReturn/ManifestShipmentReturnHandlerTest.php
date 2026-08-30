@@ -19,6 +19,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
+use Support\SeededFaker;
 
 final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
@@ -35,7 +36,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
+        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
@@ -43,7 +44,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
@@ -51,7 +52,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
+        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, $shipment->id->toString());
@@ -60,7 +61,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 

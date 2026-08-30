@@ -26,8 +26,8 @@ final class SymfonyCompromisedPasswordGatewayTest extends TestCase
         $safe = new SymfonyCompromisedPasswordGateway($this->validatorStubbingNotCompromised(violates: false));
 
         // When
-        $isCompromised = $compromised->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
-        $isSafe = $safe->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $isCompromised = $compromised->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
+        $isSafe = $safe->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
 
         // Then
         self::assertTrue($isCompromised);
@@ -41,7 +41,7 @@ final class SymfonyCompromisedPasswordGatewayTest extends TestCase
         $gateway = new SymfonyCompromisedPasswordGateway($this->validatorWithFailingHttpClient());
 
         // When
-        $isCompromised = $gateway->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $isCompromised = $gateway->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
 
         // Then
         self::assertFalse($isCompromised);

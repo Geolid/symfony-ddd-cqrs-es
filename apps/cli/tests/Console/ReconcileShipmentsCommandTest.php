@@ -104,14 +104,14 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('4 shipment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference('ACME-STUCK9999')->status);
-        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofTrackingReference('ACME-FRESH9999')->status);
-        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofTrackingReference('ACME-DISPATCHED-STUCK')->status);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference('ACME-DISPATCHED-FRESH')->status);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-STUCK')->status);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-FRESH')->status);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-DISPATCHED-STUCK')->status);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference('ACME-RETURN-DISPATCHED-FRESH')->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($stuck9999->id->toString())->status);
+        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofId($fresh9999->id->toString())->status);
+        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofId($dispatchedStuck->id->toString())->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($dispatchedFresh->id->toString())->status);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofId($returnStuck->id->toString())->status);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofId($returnFresh->id->toString())->status);
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->shipmentFinder->ofId($returnDispatchedStuck->id->toString())->status);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofId($returnDispatchedFresh->id->toString())->status);
     }
 
     #[Test]
@@ -141,8 +141,8 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('Failed to reconcile shipment', $tester->getDisplay());
         self::assertStringContainsString('1 shipment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofTrackingReference('ACME-UNREACHABLE')->status);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference('ACME-STUCK9999')->status);
+        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofId($unreachable->id->toString())->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($stuck9999->id->toString())->status);
     }
 
     #[Test]

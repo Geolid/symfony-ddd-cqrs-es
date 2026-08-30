@@ -16,10 +16,10 @@ use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
- *     id: string,
- *     label: string,
- *     unitAmountInCents: int,
- *     listedAt: \DateTimeInterface,
+ *     id: ProductId,
+ *     label: Label,
+ *     unitAmount: Money,
+ *     listedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<Product, Attributes>
@@ -28,22 +28,22 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(['id' => ProductId::fromString($id)]);
     }
 
     public function withLabel(string $label): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['label' => $label]));
+        return $this->withAttributes(['label' => Label::fromString($label)]);
     }
 
     public function withUnitAmountInCents(int $unitAmountInCents): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['unitAmountInCents' => $unitAmountInCents]));
+        return $this->withAttributes(['unitAmount' => Money::fromCents($unitAmountInCents)]);
     }
 
     public function withListedAt(\DateTimeImmutable $listedAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['listedAt' => $listedAt]));
+        return $this->withAttributes(['listedAt' => $listedAt]);
     }
 
     public function repriced(int $unitAmountInCents, ?\DateTimeImmutable $repricedAt = null): self
@@ -68,25 +68,20 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
         Assert::string($label = SeededFaker::get()->words(3, true));
 
         return [
-            'id' => ProductId::generate()->toString(),
-            'label' => $label,
-            'unitAmountInCents' => SeededFaker::get()->numberBetween(500, 5_000),
+            'id' => ProductId::generate(),
+            'label' => Label::fromString($label),
+            'unitAmount' => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'listedAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): Product
+    protected function build(): Product
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($label = $attributes['label']);
-        Assert::integer($unitAmountInCents = $attributes['unitAmountInCents']);
-        Assert::isInstanceOf($listedAt = $attributes['listedAt'], \DateTimeInterface::class);
-
         return Product::list(
-            ProductId::fromString($id),
-            Label::fromString($label),
-            Money::fromCents($unitAmountInCents),
-            \DateTimeImmutable::createFromInterface($listedAt),
+            id: $this->attribute('id'),
+            label: $this->attribute('label'),
+            unitAmount: $this->attribute('unitAmount'),
+            listedAt: $this->attribute('listedAt'),
         );
     }
 }

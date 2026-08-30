@@ -32,7 +32,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(ShipmentStatus::DELIVERED, $this->statusOf($shipment->id->toString()));
+        self::assertSame(ShipmentStatus::DELIVERED, $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString())->status);
     }
 
     #[Test]
@@ -141,16 +141,5 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     private static function body(string $trackingReference): string
     {
         return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
-    }
-
-    private function statusOf(string $id): ShipmentStatus
-    {
-        $shipment = $this->service(ShipmentFinderInterface::class)->ofTrackingReference(self::TRACKING_REFERENCE);
-
-        if ($id !== $shipment->id) {
-            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
-        }
-
-        return $shipment->status;
     }
 }

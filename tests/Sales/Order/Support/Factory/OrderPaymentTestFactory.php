@@ -13,15 +13,14 @@ use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
  *     orderId: string,
- *     amountInCents: int,
- *     reference: string,
+ *     amount: Money,
+ *     reference: PaymentReference,
  *     checkoutUrl: string,
- *     requestedAt: \DateTimeInterface,
+ *     requestedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<OrderPayment, Attributes>
@@ -30,27 +29,27 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
 {
     public function withOrderId(string $orderId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['orderId' => $orderId]));
+        return $this->withAttributes(['orderId' => $orderId]);
     }
 
     public function withAmountInCents(int $amountInCents): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['amountInCents' => $amountInCents]));
+        return $this->withAttributes(['amount' => Money::fromCents($amountInCents)]);
     }
 
     public function withReference(string $reference): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['reference' => $reference]));
+        return $this->withAttributes(['reference' => PaymentReference::fromString($reference)]);
     }
 
     public function withCheckoutUrl(string $checkoutUrl): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['checkoutUrl' => $checkoutUrl]));
+        return $this->withAttributes(['checkoutUrl' => $checkoutUrl]);
     }
 
     public function withRequestedAt(\DateTimeImmutable $requestedAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['requestedAt' => $requestedAt]));
+        return $this->withAttributes(['requestedAt' => $requestedAt]);
     }
 
     public function authorized(?\DateTimeImmutable $authorizedAt = null): self
@@ -99,28 +98,24 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'orderId' => Uuid::uuid7()->toString(),
-            'amountInCents' => SeededFaker::get()->numberBetween(500, 5_000),
-            'reference' => 'GLBX-'.SeededFaker::get()->bothify('????????'),
-            'checkoutUrl' => 'https://fake-checkout.test/?ref='.SeededFaker::get()->bothify('????????'),
+            'amount' => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+            'reference' => PaymentReference::fromString(SeededFaker::get()->regexify('GLBX-[A-Z0-9]{8}')),
+            'checkoutUrl' => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
             'requestedAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): OrderPayment
+    protected function build(): OrderPayment
     {
-        Assert::stringNotEmpty($orderId = $attributes['orderId']);
-        Assert::integer($amountInCents = $attributes['amountInCents']);
-        Assert::stringNotEmpty($reference = $attributes['reference']);
-        Assert::stringNotEmpty($checkoutUrl = $attributes['checkoutUrl']);
-        Assert::isInstanceOf($requestedAt = $attributes['requestedAt'], \DateTimeInterface::class);
+        $orderId = $this->attribute('orderId');
 
         return OrderPayment::request(
-            OrderPaymentId::forOrder($orderId),
-            $orderId,
-            Money::fromCents($amountInCents),
-            PaymentReference::fromString($reference),
-            $checkoutUrl,
-            \DateTimeImmutable::createFromInterface($requestedAt),
+            id: OrderPaymentId::forOrder($orderId),
+            orderId: $orderId,
+            amount: $this->attribute('amount'),
+            reference: $this->attribute('reference'),
+            checkoutUrl: $this->attribute('checkoutUrl'),
+            requestedAt: $this->attribute('requestedAt'),
         );
     }
 }

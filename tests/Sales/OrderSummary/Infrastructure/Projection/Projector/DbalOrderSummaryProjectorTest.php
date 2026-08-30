@@ -53,7 +53,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-ABC12345')
             ->create();
         $this->store($payment);
 
@@ -63,7 +63,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         self::assertSame('requested', $row['payment_status']);
         self::assertSame(2_500, (int) $row['payment_amount_in_cents']);
         self::assertSame('GLBX-ABC12345', $row['payment_reference']);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $row['payment_checkout_url']);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-ABC12345', $row['payment_checkout_url']);
         self::assertNull($row['paid_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());

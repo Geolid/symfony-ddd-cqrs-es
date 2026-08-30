@@ -41,7 +41,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
     public static function provideAcceptedValues(): iterable
     {
         yield 'strong password' => ['MyStr0ngP@ssw0rd123!'];
-        yield 'maximum length' => [str_repeat('Xk9$mQ2vLp7&zR4w', 256)];
+        yield 'maximum length' => [str_pad('Marmoset-42-Zephyr!', Password::MAX_LENGTH, '*')];
     }
 
     /**

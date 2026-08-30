@@ -38,7 +38,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
                 $orderId,
                 Money::fromCents(4_200),
                 PaymentReference::fromString(self::REFERENCE),
-                'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+                'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
                 $now,
             ))
             ->then($this->orderPaymentRequested($id->toString(), $orderId, $now));
@@ -333,7 +333,7 @@ final class OrderPaymentTest extends AggregateRootTestCase
             $orderId,
             4_200,
             self::REFERENCE,
-            'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
             $requestedAt,
         );
     }

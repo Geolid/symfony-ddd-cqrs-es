@@ -31,7 +31,7 @@ use Web\Tests\Support\AbstractWebTestCase;
 
 final class OrderControllerTest extends AbstractWebTestCase
 {
-    private const string CHECKOUT_URL = 'https://checkout.test/session/GLBX-TEST-REF';
+    private const string CHECKOUT_URL = 'https://checkout.globex.test/pay/GLBX-TEST-REF';
 
     #[Test]
     #[DataProvider('provideLocalizedOrdersPath')]
@@ -262,7 +262,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $orderPayment = OrderPaymentTestFactory::new()
             ->withOrderId($order->id->toString())
             ->withReference('GLBX-EXISTING-REF')
-            ->withCheckoutUrl('https://checkout.test/session/already-requested')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/already-requested')
             ->create();
         $this->store($order, $orderPayment);
 
@@ -270,9 +270,9 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client->request('GET', $this->path('sales_order_pay', ['id' => $order->id->toString()]));
 
         // Then
-        self::assertResponseRedirects('https://checkout.test/session/already-requested');
+        self::assertResponseRedirects('https://checkout.globex.test/pay/already-requested');
         $orderPayment = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-EXISTING-REF');
-        self::assertSame('https://checkout.test/session/already-requested', $orderPayment->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/already-requested', $orderPayment->checkoutUrl);
     }
 
     #[Test]

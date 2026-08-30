@@ -18,16 +18,16 @@ use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
- *     id: string,
- *     customerId?: string,
+ *     id: OrderId,
+ *     customerId: string,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
  *     lines: list<OrderLine>,
- *     placedAt: \DateTimeInterface,
+ *     placedAt: \DateTimeImmutable,
+ *     returnRejectionReason?: string,
  * }
  *
  * @extends AbstractAggregateTestFactory<Order, Attributes>
@@ -36,22 +36,22 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(['id' => OrderId::fromString($id)]);
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
+        return $this->withAttributes(['customerId' => $customerId]);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['shippingAddress' => $shippingAddress]));
+        return $this->withAttributes(['shippingAddress' => $shippingAddress]);
     }
 
     public function withBillingAddress(PostalAddress $billingAddress): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['billingAddress' => $billingAddress]));
+        return $this->withAttributes(['billingAddress' => $billingAddress]);
     }
 
     /**
@@ -59,7 +59,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
      */
     public function withLines(array $lines): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['lines' => $lines]));
+        return $this->withAttributes(['lines' => $lines]);
     }
 
     public function withTotalAmountInCents(int $totalAmountInCents): self
@@ -72,16 +72,16 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 
     public function withPlacedAt(\DateTimeImmutable $placedAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['placedAt' => $placedAt]));
+        return $this->withAttributes(['placedAt' => $placedAt]);
     }
 
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
-        Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
         $cancelledAt ??= Clock::get()->now();
 
-        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
-            ->withModifier(static fn (Order $order) => $order->cancel($customerId, $cancelledAt));
+        return $this->withModifier(static function (Order $order, array $attributes) use ($cancelledAt): void {
+            $order->cancel($attributes['customerId'], $cancelledAt);
+        });
     }
 
     public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
@@ -114,11 +114,11 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
 
     public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        Assert::stringNotEmpty($customerId = $this->attributes['customerId'] ?? Uuid::uuid7()->toString());
         $requestedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]))
-            ->withModifier(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt));
+        return $this->withModifier(static function (Order $order, array $attributes) use ($requestedAt): void {
+            $order->requestReturn($attributes['customerId'], $requestedAt);
+        });
     }
 
     public function returned(?\DateTimeImmutable $returnedAt = null): self
@@ -129,12 +129,14 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     }
 
     public function returnRejected(
-        string $reason = 'item damaged beyond resale',
+        ?string $reason = null,
         ?\DateTimeImmutable $rejectedAt = null,
     ): self {
+        $reason ??= SeededFaker::get()->sentence(4);
         $rejectedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
+        return $this->withAttributes(['returnRejectionReason' => $reason])
+            ->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
     }
 
     public function anonymized(?\DateTimeImmutable $now = null): self
@@ -147,7 +149,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => OrderId::generate()->toString(),
+            'id' => OrderId::generate(),
             'customerId' => Uuid::uuid7()->toString(),
             'shippingAddress' => PostalAddress::of(
                 FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
@@ -165,23 +167,15 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         ];
     }
 
-    protected function build(array $attributes): Order
+    protected function build(): Order
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($customerId = $attributes['customerId'] ?? null);
-        Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
-        Assert::isInstanceOf($billingAddress = $attributes['billingAddress'], PostalAddress::class);
-        Assert::isList($lines = $attributes['lines']);
-        Assert::allIsInstanceOf($lines, OrderLine::class);
-        Assert::isInstanceOf($placedAt = $attributes['placedAt'], \DateTimeInterface::class);
-
         return Order::place(
-            OrderId::fromString($id),
-            $customerId,
-            $shippingAddress,
-            $billingAddress,
-            $lines,
-            \DateTimeImmutable::createFromInterface($placedAt),
+            id: $this->attribute('id'),
+            customerId: $this->attribute('customerId'),
+            shippingAddress: $this->attribute('shippingAddress'),
+            billingAddress: $this->attribute('billingAddress'),
+            lines: $this->attribute('lines'),
+            placedAt: $this->attribute('placedAt'),
         );
     }
 }

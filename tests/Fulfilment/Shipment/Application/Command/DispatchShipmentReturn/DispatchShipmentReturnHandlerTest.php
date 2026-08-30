@@ -21,15 +21,14 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itDispatchesReturnWhenManifested(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 
@@ -37,15 +36,14 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresReturnAlreadyDispatched(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DispatchShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 

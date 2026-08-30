@@ -86,14 +86,14 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderTestFactory::new()->create();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->create();
+        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://checkout.globex.test/pay/existing')->create();
         $this->store($order, $payment);
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame('https://fake-checkout.test/?ref=existing', $checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/existing', $checkoutUrl);
         self::assertNull($this->paymentGateway->orderId);
     }
 
@@ -126,7 +126,7 @@ final class SpyPaymentGateway implements PaymentGatewayInterface
 {
     public const string CHARGE_REFERENCE = 'GLBX-9F3K2M1P';
 
-    public const string CHECKOUT_URL = 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P';
+    public const string CHECKOUT_URL = 'https://checkout.globex.test/pay/GLBX-9F3K2M1P';
 
     public ?string $orderId = null;
 

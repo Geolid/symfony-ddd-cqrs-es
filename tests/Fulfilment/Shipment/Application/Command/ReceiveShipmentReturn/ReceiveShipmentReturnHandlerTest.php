@@ -21,15 +21,14 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itReceivesReturnWhenDispatched(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 
@@ -37,15 +36,14 @@ final class ReceiveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itReceivesReturnWhenManifested(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ReceiveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 

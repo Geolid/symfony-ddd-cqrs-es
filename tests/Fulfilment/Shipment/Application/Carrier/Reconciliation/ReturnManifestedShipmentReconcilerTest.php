@@ -46,7 +46,7 @@ final class ReturnManifestedShipmentReconcilerTest extends AbstractIntegrationTe
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference($returnTrackingReference)->status);
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofId($shipment->id->toString())->status);
     }
 
     #[Test]
@@ -70,6 +70,6 @@ final class ReturnManifestedShipmentReconcilerTest extends AbstractIntegrationTe
 
         // Then
         self::assertFalse($reconciled);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofReturnTrackingReference($returnTrackingReference)->status);
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofId($shipment->id->toString())->status);
     }
 }

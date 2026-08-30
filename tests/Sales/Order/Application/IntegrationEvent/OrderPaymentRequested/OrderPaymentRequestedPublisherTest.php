@@ -23,7 +23,7 @@ final class OrderPaymentRequestedPublisherTest extends AbstractIntegrationTestCa
             ->withOrderId($orderId)
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-ABC12345')
             ->withRequestedAt($now)
             ->create();
 
@@ -35,7 +35,7 @@ final class OrderPaymentRequestedPublisherTest extends AbstractIntegrationTestCa
         self::assertSame($orderId, $event->orderId);
         self::assertSame(2_500, $event->amountInCents);
         self::assertSame('GLBX-ABC12345', $event->reference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $event->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-ABC12345', $event->checkoutUrl);
         self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->requestedAt->format(\DateTimeImmutable::ATOM));
     }
 }

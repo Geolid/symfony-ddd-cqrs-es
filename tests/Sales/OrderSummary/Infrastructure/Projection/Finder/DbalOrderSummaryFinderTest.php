@@ -37,7 +37,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-ABC12345')
             ->create();
         $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($order, $payment, $shipment);
@@ -53,7 +53,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertNull($result->cancelledAt);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-ABC12345', $result->paymentCheckoutUrl);
         self::assertNull($result->paidAt);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);

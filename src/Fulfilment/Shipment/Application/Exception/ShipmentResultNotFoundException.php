@@ -8,6 +8,11 @@ use Shared\Application\Exception\ResultNotFoundException;
 
 final class ShipmentResultNotFoundException extends ResultNotFoundException
 {
+    public static function forId(string $id): self
+    {
+        return new self(\sprintf('Shipment "%s" not found.', $id));
+    }
+
     public static function forTrackingReference(string $trackingReference): self
     {
         return new self(\sprintf('Shipment tracked under reference "%s" not found.', $trackingReference));

@@ -21,15 +21,14 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsReturnWhenReceived(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
@@ -37,15 +36,14 @@ final class RejectShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRejected(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->returnRejected()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RejectShipmentReturn($shipment->id->toString(), 'item damaged beyond resale'));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 

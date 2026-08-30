@@ -18,12 +18,12 @@ use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
- *     id: string,
- *     identityId?: string,
- *     label: string,
- *     keyId: string,
+ *     id: ApiKeyCredentialId,
+ *     identityId: string,
+ *     label: Label,
+ *     keyId: KeyId,
  *     secret: string,
- *     issuedAt: \DateTimeInterface,
+ *     issuedAt: \DateTimeImmutable,
  *     hasher?: ApiKeyHasherInterface,
  * }
  *
@@ -33,47 +33,46 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(['id' => ApiKeyCredentialId::fromString($id)]);
     }
 
     public function withIdentityId(string $identityId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]));
+        return $this->withAttributes(['identityId' => $identityId]);
     }
 
     public function withLabel(string $label): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['label' => $label]));
+        return $this->withAttributes(['label' => Label::fromString($label)]);
     }
 
     public function withKeyId(string $keyId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['keyId' => $keyId]));
+        return $this->withAttributes(['keyId' => KeyId::fromString($keyId)]);
     }
 
     public function withSecret(string $secret): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['secret' => $secret]));
+        return $this->withAttributes(['secret' => $secret]);
     }
 
     public function withIssuedAt(\DateTimeImmutable $issuedAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['issuedAt' => $issuedAt]));
+        return $this->withAttributes(['issuedAt' => $issuedAt]);
     }
 
     public function withHasher(ApiKeyHasherInterface $hasher): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
+        return $this->withAttributes(['hasher' => $hasher]);
     }
 
-    public function revoked(?string $identityId = null, ?\DateTimeImmutable $revokedAt = null): self
+    public function revoked(?\DateTimeImmutable $revokedAt = null): self
     {
-        $identityId ??= $this->attributes['identityId'] ?? Uuid::uuid7()->toString();
-        \assert(\is_string($identityId));
         $revokedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]))
-            ->withModifier(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt));
+        return $this->withModifier(static function (ApiKeyCredential $credential, array $attributes) use ($revokedAt): void {
+            $credential->revoke($attributes['identityId'], $revokedAt);
+        });
     }
 
     protected function defaults(): array
@@ -81,33 +80,27 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
         Assert::string($label = SeededFaker::get()->words(2, true));
 
         return [
-            'id' => ApiKeyCredentialId::generate()->toString(),
+            'id' => ApiKeyCredentialId::generate(),
             'identityId' => Uuid::uuid7()->toString(),
-            'label' => $label,
-            'keyId' => KeyId::PREFIX.bin2hex(random_bytes(8)),
+            'label' => Label::fromString($label),
+            'keyId' => KeyId::fromString(KeyId::PREFIX.bin2hex(random_bytes(8))),
             'secret' => bin2hex(random_bytes(32)),
             'issuedAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): ApiKeyCredential
+    protected function build(): ApiKeyCredential
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($identityId = $attributes['identityId'] ?? null);
-        Assert::stringNotEmpty($label = $attributes['label']);
-        Assert::stringNotEmpty($keyId = $attributes['keyId']);
-        Assert::stringNotEmpty($secret = $attributes['secret']);
-        Assert::isInstanceOf($hasher = $attributes['hasher'] ?? null, ApiKeyHasherInterface::class);
-        Assert::isInstanceOf($issuedAt = $attributes['issuedAt'], \DateTimeInterface::class);
+        Assert::isInstanceOf($hasher = $this->attribute('hasher'), ApiKeyHasherInterface::class);
 
         return ApiKeyCredential::issue(
-            ApiKeyCredentialId::fromString($id),
-            $identityId,
-            Label::fromString($label),
-            KeyId::fromString($keyId),
-            $secret,
-            $hasher,
-            \DateTimeImmutable::createFromInterface($issuedAt),
+            id: $this->attribute('id'),
+            identityId: $this->attribute('identityId'),
+            label: $this->attribute('label'),
+            keyId: $this->attribute('keyId'),
+            secret: $this->attribute('secret'),
+            hasher: $hasher,
+            issuedAt: $this->attribute('issuedAt'),
         );
     }
 }

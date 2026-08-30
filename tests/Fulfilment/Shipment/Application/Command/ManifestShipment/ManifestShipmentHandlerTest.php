@@ -19,6 +19,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
+use Support\SeededFaker;
 
 final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -37,13 +38,13 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->create();
         $this->store($shipment);
-        $trackingReference = 'ACME-4Q7X2K9';
+        $trackingReference = SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
     }
 
@@ -51,7 +52,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
+        $trackingReference = SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
         $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, $shipment->id->toString());
@@ -60,7 +61,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
     }
 

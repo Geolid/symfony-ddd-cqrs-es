@@ -15,8 +15,11 @@ use Webmozart\Assert\Assert;
  */
 abstract class AbstractAggregateTestFactory
 {
-    /** @var list<callable(T): void> */
+    /** @var list<callable(T, TAttributes): void> */
     private array $modifiers = [];
+
+    /** @var TAttributes|null */
+    private ?array $resolvedAttributes = null;
 
     /**
      * @param TAttributes $attributes
@@ -53,30 +56,57 @@ abstract class AbstractAggregateTestFactory
     }
 
     /**
+     * @template TName of key-of<TAttributes>
+     *
+     * @param TName $name
+     *
+     * @return TAttributes[TName]
+     */
+    public function attribute(string $name): mixed
+    {
+        return $this->resolveAttributes()[$name] ?? null;
+    }
+
+    /**
      * @return TAttributes
      */
     abstract protected function defaults(): array;
 
     /**
-     * @param TAttributes $attributes
-     *
      * @return T
      */
-    abstract protected function build(array $attributes): AggregateRoot;
+    abstract protected function build(): AggregateRoot;
 
     /**
-     * @param TAttributes $attributes
+     * @return TAttributes
+     */
+    protected function resolveAttributes(): array
+    {
+        if (null === $this->resolvedAttributes) {
+            /** @var TAttributes */
+            $resolved = array_merge($this->defaults(), $this->attributes);
+            $this->resolvedAttributes = $resolved;
+        }
+
+        return $this->resolvedAttributes;
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
      */
     protected function withAttributes(array $attributes): static
     {
-        $clone = static::new($attributes);
+        /** @var TAttributes */
+        $merged = array_merge($this->attributes, $attributes);
+
+        $clone = static::new($merged);
         $clone->modifiers = $this->modifiers;
 
         return $clone;
     }
 
     /**
-     * @param callable(T): void $modifier
+     * @param callable(T, TAttributes): void $modifier
      */
     protected function withModifier(callable $modifier): static
     {
@@ -91,12 +121,12 @@ abstract class AbstractAggregateTestFactory
      */
     private function instantiate(): AggregateRoot
     {
-        /** @var TAttributes */
-        $attributes = array_merge($this->defaults(), $this->attributes);
-        $aggregate = $this->build($attributes);
+        $this->resolvedAttributes = null;
+        $attributes = $this->resolveAttributes();
+        $aggregate = $this->build();
 
         foreach ($this->modifiers as $modifier) {
-            $modifier($aggregate);
+            $modifier($aggregate, $attributes);
         }
 
         return $aggregate;

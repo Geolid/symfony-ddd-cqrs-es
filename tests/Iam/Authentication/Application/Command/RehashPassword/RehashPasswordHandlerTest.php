@@ -25,7 +25,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)))
             ->create();
@@ -33,7 +33,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         self::getContainer()->set(PasswordHasherInterface::class, new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12)));
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword($identity->id->toString(), 'Marmoset-42-Zephyr!'));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
@@ -48,7 +48,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $hasher = $this->service(PasswordHasherInterface::class);
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->create();
@@ -56,7 +56,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword($identity->id->toString(), 'Marmoset-42-Zephyr!'));
 
         // Then
         $after = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
@@ -74,6 +74,6 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword($identity->id->toString(), 'Marmoset-42-Zephyr!'));
     }
 }

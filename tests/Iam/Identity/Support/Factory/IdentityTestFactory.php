@@ -9,13 +9,14 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
- *     id: string,
- *     registeredAt: \DateTimeInterface,
+ *     id: IdentityId,
+ *     registeredAt: \DateTimeImmutable,
+ *     reason?: string,
  * }
  *
  * @extends AbstractAggregateTestFactory<Identity, Attributes>
@@ -24,26 +25,30 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(['id' => IdentityId::fromString($id)]);
     }
 
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
+        return $this->withAttributes(['registeredAt' => $registeredAt]);
     }
 
-    public function suspended(string $reason = 'Suspected fraudulent activity', ?\DateTimeImmutable $suspendedAt = null): self
+    public function suspended(?string $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
     {
+        $reason ??= SeededFaker::get()->sentence(4);
         $suspendedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
+        return $this->withAttributes(['reason' => $reason])
+            ->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
     }
 
-    public function reactivated(string $reason = 'Appeal upheld', ?\DateTimeImmutable $reactivatedAt = null): self
+    public function reactivated(?string $reason = null, ?\DateTimeImmutable $reactivatedAt = null): self
     {
+        $reason ??= SeededFaker::get()->sentence(4);
         $reactivatedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Identity $identity) => $identity->reactivate(Reason::fromString($reason), $reactivatedAt));
+        return $this->withAttributes(['reason' => $reason])
+            ->withModifier(static fn (Identity $identity) => $identity->reactivate(Reason::fromString($reason), $reactivatedAt));
     }
 
     public function erased(?\DateTimeImmutable $erasedAt = null): self
@@ -56,19 +61,16 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => IdentityId::generate()->toString(),
+            'id' => IdentityId::generate(),
             'registeredAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): Identity
+    protected function build(): Identity
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::isInstanceOf($registeredAt = $attributes['registeredAt'], \DateTimeInterface::class);
-
         return Identity::register(
-            IdentityId::fromString($id),
-            \DateTimeImmutable::createFromInterface($registeredAt),
+            id: $this->attribute('id'),
+            registeredAt: $this->attribute('registeredAt'),
         );
     }
 }

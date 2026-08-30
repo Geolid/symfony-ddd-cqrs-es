@@ -19,7 +19,7 @@ final class SymfonyPasswordStrengthTest extends TestCase
         $passwordStrength = new SymfonyPasswordStrength(Validation::createValidator());
 
         // When
-        $strong = $passwordStrength->isSufficient(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $strong = $passwordStrength->isSufficient(Password::fromString('Marmoset-42-Zephyr!'));
         $weak = $passwordStrength->isSufficient(Password::fromString(str_repeat('a', 12)));
 
         // Then

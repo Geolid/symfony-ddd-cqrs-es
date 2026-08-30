@@ -12,13 +12,12 @@ use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
- *     id: string,
- *     email: string,
- *     registeredAt: \DateTimeInterface,
+ *     id: CustomerId,
+ *     email: Email,
+ *     registeredAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<Customer, Attributes>
@@ -27,17 +26,17 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['id' => $id]));
+        return $this->withAttributes(['id' => CustomerId::fromString($id)]);
     }
 
     public function withEmail(string $email): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['email' => $email]));
+        return $this->withAttributes(['email' => Email::fromString($email)]);
     }
 
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['registeredAt' => $registeredAt]));
+        return $this->withAttributes(['registeredAt' => $registeredAt]);
     }
 
     public function shippingAddressRegistered(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
@@ -68,22 +67,18 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => CustomerId::generate()->toString(),
-            'email' => SeededFaker::get()->unique()->safeEmail(),
+            'id' => CustomerId::generate(),
+            'email' => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): Customer
+    protected function build(): Customer
     {
-        Assert::stringNotEmpty($id = $attributes['id']);
-        Assert::stringNotEmpty($email = $attributes['email']);
-        Assert::isInstanceOf($registeredAt = $attributes['registeredAt'], \DateTimeInterface::class);
-
         return Customer::register(
-            CustomerId::fromString($id),
-            Email::fromString($email),
-            \DateTimeImmutable::createFromInterface($registeredAt),
+            id: $this->attribute('id'),
+            email: $this->attribute('email'),
+            registeredAt: $this->attribute('registeredAt'),
         );
     }
 }

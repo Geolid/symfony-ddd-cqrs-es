@@ -29,7 +29,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofLogin('ada.lovelace');
@@ -49,7 +49,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
     }
 
     #[Test]

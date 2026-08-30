@@ -27,7 +27,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
             ->withOrderId($orderId)
             ->withAmountInCents(4_200)
             ->withReference('GLBX-9F3K2M1P')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-9F3K2M1P')
             ->create();
 
         // When
@@ -39,7 +39,7 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($orderId, $row['order_id']);
         self::assertSame(4_200, (int) $row['amount_in_cents']);
         self::assertSame('GLBX-9F3K2M1P', $row['reference']);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $row['checkout_url']);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $row['checkout_url']);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $row['status']);
         self::assertNull($row['authorized_at']);
         self::assertNull($row['captured_at']);

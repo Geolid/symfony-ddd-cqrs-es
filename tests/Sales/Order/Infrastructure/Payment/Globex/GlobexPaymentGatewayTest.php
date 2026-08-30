@@ -28,7 +28,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $orderId = Uuid::uuid7()->toString();
         $response = self::jsonResponse([
             'chargeReference' => 'GLBX-9F3K2M1P',
-            'checkoutUrl' => 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            'checkoutUrl' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
@@ -36,7 +36,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $session->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
         self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
         self::assertContains('Idempotency-Key: '.$orderId, $response->getRequestOptions()['headers']);
         self::assertSame(
@@ -94,9 +94,9 @@ final class GlobexPaymentGatewayTest extends TestCase
     public static function provideUnreadableResponses(): iterable
     {
         yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
-        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
-        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
-        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
+        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
+        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
+        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
         yield 'checkout url absent' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P'])];
         yield 'checkout url blank' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => ''])];
         yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];

@@ -24,7 +24,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('ada.lovelace')
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($hasher)
             ->create();
@@ -37,7 +37,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($identity->id->toString(), $result->identityId);
         self::assertSame('ada.lovelace', $result->login);
-        self::assertTrue($hasher->verify($result->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertTrue($hasher->verify($result->passwordHash, 'Marmoset-42-Zephyr!'));
         self::assertTrue($result->identityAuthenticatable);
     }
 

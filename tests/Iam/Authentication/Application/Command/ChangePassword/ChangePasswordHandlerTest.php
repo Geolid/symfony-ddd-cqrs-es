@@ -101,7 +101,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->create();
@@ -111,6 +111,6 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SamePasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new ChangePassword($identity->id->toString(), 'Marmoset-42-Zephyr!'));
     }
 }

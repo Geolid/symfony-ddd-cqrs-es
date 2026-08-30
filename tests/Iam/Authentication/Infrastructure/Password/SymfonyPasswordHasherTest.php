@@ -18,10 +18,10 @@ final class SymfonyPasswordHasherTest extends TestCase
         $hasher = new SymfonyPasswordHasher(new NativePasswordHasher());
 
         // When
-        $hash = $hasher->hash('Xk9$mQ2vLp7&zR4w');
+        $hash = $hasher->hash('Marmoset-42-Zephyr!');
 
         // Then
-        self::assertTrue($hasher->verify($hash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertTrue($hasher->verify($hash, 'Marmoset-42-Zephyr!'));
         self::assertFalse($hasher->verify($hash, 'WrongHorse456!'));
     }
 
@@ -33,7 +33,7 @@ final class SymfonyPasswordHasherTest extends TestCase
         $strongerHasher = new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12));
 
         // When
-        $hash = $hasher->hash('Xk9$mQ2vLp7&zR4w');
+        $hash = $hasher->hash('Marmoset-42-Zephyr!');
 
         // Then
         self::assertTrue($strongerHasher->needsRehash($hash));

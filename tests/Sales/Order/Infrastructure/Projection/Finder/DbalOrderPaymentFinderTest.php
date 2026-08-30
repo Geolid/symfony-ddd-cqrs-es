@@ -39,7 +39,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->withOrderId($order->id->toString())
             ->withReference('GLBX-9F3K2M1P')
             ->withAmountInCents(4_200)
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-9F3K2M1P')
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($capturedAt)
@@ -56,7 +56,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame(4_200, $result->amountInCents);
         self::assertSame('GLBX-9F3K2M1P', $result->reference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));

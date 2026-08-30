@@ -15,10 +15,10 @@ final class PasswordTest extends TestCase
     public function itCreates(): void
     {
         // When
-        $password = Password::fromString('Xk9$mQ2vLp7&zR4w');
+        $password = Password::fromString('Marmoset-42-Zephyr!');
 
         // Then
-        self::assertSame('Xk9$mQ2vLp7&zR4w', $password->value);
+        self::assertSame('Marmoset-42-Zephyr!', $password->value);
     }
 
     #[Test]
@@ -45,8 +45,8 @@ final class PasswordTest extends TestCase
     public function itComparesEquality(): void
     {
         // When
-        $a = Password::fromString('Xk9$mQ2vLp7&zR4w');
-        $b = Password::fromString('Xk9$mQ2vLp7&zR4w');
+        $a = Password::fromString('Marmoset-42-Zephyr!');
+        $b = Password::fromString('Marmoset-42-Zephyr!');
 
         // Then
         self::assertTrue($a->equals($b));

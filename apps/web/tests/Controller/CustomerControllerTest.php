@@ -121,7 +121,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
             \sprintf('%s[login]', $prefix) => 'buyer-7',
             \sprintf('%s[email]', $prefix) => 'buyer-7@example.com',
             \sprintf('%s[password][first]', $prefix) => 'MyStr0ngP@ssw0rd123!',
-            \sprintf('%s[password][second]', $prefix) => 'Xk9$mQ2vLp7&zR4w',
+            \sprintf('%s[password][second]', $prefix) => 'Marmoset-42-Zephyr!',
         ]);
         $client->submit($form);
 
@@ -138,7 +138,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // When
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'MyStr0ngP@ssw0rd123!');
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'Xk9$mQ2vLp7&zR4w');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'Marmoset-42-Zephyr!');
 
         // Then
         self::assertResponseRedirects($this->path('security_login'));
@@ -235,7 +235,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $crawler = $client->request('GET', $this->path('sales_customer_profile'));
         $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
-        $form->setValues([\sprintf('%s[password]', $prefix) => 'Xk9$mQ2vLp7&zR4w']);
+        $form->setValues([\sprintf('%s[password]', $prefix) => 'Marmoset-42-Zephyr!']);
         $client->submit($form);
 
         // Then
@@ -244,7 +244,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
         $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
-        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Marmoset-42-Zephyr!'));
     }
 
     private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void

@@ -21,15 +21,14 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itApprovesReturnWhenReceived(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ApproveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_APPROVED, $result->status);
     }
 
@@ -37,15 +36,14 @@ final class ApproveShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyApproved(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->returnDispatched()->returnReceived()->returnApproved()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ApproveShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_APPROVED, $result->status);
     }
 

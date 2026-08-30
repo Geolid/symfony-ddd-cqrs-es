@@ -39,7 +39,7 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofTrackingReference($trackingReference)->status);
+        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofId($shipment->id->toString())->status);
     }
 
     #[Test]
@@ -56,6 +56,6 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($reconciled);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofTrackingReference($trackingReference)->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($shipment->id->toString())->status);
     }
 }

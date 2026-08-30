@@ -38,14 +38,14 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
         $this->store($identity, $credential);
 
         // Then
-        self::assertTrue($this->verifier->verify($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        self::assertTrue($this->verifier->verify($identity->id->toString(), 'Marmoset-42-Zephyr!'));
         self::assertFalse($this->verifier->verify($identity->id->toString(), 'WrongPassword456!'));
     }
 
@@ -56,7 +56,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->verifier->verify(Uuid::uuid7()->toString(), 'Xk9$mQ2vLp7&zR4w');
+        $this->verifier->verify(Uuid::uuid7()->toString(), 'Marmoset-42-Zephyr!');
     }
 
     #[Test]
@@ -66,7 +66,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $identity = IdentityTestFactory::new()->suspended()->create();
         $credential = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
@@ -76,6 +76,6 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->verifier->verify($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w');
+        $this->verifier->verify($identity->id->toString(), 'Marmoset-42-Zephyr!');
     }
 }

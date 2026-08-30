@@ -146,12 +146,6 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
 
     private function statusOf(string $id): ShipmentStatus
     {
-        $shipment = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference(self::RETURN_TRACKING_REFERENCE);
-
-        if ($id !== $shipment->id) {
-            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
-        }
-
-        return $shipment->status;
+        return $this->service(ShipmentFinderInterface::class)->ofId($id)->status;
     }
 }

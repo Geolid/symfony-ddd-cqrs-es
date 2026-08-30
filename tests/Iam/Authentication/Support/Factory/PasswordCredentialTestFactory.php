@@ -20,9 +20,9 @@ use Webmozart\Assert\Assert;
 /**
  * @phpstan-type Attributes = array{
  *     identityId: string,
- *     login: string,
- *     password: string,
- *     definedAt: \DateTimeInterface,
+ *     login: Login,
+ *     password: Password,
+ *     definedAt: \DateTimeImmutable,
  *     passwordStrength?: PasswordStrengthInterface,
  *     hasher?: PasswordHasherInterface,
  * }
@@ -33,32 +33,32 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
 {
     public function withIdentityId(string $identityId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['identityId' => $identityId]));
+        return $this->withAttributes(['identityId' => $identityId]);
     }
 
     public function withLogin(string $login): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['login' => $login]));
+        return $this->withAttributes(['login' => Login::fromString($login)]);
     }
 
     public function withPassword(string $password): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['password' => $password]));
+        return $this->withAttributes(['password' => Password::fromString($password)]);
     }
 
     public function withDefinedAt(\DateTimeImmutable $definedAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['definedAt' => $definedAt]));
+        return $this->withAttributes(['definedAt' => $definedAt]);
     }
 
     public function withPasswordStrength(PasswordStrengthInterface $passwordStrength): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['passwordStrength' => $passwordStrength]));
+        return $this->withAttributes(['passwordStrength' => $passwordStrength]);
     }
 
     public function withHasher(PasswordHasherInterface $hasher): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['hasher' => $hasher]));
+        return $this->withAttributes(['hasher' => $hasher]);
     }
 
     public function changed(
@@ -98,40 +98,37 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     {
         return [
             'identityId' => Uuid::uuid7()->toString(),
-            'login' => SeededFaker::get()->userName(),
-            'password' => 'Xk9$mQ2vLp7&zR4w',
+            'login' => Login::fromString(SeededFaker::get()->userName()),
+            'password' => Password::fromString('Marmoset-42-Zephyr!'),
             'definedAt' => ClockSequence::next(),
         ];
     }
 
-    protected function build(array $attributes): PasswordCredential
+    protected function build(): PasswordCredential
     {
-        Assert::stringNotEmpty($identityId = $attributes['identityId']);
-        Assert::stringNotEmpty($login = $attributes['login']);
-        Assert::stringNotEmpty($password = $attributes['password']);
-        Assert::isInstanceOf($definedAt = $attributes['definedAt'], \DateTimeInterface::class);
+        $identityId = $this->attribute('identityId');
 
         return PasswordCredential::define(
-            PasswordCredentialId::forIdentity($identityId),
-            $identityId,
-            Login::fromString($login),
-            Password::fromString($password),
-            $this->passwordStrength(),
-            $this->hasher(),
-            \DateTimeImmutable::createFromInterface($definedAt),
+            id: PasswordCredentialId::forIdentity($identityId),
+            identityId: $identityId,
+            login: $this->attribute('login'),
+            password: $this->attribute('password'),
+            passwordStrength: $this->passwordStrength(),
+            hasher: $this->hasher(),
+            definedAt: $this->attribute('definedAt'),
         );
     }
 
     private function passwordStrength(): PasswordStrengthInterface
     {
-        Assert::isInstanceOf($passwordStrength = $this->attributes['passwordStrength'] ?? null, PasswordStrengthInterface::class);
+        Assert::isInstanceOf($passwordStrength = $this->attribute('passwordStrength'), PasswordStrengthInterface::class);
 
         return $passwordStrength;
     }
 
     private function hasher(): PasswordHasherInterface
     {
-        Assert::isInstanceOf($hasher = $this->attributes['hasher'] ?? null, PasswordHasherInterface::class);
+        Assert::isInstanceOf($hasher = $this->attribute('hasher'), PasswordHasherInterface::class);
 
         return $hasher;
     }

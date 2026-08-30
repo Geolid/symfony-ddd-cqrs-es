@@ -31,18 +31,18 @@ final class UniqueKeyTest extends TestCase
     public static function provideScopes(): iterable
     {
         yield 'no scope' => [[], 'dummy.email'];
-        yield 'single scope segment' => [['a@b.com'], "dummy.email\x1Fa@b.com"];
-        yield 'multiple scope segments' => [['a@b.com', 'tenant-1'], "dummy.email\x1Fa@b.com\x1Ftenant-1"];
+        yield 'single scope segment' => [['a@b.example'], "dummy.email\x1Fa@b.example"];
+        yield 'multiple scope segments' => [['a@b.example', 'tenant-1'], "dummy.email\x1Fa@b.example\x1Ftenant-1"];
     }
 
     #[Test]
     public function itComparesEquality(): void
     {
         // Given
-        $a = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.com');
-        $b = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.com');
-        $differentScope = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'other@b.com');
-        $differentDiscriminator = UniqueKey::for(DummyUniqueKeyDiscriminator::PHONE, 'a@b.com');
+        $a = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.example');
+        $b = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.example');
+        $differentScope = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'other@b.example');
+        $differentDiscriminator = UniqueKey::for(DummyUniqueKeyDiscriminator::PHONE, 'a@b.example');
 
         // When
         $equalResult = $a->equals($b);

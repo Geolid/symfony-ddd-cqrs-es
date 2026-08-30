@@ -72,7 +72,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $reactivatedAt = $now->modify('+1 day');
-        $other = IdentityTestFactory::new()->suspended()->create();
+        $otherFactory = IdentityTestFactory::new()->suspended();
+        $other = $otherFactory->create();
         $identity = IdentityTestFactory::new()->suspended()->create();
         $this->store($other, $identity);
 
@@ -90,7 +91,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['status']);
-        self::assertSame('Suspected fraudulent activity', $otherRow['reason']);
+        self::assertSame($otherFactory->attribute('reason'), $otherRow['reason']);
         self::assertNull($otherRow['reactivated_at']);
     }
 

@@ -97,7 +97,7 @@ final class LockingOrderPaymentRequesterTest extends TestCase
 
 final class SpyOrderPaymentRequester implements OrderPaymentRequesterInterface
 {
-    public const string CHECKOUT_URL = 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P';
+    public const string CHECKOUT_URL = 'https://checkout.globex.test/pay/GLBX-9F3K2M1P';
 
     public ?string $orderId = null;
 

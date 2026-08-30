@@ -37,15 +37,14 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsCancellationWhenAlreadyDelivered(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
+        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new CancelShipment($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DELIVERED, $result->status);
     }
 

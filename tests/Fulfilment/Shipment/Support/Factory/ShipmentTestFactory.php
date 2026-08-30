@@ -15,14 +15,16 @@ use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
  *     orderId: string,
  *     customerId: string,
  *     shippingAddress: PostalAddress,
- *     createdAt: \DateTimeInterface,
+ *     createdAt: \DateTimeImmutable,
+ *     trackingReference?: string,
+ *     returnTrackingReference?: string,
+ *     returnRejectionReason?: string,
  * }
  *
  * @extends AbstractAggregateTestFactory<Shipment, Attributes>
@@ -31,22 +33,22 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
 {
     public function withOrderId(string $orderId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['orderId' => $orderId]));
+        return $this->withAttributes(['orderId' => $orderId]);
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['customerId' => $customerId]));
+        return $this->withAttributes(['customerId' => $customerId]);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['shippingAddress' => $shippingAddress]));
+        return $this->withAttributes(['shippingAddress' => $shippingAddress]);
     }
 
     public function withCreatedAt(\DateTimeImmutable $createdAt): self
     {
-        return $this->withAttributes(array_merge($this->attributes, ['createdAt' => $createdAt]));
+        return $this->withAttributes(['createdAt' => $createdAt]);
     }
 
     public function prepared(?\DateTimeImmutable $preparedAt = null): self
@@ -59,14 +61,16 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     }
 
     public function manifested(
-        string $trackingReference = 'ACME-4Q7X2K9',
+        ?string $trackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
+        $trackingReference ??= SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
         $manifestedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString($trackingReference), $manifestedAt),
-        );
+        return $this->withAttributes(['trackingReference' => $trackingReference])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString($trackingReference), $manifestedAt),
+            );
     }
 
     public function dispatched(?\DateTimeImmutable $dispatchedAt = null): self
@@ -106,14 +110,16 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     }
 
     public function returnManifested(
-        string $returnTrackingReference = 'ACME-RETURN-1',
+        ?string $returnTrackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
+        $returnTrackingReference ??= SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
         $manifestedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString($returnTrackingReference), $manifestedAt),
-        );
+        return $this->withAttributes(['returnTrackingReference' => $returnTrackingReference])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString($returnTrackingReference), $manifestedAt),
+            );
     }
 
     public function returnDispatched(?\DateTimeImmutable $dispatchedAt = null): self
@@ -144,14 +150,16 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     }
 
     public function returnRejected(
-        string $reason = 'item damaged beyond resale',
+        ?string $reason = null,
         ?\DateTimeImmutable $rejectedAt = null,
     ): self {
+        $reason ??= SeededFaker::get()->sentence(4);
         $rejectedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->rejectReturn($reason, $rejectedAt),
-        );
+        return $this->withAttributes(['returnRejectionReason' => $reason])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->rejectReturn($reason, $rejectedAt),
+            );
     }
 
     protected function defaults(): array
@@ -167,19 +175,16 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         ];
     }
 
-    protected function build(array $attributes): Shipment
+    protected function build(): Shipment
     {
-        Assert::stringNotEmpty($orderId = $attributes['orderId']);
-        Assert::stringNotEmpty($customerId = $attributes['customerId']);
-        Assert::isInstanceOf($shippingAddress = $attributes['shippingAddress'], PostalAddress::class);
-        Assert::isInstanceOf($createdAt = $attributes['createdAt'], \DateTimeInterface::class);
+        $orderId = $this->attribute('orderId');
 
         return Shipment::request(
             ShipmentId::forOrder($orderId),
             $orderId,
-            $customerId,
-            $shippingAddress,
-            \DateTimeImmutable::createFromInterface($createdAt),
+            $this->attribute('customerId'),
+            $this->attribute('shippingAddress'),
+            $this->attribute('createdAt'),
         );
     }
 }
