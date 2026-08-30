@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
-use Fulfilment\Shipment\Application\Carrier\ShipmentReconcilerInterface;
+use Fulfilment\Shipment\Application\Carrier\Reconciliation\ShipmentReconcilerInterface;
 use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThreshold;
 use Psr\Log\LoggerInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;

@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\CancelOrdersOnCustomerErased;
-use Sales\Order\Application\Status\OrderStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

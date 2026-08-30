@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;
 use Support\AbstractIntegrationTestCase;
 

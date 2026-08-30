@@ -10,7 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 

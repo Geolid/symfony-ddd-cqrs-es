@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Application\Command\RegisterIdentity;
 
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;

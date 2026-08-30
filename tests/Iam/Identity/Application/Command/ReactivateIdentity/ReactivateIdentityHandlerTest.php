@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Application\Command\ReactivateIdentity;
 
 use Iam\Identity\Application\Command\ReactivateIdentity\ReactivateIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\Status\IdentityStatus;
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;

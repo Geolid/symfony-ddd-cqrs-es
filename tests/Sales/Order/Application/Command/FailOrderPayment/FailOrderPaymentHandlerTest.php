@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\FailOrderPayment\FailOrderPayment;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
-use Sales\Order\Application\Status\OrderPaymentStatus;
+use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;

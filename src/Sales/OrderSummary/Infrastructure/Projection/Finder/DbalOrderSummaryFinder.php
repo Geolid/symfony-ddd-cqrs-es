@@ -8,7 +8,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 

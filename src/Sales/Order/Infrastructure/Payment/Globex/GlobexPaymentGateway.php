@@ -7,7 +7,6 @@ namespace Sales\Order\Infrastructure\Payment\Globex;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
-use Sales\Order\Infrastructure\Payment\Globex\Exception\GlobexClientException;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface

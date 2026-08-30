@@ -7,7 +7,7 @@ namespace Api\Tests\Support;
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
 use Bootstrap\Kernel;
-use Iam\Authentication\Application\Credential\ApiKeyGenerator;
+use Iam\Authentication\Application\ApiKey\ApiKeyGenerator;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Fulfilment\Shipment\Infrastructure\Projection\Projector\DbalShipmentProjector;

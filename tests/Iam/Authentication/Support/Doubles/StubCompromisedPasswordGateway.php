@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Support\Doubles;
 
-use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 
 final readonly class StubCompromisedPasswordGateway implements CompromisedPasswordGatewayInterface

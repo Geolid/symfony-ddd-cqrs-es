@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Finder\Shipment;
 
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Shared\Application\Finder\IterableFinderInterface;
 
 /**

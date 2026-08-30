@@ -9,7 +9,7 @@ use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundExc
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Authentication\Infrastructure\Security\PasswordHasher;
+use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,10 +27,10 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
             ->withIdentityId($identity->id->toString())
             ->withPassword('Xk9$mQ2vLp7&zR4w')
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher(new PasswordHasher(new NativePasswordHasher(cost: 4)))
+            ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)))
             ->create();
         $this->store($identity, $credential);
-        self::getContainer()->set(PasswordHasherInterface::class, new PasswordHasher(new NativePasswordHasher(cost: 12)));
+        self::getContainer()->set(PasswordHasherInterface::class, new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12)));
 
         // When
         $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));

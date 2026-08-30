@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Order\Application\Payment\Reconciliation;
+
+use Sales\Order\Application\Command\AuthorizeOrderPayment\AuthorizeOrderPayment;
+use Sales\Order\Application\Command\FailOrderPayment\FailOrderPayment;
+use Sales\Order\Application\OrderPaymentStatus;
+use Sales\Order\Application\Payment\PaymentGatewayInterface;
+use Sales\Order\Application\Payment\PaymentGatewayStatus;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
+
+final readonly class RequestedOrderPaymentReconciler implements OrderPaymentStatusReconcilerInterface
+{
+    public function __construct(
+        private PaymentGatewayInterface $paymentGateway,
+        private CommandBusInterface $commandBus,
+    ) {
+    }
+
+    public function supports(OrderPaymentStatus $status): bool
+    {
+        return OrderPaymentStatus::REQUESTED === $status;
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    public function reconcile(string $id, string $reference): bool
+    {
+        return match ($this->paymentGateway->checkStatus($reference)) {
+            PaymentGatewayStatus::AUTHORIZED => $this->authorize($id),
+            PaymentGatewayStatus::DECLINED => $this->fail($id),
+            default => false,
+        };
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    private function authorize(string $id): bool
+    {
+        $this->commandBus->dispatch(new AuthorizeOrderPayment($id));
+
+        return true;
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    private function fail(string $id): bool
+    {
+        $this->commandBus->dispatch(new FailOrderPayment($id));
+
+        return true;
+    }
+}

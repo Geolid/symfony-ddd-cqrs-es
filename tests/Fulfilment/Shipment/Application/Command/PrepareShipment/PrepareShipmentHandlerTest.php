@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipment\Application\Command\PrepareShipment;
 
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\Status\ShipmentStatus;
+use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;

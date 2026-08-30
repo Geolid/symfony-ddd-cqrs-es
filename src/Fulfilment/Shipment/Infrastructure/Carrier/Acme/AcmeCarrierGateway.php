@@ -6,7 +6,6 @@ namespace Fulfilment\Shipment\Infrastructure\Carrier\Acme;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
-use Fulfilment\Shipment\Infrastructure\Carrier\Acme\Exception\AcmeClientException;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

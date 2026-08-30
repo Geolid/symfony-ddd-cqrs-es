@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\ChangePassword;
 
 use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
-use Iam\Authentication\Application\Credential\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;

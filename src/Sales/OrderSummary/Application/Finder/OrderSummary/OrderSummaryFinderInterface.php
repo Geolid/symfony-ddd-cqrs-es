@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\OrderSummary\Application\Finder\OrderSummary;
 
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
-use Sales\OrderSummary\Application\Status\OrderSummaryStatus;
+use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Shared\Application\Finder\IterableFinderInterface;
 use Shared\Application\Finder\PaginatableFinderInterface;
 

@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\Command\ConfirmOrder;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
-use Sales\Order\Application\Status\OrderStatus;
+use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Factory\OrderTestFactory;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Psr\Log\LoggerInterface;
-use Sales\Order\Application\Payment\OrderPaymentReconcilerInterface;
+use Sales\Order\Application\Payment\Reconciliation\OrderPaymentReconcilerInterface;
 use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThreshold;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
