@@ -7,7 +7,7 @@ namespace Catalog\Tests\Product\Infrastructure\EventStore;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -26,7 +26,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $product = ProductTestFactory::new()->create();
+        $product = ProductBuilder::new()->create();
 
         // When
         $this->repository->save($product);

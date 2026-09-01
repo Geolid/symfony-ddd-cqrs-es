@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Customer\Support\Factory;
+namespace Sales\Tests\Customer\Support\Builder;
 
 use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\ClockSequence;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -20,9 +20,9 @@ use Symfony\Component\Clock\Clock;
  *     registeredAt: \DateTimeImmutable,
  * }
  *
- * @extends AbstractAggregateTestFactory<Customer, Attributes>
+ * @extends AbstractAggregateBuilder<Customer, Attributes>
  */
-final class CustomerTestFactory extends AbstractAggregateTestFactory
+final class CustomerBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {

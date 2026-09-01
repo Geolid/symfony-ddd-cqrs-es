@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderPaymentRequested;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentRequested\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -19,7 +19,7 @@ final class OrderPaymentRequestedPublisherTest extends AbstractIntegrationTestCa
         // Given
         $orderId = OrderId::generate()->toString();
         $now = Clock::get()->now();
-        $orderPayment = OrderPaymentTestFactory::new()
+        $orderPayment = OrderPaymentBuilder::new()
             ->withOrderId($orderId)
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')

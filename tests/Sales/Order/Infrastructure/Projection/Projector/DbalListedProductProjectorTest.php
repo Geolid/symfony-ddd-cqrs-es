@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalListedProductProjector;
@@ -19,7 +19,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
 
         // When
         $this->store($product);
@@ -35,9 +35,9 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withUnitAmountInCents(83)->create();
+        $other = ProductBuilder::new()->withUnitAmountInCents(83)->create();
         $this->store($other);
-        $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(2_000)->create();
+        $product = ProductBuilder::new()->withUnitAmountInCents(1_750)->repriced(2_000)->create();
 
         // When
         $this->store($product);
@@ -56,9 +56,9 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnProductDelisted(): void
     {
         // Given
-        $other = ProductTestFactory::new()->create();
+        $other = ProductBuilder::new()->create();
         $this->store($other);
-        $product = ProductTestFactory::new()->delisted()->create();
+        $product = ProductBuilder::new()->delisted()->create();
 
         // When
         $this->store($product);

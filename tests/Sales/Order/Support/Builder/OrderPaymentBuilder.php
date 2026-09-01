@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Support\Factory;
+namespace Sales\Tests\Order\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\OrderPayment;
@@ -10,7 +10,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 use Support\ClockSequence;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -29,9 +29,9 @@ use Symfony\Component\Clock\Clock;
  *     refundConfirmedAt?: \DateTimeImmutable,
  * }
  *
- * @extends AbstractAggregateTestFactory<OrderPayment, Attributes>
+ * @extends AbstractAggregateBuilder<OrderPayment, Attributes>
  */
-final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
+final class OrderPaymentBuilder extends AbstractAggregateBuilder
 {
     public function withOrderId(string $orderId): self
     {

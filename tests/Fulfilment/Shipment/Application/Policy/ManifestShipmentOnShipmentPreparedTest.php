@@ -10,7 +10,7 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Policy\ManifestShipmentOnShipmentPrepared;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
@@ -41,7 +41,7 @@ final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTe
             FullName::of('Ada', 'Lovelace'),
             Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
-        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->create();
+        $shipment = ShipmentBuilder::new()->withShippingAddress($shippingAddress)->prepared()->create();
         $this->store($shipment);
 
         // When

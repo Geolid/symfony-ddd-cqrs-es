@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityErased;
 
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -15,8 +15,8 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $factory = IdentityTestFactory::new()->erased();
-        $identity = $factory->create();
+        $builder = IdentityBuilder::new()->erased();
+        $identity = $builder->create();
 
         // When
         $this->store($identity);
@@ -25,7 +25,7 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(IdentityErasedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame(
-            $factory['erasedAt']->format(\DateTimeImmutable::ATOM),
+            $builder['erasedAt']->format(\DateTimeImmutable::ATOM),
             $event->erasedAt->format(\DateTimeImmutable::ATOM),
         );
     }

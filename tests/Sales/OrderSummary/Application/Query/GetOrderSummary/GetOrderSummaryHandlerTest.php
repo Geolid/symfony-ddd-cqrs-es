@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
@@ -19,7 +19,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // When
@@ -45,7 +45,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderTestFactory::new()->attribute('id')->toString();
+        $id = OrderBuilder::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(OrderSummaryResultNotFoundException::class);

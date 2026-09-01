@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -36,7 +36,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $deliveredAt = $placedAt->modify('+4 days 3 hours');
         $completedAt = $placedAt->modify('+1 month');
         $anonymizedAt = $now;
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withCustomerId($customerId)
             ->withTotalAmountInCents(2_500)
             ->withPlacedAt($placedAt)
@@ -81,8 +81,8 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->create();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $other = OrderBuilder::new()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
@@ -99,9 +99,9 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $cutoff = $now->modify('-30 days');
-        $withinCutoff = OrderTestFactory::new()->cancelled($now->modify('-10 days'))->create();
-        $notClosed = OrderTestFactory::new()->create();
-        $expired = OrderTestFactory::new()->cancelled($now->modify('-60 days'))->create();
+        $withinCutoff = OrderBuilder::new()->cancelled($now->modify('-10 days'))->create();
+        $notClosed = OrderBuilder::new()->create();
+        $expired = OrderBuilder::new()->cancelled($now->modify('-60 days'))->create();
         $this->store($withinCutoff, $notClosed, $expired);
 
         // When
@@ -118,11 +118,11 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $cutoff = $now->modify('-14 days');
-        $withinCutoff = OrderTestFactory::new()->confirmed()->dispatched()
+        $withinCutoff = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-5 days'))
             ->create();
-        $notDelivered = OrderTestFactory::new()->confirmed()->dispatched()->create();
-        $expired = OrderTestFactory::new()->confirmed()->dispatched()
+        $notDelivered = OrderBuilder::new()->confirmed()->dispatched()->create();
+        $expired = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-20 days'))
             ->create();
         $this->store($withinCutoff, $notDelivered, $expired);

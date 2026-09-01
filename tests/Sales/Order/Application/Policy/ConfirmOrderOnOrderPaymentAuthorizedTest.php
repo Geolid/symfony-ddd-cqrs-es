@@ -10,7 +10,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\ConfirmOrderOnOrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentAuthorized;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegration
     public function itConfirms(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When

@@ -9,7 +9,7 @@ use Sales\Order\Application\Command\RejectOrderReturn\RejectOrderReturn;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
@@ -27,7 +27,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRejectsReturnWhenRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
         $this->store($order);
 
         // When
@@ -43,7 +43,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When
@@ -57,7 +57,7 @@ final class RejectOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderTestFactory::new()->attribute('id')->toString();
+        $id = OrderBuilder::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

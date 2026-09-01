@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
@@ -25,8 +25,8 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByIds(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Untouched')->withUnitAmountInCents(500)->create();
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->withLabel('Untouched')->withUnitAmountInCents(500)->create();
+        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($other, $cups);
 
         // When

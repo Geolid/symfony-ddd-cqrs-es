@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Web\Tests\Support\AbstractWebTestCase;
 
@@ -181,8 +181,8 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
     private function createCustomer(string $email): Identity
     {
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail($email)->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail($email)->create();
         $this->store($identity, $customer);
 
         return $identity;

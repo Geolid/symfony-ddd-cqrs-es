@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -23,7 +23,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
 
         // When
         $this->store($order);
@@ -47,9 +47,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCancelled(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $this->store($other);
-        $order = OrderTestFactory::new()->cancelled()->create();
+        $order = OrderBuilder::new()->cancelled()->create();
 
         // When
         $this->store($order);
@@ -70,9 +70,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderConfirmed(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $this->store($other);
-        $order = OrderTestFactory::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
 
         // When
         $this->store($order);
@@ -92,9 +92,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDispatched(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->create();
+        $other = OrderBuilder::new()->confirmed()->create();
         $this->store($other);
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->create();
 
         // When
         $this->store($order);
@@ -115,9 +115,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $other = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
+        $other = OrderBuilder::new()->cancelled($now->modify('-11 years'))->create();
         $this->store($other);
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->cancelled($now->modify('-11 years'))
             ->anonymized($now)
             ->create();
@@ -140,9 +140,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $this->store($other);
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
 
         // When
         $this->store($order);
@@ -162,10 +162,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCompleted(): void
     {
         // Given
-        $other = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $other = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($other);
         $now = Clock::get()->now();
-        $order = OrderTestFactory::new()->confirmed()->dispatched()
+        $order = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-1 month'))
             ->completed($now)
             ->create();
@@ -189,7 +189,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturnRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered();
         $other = $order->create();
         $this->store($other);
         $order = $order->returnRequested()->create();
@@ -212,7 +212,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturned(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested();
         $other = $order->create();
         $this->store($other);
         $order = $order->returned()->create();
@@ -236,7 +236,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderReturnRejected(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested();
         $other = $order->create();
         $this->store($other);
         $order = $order->returnRejected('item damaged beyond resale')->create();

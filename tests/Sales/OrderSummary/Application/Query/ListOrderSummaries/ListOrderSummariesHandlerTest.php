@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
@@ -20,8 +20,8 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
 
         $orders = [
-            OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create(),
-            ...OrderTestFactory::new()->many(4)->create(),
+            OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create(),
+            ...OrderBuilder::new()->many(4)->create(),
         ];
         $this->store(...$orders);
 
@@ -43,9 +43,9 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsByCustomer(): void
     {
         // Given
-        $others = OrderTestFactory::new()->many(2)->create();
+        $others = OrderBuilder::new()->many(2)->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($order, ...$others);
 
         // When
@@ -60,8 +60,8 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsByStatus(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
-        $cancelled = OrderTestFactory::new()->cancelled()->create();
+        $other = OrderBuilder::new()->create();
+        $cancelled = OrderBuilder::new()->cancelled()->create();
         $this->store($other, $cancelled);
 
         // When
@@ -76,9 +76,9 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsSortedByPlacedAt(): void
     {
         // Given
-        $middle = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('-2 days +00:00'))->create();
-        $oldest = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('-3 days +00:00'))->create();
-        $newest = OrderTestFactory::new()->withPlacedAt(new \DateTimeImmutable('-1 day +00:00'))->create();
+        $middle = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-2 days +00:00'))->create();
+        $oldest = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-3 days +00:00'))->create();
+        $newest = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-1 day +00:00'))->create();
         $this->store($middle, $oldest, $newest);
 
         // When
@@ -95,7 +95,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $orders = OrderTestFactory::new()->many(5)->create();
+        $orders = OrderBuilder::new()->many(5)->create();
         $this->store(...$orders);
 
         // When

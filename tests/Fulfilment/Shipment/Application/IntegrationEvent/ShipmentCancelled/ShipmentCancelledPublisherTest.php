@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentCancelled;
 
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentCancelled\ShipmentCancelledIntegrationEvent;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -17,7 +17,7 @@ final class ShipmentCancelledPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->cancelled()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->cancelled()->create();
 
         // When
         $this->store($shipment);

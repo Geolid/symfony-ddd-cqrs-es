@@ -7,8 +7,8 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderPaymentCaptured;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -20,10 +20,10 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($order);
         $now = Clock::get()->now();
-        $orderPayment = OrderPaymentTestFactory::new()
+        $orderPayment = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->authorized()
             ->captured($now)

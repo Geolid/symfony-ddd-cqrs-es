@@ -12,7 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -28,11 +28,11 @@ final class IdentityTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = IdentityTestFactory::sample('id');
-        $this->reason = IdentityTestFactory::sample('reason');
-        $this->registeredAt = IdentityTestFactory::sample('registeredAt');
-        $this->suspendedAt = IdentityTestFactory::sample('suspendedAt');
-        $this->erasedAt = IdentityTestFactory::sample('erasedAt');
+        $this->id = IdentityBuilder::sample('id');
+        $this->reason = IdentityBuilder::sample('reason');
+        $this->registeredAt = IdentityBuilder::sample('registeredAt');
+        $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
+        $this->erasedAt = IdentityBuilder::sample('erasedAt');
     }
 
     #[Test]
@@ -61,7 +61,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->suspended(),
             )
-            ->when(fn (Identity $identity) => $identity->suspend(IdentityTestFactory::sample('reason'), $this->suspendedAt))
+            ->when(fn (Identity $identity) => $identity->suspend(IdentityBuilder::sample('reason'), $this->suspendedAt))
             ->then();
     }
 
@@ -80,8 +80,8 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itReactivatesWhenSuspended(): void
     {
-        $reason = IdentityTestFactory::sample('reason');
-        $reactivatedAt = IdentityTestFactory::sample('reactivatedAt');
+        $reason = IdentityBuilder::sample('reason');
+        $reactivatedAt = IdentityBuilder::sample('reactivatedAt');
 
         $this
             ->given(
@@ -97,7 +97,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityTestFactory::sample('reason'), IdentityTestFactory::sample('reactivatedAt')))
+            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityBuilder::sample('reason'), IdentityBuilder::sample('reactivatedAt')))
             ->then();
     }
 
@@ -110,7 +110,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->suspended(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityTestFactory::sample('reason'), IdentityTestFactory::sample('reactivatedAt')))
+            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityBuilder::sample('reason'), IdentityBuilder::sample('reactivatedAt')))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 

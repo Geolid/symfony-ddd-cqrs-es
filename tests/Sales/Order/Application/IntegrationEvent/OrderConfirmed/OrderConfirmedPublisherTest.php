@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderConfirmed;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -20,7 +20,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $now = Clock::get()->now();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed($now)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed($now)->create();
 
         // When
         $this->store($order);

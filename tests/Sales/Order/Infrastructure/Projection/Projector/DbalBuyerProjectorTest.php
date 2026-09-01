@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -26,7 +26,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->create();
+        $customer = CustomerBuilder::new()->create();
 
         // When
         $this->store($customer);
@@ -42,7 +42,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerShippingAddressRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
+        $customer = CustomerBuilder::new()
             ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
 
@@ -64,7 +64,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerBillingAddressRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
+        $customer = CustomerBuilder::new()
             ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
 
@@ -86,9 +86,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->create();
+        $other = CustomerBuilder::new()->create();
         $this->store($other);
-        $customer = CustomerTestFactory::new()->erased()->create();
+        $customer = CustomerBuilder::new()->erased()->create();
 
         // When
         $this->store($customer);

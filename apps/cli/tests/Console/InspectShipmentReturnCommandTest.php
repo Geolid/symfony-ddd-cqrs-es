@@ -7,7 +7,7 @@ namespace Cli\Tests\Console;
 use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;
 
@@ -26,7 +26,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itApprovesAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -43,7 +43,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itRejectsAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -60,7 +60,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itFailsWhenNeitherApproveNorRejectIsGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -75,7 +75,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itFailsWhenBothApproveAndRejectAreGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 

@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\RejectOrderReturnOnShipmentReturnRejected;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegr
     public function itRejects(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
         $this->store($order);
 
         // When

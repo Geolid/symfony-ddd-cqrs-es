@@ -10,7 +10,7 @@ use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -20,7 +20,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled(Clock::get()->now()->modify('-11 years'))->create();
+        $order = OrderBuilder::new()->cancelled(Clock::get()->now()->modify('-11 years'))->create();
         $this->store($order);
 
         // When
@@ -36,7 +36,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotClosed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When

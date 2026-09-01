@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\EventStore;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTestCase
@@ -25,7 +25,7 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
     public function itSavesAndLoads(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->create();
 
         // When
         $this->repository->save($orderPayment);
@@ -50,7 +50,7 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
     public function itThrowsWhenNotFound(): void
     {
         // Given
-        $id = OrderPaymentTestFactory::new()->create()->id;
+        $id = OrderPaymentBuilder::new()->create()->id;
 
         // Then
         self::assertFalse($this->repository->has($id));

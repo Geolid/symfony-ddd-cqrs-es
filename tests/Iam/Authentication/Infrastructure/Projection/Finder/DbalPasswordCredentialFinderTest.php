@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundExc
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -31,34 +31,34 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itGetsByLogin(): void
     {
         // Given
-        $other = PasswordCredentialTestFactory::new()
+        $other = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
 
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofLogin($factory['login']->value);
+        $result = $this->finder->ofLogin($builder['login']->value);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($factory['login']->value, $result->login);
+        self::assertSame($builder['login']->value, $result->login);
         self::assertSame(
-            $factory['definedAt']->format(\DateTimeImmutable::ATOM),
+            $builder['definedAt']->format(\DateTimeImmutable::ATOM),
             $result->definedAt->format(\DateTimeImmutable::ATOM),
         );
         self::assertSame(
-            $factory['definedAt']->format(\DateTimeImmutable::ATOM),
+            $builder['definedAt']->format(\DateTimeImmutable::ATOM),
             $result->passwordChangedAt->format(\DateTimeImmutable::ATOM),
         );
         self::assertTrue($result->identityAuthenticatable);
 
-        self::assertSame($this->hasher->hash($factory['password']->value), $result->passwordHash);
+        self::assertSame($this->hasher->hash($builder['password']->value), $result->passwordHash);
     }
 
     #[Test]
@@ -68,30 +68,30 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofLogin(PasswordCredentialTestFactory::sample('login')->value);
+        $this->finder->ofLogin(PasswordCredentialBuilder::sample('login')->value);
     }
 
     #[Test]
     public function itGetsByIdentity(): void
     {
         // Given
-        $other = PasswordCredentialTestFactory::new()
+        $other = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
 
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofIdentity($factory['identityId']);
+        $result = $this->finder->ofIdentity($builder['identityId']);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($factory['identityId'], $result->identityId);
+        self::assertSame($builder['identityId'], $result->identityId);
     }
 
     #[Test]
@@ -101,6 +101,6 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofIdentity(PasswordCredentialTestFactory::sample('identityId'));
+        $this->finder->ofIdentity(PasswordCredentialBuilder::sample('identityId'));
     }
 }

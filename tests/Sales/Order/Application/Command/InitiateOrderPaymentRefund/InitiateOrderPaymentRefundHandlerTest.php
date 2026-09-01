@@ -9,8 +9,8 @@ use Sales\Order\Application\Command\InitiateOrderPaymentRefund\InitiateOrderPaym
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTestCase
@@ -19,8 +19,8 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itInitiatesRefundWhenCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $paymentFactory = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured();
         $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
@@ -36,7 +36,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itIgnoresWhenUncaptured(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->create();
         $this->store($orderPayment);
 
         // When
@@ -50,7 +50,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderPaymentTestFactory::new()->create()->id->toString();
+        $id = OrderPaymentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(OrderPaymentNotFoundException::class);

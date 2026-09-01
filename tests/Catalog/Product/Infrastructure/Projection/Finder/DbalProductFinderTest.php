@@ -8,7 +8,7 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Domain\Product;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -28,8 +28,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->withLabel('Saucer')->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($other, $product);
 
         // When
@@ -55,8 +55,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->withLabel('Saucer')->delisted()->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($other, $product);
 
         // When
@@ -85,8 +85,8 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itListsSortedByLabel(): void
     {
         // Given
-        $zebraMug = ProductTestFactory::new()->withLabel('Zebra mug')->create();
-        $appleCrate = ProductTestFactory::new()->withLabel('Apple crate')->create();
+        $zebraMug = ProductBuilder::new()->withLabel('Zebra mug')->create();
+        $appleCrate = ProductBuilder::new()->withLabel('Apple crate')->create();
         $this->store($zebraMug, $appleCrate);
 
         // When
@@ -103,7 +103,7 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $products = ProductTestFactory::new()->many(5)->create();
+        $products = ProductBuilder::new()->many(5)->create();
         $this->store(...$products);
 
         // When

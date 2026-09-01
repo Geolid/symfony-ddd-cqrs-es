@@ -8,7 +8,7 @@ use Bootstrap\Kernel;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Support\TestCase\EventSourcingTrait;
 use Support\TestCase\ServiceLocatorTrait;
@@ -69,7 +69,7 @@ abstract class AbstractWebTestCase extends WebTestCase
 
         // A lazy firewall re-resolves the user (refreshUser()) on any request that actually
         // touches security — a real PasswordCredential must exist or that refresh deauthenticates.
-        $credential = PasswordCredentialTestFactory::new()
+        $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identityId)
             ->withLogin($login)
             ->withPassword('MyStr0ngP@ssw0rd123!')

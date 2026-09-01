@@ -9,7 +9,7 @@ use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
 use Fulfilment\Shipment\Infrastructure\Projection\Projector\DbalShipmentProjector;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
@@ -25,7 +25,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withCustomerId($customerId)->create();
+        $shipment = ShipmentBuilder::new()->withCustomerId($customerId)->create();
 
         // When
         $this->store($shipment);
@@ -43,7 +43,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()->prepared()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($other, $shipment);
 
         // When
@@ -64,7 +64,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()->prepared()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($other, $shipment);
 
         // When
@@ -88,7 +88,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
         $this->store($other, $shipment);
 
         // When
@@ -111,7 +111,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($other, $shipment);
 
         // When
@@ -134,7 +134,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()->cancelled()->create();
+        $shipment = ShipmentBuilder::new()->cancelled()->create();
         $this->store($other, $shipment);
 
         // When
@@ -157,7 +157,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()
             ->returnRequested()
             ->create();
@@ -181,7 +181,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()
             ->returnRequested()->returnManifested('ACME-RETURN-4Q7X2K9')
             ->create();
@@ -207,7 +207,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()
             ->returnRequested()->returnManifested()->returnDispatched()
             ->create();
@@ -232,7 +232,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()
             ->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
             ->create();
@@ -257,7 +257,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
             ->returnApproved()
             ->create();
@@ -282,7 +282,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = $this->otherShipment();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()
             ->returnRejected('item damaged beyond resale')
             ->create();
@@ -305,7 +305,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 
     private function otherShipment(): Shipment
     {
-        return ShipmentTestFactory::new()->create();
+        return ShipmentBuilder::new()->create();
     }
 
     /**

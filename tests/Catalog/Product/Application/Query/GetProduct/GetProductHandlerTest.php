@@ -6,7 +6,7 @@ namespace Catalog\Tests\Product\Application\Query\GetProduct;
 
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -16,8 +16,8 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = ProductTestFactory::new()->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($other, $product);
 
         // When
@@ -33,7 +33,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ProductTestFactory::new()->attribute('id')->toString();
+        $id = ProductBuilder::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(ProductResultNotFoundException::class);

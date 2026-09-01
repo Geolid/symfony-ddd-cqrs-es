@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Customer;
@@ -17,8 +17,8 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -31,7 +31,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $id = OrderTestFactory::new()->attribute('id')->toString();
+        $id = OrderBuilder::new()->attribute('id')->toString();
 
         // When
         $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $this->lines()));
@@ -73,27 +73,27 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
-        $customerId = CustomerTestFactory::new()->attribute('id')->toString();
+        $customerId = CustomerBuilder::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customerId, $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customerId, $this->lines()));
     }
 
     #[Test]
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->erased()->create();
+        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->erased()->create();
         $this->store($customer);
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -101,7 +101,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerAddressesNotCompleted(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com');
+        $customer = CustomerBuilder::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
             $customer = $customer->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')));
         }
@@ -115,7 +115,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderTestFactory::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
     }
 
     /**
@@ -139,9 +139,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderTestFactory::new()->attribute('id')->toString(),
+            OrderBuilder::new()->attribute('id')->toString(),
             $customer->id->toString(),
-            [['productId' => ProductTestFactory::new()->attribute('id')->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
+            [['productId' => ProductBuilder::new()->attribute('id')->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
         ));
     }
 
@@ -150,7 +150,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($cups);
 
         // Then
@@ -158,7 +158,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderTestFactory::new()->attribute('id')->toString(),
+            OrderBuilder::new()->attribute('id')->toString(),
             $customer->id->toString(),
             [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
         ));
@@ -169,8 +169,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
      */
     private function lines(): array
     {
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $saucer = ProductTestFactory::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
+        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $saucer = ProductBuilder::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
         $this->store($cups, $saucer);
 
         return [
@@ -181,7 +181,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function registeredCustomer(string $email): Customer
     {
-        $customer = CustomerTestFactory::new()
+        $customer = CustomerBuilder::new()
             ->withEmail($email)
             ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))

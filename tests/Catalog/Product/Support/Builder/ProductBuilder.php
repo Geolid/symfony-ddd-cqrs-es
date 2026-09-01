@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Tests\Product\Support\Factory;
+namespace Catalog\Tests\Product\Support\Builder;
 
 use Catalog\Product\Domain\Product;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\ClockSequence;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -22,9 +22,9 @@ use Webmozart\Assert\Assert;
  *     listedAt: \DateTimeImmutable,
  * }
  *
- * @extends AbstractAggregateTestFactory<Product, Attributes>
+ * @extends AbstractAggregateBuilder<Product, Attributes>
  */
-final class ProductTestFactory extends AbstractAggregateTestFactory
+final class ProductBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {

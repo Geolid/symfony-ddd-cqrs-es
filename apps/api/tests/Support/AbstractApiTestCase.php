@@ -10,7 +10,7 @@ use Bootstrap\Kernel;
 use Iam\Authentication\Application\ApiKey\ApiKeyGenerator;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Support\TestCase\EventSourcingTrait;
 use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -54,7 +54,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function authenticatedClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $credential = ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)
@@ -73,7 +73,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function invalidApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $credential = ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withHasher($this->hasher)
@@ -86,7 +86,7 @@ abstract class AbstractApiTestCase extends ApiTestCase
     protected function revokedApiKeyClient(Identity $identity): Client
     {
         $apiKey = $this->apiKeyGenerator->generate();
-        $credential = ApiKeyCredentialTestFactory::new()
+        $credential = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withKeyId($apiKey->keyId)
             ->withSecret($apiKey->secret)

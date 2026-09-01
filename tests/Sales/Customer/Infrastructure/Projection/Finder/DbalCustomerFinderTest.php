@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
@@ -26,8 +26,8 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->withEmail('other@example.com')->create();
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $other = CustomerBuilder::new()->withEmail('other@example.com')->create();
+        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->create();
         $this->store($other, $customer);
 
         // When

@@ -12,7 +12,7 @@ use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialF
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -24,9 +24,9 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itDefines(): void
     {
         // Given
-        $identityId = PasswordCredentialTestFactory::sample('identityId');
-        $login = PasswordCredentialTestFactory::sample('login')->value;
-        $password = PasswordCredentialTestFactory::sample('password')->value;
+        $identityId = PasswordCredentialBuilder::sample('identityId');
+        $login = PasswordCredentialBuilder::sample('login')->value;
+        $password = PasswordCredentialBuilder::sample('password')->value;
 
         // When
         $this->dispatch(new DefinePasswordCredential($identityId, $login, $password));
@@ -50,9 +50,9 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
 
         // When
         $this->dispatch(new DefinePasswordCredential(
-            PasswordCredentialTestFactory::sample('identityId'),
-            PasswordCredentialTestFactory::sample('login')->value,
-            PasswordCredentialTestFactory::sample('password')->value,
+            PasswordCredentialBuilder::sample('identityId'),
+            PasswordCredentialBuilder::sample('login')->value,
+            PasswordCredentialBuilder::sample('password')->value,
         ));
     }
 
@@ -60,11 +60,11 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itFailsWhenLoginAlreadyTaken(): void
     {
         // Given
-        $login = PasswordCredentialTestFactory::sample('login')->value;
+        $login = PasswordCredentialBuilder::sample('login')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
             $login,
-            PasswordCredentialTestFactory::sample('id')->toString(),
+            PasswordCredentialBuilder::sample('id')->toString(),
         );
 
         // Then
@@ -72,9 +72,9 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
 
         // When
         $this->dispatch(new DefinePasswordCredential(
-            PasswordCredentialTestFactory::sample('identityId'),
+            PasswordCredentialBuilder::sample('identityId'),
             $login,
-            PasswordCredentialTestFactory::sample('password')->value,
+            PasswordCredentialBuilder::sample('password')->value,
         ));
     }
 
@@ -86,8 +86,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
 
         // When
         $this->dispatch(new DefinePasswordCredential(
-            PasswordCredentialTestFactory::sample('identityId'),
-            PasswordCredentialTestFactory::sample('login')->value,
+            PasswordCredentialBuilder::sample('identityId'),
+            PasswordCredentialBuilder::sample('login')->value,
             'passwordpassword',
         ));
     }

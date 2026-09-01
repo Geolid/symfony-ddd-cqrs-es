@@ -9,8 +9,8 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
@@ -20,12 +20,12 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
-        $withCapturedPayment = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
-        $placed = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $alreadyCancelled = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
+        $withCapturedPayment = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
+        $placed = OrderBuilder::new()->withCustomerId($customerId)->create();
         $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
         $this->store($alreadyCancelled, $withCapturedPayment, $orderPayment, $placed, $other);
 
         // When
@@ -51,7 +51,7 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         // Given
         $customerId = Uuid::uuid7()->toString();
         $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
         $this->store($other);
 
         // When

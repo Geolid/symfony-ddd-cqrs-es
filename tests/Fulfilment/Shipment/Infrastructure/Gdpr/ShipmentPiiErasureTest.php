@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Infrastructure\Gdpr;
 
 use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
@@ -21,7 +21,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->withCustomerId($customerId)
             ->create();
         $this->store($shipment);

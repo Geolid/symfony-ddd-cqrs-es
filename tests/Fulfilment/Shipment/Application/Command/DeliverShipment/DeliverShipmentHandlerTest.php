@@ -9,7 +9,7 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -19,7 +19,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
         // When
@@ -35,7 +35,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->create();
         $this->store($shipment);
 
         // When
@@ -50,7 +50,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
@@ -65,7 +65,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentTestFactory::new()->create()->id->toString();
+        $id = ShipmentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
@@ -78,7 +78,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
         $this->store($shipment);
 
         // Then

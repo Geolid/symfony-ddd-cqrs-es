@@ -6,7 +6,7 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerRegistered;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -17,7 +17,7 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
+        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
 
         // When
         $this->store($customer);

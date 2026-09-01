@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Support\Factory;
+namespace Iam\Tests\Authentication\Support\Builder;
 
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
@@ -10,7 +10,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -27,9 +27,9 @@ use Webmozart\Assert\Assert;
  *     hasher?: ApiKeyHasherInterface,
  * }
  *
- * @extends AbstractAggregateTestFactory<ApiKeyCredential, Attributes>
+ * @extends AbstractAggregateBuilder<ApiKeyCredential, Attributes>
  */
-final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
+final class ApiKeyCredentialBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {
@@ -68,10 +68,10 @@ final class ApiKeyCredentialTestFactory extends AbstractAggregateTestFactory
 
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
     {
-        $factory = null !== $revokedAt ? $this->withAttributes(revokedAt: $revokedAt) : $this;
+        $builder = null !== $revokedAt ? $this->withAttributes(revokedAt: $revokedAt) : $this;
 
-        return $factory->withModifier(static function (ApiKeyCredential $credential, self $factory): void {
-            $credential->revoke($factory['identityId'], $factory['revokedAt']);
+        return $builder->withModifier(static function (ApiKeyCredential $credential, self $builder): void {
+            $credential->revoke($builder['identityId'], $builder['revokedAt']);
         });
     }
 

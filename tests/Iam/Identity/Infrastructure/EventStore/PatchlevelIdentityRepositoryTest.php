@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\EventStore;
 
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -25,15 +25,15 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $factory = IdentityTestFactory::new();
-        $identity = $factory->create();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
 
         // When
         $this->repository->save($identity);
         $loaded = $this->repository->load($identity->id);
 
         // Then
-        self::assertSame($factory['id']->toString(), $loaded->id->toString());
+        self::assertSame($builder['id']->toString(), $loaded->id->toString());
     }
 
     #[Test]
@@ -43,14 +43,14 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load(IdentityTestFactory::sample('id'));
+        $this->repository->load(IdentityBuilder::sample('id'));
     }
 
     #[Test]
     public function itHas(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->repository->save($identity);
 
         // When
@@ -64,7 +64,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(IdentityTestFactory::sample('id'));
+        $notExists = $this->repository->has(IdentityBuilder::sample('id'));
 
         // Then
         self::assertFalse($notExists);

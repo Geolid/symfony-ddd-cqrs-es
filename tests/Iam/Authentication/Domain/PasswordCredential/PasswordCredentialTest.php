@@ -15,7 +15,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -32,11 +32,11 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->identityId = PasswordCredentialTestFactory::sample('identityId');
+        $this->identityId = PasswordCredentialBuilder::sample('identityId');
         $this->id = PasswordCredentialId::forIdentity($this->identityId);
-        $this->login = PasswordCredentialTestFactory::sample('login');
-        $this->password = PasswordCredentialTestFactory::sample('password');
-        $this->definedAt = PasswordCredentialTestFactory::sample('definedAt');
+        $this->login = PasswordCredentialBuilder::sample('login');
+        $this->password = PasswordCredentialBuilder::sample('password');
+        $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
         $this->hasher = new FakePasswordHasher();
     }
 
@@ -77,7 +77,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itChanges(): void
     {
-        $changedAt = PasswordCredentialTestFactory::sample('changedAt');
+        $changedAt = PasswordCredentialBuilder::sample('changedAt');
         $newPassword = 'updated-password';
 
         $this
@@ -104,7 +104,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('updated-password'),
                 new StubPasswordStrength(sufficient: false),
                 $this->hasher,
-                PasswordCredentialTestFactory::sample('changedAt'),
+                PasswordCredentialBuilder::sample('changedAt'),
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -118,7 +118,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $this->password,
                 new StubPasswordStrength(),
                 $this->hasher,
-                PasswordCredentialTestFactory::sample('changedAt'),
+                PasswordCredentialBuilder::sample('changedAt'),
             ))
             ->expectsException(SamePasswordException::class);
     }
@@ -126,7 +126,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRehashes(): void
     {
-        $rehashedAt = PasswordCredentialTestFactory::sample('rehashedAt');
+        $rehashedAt = PasswordCredentialBuilder::sample('rehashedAt');
 
         $this
             ->given($this->defined())

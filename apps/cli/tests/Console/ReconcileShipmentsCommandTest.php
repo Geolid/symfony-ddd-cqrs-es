@@ -10,9 +10,9 @@ use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
@@ -41,27 +41,27 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             'ACME-RETURN-STUCK' => CarrierGatewayStatus::RETURN_DISPATCHED,
             'ACME-RETURN-DISPATCHED-STUCK' => CarrierGatewayStatus::RETURN_RECEIVED,
         ]));
-        $order = OrderTestFactory::new()->create();
-        $stuck9999 = ShipmentTestFactory::new()
+        $order = OrderBuilder::new()->create();
+        $stuck9999 = ShipmentBuilder::new()
             ->withOrderId($order->id->toString())
             ->prepared()
             ->manifested('ACME-STUCK9999', $now->modify('-3 days'))
             ->create();
-        $fresh9999 = ShipmentTestFactory::new()
+        $fresh9999 = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-FRESH9999', $now->modify('-12 hours'))
             ->create();
-        $dispatchedStuck = ShipmentTestFactory::new()
+        $dispatchedStuck = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-DISPATCHED-STUCK', $now->modify('-4 days'))
             ->dispatched($now->modify('-3 days'))
             ->create();
-        $dispatchedFresh = ShipmentTestFactory::new()
+        $dispatchedFresh = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-DISPATCHED-FRESH', $now->modify('-4 days'))
             ->dispatched($now->modify('-12 hours'))
             ->create();
-        $returnStuck = ShipmentTestFactory::new()
+        $returnStuck = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-5 days'))
             ->dispatched($now->modify('-4 days 12 hours'))
@@ -69,7 +69,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             ->returnRequested($now->modify('-4 days'))
             ->returnManifested('ACME-RETURN-STUCK', $now->modify('-3 days'))
             ->create();
-        $returnFresh = ShipmentTestFactory::new()
+        $returnFresh = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-5 days'))
             ->dispatched($now->modify('-4 days 12 hours'))
@@ -77,7 +77,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             ->returnRequested($now->modify('-4 days'))
             ->returnManifested('ACME-RETURN-FRESH', $now->modify('-12 hours'))
             ->create();
-        $returnDispatchedStuck = ShipmentTestFactory::new()
+        $returnDispatchedStuck = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-6 days'))
             ->dispatched($now->modify('-5 days 12 hours'))
@@ -86,7 +86,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             ->returnManifested('ACME-RETURN-DISPATCHED-STUCK', $now->modify('-4 days'))
             ->returnDispatched($now->modify('-3 days'))
             ->create();
-        $returnDispatchedFresh = ShipmentTestFactory::new()
+        $returnDispatchedFresh = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-6 days'))
             ->dispatched($now->modify('-5 days 12 hours'))
@@ -123,11 +123,11 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             ['ACME-UNREACHABLE' => CarrierGatewayStatus::DISPATCHED, 'ACME-STUCK9999' => CarrierGatewayStatus::DISPATCHED],
             failingReference: 'ACME-UNREACHABLE',
         ));
-        $unreachable = ShipmentTestFactory::new()
+        $unreachable = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-UNREACHABLE', $now->modify('-3 days'))
             ->create();
-        $stuck9999 = ShipmentTestFactory::new()
+        $stuck9999 = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-STUCK9999', $now->modify('-3 days'))
             ->create();
@@ -149,7 +149,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: Clock::get()->now()->modify('-3 days'))->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested(manifestedAt: Clock::get()->now()->modify('-3 days'))->create();
         $this->store($shipment);
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('fulfilment:shipment:reconcile');

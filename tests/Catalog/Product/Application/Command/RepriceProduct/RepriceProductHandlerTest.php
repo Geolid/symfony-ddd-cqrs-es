@@ -7,7 +7,7 @@ namespace Catalog\Tests\Product\Application\Command\RepriceProduct;
 use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -17,7 +17,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itReprices(): void
     {
         // Given
-        $product = ProductTestFactory::new()->create();
+        $product = ProductBuilder::new()->create();
         $this->store($product);
 
         // When
@@ -32,8 +32,8 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ProductTestFactory::new()->attribute('id')->toString();
-        $price = ProductTestFactory::new()->attribute('unitAmount')->cents;
+        $id = ProductBuilder::new()->attribute('id')->toString();
+        $price = ProductBuilder::new()->attribute('unitAmount')->cents;
 
         // Then
         $this->expectException(ProductNotFoundException::class);

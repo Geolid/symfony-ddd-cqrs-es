@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\EventStore;
 
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -25,7 +25,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
 
         // When
         $this->repository->save($shipment);
@@ -44,7 +44,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itThrowsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentTestFactory::new()->create()->id;
+        $id = ShipmentBuilder::new()->create()->id;
 
         // Then
         self::assertFalse($this->repository->has($id));

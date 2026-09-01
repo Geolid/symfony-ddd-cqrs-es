@@ -8,7 +8,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -18,11 +18,11 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $suspendedFactory = IdentityTestFactory::new()->suspended();
+        $suspendedBuilder = IdentityBuilder::new()->suspended();
 
-        $active = IdentityTestFactory::new()->create();
-        $suspended = $suspendedFactory->create();
-        $others = IdentityTestFactory::new()->many(3)->create();
+        $active = IdentityBuilder::new()->create();
+        $suspended = $suspendedBuilder->create();
+        $others = IdentityBuilder::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
         $this->store(...$identities);
 
@@ -43,9 +43,9 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 
         self::assertSame($suspended->id->toString(), $suspendedResult->id);
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
-        self::assertSame($suspendedFactory['reason']->value, $suspendedResult->reason);
+        self::assertSame($suspendedBuilder['reason']->value, $suspendedResult->reason);
         self::assertSame(
-            $suspendedFactory['suspendedAt']->format(\DateTimeImmutable::ATOM),
+            $suspendedBuilder['suspendedAt']->format(\DateTimeImmutable::ATOM),
             $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM),
         );
         self::assertNull($suspendedResult->reactivatedAt);

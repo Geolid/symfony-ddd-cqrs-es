@@ -6,7 +6,7 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerErased;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -17,7 +17,7 @@ final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $erasedAt = Clock::get()->now();
-        $customer = CustomerTestFactory::new()->erased($erasedAt)->create();
+        $customer = CustomerBuilder::new()->erased($erasedAt)->create();
 
         // When
         $this->store($customer);

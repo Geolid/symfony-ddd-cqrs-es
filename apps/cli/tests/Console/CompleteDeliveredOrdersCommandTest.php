@@ -8,7 +8,7 @@ use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
@@ -31,10 +31,10 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expired = OrderTestFactory::new()->confirmed()->dispatched()
+        $expired = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-20 days'))
             ->create();
-        $withinWindow = OrderTestFactory::new()->confirmed()->dispatched()
+        $withinWindow = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-2 days'))
             ->create();
         $this->store($expired, $withinWindow);
@@ -54,7 +54,7 @@ final class CompleteDeliveredOrdersCommandTest extends AbstractCliTestCase
     public function itSkipsWhenAlreadyRunning(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($order);
         $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
         $lock = new LockFactory($store)->createLock('sales:order:complete-delivered');

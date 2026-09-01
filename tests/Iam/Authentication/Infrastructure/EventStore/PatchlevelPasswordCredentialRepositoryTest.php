@@ -8,7 +8,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNot
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -31,18 +31,18 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itSavesAndLoads(): void
     {
         // Given
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
 
         // When
         $this->repository->save($credential);
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($factory['id']->toString(), $loaded->id->toString());
-        self::assertSame($factory['login']->value, $loaded->login->value);
+        self::assertSame($builder['id']->toString(), $loaded->id->toString());
+        self::assertSame($builder['login']->value, $loaded->login->value);
     }
 
     #[Test]
@@ -52,14 +52,14 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(PasswordCredentialTestFactory::sample('id'));
+        $this->repository->load(PasswordCredentialBuilder::sample('id'));
     }
 
     #[Test]
     public function itHas(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()
+        $credential = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
@@ -76,7 +76,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(PasswordCredentialTestFactory::sample('id'));
+        $notExists = $this->repository->has(PasswordCredentialBuilder::sample('id'));
 
         // Then
         self::assertFalse($notExists);

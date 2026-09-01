@@ -12,7 +12,7 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -32,7 +32,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsForOrder(): void
     {
         // Given
-        $paymentFactory = OrderPaymentTestFactory::new();
+        $paymentFactory = OrderPaymentBuilder::new();
         $payment = $paymentFactory->create();
         $orderId = $paymentFactory->attribute('orderId');
         $reference = $paymentFactory->attribute('reference')->value;
@@ -56,7 +56,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
-        $paymentFactory = OrderPaymentTestFactory::new();
+        $paymentFactory = OrderPaymentBuilder::new();
         $payment = $paymentFactory->create();
         $orderId = $paymentFactory->attribute('orderId');
         $reference = $paymentFactory->attribute('reference')->value;
@@ -80,7 +80,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenReferenceAlreadyTaken(): void
     {
         // Given
-        $paymentFactory = OrderPaymentTestFactory::new();
+        $paymentFactory = OrderPaymentBuilder::new();
         $orderId = $paymentFactory->attribute('orderId');
         $reference = $paymentFactory->attribute('reference')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(OrderPaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());

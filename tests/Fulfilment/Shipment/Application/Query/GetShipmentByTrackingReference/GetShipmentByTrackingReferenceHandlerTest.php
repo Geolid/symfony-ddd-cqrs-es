@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Query\GetShipmentByTrackingRefer
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference\GetShipmentByTrackingReference;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -17,8 +17,8 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
     public function itGets(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $other = ShipmentBuilder::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($other, $shipment);
 
         // When

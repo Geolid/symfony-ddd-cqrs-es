@@ -42,8 +42,8 @@ final class ForbidRamseyUuidInTestsRule implements Rule
 
         return [
             RuleErrorBuilder::message(\sprintf(
-                'Forbidden: %s used directly in a test. Use the aggregate\'s Test Factory instead, '
-                .'e.g. XTestFactory::new()->attribute(\'id\')->toString().',
+                'Forbidden: %s used directly in a test. Use the aggregate\'s Builder instead, '
+                .'e.g. XBuilder::new()->get(\'id\')->toString().',
                 Uuid::class,
             ))->identifier('app.tests.noRamseyUuid')->build(),
         ];
@@ -63,6 +63,6 @@ final class ForbidRamseyUuidInTestsRule implements Rule
         $basename = basename($file);
 
         return 1 === preg_match('/^Valid[A-Z]\w*Test\.php$/', $basename)
-            || 1 === preg_match('/TestFactory\.php$/', $basename);
+            || 1 === preg_match('/Builder\.php$/', $basename);
     }
 }

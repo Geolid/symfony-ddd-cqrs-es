@@ -10,7 +10,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoun
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -33,33 +33,33 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itRevokes(): void
     {
         // Given
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $credential = $builder->create();
 
-        $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $factory['identityId']);
-        $this->registry->reserve($labelKey, $factory['label']->value, $credential->id->toString());
+        $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $builder['identityId']);
+        $this->registry->reserve($labelKey, $builder['label']->value, $credential->id->toString());
 
         $this->store($credential);
 
         // When
-        $this->dispatch(new RevokeApiKey($credential->id->toString(), $factory['identityId']));
+        $this->dispatch(new RevokeApiKey($credential->id->toString(), $builder['identityId']));
 
         // Then
-        $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($factory['keyId']->value);
+        $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($builder['keyId']->value);
         self::assertTrue($result->revoked);
-        self::assertFalse($this->registry->exists($labelKey, $factory['label']->value));
+        self::assertFalse($this->registry->exists($labelKey, $builder['label']->value));
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyRevoked(): void
     {
         // Given
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->revoked();
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->revoked();
+        $credential = $builder->create();
         $this->store($credential);
 
         // When
-        $this->dispatch(new RevokeApiKey($credential->id->toString(), $factory['identityId']));
+        $this->dispatch(new RevokeApiKey($credential->id->toString(), $builder['identityId']));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -73,8 +73,8 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RevokeApiKey(
-            ApiKeyCredentialTestFactory::sample('id')->toString(),
-            ApiKeyCredentialTestFactory::sample('identityId'),
+            ApiKeyCredentialBuilder::sample('id')->toString(),
+            ApiKeyCredentialBuilder::sample('identityId'),
         ));
     }
 
@@ -82,7 +82,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOwnedByAnotherIdentity(): void
     {
         // Given
-        $credential = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $credential = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
         $this->store($credential);
 
         // Then
@@ -91,7 +91,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RevokeApiKey(
             $credential->id->toString(),
-            ApiKeyCredentialTestFactory::sample('identityId'),
+            ApiKeyCredentialBuilder::sample('identityId'),
         ));
     }
 }

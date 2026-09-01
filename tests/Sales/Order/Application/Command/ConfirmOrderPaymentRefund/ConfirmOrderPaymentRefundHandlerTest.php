@@ -9,8 +9,8 @@ use Sales\Order\Application\Command\ConfirmOrderPaymentRefund\ConfirmOrderPaymen
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTestCase
@@ -19,8 +19,8 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     public function itConfirmsRefundWhenInitiated(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $paymentFactory = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated();
         $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
@@ -36,8 +36,8 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     public function itIgnoresWhenNotRefunding(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $order = OrderBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($order, $orderPayment);
 
         // When
@@ -51,7 +51,7 @@ final class ConfirmOrderPaymentRefundHandlerTest extends AbstractIntegrationTest
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderPaymentTestFactory::new()->create()->id->toString();
+        $id = OrderPaymentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(OrderPaymentNotFoundException::class);

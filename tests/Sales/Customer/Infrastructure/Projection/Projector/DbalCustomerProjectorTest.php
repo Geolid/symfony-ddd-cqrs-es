@@ -7,7 +7,7 @@ namespace Sales\Tests\Customer\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Infrastructure\Projection\Projector\DbalCustomerProjector;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -21,7 +21,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
+        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
 
         // When
         $this->store($customer);
@@ -37,8 +37,8 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->withEmail('other@example.com')->create();
-        $customer = CustomerTestFactory::new()->erased()->create();
+        $other = CustomerBuilder::new()->withEmail('other@example.com')->create();
+        $customer = CustomerBuilder::new()->erased()->create();
         $this->store($other, $customer);
 
         // Then

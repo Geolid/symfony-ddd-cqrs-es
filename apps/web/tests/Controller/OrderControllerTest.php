@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Web\Tests\Controller;
 
 use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
@@ -17,9 +17,9 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
@@ -41,7 +41,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-locale@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create();
         $this->store($order);
 
         // When
@@ -75,7 +75,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-locale-show@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->withTotalAmountInCents(1_750)->create();
         $this->store($order);
 
         // When
@@ -96,7 +96,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $owner = $this->createCustomer('owner@example.com');
-        $order = OrderTestFactory::new()->withCustomerId($owner->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($owner->id->toString())->create();
         $this->store($order);
         $this->loginAs($client, $this->createCustomer('intruder@example.com'));
 
@@ -139,7 +139,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->createCustomer('buyer-1@example.com'));
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($product);
 
         // When
@@ -167,9 +167,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-9@example.com')->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-9@example.com')->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($identity, $customer, $product);
         $this->loginAs($client, $identity);
 
@@ -195,7 +195,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-11@example.com');
         $this->loginAs($client, $identity);
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($product);
         $crawler = $client->request('GET', $this->path('sales_order_place'));
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();
@@ -236,7 +236,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         )));
         $identity = $this->createCustomer('buyer-3@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
 
@@ -258,8 +258,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-8@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
-        $orderPayment = OrderPaymentTestFactory::new()
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
+        $orderPayment = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withReference('GLBX-EXISTING-REF')
             ->withCheckoutUrl('https://checkout.globex.test/pay/already-requested')
@@ -282,7 +282,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-10@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
         $lock = $this->service(LockFactory::class)->createLock(\sprintf('sales.order.payment_request.%s', $id));
@@ -305,9 +305,9 @@ final class OrderControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-7@example.com')->create();
-        $order = OrderTestFactory::new()->withCustomerId($customer->id->toString())->cancelled()->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-7@example.com')->create();
+        $order = OrderBuilder::new()->withCustomerId($customer->id->toString())->cancelled()->create();
         $this->store($identity, $customer, $order);
         $this->loginAs($client, $identity);
 
@@ -327,7 +327,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-4@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
 
@@ -352,7 +352,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-5@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
         $commandBus = $this->service(CommandBusInterface::class);
@@ -380,7 +380,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-6@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
 
@@ -397,7 +397,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $owner = $this->createCustomer('owner-cancel@example.com');
-        $order = OrderTestFactory::new()->withCustomerId($owner->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($owner->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
         $this->loginAs($client, $this->createCustomer('intruder-cancel@example.com'));
@@ -418,7 +418,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-11@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
         $commandBus = $this->service(CommandBusInterface::class);
@@ -447,7 +447,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-12@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
 
@@ -472,7 +472,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-13@example.com');
         $this->loginAs($client, $identity);
-        $order = OrderTestFactory::new()->withCustomerId($identity->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($identity->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
 
@@ -489,7 +489,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $owner = $this->createCustomer('owner-request-return@example.com');
-        $order = OrderTestFactory::new()->withCustomerId($owner->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($owner->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
         $this->loginAs($client, $this->createCustomer('intruder-request-return@example.com'));
@@ -505,8 +505,8 @@ final class OrderControllerTest extends AbstractWebTestCase
 
     private function createCustomer(string $email): Identity
     {
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()
             ->withId($identity->id->toString())
             ->withEmail($email)
             ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))

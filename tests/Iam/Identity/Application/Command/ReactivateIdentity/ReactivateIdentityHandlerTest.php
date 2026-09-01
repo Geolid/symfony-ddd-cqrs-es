@@ -9,7 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -20,10 +20,10 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itReactivates(): void
     {
         // Given
-        $reason = IdentityTestFactory::sample('reason')->value;
+        $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->suspended()->create();
         $this->store($identity);
 
         // When
@@ -43,13 +43,13 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
 
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityTestFactory::sample('reason')->value,
+            IdentityBuilder::sample('reason')->value,
         ));
 
         // Then
@@ -64,8 +64,8 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ReactivateIdentity(
-            IdentityTestFactory::sample('id')->toString(),
-            IdentityTestFactory::sample('reason')->value,
+            IdentityBuilder::sample('id')->toString(),
+            IdentityBuilder::sample('reason')->value,
         ));
     }
 
@@ -73,7 +73,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erased()->create();
         $this->store($identity);
 
         // Then
@@ -82,7 +82,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityTestFactory::sample('reason')->value,
+            IdentityBuilder::sample('reason')->value,
         ));
     }
 }

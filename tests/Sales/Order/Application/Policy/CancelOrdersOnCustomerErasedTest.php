@@ -10,7 +10,7 @@ use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedInt
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\CancelOrdersOnCustomerErased;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
@@ -30,9 +30,9 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
     public function itCancelsPlaced(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When

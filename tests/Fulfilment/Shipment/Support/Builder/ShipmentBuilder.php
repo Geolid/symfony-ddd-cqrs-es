@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Support\Factory;
+namespace Fulfilment\Tests\Shipment\Support\Builder;
 
 use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -12,7 +12,7 @@ use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\ClockSequence;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -38,9 +38,9 @@ use Symfony\Component\Clock\Clock;
  *     returnRejectedAt?: \DateTimeImmutable,
  * }
  *
- * @extends AbstractAggregateTestFactory<Shipment, Attributes>
+ * @extends AbstractAggregateBuilder<Shipment, Attributes>
  */
-final class ShipmentTestFactory extends AbstractAggregateTestFactory
+final class ShipmentBuilder extends AbstractAggregateBuilder
 {
     public function withOrderId(string $orderId): self
     {

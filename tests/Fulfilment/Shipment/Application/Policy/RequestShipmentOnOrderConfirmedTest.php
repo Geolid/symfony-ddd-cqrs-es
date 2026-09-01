@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Order\Domain\Order;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
@@ -75,7 +75,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
 
     private function placedOrder(): Order
     {
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withCustomerId(Uuid::uuid7()->toString())
             ->withTotalAmountInCents(4_200)
             ->create();

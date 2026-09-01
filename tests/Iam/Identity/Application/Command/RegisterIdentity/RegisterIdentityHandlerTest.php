@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\RegisterIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -18,7 +18,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = IdentityTestFactory::sample('id')->toString();
+        $id = IdentityBuilder::sample('id')->toString();
         $now = Clock::get()->now();
 
         // When

@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Query\GetShipmentByReturnTrackin
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Query\GetShipmentByReturnTrackingReference\GetShipmentByReturnTrackingReference;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -17,7 +17,7 @@ final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractInte
     public function itGets(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()
+        $other = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-OTHER')
             ->dispatched()
@@ -25,7 +25,7 @@ final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractInte
             ->returnRequested()
             ->returnManifested('ACME-RETURN-OTHER')
             ->create();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-4Q7X2K9')
             ->dispatched()

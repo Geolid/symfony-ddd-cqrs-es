@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\IntegrationEvent\ProductListed;
 
 use Catalog\Product\Application\IntegrationEvent\ProductListed\ProductListedIntegrationEvent;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,7 +17,7 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $listedAt = Clock::get()->now();
-        $product = ProductTestFactory::new()->withListedAt($listedAt)->create();
+        $product = ProductBuilder::new()->withListedAt($listedAt)->create();
 
         // When
         $this->store($product);

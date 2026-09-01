@@ -10,7 +10,7 @@ use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\Reconciliation\RequestedOrderPaymentReconciler;
 use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Support\AbstractIntegrationTestCase;
 
@@ -29,7 +29,7 @@ final class RequestedOrderPaymentReconcilerTest extends AbstractIntegrationTestC
     public function itReconcilesWhenAuthorized(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-AUTH0001')->create();
+        $orderPayment = OrderPaymentBuilder::new()->withReference('GLBX-AUTH0001')->create();
         $this->store($orderPayment);
         $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-AUTH0001' => PaymentGatewayStatus::AUTHORIZED]), $this->service(CommandBusInterface::class));
 
@@ -45,7 +45,7 @@ final class RequestedOrderPaymentReconcilerTest extends AbstractIntegrationTestC
     public function itReconcilesWhenFailed(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-FAIL0001')->create();
+        $orderPayment = OrderPaymentBuilder::new()->withReference('GLBX-FAIL0001')->create();
         $this->store($orderPayment);
         $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-FAIL0001' => PaymentGatewayStatus::DECLINED]), $this->service(CommandBusInterface::class));
 
@@ -61,7 +61,7 @@ final class RequestedOrderPaymentReconcilerTest extends AbstractIntegrationTestC
     public function itIgnoresWhenStillPending(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-PEND0001')->create();
+        $orderPayment = OrderPaymentBuilder::new()->withReference('GLBX-PEND0001')->create();
         $this->store($orderPayment);
         $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0001' => PaymentGatewayStatus::REQUESTED]), $this->service(CommandBusInterface::class));
 

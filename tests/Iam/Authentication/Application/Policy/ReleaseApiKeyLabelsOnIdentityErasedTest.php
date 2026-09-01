@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\Policy;
 use Iam\Authentication\Application\Policy\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -31,11 +31,11 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
     public function itReleases(): void
     {
         // Given
-        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
-        $otherIdentityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $otherIdentityId = ApiKeyCredentialBuilder::sample('identityId');
 
-        $label = ApiKeyCredentialTestFactory::sample('label')->value;
-        $otherLabel = ApiKeyCredentialTestFactory::sample('label')->value;
+        $label = ApiKeyCredentialBuilder::sample('label')->value;
+        $otherLabel = ApiKeyCredentialBuilder::sample('label')->value;
 
         $this->reserveLabel($identityId, $label);
         $this->reserveLabel($identityId, $otherLabel);
@@ -55,6 +55,6 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
 
     private function reserveLabel(string $identityId, string $label): void
     {
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, ApiKeyCredentialTestFactory::sample('id')->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, ApiKeyCredentialBuilder::sample('id')->toString());
     }
 }

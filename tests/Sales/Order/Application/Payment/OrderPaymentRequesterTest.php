@@ -15,8 +15,8 @@ use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\AbstractIntegrationTestCase;
@@ -44,7 +44,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itRequestsWhenPlaced(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->create();
+        $order = OrderBuilder::new()->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // When
@@ -85,8 +85,8 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itReturnsExistingWhenAlreadyRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://checkout.globex.test/pay/existing')->create();
+        $order = OrderBuilder::new()->create();
+        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://checkout.globex.test/pay/existing')->create();
         $this->store($order, $payment);
 
         // When
@@ -111,7 +111,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled()->create();
+        $order = OrderBuilder::new()->cancelled()->create();
         $this->store($order);
 
         // Then

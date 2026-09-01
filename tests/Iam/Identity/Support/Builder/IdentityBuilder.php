@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Support\Factory;
+namespace Iam\Tests\Identity\Support\Builder;
 
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -21,9 +21,9 @@ use Symfony\Component\Clock\Clock;
  *     erasedAt: \DateTimeImmutable,
  * }
  *
- * @extends AbstractAggregateTestFactory<Identity, Attributes>
+ * @extends AbstractAggregateBuilder<Identity, Attributes>
  */
-final class IdentityTestFactory extends AbstractAggregateTestFactory
+final class IdentityBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {
@@ -37,34 +37,34 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
 
     public function suspended(?string $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
     {
-        $factory = $this->withAttributes(...array_filter([
+        $builder = $this->withAttributes(...array_filter([
             'reason' => null !== $reason ? Reason::fromString($reason) : null,
             'suspendedAt' => $suspendedAt,
         ]));
 
-        return $factory->withModifier(
-            static fn (Identity $identity, self $factory) => $identity->suspend($factory['reason'], $factory['suspendedAt']),
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->suspend($builder['reason'], $builder['suspendedAt']),
         );
     }
 
     public function reactivated(?string $reason = null, ?\DateTimeImmutable $reactivatedAt = null): self
     {
-        $factory = $this->withAttributes(...array_filter([
+        $builder = $this->withAttributes(...array_filter([
             'reason' => null !== $reason ? Reason::fromString($reason) : null,
             'reactivatedAt' => $reactivatedAt,
         ]));
 
-        return $factory->withModifier(
-            static fn (Identity $identity, self $factory) => $identity->reactivate($factory['reason'], $factory['reactivatedAt']),
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->reactivate($builder['reason'], $builder['reactivatedAt']),
         );
     }
 
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
-        $factory = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
+        $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
 
-        return $factory->withModifier(
-            static fn (Identity $identity, self $factory) => $identity->erase($factory['erasedAt']),
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->erase($builder['erasedAt']),
         );
     }
 

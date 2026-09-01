@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
@@ -17,7 +17,7 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
     public function itGetsByReference(): void
     {
         // Given
-        $paymentFactory = OrderPaymentTestFactory::new();
+        $paymentFactory = OrderPaymentBuilder::new();
         $orderPayment = $paymentFactory->create();
         $orderId = $paymentFactory->attribute('orderId');
         $reference = $paymentFactory->attribute('reference')->value;

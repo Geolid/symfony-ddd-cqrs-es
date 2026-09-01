@@ -8,7 +8,7 @@ use Iam\Authentication\Application\ApiKey\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -29,8 +29,8 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
-        $label = ApiKeyCredentialTestFactory::sample('label')->value;
+        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $label = ApiKeyCredentialBuilder::sample('label')->value;
 
         // When
         $apiKey = $this->issuer->issueFor($identityId, $label);
@@ -48,13 +48,13 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $identityId = ApiKeyCredentialBuilder::sample('identityId');
 
-        $label = ApiKeyCredentialTestFactory::sample('label')->value;
+        $label = ApiKeyCredentialBuilder::sample('label')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
-            ApiKeyCredentialTestFactory::sample('id')->toString(),
+            ApiKeyCredentialBuilder::sample('id')->toString(),
         );
 
         // Then

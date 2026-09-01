@@ -6,7 +6,7 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerShippingAddr
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -18,7 +18,7 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
     public function itPublishes(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
+        $customer = CustomerBuilder::new()
             ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
 

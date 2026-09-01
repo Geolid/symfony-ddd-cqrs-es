@@ -6,7 +6,7 @@ namespace Webhook\Tests\Webhook;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $shipmentFactory = ShipmentTestFactory::new()->prepared()->manifested()->dispatched();
+        $shipmentFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
         $shipment = $shipmentFactory->create();
         $trackingReference = $shipmentFactory->attribute('trackingReference');
         $this->store($shipment);
@@ -146,6 +146,6 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
 
     private static function anyTrackingReference(): string
     {
-        return ShipmentTestFactory::new()->manifested()->attribute('trackingReference');
+        return ShipmentBuilder::new()->manifested()->attribute('trackingReference');
     }
 }

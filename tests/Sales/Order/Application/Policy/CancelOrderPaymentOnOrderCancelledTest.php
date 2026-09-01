@@ -10,7 +10,7 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Policy\CancelOrderPaymentOnOrderCancelled;
 use Sales\Order\Domain\Event\OrderCancelled;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
@@ -29,7 +29,7 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
+        $payment = OrderPaymentBuilder::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
         $this->store($payment);
 
         // When

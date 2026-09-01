@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Application\Query\ListOrdersPastRetentionPeriod;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrdersPastRetentionPeriod\ListOrdersPastRetentionPeriod;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -17,9 +17,9 @@ final class ListOrdersPastRetentionPeriodHandlerTest extends AbstractIntegration
     {
         // Given
         $now = Clock::get()->now();
-        $expired = OrderTestFactory::new()->cancelled($now->modify('-11 years'))->create();
-        $withinRetention = OrderTestFactory::new()->cancelled($now->modify('-1 year'))->create();
-        $notClosed = OrderTestFactory::new()->create();
+        $expired = OrderBuilder::new()->cancelled($now->modify('-11 years'))->create();
+        $withinRetention = OrderBuilder::new()->cancelled($now->modify('-1 year'))->create();
+        $notClosed = OrderBuilder::new()->create();
         $this->store($withinRetention, $notClosed, $expired);
 
         // When

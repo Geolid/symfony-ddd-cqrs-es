@@ -9,7 +9,7 @@ use Fulfilment\Shipment\Application\Carrier\Reconciliation\ReturnManifestedShipm
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
 use Support\AbstractIntegrationTestCase;
@@ -30,7 +30,7 @@ final class ReturnManifestedShipmentReconcilerTest extends AbstractIntegrationTe
     {
         // Given
         $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()
             ->manifested()
             ->dispatched()
@@ -54,7 +54,7 @@ final class ReturnManifestedShipmentReconcilerTest extends AbstractIntegrationTe
     {
         // Given
         $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->prepared()
             ->manifested()
             ->dispatched()

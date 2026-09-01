@@ -11,7 +11,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Label;
@@ -30,12 +30,12 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ApiKeyCredentialTestFactory::sample('id');
-        $this->identityId = ApiKeyCredentialTestFactory::sample('identityId');
-        $this->keyId = ApiKeyCredentialTestFactory::sample('keyId');
-        $this->label = ApiKeyCredentialTestFactory::sample('label');
-        $this->secret = ApiKeyCredentialTestFactory::sample('secret');
-        $this->issuedAt = ApiKeyCredentialTestFactory::sample('issuedAt');
+        $this->id = ApiKeyCredentialBuilder::sample('id');
+        $this->identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $this->keyId = ApiKeyCredentialBuilder::sample('keyId');
+        $this->label = ApiKeyCredentialBuilder::sample('label');
+        $this->secret = ApiKeyCredentialBuilder::sample('secret');
+        $this->issuedAt = ApiKeyCredentialBuilder::sample('issuedAt');
         $this->hasher = new FakeApiKeyHasher();
     }
 
@@ -59,7 +59,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRevokes(): void
     {
-        $revokedAt = ApiKeyCredentialTestFactory::sample('revokedAt');
+        $revokedAt = ApiKeyCredentialBuilder::sample('revokedAt');
 
         $this
             ->given($this->issued())
@@ -70,7 +70,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotRevokeWhenAlreadyRevoked(): void
     {
-        $revokedAt = ApiKeyCredentialTestFactory::sample('revokedAt');
+        $revokedAt = ApiKeyCredentialBuilder::sample('revokedAt');
 
         $this
             ->given(
@@ -84,11 +84,11 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
     {
-        $anotherIdentityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $anotherIdentityId = ApiKeyCredentialBuilder::sample('identityId');
 
         $this
             ->given($this->issued())
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($anotherIdentityId, ApiKeyCredentialTestFactory::sample('revokedAt')))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($anotherIdentityId, ApiKeyCredentialBuilder::sample('revokedAt')))
             ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
     }
 

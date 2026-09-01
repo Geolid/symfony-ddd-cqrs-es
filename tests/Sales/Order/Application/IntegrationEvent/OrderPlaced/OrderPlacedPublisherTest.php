@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\AbstractIntegrationTestCase;
@@ -24,7 +24,7 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $productId = Uuid::uuid7()->toString();
         $now = Clock::get()->now();
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withCustomerId($customerId)
             ->withLines([OrderLine::of(Product::of($productId, Label::fromString('Assorted goods'), Money::fromCents(2_500)), 1)])
             ->withPlacedAt($now)

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\IntegrationEvent\ProductDelisted;
 
 use Catalog\Product\Application\IntegrationEvent\ProductDelisted\ProductDelistedIntegrationEvent;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,7 +17,7 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $delistedAt = Clock::get()->now();
-        $product = ProductTestFactory::new()->delisted($delistedAt)->create();
+        $product = ProductBuilder::new()->delisted($delistedAt)->create();
 
         // When
         $this->store($product);

@@ -9,7 +9,7 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
@@ -70,7 +70,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $id = ShipmentId::forOrder($orderId)->toString();
-        $shipment = ShipmentTestFactory::new()
+        $shipment = ShipmentBuilder::new()
             ->withOrderId($orderId)
             ->withCustomerId($customerId)
             ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))

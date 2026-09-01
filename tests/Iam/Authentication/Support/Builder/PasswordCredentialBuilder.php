@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Support\Factory;
+namespace Iam\Tests\Authentication\Support\Builder;
 
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
@@ -11,7 +11,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
-use Support\Factory\AbstractAggregateTestFactory;
+use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -29,9 +29,9 @@ use Webmozart\Assert\Assert;
  *     hasher?: PasswordHasherInterface,
  * }
  *
- * @extends AbstractAggregateTestFactory<PasswordCredential, Attributes>
+ * @extends AbstractAggregateBuilder<PasswordCredential, Attributes>
  */
-final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
+final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 {
     public function withIdentityId(string $identityId): self
     {
@@ -69,18 +69,18 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         ?PasswordHasherInterface $hasher = null,
         ?\DateTimeImmutable $changedAt = null,
     ): self {
-        $factory = $this->withAttributes(...array_filter([
+        $builder = $this->withAttributes(...array_filter([
             'passwordStrength' => $passwordStrength,
             'hasher' => $hasher,
             'changedAt' => $changedAt,
         ]));
 
-        return $factory->withModifier(
-            static fn (PasswordCredential $credential, self $factory) => $credential->change(
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->change(
                 Password::fromString($newPassword),
-                $factory->passwordStrength(),
-                $factory->hasher(),
-                $factory['changedAt'],
+                $builder->passwordStrength(),
+                $builder->hasher(),
+                $builder['changedAt'],
             ),
         );
     }
@@ -90,16 +90,16 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
         ?PasswordHasherInterface $hasher = null,
         ?\DateTimeImmutable $rehashedAt = null,
     ): self {
-        $factory = $this->withAttributes(...array_filter([
+        $builder = $this->withAttributes(...array_filter([
             'hasher' => $hasher,
             'rehashedAt' => $rehashedAt,
         ]));
 
-        return $factory->withModifier(
-            static fn (PasswordCredential $credential, self $factory) => $credential->rehash(
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->rehash(
                 $plainPassword,
-                $factory->hasher(),
-                $factory['rehashedAt'],
+                $builder->hasher(),
+                $builder['rehashedAt'],
             ),
         );
     }
@@ -107,8 +107,8 @@ final class PasswordCredentialTestFactory extends AbstractAggregateTestFactory
     protected static function defaults(): array
     {
         return [
-            'id' => static fn (?self $factory): PasswordCredentialId => PasswordCredentialId::forIdentity(
-                null !== $factory ? $factory['identityId'] : self::sample('identityId'),
+            'id' => static fn (?self $builder): PasswordCredentialId => PasswordCredentialId::forIdentity(
+                null !== $builder ? $builder['identityId'] : self::sample('identityId'),
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'login' => static fn (): Login => Login::fromString(SeededFaker::get()->userName()),

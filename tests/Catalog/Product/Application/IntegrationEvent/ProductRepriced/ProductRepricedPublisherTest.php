@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\IntegrationEvent\ProductRepriced;
 
 use Catalog\Product\Application\IntegrationEvent\ProductRepriced\ProductRepricedIntegrationEvent;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,7 +17,7 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $repricedAt = Clock::get()->now();
-        $product = ProductTestFactory::new()->repriced(2_000, $repricedAt)->create();
+        $product = ProductBuilder::new()->repriced(2_000, $repricedAt)->create();
 
         // When
         $this->store($product);

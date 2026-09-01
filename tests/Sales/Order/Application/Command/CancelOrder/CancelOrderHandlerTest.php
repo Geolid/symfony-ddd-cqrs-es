@@ -12,8 +12,8 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
@@ -32,7 +32,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($order);
 
         // When
@@ -49,7 +49,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
         $this->store($order);
 
         // When
@@ -64,8 +64,8 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
         $this->store($order, $payment);
 
         // When
@@ -80,7 +80,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderTestFactory::new()->attribute('id')->toString();
+        $id = OrderBuilder::new()->attribute('id')->toString();
         $customerId = Uuid::uuid7()->toString();
 
         // Then
@@ -94,7 +94,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // Then
@@ -109,7 +109,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
         $this->store($order);
 
         // Then

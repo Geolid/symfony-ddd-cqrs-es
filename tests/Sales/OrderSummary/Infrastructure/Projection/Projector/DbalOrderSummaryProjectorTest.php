@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryProjector;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 /**
@@ -24,7 +24,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
 
         // When
         $this->store($order);
@@ -44,12 +44,12 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentRequested(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
-        $order = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
         // When
-        $payment = OrderPaymentTestFactory::new()
+        $payment = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
@@ -76,12 +76,12 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
-        $order = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
+        $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
         // When
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($payment);
 
         // Then
@@ -104,12 +104,12 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentManifested(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
-        $order = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($shipment);
 
         // Then
@@ -126,12 +126,12 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentDispatched(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
-        $order = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
         // Then
@@ -149,12 +149,12 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentDelivered(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
-        $order = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // Then
@@ -172,11 +172,11 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCancelled(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->create();
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($other, $order, $payment, $shipment);
 
         // When

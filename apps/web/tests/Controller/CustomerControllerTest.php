@@ -9,13 +9,13 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -155,8 +155,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -180,8 +180,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -198,8 +198,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -226,8 +226,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 

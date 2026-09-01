@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Factory;
+namespace Support\Builder;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 
@@ -10,15 +10,15 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
  * @template T of AggregateRoot
  * @template TAttributes of array<string, mixed> = array<string, mixed>
  */
-final readonly class AggregateListTestFactory
+final readonly class AggregateListBuilder
 {
     /**
-     * @param AbstractAggregateTestFactory<T, TAttributes> $factory
+     * @param AbstractAggregateBuilder<T, TAttributes> $factory
      * @param int<1, max>                                  $count
      */
     public function __construct(
-        private AbstractAggregateTestFactory $factory,
-        private int $count,
+        private AbstractAggregateBuilder $factory,
+        private int                      $count,
     ) {
     }
 

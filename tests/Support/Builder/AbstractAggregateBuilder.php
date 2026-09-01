@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Factory;
+namespace Support\Builder;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Support\ClockSequence;
@@ -16,7 +16,7 @@ use Webmozart\Assert\Assert;
  *
  * @implements \ArrayAccess<string, mixed>
  */
-abstract class AbstractAggregateTestFactory implements \ArrayAccess
+abstract class AbstractAggregateBuilder implements \ArrayAccess
 {
     /** @var list<callable(T, static): void> */
     private array $modifiers = [];
@@ -41,13 +41,13 @@ abstract class AbstractAggregateTestFactory implements \ArrayAccess
     }
 
     /**
-     * @return AggregateListTestFactory<T, TAttributes>
+     * @return AggregateListBuilder<T, TAttributes>
      */
-    public function many(int $count): AggregateListTestFactory
+    public function many(int $count): AggregateListBuilder
     {
         Assert::positiveInteger($count);
 
-        return new AggregateListTestFactory($this, $count);
+        return new AggregateListBuilder($this, $count);
     }
 
     /**
@@ -75,31 +75,6 @@ abstract class AbstractAggregateTestFactory implements \ArrayAccess
         }
 
         return $aggregate;
-    }
-
-    /**
-     * Caches a generated value on first read, so every later read (and every modifier) sees
-     * the exact same one. The generator receives this same instance, so a key derived from
-     * another reads that other key off it — through the exact same cache — instead of
-     * drawing its own independent value.
-     *
-     * @template TName of key-of<TAttributes>
-     *
-     * @param TName $name
-     *
-     * @return TAttributes[TName]
-     */
-    public function get(string $name): mixed
-    {
-        if (\array_key_exists($name, $this->attributes)) {
-            return $this->attributes[$name];
-        }
-
-        if (\array_key_exists($name, $this->generatedAttributes)) {
-            return $this->generatedAttributes[$name];
-        }
-
-        return $this->generatedAttributes[$name] = (static::defaults()[$name])($this);
     }
 
     /**
@@ -144,13 +119,18 @@ abstract class AbstractAggregateTestFactory implements \ArrayAccess
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new \LogicException('Factory attributes are read-only. Use "withAttributes()" to override values.');
+        throw new \LogicException('Builder attributes are read-only. Use "withAttributes()" to override values.');
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        throw new \LogicException('Factory attributes are read-only.');
+        throw new \LogicException('Builder attributes are read-only.');
     }
+
+    /**
+     * @return T
+     */
+    abstract protected function build(): AggregateRoot;
 
     /**
      * A date generator reads only Clock::get()->now() — create() freezes it once for the whole
@@ -162,11 +142,6 @@ abstract class AbstractAggregateTestFactory implements \ArrayAccess
      * @return array<key-of<TAttributes>, callable(?static): mixed>
      */
     abstract protected static function defaults(): array;
-
-    /**
-     * @return T
-     */
-    abstract protected function build(): AggregateRoot;
 
     protected function withAttributes(mixed ...$attributes): static
     {
@@ -180,5 +155,30 @@ abstract class AbstractAggregateTestFactory implements \ArrayAccess
     protected function withModifier(callable $modifier): static
     {
         return clone ($this, ['modifiers' => [...$this->modifiers, $modifier]]);
+    }
+
+    /**
+     * Caches a generated value on first read, so every later read (and every modifier) sees
+     * the exact same one. The generator receives this same instance, so a key derived from
+     * another reads that other key off it — through the exact same cache — instead of
+     * drawing its own independent value.
+     *
+     * @template TName of key-of<TAttributes>
+     *
+     * @param TName $name
+     *
+     * @return TAttributes[TName]
+     */
+    private function get(string $name): mixed
+    {
+        if (\array_key_exists($name, $this->attributes)) {
+            return $this->attributes[$name];
+        }
+
+        if (\array_key_exists($name, $this->generatedAttributes)) {
+            return $this->generatedAttributes[$name];
+        }
+
+        return $this->generatedAttributes[$name] = (static::defaults()[$name])($this);
     }
 }

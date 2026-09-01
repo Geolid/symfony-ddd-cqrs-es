@@ -9,7 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -28,8 +28,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $identity = IdentityTestFactory::new()->create();
+        $other = IdentityBuilder::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($other, $identity);
 
         // When
@@ -50,14 +50,14 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(IdentityTestFactory::sample('id')->toString());
+        $this->finder->ofId(IdentityBuilder::sample('id')->toString());
     }
 
     #[Test]
     public function itLists(): void
     {
         // Given
-        $identities = IdentityTestFactory::new()->many(5)->create();
+        $identities = IdentityBuilder::new()->many(5)->create();
         $this->store(...$identities);
 
         // When
@@ -81,7 +81,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $identities = IdentityTestFactory::new()->many(5)->create();
+        $identities = IdentityBuilder::new()->many(5)->create();
         $this->store(...$identities);
 
         // When

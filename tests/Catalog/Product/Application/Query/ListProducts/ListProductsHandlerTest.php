@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -15,8 +15,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->withLabel('Saucer')->delisted()->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
         $this->store($other, $product);
 
         // When
@@ -37,7 +37,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $products = ProductTestFactory::new()->many(5)->create();
+        $products = ProductBuilder::new()->many(5)->create();
         $this->store(...$products);
 
         // When

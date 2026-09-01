@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Policy;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Policy\CancelShipmentOnOrderCancelled;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
@@ -29,7 +29,7 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->create();
         $this->store($shipment);
 
         // When

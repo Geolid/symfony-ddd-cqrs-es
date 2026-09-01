@@ -6,7 +6,7 @@ namespace Webhook\Tests\Webhook;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,7 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $shipmentFactory = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
+        $shipmentFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()
             ->returnRequested()->returnManifested();
         $shipment = $shipmentFactory->create();
         $this->store($shipment);
@@ -146,6 +146,6 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
 
     private static function anyReturnTrackingReference(): string
     {
-        return ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference');
+        return ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference');
     }
 }

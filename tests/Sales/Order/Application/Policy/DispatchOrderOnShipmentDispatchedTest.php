@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\DispatchOrderOnShipmentDispatched;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
     public function itDispatches(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
         $this->store($order);
 
         // When

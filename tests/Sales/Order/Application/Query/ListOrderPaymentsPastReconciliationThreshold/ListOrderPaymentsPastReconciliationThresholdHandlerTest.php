@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Application\Query\ListOrderPaymentsPastReconciliatio
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThreshold;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -17,13 +17,13 @@ final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends Abst
     {
         // Given
         $now = Clock::get()->now();
-        $stuck = OrderPaymentTestFactory::new()
+        $stuck = OrderPaymentBuilder::new()
             ->withRequestedAt($now->modify('-90 minutes'))
             ->create();
-        $fresh = OrderPaymentTestFactory::new()
+        $fresh = OrderPaymentBuilder::new()
             ->withRequestedAt($now->modify('-5 minutes'))
             ->create();
-        $authorized = OrderPaymentTestFactory::new()
+        $authorized = OrderPaymentBuilder::new()
             ->withRequestedAt($now->modify('-90 minutes'))
             ->authorized()
             ->create();

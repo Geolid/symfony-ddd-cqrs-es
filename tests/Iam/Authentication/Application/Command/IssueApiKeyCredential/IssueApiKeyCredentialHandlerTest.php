@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCred
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -20,11 +20,11 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
-        $id = ApiKeyCredentialTestFactory::sample('id')->toString();
-        $label = ApiKeyCredentialTestFactory::sample('label')->value;
-        $keyId = ApiKeyCredentialTestFactory::sample('keyId')->value;
-        $secret = ApiKeyCredentialTestFactory::sample('secret');
+        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $id = ApiKeyCredentialBuilder::sample('id')->toString();
+        $label = ApiKeyCredentialBuilder::sample('label')->value;
+        $keyId = ApiKeyCredentialBuilder::sample('keyId')->value;
+        $secret = ApiKeyCredentialBuilder::sample('secret');
 
         // When
         $this->dispatch(new IssueApiKeyCredential($id, $identityId, $label, $keyId, $secret));
@@ -44,13 +44,13 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $identityId = ApiKeyCredentialBuilder::sample('identityId');
 
-        $label = ApiKeyCredentialTestFactory::sample('label')->value;
+        $label = ApiKeyCredentialBuilder::sample('label')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
-            ApiKeyCredentialTestFactory::sample('id')->toString(),
+            ApiKeyCredentialBuilder::sample('id')->toString(),
         );
 
         // Then
@@ -58,11 +58,11 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new IssueApiKeyCredential(
-            ApiKeyCredentialTestFactory::sample('id')->toString(),
+            ApiKeyCredentialBuilder::sample('id')->toString(),
             $identityId,
             $label,
-            ApiKeyCredentialTestFactory::sample('keyId')->value,
-            ApiKeyCredentialTestFactory::sample('secret'),
+            ApiKeyCredentialBuilder::sample('keyId')->value,
+            ApiKeyCredentialBuilder::sample('secret'),
         ));
     }
 }

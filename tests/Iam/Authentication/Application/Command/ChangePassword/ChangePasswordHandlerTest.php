@@ -14,7 +14,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -38,20 +38,20 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
         $this->store($credential);
 
         $finder = $this->service(PasswordCredentialFinderInterface::class);
-        $before = $finder->ofIdentity($factory['identityId']);
+        $before = $finder->ofIdentity($builder['identityId']);
 
         // When
-        $this->dispatch(new ChangePassword($factory['identityId'], self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($builder['identityId'], self::NEW_PASSWORD));
 
         // Then
-        $after = $finder->ofIdentity($factory['identityId']);
+        $after = $finder->ofIdentity($builder['identityId']);
         self::assertNotSame($before->passwordHash, $after->passwordHash);
         self::assertNotSame(self::NEW_PASSWORD, $after->passwordHash);
     }
@@ -62,17 +62,17 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         // Given
         $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
         $this->store($credential);
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($factory['identityId'], self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($builder['identityId'], self::NEW_PASSWORD));
     }
 
     #[Test]
@@ -84,8 +84,8 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(
             new ChangePassword(
-                PasswordCredentialTestFactory::sample('identityId'),
-                PasswordCredentialTestFactory::sample('password')->value,
+                PasswordCredentialBuilder::sample('identityId'),
+                PasswordCredentialBuilder::sample('password')->value,
             ),
         );
     }
@@ -94,10 +94,10 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenWeakPassword(): void
     {
         // Given
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
 
         $this->store($credential);
 
@@ -105,17 +105,17 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($factory['identityId'], 'passwordpassword'));
+        $this->dispatch(new ChangePassword($builder['identityId'], 'passwordpassword'));
     }
 
     #[Test]
     public function itFailsWhenSamePassword(): void
     {
         // Given
-        $factory = PasswordCredentialTestFactory::new()
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
 
         $this->store($credential);
 
@@ -123,6 +123,6 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SamePasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($factory['identityId'], $factory['password']->value));
+        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value));
     }
 }

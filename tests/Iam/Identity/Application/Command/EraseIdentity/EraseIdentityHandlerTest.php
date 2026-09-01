@@ -8,7 +8,7 @@ use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -18,7 +18,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
 
         // When
@@ -34,7 +34,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erased()->create();
         $this->store($identity);
 
         // When
@@ -51,6 +51,6 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseIdentity(IdentityTestFactory::sample('id')->toString()));
+        $this->dispatch(new EraseIdentity(IdentityBuilder::sample('id')->toString()));
     }
 }

@@ -10,8 +10,8 @@ use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -32,12 +32,12 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $credential = $builder->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($factory['keyId']->value, $factory['secret']);
+        $verified = $this->verifier->verify($builder['keyId']->value, $builder['secret']);
 
         // Then
         self::assertTrue($verified);
@@ -47,12 +47,12 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $credential = $builder->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($factory['keyId']->value, 'wrong-secret');
+        $verified = $this->verifier->verify($builder['keyId']->value, 'wrong-secret');
 
         // Then
         self::assertFalse($verified);
@@ -66,8 +66,8 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 
         // When
         $this->verifier->verify(
-            ApiKeyCredentialTestFactory::sample('keyId')->value,
-            ApiKeyCredentialTestFactory::sample('secret'),
+            ApiKeyCredentialBuilder::sample('keyId')->value,
+            ApiKeyCredentialBuilder::sample('secret'),
         );
     }
 
@@ -75,33 +75,33 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenRevoked(): void
     {
         // Given
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->revoked();
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->revoked();
+        $credential = $builder->create();
         $this->store($credential);
 
         // Then
         $this->expectException(ApiKeyCredentialRevokedException::class);
 
         // When
-        $this->verifier->verify($factory['keyId']->value, $factory['secret']);
+        $this->verifier->verify($builder['keyId']->value, $builder['secret']);
     }
 
     #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->suspended()->create();
 
-        $factory = ApiKeyCredentialTestFactory::new()
+        $builder = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher($this->hasher);
-        $credential = $factory->create();
+        $credential = $builder->create();
         $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->verifier->verify($factory['keyId']->value, $factory['secret']);
+        $this->verifier->verify($builder['keyId']->value, $builder['secret']);
     }
 }

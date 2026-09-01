@@ -9,7 +9,7 @@ use Sales\Order\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\AbstractIntegrationTestCase;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
@@ -27,7 +27,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itConfirmsWhenPlaced(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When
@@ -43,7 +43,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyConfirmed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
         $this->store($order);
 
         // When
@@ -57,7 +57,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderTestFactory::new()->attribute('id')->toString();
+        $id = OrderBuilder::new()->attribute('id')->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

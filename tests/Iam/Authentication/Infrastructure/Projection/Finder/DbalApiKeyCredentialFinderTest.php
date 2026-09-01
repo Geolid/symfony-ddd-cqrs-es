@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
@@ -27,29 +27,29 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $hasher = new FakeApiKeyHasher();
-        $other = ApiKeyCredentialTestFactory::new()->withHasher($hasher)->create();
+        $other = ApiKeyCredentialBuilder::new()->withHasher($hasher)->create();
 
-        $factory = ApiKeyCredentialTestFactory::new()->withHasher($hasher);
-        $credential = $factory->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($hasher);
+        $credential = $builder->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofKeyId($factory['keyId']->value);
+        $result = $this->finder->ofKeyId($builder['keyId']->value);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($factory['identityId'], $result->identityId);
-        self::assertSame($factory['label']->value, $result->label);
-        self::assertSame($factory['keyId']->value, $result->keyId);
+        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($builder['label']->value, $result->label);
+        self::assertSame($builder['keyId']->value, $result->keyId);
         self::assertFalse($result->revoked);
         self::assertSame(
-            $factory['issuedAt']->format(\DateTimeImmutable::ATOM),
+            $builder['issuedAt']->format(\DateTimeImmutable::ATOM),
             $result->issuedAt->format(\DateTimeImmutable::ATOM),
         );
         self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);
 
-        self::assertSame($hasher->hash($factory['secret']), $result->secretHash);
+        self::assertSame($hasher->hash($builder['secret']), $result->secretHash);
     }
 
     #[Test]
@@ -59,6 +59,6 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofKeyId(ApiKeyCredentialTestFactory::sample('keyId')->value);
+        $this->finder->ofKeyId(ApiKeyCredentialBuilder::sample('keyId')->value);
     }
 }

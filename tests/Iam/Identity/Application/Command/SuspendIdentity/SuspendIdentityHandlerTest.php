@@ -9,7 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -20,10 +20,10 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itSuspends(): void
     {
         // Given
-        $reason = IdentityTestFactory::sample('reason')->value;
+        $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
 
         // When
@@ -43,12 +43,12 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $factory = IdentityTestFactory::new()->suspended();
-        $identity = $factory->create();
+        $builder = IdentityBuilder::new()->suspended();
+        $identity = $builder->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), $factory['reason']->value));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $builder['reason']->value));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -62,8 +62,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new SuspendIdentity(
-            IdentityTestFactory::sample('id')->toString(),
-            IdentityTestFactory::sample('reason')->value,
+            IdentityBuilder::sample('id')->toString(),
+            IdentityBuilder::sample('reason')->value,
         ));
     }
 
@@ -71,7 +71,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erased()->create();
         $this->store($identity);
 
         // Then
@@ -80,7 +80,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new SuspendIdentity(
             $identity->id->toString(),
-            IdentityTestFactory::sample('reason')->value,
+            IdentityBuilder::sample('reason')->value,
         ));
     }
 }

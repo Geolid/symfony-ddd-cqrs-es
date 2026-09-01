@@ -8,7 +8,7 @@ use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -20,7 +20,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $factory = ProductTestFactory::new();
+        $factory = ProductBuilder::new();
         $id = $factory->attribute('id')->toString();
         $label = $factory->attribute('label')->value;
         $price = $factory->attribute('unitAmount')->cents;
@@ -39,12 +39,12 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $factory = ProductTestFactory::new();
+        $factory = ProductBuilder::new();
         $id = $factory->attribute('id')->toString();
         $label = $factory->attribute('label')->value;
         $price = $factory->attribute('unitAmount')->cents;
 
-        $existingId = ProductTestFactory::new()->attribute('id')->toString();
+        $existingId = ProductBuilder::new()->attribute('id')->toString();
         $this->reserveLabel($label, $existingId);
 
         // Then

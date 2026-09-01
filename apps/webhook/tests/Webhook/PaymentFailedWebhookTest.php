@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 use Webhook\Webhook\PaymentFailedParser;
@@ -21,8 +21,8 @@ final class PaymentFailedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $order = OrderTestFactory::new()->create();
-        $paymentFactory = OrderPaymentTestFactory::new()->withOrderId($order->id->toString());
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
         $orderPayment = $paymentFactory->create();
         $reference = $paymentFactory->attribute('reference')->value;
         $this->store($order, $orderPayment);
@@ -152,6 +152,6 @@ final class PaymentFailedWebhookTest extends AbstractWebhookTestCase
 
     private static function anyReference(): string
     {
-        return OrderPaymentTestFactory::new()->attribute('reference')->value;
+        return OrderPaymentBuilder::new()->attribute('reference')->value;
     }
 }
