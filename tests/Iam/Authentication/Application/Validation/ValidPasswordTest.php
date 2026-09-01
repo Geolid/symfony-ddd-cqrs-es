@@ -40,7 +40,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'strong password' => ['MyStr0ngP@ssw0rd123!'];
+        yield 'strong password' => ['Correct-Horse-Battery-42!'];
         yield 'maximum length' => [str_pad('Marmoset-42-Zephyr!', Password::MAX_LENGTH, '*')];
     }
 
@@ -66,7 +66,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
     {
         yield 'empty string' => ['', [new Assert\NotBlank(), self::length(), self::passwordStrength()]];
         yield 'not a string' => [42, [new Assert\Type('string'), self::length(), self::passwordStrength()]];
-        yield 'too short' => ['Sh0rt!', [self::length(), self::passwordStrength()]];
+        yield 'too short' => [str_repeat('a', Password::MIN_LENGTH - 1), [self::length(), self::passwordStrength()]];
         yield 'too weak' => ['passwordpassword', [self::passwordStrength()]];
     }
 
@@ -77,7 +77,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
         $validator = $this->validatorWith(new NotCompromisedPasswordValidator(new StubFailingHttpClient()));
 
         // When
-        $violations = $validator->validate('MyStr0ngP@ssw0rd123!', new ValidPassword());
+        $violations = $validator->validate('Correct-Horse-Battery-42!', new ValidPassword());
 
         // Then
         self::assertCount(0, $violations);

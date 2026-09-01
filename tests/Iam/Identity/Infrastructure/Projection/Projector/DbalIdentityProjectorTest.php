@@ -11,19 +11,20 @@ use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itProjectsOnIdentityRegistered(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityTestFactory::new()->withRegisteredAt($now)->create();
+        $factory = IdentityTestFactory::new();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -33,7 +34,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
         self::assertNull($row['reason']);
-        self::assertSame($now->format('Y-m-d H:i:s'), $row['registered_at']);
+        self::assertSame($factory['registeredAt']->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
     }
@@ -42,22 +43,21 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $suspendedAt = $now->modify('+1 day');
         $other = IdentityTestFactory::new()->create();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($other, $identity);
+        $this->store($other);
+
+        $factory = IdentityTestFactory::new()->suspended();
+        $identity = $factory->create();
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt);
         $this->store($identity);
 
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
-        self::assertSame('Suspected fraudulent activity', $row['reason']);
-        self::assertSame($suspendedAt->format('Y-m-d H:i:s'), $row['suspended_at']);
+        self::assertSame($factory['reason']->value, $row['reason']);
+        self::assertSame($factory['suspendedAt']->format(self::DATE_FORMAT), $row['suspended_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -70,28 +70,27 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivated(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $reactivatedAt = $now->modify('+1 day');
         $otherFactory = IdentityTestFactory::new()->suspended();
         $other = $otherFactory->create();
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($other, $identity);
+        $this->store($other);
+
+        $factory = IdentityTestFactory::new()->suspended()->reactivated();
+        $identity = $factory->create();
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), $reactivatedAt);
         $this->store($identity);
 
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
-        self::assertSame('Appeal upheld', $row['reason']);
-        self::assertSame($reactivatedAt->format('Y-m-d H:i:s'), $row['reactivated_at']);
+        self::assertSame($factory['reason']->value, $row['reason']);
+        self::assertSame($factory['reactivatedAt']->format(self::DATE_FORMAT), $row['reactivated_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['status']);
-        self::assertSame($otherFactory->attribute('reason'), $otherRow['reason']);
+        self::assertSame($otherFactory['reason']->value, $otherRow['reason']);
         self::assertNull($otherRow['reactivated_at']);
     }
 
@@ -100,11 +99,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = IdentityTestFactory::new()->create();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($other, $identity);
+        $this->store($other);
+
+        $identity = IdentityTestFactory::new()->erased()->create();
 
         // When
-        $identity->erase(Clock::get()->now());
         $this->store($identity);
 
         // Then

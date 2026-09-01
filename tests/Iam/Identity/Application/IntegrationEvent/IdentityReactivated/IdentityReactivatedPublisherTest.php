@@ -8,7 +8,6 @@ use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReacti
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,9 +15,8 @@ final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $suspendedAt = Clock::get()->now();
-        $reactivatedAt = $suspendedAt->modify('+1 day');
-        $identity = IdentityTestFactory::new()->suspended(suspendedAt: $suspendedAt)->reactivated(reactivatedAt: $reactivatedAt)->create();
+        $factory = IdentityTestFactory::new()->suspended()->reactivated();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -26,6 +24,9 @@ final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentityReactivatedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSame($reactivatedAt->format(\DateTimeImmutable::ATOM), $event->reactivatedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame(
+            $factory['reactivatedAt']->format(\DateTimeImmutable::ATOM),
+            $event->reactivatedAt->format(\DateTimeImmutable::ATOM),
+        );
     }
 }

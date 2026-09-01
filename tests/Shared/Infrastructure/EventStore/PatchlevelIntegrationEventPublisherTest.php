@@ -15,10 +15,9 @@ use Patchlevel\EventSourcing\Store\Header\StreamNameHeader;
 use Patchlevel\EventSourcing\Store\InMemoryStore;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
-use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Clock\Clock;
 
 final class PatchlevelIntegrationEventPublisherTest extends TestCase
 {
@@ -27,30 +26,30 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->store = new InMemoryStore();
-        $this->publisher = new PatchlevelIntegrationEventPublisher($this->store, new MockClock('2026-01-01T00:00:00+00:00'));
+        $this->publisher = new PatchlevelIntegrationEventPublisher($this->store, Clock::get());
     }
 
     #[Test]
     public function itPublishes(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $now = Clock::get()->now();
         $event = new DummyIntegrationEvent();
 
         // When
-        $this->publisher->publish(FakeAggregate::class, $id, $event);
+        $this->publisher->publish(FakeAggregate::class, 'aggregate-id', $event);
 
         // Then
-        $messages = [];
-        foreach ($this->store->load() as $message) {
-            $messages[] = $message;
-        }
+        $messages = iterator_to_array($this->store->load());
         self::assertCount(1, $messages);
+
         $message = $messages[0];
         self::assertSame($event, $message->event());
-        self::assertSame('integration.fake_aggregate-'.$id, $message->header(StreamNameHeader::class)->streamName);
-        self::assertSame('2026-01-01T00:00:00+00:00', $message->header(RecordedOnHeader::class)->recordedOn->format(\DATE_ATOM));
+        self::assertSame('integration.fake_aggregate-aggregate-id', $message->header(StreamNameHeader::class)->streamName);
+        self::assertSame($now->format(\DATE_ATOM), $message->header(RecordedOnHeader::class)->recordedOn->format(\DATE_ATOM));
         self::assertFalse($message->hasHeader(PlayheadHeader::class));
     }
 
@@ -58,10 +57,10 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
     public function itThrowsWhenNotStreamAware(): void
     {
         // Then
-        self::expectException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
 
         // When
-        $this->publisher->publish(\stdClass::class, Uuid::uuid7()->toString(), new DummyIntegrationEvent());
+        $this->publisher->publish(\stdClass::class, 'aggregate-id', new DummyIntegrationEvent());
     }
 }
 

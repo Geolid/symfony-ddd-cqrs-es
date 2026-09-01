@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Validation;
 
 use Iam\Authentication\Application\Validation\ValidLogin;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Validator\Constraint;
@@ -32,8 +33,8 @@ final class ValidLoginTest extends CompoundConstraintTestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'login' => ['ada.lovelace'];
-        yield 'maximum length' => [str_repeat('a', 50)];
+        yield 'login' => ['john.doe'];
+        yield 'maximum length' => [str_repeat('a', Login::MAX_LENGTH)];
     }
 
     /**
@@ -59,7 +60,7 @@ final class ValidLoginTest extends CompoundConstraintTestCase
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'whitespace only' => ['   ', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
-        yield 'too long' => [str_repeat('a', 51), [new Assert\Length(max: 50)]];
+        yield 'too long' => [str_repeat('a', Login::MAX_LENGTH + 1), [new Assert\Length(max: Login::MAX_LENGTH)]];
     }
 
     protected function createCompound(): ValidLogin

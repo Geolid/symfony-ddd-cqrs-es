@@ -12,13 +12,24 @@ use PHPUnit\Framework\TestCase;
 final class PasswordTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
         // When
-        $password = Password::fromString('Marmoset-42-Zephyr!');
+        $password = Password::fromString($value);
 
         // Then
-        self::assertSame('Marmoset-42-Zephyr!', $password->value);
+        self::assertSame($value, $password->value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'password' => ['P@ssword12345678'];
+        yield 'minimum length' => [str_repeat('a', Password::MIN_LENGTH)];
+        yield 'maximum length' => [str_repeat('a', Password::MAX_LENGTH)];
     }
 
     #[Test]
@@ -37,19 +48,35 @@ final class PasswordTest extends TestCase
      */
     public static function provideInvalidValues(): iterable
     {
-        yield 'too short' => ['tooshort1!'];
-        yield 'too long' => [str_repeat('a', 4_097)];
+        yield 'too short' => [str_repeat('a', Password::MIN_LENGTH - 1)];
+        yield 'too long' => [str_repeat('a', Password::MAX_LENGTH + 1)];
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
+        // Given
+        $a = Password::fromString('P@ssword12345678');
+        $b = Password::fromString('P@ssword12345678');
+
         // When
-        $a = Password::fromString('Marmoset-42-Zephyr!');
-        $b = Password::fromString('Marmoset-42-Zephyr!');
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(Password::fromString('AnotherHorse456!')));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Password::fromString('P@ssword12345678');
+        $b = Password::fromString('OtherP@ssword12345678');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

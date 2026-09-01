@@ -14,11 +14,9 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
-use Support\SeededFaker;
 
 final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -40,7 +38,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentTestFactory::new()->prepared()->create();
         $this->store($shipment);
-        $trackingReference = SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
+        $trackingReference = ShipmentTestFactory::new()->manifested()->attribute('trackingReference')->value;
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
@@ -54,7 +52,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
-        $trackingReference = SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
+        $trackingReference = ShipmentTestFactory::new()->manifested()->attribute('trackingReference')->value;
         $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, $shipment->id->toString());
@@ -105,15 +103,15 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}')));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentTestFactory::new()->manifested()->attribute('trackingReference')->value));
     }
 
     #[Test]
     public function itFailsWhenTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $trackingReference = SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, Uuid::uuid7()->toString());
+        $trackingReference = ShipmentTestFactory::new()->manifested()->attribute('trackingReference')->value;
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, ShipmentTestFactory::new()->create()->id->toString());
         $shipment = ShipmentTestFactory::new()->prepared()->create();
         $this->store($shipment);
 

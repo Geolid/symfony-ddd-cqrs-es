@@ -4,12 +4,9 @@ includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpat/phpat/extension.neon
     - vendor/patchlevel/event-sourcing-phpstan-extension/extension.neon
+    - phpstan.rules.neon
 
 services:
-    -
-        class: Tools\PHPStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule
-        tags:
-            - phpstan.rules.rule
     -
         class: Tools\PHPat\ArchitectureSuite
         tags:

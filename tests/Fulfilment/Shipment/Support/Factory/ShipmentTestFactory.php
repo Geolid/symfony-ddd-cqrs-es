@@ -22,9 +22,20 @@ use Symfony\Component\Clock\Clock;
  *     customerId: string,
  *     shippingAddress: PostalAddress,
  *     createdAt: \DateTimeImmutable,
- *     trackingReference?: string,
- *     returnTrackingReference?: string,
+ *     trackingReference?: TrackingReference,
+ *     returnTrackingReference?: TrackingReference,
  *     returnRejectionReason?: string,
+ *     preparedAt?: \DateTimeImmutable,
+ *     manifestedAt?: \DateTimeImmutable,
+ *     dispatchedAt?: \DateTimeImmutable,
+ *     deliveredAt?: \DateTimeImmutable,
+ *     cancelledAt?: \DateTimeImmutable,
+ *     returnRequestedAt?: \DateTimeImmutable,
+ *     returnManifestedAt?: \DateTimeImmutable,
+ *     returnDispatchedAt?: \DateTimeImmutable,
+ *     returnReceivedAt?: \DateTimeImmutable,
+ *     returnApprovedAt?: \DateTimeImmutable,
+ *     returnRejectedAt?: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<Shipment, Attributes>
@@ -55,21 +66,22 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         $preparedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->prepare($preparedAt),
-        );
+        return $this->withAttributes(['preparedAt' => $preparedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->prepare($preparedAt),
+            );
     }
 
     public function manifested(
         ?string $trackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
-        $trackingReference ??= SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}');
+        $trackingReference = TrackingReference::fromString($trackingReference ?? SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}'));
         $manifestedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(['trackingReference' => $trackingReference])
+        return $this->withAttributes(['trackingReference' => $trackingReference, 'manifestedAt' => $manifestedAt])
             ->withModifier(
-                static fn (Shipment $shipment) => $shipment->manifest(TrackingReference::fromString($trackingReference), $manifestedAt),
+                static fn (Shipment $shipment) => $shipment->manifest($trackingReference, $manifestedAt),
             );
     }
 
@@ -77,48 +89,52 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         $dispatchedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt),
-        );
+        return $this->withAttributes(['dispatchedAt' => $dispatchedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt),
+            );
     }
 
     public function delivered(?\DateTimeImmutable $deliveredAt = null): self
     {
         $deliveredAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->deliver($deliveredAt),
-        );
+        return $this->withAttributes(['deliveredAt' => $deliveredAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->deliver($deliveredAt),
+            );
     }
 
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         $cancelledAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->cancel($cancelledAt),
-        );
+        return $this->withAttributes(['cancelledAt' => $cancelledAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->cancel($cancelledAt),
+            );
     }
 
     public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         $requestedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt),
-        );
+        return $this->withAttributes(['returnRequestedAt' => $requestedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt),
+            );
     }
 
     public function returnManifested(
         ?string $returnTrackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
-        $returnTrackingReference ??= SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
+        $returnTrackingReference = TrackingReference::fromString($returnTrackingReference ?? SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}'));
         $manifestedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(['returnTrackingReference' => $returnTrackingReference])
+        return $this->withAttributes(['returnTrackingReference' => $returnTrackingReference, 'returnManifestedAt' => $manifestedAt])
             ->withModifier(
-                static fn (Shipment $shipment) => $shipment->manifestReturn(TrackingReference::fromString($returnTrackingReference), $manifestedAt),
+                static fn (Shipment $shipment) => $shipment->manifestReturn($returnTrackingReference, $manifestedAt),
             );
     }
 
@@ -126,27 +142,30 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     {
         $dispatchedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->dispatchReturn($dispatchedAt),
-        );
+        return $this->withAttributes(['returnDispatchedAt' => $dispatchedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->dispatchReturn($dispatchedAt),
+            );
     }
 
     public function returnReceived(?\DateTimeImmutable $receivedAt = null): self
     {
         $receivedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt),
-        );
+        return $this->withAttributes(['returnReceivedAt' => $receivedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt),
+            );
     }
 
     public function returnApproved(?\DateTimeImmutable $approvedAt = null): self
     {
         $approvedAt ??= Clock::get()->now();
 
-        return $this->withModifier(
-            static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt),
-        );
+        return $this->withAttributes(['returnApprovedAt' => $approvedAt])
+            ->withModifier(
+                static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt),
+            );
     }
 
     public function returnRejected(
@@ -156,7 +175,7 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
         $reason ??= SeededFaker::get()->sentence(4);
         $rejectedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(['returnRejectionReason' => $reason])
+        return $this->withAttributes(['returnRejectionReason' => $reason, 'returnRejectedAt' => $rejectedAt])
             ->withModifier(
                 static fn (Shipment $shipment) => $shipment->rejectReturn($reason, $rejectedAt),
             );
@@ -165,13 +184,13 @@ final class ShipmentTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'orderId' => Uuid::uuid7()->toString(),
-            'customerId' => Uuid::uuid7()->toString(),
-            'shippingAddress' => PostalAddress::of(
+            'orderId' => static fn (): string => Uuid::uuid7()->toString(),
+            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'createdAt' => ClockSequence::next(),
+            'createdAt' => ClockSequence::next(...),
         ];
     }
 

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Policy;
 
 use Iam\Authentication\Application\Policy\ReleaseLoginOnIdentityErased;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
@@ -31,14 +31,16 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
     public function itReleases(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $ownerId = PasswordCredentialId::forIdentity($identityId)->toString();
-        $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', $ownerId);
+        $identityId = PasswordCredentialTestFactory::sample('identityId');
+        $factory = PasswordCredentialTestFactory::new()->withIdentityId($identityId);
+        $login = PasswordCredentialTestFactory::sample('login')->value;
+        $loginKey = UniqueKey::for(PasswordCredentialUniqueKey::LOGIN);
+        $this->uniqueValues->reserve($loginKey, $login, $factory['id']->toString());
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace'));
+        self::assertFalse($this->uniqueValues->exists($loginKey, $login));
     }
 }

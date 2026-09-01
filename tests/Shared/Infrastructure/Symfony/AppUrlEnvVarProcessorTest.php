@@ -11,27 +11,27 @@ use Shared\Infrastructure\Symfony\AppUrlEnvVarProcessor;
 final class AppUrlEnvVarProcessorTest extends TestCase
 {
     #[Test]
-    public function itPrefixesTheHostWithTheApplicationInProduction(): void
+    public function itPrefixesWhenInProduction(): void
     {
         // When
-        $url = new AppUrlEnvVarProcessor('api')->getEnv('app_url', 'APP_URL', $this->env('prod'));
+        $url = new AppUrlEnvVarProcessor('test-app')->getEnv('app_url', 'APP_URL', $this->env('prod'));
 
         // Then
-        self::assertSame('https://api.example.com', $url);
+        self::assertSame('https://test-app.example.com', $url);
     }
 
     #[Test]
-    public function itLeavesTheUrlAloneOutsideProduction(): void
+    public function itPassesThroughOutsideProduction(): void
     {
         // When
-        $url = new AppUrlEnvVarProcessor('api')->getEnv('app_url', 'APP_URL', $this->env('dev'));
+        $url = new AppUrlEnvVarProcessor('test-app')->getEnv('app_url', 'APP_URL', $this->env('dev'));
 
         // Then
         self::assertSame('https://example.com', $url);
     }
 
     #[Test]
-    public function itFailsInProductionWithoutAnApplication(): void
+    public function itFailsWhenNoApplicationInProduction(): void
     {
         // Then
         $this->expectException(\LogicException::class);
@@ -41,7 +41,7 @@ final class AppUrlEnvVarProcessorTest extends TestCase
     }
 
     #[Test]
-    public function itProvidesTheAppUrlPrefix(): void
+    public function itProvidesTypes(): void
     {
         // When
         $types = AppUrlEnvVarProcessor::getProvidedTypes();

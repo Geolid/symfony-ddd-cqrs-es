@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Support\Doubles;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 
-final class StubApiKeyHasher implements ApiKeyHasherInterface
+final class FakeApiKeyHasher implements ApiKeyHasherInterface
 {
     public function hash(#[\SensitiveParameter] string $secret): string
     {

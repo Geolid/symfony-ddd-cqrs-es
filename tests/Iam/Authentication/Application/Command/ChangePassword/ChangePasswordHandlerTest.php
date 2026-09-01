@@ -15,102 +15,114 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
 
 final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
 {
+    private const string NEW_PASSWORD = 'Qm3&nJ8wXv5Tz1p!';
+
+    private PasswordStrengthInterface $passwordStrength;
+
+    private PasswordHasherInterface $hasher;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
+        $this->hasher = $this->service(PasswordHasherInterface::class);
+    }
+
     #[Test]
     public function itChanges(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->create();
-        $this->store($identity, $credential);
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+        $this->store($credential);
+
+        $finder = $this->service(PasswordCredentialFinderInterface::class);
+        $before = $finder->ofIdentity($factory['identityId']);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
+        $this->dispatch(new ChangePassword($factory['identityId'], self::NEW_PASSWORD));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
-        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($result->passwordHash, 'Qm3&nJ8wXv5Tz1p!'));
+        $after = $finder->ofIdentity($factory['identityId']);
+        self::assertNotSame($before->passwordHash, $after->passwordHash);
+        self::assertNotSame(self::NEW_PASSWORD, $after->passwordHash);
     }
 
     #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->create();
-        $this->store($identity, $credential);
-        self::getContainer()->set(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
+        $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
+
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+        $this->store($credential);
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
+        $this->dispatch(new ChangePassword($factory['identityId'], self::NEW_PASSWORD));
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-
         // Then
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Qm3&nJ8wXv5Tz1p!'));
+        $this->dispatch(
+            new ChangePassword(
+                PasswordCredentialTestFactory::sample('identityId'),
+                PasswordCredentialTestFactory::sample('password')->value,
+            ),
+        );
     }
 
     #[Test]
     public function itFailsWhenWeakPassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->create();
-        $this->store($identity, $credential);
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+
+        $this->store($credential);
 
         // Then
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'aaaaaaaaaaaa'));
+        $this->dispatch(new ChangePassword($factory['identityId'], 'passwordpassword'));
     }
 
     #[Test]
     public function itFailsWhenSamePassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPassword('Marmoset-42-Zephyr!')
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->create();
-        $this->store($identity, $credential);
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+
+        $this->store($credential);
 
         // Then
         $this->expectException(SamePasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($identity->id->toString(), 'Marmoset-42-Zephyr!'));
+        $this->dispatch(new ChangePassword($factory['identityId'], $factory['password']->value));
     }
 }

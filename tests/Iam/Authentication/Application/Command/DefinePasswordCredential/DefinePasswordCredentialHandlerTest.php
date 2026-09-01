@@ -12,9 +12,8 @@ use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialF
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -25,59 +24,71 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     public function itDefines(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identityId = PasswordCredentialTestFactory::sample('identityId');
+        $login = PasswordCredentialTestFactory::sample('login')->value;
+        $password = PasswordCredentialTestFactory::sample('password')->value;
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
+        $this->dispatch(new DefinePasswordCredential($identityId, $login, $password));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofLogin('ada.lovelace');
-        self::assertSame($identity->id->toString(), $result->identityId);
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofLogin($login);
+        self::assertSame($identityId, $result->identityId);
         self::assertTrue($result->identityAuthenticatable);
+
+        self::assertNotSame($password, $result->passwordHash);
     }
 
     #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        self::getContainer()->set(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
+        $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
+        $this->dispatch(new DefinePasswordCredential(
+            PasswordCredentialTestFactory::sample('identityId'),
+            PasswordCredentialTestFactory::sample('login')->value,
+            PasswordCredentialTestFactory::sample('password')->value,
+        ));
     }
 
     #[Test]
     public function itFailsWhenLoginAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', Uuid::uuid7()->toString());
+        $login = PasswordCredentialTestFactory::sample('login')->value;
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
+            $login,
+            PasswordCredentialTestFactory::sample('id')->toString(),
+        );
 
         // Then
         $this->expectException(LoginAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'Marmoset-42-Zephyr!'));
+        $this->dispatch(new DefinePasswordCredential(
+            PasswordCredentialTestFactory::sample('identityId'),
+            $login,
+            PasswordCredentialTestFactory::sample('password')->value,
+        ));
     }
 
     #[Test]
     public function itFailsWhenWeakPassword(): void
     {
-        // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-
         // Then
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identity->id->toString(), 'ada.lovelace', 'aaaaaaaaaaaa'));
+        $this->dispatch(new DefinePasswordCredential(
+            PasswordCredentialTestFactory::sample('identityId'),
+            PasswordCredentialTestFactory::sample('login')->value,
+            'passwordpassword',
+        ));
     }
 }

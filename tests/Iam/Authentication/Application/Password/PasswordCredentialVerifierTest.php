@@ -13,7 +13,6 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
@@ -32,21 +31,37 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itVerifies(): void
+    public function itAccepts(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPassword('Marmoset-42-Zephyr!')
+        $factory = PasswordCredentialTestFactory::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->create();
-        $this->store($identity, $credential);
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+        $this->store($credential);
+
+        // When
+        $verified = $this->verifier->verify($factory['identityId'], $factory['password']->value);
 
         // Then
-        self::assertTrue($this->verifier->verify($identity->id->toString(), 'Marmoset-42-Zephyr!'));
-        self::assertFalse($this->verifier->verify($identity->id->toString(), 'WrongPassword456!'));
+        self::assertTrue($verified);
+    }
+
+    #[Test]
+    public function itRefuses(): void
+    {
+        // Given
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+        $this->store($credential);
+
+        // When
+        $verified = $this->verifier->verify($factory['identityId'], 'WrongPassword456!');
+
+        // Then
+        self::assertFalse($verified);
     }
 
     #[Test]
@@ -56,7 +71,10 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->verifier->verify(Uuid::uuid7()->toString(), 'Marmoset-42-Zephyr!');
+        $this->verifier->verify(
+            PasswordCredentialTestFactory::sample('identityId'),
+            PasswordCredentialTestFactory::sample('password')->value,
+        );
     }
 
     #[Test]
@@ -64,18 +82,19 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->create();
-        $credential = PasswordCredentialTestFactory::new()
+
+        $factory = PasswordCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withPassword('Marmoset-42-Zephyr!')
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->create();
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
+
         $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->verifier->verify($identity->id->toString(), 'Marmoset-42-Zephyr!');
+        $this->verifier->verify($identity->id->toString(), $factory['password']->value);
     }
 }

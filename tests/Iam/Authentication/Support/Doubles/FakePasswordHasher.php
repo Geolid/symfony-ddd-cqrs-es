@@ -6,12 +6,8 @@ namespace Iam\Tests\Authentication\Support\Doubles;
 
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 
-final readonly class StubPasswordHasher implements PasswordHasherInterface
+final readonly class FakePasswordHasher implements PasswordHasherInterface
 {
-    public function __construct(private bool $needsRehash = false)
-    {
-    }
-
     public function hash(#[\SensitiveParameter] string $plainPassword): string
     {
         return 'hashed:'.$plainPassword;
@@ -24,6 +20,6 @@ final readonly class StubPasswordHasher implements PasswordHasherInterface
 
     public function needsRehash(string $hashedPassword): bool
     {
-        return $this->needsRehash;
+        return false;
     }
 }

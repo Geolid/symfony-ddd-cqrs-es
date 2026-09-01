@@ -65,13 +65,15 @@ final class ProductTestFactory extends AbstractAggregateTestFactory
 
     protected function defaults(): array
     {
-        Assert::string($label = SeededFaker::get()->words(3, true));
-
         return [
-            'id' => ProductId::generate(),
-            'label' => Label::fromString($label),
-            'unitAmount' => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-            'listedAt' => ClockSequence::next(),
+            'id' => ProductId::generate(...),
+            'label' => static function (): Label {
+                Assert::string($label = SeededFaker::get()->words(3, true));
+
+                return Label::fromString($label);
+            },
+            'unitAmount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+            'listedAt' => ClockSequence::next(...),
         ];
     }
 

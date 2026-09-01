@@ -6,7 +6,6 @@ namespace Iam\Tests\Identity\Infrastructure\EventStore;
 
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -26,28 +25,48 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $factory = IdentityTestFactory::new();
+        $identity = $factory->create();
 
         // When
         $this->repository->save($identity);
+        $loaded = $this->repository->load($identity->id);
 
         // Then
-        $id = $identity->id;
-        self::assertTrue($this->repository->has($id));
-        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
+        self::assertSame($factory['id']->toString(), $loaded->id->toString());
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = IdentityId::generate();
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(IdentityTestFactory::sample('id'));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $identity = IdentityTestFactory::new()->create();
+        $this->repository->save($identity);
+
+        // When
+        $exists = $this->repository->has($identity->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(IdentityTestFactory::sample('id'));
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

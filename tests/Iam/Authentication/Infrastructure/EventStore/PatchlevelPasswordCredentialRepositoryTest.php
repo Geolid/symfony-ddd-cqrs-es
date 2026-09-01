@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
+use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -15,46 +15,70 @@ use Support\AbstractIntegrationTestCase;
 final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private PasswordCredentialRepositoryInterface $repository;
+    private StubPasswordStrength $passwordStrength;
+    private FakePasswordHasher $hasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->repository = $this->service(PasswordCredentialRepositoryInterface::class);
+        $this->passwordStrength = new StubPasswordStrength();
+        $this->hasher = new FakePasswordHasher();
     }
 
     #[Test]
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()
-            ->withPasswordStrength(new StubPasswordStrength())
-            ->withHasher(new StubPasswordHasher())
-            ->create();
+        $factory = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
 
         // When
         $this->repository->save($credential);
+        $loaded = $this->repository->load($credential->id);
 
         // Then
-        $id = $credential->id;
-        self::assertTrue($this->repository->has($id));
-        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
+        self::assertSame($factory['id']->toString(), $loaded->id->toString());
+        self::assertSame($factory['login']->value, $loaded->login->value);
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = PasswordCredentialTestFactory::new()
-            ->withPasswordStrength(new StubPasswordStrength())
-            ->withHasher(new StubPasswordHasher())
-            ->create()->id;
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(PasswordCredentialTestFactory::sample('id'));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $credential = PasswordCredentialTestFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->repository->save($credential);
+
+        // When
+        $exists = $this->repository->has($credential->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(PasswordCredentialTestFactory::sample('id'));
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

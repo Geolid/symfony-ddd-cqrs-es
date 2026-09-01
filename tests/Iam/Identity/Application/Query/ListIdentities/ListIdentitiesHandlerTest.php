@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 
+use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itLists(): void
+    public function itPaginates(): void
     {
         // Given
-        $suspendedAt = Clock::get()->now()->modify('+1 day');
+        $suspendedFactory = IdentityTestFactory::new()->suspended();
+
         $active = IdentityTestFactory::new()->create();
-        $suspended = IdentityTestFactory::new()
-            ->suspended('Suspected fraudulent activity', $suspendedAt)
-            ->create();
+        $suspended = $suspendedFactory->create();
         $others = IdentityTestFactory::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
         $this->store(...$identities);
@@ -44,13 +43,16 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 
         self::assertSame($suspended->id->toString(), $suspendedResult->id);
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
-        self::assertSame('Suspected fraudulent activity', $suspendedResult->reason);
-        self::assertSame($suspendedAt->format(\DateTimeImmutable::ATOM), $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM));
+        self::assertSame($suspendedFactory['reason']->value, $suspendedResult->reason);
+        self::assertSame(
+            $suspendedFactory['suspendedAt']->format(\DateTimeImmutable::ATOM),
+            $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM),
+        );
         self::assertNull($suspendedResult->reactivatedAt);
 
-        self::assertSame($this->ids($active, $suspended), array_column($firstPage->items, 'id'));
-        self::assertSame($this->ids($identities[2], $identities[3]), array_column($secondPage->items, 'id'));
-        self::assertSame($this->ids($identities[4]), array_column($lastPage->items, 'id'));
+        self::assertSame($this->ids($active, $suspended), $this->resultIds($firstPage->items));
+        self::assertSame($this->ids($identities[2], $identities[3]), $this->resultIds($secondPage->items));
+        self::assertSame($this->ids($identities[4]), $this->resultIds($lastPage->items));
         self::assertEmpty($outOfBoundsPage->items);
 
         self::assertSame(5, $firstPage->pagination->totalItems);
@@ -62,7 +64,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsWhenEmpty(): void
+    public function itPaginatesWhenEmpty(): void
     {
         // When
         $result = $this->ask(new ListIdentities());
@@ -83,6 +85,21 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         $ids = [];
         foreach ($identities as $identity) {
             $ids[] = $identity->id->toString();
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param iterable<IdentityResult> $results
+     *
+     * @return list<string>
+     */
+    private function resultIds(iterable $results): array
+    {
+        $ids = [];
+        foreach ($results as $result) {
+            $ids[] = $result->id;
         }
 
         return $ids;

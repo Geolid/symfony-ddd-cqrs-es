@@ -10,109 +10,102 @@ use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialRevoked;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
-use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
+use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 
 final class ApiKeyCredentialTest extends AggregateRootTestCase
 {
+    private ApiKeyCredentialId $id;
+    private string $identityId;
+    private KeyId $keyId;
+    private Label $label;
+    private string $secret;
+    private FakeApiKeyHasher $hasher;
+    private \DateTimeImmutable $issuedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->id = ApiKeyCredentialTestFactory::sample('id');
+        $this->identityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $this->keyId = ApiKeyCredentialTestFactory::sample('keyId');
+        $this->label = ApiKeyCredentialTestFactory::sample('label');
+        $this->secret = ApiKeyCredentialTestFactory::sample('secret');
+        $this->issuedAt = ApiKeyCredentialTestFactory::sample('issuedAt');
+        $this->hasher = new FakeApiKeyHasher();
+    }
+
     #[Test]
     public function itIssues(): void
     {
-        $id = ApiKeyCredentialId::generate();
-        $identityId = Uuid::uuid7()->toString();
-        $keyId = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
-        $hasher = new StubApiKeyHasher();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given()
-            ->when(static fn (): ApiKeyCredential => ApiKeyCredential::issue(
-                $id,
-                $identityId,
-                Label::fromString('CI pipeline'),
-                $keyId,
-                'plain-secret',
-                $hasher,
-                $now,
+            ->when(fn (): ApiKeyCredential => ApiKeyCredential::issue(
+                $this->id,
+                $this->identityId,
+                $this->label,
+                $this->keyId,
+                $this->secret,
+                $this->hasher,
+                $this->issuedAt,
             ))
-            ->then(new ApiKeyCredentialIssued(
-                $id->toString(),
-                $identityId,
-                'CI pipeline',
-                $keyId->value,
-                $hasher->hash('plain-secret'),
-                $now,
-            ));
+            ->then($this->issued());
     }
 
     #[Test]
     public function itRevokes(): void
     {
-        $id = ApiKeyCredentialId::generate();
-        $identityId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $revokedAt = $now->modify('+1 day');
+        $revokedAt = ApiKeyCredentialTestFactory::sample('revokedAt');
 
         $this
-            ->given(new ApiKeyCredentialIssued(
-                $id->toString(),
-                $identityId,
-                'CI pipeline',
-                KeyId::PREFIX.'0123456789abcdef',
-                'hashed:plain-secret',
-                $now,
-            ))
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $revokedAt))
-            ->then(new ApiKeyCredentialRevoked($id->toString(), $revokedAt));
-    }
-
-    #[Test]
-    public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
-    {
-        $id = ApiKeyCredentialId::generate();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
-        $this
-            ->given(new ApiKeyCredentialIssued(
-                $id->toString(),
-                Uuid::uuid7()->toString(),
-                'CI pipeline',
-                KeyId::PREFIX.'0123456789abcdef',
-                'hashed:plain-secret',
-                $now,
-            ))
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke(Uuid::uuid7()->toString(), $now->modify('+1 day')))
-            ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
+            ->given($this->issued())
+            ->when(fn (ApiKeyCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
+            ->then(new ApiKeyCredentialRevoked($this->id->toString(), $revokedAt));
     }
 
     #[Test]
     public function itDoesNotRevokeWhenAlreadyRevoked(): void
     {
-        $id = ApiKeyCredentialId::generate();
-        $identityId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $revokedAt = ApiKeyCredentialTestFactory::sample('revokedAt');
 
         $this
             ->given(
-                new ApiKeyCredentialIssued(
-                    $id->toString(),
-                    $identityId,
-                    'CI pipeline',
-                    KeyId::PREFIX.'0123456789abcdef',
-                    'hashed:plain-secret',
-                    $now,
-                ),
-                new ApiKeyCredentialRevoked($id->toString(), $now->modify('+1 day')),
+                $this->issued(),
+                new ApiKeyCredentialRevoked($this->id->toString(), $revokedAt),
             )
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($identityId, $now->modify('+2 days')))
+            ->when(fn (ApiKeyCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
             ->then();
+    }
+
+    #[Test]
+    public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
+    {
+        $anotherIdentityId = ApiKeyCredentialTestFactory::sample('identityId');
+
+        $this
+            ->given($this->issued())
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($anotherIdentityId, ApiKeyCredentialTestFactory::sample('revokedAt')))
+            ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
     }
 
     protected function aggregateClass(): string
     {
         return ApiKeyCredential::class;
+    }
+
+    private function issued(): ApiKeyCredentialIssued
+    {
+        return new ApiKeyCredentialIssued(
+            $this->id->toString(),
+            $this->identityId,
+            $this->label->value,
+            $this->keyId->value,
+            $this->hasher->hash($this->secret),
+            $this->issuedAt,
+        );
     }
 }

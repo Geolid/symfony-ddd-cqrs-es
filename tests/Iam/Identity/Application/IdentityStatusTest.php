@@ -14,7 +14,8 @@ final class IdentityStatusTest extends TestCase
     public function itIsActive(): void
     {
         foreach (IdentityStatus::cases() as $status) {
-            self::assertSame(IdentityStatus::ACTIVE === $status, $status->isActive(), $status->value);
+            $isActive = $status->isActive();
+            self::assertSame(IdentityStatus::ACTIVE === $status, $isActive, $status->value);
         }
     }
 }

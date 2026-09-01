@@ -45,4 +45,12 @@ trait ServiceLocatorTrait
 
         return $service;
     }
+
+    /**
+     * Swaps a container service for a test double.
+     */
+    protected function replace(string $serviceId, object $service): void
+    {
+        static::getContainer()->set($serviceId, $service);
+    }
 }

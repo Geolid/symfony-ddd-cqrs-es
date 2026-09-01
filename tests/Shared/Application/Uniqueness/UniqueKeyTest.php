@@ -19,7 +19,7 @@ final class UniqueKeyTest extends TestCase
     public function itCreates(array $scope, string $expected): void
     {
         // When
-        $key = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, ...$scope);
+        $key = UniqueKey::for(DummyUniqueKey::A, ...$scope);
 
         // Then
         self::assertSame($expected, $key->toString());
@@ -30,34 +30,45 @@ final class UniqueKeyTest extends TestCase
      */
     public static function provideScopes(): iterable
     {
-        yield 'no scope' => [[], 'dummy.email'];
-        yield 'single scope segment' => [['a@b.example'], "dummy.email\x1Fa@b.example"];
-        yield 'multiple scope segments' => [['a@b.example', 'tenant-1'], "dummy.email\x1Fa@b.example\x1Ftenant-1"];
+        yield 'no scope' => [[], 'dummy.a'];
+        yield 'single scope segment' => [['scope-a'], "dummy.a\x1Fscope-a"];
+        yield 'multiple scope segments' => [['scope-a', 'scope-b'], "dummy.a\x1Fscope-a\x1Fscope-b"];
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
-        $a = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.example');
-        $b = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'a@b.example');
-        $differentScope = UniqueKey::for(DummyUniqueKeyDiscriminator::EMAIL, 'other@b.example');
-        $differentDiscriminator = UniqueKey::for(DummyUniqueKeyDiscriminator::PHONE, 'a@b.example');
+        $a = UniqueKey::for(DummyUniqueKey::A, 'scope-a');
+        $b = UniqueKey::for(DummyUniqueKey::A, 'scope-a');
 
         // When
-        $equalResult = $a->equals($b);
-        $differentScopeResult = $a->equals($differentScope);
-        $differentDiscriminatorResult = $a->equals($differentDiscriminator);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentScopeResult);
-        self::assertFalse($differentDiscriminatorResult);
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = UniqueKey::for(DummyUniqueKey::A, 'scope-a');
+        $differentScope = UniqueKey::for(DummyUniqueKey::A, 'scope-b');
+        $differentDiscriminator = UniqueKey::for(DummyUniqueKey::B, 'scope-a');
+
+        // When
+        $differsOnScope = $a->equals($differentScope);
+        $differsOnDiscriminator = $a->equals($differentDiscriminator);
+
+        // Then
+        self::assertFalse($differsOnScope);
+        self::assertFalse($differsOnDiscriminator);
     }
 }
 
-enum DummyUniqueKeyDiscriminator: string
+enum DummyUniqueKey: string
 {
-    case EMAIL = 'dummy.email';
-    case PHONE = 'dummy.phone';
+    case A = 'dummy.a';
+    case B = 'dummy.b';
 }

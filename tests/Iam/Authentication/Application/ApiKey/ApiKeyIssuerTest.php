@@ -8,9 +8,8 @@ use Iam\Authentication\Application\ApiKey\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -30,35 +29,38 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $label = ApiKeyCredentialTestFactory::sample('label')->value;
 
         // When
-        $apiKey = $this->issuer->issueFor($identity->id->toString(), 'CI pipeline');
+        $apiKey = $this->issuer->issueFor($identityId, $label);
 
         // Then
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($apiKey->keyId);
-        self::assertSame($identity->id->toString(), $result->identityId);
-        self::assertSame('CI pipeline', $result->label);
+        self::assertSame($identityId, $result->identityId);
+        self::assertSame($label, $result->label);
         self::assertFalse($result->revoked);
+
+        self::assertNotSame($apiKey->secret, $result->secretHash);
     }
 
     #[Test]
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
+        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
+
+        $label = ApiKeyCredentialTestFactory::sample('label')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(
-            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identity->id->toString()),
-            'CI pipeline',
-            Uuid::uuid7()->toString(),
+            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
+            $label,
+            ApiKeyCredentialTestFactory::sample('id')->toString(),
         );
 
         // Then
         $this->expectException(LabelAlreadyTakenException::class);
 
         // When
-        $this->issuer->issueFor($identity->id->toString(), 'CI pipeline');
+        $this->issuer->issueFor($identityId, $label);
     }
 }

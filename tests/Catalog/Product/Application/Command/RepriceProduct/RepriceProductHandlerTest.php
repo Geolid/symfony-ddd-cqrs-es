@@ -17,15 +17,14 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itReprices(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $id = $product->id->toString();
+        $product = ProductTestFactory::new()->create();
         $this->store($product);
 
         // When
-        $this->dispatch(new RepriceProduct($id, 1_950));
+        $this->dispatch(new RepriceProduct($product->id->toString(), 1_950));
 
         // Then
-        $result = $this->service(ProductFinderInterface::class)->ofId($id);
+        $result = $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
         self::assertSame(1_950, $result->unitAmountInCents);
     }
 
@@ -34,11 +33,12 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ProductTestFactory::new()->attribute('id')->toString();
+        $price = ProductTestFactory::new()->attribute('unitAmount')->cents;
 
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new RepriceProduct($id, 1_950));
+        $this->dispatch(new RepriceProduct($id, $price));
     }
 }

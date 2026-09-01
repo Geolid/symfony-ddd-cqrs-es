@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shared\Tests\Infrastructure\Uniqueness;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Infrastructure\Uniqueness\DbalUniqueValueRegistry;
@@ -17,178 +16,169 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->registry = $this->service(DbalUniqueValueRegistry::class);
     }
 
     #[Test]
-    public function itReservesAValue(): void
+    public function itReserves(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
+        $key = UniqueKey::for(DummyUniqueKey::A);
 
         // When
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, $ownerId);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // Then
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $value));
+        self::assertTrue($this->registry->exists($key, 'value'));
     }
 
     #[Test]
-    public function itIgnoresARetryFromTheSameOwner(): void
+    public function itIgnoresWhenAlreadyReservedBySameOwner(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, $ownerId);
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, $ownerId);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // Then
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $value));
+        self::assertTrue($this->registry->exists($key, 'value'));
     }
 
     #[Test]
-    public function itReservesACompositeKey(): void
+    public function itThrowsWhenAlreadyReservedByAnotherOwner(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $scope = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
-
-        // When
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $value, $ownerId);
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // Then
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $value));
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, Uuid::uuid7()->toString()), $value));
+        $this->expectException(UniqueValueAlreadyTakenException::class);
+
+        // When
+        $this->registry->reserve($key, 'value', 'owner-2');
     }
 
     #[Test]
-    public function itIgnoresItsOwnReservationWhenExcludingItsOwner(): void
+    public function itReservesWithScope(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, $ownerId);
+        $key = UniqueKey::for(DummyUniqueKey::A, 'scope-1');
+        $otherScopeKey = UniqueKey::for(DummyUniqueKey::A, 'scope-2');
 
         // When
-        $exists = $this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $value, $ownerId);
+        $this->registry->reserve($key, 'value', 'owner-1');
+
+        // Then
+        self::assertTrue($this->registry->exists($key, 'value'));
+        self::assertFalse($this->registry->exists($otherScopeKey, 'value'));
+    }
+
+    #[Test]
+    public function itExcludesOwnReservation(): void
+    {
+        // Given
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value', 'owner-1');
+
+        // When
+        $exists = $this->registry->exists($key, 'value', excludeOwnerId: 'owner-1');
 
         // Then
         self::assertFalse($exists);
     }
 
     #[Test]
-    public function itFindsAValueReservedBySomeoneElseWhileExcludingAnotherOwner(): void
+    public function itIncludesOthersReservation(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
-        $exists = $this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
+        $exists = $this->registry->exists($key, 'value', excludeOwnerId: 'owner-2');
 
         // Then
         self::assertTrue($exists);
     }
 
     #[Test]
-    public function itThrowsOnAValueAlreadyReservedByAnotherOwner(): void
+    public function itReleases(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
-
-        // Then
-        $this->expectException(UniqueValueAlreadyTakenException::class);
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $otherKey = UniqueKey::for(DummyUniqueKey::B);
+        $this->registry->reserve($key, 'value-1', 'owner-1');
+        $this->registry->reserve($key, 'value-2', 'owner-1');
+        $this->registry->reserve($otherKey, 'value-1', 'owner-1');
 
         // When
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
+        $this->registry->release($key, 'value-1', 'owner-1');
+
+        // Then
+        self::assertFalse($this->registry->exists($key, 'value-1'));
+        self::assertTrue($this->registry->exists($key, 'value-2'));
+        self::assertTrue($this->registry->exists($otherKey, 'value-1'));
     }
 
     #[Test]
-    public function itReleasesOnlyTheReservationItIsGiven(): void
+    public function itIgnoresWhenReleasedByAnotherOwner(): void
     {
         // Given
-        $released = Uuid::uuid7()->toString();
-        $kept = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $released, $ownerId);
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $kept, $ownerId);
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::PHONE), $released, $ownerId);
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
-        $this->registry->release(UniqueKey::for(DummyUniqueKey::EMAIL), $released, $ownerId);
+        $this->registry->release($key, 'value', 'owner-2');
 
         // Then
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $released));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $kept));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE), $released));
+        self::assertTrue($this->registry->exists($key, 'value'));
     }
 
     #[Test]
-    public function itKeepsTheReservationWhenReleasedByAnotherOwner(): void
+    public function itReleasesAll(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
+        $key = UniqueKey::for(DummyUniqueKey::A, 'scope-1');
+        $otherScopeKey = UniqueKey::for(DummyUniqueKey::A, 'scope-2');
+        $otherKey = UniqueKey::for(DummyUniqueKey::B, 'scope-1');
+        $this->registry->reserve($key, 'value-1', 'owner-1');
+        $this->registry->reserve($key, 'value-2', 'owner-1');
+        $this->registry->reserve($otherScopeKey, 'value-1', 'owner-1');
+        $this->registry->reserve($otherKey, 'value-1', 'owner-1');
 
         // When
-        $this->registry->release(UniqueKey::for(DummyUniqueKey::EMAIL), $value, Uuid::uuid7()->toString());
+        $this->registry->releaseAll($key);
 
         // Then
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $value));
+        self::assertFalse($this->registry->exists($key, 'value-1'));
+        self::assertFalse($this->registry->exists($key, 'value-2'));
+        self::assertTrue($this->registry->exists($otherScopeKey, 'value-1'));
+        self::assertTrue($this->registry->exists($otherKey, 'value-1'));
     }
 
     #[Test]
-    public function itReleasesEveryValueUnderTheGivenKey(): void
+    public function itReleasesAllForOwner(): void
     {
         // Given
-        $scope = Uuid::uuid7()->toString();
-        $otherScope = Uuid::uuid7()->toString();
-        $first = Uuid::uuid7()->toString();
-        $second = Uuid::uuid7()->toString();
-        $keptOtherScope = Uuid::uuid7()->toString();
-        $keptOtherDiscriminator = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $first, Uuid::uuid7()->toString());
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $second, Uuid::uuid7()->toString());
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, $otherScope), $keptOtherScope, Uuid::uuid7()->toString());
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::PHONE, $scope), $keptOtherDiscriminator, Uuid::uuid7()->toString());
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value-1', 'owner-1');
+        $this->registry->reserve($key, 'value-2', 'owner-2');
 
         // When
-        $this->registry->releaseAll(UniqueKey::for(DummyUniqueKey::EMAIL, $scope));
+        $this->registry->releaseAll($key, 'owner-1');
 
         // Then
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $first));
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $scope), $second));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL, $otherScope), $keptOtherScope));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::PHONE, $scope), $keptOtherDiscriminator));
-    }
-
-    #[Test]
-    public function itReleasesOnlyTheGivenOwnerUnderTheKey(): void
-    {
-        // Given
-        $released = Uuid::uuid7()->toString();
-        $kept = Uuid::uuid7()->toString();
-        $ownerId = Uuid::uuid7()->toString();
-        $otherOwnerId = Uuid::uuid7()->toString();
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $released, $ownerId);
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), $kept, $otherOwnerId);
-
-        // When
-        $this->registry->releaseAll(UniqueKey::for(DummyUniqueKey::EMAIL), $ownerId);
-
-        // Then
-        self::assertFalse($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $released));
-        self::assertTrue($this->registry->exists(UniqueKey::for(DummyUniqueKey::EMAIL), $kept));
+        self::assertFalse($this->registry->exists($key, 'value-1'));
+        self::assertTrue($this->registry->exists($key, 'value-2'));
     }
 }
 
 enum DummyUniqueKey: string
 {
-    case EMAIL = 'dummy.email';
-    case PHONE = 'dummy.phone';
+    case A = 'dummy.a';
+    case B = 'dummy.b';
 }

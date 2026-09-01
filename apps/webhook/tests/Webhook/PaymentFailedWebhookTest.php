@@ -33,7 +33,8 @@ final class PaymentFailedWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(OrderPaymentStatus::FAILED, $this->statusOf($orderPayment->id->toString()));
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofId($orderPayment->id->toString());
+        self::assertSame(OrderPaymentStatus::FAILED, $result->status);
     }
 
     #[Test]
@@ -152,10 +153,5 @@ final class PaymentFailedWebhookTest extends AbstractWebhookTestCase
     private static function anyReference(): string
     {
         return OrderPaymentTestFactory::new()->attribute('reference')->value;
-    }
-
-    private function statusOf(string $id): OrderPaymentStatus
-    {
-        return $this->service(OrderPaymentFinderInterface::class)->ofId($id)->status;
     }
 }

@@ -11,7 +11,6 @@ use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\AbstractIntegrationTestCase;
 
 final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
@@ -51,7 +50,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder->ofId(IdentityTestFactory::sample('id')->toString());
     }
 
     #[Test]
@@ -65,7 +64,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertSame($this->identityIds(...$identities), $this->resultIds($results));
+        self::assertSame($this->ids(...$identities), $this->resultIds($results));
     }
 
     #[Test]
@@ -92,9 +91,9 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $outOfBoundsPage = $this->finder->paginate(page: 4, itemsPerPage: 2);
 
         // Then
-        self::assertSame($this->identityIds($identities[0], $identities[1]), $this->resultIds($firstPage));
-        self::assertSame($this->identityIds($identities[2], $identities[3]), $this->resultIds($secondPage));
-        self::assertSame($this->identityIds($identities[4]), $this->resultIds($lastPage));
+        self::assertSame($this->ids($identities[0], $identities[1]), $this->resultIds($firstPage));
+        self::assertSame($this->ids($identities[2], $identities[3]), $this->resultIds($secondPage));
+        self::assertSame($this->ids($identities[4]), $this->resultIds($lastPage));
         self::assertCount(0, $outOfBoundsPage);
 
         self::assertSame(5, $firstPage->totalItems());
@@ -121,7 +120,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     /**
      * @return list<string>
      */
-    private function identityIds(Identity ...$identities): array
+    private function ids(Identity ...$identities): array
     {
         $ids = [];
         foreach ($identities as $identity) {

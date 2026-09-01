@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\Command\RegisterCustomer\RegisterCustomer;
 use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -22,26 +21,30 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = CustomerTestFactory::new()->attribute('id')->toString();
+        $email = CustomerTestFactory::new()->attribute('email')->value;
 
         // When
-        $this->dispatch(new RegisterCustomer($id, 'Buyer@Example.COM'));
+        $this->dispatch(new RegisterCustomer($id, $email));
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame('buyer@example.com', $result->email);
+        self::assertSame($email, $result->email);
     }
 
     #[Test]
     public function itFailsWhenEmailAlreadyRegistered(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', CustomerId::generate()->toString());
+        $id = CustomerTestFactory::new()->attribute('id')->toString();
+        $existingId = CustomerTestFactory::new()->attribute('id')->toString();
+        $email = CustomerTestFactory::new()->attribute('email')->value;
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $email, $existingId);
 
         // Then
         $this->expectException(CustomerEmailAlreadyRegisteredException::class);
 
         // When
-        $this->dispatch(new RegisterCustomer(CustomerTestFactory::new()->attribute('id')->toString(), 'BUYER@example.com'));
+        $this->dispatch(new RegisterCustomer($id, $email));
     }
 }

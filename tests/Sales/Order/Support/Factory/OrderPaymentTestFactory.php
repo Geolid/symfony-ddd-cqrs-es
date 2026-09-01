@@ -21,6 +21,12 @@ use Symfony\Component\Clock\Clock;
  *     reference: PaymentReference,
  *     checkoutUrl: string,
  *     requestedAt: \DateTimeImmutable,
+ *     authorizedAt?: \DateTimeImmutable,
+ *     failedAt?: \DateTimeImmutable,
+ *     capturedAt?: \DateTimeImmutable,
+ *     cancelledAt?: \DateTimeImmutable,
+ *     refundInitiatedAt?: \DateTimeImmutable,
+ *     refundConfirmedAt?: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<OrderPayment, Attributes>
@@ -56,52 +62,58 @@ final class OrderPaymentTestFactory extends AbstractAggregateTestFactory
     {
         $authorizedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt));
+        return $this->withAttributes(['authorizedAt' => $authorizedAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt));
     }
 
     public function failed(?\DateTimeImmutable $failedAt = null): self
     {
         $failedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt));
+        return $this->withAttributes(['failedAt' => $failedAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt));
     }
 
     public function captured(?\DateTimeImmutable $capturedAt = null): self
     {
         $capturedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
+        return $this->withAttributes(['capturedAt' => $capturedAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
     }
 
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         $cancelledAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
+        return $this->withAttributes(['cancelledAt' => $cancelledAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
     }
 
     public function refundInitiated(?\DateTimeImmutable $initiatedAt = null): self
     {
         $initiatedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt));
+        return $this->withAttributes(['refundInitiatedAt' => $initiatedAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt));
     }
 
     public function refundConfirmed(?\DateTimeImmutable $refundedAt = null): self
     {
         $refundedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($refundedAt));
+        return $this->withAttributes(['refundConfirmedAt' => $refundedAt])
+            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($refundedAt));
     }
 
     protected function defaults(): array
     {
         return [
-            'orderId' => Uuid::uuid7()->toString(),
-            'amount' => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-            'reference' => PaymentReference::fromString(SeededFaker::get()->regexify('GLBX-[A-Z0-9]{8}')),
-            'checkoutUrl' => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
-            'requestedAt' => ClockSequence::next(),
+            'orderId' => static fn (): string => Uuid::uuid7()->toString(),
+            'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+            'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->regexify('GLBX-[A-Z0-9]{8}')),
+            'checkoutUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
+            'requestedAt' => ClockSequence::next(...),
         ];
     }
 

@@ -19,7 +19,7 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
 {
     #[Test]
     #[DataProvider('provideAcceptedValues')]
-    public function itAcceptsWhenTheValueObjectConstructsSuccessfully(mixed $value, ValidValueObject $constraint): void
+    public function itAccepts(mixed $value, ValidValueObject $constraint): void
     {
         // When
         $this->validator->validate($value, $constraint);
@@ -38,8 +38,57 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
+    #[DataProvider('provideEmptyValues')]
+    public function itAcceptsEmptyValue(mixed $value): void
+    {
+        // When
+        $this->validator->validate($value, new ValidValueObject(StubValue::class, method: 'fromString'));
+
+        // Then
+        $this->assertNoViolation();
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function provideEmptyValues(): iterable
+    {
+        yield 'nothing' => [null];
+        yield 'an empty string' => [''];
+        yield 'an empty list' => [[]];
+    }
+
+    #[Test]
+    public function itCarriesGroupsAndPayload(): void
+    {
+        // Given
+        $groups = ['group-a'];
+        $payload = 'payload-a';
+
+        // When
+        $constraint = new ValidValueObject(StubValue::class, method: 'fromString', groups: $groups, payload: $payload);
+
+        // Then
+        self::assertSame($groups, $constraint->groups);
+        self::assertSame($payload, $constraint->payload);
+    }
+
+    #[Test]
+    public function itFailsWhenConstraintNotSupported(): void
+    {
+        // Given
+        $constraint = new NotBlank();
+
+        // Then
+        $this->expectException(UnexpectedTypeException::class);
+
+        // When
+        $this->validator->validate('acceptable', $constraint);
+    }
+
+    #[Test]
     #[DataProvider('provideRefusals')]
-    public function itReportsWhyTheValueObjectRefusedTheValue(mixed $value, ValidValueObject $constraint, string $reason): void
+    public function itRefuses(mixed $value, ValidValueObject $constraint, string $reason): void
     {
         // When
         $this->validator->validate($value, $constraint);
@@ -60,48 +109,6 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
         yield 'a value of the wrong type' => ['mistyped', new ValidValueObject(StubValue::class, method: 'fromString'), 'Expected a different type.'];
         yield 'a value outside the accepted range' => ['out-of-range', new ValidValueObject(StubValue::class, method: 'fromString'), 'Outside the accepted range.'];
         yield 'a spread array value' => [['same', 'same'], new ValidValueObject(StubPair::class, method: 'of'), 'Refused a matching pair.'];
-    }
-
-    #[Test]
-    #[DataProvider('provideEmptyValues')]
-    public function itLeavesAnEmptyValueToTheConstraintThatOwnsIt(mixed $value): void
-    {
-        // When
-        $this->validator->validate($value, new ValidValueObject(StubValue::class, method: 'fromString'));
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    /**
-     * @return iterable<string, array{mixed}>
-     */
-    public static function provideEmptyValues(): iterable
-    {
-        yield 'nothing' => [null];
-        yield 'an empty string' => [''];
-        yield 'an empty list' => [[]];
-    }
-
-    #[Test]
-    public function itCarriesTheGroupsAndPayloadItWasGiven(): void
-    {
-        // When
-        $constraint = new ValidValueObject(StubValue::class, method: 'fromString', groups: ['registration'], payload: 'severity');
-
-        // Then
-        self::assertSame(['registration'], $constraint->groups);
-        self::assertSame('severity', $constraint->payload);
-    }
-
-    #[Test]
-    public function itFailsOnAConstraintItDoesNotValidate(): void
-    {
-        // Then
-        $this->expectException(UnexpectedTypeException::class);
-
-        // When
-        $this->validator->validate('acceptable', new NotBlank());
     }
 
     protected function createValidator(): ValueObjectValidator

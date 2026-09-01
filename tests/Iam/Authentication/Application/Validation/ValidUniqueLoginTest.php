@@ -35,7 +35,7 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
     public function itAccepts(): void
     {
         // When
-        $this->validateValue('ada.lovelace');
+        $this->validateValue('john.doe');
 
         // Then
         $this->assertNoViolation();
@@ -45,10 +45,10 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', 'owner-id');
+        $this->registry->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'john.doe', 'owner-id');
 
         // When
-        $this->validateValue('ada.lovelace');
+        $this->validateValue('john.doe');
 
         // Then
         $this->assertViolationsCount(1);

@@ -12,16 +12,28 @@ use Shared\Domain\ValueObject\Address;
 final class AddressTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $street, string $postalCode, string $city, string $countryCode): void
     {
         // When
-        $address = Address::of('  12 rue des Lilas  ', '  75001  ', '  Paris  ', 'FR');
+        $address = Address::of($street, $postalCode, $city, $countryCode);
 
         // Then
-        self::assertSame('12 rue des Lilas', $address->street);
-        self::assertSame('75001', $address->postalCode);
-        self::assertSame('Paris', $address->city);
-        self::assertSame('12 rue des Lilas, 75001 Paris, FR', $address->toString());
+        self::assertSame($street, $address->street);
+        self::assertSame($postalCode, $address->postalCode);
+        self::assertSame($city, $address->city);
+        self::assertSame(\sprintf('%s, %s %s, %s', $street, $postalCode, $city, $countryCode), $address->toString());
+    }
+
+    /**
+     * @return iterable<string, array{street: string, postalCode: string, city: string, countryCode: string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'address' => self::address();
+        yield 'street at maximum length' => self::address(['street' => str_repeat('a', Address::STREET_MAX_LENGTH)]);
+        yield 'postal code at maximum length' => self::address(['postalCode' => str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH)]);
+        yield 'city at maximum length' => self::address(['city' => str_repeat('a', Address::CITY_MAX_LENGTH)]);
     }
 
     #[Test]
@@ -36,42 +48,69 @@ final class AddressTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, string, string, string}>
+     * @return iterable<string, array{street: string, postalCode: string, city: string, countryCode: string}>
      */
     public static function provideInvalidValues(): iterable
     {
-        yield 'empty street' => ['', '75001', 'Paris', 'FR'];
-        yield 'too long street' => [str_repeat('a', Address::STREET_MAX_LENGTH + 1), '75001', 'Paris', 'FR'];
-        yield 'empty postal code' => ['12 rue des Lilas', '', 'Paris', 'FR'];
-        yield 'too long postal code' => ['12 rue des Lilas', str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH + 1), 'Paris', 'FR'];
-        yield 'empty city' => ['12 rue des Lilas', '75001', '', 'FR'];
-        yield 'too long city' => ['12 rue des Lilas', '75001', str_repeat('a', Address::CITY_MAX_LENGTH + 1), 'FR'];
-        yield 'unknown country code' => ['12 rue des Lilas', '75001', 'Paris', 'XX'];
+        yield 'empty street' => self::address(['street' => '']);
+        yield 'too long street' => self::address(['street' => str_repeat('a', Address::STREET_MAX_LENGTH + 1)]);
+        yield 'empty postal code' => self::address(['postalCode' => '']);
+        yield 'too long postal code' => self::address(['postalCode' => str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH + 1)]);
+        yield 'empty city' => self::address(['city' => '']);
+        yield 'too long city' => self::address(['city' => str_repeat('a', Address::CITY_MAX_LENGTH + 1)]);
+        yield 'unknown country code' => self::address(['countryCode' => 'XX']);
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
-        $a = Address::of('12 rue des Lilas', '75001', 'Paris', 'FR');
-        $b = Address::of('  12 rue des Lilas  ', '  75001  ', '  Paris  ', 'FR');
-        $differentStreet = Address::of('8 avenue Foch', '75001', 'Paris', 'FR');
-        $differentPostalCode = Address::of('12 rue des Lilas', '75116', 'Paris', 'FR');
-        $differentCity = Address::of('12 rue des Lilas', '75001', 'Lyon', 'FR');
-        $differentCountryCode = Address::of('12 rue des Lilas', '75001', 'Paris', 'BE');
+        $a = Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR');
+        $b = Address::of('  10 Rue de la Paix  ', '  75002  ', '  Paris  ', 'FR');
 
         // When
-        $equalResult = $a->equals($b);
-        $differentStreetResult = $a->equals($differentStreet);
-        $differentPostalCodeResult = $a->equals($differentPostalCode);
-        $differentCityResult = $a->equals($differentCity);
-        $differentCountryCodeResult = $a->equals($differentCountryCode);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentStreetResult);
-        self::assertFalse($differentPostalCodeResult);
-        self::assertFalse($differentCityResult);
-        self::assertFalse($differentCountryCodeResult);
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR');
+
+        $differentStreet = Address::of('8 Avenue Foch', '75002', 'Paris', 'FR');
+        $differentPostalCode = Address::of('10 Rue de la Paix', '75016', 'Paris', 'FR');
+        $differentCity = Address::of('10 Rue de la Paix', '75002', 'Lyon', 'FR');
+        $differentCountryCode = Address::of('10 Rue de la Paix', '75002', 'Paris', 'BE');
+
+        // When
+        $differsOnStreet = $a->equals($differentStreet);
+        $differsOnPostalCode = $a->equals($differentPostalCode);
+        $differsOnCity = $a->equals($differentCity);
+        $differsOnCountryCode = $a->equals($differentCountryCode);
+
+        // Then
+        self::assertFalse($differsOnStreet);
+        self::assertFalse($differsOnPostalCode);
+        self::assertFalse($differsOnCity);
+        self::assertFalse($differsOnCountryCode);
+    }
+
+    /**
+     * @param array<string, string> $overrides
+     *
+     * @return array{street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private static function address(array $overrides = []): array
+    {
+        return $overrides + [
+            'street' => '10 Rue de la Paix',
+            'postalCode' => '75002',
+            'city' => 'Paris',
+            'countryCode' => 'FR',
+        ];
     }
 }

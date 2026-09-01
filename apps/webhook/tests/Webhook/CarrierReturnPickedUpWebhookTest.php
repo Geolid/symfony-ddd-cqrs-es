@@ -32,7 +32,8 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->statusOf($shipment->id->toString()));
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 
     #[Test]
@@ -146,10 +147,5 @@ final class CarrierReturnPickedUpWebhookTest extends AbstractWebhookTestCase
     private static function anyReturnTrackingReference(): string
     {
         return ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference');
-    }
-
-    private function statusOf(string $id): ShipmentStatus
-    {
-        return $this->service(ShipmentFinderInterface::class)->ofId($id)->status;
     }
 }

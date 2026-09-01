@@ -12,21 +12,21 @@ use Shared\Infrastructure\Sentry\AppIdTagger;
 final class AppIdTaggerTest extends TestCase
 {
     #[Test]
-    public function itTagsTheReportWithTheApplication(): void
+    public function itTags(): void
     {
         // Given
-        $enricher = new AppIdTagger('web');
+        $enricher = new AppIdTagger('test-app');
 
         // When
         $event = $enricher->beforeSend()(Event::createEvent());
 
         // Then
         self::assertInstanceOf(Event::class, $event);
-        self::assertSame(['app_id' => 'web'], $event->getTags());
+        self::assertSame(['app_id' => 'test-app'], $event->getTags());
     }
 
     #[Test]
-    public function itTagsNothingWithoutAnApplication(): void
+    public function itIgnoresWhenNoApplication(): void
     {
         // Given
         $enricher = new AppIdTagger(null);

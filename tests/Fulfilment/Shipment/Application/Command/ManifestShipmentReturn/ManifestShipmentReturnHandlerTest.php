@@ -14,11 +14,9 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
-use Support\SeededFaker;
 
 final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
@@ -38,7 +36,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
-        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
+        $returnTrackingReference = ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference')->value;
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
@@ -54,7 +52,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
+        $returnTrackingReference = ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference')->value;
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, $shipment->id->toString());
@@ -77,7 +75,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($id, SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}')));
+        $this->dispatch(new ManifestShipmentReturn($id, ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference')->value));
     }
 
     #[Test]
@@ -105,15 +103,15 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}')));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference')->value));
     }
 
     #[Test]
     public function itFailsWhenReturnTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $returnTrackingReference = SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}');
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, Uuid::uuid7()->toString());
+        $returnTrackingReference = ShipmentTestFactory::new()->returnManifested()->attribute('returnTrackingReference')->value;
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, ShipmentTestFactory::new()->create()->id->toString());
         $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 

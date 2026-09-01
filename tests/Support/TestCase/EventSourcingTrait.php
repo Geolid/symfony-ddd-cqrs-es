@@ -12,10 +12,17 @@ use Patchlevel\EventSourcing\Store\Store;
 
 trait EventSourcingTrait
 {
-    abstract protected function service(string $serviceId): mixed;
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $serviceId
+     *
+     * @return T
+     */
+    abstract protected function service(string $serviceId): object;
 
     /**
-     * Saves aggregates, synchronously triggering publishers, projectors, and sync processors.
+     * Saves aggregates, synchronously triggering publishers and projectors.
      *
      * @see config/packages/patchlevel_event_sourcing.php (run_after_aggregate_save)
      */

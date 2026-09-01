@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
-use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
+use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
@@ -14,40 +14,63 @@ use Support\AbstractIntegrationTestCase;
 final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private ApiKeyCredentialRepositoryInterface $repository;
+    private FakeApiKeyHasher $hasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->repository = $this->service(ApiKeyCredentialRepositoryInterface::class);
+        $this->hasher = new FakeApiKeyHasher();
     }
 
     #[Test]
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = ApiKeyCredentialTestFactory::new()->withHasher(new StubApiKeyHasher())->create();
+        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
+        $credential = $factory->create();
 
         // When
         $this->repository->save($credential);
+        $loaded = $this->repository->load($credential->id);
 
         // Then
-        $id = $credential->id;
-        self::assertTrue($this->repository->has($id));
-        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
+        self::assertSame($factory['id']->toString(), $loaded->id->toString());
+        self::assertSame($factory['label']->value, $loaded->label->value);
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = ApiKeyCredentialTestFactory::new()->attribute('id');
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(ApiKeyCredentialNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(ApiKeyCredentialTestFactory::sample('id'));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $credential = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $this->repository->save($credential);
+
+        // When
+        $exists = $this->repository->has($credential->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(ApiKeyCredentialTestFactory::sample('id'));
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

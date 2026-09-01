@@ -11,7 +11,14 @@ use Shared\Application\Query\QueryInterface;
 
 trait CqrsTrait
 {
-    abstract protected function service(string $serviceId): mixed;
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $serviceId
+     *
+     * @return T
+     */
+    abstract protected function service(string $serviceId): object;
 
     /**
      * Dispatches a command through the command bus.

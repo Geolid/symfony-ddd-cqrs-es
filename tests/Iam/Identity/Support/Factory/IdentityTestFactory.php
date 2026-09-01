@@ -7,7 +7,6 @@ namespace Iam\Tests\Identity\Support\Factory;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Support\ClockSequence;
 use Support\Factory\AbstractAggregateTestFactory;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
@@ -16,7 +15,10 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: IdentityId,
  *     registeredAt: \DateTimeImmutable,
- *     reason?: string,
+ *     reason: Reason,
+ *     suspendedAt: \DateTimeImmutable,
+ *     reactivatedAt: \DateTimeImmutable,
+ *     erasedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<Identity, Attributes>
@@ -25,52 +27,64 @@ final class IdentityTestFactory extends AbstractAggregateTestFactory
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(['id' => IdentityId::fromString($id)]);
+        return $this->withAttributes(id: IdentityId::fromString($id));
     }
 
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withAttributes(['registeredAt' => $registeredAt]);
+        return $this->withAttributes(registeredAt: $registeredAt);
     }
 
     public function suspended(?string $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
     {
-        $reason ??= SeededFaker::get()->sentence(4);
-        $suspendedAt ??= Clock::get()->now();
+        $factory = $this->withAttributes(...array_filter([
+            'reason' => null !== $reason ? Reason::fromString($reason) : null,
+            'suspendedAt' => $suspendedAt,
+        ]));
 
-        return $this->withAttributes(['reason' => $reason])
-            ->withModifier(static fn (Identity $identity) => $identity->suspend(Reason::fromString($reason), $suspendedAt));
+        return $factory->withModifier(
+            static fn (Identity $identity, self $factory) => $identity->suspend($factory['reason'], $factory['suspendedAt']),
+        );
     }
 
     public function reactivated(?string $reason = null, ?\DateTimeImmutable $reactivatedAt = null): self
     {
-        $reason ??= SeededFaker::get()->sentence(4);
-        $reactivatedAt ??= Clock::get()->now();
+        $factory = $this->withAttributes(...array_filter([
+            'reason' => null !== $reason ? Reason::fromString($reason) : null,
+            'reactivatedAt' => $reactivatedAt,
+        ]));
 
-        return $this->withAttributes(['reason' => $reason])
-            ->withModifier(static fn (Identity $identity) => $identity->reactivate(Reason::fromString($reason), $reactivatedAt));
+        return $factory->withModifier(
+            static fn (Identity $identity, self $factory) => $identity->reactivate($factory['reason'], $factory['reactivatedAt']),
+        );
     }
 
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
-        $erasedAt ??= Clock::get()->now();
+        $factory = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
 
-        return $this->withModifier(static fn (Identity $identity) => $identity->erase($erasedAt));
+        return $factory->withModifier(
+            static fn (Identity $identity, self $factory) => $identity->erase($factory['erasedAt']),
+        );
     }
 
-    protected function defaults(): array
+    protected static function defaults(): array
     {
         return [
-            'id' => IdentityId::generate(),
-            'registeredAt' => ClockSequence::next(),
+            'id' => IdentityId::generate(...),
+            'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
+            'suspendedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'reactivatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
         ];
     }
 
     protected function build(): Identity
     {
         return Identity::register(
-            id: $this->attribute('id'),
-            registeredAt: $this->attribute('registeredAt'),
+            id: $this['id'],
+            registeredAt: $this['registeredAt'],
         );
     }
 }

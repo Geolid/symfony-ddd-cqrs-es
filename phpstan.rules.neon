@@ -1,0 +1,25 @@
+services:
+    -
+        class: Tools\PHPStan\Rules\ForbidDateTimeImmutableWithoutTimezoneRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPStan\Rules\ForbidRamseyUuidInTestsRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPStan\Rules\ForbidInlineCallInAssertionRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPStan\Rules\ForbidRepeatedServiceResolutionRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPStan\Rules\ForbidDateTimeImmutableOutsideClockRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Tools\PHPStan\Rules\ForbidMultipleDateTimeInstancesRule
+        tags:
+            - phpstan.rules.rule

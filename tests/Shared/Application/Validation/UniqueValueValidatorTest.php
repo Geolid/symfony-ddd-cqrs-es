@@ -20,125 +20,40 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 {
+    private const string OWNER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
+
     private FakeUniqueValueRegistry $registry;
 
     #[Test]
-    public function itAcceptsAValueNobodyReserved(): void
+    public function itAccepts(): void
     {
         // When
-        $this->validator->validate('buyer@example.com', new ValidUniqueValue(DummyUniqueKey::EMAIL));
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A));
 
         // Then
         $this->assertNoViolation();
     }
 
     #[Test]
-    public function itReportsAValueAlreadyReserved(): void
+    public function itAcceptsOwnReservationWhileEditing(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
+        $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
-        $this->validator->validate('buyer@example.com', new ValidUniqueValue(DummyUniqueKey::EMAIL));
-
-        // Then
-        $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
-            ->setParameter('{{ value }}', 'buyer@example.com')
-            ->setParameter('{{ key }}', 'EMAIL')
-            ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
-            ->assertRaised();
-    }
-
-    #[Test]
-    public function itReportsAValueAlreadyReservedUnderACompositeKey(): void
-    {
-        // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL, 'scope'), 'buyer@example.com', 'owner-id');
-
-        // When
-        $this->validator->validate('buyer@example.com', new ValidUniqueValue(DummyUniqueKey::EMAIL, ['scope']));
-
-        // Then
-        $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
-            ->setParameter('{{ value }}', 'buyer@example.com')
-            ->setParameter('{{ key }}', 'EMAIL')
-            ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
-            ->assertRaised();
-    }
-
-    #[Test]
-    public function itIgnoresAValueAlreadyOwnedByTheEditedObjectItself(): void
-    {
-        // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');
-        $this->setObject(new DummyEditedObject('owner-id'));
-
-        // When
-        $this->validator->validate(
-            'buyer@example.com',
-            new ValidUniqueValue(DummyUniqueKey::EMAIL, excludeOwnerIdPropertyPath: 'id'),
-        );
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id'));
 
         // Then
         $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itReportsAValueOwnedBySomeoneElseWhileEditing(): void
-    {
-        // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::EMAIL), 'buyer@example.com', 'someone-elses-id');
-        $this->setObject(new DummyEditedObject('owner-id'));
-
-        // When
-        $this->validator->validate(
-            'buyer@example.com',
-            new ValidUniqueValue(DummyUniqueKey::EMAIL, excludeOwnerIdPropertyPath: 'id'),
-        );
-
-        // Then
-        $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
-            ->setParameter('{{ value }}', 'buyer@example.com')
-            ->setParameter('{{ key }}', 'EMAIL')
-            ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
-            ->assertRaised();
-    }
-
-    #[Test]
-    public function itFailsOnExclusionWithoutAnObject(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        $this->validator->validate(
-            'buyer@example.com',
-            new ValidUniqueValue(DummyUniqueKey::EMAIL, excludeOwnerIdPropertyPath: 'id'),
-        );
-    }
-
-    #[Test]
-    public function itFailsOnANonStringExcludedOwnerProperty(): void
-    {
-        // Given
-        $this->setObject(new DummyEditedObjectWithNonStringId(42));
-
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        $this->validator->validate(
-            'buyer@example.com',
-            new ValidUniqueValue(DummyUniqueKey::EMAIL, excludeOwnerIdPropertyPath: 'id'),
-        );
     }
 
     #[Test]
     #[DataProvider('provideEmptyValues')]
-    public function itLeavesAnEmptyValueToTheConstraintThatOwnsIt(mixed $value): void
+    public function itAcceptsEmptyValue(mixed $value): void
     {
         // When
-        $this->validator->validate($value, new ValidUniqueValue(DummyUniqueKey::EMAIL));
+        $this->validator->validate($value, new ValidUniqueValue(DummyUniqueKey::A));
 
         // Then
         $this->assertNoViolation();
@@ -154,34 +69,113 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
-    public function itFailsOnAValueItCannotRead(): void
+    public function itCarriesGroupsAndPayload(): void
     {
-        // Then
-        $this->expectException(UnexpectedValueException::class);
+        // Given
+        $groups = ['group-a'];
+        $payload = 'payload-a';
 
         // When
-        $this->validator->validate(42, new ValidUniqueValue(DummyUniqueKey::EMAIL));
+        $constraint = new ValidUniqueValue(DummyUniqueKey::A, groups: $groups, payload: $payload);
+
+        // Then
+        self::assertSame($groups, $constraint->groups);
+        self::assertSame($payload, $constraint->payload);
     }
 
     #[Test]
-    public function itCarriesTheGroupsAndPayloadItWasGiven(): void
+    public function itFailsWhenConstraintNotSupported(): void
     {
-        // When
-        $constraint = new ValidUniqueValue(DummyUniqueKey::EMAIL, groups: ['registration'], payload: 'severity');
+        // Given
+        $constraint = new NotBlank();
 
-        // Then
-        self::assertSame(['registration'], $constraint->groups);
-        self::assertSame('severity', $constraint->payload);
-    }
-
-    #[Test]
-    public function itFailsOnAConstraintItDoesNotValidate(): void
-    {
         // Then
         $this->expectException(UnexpectedTypeException::class);
 
         // When
-        $this->validator->validate('buyer@example.com', new NotBlank());
+        $this->validator->validate('reserved-value', $constraint);
+    }
+
+    #[Test]
+    public function itFailsWhenValueNotString(): void
+    {
+        // Given
+        $invalidValue = 42;
+        $constraint = new ValidUniqueValue(DummyUniqueKey::A);
+
+        // Then
+        $this->expectException(UnexpectedValueException::class);
+
+        // When
+        $this->validator->validate($invalidValue, $constraint);
+    }
+
+    #[Test]
+    public function itFailsWhenExcludingWithoutObject(): void
+    {
+        // Given
+        $constraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
+
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        $this->validator->validate('reserved-value', $constraint);
+    }
+
+    #[Test]
+    public function itFailsWhenExcludedOwnerPropertyNotString(): void
+    {
+        // Given
+        $this->setObject(new DummyEditedObject(42));
+        $constraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
+
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        $this->validator->validate('reserved-value', $constraint);
+    }
+
+    #[Test]
+    public function itRefuses(): void
+    {
+        // Given
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
+
+        // When
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A));
+
+        // Then
+        $this->assertViolationRaised();
+    }
+
+    #[Test]
+    public function itRefusesWithScope(): void
+    {
+        // Given
+        $scope = 'scope-a';
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A, $scope), 'reserved-value', self::OWNER_ID);
+
+        // When
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, [$scope]));
+
+        // Then
+        $this->assertViolationRaised();
+    }
+
+    #[Test]
+    public function itRefusesWhileEditing(): void
+    {
+        // Given
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $this->setObject(new DummyEditedObject(self::OWNER_ID));
+
+        // When
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id'));
+
+        // Then
+        $this->assertViolationRaised();
     }
 
     protected function createValidator(): UniqueValueValidator
@@ -190,23 +184,25 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 
         return new UniqueValueValidator($this->registry);
     }
+
+    private function assertViolationRaised(): void
+    {
+        $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
+            ->setParameter('{{ value }}', 'reserved-value')
+            ->setParameter('{{ key }}', 'A')
+            ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
+            ->assertRaised();
+    }
 }
 
 enum DummyUniqueKey: string
 {
-    case EMAIL = 'dummy.email';
+    case A = 'dummy.a';
 }
 
 final readonly class DummyEditedObject
 {
-    public function __construct(public string $id)
-    {
-    }
-}
-
-final readonly class DummyEditedObjectWithNonStringId
-{
-    public function __construct(public int $id)
+    public function __construct(public int|string $id)
     {
     }
 }

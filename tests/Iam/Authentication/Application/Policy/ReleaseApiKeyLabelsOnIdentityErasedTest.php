@@ -7,11 +7,12 @@ namespace Iam\Tests\Authentication\Application\Policy;
 use Iam\Authentication\Application\Policy\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
@@ -30,18 +31,30 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
     public function itReleases(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $otherIdentityId = Uuid::uuid7()->toString();
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CI pipeline', Uuid::uuid7()->toString());
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CD deploy', Uuid::uuid7()->toString());
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId), 'CI pipeline', Uuid::uuid7()->toString());
+        $identityId = ApiKeyCredentialTestFactory::sample('identityId');
+        $otherIdentityId = ApiKeyCredentialTestFactory::sample('identityId');
+
+        $label = ApiKeyCredentialTestFactory::sample('label')->value;
+        $otherLabel = ApiKeyCredentialTestFactory::sample('label')->value;
+
+        $this->reserveLabel($identityId, $label);
+        $this->reserveLabel($identityId, $otherLabel);
+        $this->reserveLabel($otherIdentityId, $label);
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CI pipeline'));
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), 'CD deploy'));
-        self::assertTrue($this->uniqueValues->exists(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId), 'CI pipeline'));
+        $key = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId);
+        $otherKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId);
+
+        self::assertFalse($this->uniqueValues->exists($key, $label));
+        self::assertFalse($this->uniqueValues->exists($key, $otherLabel));
+        self::assertTrue($this->uniqueValues->exists($otherKey, $label));
+    }
+
+    private function reserveLabel(string $identityId, string $label): void
+    {
+        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, ApiKeyCredentialTestFactory::sample('id')->toString());
     }
 }

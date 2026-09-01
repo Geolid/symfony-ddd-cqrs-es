@@ -21,11 +21,11 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $product = ProductTestFactory::new()->create();
         $this->store($product);
 
-        // Then
-        $this->expectException(ProductResultNotFoundException::class);
-
         // When
         $this->dispatch(new DelistProduct($product->id->toString()));
+
+        // Then
+        $this->expectException(ProductResultNotFoundException::class);
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
     }
 

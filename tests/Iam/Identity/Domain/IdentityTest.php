@@ -12,140 +12,146 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
+use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 final class IdentityTest extends AggregateRootTestCase
 {
+    private IdentityId $id;
+    private Reason $reason;
+    private \DateTimeImmutable $registeredAt;
+    private \DateTimeImmutable $suspendedAt;
+    private \DateTimeImmutable $erasedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->id = IdentityTestFactory::sample('id');
+        $this->reason = IdentityTestFactory::sample('reason');
+        $this->registeredAt = IdentityTestFactory::sample('registeredAt');
+        $this->suspendedAt = IdentityTestFactory::sample('suspendedAt');
+        $this->erasedAt = IdentityTestFactory::sample('erasedAt');
+    }
+
     #[Test]
     public function itRegisters(): void
     {
-        $id = IdentityId::generate();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given()
-            ->when(static fn (): Identity => Identity::register($id, $now))
-            ->then(new IdentityRegistered($id->toString(), $now));
+            ->when(fn (): Identity => Identity::register($this->id, $this->registeredAt))
+            ->then($this->registered());
     }
 
     #[Test]
     public function itSuspends(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $suspendedAt = $now->modify('+1 day');
-
         $this
-            ->given(new IdentityRegistered($id, $now))
-            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt))
-            ->then(new IdentitySuspended($id, 'Suspected fraudulent activity', $suspendedAt));
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
+            ->then($this->suspended());
     }
 
     #[Test]
     public function itDoesNotSuspendWhenAlreadySuspended(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given(
-                new IdentityRegistered($id, $now),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
+                $this->registered(),
+                $this->suspended(),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Manual request'), $now->modify('+2 days')))
+            ->when(fn (Identity $identity) => $identity->suspend(IdentityTestFactory::sample('reason'), $this->suspendedAt))
             ->then();
     }
 
     #[Test]
     public function itCannotSuspendWhenErased(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given(
-                new IdentityRegistered($id, $now),
-                new IdentityErased($id, $now->modify('+1 day')),
+                $this->registered(),
+                $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $now->modify('+2 days')))
+            ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
     public function itReactivatesWhenSuspended(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $reactivatedAt = $now->modify('+2 days');
+        $reason = IdentityTestFactory::sample('reason');
+        $reactivatedAt = IdentityTestFactory::sample('reactivatedAt');
 
         $this
             ->given(
-                new IdentityRegistered($id, $now),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
+                $this->registered(),
+                $this->suspended(),
             )
-            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $reactivatedAt))
-            ->then(new IdentityReactivated($id, 'Appeal upheld', $reactivatedAt));
+            ->when(static fn (Identity $identity) => $identity->reactivate($reason, $reactivatedAt))
+            ->then(new IdentityReactivated($this->id->toString(), $reason->value, $reactivatedAt));
     }
 
     #[Test]
     public function itDoesNotReactivateWhenNotSuspended(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given(new IdentityRegistered($id, $now))
-            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $now->modify('+1 day')))
+            ->given($this->registered())
+            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityTestFactory::sample('reason'), IdentityTestFactory::sample('reactivatedAt')))
             ->then();
     }
 
     #[Test]
     public function itCannotReactivateWhenErased(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given(
-                new IdentityRegistered($id, $now),
-                new IdentitySuspended($id, 'Suspected fraudulent activity', $now->modify('+1 day')),
-                new IdentityErased($id, $now->modify('+2 days')),
+                $this->registered(),
+                $this->suspended(),
+                $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->reactivate(Reason::fromString('Appeal upheld'), $now->modify('+3 days')))
+            ->when(static fn (Identity $identity) => $identity->reactivate(IdentityTestFactory::sample('reason'), IdentityTestFactory::sample('reactivatedAt')))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
     public function itErases(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $erasedAt = $now->modify('+1 day');
-
         $this
-            ->given(new IdentityRegistered($id, $now))
-            ->when(static fn (Identity $identity) => $identity->erase($erasedAt))
-            ->then(new IdentityErased($id, $erasedAt));
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
+            ->then($this->erased());
     }
 
     #[Test]
     public function itDoesNotEraseWhenAlreadyErased(): void
     {
-        $id = IdentityId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given(
-                new IdentityRegistered($id, $now),
-                new IdentityErased($id, $now->modify('+1 day')),
+                $this->registered(),
+                $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erase($now->modify('+2 days')))
+            ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
             ->then();
     }
 
     protected function aggregateClass(): string
     {
         return Identity::class;
+    }
+
+    private function registered(): IdentityRegistered
+    {
+        return new IdentityRegistered($this->id->toString(), $this->registeredAt);
+    }
+
+    private function suspended(): IdentitySuspended
+    {
+        return new IdentitySuspended($this->id->toString(), $this->reason->value, $this->suspendedAt);
+    }
+
+    private function erased(): IdentityErased
+    {
+        return new IdentityErased($this->id->toString(), $this->erasedAt);
     }
 }

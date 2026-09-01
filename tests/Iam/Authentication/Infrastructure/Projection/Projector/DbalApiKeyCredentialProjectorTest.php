@@ -5,30 +5,35 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
-use Iam\Identity\Domain\ValueObject\Reason;
-use Iam\Tests\Authentication\Support\Doubles\StubApiKeyHasher;
+use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{label: string, issued_at: string, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
  */
 final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
+    private FakeApiKeyHasher $hasher;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->hasher = new FakeApiKeyHasher();
+    }
+
     #[Test]
     public function itProjectsOnApiKeyCredentialIssued(): void
     {
         // Given
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withLabel('CI pipeline')
-            ->withIssuedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
-            ->withHasher(new StubApiKeyHasher())
-            ->create();
+        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
+        $credential = $factory->create();
 
         // When
         $this->store($credential);
@@ -36,8 +41,8 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('CI pipeline', $row['label']);
-        self::assertSame('2026-01-01 00:00:00', $row['issued_at']);
+        self::assertSame($factory['label']->value, $row['label']);
+        self::assertSame($factory['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
         self::assertFalse((bool) $row['revoked']);
         self::assertNull($row['revoked_at']);
         self::assertTrue((bool) $row['identity_authenticatable']);
@@ -47,11 +52,13 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnApiKeyCredentialRevoked(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withHasher(new StubApiKeyHasher())
-            ->revoked(revokedAt: new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
-            ->create();
+        $other = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $this->store($other);
+
+        $factory = ApiKeyCredentialTestFactory::new()
+            ->withHasher($this->hasher)
+            ->revoked();
+        $credential = $factory->create();
 
         // When
         $this->store($credential);
@@ -60,7 +67,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['revoked']);
-        self::assertSame('2026-01-02 00:00:00', $row['revoked_at']);
+        self::assertSame($factory['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -72,17 +79,17 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->create();
+        $other = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $this->store($other);
+
+        $identity = IdentityTestFactory::new()->suspended()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withHasher(new StubApiKeyHasher())
+            ->withHasher($this->hasher)
             ->create();
-        $this->store($identity, $credential);
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         $row = $this->fetchRow($credential->id->toString());
@@ -98,17 +105,20 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential(suspended: true);
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $otherIdentity = IdentityTestFactory::new()->suspended()->create();
+        $other = ApiKeyCredentialTestFactory::new()
+            ->withIdentityId($otherIdentity->id->toString())
+            ->withHasher($this->hasher)
+            ->create();
+
+        $identity = IdentityTestFactory::new()->suspended()->reactivated()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withHasher(new StubApiKeyHasher())
+            ->withHasher($this->hasher)
             ->create();
-        $this->store($credential, $identity);
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($other, $otherIdentity, $credential, $identity);
 
         // Then
         $row = $this->fetchRow($credential->id->toString());
@@ -124,38 +134,21 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->create();
+        $other = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->create();
+        $this->store($other);
+
+        $identity = IdentityTestFactory::new()->erased()->create();
         $credential = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withHasher(new StubApiKeyHasher())
+            ->withHasher($this->hasher)
             ->create();
-        $this->store($identity, $credential);
 
         // When
-        $identity->erase(Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         self::assertFalse($this->fetchRow($credential->id->toString()));
         self::assertNotFalse($this->fetchRow($other->id->toString()));
-    }
-
-    private function otherCredential(bool $suspended = false): ApiKeyCredential
-    {
-        $identity = IdentityTestFactory::new()->create();
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher(new StubApiKeyHasher())
-            ->create();
-        $this->store($identity, $credential);
-
-        if ($suspended) {
-            $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-            $this->store($identity);
-        }
-
-        return $credential;
     }
 
     /**

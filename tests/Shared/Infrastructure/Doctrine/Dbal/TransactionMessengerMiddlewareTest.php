@@ -6,7 +6,6 @@ namespace Shared\Tests\Infrastructure\Doctrine\Dbal;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Support\AbstractIntegrationTestCase;
 use Support\Doubles\DummyMessage;
@@ -28,45 +27,57 @@ final class TransactionMessengerMiddlewareTest extends AbstractIntegrationTestCa
         parent::setUp();
 
         $this->connection = $this->serviceAs('doctrine.dbal.event_store_connection', Connection::class);
-        $this->connection->executeStatement(\sprintf('CREATE TEMPORARY TABLE IF NOT EXISTS %s (value VARCHAR(255) NOT NULL)', self::TABLE));
+        $this->connection->executeStatement(\sprintf('CREATE TEMPORARY TABLE %s (value VARCHAR(255) NOT NULL)', self::TABLE));
         $this->middleware = new TransactionMessengerMiddleware($this->connection);
     }
 
+    protected function tearDown(): void
+    {
+        $this->connection->executeStatement(\sprintf('DROP TEMPORARY TABLE %s', self::TABLE));
+
+        parent::tearDown();
+    }
+
     #[Test]
-    public function itCommitsTheWriteOnSuccess(): void
+    public function itCommits(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
-        $stack = new StubStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new StubNextMiddleware()));
+        $stack = new StubStack(new StubInsertMiddleware($this->connection, self::TABLE, 'value', new StubNextMiddleware()));
 
         // When
         $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
 
         // Then
-        self::assertSame($value, $this->connection->fetchOne(\sprintf('SELECT value FROM %s WHERE value = ?', self::TABLE), [$value]));
+        self::assertSame('value', $this->storedValue());
     }
 
     #[Test]
-    public function itRollsBackTheWriteWhenTheStackFails(): void
+    public function itRollsBackWhenStackFails(): void
     {
         // Given
-        $value = Uuid::uuid7()->toString();
         $failure = new \RuntimeException('Handler blew up.');
-        $stack = new StubStack(new InsertThenDelegateMiddleware($this->connection, self::TABLE, $value, new StubNextMiddleware($failure)));
-
-        // Then
-        $this->expectExceptionObject($failure);
+        $stack = new StubStack(new StubInsertMiddleware($this->connection, self::TABLE, 'value', new StubNextMiddleware($failure)));
 
         // When
+        $caught = null;
         try {
             $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
-        } finally {
-            self::assertFalse($this->connection->fetchOne(\sprintf('SELECT value FROM %s WHERE value = ?', self::TABLE), [$value]));
+        } catch (\RuntimeException $exception) {
+            $caught = $exception;
         }
+
+        // Then
+        self::assertSame($failure, $caught);
+        self::assertFalse($this->storedValue());
+    }
+
+    private function storedValue(): mixed
+    {
+        return $this->connection->fetchOne('SELECT value FROM '.self::TABLE);
     }
 }
 
-final readonly class InsertThenDelegateMiddleware implements MiddlewareInterface
+final readonly class StubInsertMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private Connection $connection,

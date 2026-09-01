@@ -67,9 +67,9 @@ final class CustomerTestFactory extends AbstractAggregateTestFactory
     protected function defaults(): array
     {
         return [
-            'id' => CustomerId::generate(),
-            'email' => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
-            'registeredAt' => ClockSequence::next(),
+            'id' => CustomerId::generate(...),
+            'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
+            'registeredAt' => ClockSequence::next(...),
         ];
     }
 

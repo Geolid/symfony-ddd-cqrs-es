@@ -17,11 +17,19 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
     {
         // Given
         $listedAt = Clock::get()->now();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->withListedAt($listedAt)->create();
+        $product = ProductTestFactory::new()->withListedAt($listedAt)->create();
 
         // When
         $this->store($product);
 
+        $product->
+
+        // Then
+        $event = $this->publishedEventOf(ProductListedIntegrationEvent::class);
+        self::assertSame($product->id->toString(), $event->productId);
+        self::assertSame($product->label->value, $event->label);
+        self::assertSame($product->unitAmountInCents, $event->unitAmountInCents);
+        self::assertSame($listedAt->format(\DateTimeImmutable::ATOM), $event->listedAt->format(\DateTimeImmutable::ATOM));
         // Then
         $event = $this->publishedEventOf(ProductListedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);

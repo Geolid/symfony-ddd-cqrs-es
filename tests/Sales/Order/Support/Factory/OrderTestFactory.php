@@ -28,6 +28,15 @@ use Symfony\Component\Clock\Clock;
  *     lines: list<OrderLine>,
  *     placedAt: \DateTimeImmutable,
  *     returnRejectionReason?: string,
+ *     cancelledAt?: \DateTimeImmutable,
+ *     confirmedAt?: \DateTimeImmutable,
+ *     dispatchedAt?: \DateTimeImmutable,
+ *     deliveredAt?: \DateTimeImmutable,
+ *     completedAt?: \DateTimeImmutable,
+ *     returnRequestedAt?: \DateTimeImmutable,
+ *     returnedAt?: \DateTimeImmutable,
+ *     returnRejectedAt?: \DateTimeImmutable,
+ *     anonymizedAt?: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateTestFactory<Order, Attributes>
@@ -79,53 +88,60 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         $cancelledAt ??= Clock::get()->now();
 
-        return $this->withModifier(static function (Order $order, array $attributes) use ($cancelledAt): void {
-            $order->cancel($attributes['customerId'], $cancelledAt);
-        });
+        return $this->withAttributes(['cancelledAt' => $cancelledAt])
+            ->withModifier(static function (Order $order, array $attributes) use ($cancelledAt): void {
+                $order->cancel($attributes['customerId'], $cancelledAt);
+            });
     }
 
     public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
     {
         $confirmedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->confirm($confirmedAt));
+        return $this->withAttributes(['confirmedAt' => $confirmedAt])
+            ->withModifier(static fn (Order $order) => $order->confirm($confirmedAt));
     }
 
     public function dispatched(?\DateTimeImmutable $dispatchedAt = null): self
     {
         $dispatchedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
+        return $this->withAttributes(['dispatchedAt' => $dispatchedAt])
+            ->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
     }
 
     public function delivered(?\DateTimeImmutable $deliveredAt = null): self
     {
         $deliveredAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
+        return $this->withAttributes(['deliveredAt' => $deliveredAt])
+            ->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
     }
 
     public function completed(?\DateTimeImmutable $now = null): self
     {
         $now ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->complete($now));
+        return $this->withAttributes(['completedAt' => $now])
+            ->withModifier(static fn (Order $order) => $order->complete($now));
     }
 
     public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         $requestedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static function (Order $order, array $attributes) use ($requestedAt): void {
-            $order->requestReturn($attributes['customerId'], $requestedAt);
-        });
+        return $this->withAttributes(['returnRequestedAt' => $requestedAt])
+            ->withModifier(static function (Order $order, array $attributes) use ($requestedAt): void {
+                $order->requestReturn($attributes['customerId'], $requestedAt);
+            });
     }
 
     public function returned(?\DateTimeImmutable $returnedAt = null): self
     {
         $returnedAt ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->confirmReturn($returnedAt));
+        return $this->withAttributes(['returnedAt' => $returnedAt])
+            ->withModifier(static fn (Order $order) => $order->confirmReturn($returnedAt));
     }
 
     public function returnRejected(
@@ -135,7 +151,7 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
         $reason ??= SeededFaker::get()->sentence(4);
         $rejectedAt ??= Clock::get()->now();
 
-        return $this->withAttributes(['returnRejectionReason' => $reason])
+        return $this->withAttributes(['returnRejectionReason' => $reason, 'returnRejectedAt' => $rejectedAt])
             ->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
     }
 
@@ -143,27 +159,28 @@ final class OrderTestFactory extends AbstractAggregateTestFactory
     {
         $now ??= Clock::get()->now();
 
-        return $this->withModifier(static fn (Order $order) => $order->anonymize($now));
+        return $this->withAttributes(['anonymizedAt' => $now])
+            ->withModifier(static fn (Order $order) => $order->anonymize($now));
     }
 
     protected function defaults(): array
     {
         return [
-            'id' => OrderId::generate(),
-            'customerId' => Uuid::uuid7()->toString(),
-            'shippingAddress' => PostalAddress::of(
+            'id' => OrderId::generate(...),
+            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'billingAddress' => PostalAddress::of(
+            'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => [OrderLine::of(
+            'lines' => static fn (): array => [OrderLine::of(
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
                 SeededFaker::get()->numberBetween(1, 5),
             )],
-            'placedAt' => ClockSequence::next(),
+            'placedAt' => ClockSequence::next(...),
         ];
     }
 

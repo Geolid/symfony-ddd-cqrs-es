@@ -14,7 +14,8 @@ final class IdentityStateTest extends TestCase
     public function itIsActive(): void
     {
         foreach (IdentityState::cases() as $state) {
-            self::assertSame(IdentityState::ACTIVE === $state, $state->isActive(), $state->value);
+            $isActive = $state->isActive();
+            self::assertSame(IdentityState::ACTIVE === $state, $isActive, $state->value);
         }
     }
 
@@ -22,7 +23,8 @@ final class IdentityStateTest extends TestCase
     public function itIsSuspended(): void
     {
         foreach (IdentityState::cases() as $state) {
-            self::assertSame(IdentityState::SUSPENDED === $state, $state->isSuspended(), $state->value);
+            $isSuspended = $state->isSuspended();
+            self::assertSame(IdentityState::SUSPENDED === $state, $isSuspended, $state->value);
         }
     }
 
@@ -30,7 +32,8 @@ final class IdentityStateTest extends TestCase
     public function itIsErased(): void
     {
         foreach (IdentityState::cases() as $state) {
-            self::assertSame(IdentityState::ERASED === $state, $state->isErased(), $state->value);
+            $isErased = $state->isErased();
+            self::assertSame(IdentityState::ERASED === $state, $isErased, $state->value);
         }
     }
 }

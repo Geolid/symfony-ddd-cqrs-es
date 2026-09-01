@@ -8,7 +8,6 @@ use Iam\Identity\Application\IntegrationEvent\IdentityRegistered\IdentityRegiste
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityTestFactory::new()->withRegisteredAt($now)->create();
+        $factory = IdentityTestFactory::new();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -25,6 +24,9 @@ final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentityRegisteredIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->registeredAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame(
+            $factory['registeredAt']->format(\DateTimeImmutable::ATOM),
+            $event->registeredAt->format(\DateTimeImmutable::ATOM),
+        );
     }
 }

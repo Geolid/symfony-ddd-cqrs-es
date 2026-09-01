@@ -12,6 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 {
@@ -19,26 +20,35 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itSuspends(): void
     {
         // Given
+        $reason = IdentityTestFactory::sample('reason')->value;
+        $now = Clock::get()->now();
+
         $identity = IdentityTestFactory::new()->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame(IdentityStatus::SUSPENDED, $result->status);
+        self::assertSame($reason, $result->reason);
+        self::assertSame(
+            $now->format(\DateTimeImmutable::ATOM),
+            $result->suspendedAt?->format(\DateTimeImmutable::ATOM),
+        );
     }
 
     #[Test]
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $factory = IdentityTestFactory::new()->suspended();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $factory['reason']->value));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -47,14 +57,14 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = IdentityTestFactory::new()->attribute('id')->toString();
-
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity(
+            IdentityTestFactory::sample('id')->toString(),
+            IdentityTestFactory::sample('reason')->value,
+        ));
     }
 
     #[Test]
@@ -68,6 +78,9 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity(
+            $identity->id->toString(),
+            IdentityTestFactory::sample('reason')->value,
+        ));
     }
 }

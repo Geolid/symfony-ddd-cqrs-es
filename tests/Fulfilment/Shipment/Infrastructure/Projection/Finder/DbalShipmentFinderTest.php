@@ -63,13 +63,13 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofTrackingReference($trackedFactory->attribute('trackingReference'));
+        $result = $this->finder->ofTrackingReference($trackedFactory->attribute('trackingReference')->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($trackedFactory->attribute('trackingReference'), $result->trackingReference);
+        self::assertSame($trackedFactory->attribute('trackingReference')->value, $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
@@ -81,7 +81,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofTrackingReference(ShipmentTestFactory::new()->manifested()->attribute('trackingReference'));
+        $this->finder->ofTrackingReference(ShipmentTestFactory::new()->manifested()->attribute('trackingReference')->value);
     }
 
     #[Test]
@@ -107,13 +107,13 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofReturnTrackingReference($trackedFactory->attribute('returnTrackingReference'));
+        $result = $this->finder->ofReturnTrackingReference($trackedFactory->attribute('returnTrackingReference')->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame($trackedFactory->attribute('returnTrackingReference'), $result->returnTrackingReference);
+        self::assertSame($trackedFactory->attribute('returnTrackingReference')->value, $result->returnTrackingReference);
     }
 
     #[Test]

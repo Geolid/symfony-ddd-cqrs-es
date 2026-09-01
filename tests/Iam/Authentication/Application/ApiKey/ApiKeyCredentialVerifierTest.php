@@ -10,7 +10,6 @@ use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,20 +29,33 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itVerifies(): void
+    public function itAccepts(): void
     {
         // Given
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->create();
+        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
+        $credential = $factory->create();
         $this->store($credential);
 
+        // When
+        $verified = $this->verifier->verify($factory['keyId']->value, $factory['secret']);
+
         // Then
-        self::assertTrue($this->verifier->verify($keyId, 'plain-secret'));
-        self::assertFalse($this->verifier->verify($keyId, 'wrong-secret'));
+        self::assertTrue($verified);
+    }
+
+    #[Test]
+    public function itRefuses(): void
+    {
+        // Given
+        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher);
+        $credential = $factory->create();
+        $this->store($credential);
+
+        // When
+        $verified = $this->verifier->verify($factory['keyId']->value, 'wrong-secret');
+
+        // Then
+        self::assertFalse($verified);
     }
 
     #[Test]
@@ -53,27 +65,25 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->verifier->verify(KeyId::PREFIX.'fedcba9876543210', 'plain-secret');
+        $this->verifier->verify(
+            ApiKeyCredentialTestFactory::sample('keyId')->value,
+            ApiKeyCredentialTestFactory::sample('secret'),
+        );
     }
 
     #[Test]
     public function itFailsWhenRevoked(): void
     {
         // Given
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->revoked()
-            ->create();
+        $factory = ApiKeyCredentialTestFactory::new()->withHasher($this->hasher)->revoked();
+        $credential = $factory->create();
         $this->store($credential);
 
         // Then
         $this->expectException(ApiKeyCredentialRevokedException::class);
 
         // When
-        $this->verifier->verify($keyId, 'plain-secret');
+        $this->verifier->verify($factory['keyId']->value, $factory['secret']);
     }
 
     #[Test]
@@ -81,19 +91,17 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityTestFactory::new()->suspended()->create();
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
+
+        $factory = ApiKeyCredentialTestFactory::new()
             ->withIdentityId($identity->id->toString())
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->create();
+            ->withHasher($this->hasher);
+        $credential = $factory->create();
         $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->verifier->verify($keyId, 'plain-secret');
+        $this->verifier->verify($factory['keyId']->value, $factory['secret']);
     }
 }

@@ -10,7 +10,6 @@ use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\AbstractIntegrationTestCase;
@@ -21,29 +20,46 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $id = ProductTestFactory::new()->attribute('id')->toString();
-        $command = new ListProductForSale($id, 'Espresso cups, set of 6', 1_750);
+        $factory = ProductTestFactory::new();
+        $id = $factory->attribute('id')->toString();
+        $label = $factory->attribute('label')->value;
+        $price = $factory->attribute('unitAmount')->cents;
 
         // When
-        $this->dispatch($command);
+        $this->dispatch(new ListProductForSale($id, $label, $price));
 
         // Then
         $result = $this->service(ProductFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertSame($label, $result->label);
+        self::assertSame($price, $result->unitAmountInCents);
     }
 
     #[Test]
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', Uuid::uuid7()->toString());
+        $factory = ProductTestFactory::new();
+        $id = $factory->attribute('id')->toString();
+        $label = $factory->attribute('label')->value;
+        $price = $factory->attribute('unitAmount')->cents;
+
+        $existingId = ProductTestFactory::new()->attribute('id')->toString();
+        $this->reserveLabel($label, $existingId);
 
         // Then
         $this->expectException(ProductLabelAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ListProductForSale(ProductTestFactory::new()->attribute('id')->toString(), 'Espresso cups, set of 6', 1_950));
+        $this->dispatch(new ListProductForSale($id, $label, $price));
+    }
+
+    private function reserveLabel(string $label, string $existingId): void
+    {
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            UniqueKey::for(ProductUniqueKey::LABEL),
+            $label,
+            $existingId,
+        );
     }
 }
