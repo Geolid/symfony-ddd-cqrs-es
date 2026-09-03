@@ -9,6 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -41,8 +42,8 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
         self::assertNull($result->reason);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeImmutable::ATOM),
-            $result->registeredAt->format(\DateTimeImmutable::ATOM),
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
@@ -55,7 +56,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(IdentityBuilder::sample('id')->toString());
+        $this->finder()->ofId(IdentityId::generate()->toString());
     }
 
     #[Test]

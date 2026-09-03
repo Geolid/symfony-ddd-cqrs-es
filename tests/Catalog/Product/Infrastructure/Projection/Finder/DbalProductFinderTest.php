@@ -8,6 +8,7 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Domain\Product;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -40,8 +41,8 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($builder['label']->value, $result->label);
         self::assertSame($builder['unitAmount']->cents, $result->unitAmountInCents);
         self::assertSame(
-            $builder['listedAt']->format(\DateTimeImmutable::ATOM),
-            $result->listedAt->format(\DateTimeImmutable::ATOM),
+            $builder['listedAt']->format(\DateTimeInterface::ATOM),
+            $result->listedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->repricedAt);
     }
@@ -53,7 +54,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ProductBuilder::sample('id')->toString());
+        $this->finder()->ofId(ProductId::generate()->toString());
     }
 
     #[Test]

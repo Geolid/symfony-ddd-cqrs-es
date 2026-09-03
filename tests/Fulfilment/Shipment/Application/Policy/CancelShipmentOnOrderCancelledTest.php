@@ -4,24 +4,28 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Policy\CancelShipmentOnOrderCancelled;
-use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
-    private CancelShipmentOnOrderCancelled $policy;
+    private CommandBusInterface&MockObject $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(CancelShipmentOnOrderCancelled::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->replace(CommandBusInterface::class, $this->commandBus);
     }
 
     #[Test]
@@ -32,13 +36,18 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
         $shipment = ShipmentBuilder::new()->withOrderId($orderId)->create();
         $this->store($shipment);
 
+        $dispatched = null;
+        $this->commandBus->expects(self::once())->method('dispatch')
+            ->willReturnCallback(static function (CommandInterface $command) use (&$dispatched): void {
+                $dispatched = $command;
+            });
+
         // When
-        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(CancelShipmentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Clock::get()->now()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class)->byCustomer($shipment->customerId), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
+        self::assertInstanceOf(CancelShipment::class, $dispatched);
+        self::assertSame($shipment->id->toString(), $dispatched->id);
     }
 
     #[Test]
@@ -46,11 +55,9 @@ final class CancelShipmentOnOrderCancelledTest extends AbstractIntegrationTestCa
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
+        $this->commandBus->expects(self::never())->method('dispatch');
 
         // When
-        ($this->policy)(new OrderCancelledIntegrationEvent($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
-
-        // Then
-        self::expectNotToPerformAssertions();
+        $this->trigger(CancelShipmentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Clock::get()->now()));
     }
 }

@@ -6,10 +6,12 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
@@ -51,7 +53,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(PasswordCredentialBuilder::sample('id'));
+        $this->repository->load(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -75,7 +77,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(PasswordCredentialBuilder::sample('id'));
+        $notExists = $this->repository->has(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

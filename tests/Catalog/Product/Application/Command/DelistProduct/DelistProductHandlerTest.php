@@ -8,6 +8,7 @@ use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -51,6 +52,6 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct(ProductBuilder::sample('id')->toString()));
+        $this->dispatch(new DelistProduct(ProductId::generate()->toString()));
     }
 }

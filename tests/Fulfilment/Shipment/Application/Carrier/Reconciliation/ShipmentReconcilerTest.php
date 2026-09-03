@@ -8,6 +8,7 @@ use Fulfilment\Shipment\Application\Carrier\Reconciliation\ShipmentReconciler;
 use Fulfilment\Shipment\Application\Carrier\Reconciliation\ShipmentStatusReconcilerInterface;
 use Fulfilment\Shipment\Application\Exception\UnsupportedShipmentStatusException;
 use Fulfilment\Shipment\Application\ShipmentStatus;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -19,10 +20,18 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itDelegatesToSupportingReconciler(): void
     {
         // Given
-        $router = new ShipmentReconciler([new StubUnsupportingReconciler(), new StubMatchingReconciler()]);
+        $unsupporting = $this->createMock(ShipmentStatusReconcilerInterface::class);
+        $unsupporting->method('supports')->willReturn(false);
+        $unsupporting->expects(self::never())->method('reconcile');
+
+        $matching = $this->createStub(ShipmentStatusReconcilerInterface::class);
+        $matching->method('supports')->willReturn(true);
+        $matching->method('reconcile')->willReturn(true);
+
+        $router = new ShipmentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, 'ACME-4Q7X2K9', null);
+        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, ShipmentBuilder::sample('trackingReference')->value, null);
 
         // Then
         self::assertTrue($result);
@@ -38,78 +47,34 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedShipmentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, 'ACME-4Q7X2K9', null);
+        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, ShipmentBuilder::sample('trackingReference')->value, null);
     }
 
     #[Test]
-    #[DataProvider('provideReferenceResolution')]
-    public function itForwardsReferenceForStatus(ShipmentStatus $status, string $expectedReference): void
+    #[DataProvider('provideStatusUsingReturnReference')]
+    public function itForwardsReferenceForStatus(ShipmentStatus $status, bool $usesReturnReference): void
     {
         // Given
-        $reconciler = new SpyReconciler($status);
+        $trackingReference = ShipmentBuilder::sample('trackingReference')->value;
+        $returnTrackingReference = ShipmentBuilder::sample('returnTrackingReference')->value;
+        $expectedReference = $usesReturnReference ? $returnTrackingReference : $trackingReference;
+
+        $reconciler = $this->createMock(ShipmentStatusReconcilerInterface::class);
+        $reconciler->method('supports')->willReturn(true);
+        $reconciler->expects(self::once())->method('reconcile')->with(self::anything(), $expectedReference)->willReturn(true);
         $router = new ShipmentReconciler([$reconciler]);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), $status, 'ACME-4Q7X2K9', 'ACME-RETURN-1');
-
-        // Then
-        self::assertSame($expectedReference, $reconciler->receivedReference);
+        $router->reconcile(Uuid::uuid7()->toString(), $status, $trackingReference, $returnTrackingReference);
     }
 
     /**
-     * @return iterable<string, array{ShipmentStatus, string}>
+     * @return iterable<string, array{ShipmentStatus, bool}>
      */
-    public static function provideReferenceResolution(): iterable
+    public static function provideStatusUsingReturnReference(): iterable
     {
-        yield 'return manifested uses return tracking reference' => [ShipmentStatus::RETURN_MANIFESTED, 'ACME-RETURN-1'];
-        yield 'return dispatched uses return tracking reference' => [ShipmentStatus::RETURN_DISPATCHED, 'ACME-RETURN-1'];
-        yield 'dispatched uses tracking reference' => [ShipmentStatus::DISPATCHED, 'ACME-4Q7X2K9'];
-    }
-}
-
-final class StubMatchingReconciler implements ShipmentStatusReconcilerInterface
-{
-    public function supports(ShipmentStatus $status): bool
-    {
-        return ShipmentStatus::MANIFESTED === $status;
-    }
-
-    public function reconcile(string $id, string $reference): bool
-    {
-        return true;
-    }
-}
-
-final class StubUnsupportingReconciler implements ShipmentStatusReconcilerInterface
-{
-    public function supports(ShipmentStatus $status): bool
-    {
-        return false;
-    }
-
-    public function reconcile(string $id, string $reference): bool
-    {
-        throw new \LogicException('Not the supporting reconciler.');
-    }
-}
-
-final class SpyReconciler implements ShipmentStatusReconcilerInterface
-{
-    public ?string $receivedReference = null;
-
-    public function __construct(private readonly ShipmentStatus $supportedStatus)
-    {
-    }
-
-    public function supports(ShipmentStatus $status): bool
-    {
-        return $this->supportedStatus === $status;
-    }
-
-    public function reconcile(string $id, string $reference): bool
-    {
-        $this->receivedReference = $reference;
-
-        return true;
+        yield 'return manifested uses return tracking reference' => [ShipmentStatus::RETURN_MANIFESTED, true];
+        yield 'return dispatched uses return tracking reference' => [ShipmentStatus::RETURN_DISPATCHED, true];
+        yield 'dispatched uses tracking reference' => [ShipmentStatus::DISPATCHED, false];
     }
 }

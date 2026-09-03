@@ -9,6 +9,7 @@ use Sales\Order\Application\Command\ConfirmOrderReturn\ConfirmOrderReturn;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -56,7 +57,7 @@ final class ConfirmOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderBuilder::new()->attribute('id')->toString();
+        $id = OrderId::generate()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

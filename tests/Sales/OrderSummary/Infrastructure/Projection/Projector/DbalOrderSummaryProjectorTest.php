@@ -13,6 +13,7 @@ use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryProje
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
@@ -180,7 +181,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order, $payment, $shipment);
 
         // When
-        $order->cancel($customerId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+        $order->cancel($customerId, Clock::get()->now());
         $this->store($order);
 
         // Then

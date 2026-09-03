@@ -25,8 +25,10 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByIds(): void
     {
         // Given
-        $other = ProductBuilder::new()->withLabel('Untouched')->withUnitAmountInCents(500)->create();
-        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->create();
+        $label = ProductBuilder::sample('label');
+        $unitAmount = ProductBuilder::sample('unitAmount');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitAmountInCents($unitAmount->cents)->create();
         $this->store($other, $cups);
 
         // When
@@ -35,7 +37,7 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cups->id->toString(), $results[0]->productId);
-        self::assertSame('Espresso cups, set of 6', $results[0]->label);
-        self::assertSame(1_750, $results[0]->unitAmountInCents);
+        self::assertSame($label->value, $results[0]->label);
+        self::assertSame($unitAmount->cents, $results[0]->unitAmountInCents);
     }
 }

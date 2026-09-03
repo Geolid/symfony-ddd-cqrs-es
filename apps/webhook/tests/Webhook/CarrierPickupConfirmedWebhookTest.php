@@ -23,7 +23,7 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
         $client = self::createClient();
         $shipmentFactory = ShipmentBuilder::new()->prepared()->manifested();
         $shipment = $shipmentFactory->create();
-        $trackingReference = $shipmentFactory->attribute('trackingReference');
+        $trackingReference = $shipmentFactory['trackingReference']->value;
         $this->store($shipment);
         $body = self::body($trackingReference);
 
@@ -146,6 +146,6 @@ final class CarrierPickupConfirmedWebhookTest extends AbstractWebhookTestCase
 
     private static function anyTrackingReference(): string
     {
-        return ShipmentBuilder::new()->manifested()->attribute('trackingReference');
+        return ShipmentBuilder::sample('trackingReference')->value;
     }
 }

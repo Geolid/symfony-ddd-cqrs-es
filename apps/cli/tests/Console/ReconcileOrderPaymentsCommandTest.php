@@ -12,7 +12,6 @@ use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Lock\LockFactory;
@@ -35,10 +34,12 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     {
         // Given
         $now = Clock::get()->now();
-        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway([
-            'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED,
-            'GLBX-REFUND-STUCK' => PaymentGatewayStatus::REFUNDED,
-        ]));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturnMap([
+            ['GLBX-STUCK1234', PaymentGatewayStatus::AUTHORIZED],
+            ['GLBX-REFUND-STUCK', PaymentGatewayStatus::REFUNDED],
+        ]);
+        self::getContainer()->set(PaymentGatewayInterface::class, $carrier);
         $stuck = OrderPaymentBuilder::new()
             ->withReference('GLBX-STUCK1234')
             ->withRequestedAt($now->modify('-90 minutes'))
@@ -76,10 +77,14 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('2 order payment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(OrderPaymentStatus::AUTHORIZED, $this->orderPaymentFinder->ofReference('GLBX-STUCK1234')->status);
-        self::assertSame(OrderPaymentStatus::REQUESTED, $this->orderPaymentFinder->ofReference('GLBX-FRESH1234')->status);
-        self::assertSame(OrderPaymentStatus::REFUNDED, $this->orderPaymentFinder->ofReference('GLBX-REFUND-STUCK')->status);
-        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $this->orderPaymentFinder->ofReference('GLBX-REFUND-FRESH')->status);
+        $stuckResult = $this->orderPaymentFinder->ofReference('GLBX-STUCK1234');
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $stuckResult->status);
+        $freshResult = $this->orderPaymentFinder->ofReference('GLBX-FRESH1234');
+        self::assertSame(OrderPaymentStatus::REQUESTED, $freshResult->status);
+        $refundStuckResult = $this->orderPaymentFinder->ofReference('GLBX-REFUND-STUCK');
+        self::assertSame(OrderPaymentStatus::REFUNDED, $refundStuckResult->status);
+        $refundFreshResult = $this->orderPaymentFinder->ofReference('GLBX-REFUND-FRESH');
+        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $refundFreshResult->status);
     }
 
     #[Test]
@@ -87,10 +92,15 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
     {
         // Given
         $now = Clock::get()->now();
-        self::getContainer()->set(PaymentGatewayInterface::class, new StubPaymentGateway(
-            ['GLBX-UNREACHABLE' => PaymentGatewayStatus::AUTHORIZED, 'GLBX-STUCK1234' => PaymentGatewayStatus::AUTHORIZED],
-            failingReference: 'GLBX-UNREACHABLE',
-        ));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturnCallback(static function (string $reference): PaymentGatewayStatus {
+            if ('GLBX-UNREACHABLE' === $reference) {
+                throw new \RuntimeException('Provider unreachable.');
+            }
+
+            return PaymentGatewayStatus::AUTHORIZED;
+        });
+        self::getContainer()->set(PaymentGatewayInterface::class, $carrier);
         $unreachable = OrderPaymentBuilder::new()
             ->withReference('GLBX-UNREACHABLE')
             ->withRequestedAt($now->modify('-90 minutes'))
@@ -109,8 +119,10 @@ final class ReconcileOrderPaymentsCommandTest extends AbstractCliTestCase
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('Failed to reconcile order payment', $tester->getDisplay());
         self::assertStringContainsString('1 order payment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(OrderPaymentStatus::REQUESTED, $this->orderPaymentFinder->ofReference('GLBX-UNREACHABLE')->status);
-        self::assertSame(OrderPaymentStatus::AUTHORIZED, $this->orderPaymentFinder->ofReference('GLBX-STUCK1234')->status);
+        $unreachableResult = $this->orderPaymentFinder->ofReference('GLBX-UNREACHABLE');
+        self::assertSame(OrderPaymentStatus::REQUESTED, $unreachableResult->status);
+        $stuckResult = $this->orderPaymentFinder->ofReference('GLBX-STUCK1234');
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $stuckResult->status);
     }
 
     #[Test]

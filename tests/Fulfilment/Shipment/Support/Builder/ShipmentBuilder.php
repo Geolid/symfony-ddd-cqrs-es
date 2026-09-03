@@ -12,30 +12,30 @@ use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Attributes = array{
+ *     id: ShipmentId,
  *     orderId: string,
  *     customerId: string,
  *     shippingAddress: PostalAddress,
  *     createdAt: \DateTimeImmutable,
- *     trackingReference?: TrackingReference,
- *     returnTrackingReference?: TrackingReference,
- *     returnRejectionReason?: string,
- *     preparedAt?: \DateTimeImmutable,
- *     manifestedAt?: \DateTimeImmutable,
- *     dispatchedAt?: \DateTimeImmutable,
- *     deliveredAt?: \DateTimeImmutable,
- *     cancelledAt?: \DateTimeImmutable,
- *     returnRequestedAt?: \DateTimeImmutable,
- *     returnManifestedAt?: \DateTimeImmutable,
- *     returnDispatchedAt?: \DateTimeImmutable,
- *     returnReceivedAt?: \DateTimeImmutable,
- *     returnApprovedAt?: \DateTimeImmutable,
- *     returnRejectedAt?: \DateTimeImmutable,
+ *     preparedAt: \DateTimeImmutable,
+ *     cancelledAt: \DateTimeImmutable,
+ *     trackingReference: TrackingReference,
+ *     manifestedAt: \DateTimeImmutable,
+ *     dispatchedAt: \DateTimeImmutable,
+ *     deliveredAt: \DateTimeImmutable,
+ *     returnRequestedAt: \DateTimeImmutable,
+ *     returnTrackingReference: TrackingReference,
+ *     returnManifestedAt: \DateTimeImmutable,
+ *     returnDispatchedAt: \DateTimeImmutable,
+ *     returnReceivedAt: \DateTimeImmutable,
+ *     returnApprovedAt: \DateTimeImmutable,
+ *     returnRejectionReason: string,
+ *     returnRejectedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Shipment, Attributes>
@@ -44,166 +44,176 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
 {
     public function withOrderId(string $orderId): self
     {
-        return $this->withAttributes(['orderId' => $orderId]);
+        return $this->withAttributes(orderId: $orderId);
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(['customerId' => $customerId]);
+        return $this->withAttributes(customerId: $customerId);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(['shippingAddress' => $shippingAddress]);
+        return $this->withAttributes(shippingAddress: $shippingAddress);
     }
 
     public function withCreatedAt(\DateTimeImmutable $createdAt): self
     {
-        return $this->withAttributes(['createdAt' => $createdAt]);
+        return $this->withAttributes(createdAt: $createdAt);
     }
 
     public function prepared(?\DateTimeImmutable $preparedAt = null): self
     {
-        $preparedAt ??= Clock::get()->now();
+        $builder = null !== $preparedAt ? $this->withAttributes(preparedAt: $preparedAt) : $this;
 
-        return $this->withAttributes(['preparedAt' => $preparedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->prepare($preparedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->prepare($builder['preparedAt']),
+        );
+    }
+
+    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
+    {
+        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->cancel($builder['cancelledAt']),
+        );
     }
 
     public function manifested(
         ?string $trackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
-        $trackingReference = TrackingReference::fromString($trackingReference ?? SeededFaker::get()->regexify('ACME-[A-Z0-9]{8}'));
-        $manifestedAt ??= Clock::get()->now();
+        $builder = $this->withAttributes(...array_filter([
+            'trackingReference' => null !== $trackingReference ? TrackingReference::fromString($trackingReference) : null,
+            'manifestedAt' => $manifestedAt,
+        ]));
 
-        return $this->withAttributes(['trackingReference' => $trackingReference, 'manifestedAt' => $manifestedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->manifest($trackingReference, $manifestedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->manifest($builder['trackingReference'], $builder['manifestedAt']),
+        );
     }
 
     public function dispatched(?\DateTimeImmutable $dispatchedAt = null): self
     {
-        $dispatchedAt ??= Clock::get()->now();
+        $builder = null !== $dispatchedAt ? $this->withAttributes(dispatchedAt: $dispatchedAt) : $this;
 
-        return $this->withAttributes(['dispatchedAt' => $dispatchedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->dispatch($dispatchedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->dispatch($builder['dispatchedAt']),
+        );
     }
 
     public function delivered(?\DateTimeImmutable $deliveredAt = null): self
     {
-        $deliveredAt ??= Clock::get()->now();
+        $builder = null !== $deliveredAt ? $this->withAttributes(deliveredAt: $deliveredAt) : $this;
 
-        return $this->withAttributes(['deliveredAt' => $deliveredAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->deliver($deliveredAt),
-            );
-    }
-
-    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
-    {
-        $cancelledAt ??= Clock::get()->now();
-
-        return $this->withAttributes(['cancelledAt' => $cancelledAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->cancel($cancelledAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->deliver($builder['deliveredAt']),
+        );
     }
 
     public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        $requestedAt ??= Clock::get()->now();
+        $builder = null !== $requestedAt ? $this->withAttributes(returnRequestedAt: $requestedAt) : $this;
 
-        return $this->withAttributes(['returnRequestedAt' => $requestedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->requestReturn($requestedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->requestReturn($builder['returnRequestedAt']),
+        );
     }
 
     public function returnManifested(
         ?string $returnTrackingReference = null,
         ?\DateTimeImmutable $manifestedAt = null,
     ): self {
-        $returnTrackingReference = TrackingReference::fromString($returnTrackingReference ?? SeededFaker::get()->regexify('ACME-RETURN-[A-Z0-9]{8}'));
-        $manifestedAt ??= Clock::get()->now();
+        $builder = $this->withAttributes(...array_filter([
+            'returnTrackingReference' => null !== $returnTrackingReference ? TrackingReference::fromString($returnTrackingReference) : null,
+            'returnManifestedAt' => $manifestedAt,
+        ]));
 
-        return $this->withAttributes(['returnTrackingReference' => $returnTrackingReference, 'returnManifestedAt' => $manifestedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->manifestReturn($returnTrackingReference, $manifestedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->manifestReturn($builder['returnTrackingReference'], $builder['returnManifestedAt']),
+        );
     }
 
     public function returnDispatched(?\DateTimeImmutable $dispatchedAt = null): self
     {
-        $dispatchedAt ??= Clock::get()->now();
+        $builder = null !== $dispatchedAt ? $this->withAttributes(returnDispatchedAt: $dispatchedAt) : $this;
 
-        return $this->withAttributes(['returnDispatchedAt' => $dispatchedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->dispatchReturn($dispatchedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->dispatchReturn($builder['returnDispatchedAt']),
+        );
     }
 
     public function returnReceived(?\DateTimeImmutable $receivedAt = null): self
     {
-        $receivedAt ??= Clock::get()->now();
+        $builder = null !== $receivedAt ? $this->withAttributes(returnReceivedAt: $receivedAt) : $this;
 
-        return $this->withAttributes(['returnReceivedAt' => $receivedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->receiveReturn($receivedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->receiveReturn($builder['returnReceivedAt']),
+        );
     }
 
     public function returnApproved(?\DateTimeImmutable $approvedAt = null): self
     {
-        $approvedAt ??= Clock::get()->now();
+        $builder = null !== $approvedAt ? $this->withAttributes(returnApprovedAt: $approvedAt) : $this;
 
-        return $this->withAttributes(['returnApprovedAt' => $approvedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->approveReturn($approvedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->approveReturn($builder['returnApprovedAt']),
+        );
     }
 
     public function returnRejected(
         ?string $reason = null,
         ?\DateTimeImmutable $rejectedAt = null,
     ): self {
-        $reason ??= SeededFaker::get()->sentence(4);
-        $rejectedAt ??= Clock::get()->now();
+        $builder = $this->withAttributes(...array_filter([
+            'returnRejectionReason' => $reason,
+            'returnRejectedAt' => $rejectedAt,
+        ]));
 
-        return $this->withAttributes(['returnRejectionReason' => $reason, 'returnRejectedAt' => $rejectedAt])
-            ->withModifier(
-                static fn (Shipment $shipment) => $shipment->rejectReturn($reason, $rejectedAt),
-            );
+        return $builder->withModifier(
+            static fn (Shipment $shipment, self $builder) => $shipment->rejectReturn($builder['returnRejectionReason'], $builder['returnRejectedAt']),
+        );
     }
 
     protected static function defaults(): array
     {
         return [
+            'id' => static fn (?self $builder): ShipmentId => ShipmentId::forOrder(
+                null !== $builder ? $builder['orderId'] : self::sample('orderId'),
+            ),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'createdAt' => ClockSequence::next(...),
+            'createdAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'preparedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'trackingReference' => static fn (): TrackingReference => TrackingReference::fromString(SeededFaker::get()->unique()->regexify('ACME-[A-Z0-9]{8}')),
+            'manifestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
+            'returnRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+6 day'),
+            'returnTrackingReference' => static fn (): TrackingReference => TrackingReference::fromString(SeededFaker::get()->unique()->regexify('ACME-RETURN-[A-Z0-9]{8}')),
+            'returnManifestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+7 day'),
+            'returnDispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+8 day'),
+            'returnReceivedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+9 day'),
+            'returnApprovedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+10 day'),
+            'returnRejectionReason' => static fn (): string => SeededFaker::get()->sentence(4),
+            'returnRejectedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+11 day'),
         ];
     }
 
     protected function build(): Shipment
     {
-        $orderId = $this->attribute('orderId');
-
         return Shipment::request(
-            ShipmentId::forOrder($orderId),
-            $orderId,
-            $this->attribute('customerId'),
-            $this->attribute('shippingAddress'),
-            $this->attribute('createdAt'),
+            $this['id'],
+            $this['orderId'],
+            $this['customerId'],
+            $this['shippingAddress'],
+            $this['createdAt'],
         );
     }
 }

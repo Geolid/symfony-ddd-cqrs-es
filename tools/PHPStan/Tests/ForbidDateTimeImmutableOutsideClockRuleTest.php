@@ -21,12 +21,18 @@ final class ForbidDateTimeImmutableOutsideClockRuleTest extends RuleTestCase
                 __DIR__.'/data/forbid-datetime-outside-clock/src/RawRow.php',
                 __DIR__.'/data/forbid-datetime-outside-clock/src/MethodNameExempt.php',
                 __DIR__.'/data/forbid-datetime-outside-clock/src/NotClock.php',
+                __DIR__.'/data/forbid-datetime-outside-clock/tests/InTestSuite.php',
             ],
             [
                 [
-                    'Forbidden: new \DateTimeImmutable(...) outside Domain/ or a raw row rehydration. '
-                    .'Use Clock::get()->now() instead.',
+                    'Forbidden: new \DateTimeImmutable(...) outside Domain/ or a raw hydration.',
                     9,
+                    'Use an injected ClockInterface ($this->clock->now()) instead.',
+                ],
+                [
+                    'Forbidden: new \DateTimeImmutable(...) outside Domain/ or a raw hydration.',
+                    9,
+                    'Use Clock::get()->now() instead.',
                 ],
             ],
         );

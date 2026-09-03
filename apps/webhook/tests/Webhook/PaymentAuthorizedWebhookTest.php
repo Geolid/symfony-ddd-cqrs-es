@@ -24,7 +24,7 @@ final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
         $order = OrderBuilder::new()->create();
         $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
         $orderPayment = $paymentFactory->create();
-        $reference = $paymentFactory->attribute('reference')->value;
+        $reference = $paymentFactory['reference']->value;
         $this->store($order, $orderPayment);
         $body = self::body($reference);
 
@@ -152,6 +152,6 @@ final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
 
     private static function anyReference(): string
     {
-        return OrderPaymentBuilder::new()->attribute('reference')->value;
+        return OrderPaymentBuilder::sample('reference')->value;
     }
 }

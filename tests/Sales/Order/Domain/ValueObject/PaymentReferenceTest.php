@@ -48,21 +48,35 @@ final class PaymentReferenceTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
-        yield 'longer than the provider can issue' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1)];
+        yield 'too long' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1)];
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $value = 'GLBX-9F3K2M1P';
-
-        // When
         $a = PaymentReference::fromString($value);
         $b = PaymentReference::fromString($value);
 
+        // When
+        $equals = $a->equals($b);
+
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(PaymentReference::fromString('GLBX-OTHER')));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = PaymentReference::fromString('GLBX-9F3K2M1P');
+        $b = PaymentReference::fromString('GLBX-OTHER');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

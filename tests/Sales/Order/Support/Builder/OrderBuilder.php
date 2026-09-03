@@ -15,7 +15,6 @@ use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -27,16 +26,16 @@ use Symfony\Component\Clock\Clock;
  *     billingAddress: PostalAddress,
  *     lines: list<OrderLine>,
  *     placedAt: \DateTimeImmutable,
- *     returnRejectionReason?: string,
- *     cancelledAt?: \DateTimeImmutable,
- *     confirmedAt?: \DateTimeImmutable,
- *     dispatchedAt?: \DateTimeImmutable,
- *     deliveredAt?: \DateTimeImmutable,
- *     completedAt?: \DateTimeImmutable,
- *     returnRequestedAt?: \DateTimeImmutable,
- *     returnedAt?: \DateTimeImmutable,
- *     returnRejectedAt?: \DateTimeImmutable,
- *     anonymizedAt?: \DateTimeImmutable,
+ *     confirmedAt: \DateTimeImmutable,
+ *     cancelledAt: \DateTimeImmutable,
+ *     dispatchedAt: \DateTimeImmutable,
+ *     deliveredAt: \DateTimeImmutable,
+ *     completedAt: \DateTimeImmutable,
+ *     returnRequestedAt: \DateTimeImmutable,
+ *     returnedAt: \DateTimeImmutable,
+ *     returnRejectionReason: string,
+ *     returnRejectedAt: \DateTimeImmutable,
+ *     anonymizedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Order, Attributes>
@@ -45,22 +44,22 @@ final class OrderBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(['id' => OrderId::fromString($id)]);
+        return $this->withAttributes(id: OrderId::fromString($id));
     }
 
     public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(['customerId' => $customerId]);
+        return $this->withAttributes(customerId: $customerId);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
-        return $this->withAttributes(['shippingAddress' => $shippingAddress]);
+        return $this->withAttributes(shippingAddress: $shippingAddress);
     }
 
     public function withBillingAddress(PostalAddress $billingAddress): self
     {
-        return $this->withAttributes(['billingAddress' => $billingAddress]);
+        return $this->withAttributes(billingAddress: $billingAddress);
     }
 
     /**
@@ -68,7 +67,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
      */
     public function withLines(array $lines): self
     {
-        return $this->withAttributes(['lines' => $lines]);
+        return $this->withAttributes(lines: $lines);
     }
 
     public function withTotalAmountInCents(int $totalAmountInCents): self
@@ -81,89 +80,96 @@ final class OrderBuilder extends AbstractAggregateBuilder
 
     public function withPlacedAt(\DateTimeImmutable $placedAt): self
     {
-        return $this->withAttributes(['placedAt' => $placedAt]);
-    }
-
-    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
-    {
-        $cancelledAt ??= Clock::get()->now();
-
-        return $this->withAttributes(['cancelledAt' => $cancelledAt])
-            ->withModifier(static function (Order $order, array $attributes) use ($cancelledAt): void {
-                $order->cancel($attributes['customerId'], $cancelledAt);
-            });
+        return $this->withAttributes(placedAt: $placedAt);
     }
 
     public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
     {
-        $confirmedAt ??= Clock::get()->now();
+        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
 
-        return $this->withAttributes(['confirmedAt' => $confirmedAt])
-            ->withModifier(static fn (Order $order) => $order->confirm($confirmedAt));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->confirm($builder['confirmedAt']),
+        );
+    }
+
+    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
+    {
+        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->cancel($builder['customerId'], $builder['cancelledAt']),
+        );
     }
 
     public function dispatched(?\DateTimeImmutable $dispatchedAt = null): self
     {
-        $dispatchedAt ??= Clock::get()->now();
+        $builder = null !== $dispatchedAt ? $this->withAttributes(dispatchedAt: $dispatchedAt) : $this;
 
-        return $this->withAttributes(['dispatchedAt' => $dispatchedAt])
-            ->withModifier(static fn (Order $order) => $order->dispatch($dispatchedAt));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->dispatch($builder['dispatchedAt']),
+        );
     }
 
     public function delivered(?\DateTimeImmutable $deliveredAt = null): self
     {
-        $deliveredAt ??= Clock::get()->now();
+        $builder = null !== $deliveredAt ? $this->withAttributes(deliveredAt: $deliveredAt) : $this;
 
-        return $this->withAttributes(['deliveredAt' => $deliveredAt])
-            ->withModifier(static fn (Order $order) => $order->deliver($deliveredAt));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->deliver($builder['deliveredAt']),
+        );
     }
 
-    public function completed(?\DateTimeImmutable $now = null): self
+    public function completed(?\DateTimeImmutable $completedAt = null): self
     {
-        $now ??= Clock::get()->now();
+        $builder = null !== $completedAt ? $this->withAttributes(completedAt: $completedAt) : $this;
 
-        return $this->withAttributes(['completedAt' => $now])
-            ->withModifier(static fn (Order $order) => $order->complete($now));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->complete($builder['completedAt']),
+        );
     }
 
-    public function returnRequested(?\DateTimeImmutable $requestedAt = null): self
+    public function returnRequested(?\DateTimeImmutable $returnRequestedAt = null): self
     {
-        $requestedAt ??= Clock::get()->now();
+        $builder = null !== $returnRequestedAt ? $this->withAttributes(returnRequestedAt: $returnRequestedAt) : $this;
 
-        return $this->withAttributes(['returnRequestedAt' => $requestedAt])
-            ->withModifier(static function (Order $order, array $attributes) use ($requestedAt): void {
-                $order->requestReturn($attributes['customerId'], $requestedAt);
-            });
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->requestReturn($builder['customerId'], $builder['returnRequestedAt']),
+        );
     }
 
     public function returned(?\DateTimeImmutable $returnedAt = null): self
     {
-        $returnedAt ??= Clock::get()->now();
+        $builder = null !== $returnedAt ? $this->withAttributes(returnedAt: $returnedAt) : $this;
 
-        return $this->withAttributes(['returnedAt' => $returnedAt])
-            ->withModifier(static fn (Order $order) => $order->confirmReturn($returnedAt));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->confirmReturn($builder['returnedAt']),
+        );
     }
 
     public function returnRejected(
         ?string $reason = null,
         ?\DateTimeImmutable $rejectedAt = null,
     ): self {
-        $reason ??= SeededFaker::get()->sentence(4);
-        $rejectedAt ??= Clock::get()->now();
+        $builder = $this->withAttributes(...array_filter([
+            'returnRejectionReason' => $reason,
+            'returnRejectedAt' => $rejectedAt,
+        ]));
 
-        return $this->withAttributes(['returnRejectionReason' => $reason, 'returnRejectedAt' => $rejectedAt])
-            ->withModifier(static fn (Order $order) => $order->rejectReturn($reason, $rejectedAt));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->rejectReturn($builder['returnRejectionReason'], $builder['returnRejectedAt']),
+        );
     }
 
-    public function anonymized(?\DateTimeImmutable $now = null): self
+    public function anonymized(?\DateTimeImmutable $anonymizedAt = null): self
     {
-        $now ??= Clock::get()->now();
+        $builder = null !== $anonymizedAt ? $this->withAttributes(anonymizedAt: $anonymizedAt) : $this;
 
-        return $this->withAttributes(['anonymizedAt' => $now])
-            ->withModifier(static fn (Order $order) => $order->anonymize($now));
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->anonymize($builder['anonymizedAt']),
+        );
     }
 
-    protected function defaults(): array
+    protected static function defaults(): array
     {
         return [
             'id' => OrderId::generate(...),
@@ -180,19 +186,29 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
                 SeededFaker::get()->numberBetween(1, 5),
             )],
-            'placedAt' => ClockSequence::next(...),
+            'placedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'confirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'completedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+18 day'),
+            'returnRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
+            'returnedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
+            'returnRejectionReason' => static fn (): string => SeededFaker::get()->sentence(4),
+            'returnRejectedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
+            'anonymizedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3670 day'),
         ];
     }
 
     protected function build(): Order
     {
         return Order::place(
-            id: $this->attribute('id'),
-            customerId: $this->attribute('customerId'),
-            shippingAddress: $this->attribute('shippingAddress'),
-            billingAddress: $this->attribute('billingAddress'),
-            lines: $this->attribute('lines'),
-            placedAt: $this->attribute('placedAt'),
+            id: $this['id'],
+            customerId: $this['customerId'],
+            shippingAddress: $this['shippingAddress'],
+            billingAddress: $this['billingAddress'],
+            lines: $this['lines'],
+            placedAt: $this['placedAt'],
         );
     }
 }

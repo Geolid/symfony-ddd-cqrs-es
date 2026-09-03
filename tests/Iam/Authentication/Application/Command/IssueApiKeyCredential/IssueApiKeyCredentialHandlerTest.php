@@ -7,6 +7,7 @@ namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
 use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,7 +23,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $id = ApiKeyCredentialBuilder::sample('id')->toString();
+        $id = ApiKeyCredentialId::generate()->toString();
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $keyId = ApiKeyCredentialBuilder::sample('keyId')->value;
         $secret = ApiKeyCredentialBuilder::sample('secret');
@@ -38,8 +39,8 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($label, $result->label);
         self::assertSame($keyId, $result->keyId);
         self::assertSame(
-            $now->format(\DateTimeImmutable::ATOM),
-            $result->issuedAt->format(\DateTimeImmutable::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->issuedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
@@ -58,7 +59,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
-            ApiKeyCredentialBuilder::sample('id')->toString(),
+            ApiKeyCredentialId::generate()->toString(),
         );
 
         // Then
@@ -66,7 +67,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new IssueApiKeyCredential(
-            ApiKeyCredentialBuilder::sample('id')->toString(),
+            ApiKeyCredentialId::generate()->toString(),
             $identityId,
             $label,
             ApiKeyCredentialBuilder::sample('keyId')->value,

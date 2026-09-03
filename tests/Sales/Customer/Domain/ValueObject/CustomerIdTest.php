@@ -43,17 +43,31 @@ final class CustomerIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $value = CustomerId::generate()->toString();
-
-        // When
         $a = CustomerId::fromString($value);
         $b = CustomerId::fromString($value);
 
+        // When
+        $equals = $a->equals($b);
+
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(CustomerId::generate()));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = CustomerId::generate();
+        $b = CustomerId::generate();
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

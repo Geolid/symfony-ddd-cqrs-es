@@ -45,9 +45,9 @@ final class ForbidMultipleDateTimeInstancesRule implements Rule
         $errors = [];
         foreach (\array_slice($instances, 1) as $instance) {
             $errors[] = RuleErrorBuilder::message(
-                'Forbidden: a second independently-constructed date instance in this method. Derive it from the '
-                .'first one via ->modify() instead of a new hand-typed instance.',
-            )->identifier('app.tests.noMultipleDateTimeInstances')->line($instance->getStartLine())->build();
+                'Forbidden: a second independently-constructed date instance in this method.',
+            )->tip('Derive it from the first one via ->modify() instead of a new hand-typed instance.')
+                ->identifier('app.tests.noMultipleDateTimeInstances')->line($instance->getStartLine())->build();
         }
 
         return $errors;

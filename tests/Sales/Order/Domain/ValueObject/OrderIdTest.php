@@ -43,17 +43,31 @@ final class OrderIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $value = OrderId::generate()->toString();
-
-        // When
         $a = OrderId::fromString($value);
         $b = OrderId::fromString($value);
 
+        // When
+        $equals = $a->equals($b);
+
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(OrderId::generate()));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = OrderId::generate();
+        $b = OrderId::generate();
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

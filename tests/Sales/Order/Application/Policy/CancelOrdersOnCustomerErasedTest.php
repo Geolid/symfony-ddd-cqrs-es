@@ -12,20 +12,10 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\CancelOrdersOnCustomerErased;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
 {
-    private CancelOrdersOnCustomerErased $policy;
-    private \DateTimeImmutable $erasedAt;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(CancelOrdersOnCustomerErased::class);
-        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-    }
-
     #[Test]
     public function itCancelsPlaced(): void
     {
@@ -36,7 +26,7 @@ final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, $this->erasedAt));
+        $this->trigger(CancelOrdersOnCustomerErased::class, new CustomerErasedIntegrationEvent($customerId, Clock::get()->now()));
 
         // Then
         $finder = $this->service(OrderFinderInterface::class);

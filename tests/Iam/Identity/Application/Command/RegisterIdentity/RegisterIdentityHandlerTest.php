@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\RegisterIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -18,7 +18,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = IdentityBuilder::sample('id')->toString();
+        $id = IdentityId::generate()->toString();
         $now = Clock::get()->now();
 
         // When
@@ -30,8 +30,8 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
         self::assertNull($result->reason);
         self::assertSame(
-            $now->format(\DateTimeImmutable::ATOM),
-            $result->registeredAt->format(\DateTimeImmutable::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);

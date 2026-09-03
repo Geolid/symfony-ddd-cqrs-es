@@ -40,7 +40,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRejectsCancellationWhenAlreadyDelivered(): void
+    public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
         $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();

@@ -49,12 +49,12 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($builder['login']->value, $result->login);
         self::assertSame(
-            $builder['definedAt']->format(\DateTimeImmutable::ATOM),
-            $result->definedAt->format(\DateTimeImmutable::ATOM),
+            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $result->definedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $builder['definedAt']->format(\DateTimeImmutable::ATOM),
-            $result->passwordChangedAt->format(\DateTimeImmutable::ATOM),
+            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertTrue($result->identityAuthenticatable);
 

@@ -38,8 +38,10 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
         self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
 
-        self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
-        self::assertContains('Idempotency-Key: '.$orderId, $response->getRequestOptions()['headers']);
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/charges', $requestUrl);
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: '.$orderId, $headers);
         self::assertSame(
             [
                 'clientReferenceId' => $orderId,
@@ -94,7 +96,7 @@ final class GlobexPaymentGatewayTest extends TestCase
      */
     public static function provideUnreadableResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
         yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
         yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
@@ -113,7 +115,8 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->gateway($response)->void('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame('https://payments.globex.test/void', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/void', $requestUrl);
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
             $this->requestBody($response),
@@ -140,7 +143,8 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->gateway($response)->refund('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame('https://payments.globex.test/refund', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/refund', $requestUrl);
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
             $this->requestBody($response),
@@ -168,7 +172,8 @@ final class GlobexPaymentGatewayTest extends TestCase
 
         // Then
         self::assertSame(PaymentGatewayStatus::AUTHORIZED, $status);
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $requestUrl);
     }
 
     #[Test]
@@ -210,7 +215,7 @@ final class GlobexPaymentGatewayTest extends TestCase
      */
     public static function provideUnreadableStatusResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'status absent' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P'])];
         yield 'status blank' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => ''])];
         yield 'status of another type' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 42])];

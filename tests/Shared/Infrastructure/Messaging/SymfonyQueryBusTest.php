@@ -19,12 +19,19 @@ final class SymfonyQueryBusTest extends TestCase
     {
         // Given
         $expected = new \stdClass();
-        $bus = $this->createBus(static fn (): \stdClass => $expected);
+        $asked = null;
+        $bus = $this->createBus(static function (QueryInterface $query) use (&$asked, $expected): \stdClass {
+            $asked = $query;
+
+            return $expected;
+        });
+        $query = new DummyQuery();
 
         // When
-        $result = $bus->ask(new DummyQuery());
+        $result = $bus->ask($query);
 
         // Then
+        self::assertSame($query, $asked);
         self::assertSame($expected, $result);
     }
 

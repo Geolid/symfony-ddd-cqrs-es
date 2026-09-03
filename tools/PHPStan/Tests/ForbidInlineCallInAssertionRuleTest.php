@@ -15,13 +15,14 @@ final class ForbidInlineCallInAssertionRuleTest extends RuleTestCase
 {
     public function testRule(): void
     {
-        $message = 'Forbidden: a method/static call nested inside an assertion argument hides what is actually being '
-            .'checked. Assign it to a variable in // When or // Then first, then assert against that variable.';
+        $message = 'Forbidden: a method/static call nested inside an assertion argument hides what is actually '
+            .'being checked.';
+        $tip = 'Assign it to a variable in // When or // Then first, then assert against that variable.';
 
         $this->analyse([__DIR__.'/data/forbid-inline-call-in-assertion.php'], [
-            [$message, 19],
-            [$message, 20],
-            [$message, 21],
+            [$message, 19, $tip],
+            [$message, 20, $tip],
+            [$message, 21, $tip],
         ]);
     }
 

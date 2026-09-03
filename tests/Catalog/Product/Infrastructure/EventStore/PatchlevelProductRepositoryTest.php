@@ -6,6 +6,7 @@ namespace Catalog\Tests\Product\Infrastructure\EventStore;
 
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -42,7 +43,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->repository->load(ProductBuilder::sample('id'));
+        $this->repository->load(ProductId::generate());
     }
 
     #[Test]
@@ -63,7 +64,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(ProductBuilder::sample('id'));
+        $notExists = $this->repository->has(ProductId::generate());
 
         // Then
         self::assertFalse($notExists);

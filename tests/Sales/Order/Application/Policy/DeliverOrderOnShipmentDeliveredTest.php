@@ -12,18 +12,10 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\DeliverOrderOnShipmentDelivered;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestCase
 {
-    private DeliverOrderOnShipmentDelivered $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(DeliverOrderOnShipmentDelivered::class);
-    }
-
     #[Test]
     public function itDelivers(): void
     {
@@ -32,7 +24,7 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
         $this->store($order);
 
         // When
-        ($this->policy)(new ShipmentDeliveredIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(DeliverOrderOnShipmentDelivered::class, new ShipmentDeliveredIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

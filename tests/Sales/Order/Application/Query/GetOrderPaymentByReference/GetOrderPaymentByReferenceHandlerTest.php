@@ -19,21 +19,17 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
         // Given
         $paymentFactory = OrderPaymentBuilder::new();
         $orderPayment = $paymentFactory->create();
-        $orderId = $paymentFactory->attribute('orderId');
-        $reference = $paymentFactory->attribute('reference')->value;
-        $checkoutUrl = $paymentFactory->attribute('checkoutUrl');
-        $amountInCents = $paymentFactory->attribute('amount')->cents;
         $this->store($orderPayment);
 
         // When
-        $result = $this->ask(new GetOrderPaymentByReference($reference));
+        $result = $this->ask(new GetOrderPaymentByReference($paymentFactory['reference']->value));
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($orderId, $result->orderId);
-        self::assertSame($amountInCents, $result->amountInCents);
-        self::assertSame($reference, $result->reference);
-        self::assertSame($checkoutUrl, $result->checkoutUrl);
+        self::assertSame($paymentFactory['orderId'], $result->orderId);
+        self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
+        self::assertSame($paymentFactory['checkoutUrl'], $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
         self::assertNotNull($result->requestedAt);
         self::assertNull($result->capturedAt);
@@ -46,6 +42,6 @@ final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTes
         $this->expectException(OrderPaymentResultNotFoundException::class);
 
         // When
-        $this->ask(new GetOrderPaymentByReference('GLBX-NEVER-ISSUED'));
+        $this->ask(new GetOrderPaymentByReference(OrderPaymentBuilder::sample('reference')->value));
     }
 }

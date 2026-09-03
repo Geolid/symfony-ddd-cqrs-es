@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\OrderPaymentStatus;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -48,7 +50,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(OrderPaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(OrderPaymentBuilder::new()->create()->id->toString());
+        $this->finder->ofId(OrderPaymentId::forOrder(Uuid::uuid7()->toString())->toString());
     }
 
     #[Test]
@@ -69,20 +71,17 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
             ->refundInitiated($refundInitiatedAt)
             ->refundConfirmed($refundedAt);
         $orderPayment = $paymentFactory->create();
-        $reference = $paymentFactory->attribute('reference')->value;
-        $checkoutUrl = $paymentFactory->attribute('checkoutUrl');
-        $amountInCents = $paymentFactory->attribute('amount')->cents;
         $this->store($order, $orderPayment);
 
         // When
-        $result = $this->finder->ofReference($reference);
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($amountInCents, $result->amountInCents);
-        self::assertSame($reference, $result->reference);
-        self::assertSame($checkoutUrl, $result->checkoutUrl);
+        self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
+        self::assertSame($paymentFactory['checkoutUrl'], $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
@@ -100,7 +99,7 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(OrderPaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofReference('GLBX-NEVER-ISSUED');
+        $this->finder->ofReference(OrderPaymentBuilder::sample('reference')->value);
     }
 
     #[Test]

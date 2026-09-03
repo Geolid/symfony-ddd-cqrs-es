@@ -48,8 +48,8 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::ACTIVE, $activeResult->status);
         self::assertNull($activeResult->reason);
         self::assertSame(
-            $activeBuilder['registeredAt']->format(\DateTimeImmutable::ATOM),
-            $activeResult->registeredAt->format(\DateTimeImmutable::ATOM),
+            $activeBuilder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $activeResult->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($activeResult->suspendedAt);
         self::assertNull($activeResult->reactivatedAt);
@@ -58,12 +58,12 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
         self::assertSame($suspendedBuilder['reason']->value, $suspendedResult->reason);
         self::assertSame(
-            $suspendedBuilder['registeredAt']->format(\DateTimeImmutable::ATOM),
-            $suspendedResult->registeredAt->format(\DateTimeImmutable::ATOM),
+            $suspendedBuilder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $suspendedResult->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $suspendedBuilder['suspendedAt']->format(\DateTimeImmutable::ATOM),
-            $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM),
+            $suspendedBuilder['suspendedAt']->format(\DateTimeInterface::ATOM),
+            $suspendedResult->suspendedAt?->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($suspendedResult->reactivatedAt);
     }

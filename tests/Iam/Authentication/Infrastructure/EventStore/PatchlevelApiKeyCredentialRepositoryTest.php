@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
@@ -45,7 +46,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
         $this->expectException(ApiKeyCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(ApiKeyCredentialBuilder::sample('id'));
+        $this->repository->load(ApiKeyCredentialId::generate());
     }
 
     #[Test]
@@ -66,7 +67,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(ApiKeyCredentialBuilder::sample('id'));
+        $notExists = $this->repository->has(ApiKeyCredentialId::generate());
 
         // Then
         self::assertFalse($notExists);

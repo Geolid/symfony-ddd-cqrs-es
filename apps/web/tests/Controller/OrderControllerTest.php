@@ -185,7 +185,8 @@ final class OrderControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('checkout_address_complete', ['return_to' => 'sales_order_place']));
-        self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id->toString()));
+        $results = $this->service(OrderFinderInterface::class)->byCustomer($identity->id->toString());
+        self::assertCount(0, $results);
     }
 
     #[Test]
@@ -213,7 +214,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertResponseRedirects($this->path('sales_order_place'));
         $client->followRedirect();
         self::assertSelectorTextContains('[data-testid="flash-error"]', 'sales.order.flash.catalog_changed');
-        self::assertCount(0, $this->service(OrderFinderInterface::class)->byCustomer($identity->id->toString()));
+        $results = $this->service(OrderFinderInterface::class)->byCustomer($identity->id->toString());
+        self::assertCount(0, $results);
     }
 
     /**

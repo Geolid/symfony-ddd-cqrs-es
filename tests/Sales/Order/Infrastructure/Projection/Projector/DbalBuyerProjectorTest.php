@@ -42,8 +42,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerShippingAddressRegistered(): void
     {
         // Given
+        $shippingAddress = $this->shippingAddress();
         $customer = CustomerBuilder::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->shippingAddressRegistered($shippingAddress)
             ->create();
 
         // When
@@ -54,7 +55,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '12 rue des Lilas', 'postal_code' => '75001', 'city' => 'Paris', 'country_code' => 'FR'],
+            $this->primitiveAddress($shippingAddress),
             $this->postalAddress($row['shipping_address']),
         );
         self::assertNull($row['billing_address']);
@@ -64,8 +65,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerBillingAddressRegistered(): void
     {
         // Given
+        $billingAddress = $this->billingAddress();
         $customer = CustomerBuilder::new()
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When
@@ -76,7 +78,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '8 avenue Foch', 'postal_code' => '75116', 'city' => 'Paris', 'country_code' => 'FR'],
+            $this->primitiveAddress($billingAddress),
             $this->postalAddress($row['billing_address']),
         );
         self::assertNull($row['shipping_address']);
@@ -99,6 +101,31 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($other->id->toString(), $otherRow['customer_id']);
+    }
+
+    private function shippingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+    }
+
+    private function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
+    }
+
+    /**
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
+    {
+        return [
+            'first_name' => $address->fullName->firstName,
+            'last_name' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postal_code' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'country_code' => $address->address->countryCode->value,
+        ];
     }
 
     /**

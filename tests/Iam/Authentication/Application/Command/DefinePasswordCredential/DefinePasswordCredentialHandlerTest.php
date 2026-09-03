@@ -15,6 +15,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialU
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -40,12 +41,12 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         self::assertSame($identityId, $result->identityId);
         self::assertSame($login, $result->login);
         self::assertSame(
-            $now->format(\DateTimeImmutable::ATOM),
-            $result->definedAt->format(\DateTimeImmutable::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->definedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $now->format(\DateTimeImmutable::ATOM),
-            $result->passwordChangedAt->format(\DateTimeImmutable::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertTrue($result->identityAuthenticatable);
 
@@ -77,7 +78,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
             $login,
-            PasswordCredentialBuilder::sample('id')->toString(),
+            PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString(),
         );
 
         // Then

@@ -19,11 +19,17 @@ enum ShipmentState: string
     case RETURN_APPROVED = 'return_approved';
     case RETURN_REJECTED = 'return_rejected';
 
+    /**
+     * @phpstan-pure
+     */
     public function isManifested(): bool
     {
         return self::MANIFESTED === $this;
     }
 
+    /**
+     * @phpstan-pure
+     */
     public function isReturnManifested(): bool
     {
         return self::RETURN_MANIFESTED === $this;

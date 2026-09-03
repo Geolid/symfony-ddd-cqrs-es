@@ -11,7 +11,6 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, delivered_at: ?string, completed_at: ?string, return_requested_at: ?string, returned_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string, cancelled_at: ?string, closed_at: ?string, anonymized_at: ?string}
@@ -23,7 +22,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(2_500)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
 
         // When
         $this->store($order);
@@ -32,7 +31,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
-        self::assertSame(2_500, (int) $row['total_amount_in_cents']);
+        self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
         self::assertSame(OrderStatus::PLACED->value, $row['status']);
         self::assertNull($row['confirmed_at']);
         self::assertNull($row['dispatched_at']);
@@ -114,13 +113,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderAnonymized(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $other = OrderBuilder::new()->cancelled($now->modify('-11 years'))->create();
+        $other = OrderBuilder::new()->cancelled()->create();
         $this->store($other);
-        $order = OrderBuilder::new()
-            ->cancelled($now->modify('-11 years'))
-            ->anonymized($now)
-            ->create();
+        $order = OrderBuilder::new()->cancelled()->anonymized()->create();
 
         // When
         $this->store($order);
@@ -164,11 +159,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($other);
-        $now = Clock::get()->now();
-        $order = OrderBuilder::new()->confirmed()->dispatched()
-            ->delivered($now->modify('-1 month'))
-            ->completed($now)
-            ->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->completed()->create();
 
         // When
         $this->store($order);
@@ -239,7 +230,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested();
         $other = $order->create();
         $this->store($other);
-        $order = $order->returnRejected('item damaged beyond resale')->create();
+        $returnRejectionReason = OrderBuilder::sample('returnRejectionReason');
+        $order = $order->returnRejected($returnRejectionReason)->create();
 
         // When
         $this->store($order);
@@ -250,7 +242,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::RETURN_REJECTED->value, $row['status']);
         self::assertNotNull($row['return_rejected_at']);
         self::assertNotNull($row['closed_at']);
-        self::assertSame('item damaged beyond resale', $row['return_rejection_reason']);
+        self::assertSame($returnRejectionReason, $row['return_rejection_reason']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

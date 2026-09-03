@@ -30,7 +30,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ApiKeyCredentialBuilder::sample('id');
+        $this->id = ApiKeyCredentialId::generate();
         $this->identityId = ApiKeyCredentialBuilder::sample('identityId');
         $this->keyId = ApiKeyCredentialBuilder::sample('keyId');
         $this->label = ApiKeyCredentialBuilder::sample('label');

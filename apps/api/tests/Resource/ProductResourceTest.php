@@ -164,7 +164,8 @@ final class ProductResourceTest extends AbstractApiTestCase
             'label' => 'Wireless mouse',
             'unitAmountInCents' => 2_999,
         ]);
-        self::assertNotEmpty($response->toArray()['id']);
+        $content = $response->toArray();
+        self::assertNotEmpty($content['id']);
     }
 
     #[Test]

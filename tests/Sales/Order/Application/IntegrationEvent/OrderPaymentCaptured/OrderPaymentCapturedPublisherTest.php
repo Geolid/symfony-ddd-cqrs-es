@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\IntegrationEvent\OrderPaymentCaptured;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -19,15 +17,12 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
     public function itPublishes(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $orderBuilder = OrderBuilder::new();
+        $order = $orderBuilder->create();
         $this->store($order);
-        $now = Clock::get()->now();
-        $orderPayment = OrderPaymentBuilder::new()
-            ->withOrderId($order->id->toString())
-            ->authorized()
-            ->captured($now)
-            ->create();
+
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured();
+        $orderPayment = $paymentBuilder->create();
 
         // When
         $this->store($orderPayment);
@@ -35,9 +30,9 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         // Then
         $event = $this->publishedEventOf(OrderPaymentCapturedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($customerId, $event->customerId);
+        self::assertSame($orderBuilder['customerId'], $event->customerId);
         self::assertSame($this->address($order->shippingAddress), $event->shippingAddress);
-        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->capturedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame($paymentBuilder['capturedAt']->format(\DateTimeInterface::ATOM), $event->capturedAt->format(\DateTimeInterface::ATOM));
     }
 
     /**

@@ -41,8 +41,10 @@ final class AnonymizeExpiredOrdersCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('1 order(s) anonymized.', $tester->getDisplay());
-        self::assertNotNull($this->orderFinder->ofId($expired->id->toString())->anonymizedAt);
-        self::assertNull($this->orderFinder->ofId($withinRetention->id->toString())->anonymizedAt);
+        $expiredResult = $this->orderFinder->ofId($expired->id->toString());
+        self::assertNotNull($expiredResult->anonymizedAt);
+        $withinRetentionResult = $this->orderFinder->ofId($withinRetention->id->toString());
+        self::assertNull($withinRetentionResult->anonymizedAt);
     }
 
     #[Test]

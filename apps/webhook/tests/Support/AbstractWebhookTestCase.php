@@ -46,6 +46,8 @@ abstract class AbstractWebhookTestCase extends WebTestCase
     }
 
     /**
+     * @phpstan-pure
+     *
      * @return array<array-key, mixed>
      */
     protected static function toArray(mixed $value): array

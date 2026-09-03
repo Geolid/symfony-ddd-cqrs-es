@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Policy;
 
 use Iam\Authentication\Application\Policy\ReleaseApiKeyLabelsOnIdentityErased;
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
@@ -53,6 +54,6 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
 
     private function reserveLabel(string $identityId, string $label): void
     {
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, ApiKeyCredentialBuilder::sample('id')->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, ApiKeyCredentialId::generate()->toString());
     }
 }

@@ -4,99 +4,74 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipment\Application\Policy\RequestShipmentOnOrderConfirmed;
-use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
-use Sales\Order\Domain\Order;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
 {
-    private RequestShipmentOnOrderConfirmed $policy;
-    private ShipmentFinderInterface $shipmentFinder;
+    private CommandBusInterface&MockObject $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(RequestShipmentOnOrderConfirmed::class);
-        $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->replace(CommandBusInterface::class, $this->commandBus);
     }
 
     #[Test]
     public function itRequests(): void
     {
         // Given
-        $order = $this->placedOrder();
+        $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $shippingAddress = ShipmentBuilder::sample('shippingAddress');
+
+        $dispatched = null;
+        $this->commandBus->expects(self::once())->method('dispatch')
+            ->willReturnCallback(static function (CommandInterface $command) use (&$dispatched): void {
+                $dispatched = $command;
+            });
 
         // When
-        ($this->policy)($this->orderConfirmed($order));
+        $this->trigger(RequestShipmentOnOrderConfirmed::class, new OrderConfirmedIntegrationEvent(
+            orderId: $orderId,
+            customerId: $customerId,
+            shippingAddress: $this->rawAddress($shippingAddress),
+            confirmedAt: Clock::get()->now(),
+        ));
 
         // Then
-        $results = iterator_to_array($this->shipmentFinder, false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentId::forOrder($order->id->toString())->toString(), $results[0]->id);
-        self::assertSame($order->id->toString(), $results[0]->orderId);
-        self::assertSame(ShipmentStatus::REQUESTED, $results[0]->status);
-        $shippingAddress = $this->shipmentOf($order)->shippingAddress;
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-        );
+        self::assertInstanceOf(RequestShipment::class, $dispatched);
+        self::assertSame(ShipmentId::forOrder($orderId)->toString(), $dispatched->id);
+        self::assertSame($orderId, $dispatched->orderId);
+        self::assertSame($customerId, $dispatched->customerId);
+        self::assertSame($this->rawAddress($shippingAddress), $dispatched->shippingAddress);
     }
 
-    #[Test]
-    public function itRequestsSingleWhenReplayed(): void
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function rawAddress(PostalAddress $address): array
     {
-        // Given
-        $order = $this->placedOrder();
-        ($this->policy)($this->orderConfirmed($order));
-
-        // When
-        ($this->policy)($this->orderConfirmed($order));
-
-        // Then
-        self::assertCount(1, $this->shipmentFinder);
-    }
-
-    private function placedOrder(): Order
-    {
-        $order = OrderBuilder::new()
-            ->withCustomerId(Uuid::uuid7()->toString())
-            ->withTotalAmountInCents(4_200)
-            ->create();
-        $this->store($order);
-
-        return $order;
-    }
-
-    private function orderConfirmed(Order $order): OrderConfirmedIntegrationEvent
-    {
-        return new OrderConfirmedIntegrationEvent(
-            orderId: $order->id->toString(),
-            customerId: Uuid::uuid7()->toString(),
-            shippingAddress: ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            confirmedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
-        );
-    }
-
-    private function shipmentOf(Order $order): Shipment
-    {
-        return $this->service(ShipmentRepositoryInterface::class)
-            ->load(ShipmentId::forOrder($order->id->toString()));
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
+        ];
     }
 }

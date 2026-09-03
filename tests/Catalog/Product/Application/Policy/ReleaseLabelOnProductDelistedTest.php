@@ -6,6 +6,7 @@ namespace Catalog\Tests\Product\Application\Policy;
 
 use Catalog\Product\Application\Policy\ReleaseLabelOnProductDelisted;
 use Catalog\Product\Domain\Event\ProductDelisted;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,13 +30,13 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     public function itReleases(): void
     {
         // Given
-        $productId = ProductBuilder::sample('id')->toString();
+        $productId = ProductId::generate()->toString();
         $label = ProductBuilder::sample('label')->value;
         $labelKey = UniqueKey::for(ProductUniqueKey::LABEL);
         $this->uniqueValues->reserve($labelKey, $label, $productId);
 
         $otherLabel = ProductBuilder::sample('label')->value;
-        $this->uniqueValues->reserve($labelKey, $otherLabel, ProductBuilder::sample('id')->toString());
+        $this->uniqueValues->reserve($labelKey, $otherLabel, ProductId::generate()->toString());
 
         // When
         $this->trigger(ReleaseLabelOnProductDelisted::class, new ProductDelisted($productId, Clock::get()->now()));

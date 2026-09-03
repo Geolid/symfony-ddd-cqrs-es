@@ -41,12 +41,12 @@ final class HasReachedSpecificationTest extends TestCase
      */
     public static function provideTransitions(): iterable
     {
-        yield 'reaches itself' => [ShipmentState::PREPARED, ShipmentState::PREPARED, true];
-        yield 'reaches one hop away' => [ShipmentState::MANIFESTED, ShipmentState::PREPARED, true];
-        yield 'reaches several hops away' => [ShipmentState::DELIVERED, ShipmentState::PREPARED, true];
-        yield 'does not reach backward' => [ShipmentState::MANIFESTED, ShipmentState::DISPATCHED, false];
-        yield 'does not cross into the other branch' => [ShipmentState::CANCELLED, ShipmentState::PREPARED, false];
-        yield 'a dead end reaches itself' => [ShipmentState::CANCELLED, ShipmentState::CANCELLED, true];
-        yield 'a dead end reaches nothing else' => [ShipmentState::PREPARED, ShipmentState::CANCELLED, false];
+        yield 'same state' => [ShipmentState::PREPARED, ShipmentState::PREPARED, true];
+        yield 'one hop away' => [ShipmentState::MANIFESTED, ShipmentState::PREPARED, true];
+        yield 'several hops away' => [ShipmentState::DELIVERED, ShipmentState::PREPARED, true];
+        yield 'backward' => [ShipmentState::MANIFESTED, ShipmentState::DISPATCHED, false];
+        yield 'other branch' => [ShipmentState::CANCELLED, ShipmentState::PREPARED, false];
+        yield 'dead end itself' => [ShipmentState::CANCELLED, ShipmentState::CANCELLED, true];
+        yield 'dead end' => [ShipmentState::PREPARED, ShipmentState::CANCELLED, false];
     }
 }

@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentManifes
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentManifested\ShipmentManifestedIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentManifestedPublisherTest extends AbstractIntegrationTestCase
@@ -16,8 +15,8 @@ final class ShipmentManifestedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested();
+        $shipment = $builder->create();
 
         // When
         $this->store($shipment);
@@ -25,7 +24,7 @@ final class ShipmentManifestedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentManifestedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($orderId, $event->orderId);
-        self::assertSame('ACME-4Q7X2K9', $event->trackingReference);
+        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($builder['trackingReference']->value, $event->trackingReference);
     }
 }

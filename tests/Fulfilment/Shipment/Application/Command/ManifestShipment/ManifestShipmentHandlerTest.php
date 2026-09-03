@@ -38,7 +38,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
-        $trackingReference = ShipmentBuilder::new()->manifested()->attribute('trackingReference')->value;
+        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
@@ -52,7 +52,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWithSameTrackingReference(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::new()->manifested()->attribute('trackingReference')->value;
+        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, $shipment->id->toString());
@@ -75,21 +75,21 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($id, 'ACME-4Q7X2K9'));
+        $this->dispatch(new ManifestShipment($id, ShipmentBuilder::new()->manifested()['trackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenAlreadyTrackedUnderAnotherReference(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->manifested('ACME-4Q7X2K9')->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->create();
         $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), 'ACME-OTHER'));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingReference']->value));
     }
 
     #[Test]
@@ -103,14 +103,14 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()->attribute('trackingReference')->value));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::new()->manifested()->attribute('trackingReference')->value;
+        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);

@@ -28,7 +28,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = IdentityBuilder::sample('id');
+        $this->id = IdentityId::generate();
         $this->reason = IdentityBuilder::sample('reason');
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');

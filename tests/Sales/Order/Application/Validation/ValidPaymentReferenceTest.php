@@ -48,7 +48,7 @@ final class ValidPaymentReferenceTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
-        yield 'longer than the provider can issue' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1), [new Assert\Length(max: PaymentReference::MAX_LENGTH)]];
+        yield 'too long' => [str_repeat('A', PaymentReference::MAX_LENGTH + 1), [new Assert\Length(max: PaymentReference::MAX_LENGTH)]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
     }
 

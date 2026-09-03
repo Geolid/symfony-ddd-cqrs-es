@@ -9,6 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -36,12 +37,12 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
         self::assertSame($reason, $result->reason);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeImmutable::ATOM),
-            $result->registeredAt->format(\DateTimeImmutable::ATOM),
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $now->format(\DateTimeImmutable::ATOM),
-            $result->reactivatedAt?->format(\DateTimeImmutable::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->reactivatedAt?->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->suspendedAt);
     }
@@ -71,7 +72,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ReactivateIdentity(
-            IdentityBuilder::sample('id')->toString(),
+            IdentityId::generate()->toString(),
             IdentityBuilder::sample('reason')->value,
         ));
     }

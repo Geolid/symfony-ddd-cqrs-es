@@ -34,21 +34,19 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $paymentFactory = OrderPaymentBuilder::new();
         $payment = $paymentFactory->create();
-        $orderId = $paymentFactory->attribute('orderId');
-        $reference = $paymentFactory->attribute('reference')->value;
 
         // When
         $this->dispatch(new RequestOrderPayment(
             id: $payment->id->toString(),
-            orderId: $orderId,
-            amountInCents: 4_200,
-            reference: $reference,
-            checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
+            orderId: $paymentFactory['orderId'],
+            amountInCents: $paymentFactory['amount']->cents,
+            reference: $paymentFactory['reference']->value,
+            checkoutUrl: $paymentFactory['checkoutUrl'],
         ));
 
         // Then
-        $result = $this->finder->ofReference($reference);
-        self::assertSame($reference, $result->reference);
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
 
@@ -58,31 +56,28 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $paymentFactory = OrderPaymentBuilder::new();
         $payment = $paymentFactory->create();
-        $orderId = $paymentFactory->attribute('orderId');
-        $reference = $paymentFactory->attribute('reference')->value;
         $this->store($payment);
 
         // When
         $this->dispatch(new RequestOrderPayment(
             id: $payment->id->toString(),
-            orderId: $orderId,
-            amountInCents: 4_200,
-            reference: 'GLBX-OTHER',
-            checkoutUrl: 'https://checkout.globex.test/pay/GLBX-OTHER',
+            orderId: $paymentFactory['orderId'],
+            amountInCents: OrderPaymentBuilder::sample('amount')->cents,
+            reference: OrderPaymentBuilder::sample('reference')->value,
+            checkoutUrl: OrderPaymentBuilder::sample('checkoutUrl'),
         ));
 
         // Then
-        $result = $this->finder->ofReference($reference);
-        self::assertSame($reference, $result->reference);
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
     }
 
     #[Test]
     public function itFailsWhenReferenceAlreadyTaken(): void
     {
         // Given
-        $paymentFactory = OrderPaymentBuilder::new();
-        $orderId = $paymentFactory->attribute('orderId');
-        $reference = $paymentFactory->attribute('reference')->value;
+        $orderId = OrderPaymentBuilder::sample('orderId');
+        $reference = OrderPaymentBuilder::sample('reference')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(OrderPaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
         // Then

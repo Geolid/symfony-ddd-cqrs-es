@@ -92,7 +92,9 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('sales_order_list'));
-        self::assertNotNull($client->getCookieJar()->get('REMEMBERME'));
+        $cookieJar = $client->getCookieJar();
+        $rememberMeCookie = $cookieJar->get('REMEMBERME');
+        self::assertNotNull($rememberMeCookie);
     }
 
     #[Test]

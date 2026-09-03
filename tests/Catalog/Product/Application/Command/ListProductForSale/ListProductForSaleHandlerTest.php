@@ -7,6 +7,7 @@ namespace Catalog\Tests\Product\Application\Command\ListProductForSale;
 use Catalog\Product\Application\Command\ListProductForSale\ListProductForSale;
 use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,7 +21,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $id = ProductBuilder::sample('id')->toString();
+        $id = ProductId::generate()->toString();
         $label = ProductBuilder::sample('label')->value;
         $unitAmountInCents = ProductBuilder::sample('unitAmount')->cents;
 
@@ -42,7 +43,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ProductUniqueKey::LABEL),
             $label,
-            ProductBuilder::sample('id')->toString(),
+            ProductId::generate()->toString(),
         );
 
         // Then
@@ -50,7 +51,7 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ListProductForSale(
-            ProductBuilder::sample('id')->toString(),
+            ProductId::generate()->toString(),
             $label,
             ProductBuilder::sample('unitAmount')->cents,
         ));

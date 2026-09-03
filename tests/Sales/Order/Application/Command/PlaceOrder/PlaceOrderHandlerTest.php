@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Customer;
+use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -18,7 +20,6 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -31,55 +32,35 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $id = OrderBuilder::new()->attribute('id')->toString();
+        $id = OrderId::generate()->toString();
+        $lines = $this->lines();
 
         // When
-        $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $lines));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
         self::assertSame($customer->id->toString(), $result->customerId);
-        self::assertSame(1_999, $result->totalAmountInCents);
+        self::assertSame($this->totalAmountInCents($lines), $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
+
         $order = $this->orderOf($id);
-        $shippingAddress = $order->shippingAddress;
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-        );
-        $billingAddress = $order->billingAddress;
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $billingAddress->fullName->firstName,
-                'lastName' => $billingAddress->fullName->lastName,
-                'street' => $billingAddress->address->street,
-                'postalCode' => $billingAddress->address->postalCode,
-                'city' => $billingAddress->address->city,
-                'countryCode' => $billingAddress->address->countryCode->value,
-            ],
-        );
+        self::assertSame($this->primitiveAddress($this->shippingAddress()), $this->primitiveAddress($order->shippingAddress));
+        self::assertSame($this->primitiveAddress($this->billingAddress()), $this->primitiveAddress($order->billingAddress));
     }
 
     #[Test]
     public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
-        $customerId = CustomerBuilder::new()->attribute('id')->toString();
+        $customerId = CustomerId::generate()->toString();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customerId, $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, $this->lines()));
     }
 
     #[Test]
@@ -93,7 +74,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -103,10 +84,10 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customer = CustomerBuilder::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $customer = $customer->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')));
+            $customer = $customer->shippingAddressRegistered($this->shippingAddress());
         }
         if ($withBillingAddress) {
-            $customer = $customer->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')));
+            $customer = $customer->billingAddressRegistered($this->billingAddress());
         }
         $customer = $customer->create();
         $this->store($customer);
@@ -115,7 +96,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderBuilder::new()->attribute('id')->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
     }
 
     /**
@@ -139,9 +120,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderBuilder::new()->attribute('id')->toString(),
+            OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => ProductBuilder::new()->attribute('id')->toString(), 'quantity' => 1, 'label' => 'Ghost mug', 'unitAmountInCents' => 500]],
+            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitAmountInCents' => ProductBuilder::sample('unitAmount')->cents]],
         ));
     }
 
@@ -150,7 +131,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
-        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $label = ProductBuilder::sample('label');
+        $unitAmount = ProductBuilder::sample('unitAmount');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitAmountInCents($unitAmount->cents)->create();
         $this->store($cups);
 
         // Then
@@ -158,9 +141,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderBuilder::new()->attribute('id')->toString(),
+            OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_500]],
+            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitAmountInCents' => $unitAmount->cents - 250]],
         ));
     }
 
@@ -169,26 +152,65 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
      */
     private function lines(): array
     {
-        $cups = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $saucer = ProductBuilder::new()->withLabel('Saucer')->withUnitAmountInCents(83)->create();
+        $cupsLabel = ProductBuilder::sample('label');
+        $cupsUnitAmount = ProductBuilder::sample('unitAmount');
+        $cups = ProductBuilder::new()->withLabel($cupsLabel->value)->withUnitAmountInCents($cupsUnitAmount->cents)->create();
+
+        $saucerLabel = ProductBuilder::sample('label');
+        $saucerUnitAmount = ProductBuilder::sample('unitAmount');
+        $saucer = ProductBuilder::new()->withLabel($saucerLabel->value)->withUnitAmountInCents($saucerUnitAmount->cents)->create();
+
         $this->store($cups, $saucer);
 
         return [
-            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => 'Espresso cups, set of 6', 'unitAmountInCents' => 1_750],
-            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => 'Saucer', 'unitAmountInCents' => 83],
+            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $cupsLabel->value, 'unitAmountInCents' => $cupsUnitAmount->cents],
+            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => $saucerLabel->value, 'unitAmountInCents' => $saucerUnitAmount->cents],
         ];
+    }
+
+    /**
+     * @param list<array{productId: string, quantity: int, label: string, unitAmountInCents: int}> $lines
+     */
+    private function totalAmountInCents(array $lines): int
+    {
+        return array_sum(array_map(static fn (array $line): int => $line['quantity'] * $line['unitAmountInCents'], $lines));
     }
 
     private function registeredCustomer(string $email): Customer
     {
         $customer = CustomerBuilder::new()
             ->withEmail($email)
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->shippingAddressRegistered($this->shippingAddress())
+            ->billingAddressRegistered($this->billingAddress())
             ->create();
         $this->store($customer);
 
         return $customer;
+    }
+
+    private function shippingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+    }
+
+    private function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
+    {
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
+        ];
     }
 
     private function orderOf(string $id): Order

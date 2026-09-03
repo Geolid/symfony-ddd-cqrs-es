@@ -6,6 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\EventStore;
 
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -42,7 +43,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load(IdentityBuilder::sample('id'));
+        $this->repository->load(IdentityId::generate());
     }
 
     #[Test]
@@ -63,7 +64,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(IdentityBuilder::sample('id'));
+        $notExists = $this->repository->has(IdentityId::generate());
 
         // Then
         self::assertFalse($notExists);

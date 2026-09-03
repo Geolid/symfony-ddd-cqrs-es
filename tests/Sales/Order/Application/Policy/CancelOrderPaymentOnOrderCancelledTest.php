@@ -12,31 +12,24 @@ use Sales\Order\Application\Policy\CancelOrderPaymentOnOrderCancelled;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
-    private CancelOrderPaymentOnOrderCancelled $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(CancelOrderPaymentOnOrderCancelled::class);
-    }
-
     #[Test]
     public function itCancels(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $payment = OrderPaymentBuilder::new()->withOrderId($orderId)->withReference('GLBX-9F3K2M1P')->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($orderId);
+        $payment = $paymentBuilder->create();
         $this->store($payment);
 
         // When
-        ($this->policy)($this->orderCancelled($orderId));
+        $this->trigger(CancelOrderPaymentOnOrderCancelled::class, new OrderCancelled($orderId, Clock::get()->now()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);
         self::assertSame(OrderPaymentStatus::CANCELLED, $result->status);
     }
 
@@ -47,14 +40,9 @@ final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTe
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        ($this->policy)($this->orderCancelled($orderId));
+        $this->trigger(CancelOrderPaymentOnOrderCancelled::class, new OrderCancelled($orderId, Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();
-    }
-
-    private function orderCancelled(string $orderId): OrderCancelled
-    {
-        return new OrderCancelled($orderId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
     }
 }

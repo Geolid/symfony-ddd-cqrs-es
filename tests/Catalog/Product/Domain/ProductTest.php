@@ -28,7 +28,7 @@ final class ProductTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ProductBuilder::sample('id');
+        $this->id = ProductId::generate();
         $this->label = ProductBuilder::sample('label');
         $this->unitAmount = ProductBuilder::sample('unitAmount');
         $this->listedAt = ProductBuilder::sample('listedAt');

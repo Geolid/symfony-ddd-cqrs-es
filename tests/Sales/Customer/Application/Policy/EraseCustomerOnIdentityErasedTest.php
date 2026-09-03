@@ -12,33 +12,23 @@ use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Policy\EraseCustomerOnIdentityErased;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private EraseCustomerOnIdentityErased $policy;
-    private \DateTimeImmutable $erasedAt;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(EraseCustomerOnIdentityErased::class);
-        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-    }
-
     #[Test]
     public function itErases(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $customer = CustomerBuilder::new()->withId($id)->withEmail('buyer@example.com')->create();
+        $customer = CustomerBuilder::new()->withId($id)->create();
         $this->store($customer);
 
         // Then
         $this->expectException(CustomerResultNotFoundException::class);
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($id, $this->erasedAt));
+        $this->trigger(EraseCustomerOnIdentityErased::class, new IdentityErasedIntegrationEvent($id, Clock::get()->now()));
         $this->service(CustomerFinderInterface::class)->ofId($id);
     }
 
@@ -46,7 +36,7 @@ final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCas
     public function itIgnoresWhenNoneExist(): void
     {
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), $this->erasedAt));
+        $this->trigger(EraseCustomerOnIdentityErased::class, new IdentityErasedIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

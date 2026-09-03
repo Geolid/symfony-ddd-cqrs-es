@@ -36,7 +36,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
+        $request = $client->getRequest();
+        $requestLocale = $request->getLocale();
+        self::assertSame($locale, $requestLocale);
         self::assertSelectorExists('[data-testid="register-customer-form"]');
     }
 
@@ -167,9 +169,11 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('_logout_main'));
-        $session = $client->getRequest()->getSession();
+        $request = $client->getRequest();
+        $session = $request->getSession();
         \assert($session instanceof FlashBagAwareSessionInterface);
-        self::assertSame(['sales.customer.flash.erased'], $session->getFlashBag()->get('success'));
+        $successFlashes = $session->getFlashBag()->get('success');
+        self::assertSame(['sales.customer.flash.erased'], $successFlashes);
 
         self::expectException(IdentityResultNotFoundException::class);
         $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
@@ -208,7 +212,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
+        $request = $client->getRequest();
+        $requestLocale = $request->getLocale();
+        self::assertSame($locale, $requestLocale);
         self::assertSelectorExists('[data-testid="change-password-form"]');
     }
 

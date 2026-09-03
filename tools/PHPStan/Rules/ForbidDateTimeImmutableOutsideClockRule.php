@@ -41,20 +41,23 @@ final class ForbidDateTimeImmutableOutsideClockRule implements Rule
         }
 
         if (str_contains($scope->getFile(), '/Domain/')
-            || $this->isRehydratingARawRow($node)
+            || $this->isRawHydration($node)
             || 'denormalize' === $scope->getFunctionName()) {
             return [];
         }
 
+        $fix = str_contains($scope->getFile(), '/tests/')
+            ? 'Clock::get()->now()'
+            : 'an injected ClockInterface ($this->clock->now())';
+
         return [
-            RuleErrorBuilder::message(\sprintf(
-                'Forbidden: new \%s(...) outside Domain/ or a raw row rehydration. Use Clock::get()->now() instead.',
-                $class,
-            ))->identifier('app.tests.noDateTimeOutsideClock')->build(),
+            RuleErrorBuilder::message(\sprintf('Forbidden: new \%s(...) outside Domain/ or a raw hydration.', $class))
+                ->tip(\sprintf('Use %s instead.', $fix))
+                ->identifier('app.tests.noDateTimeOutsideClock')->build(),
         ];
     }
 
-    private function isRehydratingARawRow(New_ $node): bool
+    private function isRawHydration(New_ $node): bool
     {
         if ([] === $node->getArgs()) {
             return false;

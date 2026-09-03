@@ -15,33 +15,42 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderFinderInterface::class);
+    }
+
     #[Test]
     public function itCancelsWhenCancellable(): void
     {
         // Given
+        $otherCustomerId = Uuid::uuid7()->toString();
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
+
         $customerId = Uuid::uuid7()->toString();
         $alreadyCancelled = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
         $withCapturedPayment = OrderBuilder::new()->withCustomerId($customerId)->create();
         $orderPayment = OrderPaymentBuilder::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
         $placed = OrderBuilder::new()->withCustomerId($customerId)->create();
-        $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
-        $this->store($alreadyCancelled, $withCapturedPayment, $orderPayment, $placed, $other);
+        $this->store($other, $alreadyCancelled, $withCapturedPayment, $orderPayment, $placed);
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
-        $finder = $this->service(OrderFinderInterface::class);
         $statusesById = [];
-        foreach ($finder->byCustomer($customerId) as $result) {
+        foreach ($this->finder->byCustomer($customerId) as $result) {
             $statusesById[$result->id] = $result->status;
         }
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$placed->id->toString()]);
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$alreadyCancelled->id->toString()]);
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$withCapturedPayment->id->toString()]);
 
-        $otherResults = iterator_to_array($finder->byCustomer($otherCustomerId), false);
+        $otherResults = iterator_to_array($this->finder->byCustomer($otherCustomerId), false);
         self::assertSame(OrderStatus::PLACED, $otherResults[0]->status);
     }
 
@@ -58,7 +67,7 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
-        $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);
+        $results = iterator_to_array($this->finder->byCustomer($otherCustomerId), false);
         self::assertSame(OrderStatus::PLACED, $results[0]->status);
     }
 }

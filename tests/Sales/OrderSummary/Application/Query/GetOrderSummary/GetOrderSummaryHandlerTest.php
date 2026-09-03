@@ -6,6 +6,7 @@ namespace Sales\Tests\OrderSummary\Application\Query\GetOrderSummary;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
@@ -45,7 +46,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderBuilder::new()->attribute('id')->toString();
+        $id = OrderId::generate()->toString();
 
         // Then
         $this->expectException(OrderSummaryResultNotFoundException::class);

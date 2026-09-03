@@ -22,6 +22,8 @@ trait PolicyTrait
      */
     protected function trigger(string $policyClass, object $event): void
     {
-        ($this->service($policyClass))($event);
+        $policy = $this->service($policyClass);
+        \assert(\is_callable($policy));
+        $policy($event);
     }
 }

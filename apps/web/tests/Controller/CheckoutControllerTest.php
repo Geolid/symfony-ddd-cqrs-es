@@ -29,7 +29,9 @@ final class CheckoutControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
+        $request = $client->getRequest();
+        $requestLocale = $request->getLocale();
+        self::assertSame($locale, $requestLocale);
         self::assertSelectorExists('[data-testid="checkout-addresses-form"]');
     }
 

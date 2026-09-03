@@ -17,9 +17,9 @@ final class ForbidMultipleDateTimeInstancesRuleTest extends RuleTestCase
     {
         $this->analyse([__DIR__.'/data/forbid-multiple-datetime-instances.php'], [
             [
-                'Forbidden: a second independently-constructed date instance in this method. Derive it from the '
-                .'first one via ->modify() instead of a new hand-typed instance.',
+                'Forbidden: a second independently-constructed date instance in this method.',
                 40,
+                'Derive it from the first one via ->modify() instead of a new hand-typed instance.',
             ],
         ]);
     }

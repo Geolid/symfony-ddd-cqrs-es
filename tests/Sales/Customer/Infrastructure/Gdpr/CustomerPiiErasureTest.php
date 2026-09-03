@@ -18,23 +18,27 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 {
-    private \DateTimeImmutable $erasedAt;
+    private DataSubjectEraserProcessor $eraser;
+
+    private EventSerializer $serializer;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
+        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->serializer = $this->service(EventSerializer::class);
     }
 
     #[Test]
     public function itCryptoShredsEmailOnErasure(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->create();
+        $customer = CustomerBuilder::new()->create();
         $this->store($customer);
         $serialized = $this->serializedEventOf(
             CustomerRegistered::class,
@@ -42,12 +46,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
-        );
+        ($this->eraser)(Message::create(new CustomerErased($customer->id->toString(), Clock::get()->now())));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(CustomerRegistered::class, $rehydrated);
         $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
         self::assertSame($sentinel($customer->id->toString()), $rehydrated->email);
@@ -67,12 +69,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
-        );
+        ($this->eraser)(Message::create(new CustomerErased($customer->id->toString(), Clock::get()->now())));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(CustomerShippingAddressRegistered::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->address);
     }
@@ -91,12 +91,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new CustomerErased($customer->id->toString(), $this->erasedAt)),
-        );
+        ($this->eraser)(Message::create(new CustomerErased($customer->id->toString(), Clock::get()->now())));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(CustomerBillingAddressRegistered::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->address);
     }

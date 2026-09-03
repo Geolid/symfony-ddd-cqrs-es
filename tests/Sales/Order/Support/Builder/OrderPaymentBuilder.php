@@ -10,7 +10,6 @@ use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -21,12 +20,12 @@ use Symfony\Component\Clock\Clock;
  *     reference: PaymentReference,
  *     checkoutUrl: string,
  *     requestedAt: \DateTimeImmutable,
- *     authorizedAt?: \DateTimeImmutable,
- *     failedAt?: \DateTimeImmutable,
- *     capturedAt?: \DateTimeImmutable,
- *     cancelledAt?: \DateTimeImmutable,
- *     refundInitiatedAt?: \DateTimeImmutable,
- *     refundConfirmedAt?: \DateTimeImmutable,
+ *     authorizedAt: \DateTimeImmutable,
+ *     failedAt: \DateTimeImmutable,
+ *     capturedAt: \DateTimeImmutable,
+ *     cancelledAt: \DateTimeImmutable,
+ *     refundInitiatedAt: \DateTimeImmutable,
+ *     refundConfirmedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<OrderPayment, Attributes>
@@ -35,99 +34,111 @@ final class OrderPaymentBuilder extends AbstractAggregateBuilder
 {
     public function withOrderId(string $orderId): self
     {
-        return $this->withAttributes(['orderId' => $orderId]);
+        return $this->withAttributes(orderId: $orderId);
     }
 
     public function withAmountInCents(int $amountInCents): self
     {
-        return $this->withAttributes(['amount' => Money::fromCents($amountInCents)]);
+        return $this->withAttributes(amount: Money::fromCents($amountInCents));
     }
 
     public function withReference(string $reference): self
     {
-        return $this->withAttributes(['reference' => PaymentReference::fromString($reference)]);
+        return $this->withAttributes(reference: PaymentReference::fromString($reference));
     }
 
     public function withCheckoutUrl(string $checkoutUrl): self
     {
-        return $this->withAttributes(['checkoutUrl' => $checkoutUrl]);
+        return $this->withAttributes(checkoutUrl: $checkoutUrl);
     }
 
     public function withRequestedAt(\DateTimeImmutable $requestedAt): self
     {
-        return $this->withAttributes(['requestedAt' => $requestedAt]);
+        return $this->withAttributes(requestedAt: $requestedAt);
     }
 
     public function authorized(?\DateTimeImmutable $authorizedAt = null): self
     {
-        $authorizedAt ??= Clock::get()->now();
+        $builder = null !== $authorizedAt ? $this->withAttributes(authorizedAt: $authorizedAt) : $this;
 
-        return $this->withAttributes(['authorizedAt' => $authorizedAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->authorize($authorizedAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->authorize($builder['authorizedAt']),
+        );
     }
 
     public function failed(?\DateTimeImmutable $failedAt = null): self
     {
-        $failedAt ??= Clock::get()->now();
+        $builder = null !== $failedAt ? $this->withAttributes(failedAt: $failedAt) : $this;
 
-        return $this->withAttributes(['failedAt' => $failedAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->fail($failedAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->fail($builder['failedAt']),
+        );
     }
 
     public function captured(?\DateTimeImmutable $capturedAt = null): self
     {
-        $capturedAt ??= Clock::get()->now();
+        $builder = null !== $capturedAt ? $this->withAttributes(capturedAt: $capturedAt) : $this;
 
-        return $this->withAttributes(['capturedAt' => $capturedAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->capture($capturedAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->capture($builder['capturedAt']),
+        );
     }
 
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
-        $cancelledAt ??= Clock::get()->now();
+        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
 
-        return $this->withAttributes(['cancelledAt' => $cancelledAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->cancel($cancelledAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->cancel($builder['cancelledAt']),
+        );
     }
 
-    public function refundInitiated(?\DateTimeImmutable $initiatedAt = null): self
+    public function refundInitiated(?\DateTimeImmutable $refundInitiatedAt = null): self
     {
-        $initiatedAt ??= Clock::get()->now();
+        $builder = null !== $refundInitiatedAt ? $this->withAttributes(refundInitiatedAt: $refundInitiatedAt) : $this;
 
-        return $this->withAttributes(['refundInitiatedAt' => $initiatedAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->initiateRefund($initiatedAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->initiateRefund($builder['refundInitiatedAt']),
+        );
     }
 
-    public function refundConfirmed(?\DateTimeImmutable $refundedAt = null): self
+    public function refundConfirmed(?\DateTimeImmutable $refundConfirmedAt = null): self
     {
-        $refundedAt ??= Clock::get()->now();
+        $builder = null !== $refundConfirmedAt ? $this->withAttributes(refundConfirmedAt: $refundConfirmedAt) : $this;
 
-        return $this->withAttributes(['refundConfirmedAt' => $refundedAt])
-            ->withModifier(static fn (OrderPayment $orderPayment) => $orderPayment->confirmRefund($refundedAt));
+        return $builder->withModifier(
+            static fn (OrderPayment $orderPayment, self $builder) => $orderPayment->confirmRefund($builder['refundConfirmedAt']),
+        );
     }
 
-    protected function defaults(): array
+    protected static function defaults(): array
     {
         return [
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-            'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->regexify('GLBX-[A-Z0-9]{8}')),
+            'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
             'checkoutUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
-            'requestedAt' => ClockSequence::next(...),
+            'requestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'authorizedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'capturedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'refundInitiatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'refundConfirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
         ];
     }
 
     protected function build(): OrderPayment
     {
-        $orderId = $this->attribute('orderId');
+        $orderId = $this['orderId'];
 
         return OrderPayment::request(
             id: OrderPaymentId::forOrder($orderId),
             orderId: $orderId,
-            amount: $this->attribute('amount'),
-            reference: $this->attribute('reference'),
-            checkoutUrl: $this->attribute('checkoutUrl'),
-            requestedAt: $this->attribute('requestedAt'),
+            amount: $this['amount'],
+            reference: $this['reference'],
+            checkoutUrl: $this['checkoutUrl'],
+            requestedAt: $this['requestedAt'],
         );
     }
 }

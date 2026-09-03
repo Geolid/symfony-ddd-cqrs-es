@@ -15,12 +15,12 @@ final class ForbidRepeatedServiceResolutionRuleTest extends RuleTestCase
 {
     public function testRule(): void
     {
-        $message = 'Forbidden: SomeFinderInterface resolved 2 times in this class. Hoist the repeated resolution to '
-            .'a setUp()-assigned property instead.';
+        $message = 'Forbidden: SomeFinderInterface resolved 2 times in this class.';
+        $tip = 'Hoist the repeated resolution to a setUp()-assigned property instead.';
 
         $this->analyse([__DIR__.'/data/forbid-repeated-service-resolution.php'], [
-            [$message, 36],
-            [$message, 41],
+            [$message, 36, $tip],
+            [$message, 41, $tip],
         ]);
     }
 

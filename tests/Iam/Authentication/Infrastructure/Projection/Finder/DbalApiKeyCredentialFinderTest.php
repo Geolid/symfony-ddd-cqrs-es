@@ -43,8 +43,8 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($builder['keyId']->value, $result->keyId);
         self::assertFalse($result->revoked);
         self::assertSame(
-            $builder['issuedAt']->format(\DateTimeImmutable::ATOM),
-            $result->issuedAt->format(\DateTimeImmutable::ATOM),
+            $builder['issuedAt']->format(\DateTimeInterface::ATOM),
+            $result->issuedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);

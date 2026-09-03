@@ -36,7 +36,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
-        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference')->value;
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
@@ -52,7 +52,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference')->value;
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, $shipment->id->toString());
@@ -75,21 +75,21 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($id, ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference')->value));
+        $this->dispatch(new ManifestShipmentReturn($id, ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenAlreadyTrackedUnderAnotherReturnReference(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
         $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-OTHER'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
@@ -103,14 +103,14 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference')->value));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenReturnTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference')->value;
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);

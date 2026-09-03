@@ -63,13 +63,13 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofTrackingReference($trackedFactory->attribute('trackingReference')->value);
+        $result = $this->finder->ofTrackingReference($trackedFactory['trackingReference']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($trackedFactory->attribute('trackingReference')->value, $result->trackingReference);
+        self::assertSame($trackedFactory['trackingReference']->value, $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
@@ -81,7 +81,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofTrackingReference(ShipmentBuilder::new()->manifested()->attribute('trackingReference')->value);
+        $this->finder->ofTrackingReference(ShipmentBuilder::sample('trackingReference')->value);
     }
 
     #[Test]
@@ -107,13 +107,13 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofReturnTrackingReference($trackedFactory->attribute('returnTrackingReference')->value);
+        $result = $this->finder->ofReturnTrackingReference($trackedFactory['returnTrackingReference']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame($trackedFactory->attribute('returnTrackingReference')->value, $result->returnTrackingReference);
+        self::assertSame($trackedFactory['returnTrackingReference']->value, $result->returnTrackingReference);
     }
 
     #[Test]
@@ -123,7 +123,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
+        $this->finder->ofReturnTrackingReference(ShipmentBuilder::sample('returnTrackingReference')->value);
     }
 
     #[Test]

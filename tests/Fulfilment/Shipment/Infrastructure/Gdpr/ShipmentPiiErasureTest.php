@@ -9,7 +9,6 @@ use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -20,10 +19,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsFrozenAddressOnErasure(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()
-            ->withCustomerId($customerId)
-            ->create();
+        $builder = ShipmentBuilder::new();
+        $shipment = $builder->create();
         $this->store($shipment);
         $serialized = $this->serializedEventOf(
             ShipmentRequested::class,
@@ -32,7 +29,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($customerId)),
+            Message::create(new StubDataSubjectErased($builder['customerId'])),
         );
 
         // Then

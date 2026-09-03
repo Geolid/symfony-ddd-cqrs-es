@@ -25,7 +25,7 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
             ->returnRequested()->returnManifested()->returnDispatched();
         $shipment = $shipmentFactory->create();
         $this->store($shipment);
-        $body = self::body($shipmentFactory->attribute('returnTrackingReference'));
+        $body = self::body($shipmentFactory['returnTrackingReference']->value);
 
         // When
         $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
@@ -146,6 +146,6 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
 
     private static function anyReturnTrackingReference(): string
     {
-        return ShipmentBuilder::new()->returnManifested()->attribute('returnTrackingReference');
+        return ShipmentBuilder::sample('returnTrackingReference')->value;
     }
 }

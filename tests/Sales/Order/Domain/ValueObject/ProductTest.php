@@ -40,23 +40,39 @@ final class ProductTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();
         $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
         $b = Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83));
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
+
         $differentId = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
         $differentLabel = Product::of($id, Label::fromString('Plate'), Money::fromCents(83));
         $differentPrice = Product::of($id, Label::fromString('Saucer'), Money::fromCents(90));
 
         // When
-        $equalResult = $a->equals($b);
+        $differsOnId = $a->equals($differentId);
+        $differsOnLabel = $a->equals($differentLabel);
+        $differsOnPrice = $a->equals($differentPrice);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($a->equals($differentId));
-        self::assertFalse($a->equals($differentLabel));
-        self::assertFalse($a->equals($differentPrice));
+        self::assertFalse($differsOnId);
+        self::assertFalse($differsOnLabel);
+        self::assertFalse($differsOnPrice);
     }
 }

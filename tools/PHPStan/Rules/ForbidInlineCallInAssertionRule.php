@@ -50,9 +50,10 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
         foreach ($node->getArgs() as $arg) {
             if ($this->hasForbiddenNestedCall($arg->value, $scope)) {
                 $errors[] = RuleErrorBuilder::message(
-                    'Forbidden: a method/static call nested inside an assertion argument hides what is actually being '
-                    .'checked. Assign it to a variable in // When or // Then first, then assert against that variable.',
-                )->identifier('app.tests.noInlineCallInAssertion')->build();
+                    'Forbidden: a method/static call nested inside an assertion argument hides what is actually '
+                    .'being checked.',
+                )->tip('Assign it to a variable in // When or // Then first, then assert against that variable.')
+                    ->identifier('app.tests.noInlineCallInAssertion')->build();
 
                 break;
             }
@@ -64,7 +65,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
     private function hasForbiddenNestedCall(Node $node, Scope $scope): bool
     {
         if ($node instanceof MethodCall || $node instanceof StaticCall || $node instanceof NullsafeMethodCall) {
-            return !($this->isOwnHelperCall($node, $scope) || $this->isPureStaticCall($node) || $this->isWhitelistedMethodCall($node));
+            return !($this->isOwnHelperCall($node, $scope) || $this->isPureStaticCall($node, $scope) || $this->isPureEnumMethodCall($node, $scope) || $this->isWhitelistedMethodCall($node));
         }
 
         foreach ($node->getSubNodeNames() as $subNodeName) {
@@ -103,20 +104,27 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
         return !$class->getMethod($node->name->toString(), $scope)->isPublic();
     }
 
-    private function isPureStaticCall(Node $node): bool
+    private function isPureStaticCall(Node $node, Scope $scope): bool
     {
         if (!$node instanceof StaticCall || !$node->class instanceof Name || !$node->name instanceof Identifier) {
             return false;
         }
 
         $className = ltrim((string) $node->class, '\\');
+        $methodName = $node->name->toString();
+
+        if (\in_array(strtolower($className), ['self', 'static', 'parent'], true)) {
+            $class = $scope->getClassReflection();
+
+            return null !== $class && $class->hasNativeMethod($methodName)
+                && $class->getNativeMethod($methodName)->hasSideEffects()->no();
+        }
 
         if (!$this->reflectionProvider->hasClass($className)) {
             return false;
         }
 
         $class = $this->reflectionProvider->getClass($className);
-        $methodName = $node->name->toString();
 
         if (!$class->hasNativeMethod($methodName)) {
             return false;
@@ -125,13 +133,34 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
         return $class->getNativeMethod($methodName)->hasSideEffects()->no();
     }
 
+    private function isPureEnumMethodCall(Node $node, Scope $scope): bool
+    {
+        if (!$node instanceof MethodCall || !$node->name instanceof Identifier) {
+            return false;
+        }
+
+        $methodName = $node->name->toString();
+
+        foreach ($scope->getType($node->var)->getObjectClassReflections() as $classReflection) {
+            if (!$classReflection->isEnum() || !$classReflection->hasNativeMethod($methodName)) {
+                continue;
+            }
+
+            if ($classReflection->getNativeMethod($methodName)->hasSideEffects()->no()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function isWhitelistedMethodCall(Node $node): bool
     {
         if ((!$node instanceof MethodCall && !$node instanceof NullsafeMethodCall) || !$node->name instanceof Identifier) {
             return false;
         }
 
-        $safeMethods = ['format', 'toString', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader', 'getTimezone', 'getName'];
+        $safeMethods = ['format', 'toString', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader', 'getTimezone', 'getName', 'getStatusCode', 'getDisplay', 'getRequest', 'getLocale'];
 
         return \in_array($node->name->toString(), $safeMethods, true);
     }

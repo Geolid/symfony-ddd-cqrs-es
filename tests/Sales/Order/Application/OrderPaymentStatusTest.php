@@ -14,7 +14,8 @@ final class OrderPaymentStatusTest extends TestCase
     public function itIsCaptured(): void
     {
         foreach (OrderPaymentStatus::cases() as $status) {
-            self::assertSame(OrderPaymentStatus::CAPTURED === $status, $status->isCaptured(), $status->value);
+            $isCaptured = $status->isCaptured();
+            self::assertSame(OrderPaymentStatus::CAPTURED === $status, $isCaptured, $status->value);
         }
     }
 }

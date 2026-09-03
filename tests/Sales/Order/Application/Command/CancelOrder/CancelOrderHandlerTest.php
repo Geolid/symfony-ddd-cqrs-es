@@ -12,6 +12,7 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -80,7 +81,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderBuilder::new()->attribute('id')->toString();
+        $id = OrderId::generate()->toString();
         $customerId = Uuid::uuid7()->toString();
 
         // Then

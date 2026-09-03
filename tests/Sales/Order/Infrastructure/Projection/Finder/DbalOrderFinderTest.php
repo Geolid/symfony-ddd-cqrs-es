@@ -28,24 +28,8 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $now = Clock::get()->now();
-        $placedAt = $now->modify('-11 years');
-        $confirmedAt = $placedAt->modify('+1 hour');
-        $dispatchedAt = $placedAt->modify('+1 day 2 hours');
-        $deliveredAt = $placedAt->modify('+4 days 3 hours');
-        $completedAt = $placedAt->modify('+1 month');
-        $anonymizedAt = $now;
-        $order = OrderBuilder::new()
-            ->withCustomerId($customerId)
-            ->withTotalAmountInCents(2_500)
-            ->withPlacedAt($placedAt)
-            ->confirmed($confirmedAt)
-            ->dispatched($dispatchedAt)
-            ->delivered($deliveredAt)
-            ->completed($completedAt)
-            ->anonymized($anonymizedAt)
-            ->create();
+        $builder = OrderBuilder::new()->confirmed()->dispatched()->delivered()->completed()->anonymized();
+        $order = $builder->create();
         $this->store($order);
 
         // When
@@ -53,17 +37,17 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->id);
-        self::assertSame($customerId, $result->customerId);
-        self::assertSame(2_500, $result->totalAmountInCents);
+        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::COMPLETED, $result->status);
-        self::assertSame($placedAt->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
-        self::assertSame($confirmedAt->format('Y-m-d H:i:s'), $result->confirmedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($dispatchedAt->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($deliveredAt->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
-        self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->completedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['placedAt']->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
+        self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['dispatchedAt']->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['deliveredAt']->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['completedAt']->format('Y-m-d H:i:s'), $result->completedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
-        self::assertSame($completedAt->format('Y-m-d H:i:s'), $result->closedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($anonymizedAt->format('Y-m-d H:i:s'), $result->anonymizedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['completedAt']->format('Y-m-d H:i:s'), $result->closedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['anonymizedAt']->format('Y-m-d H:i:s'), $result->anonymizedAt?->format('Y-m-d H:i:s'));
     }
 
     #[Test]

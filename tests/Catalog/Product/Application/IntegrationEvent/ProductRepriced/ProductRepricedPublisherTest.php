@@ -27,8 +27,8 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame($builder['unitAmount']->cents, $event->unitAmountInCents);
         self::assertSame(
-            $builder['repricedAt']->format(\DateTimeImmutable::ATOM),
-            $event->repricedAt->format(\DateTimeImmutable::ATOM),
+            $builder['repricedAt']->format(\DateTimeInterface::ATOM),
+            $event->repricedAt->format(\DateTimeInterface::ATOM),
         );
     }
 }

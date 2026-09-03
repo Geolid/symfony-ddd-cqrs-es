@@ -26,8 +26,9 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = CustomerBuilder::new()->withEmail('other@example.com')->create();
-        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->create();
+        $other = CustomerBuilder::new()->create();
+        $builder = CustomerBuilder::new();
+        $customer = $builder->create();
         $this->store($other, $customer);
 
         // When
@@ -35,7 +36,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($customer->id->toString(), $result->id);
-        self::assertSame('buyer@example.com', $result->email);
+        self::assertSame($builder['email']->value, $result->email);
     }
 
     #[Test]

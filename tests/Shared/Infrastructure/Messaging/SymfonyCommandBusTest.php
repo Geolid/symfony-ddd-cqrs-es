@@ -18,16 +18,17 @@ final class SymfonyCommandBusTest extends TestCase
     public function itDispatches(): void
     {
         // Given
-        $called = false;
-        $bus = $this->createBus(static function () use (&$called): void {
-            $called = true;
+        $dispatched = null;
+        $bus = $this->createBus(static function (CommandInterface $command) use (&$dispatched): void {
+            $dispatched = $command;
         });
+        $command = new DummyCommand();
 
         // When
-        $bus->dispatch(new DummyCommand());
+        $bus->dispatch($command);
 
         // Then
-        self::assertTrue($called);
+        self::assertSame($command, $dispatched);
     }
 
     #[Test]

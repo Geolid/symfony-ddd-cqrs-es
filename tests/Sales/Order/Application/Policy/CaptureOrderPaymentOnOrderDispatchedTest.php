@@ -12,31 +12,24 @@ use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CaptureOrderPaymentOnOrderDispatchedTest extends AbstractIntegrationTestCase
 {
-    private CaptureOrderPaymentOnOrderDispatched $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(CaptureOrderPaymentOnOrderDispatched::class);
-    }
-
     #[Test]
     public function itCaptures(): void
     {
         // Given
         $order = OrderBuilder::new()->create();
-        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $payment = $paymentBuilder->create();
         $this->store($order, $payment);
 
         // When
-        ($this->policy)(new OrderDispatched($order->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(CaptureOrderPaymentOnOrderDispatched::class, new OrderDispatched($order->id->toString(), Clock::get()->now()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);
         self::assertSame(OrderPaymentStatus::CAPTURED, $result->status);
     }
 }

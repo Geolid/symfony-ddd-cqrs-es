@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Policy;
 
 use Iam\Authentication\Application\Policy\ReleaseLoginOnIdentityErased;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -36,7 +38,7 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $this->uniqueValues->reserve($loginKey, $login, $builder['id']->toString());
 
         $otherLogin = PasswordCredentialBuilder::sample('login')->value;
-        $this->uniqueValues->reserve($loginKey, $otherLogin, PasswordCredentialBuilder::sample('id')->toString());
+        $this->uniqueValues->reserve($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
 
         // When
         $this->trigger(ReleaseLoginOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));

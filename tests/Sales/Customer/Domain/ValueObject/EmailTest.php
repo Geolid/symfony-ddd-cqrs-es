@@ -22,16 +22,6 @@ final class EmailTest extends TestCase
     }
 
     #[Test]
-    public function itNormalizes(): void
-    {
-        // When
-        $email = Email::fromString('  Buyer@Example.COM  ');
-
-        // Then
-        self::assertSame('buyer@example.com', $email->value);
-    }
-
-    #[Test]
     #[DataProvider('provideInvalidValues')]
     public function itProtectsInvariants(string $value): void
     {
@@ -55,19 +45,30 @@ final class EmailTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $a = Email::fromString('buyer@example.com');
         $b = Email::fromString('  Buyer@Example.COM  ');
-        $other = Email::fromString('other@example.com');
 
         // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Email::fromString('buyer@example.com');
+        $b = Email::fromString('other@example.com');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

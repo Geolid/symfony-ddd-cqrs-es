@@ -19,7 +19,8 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
 
         // When
         $this->store($product);
@@ -27,17 +28,18 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('Espresso cups, set of 6', $row['label']);
-        self::assertSame(1_750, (int) $row['unit_amount_in_cents']);
+        self::assertSame($builder['label']->value, $row['label']);
+        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_amount_in_cents']);
     }
 
     #[Test]
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $other = ProductBuilder::new()->withUnitAmountInCents(83)->create();
+        $otherBuilder = ProductBuilder::new();
+        $other = $otherBuilder->create();
         $this->store($other);
-        $product = ProductBuilder::new()->withUnitAmountInCents(1_750)->repriced(2_000)->create();
+        $product = ProductBuilder::new()->repriced(2_000)->create();
 
         // When
         $this->store($product);
@@ -49,7 +51,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(83, (int) $otherRow['unit_amount_in_cents']);
+        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_amount_in_cents']);
     }
 
     #[Test]

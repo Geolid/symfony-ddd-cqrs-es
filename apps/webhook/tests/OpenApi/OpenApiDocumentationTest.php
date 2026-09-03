@@ -34,8 +34,11 @@ final class OpenApiDocumentationTest extends AbstractWebhookTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('text/html', (string) $client->getResponse()->headers->get('Content-Type'));
-        self::assertStringContainsString('swagger-ui', (string) $client->getResponse()->getContent());
+        $response = $client->getResponse();
+        $contentType = (string) $response->headers->get('Content-Type');
+        self::assertStringContainsString('text/html', $contentType);
+        $content = (string) $response->getContent();
+        self::assertStringContainsString('swagger-ui', $content);
     }
 
     #[Test]

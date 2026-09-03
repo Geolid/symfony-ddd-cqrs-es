@@ -66,11 +66,11 @@ final class ForbidRepeatedServiceResolutionRule implements Rule
 
             foreach ($group as $call) {
                 $errors[] = RuleErrorBuilder::message(\sprintf(
-                    'Forbidden: %s resolved %d times in this class. Hoist the repeated resolution to a setUp()-assigned '
-                    .'property instead.',
+                    'Forbidden: %s resolved %d times in this class.',
                     $class,
                     \count($group),
-                ))->identifier('app.tests.noRepeatedServiceResolution')->line($call->getStartLine())->build();
+                ))->tip('Hoist the repeated resolution to a setUp()-assigned property instead.')
+                    ->identifier('app.tests.noRepeatedServiceResolution')->line($call->getStartLine())->build();
             }
         }
 

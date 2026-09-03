@@ -18,19 +18,28 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 {
+    private UniqueValueRegistryInterface $uniqueValues;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+    }
+
     #[Test]
     public function itErases(): void
     {
         // Given
         $customer = CustomerBuilder::new()->create();
         $this->store($customer);
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value, $customer->id->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value, $customer->id->toString());
 
         // When
         $this->dispatch(new EraseCustomer($customer->id->toString()));
 
         // Then
-        self::assertFalse($this->service(UniqueValueRegistryInterface::class)->exists(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value));
+        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->email->value));
         $this->expectException(CustomerResultNotFoundException::class);
         $this->service(CustomerFinderInterface::class)->ofId($customer->id->toString());
     }

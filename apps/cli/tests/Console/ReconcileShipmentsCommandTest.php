@@ -10,7 +10,6 @@ use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
-use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Symfony\Component\Clock\Clock;
@@ -35,12 +34,14 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     {
         // Given
         $now = Clock::get()->now();
-        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway([
-            'ACME-STUCK9999' => CarrierGatewayStatus::DISPATCHED,
-            'ACME-DISPATCHED-STUCK' => CarrierGatewayStatus::DELIVERED,
-            'ACME-RETURN-STUCK' => CarrierGatewayStatus::RETURN_DISPATCHED,
-            'ACME-RETURN-DISPATCHED-STUCK' => CarrierGatewayStatus::RETURN_RECEIVED,
-        ]));
+        $carrier = $this->createStub(CarrierGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturnMap([
+            ['ACME-STUCK9999', CarrierGatewayStatus::DISPATCHED],
+            ['ACME-DISPATCHED-STUCK', CarrierGatewayStatus::DELIVERED],
+            ['ACME-RETURN-STUCK', CarrierGatewayStatus::RETURN_DISPATCHED],
+            ['ACME-RETURN-DISPATCHED-STUCK', CarrierGatewayStatus::RETURN_RECEIVED],
+        ]);
+        self::getContainer()->set(CarrierGatewayInterface::class, $carrier);
         $order = OrderBuilder::new()->create();
         $stuck9999 = ShipmentBuilder::new()
             ->withOrderId($order->id->toString())
@@ -104,14 +105,22 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('4 shipment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($stuck9999->id->toString())->status);
-        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofId($fresh9999->id->toString())->status);
-        self::assertSame(ShipmentStatus::DELIVERED, $this->shipmentFinder->ofId($dispatchedStuck->id->toString())->status);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($dispatchedFresh->id->toString())->status);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofId($returnStuck->id->toString())->status);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $this->shipmentFinder->ofId($returnFresh->id->toString())->status);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->shipmentFinder->ofId($returnDispatchedStuck->id->toString())->status);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofId($returnDispatchedFresh->id->toString())->status);
+        $stuck9999Result = $this->shipmentFinder->ofId($stuck9999->id->toString());
+        self::assertSame(ShipmentStatus::DISPATCHED, $stuck9999Result->status);
+        $fresh9999Result = $this->shipmentFinder->ofId($fresh9999->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $fresh9999Result->status);
+        $dispatchedStuckResult = $this->shipmentFinder->ofId($dispatchedStuck->id->toString());
+        self::assertSame(ShipmentStatus::DELIVERED, $dispatchedStuckResult->status);
+        $dispatchedFreshResult = $this->shipmentFinder->ofId($dispatchedFresh->id->toString());
+        self::assertSame(ShipmentStatus::DISPATCHED, $dispatchedFreshResult->status);
+        $returnStuckResult = $this->shipmentFinder->ofId($returnStuck->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $returnStuckResult->status);
+        $returnFreshResult = $this->shipmentFinder->ofId($returnFresh->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $returnFreshResult->status);
+        $returnDispatchedStuckResult = $this->shipmentFinder->ofId($returnDispatchedStuck->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $returnDispatchedStuckResult->status);
+        $returnDispatchedFreshResult = $this->shipmentFinder->ofId($returnDispatchedFresh->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $returnDispatchedFreshResult->status);
     }
 
     #[Test]
@@ -119,10 +128,15 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
     {
         // Given
         $now = Clock::get()->now();
-        self::getContainer()->set(CarrierGatewayInterface::class, new StubCarrierGateway(
-            ['ACME-UNREACHABLE' => CarrierGatewayStatus::DISPATCHED, 'ACME-STUCK9999' => CarrierGatewayStatus::DISPATCHED],
-            failingReference: 'ACME-UNREACHABLE',
-        ));
+        $carrier = $this->createStub(CarrierGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturnCallback(static function (string $reference): CarrierGatewayStatus {
+            if ('ACME-UNREACHABLE' === $reference) {
+                throw new \RuntimeException('Carrier unreachable.');
+            }
+
+            return CarrierGatewayStatus::DISPATCHED;
+        });
+        self::getContainer()->set(CarrierGatewayInterface::class, $carrier);
         $unreachable = ShipmentBuilder::new()
             ->prepared()
             ->manifested('ACME-UNREACHABLE', $now->modify('-3 days'))
@@ -141,8 +155,10 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('Failed to reconcile shipment', $tester->getDisplay());
         self::assertStringContainsString('1 shipment(s) reconciled.', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::MANIFESTED, $this->shipmentFinder->ofId($unreachable->id->toString())->status);
-        self::assertSame(ShipmentStatus::DISPATCHED, $this->shipmentFinder->ofId($stuck9999->id->toString())->status);
+        $unreachableResult = $this->shipmentFinder->ofId($unreachable->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $unreachableResult->status);
+        $stuck9999Result = $this->shipmentFinder->ofId($stuck9999->id->toString());
+        self::assertSame(ShipmentStatus::DISPATCHED, $stuck9999Result->status);
     }
 
     #[Test]

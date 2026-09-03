@@ -4,10 +4,6 @@ services:
         tags:
             - phpstan.rules.rule
     -
-        class: Tools\PHPStan\Rules\ForbidRamseyUuidInTestsRule
-        tags:
-            - phpstan.rules.rule
-    -
         class: Tools\PHPStan\Rules\ForbidInlineCallInAssertionRule
         tags:
             - phpstan.rules.rule

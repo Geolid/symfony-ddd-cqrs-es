@@ -14,6 +14,7 @@ use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Query\Result\PaginatedResult;
 use Shared\Tests\Support\PaginationTrait;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
 {
@@ -83,9 +84,10 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itListsSortedByPlacedAt(): void
     {
         // Given
-        $middle = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-2 days +00:00'))->create();
-        $oldest = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-3 days +00:00'))->create();
-        $newest = OrderBuilder::new()->withPlacedAt(new \DateTimeImmutable('-1 day +00:00'))->create();
+        $now = Clock::get()->now();
+        $middle = OrderBuilder::new()->withPlacedAt($now->modify('-2 days'))->create();
+        $oldest = OrderBuilder::new()->withPlacedAt($now->modify('-3 days'))->create();
+        $newest = OrderBuilder::new()->withPlacedAt($now->modify('-1 day'))->create();
         $this->store($middle, $oldest, $newest);
 
         // When

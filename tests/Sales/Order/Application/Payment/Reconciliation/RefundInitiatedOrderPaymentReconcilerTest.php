@@ -7,11 +7,11 @@ namespace Sales\Tests\Order\Application\Payment\Reconciliation;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
+use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\Reconciliation\RefundInitiatedOrderPaymentReconciler;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Sales\Tests\Order\Support\Double\StubPaymentGateway;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -19,11 +19,14 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
 {
     private OrderPaymentFinderInterface $orderPaymentFinder;
 
+    private CommandBusInterface $commandBus;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->orderPaymentFinder = $this->service(OrderPaymentFinderInterface::class);
+        $this->commandBus = $this->service(CommandBusInterface::class);
     }
 
     #[Test]
@@ -31,16 +34,20 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
     {
         // Given
         $order = OrderBuilder::new()->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withReference('GLBX-REFD0001')->authorized()->captured()->refundInitiated()->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated();
+        $orderPayment = $paymentBuilder->create();
         $this->store($order, $orderPayment);
-        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-REFD0001' => PaymentGatewayStatus::REFUNDED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::REFUNDED);
+        $reconciler = new RefundInitiatedOrderPaymentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-REFD0001');
+        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(OrderPaymentStatus::REFUNDED, $this->orderPaymentFinder->ofReference('GLBX-REFD0001')->status);
+        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
     }
 
     #[Test]
@@ -48,15 +55,19 @@ final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegratio
     {
         // Given
         $order = OrderBuilder::new()->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withReference('GLBX-PEND0002')->authorized()->captured()->refundInitiated()->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated();
+        $orderPayment = $paymentBuilder->create();
         $this->store($order, $orderPayment);
-        $reconciler = new RefundInitiatedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0002' => PaymentGatewayStatus::REFUNDING]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::REFUNDING);
+        $reconciler = new RefundInitiatedOrderPaymentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-PEND0002');
+        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
 
         // Then
         self::assertFalse($reconciled);
-        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $this->orderPaymentFinder->ofReference('GLBX-PEND0002')->status);
+        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $result->status);
     }
 }

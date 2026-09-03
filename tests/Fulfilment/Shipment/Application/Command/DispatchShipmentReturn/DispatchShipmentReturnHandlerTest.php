@@ -40,7 +40,7 @@ final class DispatchShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itIgnoresReturnAlreadyDispatched(): void
+    public function itIgnoresWhenReturnAlreadyDispatched(): void
     {
         // Given
         $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();

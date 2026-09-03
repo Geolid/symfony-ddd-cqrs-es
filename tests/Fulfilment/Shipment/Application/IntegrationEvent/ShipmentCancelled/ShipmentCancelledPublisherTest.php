@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentCancell
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentCancelled\ShipmentCancelledIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentCancelledPublisherTest extends AbstractIntegrationTestCase
@@ -16,8 +15,8 @@ final class ShipmentCancelledPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->cancelled()->create();
+        $builder = ShipmentBuilder::new()->cancelled();
+        $shipment = $builder->create();
 
         // When
         $this->store($shipment);
@@ -25,6 +24,10 @@ final class ShipmentCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentCancelledIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($orderId, $event->orderId);
+        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame(
+            $builder['cancelledAt']->format(\DateTimeInterface::ATOM),
+            $event->cancelledAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

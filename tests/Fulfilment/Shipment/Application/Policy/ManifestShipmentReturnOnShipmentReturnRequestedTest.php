@@ -5,78 +5,81 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Command\ManifestShipmentReturn\ManifestShipmentReturn;
 use Fulfilment\Shipment\Application\Policy\ManifestShipmentReturnOnShipmentReturnRequested;
-use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
+use PHPUnit\Framework\MockObject\MockObject;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ManifestShipmentReturnOnShipmentReturnRequestedTest extends AbstractIntegrationTestCase
 {
-    private SpyReturnCarrierGateway $carrier;
+    private CarrierGatewayInterface&MockObject $carrier;
 
-    private ManifestShipmentReturnOnShipmentReturnRequested $policy;
+    private CommandBusInterface&MockObject $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->carrier = new SpyReturnCarrierGateway();
-        self::getContainer()->set(CarrierGatewayInterface::class, $this->carrier);
+        $this->carrier = $this->createMock(CarrierGatewayInterface::class);
+        $this->replace(CarrierGatewayInterface::class, $this->carrier);
 
-        $this->policy = $this->service(ManifestShipmentReturnOnShipmentReturnRequested::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->replace(CommandBusInterface::class, $this->commandBus);
     }
 
     #[Test]
     public function itManifests(): void
     {
         // Given
-        $shippingAddress = PostalAddress::of(
-            FullName::of('Ada', 'Lovelace'),
-            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
-        );
-        $shipment = ShipmentBuilder::new()->withShippingAddress($shippingAddress)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
+        $pickupAddress = null;
+        $returnTrackingReference = ShipmentBuilder::sample('returnTrackingReference')->value;
+        $this->carrier->expects(self::once())->method('manifestReturn')
+            ->willReturnCallback(static function (string $shipmentId, PostalAddress $address) use (&$pickupAddress, $returnTrackingReference): string {
+                $pickupAddress = $address;
+
+                return $returnTrackingReference;
+            });
+
+        $dispatched = null;
+        $this->commandBus->expects(self::once())->method('dispatch')
+            ->willReturnCallback(static function (CommandInterface $command) use (&$dispatched): void {
+                $dispatched = $command;
+            });
+
         // When
-        ($this->policy)(new ShipmentReturnRequested($shipment->id->toString(), new \DateTimeImmutable('2026-01-10T00:00:00+00:00')));
+        $this->trigger(ManifestShipmentReturnOnShipmentReturnRequested::class, new ShipmentReturnRequested($shipment->id->toString(), Clock::get()->now()));
 
         // Then
-        self::assertNotNull($this->carrier->pickupAddress);
-        self::assertSame('12 rue des Lilas', $this->carrier->pickupAddress->address->street);
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $results[0]->status);
-        self::assertSame(SpyReturnCarrierGateway::RETURN_TRACKING_REFERENCE, $results[0]->returnTrackingReference);
-    }
-}
+        self::assertNotNull($pickupAddress);
+        self::assertSame($this->rawAddress($shipment->shippingAddress), $this->rawAddress($pickupAddress));
 
-final class SpyReturnCarrierGateway implements CarrierGatewayInterface
-{
-    public const string RETURN_TRACKING_REFERENCE = 'ACME-RETURN-4Q7X2K9';
-
-    public ?PostalAddress $pickupAddress = null;
-
-    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
-    {
-        throw new \LogicException('Not exercised by this test.');
+        self::assertInstanceOf(ManifestShipmentReturn::class, $dispatched);
+        self::assertSame($shipment->id->toString(), $dispatched->id);
+        self::assertSame($returnTrackingReference, $dispatched->returnTrackingReference);
     }
 
-    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function rawAddress(PostalAddress $address): array
     {
-        $this->pickupAddress = $pickupAddress;
-
-        return self::RETURN_TRACKING_REFERENCE;
-    }
-
-    public function checkStatus(string $reference): CarrierGatewayStatus
-    {
-        throw new \LogicException('Not exercised by this test.');
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
+        ];
     }
 }

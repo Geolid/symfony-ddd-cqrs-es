@@ -49,7 +49,7 @@ final class ValidEmailTest extends CompoundConstraintTestCase
         yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'whitespace only' => ['   ', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
-        yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email()]];
+        yield 'malformed address' => ['buyer-at-example.com', [new Assert\Email()]];
     }
 
     protected function createCompound(): ValidEmail

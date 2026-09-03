@@ -36,7 +36,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('approved', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::RETURN_APPROVED, $this->finder->ofId($shipment->id->toString())->status);
+        $result = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_APPROVED, $result->status);
     }
 
     #[Test]
@@ -53,7 +54,8 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('rejected', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::RETURN_REJECTED, $this->finder->ofId($shipment->id->toString())->status);
+        $result = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
     #[Test]

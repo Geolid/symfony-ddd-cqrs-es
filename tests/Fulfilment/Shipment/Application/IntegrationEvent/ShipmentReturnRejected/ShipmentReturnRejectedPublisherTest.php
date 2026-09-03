@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentReturnR
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnRejected\ShipmentReturnRejectedIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentReturnRejectedPublisherTest extends AbstractIntegrationTestCase
@@ -16,8 +15,8 @@ final class ShipmentReturnRejectedPublisherTest extends AbstractIntegrationTestC
     public function itPublishes(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected('item damaged beyond resale')->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected();
+        $shipment = $builder->create();
 
         // When
         $this->store($shipment);
@@ -25,7 +24,11 @@ final class ShipmentReturnRejectedPublisherTest extends AbstractIntegrationTestC
         // Then
         $event = $this->publishedEventOf(ShipmentReturnRejectedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($orderId, $event->orderId);
-        self::assertSame('item damaged beyond resale', $event->reason);
+        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($builder['returnRejectionReason'], $event->reason);
+        self::assertSame(
+            $builder['returnRejectedAt']->format(\DateTimeInterface::ATOM),
+            $event->rejectedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

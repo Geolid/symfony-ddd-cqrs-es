@@ -12,36 +12,29 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\RejectOrderReturnOnShipmentReturnRejected;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RejectOrderReturnOnShipmentReturnRejectedTest extends AbstractIntegrationTestCase
 {
-    private RejectOrderReturnOnShipmentReturnRejected $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(RejectOrderReturnOnShipmentReturnRejected::class);
-    }
-
     #[Test]
     public function itRejects(): void
     {
         // Given
         $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
         $this->store($order);
+        $reason = OrderBuilder::sample('returnRejectionReason');
 
         // When
-        ($this->policy)(new ShipmentReturnRejectedIntegrationEvent(
+        $this->trigger(RejectOrderReturnOnShipmentReturnRejected::class, new ShipmentReturnRejectedIntegrationEvent(
             Uuid::uuid7()->toString(),
             $order->id->toString(),
-            'item damaged beyond resale',
-            new \DateTimeImmutable('2026-01-11T00:00:00+00:00'),
+            $reason,
+            Clock::get()->now(),
         ));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::RETURN_REJECTED, $result->status);
-        self::assertSame('item damaged beyond resale', $result->returnRejectionReason);
+        self::assertSame($reason, $result->returnRejectionReason);
     }
 }

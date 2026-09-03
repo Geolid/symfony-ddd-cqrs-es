@@ -9,7 +9,6 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -18,6 +17,9 @@ use Symfony\Component\Clock\Clock;
  *     id: CustomerId,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
+ *     shippingAddressRegisteredAt: \DateTimeImmutable,
+ *     billingAddressRegisteredAt: \DateTimeImmutable,
+ *     erasedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Customer, Attributes>
@@ -26,59 +28,64 @@ final class CustomerBuilder extends AbstractAggregateBuilder
 {
     public function withId(string $id): self
     {
-        return $this->withAttributes(['id' => CustomerId::fromString($id)]);
+        return $this->withAttributes(id: CustomerId::fromString($id));
     }
 
     public function withEmail(string $email): self
     {
-        return $this->withAttributes(['email' => Email::fromString($email)]);
+        return $this->withAttributes(email: Email::fromString($email));
     }
 
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
-        return $this->withAttributes(['registeredAt' => $registeredAt]);
+        return $this->withAttributes(registeredAt: $registeredAt);
     }
 
     public function shippingAddressRegistered(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
-        $registeredAt ??= Clock::get()->now();
+        $builder = null !== $registeredAt ? $this->withAttributes(shippingAddressRegisteredAt: $registeredAt) : $this;
 
-        return $this->withModifier(
-            static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $registeredAt),
+        return $builder->withModifier(
+            static fn (Customer $customer, self $builder) => $customer->registerShippingAddress($shippingAddress, $builder['shippingAddressRegisteredAt']),
         );
     }
 
     public function billingAddressRegistered(PostalAddress $billingAddress, ?\DateTimeImmutable $registeredAt = null): self
     {
-        $registeredAt ??= Clock::get()->now();
+        $builder = null !== $registeredAt ? $this->withAttributes(billingAddressRegisteredAt: $registeredAt) : $this;
 
-        return $this->withModifier(
-            static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $registeredAt),
+        return $builder->withModifier(
+            static fn (Customer $customer, self $builder) => $customer->registerBillingAddress($billingAddress, $builder['billingAddressRegisteredAt']),
         );
     }
 
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
-        $erasedAt ??= Clock::get()->now();
+        $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
 
-        return $this->withModifier(static fn (Customer $customer) => $customer->erase($erasedAt));
+        return $builder->withModifier(
+            static fn (Customer $customer, self $builder) => $customer->erase($builder['erasedAt']),
+        );
     }
 
-    protected function defaults(): array
+    protected static function defaults(): array
     {
         return [
             'id' => CustomerId::generate(...),
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
-            'registeredAt' => ClockSequence::next(...),
+            'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'shippingAddressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'billingAddressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
         ];
     }
 
     protected function build(): Customer
     {
         return Customer::register(
-            id: $this->attribute('id'),
-            email: $this->attribute('email'),
-            registeredAt: $this->attribute('registeredAt'),
+            id: $this['id'],
+            email: $this['email'],
+            registeredAt: $this['registeredAt'],
         );
     }
 }

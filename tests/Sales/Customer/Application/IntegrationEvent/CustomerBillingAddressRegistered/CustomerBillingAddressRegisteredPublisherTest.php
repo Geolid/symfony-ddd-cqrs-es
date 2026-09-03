@@ -18,8 +18,9 @@ final class CustomerBillingAddressRegisteredPublisherTest extends AbstractIntegr
     public function itPublishes(): void
     {
         // Given
+        $billingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
         $customer = CustomerBuilder::new()
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When
@@ -29,7 +30,14 @@ final class CustomerBillingAddressRegisteredPublisherTest extends AbstractIntegr
         $event = $this->publishedEventOf(CustomerBillingAddressRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
+            [
+                'firstName' => $billingAddress->fullName->firstName,
+                'lastName' => $billingAddress->fullName->lastName,
+                'street' => $billingAddress->address->street,
+                'postalCode' => $billingAddress->address->postalCode,
+                'city' => $billingAddress->address->city,
+                'countryCode' => $billingAddress->address->countryCode->value,
+            ],
             $event->address,
         );
     }

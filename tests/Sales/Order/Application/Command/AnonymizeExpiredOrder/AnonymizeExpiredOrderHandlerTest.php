@@ -16,6 +16,15 @@ use Symfony\Component\Clock\Clock;
 
 final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderFinderInterface::class);
+    }
+
     #[Test]
     public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
     {
@@ -27,7 +36,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->anonymizedAt);
     }
@@ -43,7 +52,7 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertNull($result->anonymizedAt);
     }
 

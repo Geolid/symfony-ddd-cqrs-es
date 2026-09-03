@@ -19,14 +19,15 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderBuilder::new()->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::CAPTURED, $result->status);
     }
 

@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\IntegrationEvent\OrderPlaced;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Order\Domain\ValueObject\Product;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -21,14 +16,8 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $productId = Uuid::uuid7()->toString();
-        $now = Clock::get()->now();
-        $order = OrderBuilder::new()
-            ->withCustomerId($customerId)
-            ->withLines([OrderLine::of(Product::of($productId, Label::fromString('Assorted goods'), Money::fromCents(2_500)), 1)])
-            ->withPlacedAt($now)
-            ->create();
+        $builder = OrderBuilder::new();
+        $order = $builder->create();
 
         // When
         $this->store($order);
@@ -36,12 +25,35 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(OrderPlacedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($customerId, $event->customerId);
-        self::assertSame(
-            [['productId' => $productId, 'label' => 'Assorted goods', 'quantity' => 1, 'unitAmountInCents' => 2_500]],
-            $event->lines,
+        self::assertSame($builder['customerId'], $event->customerId);
+        self::assertSame($this->primitiveLines($builder['lines']), $event->lines);
+        self::assertSame($this->totalAmountInCents($builder['lines']), $event->totalAmountInCents);
+        self::assertSame($builder['placedAt']->format(\DateTimeInterface::ATOM), $event->placedAt->format(\DateTimeInterface::ATOM));
+    }
+
+    /**
+     * @param list<OrderLine> $lines
+     */
+    private function totalAmountInCents(array $lines): int
+    {
+        return array_sum(array_map(static fn (OrderLine $line): int => $line->total()->cents, $lines));
+    }
+
+    /**
+     * @param list<OrderLine> $lines
+     *
+     * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
+     */
+    private function primitiveLines(array $lines): array
+    {
+        return array_map(
+            static fn (OrderLine $line): array => [
+                'productId' => $line->product->id,
+                'label' => $line->product->label->value,
+                'quantity' => $line->quantity,
+                'unitAmountInCents' => $line->product->price->cents,
+            ],
+            $lines,
         );
-        self::assertSame(2_500, $event->totalAmountInCents);
-        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->placedAt->format(\DateTimeImmutable::ATOM));
     }
 }

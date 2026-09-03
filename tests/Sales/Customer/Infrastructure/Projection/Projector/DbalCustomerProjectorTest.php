@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Infrastructure\Projection\Projector\DbalCustomerProjector;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{email: string, registered_at: string}
@@ -20,8 +19,8 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerRegistered(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
+        $builder = CustomerBuilder::new();
+        $customer = $builder->create();
 
         // When
         $this->store($customer);
@@ -29,24 +28,28 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('buyer@example.com', $row['email']);
-        self::assertSame($now->format('Y-m-d H:i:s'), $row['registered_at']);
+        self::assertSame($builder['email']->value, $row['email']);
+        self::assertSame($builder['registeredAt']->format('Y-m-d H:i:s'), $row['registered_at']);
     }
 
     #[Test]
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerBuilder::new()->withEmail('other@example.com')->create();
+        $otherBuilder = CustomerBuilder::new();
+        $other = $otherBuilder->create();
+        $this->store($other);
         $customer = CustomerBuilder::new()->erased()->create();
-        $this->store($other, $customer);
+
+        // When
+        $this->store($customer);
 
         // Then
         self::assertFalse($this->fetchRow($customer->id->toString()));
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame('other@example.com', $otherRow['email']);
+        self::assertSame($otherBuilder['email']->value, $otherRow['email']);
     }
 
     /**

@@ -21,14 +21,15 @@ final class CancelOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderBuilder::new()->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CancelOrderPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::CANCELLED, $result->status);
     }
 

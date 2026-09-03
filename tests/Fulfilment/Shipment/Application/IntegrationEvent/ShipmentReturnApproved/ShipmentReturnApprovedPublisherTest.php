@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentReturnA
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentReturnApproved\ShipmentReturnApprovedIntegrationEvent;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentReturnApprovedPublisherTest extends AbstractIntegrationTestCase
@@ -16,8 +15,8 @@ final class ShipmentReturnApprovedPublisherTest extends AbstractIntegrationTestC
     public function itPublishes(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved()->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved();
+        $shipment = $builder->create();
 
         // When
         $this->store($shipment);
@@ -25,6 +24,10 @@ final class ShipmentReturnApprovedPublisherTest extends AbstractIntegrationTestC
         // Then
         $event = $this->publishedEventOf(ShipmentReturnApprovedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($orderId, $event->orderId);
+        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame(
+            $builder['returnApprovedAt']->format(\DateTimeInterface::ATOM),
+            $event->approvedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }
