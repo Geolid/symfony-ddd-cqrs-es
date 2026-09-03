@@ -11,5 +11,6 @@ abstract class AbstractIntegrationTestCase extends KernelTestCase
 {
     use CqrsTrait;
     use EventSourcingTrait;
+    use PolicyTrait;
     use ServiceLocatorTrait;
 }

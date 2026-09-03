@@ -18,16 +18,17 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $unitAmountInCents = ProductBuilder::sample('unitAmount')->cents;
+        $newUnitAmountInCents = $unitAmountInCents + 100;
 
-        $product = ProductBuilder::new()->create();
+        $product = ProductBuilder::new()->withUnitAmountInCents($unitAmountInCents)->create();
         $this->store($product);
 
         // When
-        $this->dispatch(new RepriceProduct($product->id->toString(), $unitAmountInCents));
+        $this->dispatch(new RepriceProduct($product->id->toString(), $newUnitAmountInCents));
 
         // Then
         $result = $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
-        self::assertSame($unitAmountInCents, $result->unitAmountInCents);
+        self::assertSame($newUnitAmountInCents, $result->unitAmountInCents);
     }
 
     #[Test]

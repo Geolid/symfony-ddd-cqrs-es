@@ -81,7 +81,7 @@ final class ApiKeyCredentialBuilder extends AbstractAggregateBuilder
             'id' => ApiKeyCredentialId::generate(...),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'label' => static function (): Label {
-                Assert::string($label = SeededFaker::get()->words(2, true));
+                Assert::string($label = SeededFaker::get()->unique()->words(2, true));
 
                 return Label::fromString($label);
             },

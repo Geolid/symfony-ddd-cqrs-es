@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
+use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -31,14 +32,9 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         $identities = [$active, $suspended, ...$others];
         $this->store(...$identities);
 
-        $ids = [];
-        foreach ($identities as $identity) {
-            $ids[] = $identity->id->toString();
-        }
-
         // When
         $pages = $this->traversePages(
-            expectedIds: $ids,
+            expectedIds: array_map(static fn (Identity $identity): string => $identity->id->toString(), $identities),
             pageSize: 2,
             askPage: $this->askPage(...),
             idsOf: $this->idsOf(...),

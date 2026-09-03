@@ -7,6 +7,7 @@ namespace Catalog\Tests\Product\Infrastructure\Projection\Finder;
 use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
+use Catalog\Product\Domain\Product;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -100,12 +101,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         $products = ProductBuilder::new()->many($count)->create();
         $this->store(...$products);
 
-        $ids = [];
-        foreach ($products as $product) {
-            $ids[] = $product->id->toString();
-        }
-
-        return $ids;
+        return array_map(static fn (Product $product): string => $product->id->toString(), $products);
     }
 
     protected function idOf(object $result): string

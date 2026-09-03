@@ -8,6 +8,7 @@ use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -102,12 +103,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         $identities = IdentityBuilder::new()->many($count)->create();
         $this->store(...$identities);
 
-        $ids = [];
-        foreach ($identities as $identity) {
-            $ids[] = $identity->id->toString();
-        }
-
-        return $ids;
+        return array_map(static fn (Identity $identity): string => $identity->id->toString(), $identities);
     }
 
     protected function idOf(object $result): string

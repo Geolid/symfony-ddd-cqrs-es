@@ -6,6 +6,7 @@ namespace Catalog\Tests\Product\Application\Query\ListProducts;
 
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
+use Catalog\Product\Domain\Product;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
@@ -30,14 +31,9 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
         $products = [$product, ...$others];
         $this->store(...$products);
 
-        $ids = [];
-        foreach ($products as $eachProduct) {
-            $ids[] = $eachProduct->id->toString();
-        }
-
         // When
         $pages = $this->traversePages(
-            expectedIds: $ids,
+            expectedIds: array_map(static fn (Product $eachProduct): string => $eachProduct->id->toString(), $products),
             pageSize: 2,
             askPage: $this->askPage(...),
             idsOf: $this->idsOf(...),

@@ -15,7 +15,8 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ProductBuilder::new()->repriced();
+        $unitAmountInCents = ProductBuilder::sample('unitAmount')->cents;
+        $builder = ProductBuilder::new()->withUnitAmountInCents($unitAmountInCents)->repriced($unitAmountInCents + 100);
         $product = $builder->create();
 
         // When

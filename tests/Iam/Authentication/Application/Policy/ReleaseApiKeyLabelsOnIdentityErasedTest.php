@@ -16,14 +16,12 @@ use Symfony\Component\Clock\Clock;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseApiKeyLabelsOnIdentityErased $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(ReleaseApiKeyLabelsOnIdentityErased::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -42,7 +40,7 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $this->reserveLabel($otherIdentityId, $label);
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
+        $this->trigger(ReleaseApiKeyLabelsOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
         $key = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId);

@@ -111,7 +111,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
                 null !== $builder ? $builder['identityId'] : self::sample('identityId'),
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'login' => static fn (): Login => Login::fromString(SeededFaker::get()->userName()),
+            'login' => static fn (): Login => Login::fromString(SeededFaker::get()->unique()->userName()),
             'password' => static fn (): Password => Password::fromString('Marmoset-42-Zephyr!'),
             'definedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
             'changedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),

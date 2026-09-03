@@ -16,14 +16,12 @@ use Symfony\Component\Clock\Clock;
 
 final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLabelOnProductDelisted $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(ReleaseLabelOnProductDelisted::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -36,10 +34,14 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
         $labelKey = UniqueKey::for(ProductUniqueKey::LABEL);
         $this->uniqueValues->reserve($labelKey, $label, $productId);
 
+        $otherLabel = ProductBuilder::sample('label')->value;
+        $this->uniqueValues->reserve($labelKey, $otherLabel, ProductBuilder::sample('id')->toString());
+
         // When
-        ($this->policy)(new ProductDelisted($productId, Clock::get()->now()));
+        $this->trigger(ReleaseLabelOnProductDelisted::class, new ProductDelisted($productId, Clock::get()->now()));
 
         // Then
         self::assertFalse($this->uniqueValues->exists($labelKey, $label));
+        self::assertTrue($this->uniqueValues->exists($labelKey, $otherLabel));
     }
 }

@@ -16,14 +16,12 @@ use Symfony\Component\Clock\Clock;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLoginOnIdentityErased $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(ReleaseLoginOnIdentityErased::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -37,10 +35,14 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $loginKey = UniqueKey::for(PasswordCredentialUniqueKey::LOGIN);
         $this->uniqueValues->reserve($loginKey, $login, $builder['id']->toString());
 
+        $otherLogin = PasswordCredentialBuilder::sample('login')->value;
+        $this->uniqueValues->reserve($loginKey, $otherLogin, PasswordCredentialBuilder::sample('id')->toString());
+
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
+        $this->trigger(ReleaseLoginOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
         self::assertFalse($this->uniqueValues->exists($loginKey, $login));
+        self::assertTrue($this->uniqueValues->exists($loginKey, $otherLogin));
     }
 }

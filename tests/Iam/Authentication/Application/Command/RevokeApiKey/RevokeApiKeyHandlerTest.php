@@ -39,7 +39,11 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $builder['identityId']);
         $this->registry->reserve($labelKey, $builder['label']->value, $credential->id->toString());
 
-        $this->store($credential);
+        $otherBuilder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->withIdentityId($builder['identityId']);
+        $otherCredential = $otherBuilder->create();
+        $this->registry->reserve($labelKey, $otherBuilder['label']->value, $otherCredential->id->toString());
+
+        $this->store($credential, $otherCredential);
 
         // When
         $this->dispatch(new RevokeApiKey($credential->id->toString(), $builder['identityId']));
@@ -49,6 +53,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         self::assertTrue($result->revoked);
 
         self::assertFalse($this->registry->exists($labelKey, $builder['label']->value));
+        self::assertTrue($this->registry->exists($labelKey, $otherBuilder['label']->value));
     }
 
     #[Test]

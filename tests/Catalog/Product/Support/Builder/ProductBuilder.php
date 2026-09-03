@@ -73,7 +73,7 @@ final class ProductBuilder extends AbstractAggregateBuilder
         return [
             'id' => ProductId::generate(...),
             'label' => static function (): Label {
-                Assert::string($label = SeededFaker::get()->words(3, true));
+                Assert::string($label = SeededFaker::get()->unique()->words(3, true));
 
                 return Label::fromString($label);
             },

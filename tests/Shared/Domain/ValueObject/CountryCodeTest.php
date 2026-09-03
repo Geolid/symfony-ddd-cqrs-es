@@ -18,10 +18,10 @@ final class CountryCodeTest extends TestCase
         $cases = CountryCode::cases();
 
         // Then
-        foreach ($cases as $case) {
-            self::assertSame($case->name, $case->value);
-        }
-
+        self::assertSame(
+            array_map(static fn (CountryCode $case): string => $case->name, $cases),
+            array_map(static fn (CountryCode $case): string => $case->value, $cases),
+        );
         self::assertSame(array_map(static fn (CountryCode $case): string => $case->value, $cases), $values);
         self::assertSame(\count($cases), \count(array_unique($values)));
         self::assertContains('ZZ', $values);
