@@ -9,7 +9,7 @@ use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetOrderPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
 {

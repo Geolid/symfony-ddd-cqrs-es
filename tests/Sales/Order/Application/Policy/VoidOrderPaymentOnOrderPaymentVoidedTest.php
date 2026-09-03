@@ -12,7 +12,7 @@ use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Policy\VoidOrderPaymentOnOrderPaymentVoided;
 use Sales\Order\Domain\Event\OrderPaymentVoided;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class VoidOrderPaymentOnOrderPaymentVoidedTest extends AbstractIntegrationTestCase
 {

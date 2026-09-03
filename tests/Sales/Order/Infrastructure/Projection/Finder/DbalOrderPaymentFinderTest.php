@@ -9,9 +9,9 @@ use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\OrderPaymentStatus;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase

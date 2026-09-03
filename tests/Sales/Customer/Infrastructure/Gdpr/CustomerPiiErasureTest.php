@@ -17,7 +17,7 @@ use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 {

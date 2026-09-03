@@ -8,7 +8,7 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -25,15 +25,14 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $identity = IdentityBuilder::new()->create();
 
         // When
         $this->repository->save($identity);
         $loaded = $this->repository->load($identity->id);
 
         // Then
-        self::assertSame($builder['id']->toString(), $loaded->id->toString());
+        self::assertSame($identity->id->toString(), $loaded->id->toString());
     }
 
     #[Test]

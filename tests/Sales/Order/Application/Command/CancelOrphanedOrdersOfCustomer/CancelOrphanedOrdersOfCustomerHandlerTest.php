@@ -9,9 +9,9 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
 {

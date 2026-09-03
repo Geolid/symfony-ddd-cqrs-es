@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\CompromisedPassword;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Infrastructure\CompromisedPassword\SymfonyCompromisedPasswordGateway;
-use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
+use Iam\Tests\Authentication\Support\Double\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;

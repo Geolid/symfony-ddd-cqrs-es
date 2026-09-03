@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
 {

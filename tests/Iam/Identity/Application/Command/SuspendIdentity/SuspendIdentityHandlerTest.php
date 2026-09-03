@@ -11,7 +11,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -23,7 +23,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
         $this->store($identity);
 
         // When
@@ -31,12 +32,18 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityStatus::SUSPENDED, $result->status);
         self::assertSame($reason, $result->reason);
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeImmutable::ATOM),
+            $result->registeredAt->format(\DateTimeImmutable::ATOM),
+        );
         self::assertSame(
             $now->format(\DateTimeImmutable::ATOM),
             $result->suspendedAt?->format(\DateTimeImmutable::ATOM),
         );
+        self::assertNull($result->reactivatedAt);
     }
 
     #[Test]

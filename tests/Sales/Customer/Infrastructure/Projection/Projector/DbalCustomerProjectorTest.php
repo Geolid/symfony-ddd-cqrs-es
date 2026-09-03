@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Infrastructure\Projection\Projector\DbalCustomerProjector;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -54,8 +54,10 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT email, registered_at FROM %s WHERE id = :id', DbalCustomerProjector::TABLE),
             ['id' => $id],
         );

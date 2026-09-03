@@ -12,7 +12,7 @@ use Sales\OrderSummary\Application\Query\ListOrderSummaryLines\ListOrderSummaryL
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
 {

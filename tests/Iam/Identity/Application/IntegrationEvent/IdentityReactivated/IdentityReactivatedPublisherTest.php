@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityReactivated;
 use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
 {

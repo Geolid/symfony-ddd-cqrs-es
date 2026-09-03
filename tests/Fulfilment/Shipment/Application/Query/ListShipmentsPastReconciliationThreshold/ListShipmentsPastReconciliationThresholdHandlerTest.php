@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipment\Application\Query\ListShipmentsPastReconcili
 use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThreshold;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ListShipmentsPastReconciliationThresholdHandlerTest extends AbstractIntegrationTestCase

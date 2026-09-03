@@ -43,15 +43,6 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         }
     }
 
-    public function release(UniqueKey $key, string $value, string $ownerId): void
-    {
-        $this->connection->delete(self::TABLE, [
-            'key_type' => $key->toString(),
-            'key_value' => $value,
-            'owner_id' => $ownerId,
-        ]);
-    }
-
     public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
     {
         $qb = $this->connection->createQueryBuilder()

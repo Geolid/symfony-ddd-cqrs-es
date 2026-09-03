@@ -6,10 +6,10 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
 {

@@ -11,7 +11,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\DispatchOrderOnShipmentDispatched;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {

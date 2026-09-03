@@ -11,11 +11,11 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Doubles\StubDataSubjectErased;
-use Support\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\StubDataSubjectErased;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 {

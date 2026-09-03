@@ -19,30 +19,18 @@ final class DbalPaginator implements PaginatorInterface
     use DbalCountTrait;
 
     /**
-     * @param \Closure(): QueryBuilder $query
+     * @param \Closure(): QueryBuilder                $query
+     * @param \Closure(array<string, mixed>): TResult $hydrate
      */
     public function __construct(
         private readonly Connection $connection,
         private readonly \Closure $query,
         private readonly \Closure $hydrate,
-        private int $page = 1,
-        private int $itemsPerPage = 20,
+        private readonly int $page = 1,
+        private readonly int $itemsPerPage = 20,
     ) {
-    }
-
-    /**
-     * @return self<TResult>
-     */
-    public function withPagination(int $page, int $itemsPerPage): self
-    {
         Assert::positiveInteger($page);
         Assert::positiveInteger($itemsPerPage);
-
-        $clone = clone $this;
-        $clone->page = $page;
-        $clone->itemsPerPage = $itemsPerPage;
-
-        return $clone;
     }
 
     public function currentPage(): int

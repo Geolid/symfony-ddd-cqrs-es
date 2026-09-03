@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{order_id: string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_initiated_at: ?string, refunded_at: ?string}
@@ -215,8 +215,10 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, cancelled_at, refund_initiated_at, refunded_at FROM %s WHERE id = :id',
                 DbalOrderPaymentProjector::TABLE,

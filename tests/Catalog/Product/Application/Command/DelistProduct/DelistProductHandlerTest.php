@@ -10,7 +10,7 @@ use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 {
@@ -26,6 +26,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(ProductResultNotFoundException::class);
+
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
     }
 
@@ -46,13 +47,10 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = ProductBuilder::new()->attribute('id')->toString();
-
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct($id));
+        $this->dispatch(new DelistProduct(ProductBuilder::sample('id')->toString()));
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Support\Doubles;
+namespace Iam\Tests\Authentication\Support\Double;
 
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 

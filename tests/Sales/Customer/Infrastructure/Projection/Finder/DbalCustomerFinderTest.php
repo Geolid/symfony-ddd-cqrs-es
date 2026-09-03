@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 {

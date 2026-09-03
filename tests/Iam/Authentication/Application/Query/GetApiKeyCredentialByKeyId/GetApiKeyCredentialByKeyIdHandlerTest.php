@@ -9,7 +9,7 @@ use Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId\GetApiKeyCre
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTestCase
 {

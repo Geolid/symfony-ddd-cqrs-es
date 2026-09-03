@@ -50,22 +50,8 @@ final class ErasedFieldSentinelTest extends TestCase
         $anotherErased = $sentinel('10000000-7000-0000-0000-000000000002');
 
         // Then
-        self::assertIsString($erased);
-        self::assertMatchesRegularExpression('/^[0-9a-f]{8}-erased$/', $erased);
+        self::assertSame('f0704062-erased', $erased);
         self::assertNotSame($erased, $anotherErased);
-    }
-
-    #[Test]
-    public function itDerivesFallback(): void
-    {
-        // Given
-        $sentinel = new ErasedFieldSentinel('%s-erased');
-
-        // When
-        $result = $sentinel(self::SUBJECT_ID);
-
-        // Then
-        self::assertSame('f0704062-erased', $result);
     }
 
     #[Test]

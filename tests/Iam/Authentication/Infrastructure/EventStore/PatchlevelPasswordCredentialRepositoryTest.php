@@ -6,11 +6,11 @@ namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
-use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -31,18 +31,17 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itSavesAndLoads(): void
     {
         // Given
-        $builder = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
+            ->withHasher($this->hasher)
+            ->create();
 
         // When
         $this->repository->save($credential);
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($builder['id']->toString(), $loaded->id->toString());
-        self::assertSame($builder['login']->value, $loaded->login->value);
+        self::assertSame($credential->id->toString(), $loaded->id->toString());
     }
 
     #[Test]

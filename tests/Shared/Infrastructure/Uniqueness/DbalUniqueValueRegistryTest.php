@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\Uniqueness;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Infrastructure\Uniqueness\DbalUniqueValueRegistry;
-use Support\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\DummyUniqueKey;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
 {
@@ -78,64 +80,27 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itExcludesOwnReservation(): void
+    #[DataProvider('provideExclusionOutcomes')]
+    public function itExcludesOnlyOwnReservation(string $excludeOwnerId, bool $expected): void
     {
         // Given
         $key = UniqueKey::for(DummyUniqueKey::A);
         $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
-        $exists = $this->registry->exists($key, 'value', excludeOwnerId: 'owner-1');
+        $exists = $this->registry->exists($key, 'value', excludeOwnerId: $excludeOwnerId);
 
         // Then
-        self::assertFalse($exists);
+        self::assertSame($expected, $exists);
     }
 
-    #[Test]
-    public function itIncludesOthersReservation(): void
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideExclusionOutcomes(): iterable
     {
-        // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
-        $this->registry->reserve($key, 'value', 'owner-1');
-
-        // When
-        $exists = $this->registry->exists($key, 'value', excludeOwnerId: 'owner-2');
-
-        // Then
-        self::assertTrue($exists);
-    }
-
-    #[Test]
-    public function itReleases(): void
-    {
-        // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
-        $otherKey = UniqueKey::for(DummyUniqueKey::B);
-        $this->registry->reserve($key, 'value-1', 'owner-1');
-        $this->registry->reserve($key, 'value-2', 'owner-1');
-        $this->registry->reserve($otherKey, 'value-1', 'owner-1');
-
-        // When
-        $this->registry->release($key, 'value-1', 'owner-1');
-
-        // Then
-        self::assertFalse($this->registry->exists($key, 'value-1'));
-        self::assertTrue($this->registry->exists($key, 'value-2'));
-        self::assertTrue($this->registry->exists($otherKey, 'value-1'));
-    }
-
-    #[Test]
-    public function itIgnoresWhenReleasedByAnotherOwner(): void
-    {
-        // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
-        $this->registry->reserve($key, 'value', 'owner-1');
-
-        // When
-        $this->registry->release($key, 'value', 'owner-2');
-
-        // Then
-        self::assertTrue($this->registry->exists($key, 'value'));
+        yield 'own reservation' => ['owner-1', false];
+        yield 'another owner' => ['owner-2', true];
     }
 
     #[Test]
@@ -175,10 +140,4 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
         self::assertFalse($this->registry->exists($key, 'value-1'));
         self::assertTrue($this->registry->exists($key, 'value-2'));
     }
-}
-
-enum DummyUniqueKey: string
-{
-    case A = 'dummy.a';
-    case B = 'dummy.b';
 }

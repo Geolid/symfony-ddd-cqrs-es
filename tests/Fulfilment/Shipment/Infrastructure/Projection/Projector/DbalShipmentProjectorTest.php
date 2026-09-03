@@ -12,7 +12,7 @@ use Fulfilment\Shipment\Infrastructure\Projection\Projector\DbalShipmentProjecto
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -313,8 +313,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT customer_id, status, tracking_reference, return_tracking_reference, manifested_at, dispatched_at, delivered_at, cancelled_at, return_manifested_at, return_dispatched_at, return_received_at, return_approved_at, return_rejected_at, return_rejection_reason FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,

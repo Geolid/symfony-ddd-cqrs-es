@@ -10,7 +10,7 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationTestCase
 {

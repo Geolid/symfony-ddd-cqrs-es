@@ -13,7 +13,7 @@ use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryLineP
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{position: int, label: string, quantity: int, unit_amount_in_cents: int}
@@ -48,8 +48,10 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
      */
     private function fetchRows(string $orderId): array
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var list<Row> */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAllAssociative(
+        return $connection->fetchAllAssociative(
             \sprintf(
                 'SELECT position, label, quantity, unit_amount_in_cents FROM %s WHERE order_id = :orderId ORDER BY position ASC',
                 DbalOrderSummaryLineProjector::TABLE,

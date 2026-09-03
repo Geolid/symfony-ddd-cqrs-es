@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -262,8 +262,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT customer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, delivered_at, completed_at, return_requested_at, returned_at, return_rejected_at, return_rejection_reason, cancelled_at, closed_at, anonymized_at FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,

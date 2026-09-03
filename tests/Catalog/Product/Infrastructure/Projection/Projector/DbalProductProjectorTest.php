@@ -8,20 +8,21 @@ use Catalog\Product\Infrastructure\Projection\Projector\DbalProductProjector;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{label: string, unit_amount_in_cents: int, listed_at: string, repriced_at: string|null}
  */
 final class DbalProductProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $listedAt = Clock::get()->now();
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->withListedAt($listedAt)->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
 
         // When
         $this->store($product);
@@ -29,9 +30,9 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('Espresso cups, set of 6', $row['label']);
-        self::assertSame(1_750, (int) $row['unit_amount_in_cents']);
-        self::assertSame($listedAt->format('Y-m-d H:i:s'), $row['listed_at']);
+        self::assertSame($builder['label']->value, $row['label']);
+        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_amount_in_cents']);
+        self::assertSame($builder['listedAt']->format(self::DATE_FORMAT), $row['listed_at']);
         self::assertNull($row['repriced_at']);
     }
 
@@ -39,23 +40,25 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $other = ProductBuilder::new()->withUnitAmountInCents(500)->create();
+        $otherBuilder = ProductBuilder::new();
+        $other = $otherBuilder->create();
         $this->store($other);
 
+        $builder = ProductBuilder::new()->repriced();
+        $product = $builder->create();
+
         // When
-        $repricedAt = Clock::get()->now();
-        $product = ProductBuilder::new()->withUnitAmountInCents(1_750)->repriced(1_950, $repricedAt)->create();
         $this->store($product);
 
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(1_950, (int) $row['unit_amount_in_cents']);
-        self::assertSame($repricedAt->format('Y-m-d H:i:s'), $row['repriced_at']);
+        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_amount_in_cents']);
+        self::assertSame($builder['repricedAt']->format(self::DATE_FORMAT), $row['repriced_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(500, (int) $otherRow['unit_amount_in_cents']);
+        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_amount_in_cents']);
         self::assertNull($otherRow['repriced_at']);
     }
 
@@ -66,8 +69,9 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         $other = ProductBuilder::new()->create();
         $this->store($other);
 
-        // When
         $product = ProductBuilder::new()->delisted()->create();
+
+        // When
         $this->store($product);
 
         // Then
@@ -80,8 +84,10 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT label, unit_amount_in_cents, listed_at, repriced_at FROM %s WHERE id = :id', DbalProductProjector::TABLE),
             ['id' => $id],
         );

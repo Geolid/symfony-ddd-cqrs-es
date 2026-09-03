@@ -64,7 +64,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
     private function hasForbiddenNestedCall(Node $node, Scope $scope): bool
     {
         if ($node instanceof MethodCall || $node instanceof StaticCall || $node instanceof NullsafeMethodCall) {
-            return !($this->isOwnPrivateHelperCall($node, $scope) || $this->isPureStaticCall($node) || $this->isWhitelistedMethodCall($node));
+            return !($this->isOwnHelperCall($node, $scope) || $this->isPureStaticCall($node) || $this->isWhitelistedMethodCall($node));
         }
 
         foreach ($node->getSubNodeNames() as $subNodeName) {
@@ -80,7 +80,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
         return false;
     }
 
-    private function isOwnPrivateHelperCall(Node $node, Scope $scope): bool
+    private function isOwnHelperCall(Node $node, Scope $scope): bool
     {
         if (!$node instanceof MethodCall) {
             return false;
@@ -100,7 +100,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
             return false;
         }
 
-        return $class->getMethod($node->name->toString(), $scope)->isPrivate();
+        return !$class->getMethod($node->name->toString(), $scope)->isPublic();
     }
 
     private function isPureStaticCall(Node $node): bool
@@ -131,7 +131,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
             return false;
         }
 
-        $safeMethods = ['format', 'toString', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader'];
+        $safeMethods = ['format', 'toString', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader', 'getTimezone', 'getName'];
 
         return \in_array($node->name->toString(), $safeMethods, true);
     }

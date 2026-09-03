@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Query;
+namespace Shared\Application\Finder;
 
-use Shared\Application\Finder\PaginatorInterface;
-
-final readonly class Pagination
+final readonly class PaginationMetadata
 {
     public function __construct(
         public int $totalItems,

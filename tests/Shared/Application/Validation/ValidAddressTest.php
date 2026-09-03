@@ -99,11 +99,11 @@ final class ValidAddressTest extends CompoundConstraintTestCase
     private static function address(array $overrides = []): array
     {
         return $overrides + [
-                'street' => '10 Rue de la Paix',
-                'postalCode' => '75002',
-                'city' => 'Paris',
-                'countryCode' => 'FR',
-            ];
+            'street' => '10 Rue de la Paix',
+            'postalCode' => '75002',
+            'city' => 'Paris',
+            'countryCode' => 'FR',
+        ];
     }
 
     private function collection(): Assert\Collection

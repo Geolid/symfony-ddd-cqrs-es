@@ -12,9 +12,9 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
 {

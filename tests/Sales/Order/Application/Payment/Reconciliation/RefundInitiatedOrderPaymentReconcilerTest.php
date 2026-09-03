@@ -9,11 +9,11 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\Reconciliation\RefundInitiatedOrderPaymentReconciler;
-use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Sales\Tests\Order\Support\Double\StubPaymentGateway;
 use Shared\Application\Command\CommandBusInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RefundInitiatedOrderPaymentReconcilerTest extends AbstractIntegrationTestCase
 {

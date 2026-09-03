@@ -9,8 +9,8 @@ use Sales\Order\Domain\OrderPayment;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\PaymentReference;
 use Shared\Domain\ValueObject\Money;
-use Support\ClockSequence;
 use Support\Builder\AbstractAggregateBuilder;
+use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 

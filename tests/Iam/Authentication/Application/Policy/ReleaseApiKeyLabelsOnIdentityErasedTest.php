@@ -11,7 +11,7 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase

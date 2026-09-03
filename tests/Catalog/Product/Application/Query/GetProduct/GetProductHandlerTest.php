@@ -8,37 +8,39 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Query\GetProduct\GetProduct;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetProductHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itGetsById(): void
+    public function itGets(): void
     {
         // Given
-        $other = ProductBuilder::new()->create();
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($other, $product);
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
+        $this->store($product);
 
         // When
         $result = $this->ask(new GetProduct($product->id->toString()));
 
         // Then
         self::assertSame($product->id->toString(), $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertSame($builder['label']->value, $result->label);
+        self::assertSame($builder['unitAmount']->cents, $result->unitAmountInCents);
+        self::assertSame(
+            $builder['listedAt']->format(\DateTimeImmutable::ATOM),
+            $result->listedAt->format(\DateTimeImmutable::ATOM),
+        );
+        self::assertNull($result->repricedAt);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = ProductBuilder::new()->attribute('id')->toString();
-
         // Then
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->ask(new GetProduct($id));
+        $this->ask(new GetProduct(ProductBuilder::sample('id')->toString()));
     }
 }

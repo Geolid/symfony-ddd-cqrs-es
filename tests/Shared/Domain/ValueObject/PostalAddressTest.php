@@ -7,6 +7,7 @@ namespace Shared\Tests\Domain\ValueObject;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -28,6 +29,7 @@ final class PostalAddressTest extends TestCase
         self::assertSame('10 Rue de la Paix', $postalAddress->address->street);
         self::assertSame('75002', $postalAddress->address->postalCode);
         self::assertSame('Paris', $postalAddress->address->city);
+        self::assertSame(CountryCode::FR, $postalAddress->address->countryCode);
         self::assertSame('John Doe, 10 Rue de la Paix, 75002 Paris, FR', $postalAddress->toString());
     }
 

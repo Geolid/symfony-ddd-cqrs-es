@@ -9,7 +9,7 @@ use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
 {

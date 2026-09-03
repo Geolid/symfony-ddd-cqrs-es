@@ -9,9 +9,9 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Policy\InitiateOrderPaymentRefundOnOrderReturned;
 use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegrationTestCase
 {

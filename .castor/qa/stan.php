@@ -26,6 +26,13 @@ function qa_stan(
     }
 
     if (null !== $target) {
+        if (str_starts_with($target, 'tests/') || str_starts_with($target, 'tools/PHPUnit/')) {
+            io()->comment('tests/');
+            stan_exec('tests/phpstan.neon', $target, ['APP_ENV' => 'test', 'APP_ENV_UCFIRST' => 'Test']);
+
+            return;
+        }
+
         stan_analyse(null, $target);
 
         return;

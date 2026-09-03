@@ -10,7 +10,7 @@ use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
 {

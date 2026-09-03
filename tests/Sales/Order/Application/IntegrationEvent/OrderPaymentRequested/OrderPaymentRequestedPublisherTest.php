@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentRequested\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class OrderPaymentRequestedPublisherTest extends AbstractIntegrationTestCase

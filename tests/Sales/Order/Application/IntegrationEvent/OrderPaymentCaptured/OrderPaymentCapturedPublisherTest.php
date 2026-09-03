@@ -7,10 +7,10 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderPaymentCaptured;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCase

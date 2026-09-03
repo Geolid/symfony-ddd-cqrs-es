@@ -9,7 +9,7 @@ use Fulfilment\Shipment\Application\Query\GetShipmentByReturnTrackingReference\G
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {

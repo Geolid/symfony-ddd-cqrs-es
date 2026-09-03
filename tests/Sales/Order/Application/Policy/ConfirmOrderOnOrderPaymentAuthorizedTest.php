@@ -11,7 +11,7 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\ConfirmOrderOnOrderPaymentAuthorized;
 use Sales\Order\Domain\Event\OrderPaymentAuthorized;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ConfirmOrderOnOrderPaymentAuthorizedTest extends AbstractIntegrationTestCase
 {

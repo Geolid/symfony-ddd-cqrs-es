@@ -78,7 +78,7 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itReactivatesWhenSuspended(): void
+    public function itReactivates(): void
     {
         $reason = IdentityBuilder::sample('reason');
         $reactivatedAt = IdentityBuilder::sample('reactivatedAt');

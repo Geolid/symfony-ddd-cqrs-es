@@ -4,76 +4,89 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Product\Application\Query\ListProducts;
 
+use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Shared\Application\Finder\PaginationMetadata;
+use Shared\Application\Query\Result\PaginatedResult;
+use Shared\Tests\Support\PaginationTrait;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListProductsHandlerTest extends AbstractIntegrationTestCase
 {
-    #[Test]
-    public function itLists(): void
-    {
-        // Given
-        $other = ProductBuilder::new()->withLabel('Saucer')->delisted()->create();
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($other, $product);
-
-        // When
-        $result = $this->ask(new ListProducts());
-
-        // Then
-        self::assertCount(1, $result->items);
-        self::assertSame($product->id->toString(), $result->items[0]->id);
-        self::assertSame('Espresso cups, set of 6', $result->items[0]->label);
-        self::assertSame(1_750, $result->items[0]->unitAmountInCents);
-        self::assertSame(1, $result->pagination->totalItems);
-        self::assertSame(1, $result->pagination->currentPage);
-        self::assertSame(20, $result->pagination->itemsPerPage);
-        self::assertSame(1, $result->pagination->lastPage);
-    }
+    /** @use PaginationTrait<PaginatedResult<ProductResult>> */
+    use PaginationTrait;
 
     #[Test]
     public function itPaginates(): void
     {
         // Given
-        $products = ProductBuilder::new()->many(5)->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
+
+        $others = ProductBuilder::new()->many(4)->create();
+
+        $products = [$product, ...$others];
         $this->store(...$products);
 
+        $ids = [];
+        foreach ($products as $eachProduct) {
+            $ids[] = $eachProduct->id->toString();
+        }
+
         // When
-        $firstPage = $this->ask(new ListProducts(page: 1, itemsPerPage: 2));
-        $secondPage = $this->ask(new ListProducts(page: 2, itemsPerPage: 2));
-        $lastPage = $this->ask(new ListProducts(page: 3, itemsPerPage: 2));
-        $outOfBoundsPage = $this->ask(new ListProducts(page: 4, itemsPerPage: 2));
+        $pages = $this->traversePages(
+            expectedIds: $ids,
+            pageSize: 2,
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+        );
 
         // Then
-        self::assertCount(2, $firstPage->items);
-        self::assertSame(5, $firstPage->pagination->totalItems);
-        self::assertSame(1, $firstPage->pagination->currentPage);
-        self::assertSame(2, $firstPage->pagination->itemsPerPage);
-        self::assertSame(3, $firstPage->pagination->lastPage);
+        [$productResult] = $pages[1]->items;
 
-        self::assertCount(2, $secondPage->items);
-        self::assertSame(2, $secondPage->pagination->currentPage);
-
-        self::assertCount(1, $lastPage->items);
-        self::assertSame(3, $lastPage->pagination->currentPage);
-
-        self::assertEmpty($outOfBoundsPage->items);
-        self::assertSame(4, $outOfBoundsPage->pagination->currentPage);
+        self::assertSame($product->id->toString(), $productResult->id);
+        self::assertSame($builder['label']->value, $productResult->label);
+        self::assertSame($builder['unitAmount']->cents, $productResult->unitAmountInCents);
     }
 
     #[Test]
-    public function itListsWhenEmpty(): void
+    public function itPaginatesWhenEmpty(): void
     {
         // When
-        $result = $this->ask(new ListProducts());
+        $this->traverseEmptyPage(
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+            itemsPerPage: 20,
+        );
+    }
 
-        // Then
-        self::assertCount(0, $result->items);
-        self::assertSame(0, $result->pagination->totalItems);
-        self::assertSame(1, $result->pagination->currentPage);
-        self::assertSame(20, $result->pagination->itemsPerPage);
-        self::assertSame(1, $result->pagination->lastPage);
+    /**
+     * @return PaginatedResult<ProductResult>
+     */
+    private function askPage(int $page, int $itemsPerPage): PaginatedResult
+    {
+        return $this->ask(new ListProducts($page, $itemsPerPage));
+    }
+
+    /**
+     * @param PaginatedResult<ProductResult> $result
+     *
+     * @return list<string>
+     */
+    private function idsOf(PaginatedResult $result): array
+    {
+        return array_map(static fn (ProductResult $item): string => $item->id, $result->items);
+    }
+
+    /**
+     * @param PaginatedResult<ProductResult> $result
+     */
+    private function metadataOf(PaginatedResult $result): PaginationMetadata
+    {
+        return $result->pagination;
     }
 }

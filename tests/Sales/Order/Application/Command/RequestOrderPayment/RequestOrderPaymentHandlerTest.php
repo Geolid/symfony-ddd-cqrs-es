@@ -15,7 +15,7 @@ use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {

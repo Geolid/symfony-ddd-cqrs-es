@@ -18,7 +18,7 @@ final class ForbidRamseyUuidInTestsRuleTest extends RuleTestCase
     {
         $message = \sprintf(
             'Forbidden: %s used directly in a test. Use the aggregate\'s Builder instead, '
-            .'e.g. XBuilder::new()->get(\'id\')->toString().',
+            .'e.g. XBuilder::sample(\'id\')->toString().',
             Uuid::class,
         );
 

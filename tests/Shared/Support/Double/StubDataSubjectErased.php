@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Support\Doubles;
+namespace Shared\Tests\Support\Double;
 
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 

@@ -6,11 +6,11 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
 {

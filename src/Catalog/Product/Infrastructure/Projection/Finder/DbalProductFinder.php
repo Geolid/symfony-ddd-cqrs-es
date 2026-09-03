@@ -25,13 +25,6 @@ final class DbalProductFinder extends AbstractDbalFinder implements ProductFinde
         )->one() ?? throw ProductResultNotFoundException::forId($id);
     }
 
-    public function sortedByLabel(): static
-    {
-        return $this->filter(static function (QueryBuilder $qb): void {
-            $qb->orderBy('label', 'ASC');
-        });
-    }
-
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'label', 'unit_amount_in_cents', 'listed_at', 'repriced_at')

@@ -15,11 +15,11 @@ use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 {

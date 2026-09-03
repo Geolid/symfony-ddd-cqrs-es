@@ -12,7 +12,7 @@ use Sales\Order\Domain\ValueObject\Product;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase

@@ -8,7 +8,7 @@ use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDispatched\Shipment
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentDispatchedPublisherTest extends AbstractIntegrationTestCase
 {

@@ -8,7 +8,7 @@ use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
 {

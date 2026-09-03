@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderCancelled;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase

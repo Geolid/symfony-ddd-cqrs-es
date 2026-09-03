@@ -11,7 +11,7 @@ use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{
@@ -117,8 +117,10 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $customerId): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT customer_id, shipping_address, billing_address FROM %s WHERE customer_id = :customerId',
                 DbalBuyerProjector::TABLE,

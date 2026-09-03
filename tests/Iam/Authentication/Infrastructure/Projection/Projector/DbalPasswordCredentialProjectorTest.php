@@ -8,12 +8,12 @@ use Doctrine\DBAL\Connection;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentialProjector;
-use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{login: string, password_hash: string, defined_at: string, password_changed_at: string, identity_authenticatable: bool}
@@ -208,8 +208,10 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT login, password_hash, defined_at, password_changed_at, identity_authenticatable FROM %s WHERE id = :id', DbalPasswordCredentialProjector::TABLE),
             ['id' => $id],
         );

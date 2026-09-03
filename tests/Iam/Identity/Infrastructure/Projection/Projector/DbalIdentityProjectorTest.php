@@ -10,7 +10,7 @@ use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null}
@@ -46,7 +46,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = IdentityBuilder::new()->create();
         $this->store($other);
 
-        $builder = IdentityBuilder::new()->suspended();
+        $builder = IdentityBuilder::new()->suspended()->reactivated()->suspended();
         $identity = $builder->create();
 
         // When
@@ -58,6 +58,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
         self::assertSame($builder['reason']->value, $row['reason']);
         self::assertSame($builder['suspendedAt']->format(self::DATE_FORMAT), $row['suspended_at']);
+        self::assertNull($row['reactivated_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -86,6 +87,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
         self::assertSame($builder['reason']->value, $row['reason']);
         self::assertSame($builder['reactivatedAt']->format(self::DATE_FORMAT), $row['reactivated_at']);
+        self::assertNull($row['suspended_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -116,8 +118,10 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT id, status, reason, registered_at, suspended_at, reactivated_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );

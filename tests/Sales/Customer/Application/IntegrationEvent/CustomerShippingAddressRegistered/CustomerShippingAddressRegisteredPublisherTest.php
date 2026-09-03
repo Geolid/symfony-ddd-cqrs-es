@@ -10,7 +10,7 @@ use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerShippingAddressRegisteredPublisherTest extends AbstractIntegrationTestCase
 {

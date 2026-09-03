@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentitySuspended;
 use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class IdentitySuspendedPublisherTest extends AbstractIntegrationTestCase
 {

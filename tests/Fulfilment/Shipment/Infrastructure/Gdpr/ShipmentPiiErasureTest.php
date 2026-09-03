@@ -11,8 +11,8 @@ use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Doubles\StubDataSubjectErased;
-use Support\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\StubDataSubjectErased;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 {

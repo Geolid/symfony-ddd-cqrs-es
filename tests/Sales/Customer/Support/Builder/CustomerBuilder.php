@@ -8,8 +8,8 @@ use Sales\Customer\Domain\Customer;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\ClockSequence;
 use Support\Builder\AbstractAggregateBuilder;
+use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 

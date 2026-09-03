@@ -15,10 +15,12 @@ final class ValidEmail extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new Assert\NotBlank(normalizer: 'trim'),
-            new Assert\Type('string'),
-            new Assert\Email(),
-            new ValidValueObject(Email::class, method: 'fromString'),
+            new Assert\Sequentially([
+                new Assert\NotBlank(normalizer: 'trim'),
+                new Assert\Type('string'),
+                new Assert\Email(),
+                new ValidValueObject(Email::class, method: 'fromString'),
+            ]),
         ];
     }
 }

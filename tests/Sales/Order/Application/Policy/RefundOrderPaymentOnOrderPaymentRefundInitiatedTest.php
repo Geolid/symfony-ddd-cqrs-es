@@ -12,7 +12,7 @@ use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Policy\RefundOrderPaymentOnOrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends AbstractIntegrationTestCase
 {

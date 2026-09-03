@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
-use Shared\Tests\Support\Doubles\FakeUniqueValueRegistry;
+use Shared\Tests\Support\Double\FakeUniqueValueRegistry;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 use Symfony\Component\Validator\Validation;

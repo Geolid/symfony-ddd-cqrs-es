@@ -8,11 +8,11 @@ use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Carrier\Reconciliation\ReturnManifestedShipmentReconciler;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipment\Support\Double\StubCarrierGateway;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ReturnManifestedShipmentReconcilerTest extends AbstractIntegrationTestCase
 {

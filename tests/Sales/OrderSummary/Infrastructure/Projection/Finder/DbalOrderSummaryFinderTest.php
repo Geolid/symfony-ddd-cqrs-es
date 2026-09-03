@@ -12,9 +12,9 @@ use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
 {

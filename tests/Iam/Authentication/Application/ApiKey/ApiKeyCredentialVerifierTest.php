@@ -13,7 +13,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 {

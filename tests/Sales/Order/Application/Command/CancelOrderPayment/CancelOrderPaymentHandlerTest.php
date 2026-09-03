@@ -10,9 +10,9 @@ use Sales\Order\Application\Command\CancelOrderPayment\CancelOrderPayment;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {

@@ -9,10 +9,6 @@ use Patchlevel\Hydrator\Normalizer\Normalizer;
 
 final readonly class UtcDateTimeImmutableNormalizer implements Normalizer
 {
-    public function __construct(private string $format = 'Y-m-d H:i:s')
-    {
-    }
-
     public function normalize(mixed $value): ?string
     {
         if (null === $value) {
@@ -23,7 +19,7 @@ final readonly class UtcDateTimeImmutableNormalizer implements Normalizer
             throw InvalidArgument::withWrongType('DateTimeImmutable|null', $value);
         }
 
-        return $value->format($this->format);
+        return $value->format('Y-m-d H:i:s');
     }
 
     public function denormalize(mixed $value): ?\DateTimeImmutable

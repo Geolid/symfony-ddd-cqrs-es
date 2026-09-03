@@ -12,7 +12,8 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
 {
@@ -25,6 +26,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $keyId = ApiKeyCredentialBuilder::sample('keyId')->value;
         $secret = ApiKeyCredentialBuilder::sample('secret');
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new IssueApiKeyCredential($id, $identityId, $label, $keyId, $secret));
@@ -34,7 +36,13 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($id, $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame($label, $result->label);
+        self::assertSame($keyId, $result->keyId);
+        self::assertSame(
+            $now->format(\DateTimeImmutable::ATOM),
+            $result->issuedAt->format(\DateTimeImmutable::ATOM),
+        );
         self::assertFalse($result->revoked);
+        self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);
 
         self::assertNotSame($secret, $result->secretHash);

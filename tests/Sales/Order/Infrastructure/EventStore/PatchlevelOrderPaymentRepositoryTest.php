@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTestCase
 {

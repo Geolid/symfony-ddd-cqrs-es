@@ -8,7 +8,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
 {

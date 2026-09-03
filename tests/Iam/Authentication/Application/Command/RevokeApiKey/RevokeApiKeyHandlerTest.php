@@ -14,7 +14,7 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
@@ -47,6 +47,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($builder['keyId']->value);
         self::assertTrue($result->revoked);
+
         self::assertFalse($this->registry->exists($labelKey, $builder['label']->value));
     }
 

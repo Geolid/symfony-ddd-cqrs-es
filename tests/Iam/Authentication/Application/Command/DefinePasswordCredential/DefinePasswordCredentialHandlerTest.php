@@ -10,13 +10,15 @@ use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
-use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestCase
 {
@@ -27,13 +29,24 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $identityId = PasswordCredentialBuilder::sample('identityId');
         $login = PasswordCredentialBuilder::sample('login')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new DefinePasswordCredential($identityId, $login, $password));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofLogin($login);
+        self::assertSame(PasswordCredentialId::forIdentity($identityId)->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
+        self::assertSame($login, $result->login);
+        self::assertSame(
+            $now->format(\DateTimeImmutable::ATOM),
+            $result->definedAt->format(\DateTimeImmutable::ATOM),
+        );
+        self::assertSame(
+            $now->format(\DateTimeImmutable::ATOM),
+            $result->passwordChangedAt->format(\DateTimeImmutable::ATOM),
+        );
         self::assertTrue($result->identityAuthenticatable);
 
         self::assertNotSame($password, $result->passwordHash);

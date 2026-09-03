@@ -8,37 +8,41 @@ use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
-use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Shared\Application\Finder\PaginationMetadata;
+use Shared\Application\Finder\PaginatorInterface;
+use Shared\Tests\Support\PaginationTrait;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
-final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<IdentityResult>
+ */
+final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
 {
-    private IdentityFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(IdentityFinderInterface::class);
-    }
+    /** @use PaginationTrait<PaginatorInterface<IdentityResult>> */
+    use PaginationTrait;
 
     #[Test]
     public function itGetsById(): void
     {
         // Given
         $other = IdentityBuilder::new()->create();
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
         $this->store($other, $identity);
 
         // When
-        $result = $this->finder->ofId($identity->id->toString());
+        $result = $this->finder()->ofId($identity->id->toString());
 
         // Then
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
         self::assertNull($result->reason);
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeImmutable::ATOM),
+            $result->registeredAt->format(\DateTimeImmutable::ATOM),
+        );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
     }
@@ -50,78 +54,54 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(IdentityBuilder::sample('id')->toString());
-    }
-
-    #[Test]
-    public function itLists(): void
-    {
-        // Given
-        $identities = IdentityBuilder::new()->many(5)->create();
-        $this->store(...$identities);
-
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertSame($this->ids(...$identities), $this->resultIds($results));
-    }
-
-    #[Test]
-    public function itListsWhenEmpty(): void
-    {
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertEmpty($results);
+        $this->finder()->ofId(IdentityBuilder::sample('id')->toString());
     }
 
     #[Test]
     public function itPaginates(): void
     {
         // Given
-        $identities = IdentityBuilder::new()->many(5)->create();
-        $this->store(...$identities);
+        $finder = $this->finder();
+        $ids = $this->seed(5);
 
         // When
-        $firstPage = $this->finder->paginate(page: 1, itemsPerPage: 2);
-        $secondPage = $this->finder->paginate(page: 2, itemsPerPage: 2);
-        $lastPage = $this->finder->paginate(page: 3, itemsPerPage: 2);
-        $outOfBoundsPage = $this->finder->paginate(page: 4, itemsPerPage: 2);
-
-        // Then
-        self::assertSame($this->ids($identities[0], $identities[1]), $this->resultIds($firstPage));
-        self::assertSame($this->ids($identities[2], $identities[3]), $this->resultIds($secondPage));
-        self::assertSame($this->ids($identities[4]), $this->resultIds($lastPage));
-        self::assertCount(0, $outOfBoundsPage);
-
-        self::assertSame(5, $firstPage->totalItems());
-        self::assertSame(3, $firstPage->lastPage());
-        self::assertSame(1, $firstPage->currentPage());
-        self::assertSame(2, $firstPage->itemsPerPage());
-        self::assertSame(2, $secondPage->currentPage());
-        self::assertSame(3, $lastPage->currentPage());
-        self::assertSame(4, $outOfBoundsPage->currentPage());
+        $this->traversePages(
+            expectedIds: $ids,
+            pageSize: 2,
+            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
+            idsOf: $this->resultIds(...),
+            metadataOf: PaginationMetadata::fromPaginator(...),
+        );
     }
 
     #[Test]
     public function itPaginatesWhenEmpty(): void
     {
-        // When
-        $paginator = $this->finder->paginate(page: 1, itemsPerPage: 20);
+        // Given
+        $finder = $this->finder();
 
-        // Then
-        self::assertCount(0, $paginator);
-        self::assertSame(0, $paginator->totalItems());
-        self::assertSame(1, $paginator->lastPage());
+        // When
+        $this->traverseEmptyPage(
+            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
+            idsOf: $this->resultIds(...),
+            metadataOf: PaginationMetadata::fromPaginator(...),
+            itemsPerPage: 20,
+        );
+    }
+
+    protected function finder(): IdentityFinderInterface
+    {
+        return $this->service(IdentityFinderInterface::class);
     }
 
     /**
      * @return list<string>
      */
-    private function ids(Identity ...$identities): array
+    protected function seed(int $count): array
     {
+        $identities = IdentityBuilder::new()->many($count)->create();
+        $this->store(...$identities);
+
         $ids = [];
         foreach ($identities as $identity) {
             $ids[] = $identity->id->toString();
@@ -130,18 +110,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         return $ids;
     }
 
-    /**
-     * @param iterable<IdentityResult> $results
-     *
-     * @return list<string>
-     */
-    private function resultIds(iterable $results): array
+    protected function idOf(object $result): string
     {
-        $ids = [];
-        foreach ($results as $result) {
-            $ids[] = $result->id;
-        }
-
-        return $ids;
+        return $result->id;
     }
 }

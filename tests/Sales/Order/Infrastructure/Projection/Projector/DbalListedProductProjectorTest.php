@@ -8,7 +8,7 @@ use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalListedProductProjector;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{label: string, unit_amount_in_cents: int|string}
@@ -73,8 +73,10 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $productId): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT label, unit_amount_in_cents FROM %s WHERE product_id = :productId',
                 DbalListedProductProjector::TABLE,

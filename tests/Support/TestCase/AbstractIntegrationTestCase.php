@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Support;
+namespace Support\TestCase;
 
-use Support\TestCase\CqrsTrait;
-use Support\TestCase\EventSourcingTrait;
-use Support\TestCase\ServiceLocatorTrait;
+use Shared\Tests\Support\TestCase\CqrsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 abstract class AbstractIntegrationTestCase extends KernelTestCase

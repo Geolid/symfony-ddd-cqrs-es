@@ -8,17 +8,17 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 
 /**
  * @template T of AggregateRoot
- * @template TAttributes of array<string, mixed> = array<string, mixed>
+ * @template TAttributes of array<string, mixed>
  */
 final readonly class AggregateListBuilder
 {
     /**
      * @param AbstractAggregateBuilder<T, TAttributes> $factory
-     * @param int<1, max>                                  $count
+     * @param int<1, max>                              $count
      */
     public function __construct(
         private AbstractAggregateBuilder $factory,
-        private int                      $count,
+        private int $count,
     ) {
     }
 

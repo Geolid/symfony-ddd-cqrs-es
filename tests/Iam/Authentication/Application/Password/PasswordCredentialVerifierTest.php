@@ -13,7 +13,7 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {

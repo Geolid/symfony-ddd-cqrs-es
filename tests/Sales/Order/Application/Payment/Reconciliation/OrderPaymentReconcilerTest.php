@@ -10,7 +10,7 @@ use Sales\Order\Application\Exception\UnsupportedOrderPaymentStatusException;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Payment\Reconciliation\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\Reconciliation\OrderPaymentStatusReconcilerInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
 {

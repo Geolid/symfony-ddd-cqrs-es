@@ -14,7 +14,7 @@ use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase

@@ -11,7 +11,7 @@ use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Application\Policy\EraseCustomerOnIdentityErased;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseCustomerOnIdentityErasedTest extends AbstractIntegrationTestCase
 {

@@ -15,7 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Order\Domain\Order;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestCase
 {

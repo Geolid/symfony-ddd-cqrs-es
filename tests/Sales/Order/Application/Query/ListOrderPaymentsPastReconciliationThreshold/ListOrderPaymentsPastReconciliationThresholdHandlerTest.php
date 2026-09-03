@@ -7,7 +7,7 @@ namespace Sales\Tests\Order\Application\Query\ListOrderPaymentsPastReconciliatio
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrderPaymentsPastReconciliationThreshold\ListOrderPaymentsPastReconciliationThreshold;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ListOrderPaymentsPastReconciliationThresholdHandlerTest extends AbstractIntegrationTestCase

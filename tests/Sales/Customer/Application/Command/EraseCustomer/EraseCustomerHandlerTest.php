@@ -14,7 +14,7 @@ use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
 {

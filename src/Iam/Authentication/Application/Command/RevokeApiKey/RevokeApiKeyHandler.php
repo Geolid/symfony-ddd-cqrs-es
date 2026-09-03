@@ -37,9 +37,8 @@ final readonly class RevokeApiKeyHandler
 
         $this->repository->save($credential);
 
-        $this->uniqueValues->release(
+        $this->uniqueValues->releaseAll(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId),
-            $credential->label->value,
             $credential->id->toString(),
         );
     }

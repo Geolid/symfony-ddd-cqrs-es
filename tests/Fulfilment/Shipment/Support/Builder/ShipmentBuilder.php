@@ -11,8 +11,8 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\ClockSequence;
 use Support\Builder\AbstractAggregateBuilder;
+use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
@@ -181,7 +181,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
             );
     }
 
-    protected function defaults(): array
+    protected static function defaults(): array
     {
         return [
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),

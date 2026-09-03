@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\TestCase;
+namespace Shared\Tests\Support\TestCase;
 
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;

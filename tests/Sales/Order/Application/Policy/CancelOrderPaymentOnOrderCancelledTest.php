@@ -11,7 +11,7 @@ use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Policy\CancelOrderPaymentOnOrderCancelled;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrderPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
 {

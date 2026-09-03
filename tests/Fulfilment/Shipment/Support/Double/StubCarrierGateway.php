@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipment\Support\Doubles;
+namespace Fulfilment\Tests\Shipment\Support\Double;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;

@@ -11,7 +11,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\CancelOrdersOnCustomerErased;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
 {

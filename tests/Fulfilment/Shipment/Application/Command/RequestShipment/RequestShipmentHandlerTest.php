@@ -15,7 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
 {

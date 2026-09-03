@@ -6,91 +6,62 @@ namespace Shared\Tests\Infrastructure\Doctrine\Dbal;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
-use Support\AbstractIntegrationTestCase;
-use Support\Doubles\DummyMessage;
-use Support\Doubles\StubNextMiddleware;
-use Support\Doubles\StubStack;
+use Support\Double\DummyMessage;
+use Support\Double\StubNextMiddleware;
+use Support\Double\StubStack;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
-use Symfony\Component\Messenger\Middleware\StackInterface;
 
-final class TransactionMessengerMiddlewareTest extends AbstractIntegrationTestCase
+final class TransactionMessengerMiddlewareTest extends TestCase
 {
-    private const string TABLE = 'dbal_transaction_middleware_test';
-
-    private Connection $connection;
+    private Connection&MockObject $connection;
     private TransactionMessengerMiddleware $middleware;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->connection = $this->serviceAs('doctrine.dbal.event_store_connection', Connection::class);
-        $this->connection->executeStatement(\sprintf('CREATE TEMPORARY TABLE %s (value VARCHAR(255) NOT NULL)', self::TABLE));
+        $this->connection = $this->createMock(Connection::class);
         $this->middleware = new TransactionMessengerMiddleware($this->connection);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->connection->executeStatement(\sprintf('DROP TEMPORARY TABLE %s', self::TABLE));
-
-        parent::tearDown();
     }
 
     #[Test]
     public function itCommits(): void
     {
         // Given
-        $stack = new StubStack(new StubInsertMiddleware($this->connection, self::TABLE, 'value', new StubNextMiddleware()));
+        $this->connection->expects(self::once())->method('beginTransaction');
+        $this->connection->expects(self::once())->method('commit');
+        $this->connection->expects(self::never())->method('rollBack');
+
+        $envelope = new Envelope(new DummyMessage());
+        $stack = new StubStack(new StubNextMiddleware());
 
         // When
-        $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
+        $result = $this->middleware->handle($envelope, $stack);
 
         // Then
-        self::assertSame('value', $this->storedValue());
+        self::assertSame($envelope, $result);
     }
 
     #[Test]
     public function itRollsBackWhenStackFails(): void
     {
         // Given
-        $failure = new \RuntimeException('Handler blew up.');
-        $stack = new StubStack(new StubInsertMiddleware($this->connection, self::TABLE, 'value', new StubNextMiddleware($failure)));
+        $failure = new \RuntimeException('Failed');
+        $this->connection->expects(self::once())->method('beginTransaction');
+        $this->connection->expects(self::never())->method('commit');
+        $this->connection->expects(self::once())->method('rollBack');
+
+        $stack = new StubStack(new StubNextMiddleware($failure));
 
         // When
         $caught = null;
         try {
             $this->middleware->handle(new Envelope(new DummyMessage()), $stack);
-        } catch (\RuntimeException $exception) {
-            $caught = $exception;
+        } catch (\RuntimeException $caught) {
         }
 
         // Then
         self::assertSame($failure, $caught);
-        self::assertFalse($this->storedValue());
-    }
-
-    private function storedValue(): mixed
-    {
-        return $this->connection->fetchOne('SELECT value FROM '.self::TABLE);
-    }
-}
-
-final readonly class StubInsertMiddleware implements MiddlewareInterface
-{
-    public function __construct(
-        private Connection $connection,
-        private string $table,
-        private string $value,
-        private MiddlewareInterface $next,
-    ) {
-    }
-
-    public function handle(Envelope $envelope, StackInterface $stack): Envelope
-    {
-        $this->connection->insert($this->table, ['value' => $this->value]);
-
-        return $this->next->handle($envelope, $stack);
     }
 }

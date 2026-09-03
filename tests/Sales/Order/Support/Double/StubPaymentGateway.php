@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Support\Doubles;
+namespace Sales\Tests\Order\Support\Double;
 
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;

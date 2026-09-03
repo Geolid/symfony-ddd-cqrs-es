@@ -22,7 +22,7 @@ use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 {

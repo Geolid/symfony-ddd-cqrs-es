@@ -11,7 +11,7 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase

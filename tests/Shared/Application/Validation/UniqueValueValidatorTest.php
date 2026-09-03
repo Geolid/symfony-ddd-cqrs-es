@@ -9,7 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
-use Shared\Tests\Support\Doubles\FakeUniqueValueRegistry;
+use Shared\Tests\Support\Double\DummyUniqueKey;
+use Shared\Tests\Support\Double\FakeUniqueValueRegistry;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -23,118 +24,25 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     private const string OWNER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
     private FakeUniqueValueRegistry $registry;
+    private ValidUniqueValue $baseConstraint;
+    private ValidUniqueValue $exclusionConstraint;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->baseConstraint = new ValidUniqueValue(DummyUniqueKey::A);
+        $this->exclusionConstraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
+    }
 
     #[Test]
     public function itAccepts(): void
     {
         // When
-        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A));
+        $this->validator->validate('reserved-value', $this->baseConstraint);
 
         // Then
         $this->assertNoViolation();
-    }
-
-    #[Test]
-    public function itAcceptsOwnReservationWhileEditing(): void
-    {
-        // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
-        $this->setObject(new DummyEditedObject(self::OWNER_ID));
-
-        // When
-        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id'));
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    #[Test]
-    #[DataProvider('provideEmptyValues')]
-    public function itAcceptsEmptyValue(mixed $value): void
-    {
-        // When
-        $this->validator->validate($value, new ValidUniqueValue(DummyUniqueKey::A));
-
-        // Then
-        $this->assertNoViolation();
-    }
-
-    /**
-     * @return iterable<string, array{mixed}>
-     */
-    public static function provideEmptyValues(): iterable
-    {
-        yield 'nothing' => [null];
-        yield 'an empty string' => [''];
-    }
-
-    #[Test]
-    public function itCarriesGroupsAndPayload(): void
-    {
-        // Given
-        $groups = ['group-a'];
-        $payload = 'payload-a';
-
-        // When
-        $constraint = new ValidUniqueValue(DummyUniqueKey::A, groups: $groups, payload: $payload);
-
-        // Then
-        self::assertSame($groups, $constraint->groups);
-        self::assertSame($payload, $constraint->payload);
-    }
-
-    #[Test]
-    public function itFailsWhenConstraintNotSupported(): void
-    {
-        // Given
-        $constraint = new NotBlank();
-
-        // Then
-        $this->expectException(UnexpectedTypeException::class);
-
-        // When
-        $this->validator->validate('reserved-value', $constraint);
-    }
-
-    #[Test]
-    public function itFailsWhenValueNotString(): void
-    {
-        // Given
-        $invalidValue = 42;
-        $constraint = new ValidUniqueValue(DummyUniqueKey::A);
-
-        // Then
-        $this->expectException(UnexpectedValueException::class);
-
-        // When
-        $this->validator->validate($invalidValue, $constraint);
-    }
-
-    #[Test]
-    public function itFailsWhenExcludingWithoutObject(): void
-    {
-        // Given
-        $constraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
-
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        $this->validator->validate('reserved-value', $constraint);
-    }
-
-    #[Test]
-    public function itFailsWhenExcludedOwnerPropertyNotString(): void
-    {
-        // Given
-        $this->setObject(new DummyEditedObject(42));
-        $constraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
-
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        $this->validator->validate('reserved-value', $constraint);
     }
 
     #[Test]
@@ -144,7 +52,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
         $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
 
         // When
-        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A));
+        $this->validator->validate('reserved-value', $this->baseConstraint);
 
         // Then
         $this->assertViolationRaised();
@@ -165,17 +73,97 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
-    public function itRefusesWhileEditing(): void
+    public function itAcceptsWhenOwnerMatches(): void
+    {
+        // Given
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
+        $this->setObject(new DummyEditedObject(self::OWNER_ID));
+
+        // When
+        $this->validator->validate('reserved-value', $this->exclusionConstraint);
+
+        // Then
+        $this->assertNoViolation();
+    }
+
+    #[Test]
+    public function itRefusesWhenOwnerDiffers(): void
     {
         // Given
         $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
         $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
-        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id'));
+        $this->validator->validate('reserved-value', $this->exclusionConstraint);
 
         // Then
         $this->assertViolationRaised();
+    }
+
+    #[Test]
+    public function itFailsWhenObjectMissing(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        $this->validator->validate('reserved-value', $this->exclusionConstraint);
+    }
+
+    #[Test]
+    public function itFailsWhenOwnerIdInvalid(): void
+    {
+        // Given
+        $this->setObject(new DummyEditedObject(42));
+
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        $this->validator->validate('reserved-value', $this->exclusionConstraint);
+    }
+
+    #[Test]
+    #[DataProvider('provideEmptyValues')]
+    public function itAcceptsEmptyValue(mixed $value): void
+    {
+        // When
+        $this->validator->validate($value, $this->baseConstraint);
+
+        // Then
+        $this->assertNoViolation();
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function provideEmptyValues(): iterable
+    {
+        yield 'null' => [null];
+        yield 'empty string' => [''];
+    }
+
+    #[Test]
+    public function itFailsWhenConstraintNotSupported(): void
+    {
+        // Given
+        $constraint = new NotBlank();
+
+        // Then
+        $this->expectException(UnexpectedTypeException::class);
+
+        // When
+        $this->validator->validate('reserved-value', $constraint);
+    }
+
+    #[Test]
+    public function itFailsWhenValueNotString(): void
+    {
+        // Then
+        $this->expectException(UnexpectedValueException::class);
+
+        // When
+        $this->validator->validate(42, $this->baseConstraint);
     }
 
     protected function createValidator(): UniqueValueValidator
@@ -193,11 +181,6 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
             ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
             ->assertRaised();
     }
-}
-
-enum DummyUniqueKey: string
-{
-    case A = 'dummy.a';
 }
 
 final readonly class DummyEditedObject

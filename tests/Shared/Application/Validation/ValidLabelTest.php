@@ -57,8 +57,8 @@ final class ValidLabelTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'empty string' => ['', [self::notBlank()]];
-        yield 'whitespace only' => ['   ', [self::notBlank()]];
+        yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
+        yield 'whitespace only' => ['   ', [new Assert\NotBlank(normalizer: 'trim')]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
         yield 'too long' => [str_repeat('a', Label::MAX_LENGTH + 1), [new Assert\Length(max: Label::MAX_LENGTH)]];
     }
@@ -66,10 +66,5 @@ final class ValidLabelTest extends CompoundConstraintTestCase
     protected function createCompound(): ValidLabel
     {
         return new ValidLabel();
-    }
-
-    private static function notBlank(): Assert\NotBlank
-    {
-        return new Assert\NotBlank(normalizer: 'trim');
     }
 }

@@ -13,10 +13,10 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Tests\Authentication\Support\Doubles\StubCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
 {
@@ -44,16 +44,12 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $credential = $builder->create();
         $this->store($credential);
 
-        $finder = $this->service(PasswordCredentialFinderInterface::class);
-        $before = $finder->ofIdentity($builder['identityId']);
-
         // When
         $this->dispatch(new ChangePassword($builder['identityId'], self::NEW_PASSWORD));
 
         // Then
-        $after = $finder->ofIdentity($builder['identityId']);
-        self::assertNotSame($before->passwordHash, $after->passwordHash);
-        self::assertNotSame(self::NEW_PASSWORD, $after->passwordHash);
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($builder['identityId']);
+        self::assertTrue($this->hasher->verify($result->passwordHash, self::NEW_PASSWORD));
     }
 
     #[Test]

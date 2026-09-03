@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase

@@ -28,7 +28,6 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     public private(set) PasswordCredentialId $id;
-    public private(set) Login $login;
     private string $passwordHash;
 
     /**
@@ -95,7 +94,6 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyDefined(PasswordCredentialDefined $event): void
     {
         $this->id = PasswordCredentialId::fromString($event->id);
-        $this->login = Login::fromString($event->login);
         $this->passwordHash = $event->passwordHash;
     }
 

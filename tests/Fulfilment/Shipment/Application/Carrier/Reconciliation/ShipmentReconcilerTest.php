@@ -11,7 +11,7 @@ use Fulfilment\Shipment\Application\ShipmentStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
 {

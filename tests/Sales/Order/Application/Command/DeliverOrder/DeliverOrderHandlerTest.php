@@ -10,7 +10,7 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
 {

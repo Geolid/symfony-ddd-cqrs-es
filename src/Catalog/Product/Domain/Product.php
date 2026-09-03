@@ -25,7 +25,6 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) ProductId $id;
-    public private(set) Label $label;
     private bool $delisted;
 
     public static function list(ProductId $id, Label $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
@@ -73,7 +72,6 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     private function applyListed(ProductListed $event): void
     {
         $this->id = ProductId::fromString($event->id);
-        $this->label = Label::fromString($event->label);
         $this->delisted = false;
     }
 

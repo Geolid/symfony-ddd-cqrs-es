@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Support\Doubles;
+namespace Shared\Tests\Support\Double;
 
 use Shared\Application\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -20,11 +20,6 @@ final class FakeUniqueValueRegistry implements UniqueValueRegistryInterface
         }
 
         $this->reserved[$this->normalize($key, $value)] = $ownerId;
-    }
-
-    public function release(UniqueKey $key, string $value, string $ownerId): void
-    {
-        unset($this->reserved[$this->normalize($key, $value)]);
     }
 
     public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool

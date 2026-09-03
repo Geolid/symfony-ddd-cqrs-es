@@ -13,9 +13,9 @@ use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Tests\Authentication\Support\Doubles\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 

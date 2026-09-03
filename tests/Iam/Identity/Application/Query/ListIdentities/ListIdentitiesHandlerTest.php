@@ -7,37 +7,54 @@ namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
-use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Shared\Application\Finder\PaginationMetadata;
+use Shared\Application\Query\Result\PaginatedResult;
+use Shared\Tests\Support\PaginationTrait;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 {
+    /** @use PaginationTrait<PaginatedResult<IdentityResult>> */
+    use PaginationTrait;
+
     #[Test]
     public function itPaginates(): void
     {
         // Given
         $suspendedBuilder = IdentityBuilder::new()->suspended();
-
-        $active = IdentityBuilder::new()->create();
+        $activeBuilder = IdentityBuilder::new();
+        $active = $activeBuilder->create();
         $suspended = $suspendedBuilder->create();
         $others = IdentityBuilder::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
         $this->store(...$identities);
 
+        $ids = [];
+        foreach ($identities as $identity) {
+            $ids[] = $identity->id->toString();
+        }
+
         // When
-        $firstPage = $this->ask(new ListIdentities(page: 1, itemsPerPage: 2));
-        $secondPage = $this->ask(new ListIdentities(page: 2, itemsPerPage: 2));
-        $lastPage = $this->ask(new ListIdentities(page: 3, itemsPerPage: 2));
-        $outOfBoundsPage = $this->ask(new ListIdentities(page: 4, itemsPerPage: 2));
+        $pages = $this->traversePages(
+            expectedIds: $ids,
+            pageSize: 2,
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+        );
 
         // Then
-        [$activeResult, $suspendedResult] = $firstPage->items;
+        [$activeResult, $suspendedResult] = $pages[1]->items;
 
         self::assertSame($active->id->toString(), $activeResult->id);
         self::assertSame(IdentityStatus::ACTIVE, $activeResult->status);
         self::assertNull($activeResult->reason);
+        self::assertSame(
+            $activeBuilder['registeredAt']->format(\DateTimeImmutable::ATOM),
+            $activeResult->registeredAt->format(\DateTimeImmutable::ATOM),
+        );
         self::assertNull($activeResult->suspendedAt);
         self::assertNull($activeResult->reactivatedAt);
 
@@ -45,63 +62,51 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
         self::assertSame($suspendedBuilder['reason']->value, $suspendedResult->reason);
         self::assertSame(
+            $suspendedBuilder['registeredAt']->format(\DateTimeImmutable::ATOM),
+            $suspendedResult->registeredAt->format(\DateTimeImmutable::ATOM),
+        );
+        self::assertSame(
             $suspendedBuilder['suspendedAt']->format(\DateTimeImmutable::ATOM),
             $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM),
         );
         self::assertNull($suspendedResult->reactivatedAt);
-
-        self::assertSame($this->ids($active, $suspended), $this->resultIds($firstPage->items));
-        self::assertSame($this->ids($identities[2], $identities[3]), $this->resultIds($secondPage->items));
-        self::assertSame($this->ids($identities[4]), $this->resultIds($lastPage->items));
-        self::assertEmpty($outOfBoundsPage->items);
-
-        self::assertSame(5, $firstPage->pagination->totalItems);
-        self::assertSame(3, $firstPage->pagination->lastPage);
-        self::assertSame(1, $firstPage->pagination->currentPage);
-        self::assertSame(2, $secondPage->pagination->currentPage);
-        self::assertSame(3, $lastPage->pagination->currentPage);
-        self::assertSame(4, $outOfBoundsPage->pagination->currentPage);
     }
 
     #[Test]
     public function itPaginatesWhenEmpty(): void
     {
         // When
-        $result = $this->ask(new ListIdentities());
-
-        // Then
-        self::assertCount(0, $result->items);
-        self::assertSame(0, $result->pagination->totalItems);
-        self::assertSame(1, $result->pagination->currentPage);
-        self::assertSame(20, $result->pagination->itemsPerPage);
-        self::assertSame(1, $result->pagination->lastPage);
+        $this->traverseEmptyPage(
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+            itemsPerPage: 20,
+        );
     }
 
     /**
-     * @return list<string>
+     * @return PaginatedResult<IdentityResult>
      */
-    private function ids(Identity ...$identities): array
+    private function askPage(int $page, int $itemsPerPage): PaginatedResult
     {
-        $ids = [];
-        foreach ($identities as $identity) {
-            $ids[] = $identity->id->toString();
-        }
-
-        return $ids;
+        return $this->ask(new ListIdentities($page, $itemsPerPage));
     }
 
     /**
-     * @param iterable<IdentityResult> $results
+     * @param PaginatedResult<IdentityResult> $result
      *
      * @return list<string>
      */
-    private function resultIds(iterable $results): array
+    private function idsOf(PaginatedResult $result): array
     {
-        $ids = [];
-        foreach ($results as $result) {
-            $ids[] = $result->id;
-        }
+        return array_map(static fn (IdentityResult $item): string => $item->id, $result->items);
+    }
 
-        return $ids;
+    /**
+     * @param PaginatedResult<IdentityResult> $result
+     */
+    private function metadataOf(PaginatedResult $result): PaginationMetadata
+    {
+        return $result->pagination;
     }
 }

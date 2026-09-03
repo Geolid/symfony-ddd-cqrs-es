@@ -14,8 +14,8 @@ use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\ClockSequence;
 use Support\Builder\AbstractAggregateBuilder;
+use Support\ClockSequence;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 

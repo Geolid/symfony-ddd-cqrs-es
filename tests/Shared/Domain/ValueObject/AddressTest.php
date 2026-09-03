@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
 
 final class AddressTest extends TestCase
 {
@@ -22,6 +23,7 @@ final class AddressTest extends TestCase
         self::assertSame($street, $address->street);
         self::assertSame($postalCode, $address->postalCode);
         self::assertSame($city, $address->city);
+        self::assertSame(CountryCode::from($countryCode), $address->countryCode);
         self::assertSame(\sprintf('%s, %s %s, %s', $street, $postalCode, $city, $countryCode), $address->toString());
     }
 
@@ -53,10 +55,13 @@ final class AddressTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty street' => self::address(['street' => '']);
+        yield 'whitespace-only street' => self::address(['street' => '   ']);
         yield 'too long street' => self::address(['street' => str_repeat('a', Address::STREET_MAX_LENGTH + 1)]);
         yield 'empty postal code' => self::address(['postalCode' => '']);
+        yield 'whitespace-only postal code' => self::address(['postalCode' => '   ']);
         yield 'too long postal code' => self::address(['postalCode' => str_repeat('1', Address::POSTAL_CODE_MAX_LENGTH + 1)]);
         yield 'empty city' => self::address(['city' => '']);
+        yield 'whitespace-only city' => self::address(['city' => '   ']);
         yield 'too long city' => self::address(['city' => str_repeat('a', Address::CITY_MAX_LENGTH + 1)]);
         yield 'unknown country code' => self::address(['countryCode' => 'XX']);
     }

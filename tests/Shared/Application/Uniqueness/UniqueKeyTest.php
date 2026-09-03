@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Tests\Support\Double\DummyUniqueKey;
 
 final class UniqueKeyTest extends TestCase
 {
@@ -65,10 +66,4 @@ final class UniqueKeyTest extends TestCase
         self::assertFalse($differsOnScope);
         self::assertFalse($differsOnDiscriminator);
     }
-}
-
-enum DummyUniqueKey: string
-{
-    case A = 'dummy.a';
-    case B = 'dummy.b';
 }

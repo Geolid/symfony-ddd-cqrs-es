@@ -6,11 +6,11 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
-use Iam\Tests\Authentication\Support\Doubles\FakeApiKeyHasher;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{label: string, issued_at: string, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
@@ -156,8 +156,10 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT label, issued_at, revoked, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalApiKeyCredentialProjector::TABLE),
             ['id' => $id],
         );

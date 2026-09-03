@@ -6,7 +6,7 @@ namespace Iam\Identity\Application\Query\ListIdentities;
 
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Shared\Application\Query\Pagination;
+use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 
@@ -27,6 +27,6 @@ final readonly class ListIdentitiesHandler
         /** @var list<IdentityResult> $items */
         $items = iterator_to_array($paginator);
 
-        return new PaginatedResult($items, Pagination::fromPaginator($paginator));
+        return new PaginatedResult($items, PaginationMetadata::fromPaginator($paginator));
     }
 }

@@ -7,7 +7,7 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerErased;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase

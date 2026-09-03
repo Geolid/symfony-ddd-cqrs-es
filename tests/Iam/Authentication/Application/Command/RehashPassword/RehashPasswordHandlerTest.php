@@ -12,7 +12,7 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
 final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase

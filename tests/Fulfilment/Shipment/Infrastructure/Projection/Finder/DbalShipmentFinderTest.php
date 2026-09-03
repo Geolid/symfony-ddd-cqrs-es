@@ -12,7 +12,7 @@ use Fulfilment\Shipment\Domain\Shipment;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
