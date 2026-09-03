@@ -7,9 +7,9 @@ namespace Fulfilment\Tests\Shipment\Application\Query\GetShipmentByTrackingRefer
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference\GetShipmentByTrackingReference;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {
@@ -17,18 +17,19 @@ final class GetShipmentByTrackingReferenceHandlerTest extends AbstractIntegratio
     public function itGets(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
+        $shipment = $builder->create();
         $this->store($other, $shipment);
 
         // When
-        $result = $this->ask(new GetShipmentByTrackingReference('ACME-4Q7X2K9'));
+        $result = $this->ask(new GetShipmentByTrackingReference($builder['trackingReference']->value));
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
         self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
+        self::assertSame($builder['trackingReference']->value, $result->trackingReference);
         self::assertNotNull($result->createdAt);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);

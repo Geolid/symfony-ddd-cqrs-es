@@ -43,15 +43,6 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         }
     }
 
-    public function release(UniqueKey $key, string $value, string $ownerId): void
-    {
-        $this->connection->delete(self::TABLE, [
-            'key_type' => $key->toString(),
-            'key_value' => $value,
-            'owner_id' => $ownerId,
-        ]);
-    }
-
     public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
     {
         $qb = $this->connection->createQueryBuilder()
@@ -70,15 +61,17 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
         return false !== $qb->fetchOne();
     }
 
-    public function releaseAll(UniqueKey $key, ?string $ownerId = null): void
+    public function release(UniqueKey $key, string $ownerId): void
     {
-        $criteria = ['key_type' => $key->toString()];
+        $this->connection->delete(self::TABLE, [
+            'key_type' => $key->toString(),
+            'owner_id' => $ownerId,
+        ]);
+    }
 
-        if (null !== $ownerId) {
-            $criteria['owner_id'] = $ownerId;
-        }
-
-        $this->connection->delete(self::TABLE, $criteria);
+    public function releaseAll(UniqueKey $key): void
+    {
+        $this->connection->delete(self::TABLE, ['key_type' => $key->toString()]);
     }
 
     /**

@@ -4,87 +4,105 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 
+use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Shared\Application\Finder\PaginationMetadata;
+use Shared\Application\Query\Result\PaginatedResult;
+use Shared\Tests\Support\PaginationTrait;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
 {
+    /** @use PaginationTrait<PaginatedResult<IdentityResult>> */
+    use PaginationTrait;
+
     #[Test]
-    public function itLists(): void
+    public function itPaginates(): void
     {
         // Given
-        $suspendedAt = Clock::get()->now()->modify('+1 day');
-        $active = IdentityTestFactory::new()->create();
-        $suspended = IdentityTestFactory::new()
-            ->suspended('Suspected fraudulent activity', $suspendedAt)
-            ->create();
-        $others = IdentityTestFactory::new()->many(3)->create();
+        $suspendedBuilder = IdentityBuilder::new()->suspended();
+        $activeBuilder = IdentityBuilder::new();
+        $active = $activeBuilder->create();
+        $suspended = $suspendedBuilder->create();
+        $others = IdentityBuilder::new()->many(3)->create();
         $identities = [$active, $suspended, ...$others];
         $this->store(...$identities);
 
         // When
-        $firstPage = $this->ask(new ListIdentities(page: 1, itemsPerPage: 2));
-        $secondPage = $this->ask(new ListIdentities(page: 2, itemsPerPage: 2));
-        $lastPage = $this->ask(new ListIdentities(page: 3, itemsPerPage: 2));
-        $outOfBoundsPage = $this->ask(new ListIdentities(page: 4, itemsPerPage: 2));
+        $pages = $this->traversePages(
+            expectedIds: array_map(static fn (Identity $identity): string => $identity->id->toString(), $identities),
+            pageSize: 2,
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+        );
 
         // Then
-        [$activeResult, $suspendedResult] = $firstPage->items;
+        [$activeResult, $suspendedResult] = $pages[1]->items;
 
         self::assertSame($active->id->toString(), $activeResult->id);
         self::assertSame(IdentityStatus::ACTIVE, $activeResult->status);
         self::assertNull($activeResult->reason);
+        self::assertSame(
+            $activeBuilder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $activeResult->registeredAt->format(\DateTimeInterface::ATOM),
+        );
         self::assertNull($activeResult->suspendedAt);
         self::assertNull($activeResult->reactivatedAt);
 
         self::assertSame($suspended->id->toString(), $suspendedResult->id);
         self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
-        self::assertSame('Suspected fraudulent activity', $suspendedResult->reason);
-        self::assertSame($suspendedAt->format(\DateTimeImmutable::ATOM), $suspendedResult->suspendedAt?->format(\DateTimeImmutable::ATOM));
+        self::assertSame($suspendedBuilder['reason']->value, $suspendedResult->reason);
+        self::assertSame(
+            $suspendedBuilder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $suspendedResult->registeredAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame(
+            $suspendedBuilder['suspendedAt']->format(\DateTimeInterface::ATOM),
+            $suspendedResult->suspendedAt?->format(\DateTimeInterface::ATOM),
+        );
         self::assertNull($suspendedResult->reactivatedAt);
-
-        self::assertSame($this->ids($active, $suspended), array_column($firstPage->items, 'id'));
-        self::assertSame($this->ids($identities[2], $identities[3]), array_column($secondPage->items, 'id'));
-        self::assertSame($this->ids($identities[4]), array_column($lastPage->items, 'id'));
-        self::assertEmpty($outOfBoundsPage->items);
-
-        self::assertSame(5, $firstPage->pagination->totalItems);
-        self::assertSame(3, $firstPage->pagination->lastPage);
-        self::assertSame(1, $firstPage->pagination->currentPage);
-        self::assertSame(2, $secondPage->pagination->currentPage);
-        self::assertSame(3, $lastPage->pagination->currentPage);
-        self::assertSame(4, $outOfBoundsPage->pagination->currentPage);
     }
 
     #[Test]
-    public function itListsWhenEmpty(): void
+    public function itPaginatesWhenEmpty(): void
     {
         // When
-        $result = $this->ask(new ListIdentities());
-
-        // Then
-        self::assertCount(0, $result->items);
-        self::assertSame(0, $result->pagination->totalItems);
-        self::assertSame(1, $result->pagination->currentPage);
-        self::assertSame(20, $result->pagination->itemsPerPage);
-        self::assertSame(1, $result->pagination->lastPage);
+        $this->traverseEmptyPage(
+            askPage: $this->askPage(...),
+            idsOf: $this->idsOf(...),
+            metadataOf: $this->metadataOf(...),
+            itemsPerPage: 20,
+        );
     }
 
     /**
+     * @return PaginatedResult<IdentityResult>
+     */
+    private function askPage(int $page, int $itemsPerPage): PaginatedResult
+    {
+        return $this->ask(new ListIdentities($page, $itemsPerPage));
+    }
+
+    /**
+     * @param PaginatedResult<IdentityResult> $result
+     *
      * @return list<string>
      */
-    private function ids(Identity ...$identities): array
+    private function idsOf(PaginatedResult $result): array
     {
-        $ids = [];
-        foreach ($identities as $identity) {
-            $ids[] = $identity->id->toString();
-        }
+        return array_map(static fn (IdentityResult $item): string => $item->id, $result->items);
+    }
 
-        return $ids;
+    /**
+     * @param PaginatedResult<IdentityResult> $result
+     */
+    private function metadataOf(PaginatedResult $result): PaginationMetadata
+    {
+        return $result->pagination;
     }
 }

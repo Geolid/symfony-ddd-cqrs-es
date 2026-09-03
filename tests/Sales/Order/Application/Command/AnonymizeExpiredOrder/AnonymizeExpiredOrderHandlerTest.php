@@ -10,24 +10,33 @@ use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderFinderInterface::class);
+    }
+
     #[Test]
     public function itAnonymizesWhenRetentionPeriodHasElapsed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled(Clock::get()->now()->modify('-11 years'))->create();
+        $order = OrderBuilder::new()->cancelled(Clock::get()->now()->modify('-11 years'))->create();
         $this->store($order);
 
         // When
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertSame(OrderStatus::CANCELLED, $result->status);
         self::assertNotNull($result->anonymizedAt);
     }
@@ -36,14 +45,14 @@ final class AnonymizeExpiredOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotClosed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When
         $this->dispatch(new AnonymizeExpiredOrder($order->id->toString()));
 
         // Then
-        $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
+        $result = $this->finder->ofId($order->id->toString());
         self::assertNull($result->anonymizedAt);
     }
 

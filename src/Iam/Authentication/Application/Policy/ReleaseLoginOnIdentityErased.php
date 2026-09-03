@@ -22,7 +22,7 @@ final readonly class ReleaseLoginOnIdentityErased
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
     public function __invoke(IdentityErasedIntegrationEvent $event): void
     {
-        $this->uniqueValues->releaseAll(
+        $this->uniqueValues->release(
             UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
             PasswordCredentialId::forIdentity($event->identityId)->toString(),
         );

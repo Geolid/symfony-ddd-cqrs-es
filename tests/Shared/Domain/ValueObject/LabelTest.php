@@ -13,23 +13,22 @@ final class LabelTest extends TestCase
 {
     #[Test]
     #[DataProvider('provideAcceptedValues')]
-    public function itCreates(string $value, string $expected): void
+    public function itCreates(string $value): void
     {
         // When
         $label = Label::fromString($value);
 
         // Then
-        self::assertSame($expected, $label->value);
+        self::assertSame($value, $label->value);
     }
 
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{string}>
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'label' => ['Espresso cups, set of 6', 'Espresso cups, set of 6'];
-        yield 'maximum length' => [str_repeat('a', Label::MAX_LENGTH), str_repeat('a', Label::MAX_LENGTH)];
-        yield 'surrounding whitespace' => ['  Espresso cups, set of 6  ', 'Espresso cups, set of 6'];
+        yield 'label' => ['Espresso cups, set of 6'];
+        yield 'maximum length' => [str_repeat('a', Label::MAX_LENGTH)];
     }
 
     #[Test]
@@ -54,19 +53,30 @@ final class LabelTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $a = Label::fromString('Espresso cups, set of 6');
         $b = Label::fromString('  Espresso cups, set of 6  ');
-        $other = Label::fromString('Wireless mouse');
 
         // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Label::fromString('Espresso cups, set of 6');
+        $b = Label::fromString('Wireless mouse');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

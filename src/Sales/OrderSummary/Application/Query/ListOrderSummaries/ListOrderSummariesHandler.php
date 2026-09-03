@@ -6,7 +6,7 @@ namespace Sales\OrderSummary\Application\Query\ListOrderSummaries;
 
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
-use Shared\Application\Query\Pagination;
+use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\PaginatedResult;
 
@@ -41,6 +41,6 @@ final readonly class ListOrderSummariesHandler
         /** @var list<OrderSummaryResult> $items */
         $items = iterator_to_array($paginator);
 
-        return new PaginatedResult($items, Pagination::fromPaginator($paginator));
+        return new PaginatedResult($items, PaginationMetadata::fromPaginator($paginator));
     }
 }

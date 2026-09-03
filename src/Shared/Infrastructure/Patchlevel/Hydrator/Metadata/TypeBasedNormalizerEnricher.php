@@ -6,6 +6,7 @@ namespace Shared\Infrastructure\Patchlevel\Hydrator\Metadata;
 
 use Patchlevel\Hydrator\Metadata\ClassMetadata;
 use Patchlevel\Hydrator\Metadata\MetadataEnricher;
+use Patchlevel\Hydrator\Normalizer\Normalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\BooleanNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\IntegerNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonObjectNormalizer;
@@ -22,28 +23,33 @@ final class TypeBasedNormalizerEnricher implements MetadataEnricher
                 continue;
             }
 
-            $typeName = $type->getName();
+            $normalizer = $this->resolveNormalizer($type);
 
-            $normalizer = match (true) {
-                \DateTimeImmutable::class === $typeName => new UtcDateTimeImmutableNormalizer(),
-                'bool' === $typeName => new BooleanNormalizer(),
-                'int' === $typeName => new IntegerNormalizer(),
-                !$type->isBuiltin() && !is_a($typeName, \BackedEnum::class, true) => $this->jsonObjectNormalizer($typeName),
-                default => null,
-            };
-
-            if (null === $normalizer) {
-                continue;
+            if (null !== $normalizer) {
+                $property->normalizer = $normalizer;
             }
-
-            $property->normalizer = $normalizer;
         }
     }
 
-    private function jsonObjectNormalizer(string $className): JsonObjectNormalizer
+    private function resolveNormalizer(\ReflectionNamedType $type): ?Normalizer
     {
-        \assert(class_exists($className));
+        $name = $type->getName();
 
-        return new JsonObjectNormalizer($className);
+        $normalizer = match ($name) {
+            \DateTimeImmutable::class => new UtcDateTimeImmutableNormalizer(),
+            'bool' => new BooleanNormalizer(),
+            'int' => new IntegerNormalizer(),
+            default => null,
+        };
+
+        if (null !== $normalizer) {
+            return $normalizer;
+        }
+
+        if (!class_exists($name) || is_a($name, \BackedEnum::class, true)) {
+            return null;
+        }
+
+        return new JsonObjectNormalizer($name);
     }
 }

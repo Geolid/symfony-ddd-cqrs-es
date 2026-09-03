@@ -5,55 +5,59 @@ declare(strict_types=1);
 namespace Shared\Tests\Infrastructure\Gdpr;
 
 use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
+use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Doubles\StubDataSubjectErased;
-use Support\Doubles\DummyMessage;
+use Shared\Tests\Support\Double\StubDataSubjectErased;
+use Support\Double\DummyMessage;
+use Symfony\Component\Clock\Clock;
 
 final class DataSubjectEraserProcessorTest extends TestCase
 {
-    /** @var list<string> */
-    private array $dropped = [];
-
-    private CipherKeyStore $cipherKeyStore;
+    private InMemoryCipherKeyStore $cipherKeyStore;
+    private CipherKey $key;
+    private DataSubjectEraserProcessor $processor;
 
     protected function setUp(): void
     {
-        $this->cipherKeyStore = $this->createStub(CipherKeyStore::class);
-        $this->cipherKeyStore->method('removeWithSubjectId')->willReturnCallback(
-            function (string $subjectId): void {
-                $this->dropped[] = $subjectId;
-            },
-        );
+        parent::setUp();
+
+        $this->cipherKeyStore = new InMemoryCipherKeyStore();
+        $this->key = new CipherKey('key-id', 'subject-id', 'secret', 'method', Clock::get()->now());
+        $this->cipherKeyStore->store($this->key);
+        $this->processor = new DataSubjectEraserProcessor($this->cipherKeyStore);
     }
 
     #[Test]
-    public function itDropsTheKeyOfAnErasedSubject(): void
+    public function itDrops(): void
     {
         // Given
-        $subjectId = Uuid::uuid7()->toString();
-        $event = new StubDataSubjectErased($subjectId);
+        $event = new StubDataSubjectErased('subject-id');
 
         // When
-        (new DataSubjectEraserProcessor($this->cipherKeyStore))(Message::create($event));
+        ($this->processor)(Message::create($event));
 
         // Then
-        self::assertSame([$subjectId], $this->dropped);
+        $this->expectException(CipherKeyNotExists::class);
+
+        $this->cipherKeyStore->currentKeyFor('subject-id');
     }
 
     #[Test]
-    public function itIgnoresAnyOtherEvent(): void
+    public function itIgnoresWhenNotErasure(): void
     {
         // Given
         $event = new DummyMessage();
 
         // When
-        (new DataSubjectEraserProcessor($this->cipherKeyStore))(Message::create($event));
+        ($this->processor)(Message::create($event));
 
         // Then
-        self::assertSame([], $this->dropped);
+        $currentKey = $this->cipherKeyStore->currentKeyFor('subject-id');
+
+        self::assertSame($this->key, $currentKey);
     }
 }

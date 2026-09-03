@@ -6,9 +6,8 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerErased;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $erasedAt = Clock::get()->now();
-        $customer = CustomerTestFactory::new()->erased($erasedAt)->create();
+        $builder = CustomerBuilder::new()->erased();
+        $customer = $builder->create();
 
         // When
         $this->store($customer);
@@ -25,6 +24,6 @@ final class CustomerErasedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CustomerErasedIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
-        self::assertSame($erasedAt->format(\DateTimeImmutable::ATOM), $event->erasedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame($builder['erasedAt']->format(\DateTimeInterface::ATOM), $event->erasedAt->format(\DateTimeInterface::ATOM));
     }
 }

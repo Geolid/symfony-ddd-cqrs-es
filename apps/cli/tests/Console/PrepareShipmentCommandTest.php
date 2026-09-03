@@ -7,7 +7,7 @@ namespace Cli\Tests\Console;
 use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;
 
@@ -17,8 +17,8 @@ final class PrepareShipmentCommandTest extends AbstractCliTestCase
     public function itPreparesARequestedShipment(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->create();
-        $shipment = ShipmentTestFactory::new()->create();
+        $other = ShipmentBuilder::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
         $this->store($other, $shipment);
         $tester = $this->tester();
 

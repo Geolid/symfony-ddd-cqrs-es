@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalListedProductProjector;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{label: string, unit_amount_in_cents: int|string}
@@ -19,7 +19,8 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
 
         // When
         $this->store($product);
@@ -27,17 +28,18 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('Espresso cups, set of 6', $row['label']);
-        self::assertSame(1_750, (int) $row['unit_amount_in_cents']);
+        self::assertSame($builder['label']->value, $row['label']);
+        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_amount_in_cents']);
     }
 
     #[Test]
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withUnitAmountInCents(83)->create();
+        $otherBuilder = ProductBuilder::new();
+        $other = $otherBuilder->create();
         $this->store($other);
-        $product = ProductTestFactory::new()->withUnitAmountInCents(1_750)->repriced(2_000)->create();
+        $product = ProductBuilder::new()->repriced(2_000)->create();
 
         // When
         $this->store($product);
@@ -49,16 +51,16 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(83, (int) $otherRow['unit_amount_in_cents']);
+        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_amount_in_cents']);
     }
 
     #[Test]
     public function itRemovesOnProductDelisted(): void
     {
         // Given
-        $other = ProductTestFactory::new()->create();
+        $other = ProductBuilder::new()->create();
         $this->store($other);
-        $product = ProductTestFactory::new()->delisted()->create();
+        $product = ProductBuilder::new()->delisted()->create();
 
         // When
         $this->store($product);
@@ -73,8 +75,10 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $productId): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT label, unit_amount_in_cents FROM %s WHERE product_id = :productId',
                 DbalListedProductProjector::TABLE,

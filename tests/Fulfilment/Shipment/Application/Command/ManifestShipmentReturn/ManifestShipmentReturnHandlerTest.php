@@ -11,39 +11,40 @@ use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
     private UniqueValueRegistryInterface $uniqueValues;
+
+    private ShipmentFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->finder = $this->service(ShipmentFinderInterface::class);
     }
 
     #[Test]
     public function itManifestsReturnWhenRequested(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
@@ -51,8 +52,8 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWithSameReturnTrackingReference(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested($returnTrackingReference)->create();
         $this->store($shipment);
         $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, $shipment->id->toString());
 
@@ -60,7 +61,7 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference($returnTrackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
     }
 
@@ -68,55 +69,56 @@ final class ManifestShipmentReturnHandlerTest extends AbstractIntegrationTestCas
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($id, 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($id, ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenAlreadyTrackedUnderAnotherReturnReference(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested('ACME-RETURN-1')->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->create();
         $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-OTHER'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenNotRequested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // Then
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value));
     }
 
     #[Test]
     public function itFailsWhenReturnTrackingReferenceAlreadyTaken(): void
     {
         // Given
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), 'ACME-RETURN-1', Uuid::uuid7()->toString());
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
+        $returnTrackingReference = ShipmentBuilder::new()->returnManifested()['returnTrackingReference']->value;
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::RETURN_TRACKING_REFERENCE), $returnTrackingReference, ShipmentBuilder::new()->create()->id->toString());
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
         $this->store($shipment);
 
         // Then
         $this->expectException(TrackingReferenceAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), 'ACME-RETURN-1'));
+        $this->dispatch(new ManifestShipmentReturn($shipment->id->toString(), $returnTrackingReference));
     }
 }

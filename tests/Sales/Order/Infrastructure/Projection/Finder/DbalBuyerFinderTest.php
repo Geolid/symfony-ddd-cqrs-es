@@ -8,11 +8,11 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 {
@@ -29,9 +29,11 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsById(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+        $shippingAddress = $this->shippingAddress();
+        $billingAddress = $this->billingAddress();
+        $customer = CustomerBuilder::new()
+            ->shippingAddressRegistered($shippingAddress)
+            ->billingAddressRegistered($billingAddress)
             ->create();
         $this->store($customer);
 
@@ -43,7 +45,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertSame($customer->id->toString(), $result->customerId);
         self::assertNotNull($result->shippingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            $this->primitiveAddress($shippingAddress),
             [
                 'firstName' => $result->shippingAddress->firstName,
                 'lastName' => $result->shippingAddress->lastName,
@@ -55,7 +57,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         );
         self::assertNotNull($result->billingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
+            $this->primitiveAddress($billingAddress),
             [
                 'firstName' => $result->billingAddress->firstName,
                 'lastName' => $result->billingAddress->lastName,
@@ -71,7 +73,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithNoAddress(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->create();
+        $customer = CustomerBuilder::new()->create();
         $this->store($customer);
 
         // When
@@ -88,8 +90,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithOnlyShippingAddress(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+        $customer = CustomerBuilder::new()
+            ->shippingAddressRegistered($this->shippingAddress())
             ->create();
         $this->store($customer);
 
@@ -110,5 +112,30 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertNull($result);
+    }
+
+    private function shippingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+    }
+
+    private function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
+    {
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
+        ];
     }
 }

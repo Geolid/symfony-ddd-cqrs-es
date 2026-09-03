@@ -18,6 +18,15 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPaymentFinderInterface
 {
+    public function ofId(string $id): OrderPaymentResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw OrderPaymentResultNotFoundException::forId($id);
+    }
+
     public function ofReference(string $reference): OrderPaymentResult
     {
         return $this->filter(

@@ -10,29 +10,21 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\ConfirmOrderReturnOnShipmentReturnApproved;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ConfirmOrderReturnOnShipmentReturnApprovedTest extends AbstractIntegrationTestCase
 {
-    private ConfirmOrderReturnOnShipmentReturnApproved $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(ConfirmOrderReturnOnShipmentReturnApproved::class);
-    }
-
     #[Test]
     public function itConfirms(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested()->create();
         $this->store($order);
 
         // When
-        ($this->policy)(new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), new \DateTimeImmutable('2026-01-11T00:00:00+00:00')));
+        $this->trigger(ConfirmOrderReturnOnShipmentReturnApproved::class, new ShipmentReturnApprovedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

@@ -9,10 +9,10 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Application\Query\ListOrderSummaryLines\ListOrderSummaryLines;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
 {
@@ -20,7 +20,7 @@ final class ListOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withLines([OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_500)), 2)])
             ->create();
         $this->store($order);

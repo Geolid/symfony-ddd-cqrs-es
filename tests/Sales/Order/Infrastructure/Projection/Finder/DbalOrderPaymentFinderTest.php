@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Exception\OrderPaymentResultNotFoundException;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentResult;
 use Sales\Order\Application\OrderPaymentStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Order\Domain\ValueObject\OrderPaymentId;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
@@ -26,37 +28,60 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itGetsById(): void
+    {
+        // Given
+        $other = OrderPaymentBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->authorized()->create();
+        $this->store($other, $orderPayment);
+
+        // When
+        $result = $this->finder->ofId($orderPayment->id->toString());
+
+        // Then
+        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $result->status);
+    }
+
+    #[Test]
+    public function itThrowsWhenIdNotFound(): void
+    {
+        // Then
+        $this->expectException(OrderPaymentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(OrderPaymentId::forOrder(Uuid::uuid7()->toString())->toString());
+    }
+
+    #[Test]
     public function itGetsByReference(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $requestedAt = Clock::get()->now()->modify('-4 days');
         $authorizedAt = $requestedAt->modify('+1 hour');
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
         $refundInitiatedAt = $requestedAt->modify('+2 days 3 hours');
         $refundedAt = $requestedAt->modify('+3 days 4 hours');
-        $orderPayment = OrderPaymentTestFactory::new()
+        $paymentFactory = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
-            ->withReference('GLBX-9F3K2M1P')
-            ->withAmountInCents(4_200)
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($capturedAt)
             ->refundInitiated($refundInitiatedAt)
-            ->refundConfirmed($refundedAt)
-            ->create();
+            ->refundConfirmed($refundedAt);
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
-        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame(4_200, $result->amountInCents);
-        self::assertSame('GLBX-9F3K2M1P', $result->reference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $result->checkoutUrl);
+        self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
+        self::assertSame($paymentFactory['checkoutUrl'], $result->checkoutUrl);
         self::assertSame(OrderPaymentStatus::REFUNDED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
@@ -74,15 +99,15 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(OrderPaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofReference('GLBX-NEVER-ISSUED');
+        $this->finder->ofReference(OrderPaymentBuilder::sample('reference')->value);
     }
 
     #[Test]
     public function itFiltersByStatus(): void
     {
         // Given
-        $authorized = OrderPaymentTestFactory::new()->authorized()->create();
-        $requested = OrderPaymentTestFactory::new()->create();
+        $authorized = OrderPaymentBuilder::new()->authorized()->create();
+        $requested = OrderPaymentBuilder::new()->create();
         $this->store($authorized, $requested);
 
         // When
@@ -98,18 +123,18 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
-        $staleRequested = OrderPaymentTestFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $staleOrder = OrderTestFactory::new()->create();
-        $staleRefundInitiated = OrderPaymentTestFactory::new()
+        $freshRequested = OrderPaymentBuilder::new()->withRequestedAt($now->modify('+1 day'))->create();
+        $staleRequested = OrderPaymentBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $staleOrder = OrderBuilder::new()->create();
+        $staleRefundInitiated = OrderPaymentBuilder::new()
             ->withOrderId($staleOrder->id->toString())
             ->withRequestedAt($now->modify('-4 days'))
             ->authorized($now->modify('-4 days')->modify('+10 minutes'))
             ->captured($now->modify('-3 days'))
             ->refundInitiated($now->modify('-1 day'))
             ->create();
-        $freshOrder = OrderTestFactory::new()->create();
-        $freshRefundInitiated = OrderPaymentTestFactory::new()
+        $freshOrder = OrderBuilder::new()->create();
+        $freshRefundInitiated = OrderPaymentBuilder::new()
             ->withOrderId($freshOrder->id->toString())
             ->withRequestedAt($now->modify('-4 days'))
             ->authorized($now->modify('-4 days')->modify('+10 minutes'))

@@ -10,29 +10,21 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\DispatchOrderOnShipmentDispatched;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTestCase
 {
-    private DispatchOrderOnShipmentDispatched $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(DispatchOrderOnShipmentDispatched::class);
-    }
-
     #[Test]
     public function itDispatches(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
         $this->store($order);
 
         // When
-        ($this->policy)(new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(DispatchOrderOnShipmentDispatched::class, new ShipmentDispatchedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());

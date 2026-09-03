@@ -11,9 +11,9 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTestCase
 {
@@ -21,15 +21,16 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itInitiatesRefundWhenCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->create();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured();
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new InitiateOrderPaymentRefund($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $result->status);
     }
 
@@ -37,7 +38,7 @@ final class InitiateOrderPaymentRefundHandlerTest extends AbstractIntegrationTes
     public function itIgnoresWhenUncaptured(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->create();
         $this->store($orderPayment);
 
         // When

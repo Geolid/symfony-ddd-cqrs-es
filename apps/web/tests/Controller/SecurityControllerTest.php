@@ -6,11 +6,11 @@ namespace Web\Tests\Controller;
 
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Web\Tests\Support\AbstractWebTestCase;
 
 final class SecurityControllerTest extends AbstractWebTestCase
@@ -45,15 +45,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $passwordCredential = PasswordCredentialTestFactory::new()
+        $identity = IdentityBuilder::new()->create();
+        $passwordCredential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->create();
         $this->store($identity, $passwordCredential, $customer);
 
         // When
@@ -73,15 +73,15 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $passwordCredential = PasswordCredentialTestFactory::new()
+        $identity = IdentityBuilder::new()->create();
+        $passwordCredential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer-remember@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
             ->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->create();
         $this->store($identity, $passwordCredential, $customer);
 
         // When
@@ -92,7 +92,9 @@ final class SecurityControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('sales_order_list'));
-        self::assertNotNull($client->getCookieJar()->get('REMEMBERME'));
+        $cookieJar = $client->getCookieJar();
+        $rememberMeCookie = $cookieJar->get('REMEMBERME');
+        self::assertNotNull($rememberMeCookie);
     }
 
     #[Test]
@@ -100,8 +102,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $passwordCredential = PasswordCredentialTestFactory::new()
+        $identity = IdentityBuilder::new()->create();
+        $passwordCredential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
@@ -128,8 +130,8 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $passwordCredential = PasswordCredentialTestFactory::new()
+        $identity = IdentityBuilder::new()->suspended()->create();
+        $passwordCredential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withLogin('buyer@example.com')
             ->withPassword('MyStr0ngP@ssw0rd123!')
@@ -155,7 +157,7 @@ final class SecurityControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
         $this->loginAs($client, $identity);
 

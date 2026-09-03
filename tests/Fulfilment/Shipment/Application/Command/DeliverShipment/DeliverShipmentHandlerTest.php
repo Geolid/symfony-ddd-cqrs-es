@@ -9,27 +9,33 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
 {
+    private ShipmentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(ShipmentFinderInterface::class);
+    }
+
     #[Test]
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DELIVERED, $result->status);
         self::assertNotNull($result->deliveredAt);
     }
@@ -38,15 +44,14 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenManifested(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DELIVERED, $result->status);
     }
 
@@ -54,15 +59,14 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DELIVERED, $result->status);
     }
 
@@ -70,7 +74,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
@@ -83,7 +87,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotManifested(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
         $this->store($shipment);
 
         // Then

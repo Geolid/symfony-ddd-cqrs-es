@@ -11,14 +11,16 @@ use PHPUnit\Framework\TestCase;
 
 final class KeyIdTest extends TestCase
 {
+    private const string VALID_KEY = 'key_0123456789abcdef';
+
     #[Test]
     public function itCreates(): void
     {
         // When
-        $keyId = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
+        $keyId = KeyId::fromString(self::VALID_KEY);
 
         // Then
-        self::assertSame(KeyId::PREFIX.'0123456789abcdef', $keyId->value);
+        self::assertSame(self::VALID_KEY, $keyId->value);
     }
 
     #[Test]
@@ -38,20 +40,41 @@ final class KeyIdTest extends TestCase
     public static function provideInvalidValues(): iterable
     {
         yield 'empty string' => [''];
-        yield 'too short' => [KeyId::PREFIX.'0123456789abcde'];
-        yield 'too long' => [KeyId::PREFIX.'0123456789abcdef0'];
-        yield 'missing key_ prefix' => ['abc_0123456789abcdef'];
+        yield 'too short' => [KeyId::PREFIX.str_repeat('a', self::suffixLength() - 1)];
+        yield 'too long' => [KeyId::PREFIX.str_repeat('a', self::suffixLength() + 1)];
+        yield 'invalid prefix' => ['abc_'.str_repeat('a', self::suffixLength())];
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
+        // Given
+        $a = KeyId::fromString(self::VALID_KEY);
+        $b = KeyId::fromString(self::VALID_KEY);
+
         // When
-        $a = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
-        $b = KeyId::fromString(KeyId::PREFIX.'0123456789abcdef');
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(KeyId::fromString(KeyId::PREFIX.'fedcba9876543210')));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = KeyId::fromString(self::VALID_KEY);
+        $b = KeyId::fromString('key_fedcba9876543210');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
+    }
+
+    private static function suffixLength(): int
+    {
+        return KeyId::LENGTH - \strlen(KeyId::PREFIX);
     }
 }

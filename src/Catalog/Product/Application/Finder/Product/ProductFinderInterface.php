@@ -18,6 +18,4 @@ interface ProductFinderInterface extends IterableFinderInterface, PaginatableFin
      * @throws ProductResultNotFoundException
      */
     public function ofId(string $id): ProductResult;
-
-    public function sortedByLabel(): static;
 }

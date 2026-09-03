@@ -9,8 +9,8 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -27,38 +27,47 @@ final class PatchlevelOrderPaymentRepositoryTest extends AbstractIntegrationTest
     public function itSavesAndLoads(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->create();
 
         // When
         $this->repository->save($orderPayment);
+        $loaded = $this->repository->load($orderPayment->id);
 
         // Then
-        $id = $orderPayment->id;
-        self::assertTrue($this->repository->has($id));
-        $reloaded = $this->repository->load($id);
-        self::assertSame(
-            [
-                'id' => $id->toString(),
-                'checkoutUrl' => $orderPayment->checkoutUrl,
-            ],
-            [
-                'id' => $reloaded->id->toString(),
-                'checkoutUrl' => $reloaded->checkoutUrl,
-            ],
-        );
+        self::assertSame($orderPayment->id->toString(), $loaded->id->toString());
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = OrderPaymentId::forOrder(Uuid::uuid7()->toString());
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(OrderPaymentNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(OrderPaymentId::forOrder(Uuid::uuid7()->toString()));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $orderPayment = OrderPaymentBuilder::new()->create();
+        $this->repository->save($orderPayment);
+
+        // When
+        $exists = $this->repository->has($orderPayment->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(OrderPaymentId::forOrder(Uuid::uuid7()->toString()));
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

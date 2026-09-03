@@ -7,11 +7,11 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{
@@ -26,7 +26,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()->create();
+        $customer = CustomerBuilder::new()->create();
 
         // When
         $this->store($customer);
@@ -42,8 +42,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerShippingAddressRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+        $shippingAddress = $this->shippingAddress();
+        $customer = CustomerBuilder::new()
+            ->shippingAddressRegistered($shippingAddress)
             ->create();
 
         // When
@@ -54,7 +55,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '12 rue des Lilas', 'postal_code' => '75001', 'city' => 'Paris', 'country_code' => 'FR'],
+            $this->primitiveAddress($shippingAddress),
             $this->postalAddress($row['shipping_address']),
         );
         self::assertNull($row['billing_address']);
@@ -64,8 +65,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerBillingAddressRegistered(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+        $billingAddress = $this->billingAddress();
+        $customer = CustomerBuilder::new()
+            ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When
@@ -76,7 +78,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
         self::assertSame(
-            ['first_name' => 'Ada', 'last_name' => 'Lovelace', 'street' => '8 avenue Foch', 'postal_code' => '75116', 'city' => 'Paris', 'country_code' => 'FR'],
+            $this->primitiveAddress($billingAddress),
             $this->postalAddress($row['billing_address']),
         );
         self::assertNull($row['shipping_address']);
@@ -86,9 +88,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->create();
+        $other = CustomerBuilder::new()->create();
         $this->store($other);
-        $customer = CustomerTestFactory::new()->erased()->create();
+        $customer = CustomerBuilder::new()->erased()->create();
 
         // When
         $this->store($customer);
@@ -99,6 +101,31 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($other->id->toString(), $otherRow['customer_id']);
+    }
+
+    private function shippingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+    }
+
+    private function billingAddress(): PostalAddress
+    {
+        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
+    }
+
+    /**
+     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
+    {
+        return [
+            'first_name' => $address->fullName->firstName,
+            'last_name' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postal_code' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'country_code' => $address->address->countryCode->value,
+        ];
     }
 
     /**
@@ -117,8 +144,10 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $customerId): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT customer_id, shipping_address, billing_address FROM %s WHERE customer_id = :customerId',
                 DbalBuyerProjector::TABLE,

@@ -6,7 +6,7 @@ namespace Webhook\Tests\Webhook;
 
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,24 +16,24 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
 {
     private const string PATH = '/webhooks/carrier-return-received';
 
-    private const string RETURN_TRACKING_REFERENCE = 'ACME-RETURN-4Q7X2K9';
-
     #[Test]
     public function itAcceptsACarrierReturnReception(): void
     {
         // Given
         $client = self::createClient();
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()
-            ->returnRequested()->returnManifested(self::RETURN_TRACKING_REFERENCE)->returnDispatched()->create();
+        $shipmentFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()
+            ->returnRequested()->returnManifested()->returnDispatched();
+        $shipment = $shipmentFactory->create();
         $this->store($shipment);
-        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+        $body = self::body($shipmentFactory['returnTrackingReference']->value);
 
         // When
         $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->statusOf($shipment->id->toString()));
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 
     #[Test]
@@ -42,7 +42,7 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::RETURN_TRACKING_REFERENCE);
+        $body = self::body(self::anyReturnTrackingReference());
 
         // When
         $client->request('POST', self::PATH, server: $this->headers($signature), content: $body);
@@ -107,7 +107,7 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::RETURN_TRACKING_REFERENCE)];
+        yield 'method is not POST' => ['GET', self::body(self::anyReturnTrackingReference())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -144,14 +144,8 @@ final class CarrierReturnReceivedWebhookTest extends AbstractWebhookTestCase
         return json_encode(['returnTrackingReference' => $returnTrackingReference], \JSON_THROW_ON_ERROR);
     }
 
-    private function statusOf(string $id): ShipmentStatus
+    private static function anyReturnTrackingReference(): string
     {
-        $shipment = $this->service(ShipmentFinderInterface::class)->ofReturnTrackingReference(self::RETURN_TRACKING_REFERENCE);
-
-        if ($id !== $shipment->id) {
-            self::fail(\sprintf('Shipment "%s" was not projected.', $id));
-        }
-
-        return $shipment->status;
+        return ShipmentBuilder::sample('returnTrackingReference')->value;
     }
 }

@@ -7,9 +7,9 @@ namespace Fulfilment\Tests\Shipment\Application\Query\GetShipmentByReturnTrackin
 use Fulfilment\Shipment\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipment\Application\Query\GetShipmentByReturnTrackingReference\GetShipmentByReturnTrackingReference;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractIntegrationTestCase
 {
@@ -17,32 +17,32 @@ final class GetShipmentByReturnTrackingReferenceHandlerTest extends AbstractInte
     public function itGets(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()
+        $other = ShipmentBuilder::new()
             ->prepared()
-            ->manifested('ACME-OTHER')
+            ->manifested()
             ->dispatched()
             ->delivered()
             ->returnRequested()
-            ->returnManifested('ACME-RETURN-OTHER')
+            ->returnManifested()
             ->create();
-        $shipment = ShipmentTestFactory::new()
+        $builder = ShipmentBuilder::new()
             ->prepared()
-            ->manifested('ACME-4Q7X2K9')
+            ->manifested()
             ->dispatched()
             ->delivered()
             ->returnRequested()
-            ->returnManifested('ACME-RETURN-1')
-            ->create();
+            ->returnManifested();
+        $shipment = $builder->create();
         $this->store($other, $shipment);
 
         // When
-        $result = $this->ask(new GetShipmentByReturnTrackingReference('ACME-RETURN-1'));
+        $result = $this->ask(new GetShipmentByReturnTrackingReference($builder['returnTrackingReference']->value));
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
         self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
+        self::assertSame($builder['returnTrackingReference']->value, $result->returnTrackingReference);
     }
 
     #[Test]

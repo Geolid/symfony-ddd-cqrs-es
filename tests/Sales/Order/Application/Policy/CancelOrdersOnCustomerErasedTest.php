@@ -10,33 +10,23 @@ use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedInt
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Application\Policy\CancelOrdersOnCustomerErased;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class CancelOrdersOnCustomerErasedTest extends AbstractIntegrationTestCase
 {
-    private CancelOrdersOnCustomerErased $policy;
-    private \DateTimeImmutable $erasedAt;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(CancelOrdersOnCustomerErased::class);
-        $this->erasedAt = new \DateTimeImmutable('2026-01-02T00:00:00+00:00');
-    }
-
     #[Test]
     public function itCancelsPlaced(): void
     {
         // Given
-        $other = OrderTestFactory::new()->create();
+        $other = OrderBuilder::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
-        ($this->policy)(new CustomerErasedIntegrationEvent($customerId, $this->erasedAt));
+        $this->trigger(CancelOrdersOnCustomerErased::class, new CustomerErasedIntegrationEvent($customerId, Clock::get()->now()));
 
         // Then
         $finder = $this->service(OrderFinderInterface::class);

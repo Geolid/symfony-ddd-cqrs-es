@@ -6,32 +6,47 @@ namespace Iam\Tests\Authentication\Infrastructure\CompromisedPassword;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Infrastructure\CompromisedPassword\SymfonyCompromisedPasswordGateway;
-use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
+use Iam\Tests\Authentication\Support\Double\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;
-use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
+use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class SymfonyCompromisedPasswordGatewayTest extends TestCase
 {
     #[Test]
-    public function itDetects(): void
+    public function itAccepts(): void
     {
         // Given
-        $compromised = new SymfonyCompromisedPasswordGateway($this->validatorStubbingNotCompromised(violates: true));
-        $safe = new SymfonyCompromisedPasswordGateway($this->validatorStubbingNotCompromised(violates: false));
+        $validator = $this->createStub(ValidatorInterface::class);
+        $validator->method('validate')->willReturn(new ConstraintViolationList());
+        $gateway = new SymfonyCompromisedPasswordGateway($validator);
 
         // When
-        $isCompromised = $compromised->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
-        $isSafe = $safe->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $isCompromised = $gateway->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
+
+        // Then
+        self::assertFalse($isCompromised);
+    }
+
+    #[Test]
+    public function itRefuses(): void
+    {
+        // Given
+        $violation = $this->createStub(ConstraintViolationInterface::class);
+        $validator = $this->createStub(ValidatorInterface::class);
+        $validator->method('validate')->willReturn(new ConstraintViolationList([$violation]));
+        $gateway = new SymfonyCompromisedPasswordGateway($validator);
+
+        // When
+        $isCompromised = $gateway->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
 
         // Then
         self::assertTrue($isCompromised);
-        self::assertFalse($isSafe);
     }
 
     #[Test]
@@ -41,19 +56,10 @@ final class SymfonyCompromisedPasswordGatewayTest extends TestCase
         $gateway = new SymfonyCompromisedPasswordGateway($this->validatorWithFailingHttpClient());
 
         // When
-        $isCompromised = $gateway->isCompromised(Password::fromString('Xk9$mQ2vLp7&zR4w'));
+        $isCompromised = $gateway->isCompromised(Password::fromString('Marmoset-42-Zephyr!'));
 
         // Then
         self::assertFalse($isCompromised);
-    }
-
-    private function validatorStubbingNotCompromised(bool $violates): ValidatorInterface
-    {
-        return Validation::createValidatorBuilder()
-            ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
-                NotCompromisedPasswordValidator::class => new StubNotCompromisedPasswordValidator($violates),
-            ]))
-            ->getValidator();
     }
 
     private function validatorWithFailingHttpClient(): ValidatorInterface
@@ -63,19 +69,5 @@ final class SymfonyCompromisedPasswordGatewayTest extends TestCase
                 NotCompromisedPasswordValidator::class => new NotCompromisedPasswordValidator(new StubFailingHttpClient()),
             ]))
             ->getValidator();
-    }
-}
-
-final class StubNotCompromisedPasswordValidator extends ConstraintValidator
-{
-    public function __construct(private readonly bool $violates)
-    {
-    }
-
-    public function validate(mixed $value, Constraint $constraint): void
-    {
-        if ($this->violates) {
-            $this->context->buildViolation('')->addViolation();
-        }
     }
 }

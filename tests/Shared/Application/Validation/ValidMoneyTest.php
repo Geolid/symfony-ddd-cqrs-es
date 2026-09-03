@@ -17,13 +17,23 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidMoneyTest extends CompoundConstraintTestCase
 {
     #[Test]
-    public function itAccepts(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itAccepts(int $amount): void
     {
         // When
-        $this->validateValue(2_500);
+        $this->validateValue($amount);
 
         // Then
         $this->assertNoViolation();
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'amount' => [2_500];
+        yield 'zero' => [0];
     }
 
     /**

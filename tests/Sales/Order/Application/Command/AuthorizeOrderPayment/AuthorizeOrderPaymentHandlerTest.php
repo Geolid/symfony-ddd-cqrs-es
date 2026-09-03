@@ -11,9 +11,9 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\Exception\OrderPaymentNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class AuthorizeOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -21,15 +21,16 @@ final class AuthorizeOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itAuthorizesWhenRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->create();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new AuthorizeOrderPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -37,8 +38,8 @@ final class AuthorizeOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyAuthorized(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->create();
+        $order = OrderBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->create();
         $this->store($order, $orderPayment);
 
         // When

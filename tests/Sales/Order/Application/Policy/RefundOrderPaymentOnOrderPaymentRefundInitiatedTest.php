@@ -5,29 +5,24 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Policy;
 
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
-use Sales\Order\Application\Payment\PaymentGatewayStatus;
-use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Policy\RefundOrderPaymentOnOrderPaymentRefundInitiated;
 use Sales\Order\Domain\Event\OrderPaymentRefundInitiated;
-use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends AbstractIntegrationTestCase
 {
-    private RefundOrderPaymentOnOrderPaymentRefundInitiated $policy;
-
-    private SpyRefundingPaymentGateway $paymentGateway;
+    private PaymentGatewayInterface&MockObject $paymentGateway;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->paymentGateway = new SpyRefundingPaymentGateway();
-        self::getContainer()->set(PaymentGatewayInterface::class, $this->paymentGateway);
-
-        $this->policy = $this->service(RefundOrderPaymentOnOrderPaymentRefundInitiated::class);
+        $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
+        $this->replace(PaymentGatewayInterface::class, $this->paymentGateway);
     }
 
     #[Test]
@@ -35,36 +30,9 @@ final class RefundOrderPaymentOnOrderPaymentRefundInitiatedTest extends Abstract
     {
         // Given
         $reference = 'GLBX-'.Uuid::uuid7()->toString();
+        $this->paymentGateway->expects(self::once())->method('refund')->with($reference);
 
         // When
-        ($this->policy)(new OrderPaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
-
-        // Then
-        self::assertSame($reference, $this->paymentGateway->refundedReference);
-    }
-}
-
-final class SpyRefundingPaymentGateway implements PaymentGatewayInterface
-{
-    public ?string $refundedReference = null;
-
-    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function void(string $reference): void
-    {
-        throw new \LogicException('Not needed by this test.');
-    }
-
-    public function refund(string $reference): void
-    {
-        $this->refundedReference = $reference;
-    }
-
-    public function checkStatus(string $reference): PaymentGatewayStatus
-    {
-        throw new \LogicException('Not needed by this test.');
+        $this->trigger(RefundOrderPaymentOnOrderPaymentRefundInitiated::class, new OrderPaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, Clock::get()->now()));
     }
 }

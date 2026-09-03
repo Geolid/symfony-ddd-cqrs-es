@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Finder;
 
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Order;
@@ -12,9 +12,9 @@ use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterface;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
 {
@@ -32,14 +32,14 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
-        $payment = OrderPaymentTestFactory::new()
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $payment = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-ABC12345')
+            ->withCheckoutUrl('https://checkout.globex.test/pay/GLBX-ABC12345')
             ->create();
-        $shipment = ShipmentTestFactory::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($order, $payment, $shipment);
 
         // When
@@ -53,7 +53,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         self::assertNull($result->cancelledAt);
         self::assertSame(2_500, $result->paymentAmountInCents);
         self::assertSame('GLBX-ABC12345', $result->paymentReference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-ABC12345', $result->paymentCheckoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-ABC12345', $result->paymentCheckoutUrl);
         self::assertNull($result->paidAt);
         self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
@@ -74,9 +74,9 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByCustomer(): void
     {
         // Given
-        $other = OrderTestFactory::new()->withCustomerId(Uuid::uuid7()->toString())->create();
+        $other = OrderBuilder::new()->withCustomerId(Uuid::uuid7()->toString())->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
@@ -91,8 +91,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByStatus(): void
     {
         // Given
-        $others = OrderTestFactory::new()->many(2)->create();
-        $cancelled = OrderTestFactory::new()->cancelled()->create();
+        $others = OrderBuilder::new()->many(2)->create();
+        $cancelled = OrderBuilder::new()->cancelled()->create();
         $orders = [...$others, $cancelled];
         $this->store(...$orders);
 
@@ -108,7 +108,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $orders = OrderTestFactory::new()->many(5)->create();
+        $orders = OrderBuilder::new()->many(5)->create();
         $this->store(...$orders);
 
         // When
@@ -132,7 +132,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $orders = OrderTestFactory::new()->many(5)->create();
+        $orders = OrderBuilder::new()->many(5)->create();
         $this->store(...$orders);
 
         // When

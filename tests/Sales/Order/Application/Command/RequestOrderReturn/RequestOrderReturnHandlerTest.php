@@ -14,8 +14,8 @@ use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Exception\OrderNotReturnableException;
 use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
@@ -34,7 +34,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When
@@ -51,7 +51,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->delivered()->returnRequested()->create();
         $this->store($order);
 
         // When
@@ -78,7 +78,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBelongsToAnotherCustomer(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($order);
 
         // Then
@@ -93,7 +93,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($order);
 
         // Then
@@ -108,7 +108,7 @@ final class RequestOrderReturnHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withCustomerId($customerId)
             ->confirmed()
             ->dispatched()

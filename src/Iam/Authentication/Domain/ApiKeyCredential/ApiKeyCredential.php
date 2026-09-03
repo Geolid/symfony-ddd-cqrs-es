@@ -25,7 +25,6 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
 
     #[Id]
     public private(set) ApiKeyCredentialId $id;
-    public private(set) Label $label;
     private string $identityId;
     private bool $revoked;
 
@@ -76,7 +75,6 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     {
         $this->id = ApiKeyCredentialId::fromString($event->id);
         $this->identityId = $event->identityId;
-        $this->label = Label::fromString($event->label);
         $this->revoked = false;
     }
 

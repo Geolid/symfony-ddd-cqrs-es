@@ -11,8 +11,8 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotCompletableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
@@ -30,7 +30,7 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itCompletesWhenReturnWindowHasElapsed(): void
     {
         // Given
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->confirmed()
             ->dispatched()
             ->delivered(Clock::get()->now()->modify('-19 days'))
@@ -49,7 +49,7 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCompleted(): void
     {
         // Given
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->confirmed()
             ->dispatched()
             ->delivered(Clock::get()->now()->modify('-19 days'))
@@ -81,7 +81,7 @@ final class CompleteOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotCompletable(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->create();
         $this->store($order);
 
         // Then

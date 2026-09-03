@@ -10,9 +10,10 @@ use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
 {
@@ -21,26 +22,30 @@ final class RegisterCustomerHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = CustomerId::generate()->toString();
+        $email = CustomerBuilder::sample('email')->value;
 
         // When
-        $this->dispatch(new RegisterCustomer($id, 'Buyer@Example.COM'));
+        $this->dispatch(new RegisterCustomer($id, $email));
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame('buyer@example.com', $result->email);
+        self::assertSame($email, $result->email);
     }
 
     #[Test]
     public function itFailsWhenEmailAlreadyRegistered(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), 'buyer@example.com', CustomerId::generate()->toString());
+        $id = CustomerId::generate()->toString();
+        $existingId = CustomerId::generate()->toString();
+        $email = CustomerBuilder::sample('email')->value;
+        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(CustomerUniqueKey::EMAIL), $email, $existingId);
 
         // Then
         $this->expectException(CustomerEmailAlreadyRegisteredException::class);
 
         // When
-        $this->dispatch(new RegisterCustomer(CustomerId::generate()->toString(), 'BUYER@example.com'));
+        $this->dispatch(new RegisterCustomer($id, $email));
     }
 }

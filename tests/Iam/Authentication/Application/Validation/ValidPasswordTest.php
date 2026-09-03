@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\Validation;
 use Iam\Authentication\Application\Validation\ValidPassword;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
-use Iam\Tests\Authentication\Support\Doubles\StubFailingHttpClient;
+use Iam\Tests\Authentication\Support\Double\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Validator\Constraint;
@@ -40,8 +40,8 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'strong password' => ['MyStr0ngP@ssw0rd123!'];
-        yield 'maximum length' => [str_repeat('Xk9$mQ2vLp7&zR4w', 256)];
+        yield 'strong password' => ['Correct-Horse-Battery-42!'];
+        yield 'maximum length' => [str_pad('Marmoset-42-Zephyr!', Password::MAX_LENGTH, '*')];
     }
 
     /**
@@ -64,10 +64,10 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'empty string' => ['', [new Assert\NotBlank(), self::length(), self::passwordStrength()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), self::length(), self::passwordStrength()]];
-        yield 'too short' => ['Sh0rt!', [self::length(), self::passwordStrength()]];
-        yield 'too weak' => ['passwordpassword', [self::passwordStrength()]];
+        yield 'empty string' => ['', [new Assert\NotBlank()]];
+        yield 'not a string' => [42, [new Assert\Type('string')]];
+        yield 'too short' => [str_repeat('a', Password::MIN_LENGTH - 1), [new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH)]];
+        yield 'too weak' => ['passwordpassword', [new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE)]];
     }
 
     #[Test]
@@ -77,7 +77,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
         $validator = $this->validatorWith(new NotCompromisedPasswordValidator(new StubFailingHttpClient()));
 
         // When
-        $violations = $validator->validate('MyStr0ngP@ssw0rd123!', new ValidPassword());
+        $violations = $validator->validate('Correct-Horse-Battery-42!', new ValidPassword());
 
         // Then
         self::assertCount(0, $violations);
@@ -101,15 +101,5 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
                 NotCompromisedPasswordValidator::class => $notCompromisedPasswordValidator,
             ]))
             ->getValidator();
-    }
-
-    private static function length(): Assert\Length
-    {
-        return new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH);
-    }
-
-    private static function passwordStrength(): PasswordStrength
-    {
-        return new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE);
     }
 }

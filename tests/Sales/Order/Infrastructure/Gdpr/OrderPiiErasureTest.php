@@ -11,20 +11,32 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Doubles\StubDataSubjectErased;
-use Support\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\StubDataSubjectErased;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 {
+    private DataSubjectEraserProcessor $eraser;
+
+    private EventSerializer $serializer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->serializer = $this->service(EventSerializer::class);
+    }
+
     #[Test]
     public function itCryptoShredsShippingAddressOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()
+        $order = OrderBuilder::new()
             ->withCustomerId($customerId)
             ->create();
         $this->store($order);
@@ -34,12 +46,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($customerId)),
-        );
+        ($this->eraser)(Message::create(new StubDataSubjectErased($customerId)));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
         self::assertNotSame('erased', $rehydrated->billingAddress['street']);
@@ -49,7 +59,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsBillingAddressOnBillingRetentionExpiry(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
@@ -57,12 +67,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($order->id->toString())),
-        );
+        ($this->eraser)(Message::create(new StubDataSubjectErased($order->id->toString())));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
         self::assertNotSame('erased', $rehydrated->shippingAddress['street']);
@@ -73,8 +81,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($order, $orderPayment);
         $serialized = $this->serializedEventOf(
             OrderPaymentCapturedIntegrationEvent::class,
@@ -82,12 +90,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($customerId)),
-        );
+        ($this->eraser)(Message::create(new StubDataSubjectErased($customerId)));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
     }
@@ -97,7 +103,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->create();
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderConfirmedIntegrationEvent::class,
@@ -105,12 +111,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($customerId)),
-        );
+        ($this->eraser)(Message::create(new StubDataSubjectErased($customerId)));
 
         // Then
-        $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
+        $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
     }

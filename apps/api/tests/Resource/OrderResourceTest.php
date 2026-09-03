@@ -6,10 +6,10 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\OrderResource;
 use Api\Tests\Support\AbstractApiTestCase;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 final class OrderResourceTest extends AbstractApiTestCase
@@ -18,9 +18,9 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsAnOrder(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(1_999)->create();
         $this->store($identity, $order);
         $client = $this->authenticatedClient($identity);
 
@@ -43,7 +43,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itFailsToReturnAnUnknownOrder(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
         $client = $this->authenticatedClient($identity);
 
@@ -58,8 +58,8 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itReturnsTheOrders(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $order = OrderTestFactory::new()->withTotalAmountInCents(1_999)->create();
+        $identity = IdentityBuilder::new()->create();
+        $order = OrderBuilder::new()->withTotalAmountInCents(1_999)->create();
         $this->store($identity, $order);
         $client = $this->authenticatedClient($identity);
 
@@ -103,7 +103,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsAnInvalidApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
         $client = $this->invalidApiKeyClient($identity);
 
@@ -118,7 +118,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsARevokedApiKey(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
         $client = $this->revokedApiKeyClient($identity);
 
@@ -133,7 +133,7 @@ final class OrderResourceTest extends AbstractApiTestCase
     public function itRejectsASuspendedIdentity(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->suspended()->create();
         $client = $this->authenticatedClient($identity);
         $this->store($identity);
 

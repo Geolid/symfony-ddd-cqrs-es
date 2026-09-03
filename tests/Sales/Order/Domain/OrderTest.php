@@ -27,513 +27,299 @@ use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Order\Domain\ValueObject\Product;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class OrderTest extends AggregateRootTestCase
 {
+    private OrderId $id;
+    private string $customerId;
+    private PostalAddress $shippingAddress;
+    private PostalAddress $billingAddress;
+
+    /** @var list<OrderLine> */
+    private array $lines;
+
+    private \DateTimeImmutable $placedAt;
+    private \DateTimeImmutable $confirmedAt;
+    private \DateTimeImmutable $cancelledAt;
+    private \DateTimeImmutable $dispatchedAt;
+    private \DateTimeImmutable $deliveredAt;
+    private \DateTimeImmutable $returnRequestedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->id = OrderId::generate();
+        $this->customerId = OrderBuilder::sample('customerId');
+        $this->shippingAddress = OrderBuilder::sample('shippingAddress');
+        $this->billingAddress = OrderBuilder::sample('billingAddress');
+        $this->lines = OrderBuilder::sample('lines');
+        $this->placedAt = OrderBuilder::sample('placedAt');
+        $this->confirmedAt = OrderBuilder::sample('confirmedAt');
+        $this->cancelledAt = OrderBuilder::sample('cancelledAt');
+        $this->dispatchedAt = OrderBuilder::sample('dispatchedAt');
+        $this->deliveredAt = OrderBuilder::sample('deliveredAt');
+        $this->returnRequestedAt = OrderBuilder::sample('returnRequestedAt');
+    }
+
     #[Test]
     public function itPlacesDerivingTotalFromLines(): void
     {
-        $id = OrderId::generate();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $customerId = Uuid::uuid7()->toString();
-        $lines = $this->lines();
-
         $this
             ->given()
-            ->when(static fn (): Order => Order::place($id, $customerId, self::shippingAddress(), self::billingAddress(), $lines, $now))
+            ->when(fn (): Order => Order::place($this->id, $this->customerId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->placedAt))
             ->then(new OrderPlaced(
-                $id->toString(),
-                $customerId,
+                $this->id->toString(),
+                $this->customerId,
                 $this->primitiveShippingAddress(),
                 $this->primitiveBillingAddress(),
-                $this->primitiveLines($lines),
-                1_999,
-                $now,
+                $this->primitiveLines(),
+                $this->totalAmountInCents(),
+                $this->placedAt,
             ));
     }
 
     #[Test]
     public function itCannotPlaceWithoutLine(): void
     {
-        $id = OrderId::generate();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given()
-            ->when(static fn (): Order => Order::place($id, Uuid::uuid7()->toString(), self::shippingAddress(), self::billingAddress(), [], $now))
+            ->when(fn (): Order => Order::place($this->id, $this->customerId, $this->shippingAddress, $this->billingAddress, [], $this->placedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
     #[Test]
     public function itConfirmsWhenPlaced(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-
         $this
-            ->given($this->orderPlaced($id, $customerId, $now))
-            ->when(static fn (Order $order) => $order->confirm($confirmedAt))
-            ->then(new OrderConfirmed($id, $confirmedAt));
+            ->given($this->placed())
+            ->when(fn (Order $order) => $order->confirm($this->confirmedAt))
+            ->then(new OrderConfirmed($this->id->toString(), $this->confirmedAt));
     }
 
     #[Test]
     public function itDoesNotConfirmWhenAlreadyConfirmed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->confirm($confirmedAt->modify('+1 hour')))
+            ->given($this->placed(), $this->confirmed())
+            ->when(static fn (Order $order) => $order->confirm(OrderBuilder::sample('confirmedAt')))
             ->then();
     }
 
     #[Test]
     public function itCancels(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-
         $this
-            ->given($this->orderPlaced($id, $customerId, $now))
-            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
-            ->then(new OrderCancelled($id, $cancelledAt));
+            ->given($this->placed())
+            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
+            ->then(new OrderCancelled($this->id->toString(), $this->cancelledAt));
     }
 
     #[Test]
     public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderCancelled($id, $cancelledAt),
-            )
-            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt->modify('+1 day')))
+            ->given($this->placed(), $this->cancelled())
+            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
             ->then();
     }
 
     #[Test]
     public function itCancelsWhenConfirmed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $cancelledAt = $now->modify('+1 day');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->cancel($customerId, $cancelledAt))
-            ->then(new OrderCancelled($id, $cancelledAt));
+            ->given($this->placed(), $this->confirmed())
+            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
+            ->then(new OrderCancelled($this->id->toString(), $this->cancelledAt));
     }
 
     #[Test]
     public function itCannotCancelWhenDispatched(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-            )
-            ->when(static fn (Order $order) => $order->cancel($customerId, $dispatchedAt->modify('+1 day')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched())
+            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
             ->expectsException(OrderNotCancellableException::class);
     }
 
     #[Test]
     public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
-        $id = OrderId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given($this->orderPlaced($id, Uuid::uuid7()->toString(), $now))
-            ->when(static fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), $now->modify('+1 day')))
+            ->given($this->placed())
+            ->when(fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), $this->cancelledAt))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
     public function itDispatchesWhenConfirmed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->dispatch($dispatchedAt))
-            ->then(new OrderDispatched($id, $dispatchedAt));
+            ->given($this->placed(), $this->confirmed())
+            ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
+            ->then(new OrderDispatched($this->id->toString(), $this->dispatchedAt));
     }
 
     #[Test]
     public function itDoesNotDispatchWhenNotConfirmed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given($this->orderPlaced($id, $customerId, $now))
-            ->when(static fn (Order $order) => $order->dispatch($now->modify('+2 days')))
+            ->given($this->placed())
+            ->when(static fn (Order $order) => $order->dispatch(OrderBuilder::sample('dispatchedAt')))
             ->then();
     }
 
     #[Test]
     public function itDeliversWhenDispatched(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-            )
-            ->when(static fn (Order $order) => $order->deliver($deliveredAt))
-            ->then(new OrderDelivered($id, $deliveredAt));
+            ->given($this->placed(), $this->confirmed(), $this->dispatched())
+            ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
+            ->then(new OrderDelivered($this->id->toString(), $this->deliveredAt));
     }
 
     #[Test]
     public function itDoesNotDeliverWhenNotDispatched(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->deliver($now->modify('+2 days')))
+            ->given($this->placed(), $this->confirmed())
+            ->when(static fn (Order $order) => $order->deliver(OrderBuilder::sample('deliveredAt')))
             ->then();
     }
 
     #[Test]
     public function itCompletesWhenReturnWindowElapsed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $completedAt = $deliveredAt->modify('+30 days');
+        $completedAt = OrderBuilder::sample('completedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
             ->when(static fn (Order $order) => $order->complete($completedAt))
-            ->then(new OrderCompleted($id, $completedAt));
+            ->then(new OrderCompleted($this->id->toString(), $completedAt));
     }
 
     #[Test]
     public function itDoesNotCompleteWhenReturnWindowNotElapsed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->complete($deliveredAt->modify('+6 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(fn (Order $order) => $order->complete($this->deliveredAt->modify('+6 days')))
             ->then();
     }
 
     #[Test]
     public function itDoesNotCompleteWhenAlreadyCompleted(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $completedAt = $deliveredAt->modify('+30 days');
+        $completedAt = OrderBuilder::sample('completedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-                new OrderCompleted($id, $completedAt),
-            )
-            ->when(static fn (Order $order) => $order->complete($completedAt->modify('+30 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered(), new OrderCompleted($this->id->toString(), $completedAt))
+            ->when(static fn (Order $order) => $order->complete(OrderBuilder::sample('completedAt')))
             ->then();
     }
 
     #[Test]
     public function itCannotCompleteWhenNotCompletable(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->complete($confirmedAt->modify('+30 days')))
+            ->given($this->placed(), $this->confirmed())
+            ->when(static fn (Order $order) => $order->complete(OrderBuilder::sample('completedAt')))
             ->expectsException(OrderNotCompletableException::class);
     }
 
     #[Test]
     public function itRequestsReturnWhenDelivered(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $requestedAt = $deliveredAt->modify('+6 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt))
-            ->then(new OrderReturnRequested($id, $requestedAt));
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(fn (Order $order) => $order->requestReturn($this->customerId, $this->returnRequestedAt))
+            ->then(new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt));
     }
 
     #[Test]
     public function itDoesNotRequestReturnWhenAlreadyRequested(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $requestedAt = $deliveredAt->modify('+6 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-                new OrderReturnRequested($id, $requestedAt),
-            )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, $requestedAt->modify('+1 day')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered(), $this->returnRequested())
+            ->when(fn (Order $order) => $order->requestReturn($this->customerId, OrderBuilder::sample('returnRequestedAt')))
             ->then();
     }
 
     #[Test]
     public function itCannotRequestReturnWhenBelongingToAnotherCustomer(): void
     {
-        $id = OrderId::generate()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, Uuid::uuid7()->toString(), $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), $deliveredAt->modify('+6 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(fn (Order $order) => $order->requestReturn(Uuid::uuid7()->toString(), $this->returnRequestedAt))
             ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
     public function itCannotRequestReturnWhenNotDelivered(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-            )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, $confirmedAt->modify('+6 days')))
+            ->given($this->placed(), $this->confirmed())
+            ->when(fn (Order $order) => $order->requestReturn($this->customerId, OrderBuilder::sample('returnRequestedAt')))
             ->expectsException(OrderNotReturnableException::class);
     }
 
     #[Test]
     public function itCannotRequestReturnWhenReturnWindowElapsed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->requestReturn($customerId, $deliveredAt->modify('+15 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(fn (Order $order) => $order->requestReturn($this->customerId, $this->deliveredAt->modify('+15 days')))
             ->expectsException(OrderReturnWindowExpiredException::class);
     }
 
     #[Test]
     public function itConfirmsReturnWhenRequested(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $requestedAt = $deliveredAt->modify('+6 days');
-        $returnedAt = $requestedAt->modify('+2 days');
+        $returnedAt = OrderBuilder::sample('returnedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-                new OrderReturnRequested($id, $requestedAt),
-            )
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered(), $this->returnRequested())
             ->when(static fn (Order $order) => $order->confirmReturn($returnedAt))
-            ->then(new OrderReturned($id, $returnedAt));
+            ->then(new OrderReturned($this->id->toString(), $returnedAt));
     }
 
     #[Test]
     public function itDoesNotConfirmReturnWhenNotRequested(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->confirmReturn($deliveredAt->modify('+6 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(static fn (Order $order) => $order->confirmReturn(OrderBuilder::sample('returnedAt')))
             ->then();
     }
 
     #[Test]
     public function itRejectsReturnWhenRequested(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-        $requestedAt = $deliveredAt->modify('+6 days');
-        $rejectedAt = $requestedAt->modify('+1 day');
+        $returnRejectionReason = OrderBuilder::sample('returnRejectionReason');
+        $returnRejectedAt = OrderBuilder::sample('returnRejectedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-                new OrderReturnRequested($id, $requestedAt),
-            )
-            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', $rejectedAt))
-            ->then(new OrderReturnRejected($id, 'item damaged beyond resale', $rejectedAt));
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered(), $this->returnRequested())
+            ->when(static fn (Order $order) => $order->rejectReturn($returnRejectionReason, $returnRejectedAt))
+            ->then(new OrderReturnRejected($this->id->toString(), $returnRejectionReason, $returnRejectedAt));
     }
 
     #[Test]
     public function itDoesNotRejectReturnWhenNotRequested(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $confirmedAt = $now->modify('+2 hours');
-        $dispatchedAt = $now->modify('+2 days');
-        $deliveredAt = $now->modify('+5 days');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderConfirmed($id, $confirmedAt),
-                new OrderDispatched($id, $dispatchedAt),
-                new OrderDelivered($id, $deliveredAt),
-            )
-            ->when(static fn (Order $order) => $order->rejectReturn('item damaged beyond resale', $deliveredAt->modify('+6 days')))
+            ->given($this->placed(), $this->confirmed(), $this->dispatched(), $this->delivered())
+            ->when(static fn (Order $order) => $order->rejectReturn(OrderBuilder::sample('returnRejectionReason'), OrderBuilder::sample('returnRejectedAt')))
             ->then();
     }
 
     #[Test]
     public function itEnsuresNotCancelled(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given($this->orderPlaced($id, $customerId, $now))
+            ->given($this->placed())
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
             ->then();
     }
@@ -541,16 +327,8 @@ final class OrderTest extends AggregateRootTestCase
     #[Test]
     public function itCannotEnsureNotCancelledWhenCancelled(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderCancelled($id, $cancelledAt),
-            )
+            ->given($this->placed(), $this->cancelled())
             ->when(static fn (Order $order) => $order->ensureNotCancelled())
             ->expectsException(OrderAlreadyCancelledException::class);
     }
@@ -558,67 +336,40 @@ final class OrderTest extends AggregateRootTestCase
     #[Test]
     public function itAnonymizesWhenRetentionPeriodElapsed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-        $anonymizedAt = $now->modify('+11 years');
+        $anonymizedAt = OrderBuilder::sample('anonymizedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderCancelled($id, $cancelledAt),
-            )
+            ->given($this->placed(), $this->cancelled())
             ->when(static fn (Order $order) => $order->anonymize($anonymizedAt))
-            ->then(new OrderAnonymized($id, $anonymizedAt));
+            ->then(new OrderAnonymized($this->id->toString(), $anonymizedAt));
     }
 
     #[Test]
     public function itDoesNotAnonymizeWhenNotClosed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given($this->orderPlaced($id, $customerId, $now))
-            ->when(static fn (Order $order) => $order->anonymize($now->modify('+11 years')))
+            ->given($this->placed())
+            ->when(static fn (Order $order) => $order->anonymize(OrderBuilder::sample('anonymizedAt')))
             ->then();
     }
 
     #[Test]
     public function itDoesNotAnonymizeWhenRetentionPeriodNotElapsed(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderCancelled($id, $cancelledAt),
-            )
-            ->when(static fn (Order $order) => $order->anonymize($cancelledAt->modify('+1 month')))
+            ->given($this->placed(), $this->cancelled())
+            ->when(fn (Order $order) => $order->anonymize($this->cancelledAt->modify('+1 month')))
             ->then();
     }
 
     #[Test]
     public function itDoesNotAnonymizeWhenAlreadyAnonymized(): void
     {
-        $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $cancelledAt = $now->modify('+1 day');
-        $anonymizedAt = $now->modify('+11 years');
+        $anonymizedAt = OrderBuilder::sample('anonymizedAt');
 
         $this
-            ->given(
-                $this->orderPlaced($id, $customerId, $now),
-                new OrderCancelled($id, $cancelledAt),
-                new OrderAnonymized($id, $anonymizedAt),
-            )
-            ->when(static fn (Order $order) => $order->anonymize($anonymizedAt->modify('+1 day')))
+            ->given($this->placed(), $this->cancelled(), new OrderAnonymized($this->id->toString(), $anonymizedAt))
+            ->when(static fn (Order $order) => $order->anonymize(OrderBuilder::sample('anonymizedAt')))
             ->then();
     }
 
@@ -627,23 +378,84 @@ final class OrderTest extends AggregateRootTestCase
         return Order::class;
     }
 
+    private function placed(): OrderPlaced
+    {
+        return new OrderPlaced(
+            $this->id->toString(),
+            $this->customerId,
+            $this->primitiveShippingAddress(),
+            $this->primitiveBillingAddress(),
+            $this->primitiveLines(),
+            $this->totalAmountInCents(),
+            $this->placedAt,
+        );
+    }
+
+    private function confirmed(): OrderConfirmed
+    {
+        return new OrderConfirmed($this->id->toString(), $this->confirmedAt);
+    }
+
+    private function cancelled(): OrderCancelled
+    {
+        return new OrderCancelled($this->id->toString(), $this->cancelledAt);
+    }
+
+    private function dispatched(): OrderDispatched
+    {
+        return new OrderDispatched($this->id->toString(), $this->dispatchedAt);
+    }
+
+    private function delivered(): OrderDelivered
+    {
+        return new OrderDelivered($this->id->toString(), $this->deliveredAt);
+    }
+
+    private function returnRequested(): OrderReturnRequested
+    {
+        return new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt);
+    }
+
+    private function totalAmountInCents(): int
+    {
+        return array_sum(array_map(static fn (OrderLine $line): int => $line->total()->cents, $this->lines));
+    }
+
     /**
-     * @return list<OrderLine>
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
-    private function lines(): array
+    private function primitiveShippingAddress(): array
+    {
+        return $this->primitiveAddress($this->shippingAddress);
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function primitiveBillingAddress(): array
+    {
+        return $this->primitiveAddress($this->billingAddress);
+    }
+
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
     {
         return [
-            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Espresso cups, set of 6'), Money::fromCents(1_750)), 1),
-            OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83)), 3),
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
         ];
     }
 
     /**
-     * @param list<OrderLine> $lines
-     *
      * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
      */
-    private function primitiveLines(array $lines): array
+    private function primitiveLines(): array
     {
         return array_map(
             static fn (OrderLine $line): array => [
@@ -652,46 +464,7 @@ final class OrderTest extends AggregateRootTestCase
                 'quantity' => $line->quantity,
                 'unitAmountInCents' => $line->product->price->cents,
             ],
-            $lines,
+            $this->lines,
         );
-    }
-
-    private static function shippingAddress(): PostalAddress
-    {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
-    }
-
-    private static function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
-    }
-
-    private function orderPlaced(string $id, string $customerId, \DateTimeImmutable $placedAt): OrderPlaced
-    {
-        return new OrderPlaced(
-            $id,
-            $customerId,
-            $this->primitiveShippingAddress(),
-            $this->primitiveBillingAddress(),
-            $this->primitiveLines($this->lines()),
-            1_999,
-            $placedAt,
-        );
-    }
-
-    /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function primitiveShippingAddress(): array
-    {
-        return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'];
-    }
-
-    /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function primitiveBillingAddress(): array
-    {
-        return ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'];
     }
 }

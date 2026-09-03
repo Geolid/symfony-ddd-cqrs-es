@@ -6,12 +6,11 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{order_id: string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, cancelled_at: ?string, refund_initiated_at: ?string, refunded_at: ?string}
@@ -22,13 +21,8 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentRequested(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $orderPayment = OrderPaymentTestFactory::new()
-            ->withOrderId($orderId)
-            ->withAmountInCents(4_200)
-            ->withReference('GLBX-9F3K2M1P')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create();
+        $paymentBuilder = OrderPaymentBuilder::new();
+        $orderPayment = $paymentBuilder->create();
 
         // When
         $this->store($orderPayment);
@@ -36,10 +30,10 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($orderId, $row['order_id']);
-        self::assertSame(4_200, (int) $row['amount_in_cents']);
-        self::assertSame('GLBX-9F3K2M1P', $row['reference']);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $row['checkout_url']);
+        self::assertSame($paymentBuilder['orderId'], $row['order_id']);
+        self::assertSame($paymentBuilder['amount']->cents, (int) $row['amount_in_cents']);
+        self::assertSame($paymentBuilder['reference']->value, $row['reference']);
+        self::assertSame($paymentBuilder['checkoutUrl'], $row['checkout_url']);
         self::assertSame(OrderPaymentStatus::REQUESTED->value, $row['status']);
         self::assertNull($row['authorized_at']);
         self::assertNull($row['captured_at']);
@@ -53,9 +47,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentAuthorized(): void
     {
         // Given
-        $other = OrderPaymentTestFactory::new()->create();
+        $other = OrderPaymentBuilder::new()->create();
         $this->store($other);
-        $orderPayment = OrderPaymentTestFactory::new()->authorized()->create();
+        $orderPayment = OrderPaymentBuilder::new()->authorized()->create();
 
         // When
         $this->store($orderPayment);
@@ -75,10 +69,10 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $other = OrderPaymentTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
+        $other = OrderPaymentBuilder::new()->create();
         $this->store($order, $other);
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
 
         // When
         $this->store($orderPayment);
@@ -98,9 +92,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentFailed(): void
     {
         // Given
-        $other = OrderPaymentTestFactory::new()->create();
+        $other = OrderPaymentBuilder::new()->create();
         $this->store($other);
-        $orderPayment = OrderPaymentTestFactory::new()->failed()->create();
+        $orderPayment = OrderPaymentBuilder::new()->failed()->create();
 
         // When
         $this->store($orderPayment);
@@ -120,9 +114,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentCancelled(): void
     {
         // Given
-        $other = OrderPaymentTestFactory::new()->create();
+        $other = OrderPaymentBuilder::new()->create();
         $this->store($other);
-        $orderPayment = OrderPaymentTestFactory::new()->cancelled()->create();
+        $orderPayment = OrderPaymentBuilder::new()->cancelled()->create();
 
         // When
         $this->store($orderPayment);
@@ -142,9 +136,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentVoided(): void
     {
         // Given
-        $other = OrderPaymentTestFactory::new()->authorized()->create();
+        $other = OrderPaymentBuilder::new()->authorized()->create();
         $this->store($other);
-        $orderPayment = OrderPaymentTestFactory::new()->authorized()->cancelled()->create();
+        $orderPayment = OrderPaymentBuilder::new()->authorized()->cancelled()->create();
 
         // When
         $this->store($orderPayment);
@@ -164,10 +158,10 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentRefundInitiated(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $other = OrderPaymentTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
+        $other = OrderPaymentBuilder::new()->create();
         $this->store($order, $other);
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->refundInitiated()->create();
 
         // When
         $this->store($orderPayment);
@@ -188,9 +182,9 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentRefunded(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $otherOrder = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->authorized()->captured()->refundInitiated();
+        $order = OrderBuilder::new()->create();
+        $otherOrder = OrderBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->authorized()->captured()->refundInitiated();
         $other = $orderPayment->withOrderId($otherOrder->id->toString())->create();
         $this->store($order, $otherOrder, $other);
         $orderPayment = $orderPayment->withOrderId($order->id->toString())->refundConfirmed()->create();
@@ -215,8 +209,10 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf(
                 'SELECT order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, cancelled_at, refund_initiated_at, refunded_at FROM %s WHERE id = :id',
                 DbalOrderPaymentProjector::TABLE,

@@ -8,9 +8,9 @@ use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
 {
@@ -18,28 +18,30 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itReprices(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
-        $product = ProductTestFactory::new()->withId($id)->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $unitAmountInCents = ProductBuilder::sample('unitAmount')->cents;
+        $newUnitAmountInCents = $unitAmountInCents + 100;
+
+        $product = ProductBuilder::new()->withUnitAmountInCents($unitAmountInCents)->create();
         $this->store($product);
 
         // When
-        $this->dispatch(new RepriceProduct($id, 1_950));
+        $this->dispatch(new RepriceProduct($product->id->toString(), $newUnitAmountInCents));
 
         // Then
-        $result = $this->service(ProductFinderInterface::class)->ofId($id);
-        self::assertSame(1_950, $result->unitAmountInCents);
+        $result = $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
+        self::assertSame($newUnitAmountInCents, $result->unitAmountInCents);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = ProductId::generate()->toString();
-
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new RepriceProduct($id, 1_950));
+        $this->dispatch(new RepriceProduct(
+            ProductId::generate()->toString(),
+            ProductBuilder::sample('unitAmount')->cents,
+        ));
     }
 }

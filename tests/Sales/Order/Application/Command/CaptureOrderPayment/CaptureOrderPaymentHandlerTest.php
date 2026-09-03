@@ -8,9 +8,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Command\CaptureOrderPayment\CaptureOrderPayment;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -18,15 +18,16 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itCapturesWhenAuthorized(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->create();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CaptureOrderPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::CAPTURED, $result->status);
     }
 
@@ -34,8 +35,8 @@ final class CaptureOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCaptured(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $order = OrderBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($order, $orderPayment);
 
         // When

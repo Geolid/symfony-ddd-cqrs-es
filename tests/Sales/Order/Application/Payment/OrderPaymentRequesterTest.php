@@ -5,25 +5,24 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Payment;
 
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\PaymentGatewayInterface;
-use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\PaymentSession;
 use Sales\Order\Application\Query\GetOrderPaymentByReference\GetOrderPaymentByReference;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderPaymentRepositoryInterface;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Command\CommandBusInterface;
-use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
 {
-    private SpyPaymentGateway $paymentGateway;
+    private PaymentGatewayInterface&MockObject $paymentGateway;
 
     private OrderPaymentRequester $service;
 
@@ -31,7 +30,7 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->paymentGateway = new SpyPaymentGateway();
+        $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
         $this->service = new OrderPaymentRequester(
             $this->service(OrderPaymentRepositoryInterface::class),
             $this->service(OrderRepositoryInterface::class),
@@ -44,62 +43,48 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itRequestsWhenPlaced(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withTotalAmountInCents(4_200)->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
+        $reference = OrderPaymentBuilder::sample('reference')->value;
+        $checkoutUrl = OrderPaymentBuilder::sample('checkoutUrl');
+        $this->paymentGateway->expects(self::once())->method('requestPayment')
+            ->with($order->id->toString(), $order->totalAmountInCents, 'https://web.test/sales/orders', $order->billingAddress)
+            ->willReturn(new PaymentSession($reference, $checkoutUrl));
 
         // When
-        $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
+        $result = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame(SpyPaymentGateway::CHECKOUT_URL, $checkoutUrl);
-        self::assertSame($order->id->toString(), $this->paymentGateway->orderId);
-        self::assertSame(4_200, $this->paymentGateway->amountInCents);
-        self::assertSame('https://web.test/sales/orders', $this->paymentGateway->returnUrl);
-        self::assertNotNull($this->paymentGateway->billingAddress);
-        $billingAddress = $order->billingAddress;
-        self::assertSame(
-            [
-                'firstName' => $billingAddress->fullName->firstName,
-                'lastName' => $billingAddress->fullName->lastName,
-                'street' => $billingAddress->address->street,
-                'postalCode' => $billingAddress->address->postalCode,
-                'city' => $billingAddress->address->city,
-                'countryCode' => $billingAddress->address->countryCode->value,
-            ],
-            [
-                'firstName' => $this->paymentGateway->billingAddress->fullName->firstName,
-                'lastName' => $this->paymentGateway->billingAddress->fullName->lastName,
-                'street' => $this->paymentGateway->billingAddress->address->street,
-                'postalCode' => $this->paymentGateway->billingAddress->address->postalCode,
-                'city' => $this->paymentGateway->billingAddress->address->city,
-                'countryCode' => $this->paymentGateway->billingAddress->address->countryCode->value,
-            ],
-        );
+        self::assertSame($checkoutUrl, $result);
 
-        $orderPayment = $this->ask(new GetOrderPaymentByReference(SpyPaymentGateway::CHARGE_REFERENCE));
-        self::assertSame(SpyPaymentGateway::CHARGE_REFERENCE, $orderPayment->reference);
-        self::assertSame(SpyPaymentGateway::CHECKOUT_URL, $orderPayment->checkoutUrl);
+        $orderPayment = $this->ask(new GetOrderPaymentByReference($reference));
+        self::assertSame($reference, $orderPayment->reference);
+        self::assertSame($checkoutUrl, $orderPayment->checkoutUrl);
     }
 
     #[Test]
     public function itReturnsExistingWhenAlreadyRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $payment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withCheckoutUrl('https://fake-checkout.test/?ref=existing')->create();
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
+        $payment = $paymentBuilder->create();
         $this->store($order, $payment);
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
         $checkoutUrl = $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
 
         // Then
-        self::assertSame('https://fake-checkout.test/?ref=existing', $checkoutUrl);
-        self::assertNull($this->paymentGateway->orderId);
+        self::assertSame($paymentBuilder['checkoutUrl'], $checkoutUrl);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
+
         // Then
         $this->expectException(OrderNotFoundException::class);
 
@@ -111,51 +96,14 @@ final class OrderPaymentRequesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $order = OrderTestFactory::new()->cancelled()->create();
+        $order = OrderBuilder::new()->cancelled()->create();
         $this->store($order);
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // Then
         $this->expectException(OrderAlreadyCancelledException::class);
 
         // When
         $this->service->requestFor($order->id->toString(), 'https://web.test/sales/orders');
-    }
-}
-
-final class SpyPaymentGateway implements PaymentGatewayInterface
-{
-    public const string CHARGE_REFERENCE = 'GLBX-9F3K2M1P';
-
-    public const string CHECKOUT_URL = 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P';
-
-    public ?string $orderId = null;
-
-    public ?int $amountInCents = null;
-
-    public ?string $returnUrl = null;
-
-    public ?PostalAddress $billingAddress = null;
-
-    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
-    {
-        $this->orderId = $orderId;
-        $this->amountInCents = $amountInCents;
-        $this->returnUrl = $returnUrl;
-        $this->billingAddress = $billingAddress;
-
-        return new PaymentSession(self::CHARGE_REFERENCE, self::CHECKOUT_URL);
-    }
-
-    public function void(string $reference): void
-    {
-    }
-
-    public function refund(string $reference): void
-    {
-    }
-
-    public function checkStatus(string $reference): PaymentGatewayStatus
-    {
-        throw new \LogicException('Not needed by this test.');
     }
 }

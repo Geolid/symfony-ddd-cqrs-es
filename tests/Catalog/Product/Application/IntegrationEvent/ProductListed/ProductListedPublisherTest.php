@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Catalog\Tests\Product\Application\IntegrationEvent\ProductListed;
 
 use Catalog\Product\Application\IntegrationEvent\ProductListed\ProductListedIntegrationEvent;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ProductListedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $listedAt = Clock::get()->now();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->withListedAt($listedAt)->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
 
         // When
         $this->store($product);
@@ -25,8 +24,11 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ProductListedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
-        self::assertSame('Espresso cups, set of 6', $event->label);
-        self::assertSame(1_750, $event->unitAmountInCents);
-        self::assertSame($listedAt->format(\DateTimeImmutable::ATOM), $event->listedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame($builder['label']->value, $event->label);
+        self::assertSame($builder['unitAmount']->cents, $event->unitAmountInCents);
+        self::assertSame(
+            $builder['listedAt']->format(\DateTimeInterface::ATOM),
+            $event->listedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

@@ -7,16 +7,17 @@ namespace Sales\Tests\Order\Domain\ValueObject;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 
 final class OrderPaymentIdTest extends TestCase
 {
+    private const string ORDER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
+
     #[Test]
     public function itDerivesKnownId(): void
     {
         // When
-        $id = OrderPaymentId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b7');
+        $id = OrderPaymentId::forOrder(self::ORDER_ID);
 
         // Then
         self::assertSame('35a17cdc-4f76-5c72-93c7-4ec8000e0c08', $id->toString());
@@ -43,17 +44,30 @@ final class OrderPaymentIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $a = OrderPaymentId::forOrder(self::ORDER_ID);
+        $b = OrderPaymentId::forOrder(self::ORDER_ID);
 
         // When
-        $a = OrderPaymentId::forOrder($orderId);
-        $b = OrderPaymentId::forOrder($orderId);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(OrderPaymentId::forOrder(Uuid::uuid7()->toString())));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = OrderPaymentId::forOrder(self::ORDER_ID);
+        $b = OrderPaymentId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

@@ -9,39 +9,48 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfCustomer\CancelOrphanedOrdersOfCustomer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegrationTestCase
 {
+    private OrderFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(OrderFinderInterface::class);
+    }
+
     #[Test]
     public function itCancelsWhenCancellable(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $alreadyCancelled = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
-        $withCapturedPayment = OrderTestFactory::new()->withCustomerId($customerId)->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
-        $placed = OrderTestFactory::new()->withCustomerId($customerId)->create();
         $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
-        $this->store($alreadyCancelled, $withCapturedPayment, $orderPayment, $placed, $other);
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
+
+        $customerId = Uuid::uuid7()->toString();
+        $alreadyCancelled = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
+        $withCapturedPayment = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
+        $placed = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $this->store($other, $alreadyCancelled, $withCapturedPayment, $orderPayment, $placed);
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
-        $finder = $this->service(OrderFinderInterface::class);
         $statusesById = [];
-        foreach ($finder->byCustomer($customerId) as $result) {
+        foreach ($this->finder->byCustomer($customerId) as $result) {
             $statusesById[$result->id] = $result->status;
         }
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$placed->id->toString()]);
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$alreadyCancelled->id->toString()]);
         self::assertSame(OrderStatus::CANCELLED, $statusesById[$withCapturedPayment->id->toString()]);
 
-        $otherResults = iterator_to_array($finder->byCustomer($otherCustomerId), false);
+        $otherResults = iterator_to_array($this->finder->byCustomer($otherCustomerId), false);
         self::assertSame(OrderStatus::PLACED, $otherResults[0]->status);
     }
 
@@ -51,14 +60,14 @@ final class CancelOrphanedOrdersOfCustomerHandlerTest extends AbstractIntegratio
         // Given
         $customerId = Uuid::uuid7()->toString();
         $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderTestFactory::new()->withCustomerId($otherCustomerId)->create();
+        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
         $this->store($other);
 
         // When
         $this->dispatch(new CancelOrphanedOrdersOfCustomer($customerId));
 
         // Then
-        $results = iterator_to_array($this->service(OrderFinderInterface::class)->byCustomer($otherCustomerId), false);
+        $results = iterator_to_array($this->finder->byCustomer($otherCustomerId), false);
         self::assertSame(OrderStatus::PLACED, $results[0]->status);
     }
 }

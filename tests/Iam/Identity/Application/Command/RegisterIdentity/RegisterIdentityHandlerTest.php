@@ -9,7 +9,8 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
 {
@@ -18,12 +19,21 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = IdentityId::generate()->toString();
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new RegisterIdentity($id));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($id);
+        self::assertSame($id, $result->id);
         self::assertSame(IdentityStatus::ACTIVE, $result->status);
+        self::assertNull($result->reason);
+        self::assertSame(
+            $now->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertNull($result->suspendedAt);
+        self::assertNull($result->reactivatedAt);
     }
 }

@@ -8,37 +8,43 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Domain\Product;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Product\Domain\ValueObject\ProductId;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Shared\Application\Finder\PaginationMetadata;
+use Shared\Application\Finder\PaginatorInterface;
+use Shared\Tests\Support\PaginationTrait;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
-final class DbalProductFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<ProductResult>
+ */
+final class DbalProductFinderTest extends AbstractIterableFinderTestCase
 {
-    private ProductFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(ProductFinderInterface::class);
-    }
+    /** @use PaginationTrait<PaginatorInterface<ProductResult>> */
+    use PaginationTrait;
 
     #[Test]
     public function itGetsById(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->create();
+        $builder = ProductBuilder::new();
+        $product = $builder->create();
         $this->store($other, $product);
 
         // When
-        $result = $this->finder->ofId($product->id->toString());
+        $result = $this->finder()->ofId($product->id->toString());
 
         // Then
         self::assertSame($product->id->toString(), $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertSame($builder['label']->value, $result->label);
+        self::assertSame($builder['unitAmount']->cents, $result->unitAmountInCents);
+        self::assertSame(
+            $builder['listedAt']->format(\DateTimeInterface::ATOM),
+            $result->listedAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertNull($result->repricedAt);
     }
 
     #[Test]
@@ -48,122 +54,59 @@ final class DbalProductFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
-    }
-
-    #[Test]
-    public function itLists(): void
-    {
-        // Given
-        $other = ProductTestFactory::new()->withLabel('Saucer')->delisted()->create();
-        $product = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
-        $this->store($other, $product);
-
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertCount(1, $results);
-        $result = $results[0];
-        self::assertInstanceOf(ProductResult::class, $result);
-        self::assertSame($product->id->toString(), $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
-    }
-
-    #[Test]
-    public function itListsWhenEmpty(): void
-    {
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertEmpty($results);
-    }
-
-    #[Test]
-    public function itListsSortedByLabel(): void
-    {
-        // Given
-        $zebraMug = ProductTestFactory::new()->withLabel('Zebra mug')->create();
-        $appleCrate = ProductTestFactory::new()->withLabel('Apple crate')->create();
-        $this->store($zebraMug, $appleCrate);
-
-        // When
-        $results = iterator_to_array($this->finder->sortedByLabel());
-
-        // Then
-        self::assertSame(
-            ['Apple crate', 'Zebra mug'],
-            array_map(static fn (ProductResult $result): string => $result->label, $results),
-        );
+        $this->finder()->ofId(ProductId::generate()->toString());
     }
 
     #[Test]
     public function itPaginates(): void
     {
         // Given
-        $products = ProductTestFactory::new()->many(5)->create();
-        $this->store(...$products);
+        $finder = $this->finder();
+        $ids = $this->seed(5);
 
         // When
-        $firstPage = $this->finder->paginate(page: 1, itemsPerPage: 2);
-        $secondPage = $this->finder->paginate(page: 2, itemsPerPage: 2);
-        $lastPage = $this->finder->paginate(page: 3, itemsPerPage: 2);
-        $outOfBoundsPage = $this->finder->paginate(page: 4, itemsPerPage: 2);
-
-        // Then
-        self::assertSame($this->productIds($products[0], $products[1]), $this->resultIds($firstPage));
-        self::assertSame($this->productIds($products[2], $products[3]), $this->resultIds($secondPage));
-        self::assertSame($this->productIds($products[4]), $this->resultIds($lastPage));
-        self::assertCount(0, $outOfBoundsPage);
-
-        self::assertSame(5, $firstPage->totalItems());
-        self::assertSame(3, $firstPage->lastPage());
-        self::assertSame(1, $firstPage->currentPage());
-        self::assertSame(2, $firstPage->itemsPerPage());
-        self::assertSame(2, $secondPage->currentPage());
-        self::assertSame(3, $lastPage->currentPage());
-        self::assertSame(4, $outOfBoundsPage->currentPage());
+        $this->traversePages(
+            expectedIds: $ids,
+            pageSize: 2,
+            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
+            idsOf: $this->resultIds(...),
+            metadataOf: PaginationMetadata::fromPaginator(...),
+        );
     }
 
     #[Test]
     public function itPaginatesWhenEmpty(): void
     {
+        // Given
+        $finder = $this->finder();
+
         // When
-        $paginator = $this->finder->paginate(page: 1, itemsPerPage: 20);
+        $this->traverseEmptyPage(
+            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
+            idsOf: $this->resultIds(...),
+            metadataOf: PaginationMetadata::fromPaginator(...),
+            itemsPerPage: 20,
+        );
+    }
 
-        // Then
-        self::assertCount(0, $paginator);
-        self::assertSame(0, $paginator->totalItems());
-        self::assertSame(1, $paginator->lastPage());
+    protected function finder(): ProductFinderInterface
+    {
+        return $this->service(ProductFinderInterface::class);
     }
 
     /**
      * @return list<string>
      */
-    private function productIds(Product ...$products): array
+    protected function seed(int $count): array
     {
-        $ids = [];
-        foreach ($products as $product) {
-            $ids[] = $product->id->toString();
-        }
+        $products = ProductBuilder::new()->many($count)->create();
+        $this->store(...$products);
 
-        return $ids;
+        return array_map(static fn (Product $product): string => $product->id->toString(), $products);
     }
 
-    /**
-     * @param iterable<ProductResult> $results
-     *
-     * @return list<string>
-     */
-    private function resultIds(iterable $results): array
+    protected function idOf(object $result): string
     {
-        $ids = [];
-        foreach ($results as $result) {
-            $ids[] = $result->id;
-        }
-
-        return $ids;
+        return $result->id;
     }
 }

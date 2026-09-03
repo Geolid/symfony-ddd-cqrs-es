@@ -56,6 +56,10 @@
         <!-- TOOLS -->
         <testsuite name="tools">
             <directory>tools/PHPStan/Tests</directory>
+            <!-- Deliberately-invalid fixtures for custom rule tests, some named *Test.php to exercise the
+                 rule's own basename-pattern matching — otherwise PHPUnit's own discovery warns that they
+                 don't extend TestCase. -->
+            <exclude>tools/PHPStan/Tests/data</exclude>
         </testsuite>
     </testsuites>
 

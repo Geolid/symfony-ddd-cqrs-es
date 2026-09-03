@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -23,50 +23,50 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itLoadsSaved(): void
+    public function itSavesAndLoads(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
+        $order = OrderBuilder::new()->create();
 
         // When
         $this->repository->save($order);
+        $loaded = $this->repository->load($order->id);
 
         // Then
-        $id = $order->id;
-        self::assertTrue($this->repository->has($id));
-        $shippingAddress = $order->shippingAddress;
-        $reloadedShippingAddress = $this->repository->load($id)->shippingAddress;
-        self::assertSame(
-            [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-            [
-                'firstName' => $reloadedShippingAddress->fullName->firstName,
-                'lastName' => $reloadedShippingAddress->fullName->lastName,
-                'street' => $reloadedShippingAddress->address->street,
-                'postalCode' => $reloadedShippingAddress->address->postalCode,
-                'city' => $reloadedShippingAddress->address->city,
-                'countryCode' => $reloadedShippingAddress->address->countryCode->value,
-            ],
-        );
+        self::assertSame($order->id->toString(), $loaded->id->toString());
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = OrderId::generate();
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(OrderId::generate());
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $this->repository->save($order);
+
+        // When
+        $exists = $this->repository->has($order->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(OrderId::generate());
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

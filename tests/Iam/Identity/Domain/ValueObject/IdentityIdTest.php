@@ -43,17 +43,31 @@ final class IdentityIdTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $value = IdentityId::generate()->toString();
-
-        // When
         $a = IdentityId::fromString($value);
         $b = IdentityId::fromString($value);
 
+        // When
+        $equals = $a->equals($b);
+
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(IdentityId::generate()));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = IdentityId::generate();
+        $b = IdentityId::generate();
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

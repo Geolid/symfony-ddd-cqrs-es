@@ -45,9 +45,9 @@ final class ForbidDateTimeImmutableWithoutTimezoneRule implements Rule
         if ([] === $node->args) {
             return [
                 RuleErrorBuilder::message(\sprintf(
-                    'Forbidden: new \%s() without arguments implicitly uses the system clock. Use $this->clock->now() instead.',
+                    'Forbidden: new \%s() without arguments implicitly uses the system clock.',
                     $class,
-                ))->identifier('app.datetime.noArgs')->build(),
+                ))->tip('Use $this->clock->now() instead.')->identifier('app.datetime.noArgs')->build(),
             ];
         }
 
@@ -59,9 +59,11 @@ final class ForbidDateTimeImmutableWithoutTimezoneRule implements Rule
         if ($firstArg->value instanceof ArrayDimFetch && 1 === \count($node->args)) {
             return [
                 RuleErrorBuilder::message(\sprintf(
-                    'Forbidden: new \%s($row[...]) rehydrating a database column with no explicit \DateTimeZone argument implicitly uses the server\'s local timezone. Pass new \DateTimeZone(\'UTC\') as the second argument.',
+                    'Forbidden: new \%s($row[...]) rehydrating a database column with no explicit \DateTimeZone '
+                    .'argument implicitly uses the server\'s local timezone.',
                     $class,
-                ))->identifier('app.datetime.noTimezone')->build(),
+                ))->tip('Pass new \DateTimeZone(\'UTC\') as the second argument.')
+                    ->identifier('app.datetime.noTimezone')->build(),
             ];
         }
 
@@ -74,11 +76,11 @@ final class ForbidDateTimeImmutableWithoutTimezoneRule implements Rule
         if (!$this->hasExplicitTimezoneOffset($value)) {
             return [
                 RuleErrorBuilder::message(\sprintf(
-                    'Forbidden: new \%s(\'%s\') has no explicit timezone offset. Use ISO 8601 with offset, e.g. \'%sT00:00:00+00:00\'.',
+                    'Forbidden: new \%s(\'%s\') has no explicit timezone offset.',
                     $class,
                     $value,
-                    substr($value, 0, 10),
-                ))->identifier('app.datetime.noTimezone')->build(),
+                ))->tip(\sprintf('Use \DateTimeInterface::ATOM format, e.g. \'%sT00:00:00+00:00\'.', substr($value, 0, 10)))
+                    ->identifier('app.datetime.noTimezone')->build(),
             ];
         }
 

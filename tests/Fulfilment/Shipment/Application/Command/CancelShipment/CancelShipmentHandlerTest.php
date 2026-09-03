@@ -8,44 +8,49 @@ use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
 {
+    private ShipmentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(ShipmentFinderInterface::class);
+    }
+
     #[Test]
     public function itCancelsWhenPending(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new CancelShipment($shipment->id->toString()));
 
         // Then
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::CANCELLED, $results[0]->status);
-        self::assertNotNull($results[0]->cancelledAt);
+        $result = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::CANCELLED, $result->status);
+        self::assertNotNull($result->cancelledAt);
     }
 
     #[Test]
-    public function itRejectsCancellationWhenAlreadyDelivered(): void
+    public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new CancelShipment($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->finder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DELIVERED, $result->status);
     }
 
@@ -53,7 +58,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);

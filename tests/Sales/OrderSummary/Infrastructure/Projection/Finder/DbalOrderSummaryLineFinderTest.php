@@ -9,10 +9,10 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Application\Finder\OrderSummaryLine\OrderSummaryLineFinderInterface;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
 {
@@ -29,10 +29,10 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByOrderInPositionOrder(): void
     {
         // Given
-        $other = OrderTestFactory::new()->withLines([
+        $other = OrderBuilder::new()->withLines([
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gizmo'), Money::fromCents(2_000)), 5),
         ])->create();
-        $order = OrderTestFactory::new()->withLines([
+        $order = OrderBuilder::new()->withLines([
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
         ])->create();

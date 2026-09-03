@@ -22,7 +22,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class AcmeCarrierGatewayTest extends TestCase
 {
     #[Test]
-    public function itManifestsAndReadsCarrierReference(): void
+    public function itManifests(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -33,8 +33,11 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame('ACME-4Q7X2K9', $trackingReference);
-        self::assertSame('https://carrier.acme.test/shipments', $response->getRequestUrl());
-        self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
+
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://carrier.acme.test/shipments', $requestUrl);
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: '.$shipmentId, $headers);
         self::assertSame(
             [
                 'clientReferenceId' => $shipmentId,
@@ -46,12 +49,12 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
     #[Test]
-    public function itManifestsReturnAndReadsCarrierReference(): void
+    public function itManifestsReturn(): void
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
@@ -62,8 +65,11 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
-        self::assertSame('https://carrier.acme.test/returns', $response->getRequestUrl());
-        self::assertContains('Idempotency-Key: '.$shipmentId, $response->getRequestOptions()['headers']);
+
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://carrier.acme.test/returns', $requestUrl);
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: '.$shipmentId, $headers);
         self::assertSame(
             [
                 'clientReferenceId' => $shipmentId,
@@ -82,7 +88,7 @@ final class AcmeCarrierGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -133,7 +139,7 @@ final class AcmeCarrierGatewayTest extends TestCase
      */
     public static function provideUnreadableResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'tracking number absent' => [self::jsonResponse(['status' => 'booked'])];
         yield 'tracking number blank' => [self::jsonResponse(['trackingNumber' => ''])];
         yield 'tracking number of another type' => [self::jsonResponse(['trackingNumber' => 42])];
@@ -150,7 +156,8 @@ final class AcmeCarrierGatewayTest extends TestCase
 
         // Then
         self::assertSame(CarrierGatewayStatus::DISPATCHED, $status);
-        self::assertSame('https://carrier.acme.test/trackers/ACME-4Q7X2K9', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://carrier.acme.test/trackers/ACME-4Q7X2K9', $requestUrl);
     }
 
     #[Test]
@@ -192,7 +199,7 @@ final class AcmeCarrierGatewayTest extends TestCase
      */
     public static function provideUnreadableStatusResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'status absent' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9'])];
         yield 'status blank' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => ''])];
         yield 'status of another type' => [self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => 42])];
@@ -224,5 +231,16 @@ final class AcmeCarrierGatewayTest extends TestCase
                 'response_headers' => ['content-type' => 'application/json'],
             ],
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestBody(MockResponse $response): array
+    {
+        /** @var array<string, mixed> $body */
+        $body = json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR);
+
+        return $body;
     }
 }

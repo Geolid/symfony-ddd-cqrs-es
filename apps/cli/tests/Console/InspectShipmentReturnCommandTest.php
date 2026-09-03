@@ -7,7 +7,7 @@ namespace Cli\Tests\Console;
 use Cli\Tests\Support\AbstractCliTestCase;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;
 
@@ -26,7 +26,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itApprovesAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -36,14 +36,15 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('approved', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::RETURN_APPROVED, $this->finder->ofTrackingReference('ACME-4Q7X2K9')->status);
+        $result = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_APPROVED, $result->status);
     }
 
     #[Test]
     public function itRejectsAReceivedReturn(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -53,14 +54,15 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('rejected', $tester->getDisplay());
-        self::assertSame(ShipmentStatus::RETURN_REJECTED, $this->finder->ofTrackingReference('ACME-4Q7X2K9')->status);
+        $result = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_REJECTED, $result->status);
     }
 
     #[Test]
     public function itFailsWhenNeitherApproveNorRejectIsGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 
@@ -75,7 +77,7 @@ final class InspectShipmentReturnCommandTest extends AbstractCliTestCase
     public function itFailsWhenBothApproveAndRejectAreGiven(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
         $this->store($shipment);
         $tester = $this->tester();
 

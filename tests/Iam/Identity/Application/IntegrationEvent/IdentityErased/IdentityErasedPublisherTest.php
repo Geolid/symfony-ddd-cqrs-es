@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityErased;
 
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $erasedAt = Clock::get()->now();
-        $identity = IdentityTestFactory::new()->erased($erasedAt)->create();
+        $builder = IdentityBuilder::new()->erased();
+        $identity = $builder->create();
 
         // When
         $this->store($identity);
@@ -25,6 +24,9 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentityErasedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSame($erasedAt->format(\DateTimeImmutable::ATOM), $event->erasedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame(
+            $builder['erasedAt']->format(\DateTimeInterface::ATOM),
+            $event->erasedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

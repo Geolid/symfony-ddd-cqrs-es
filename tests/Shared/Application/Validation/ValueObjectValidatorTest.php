@@ -19,7 +19,7 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
 {
     #[Test]
     #[DataProvider('provideAcceptedValues')]
-    public function itAcceptsWhenTheValueObjectConstructsSuccessfully(mixed $value, ValidValueObject $constraint): void
+    public function itAccepts(mixed $value, ValidValueObject $constraint): void
     {
         // When
         $this->validator->validate($value, $constraint);
@@ -33,13 +33,13 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'a scalar value' => ['acceptable', new ValidValueObject(StubValue::class, method: 'fromString')];
-        yield 'an array spread into the constructor' => [['left', 'right'], new ValidValueObject(StubPair::class, method: 'of')];
+        yield 'scalar value' => ['acceptable', self::validValueObject()];
+        yield 'spread array' => [['left', 'right'], new ValidValueObject(StubValueObject::class, method: 'of')];
     }
 
     #[Test]
-    #[DataProvider('provideRefusals')]
-    public function itReportsWhyTheValueObjectRefusedTheValue(mixed $value, ValidValueObject $constraint, string $reason): void
+    #[DataProvider('provideRefusedValues')]
+    public function itRefuses(mixed $value, ValidValueObject $constraint, string $reason): void
     {
         // When
         $this->validator->validate($value, $constraint);
@@ -54,23 +54,38 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
     /**
      * @return iterable<string, array{mixed, ValidValueObject, string}>
      */
-    public static function provideRefusals(): iterable
+    public static function provideRefusedValues(): iterable
     {
-        yield 'a value the invariants reject' => ['refused', new ValidValueObject(StubValue::class, method: 'fromString'), 'Refused by the value object.'];
-        yield 'a value of the wrong type' => ['mistyped', new ValidValueObject(StubValue::class, method: 'fromString'), 'Expected a different type.'];
-        yield 'a value outside the accepted range' => ['out-of-range', new ValidValueObject(StubValue::class, method: 'fromString'), 'Outside the accepted range.'];
-        yield 'a spread array value' => [['same', 'same'], new ValidValueObject(StubPair::class, method: 'of'), 'Refused a matching pair.'];
+        yield 'refused' => ['refused', self::validValueObject(), 'Refused by the value object.'];
+        yield 'mistyped' => ['mistyped', self::validValueObject(), 'Expected a different type.'];
+        yield 'out of range' => ['out-of-range', self::validValueObject(), 'Outside the accepted range.'];
+        yield 'spread array' => [['same', 'same'], new ValidValueObject(StubValueObject::class, method: 'of'), 'Refused a matching pair.'];
     }
 
     #[Test]
     #[DataProvider('provideEmptyValues')]
-    public function itLeavesAnEmptyValueToTheConstraintThatOwnsIt(mixed $value): void
+    public function itAcceptsEmptyValue(mixed $value): void
     {
         // When
-        $this->validator->validate($value, new ValidValueObject(StubValue::class, method: 'fromString'));
+        $this->validator->validate($value, self::validValueObject());
 
         // Then
         $this->assertNoViolation();
+    }
+
+    #[Test]
+    public function itSkipsWhenPathAlreadyViolated(): void
+    {
+        // Given
+        $this->context->buildViolation('Already invalid.')->addViolation();
+
+        // When
+        $this->validator->validate('refused', self::validValueObject());
+
+        // Then
+        $violations = $this->context->getViolations();
+
+        self::assertCount(1, $violations);
     }
 
     /**
@@ -78,39 +93,36 @@ final class ValueObjectValidatorTest extends ConstraintValidatorTestCase
      */
     public static function provideEmptyValues(): iterable
     {
-        yield 'nothing' => [null];
-        yield 'an empty string' => [''];
-        yield 'an empty list' => [[]];
+        yield 'null' => [null];
+        yield 'empty string' => [''];
+        yield 'empty list' => [[]];
     }
 
     #[Test]
-    public function itCarriesTheGroupsAndPayloadItWasGiven(): void
+    public function itFailsWhenConstraintNotSupported(): void
     {
-        // When
-        $constraint = new ValidValueObject(StubValue::class, method: 'fromString', groups: ['registration'], payload: 'severity');
+        // Given
+        $constraint = new NotBlank();
 
-        // Then
-        self::assertSame(['registration'], $constraint->groups);
-        self::assertSame('severity', $constraint->payload);
-    }
-
-    #[Test]
-    public function itFailsOnAConstraintItDoesNotValidate(): void
-    {
         // Then
         $this->expectException(UnexpectedTypeException::class);
 
         // When
-        $this->validator->validate('acceptable', new NotBlank());
+        $this->validator->validate('acceptable', $constraint);
     }
 
     protected function createValidator(): ValueObjectValidator
     {
         return new ValueObjectValidator();
     }
+
+    private static function validValueObject(): ValidValueObject
+    {
+        return new ValidValueObject(StubValueObject::class, method: 'fromString');
+    }
 }
 
-final readonly class StubValue
+final readonly class StubValueObject
 {
     private function __construct()
     {
@@ -124,13 +136,6 @@ final readonly class StubValue
             'out-of-range' => throw new \ValueError('Outside the accepted range.'),
             default => new self(),
         };
-    }
-}
-
-final readonly class StubPair
-{
-    private function __construct()
-    {
     }
 
     public static function of(string $a, string $b): self

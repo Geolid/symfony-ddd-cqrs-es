@@ -8,10 +8,9 @@ use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundExc
 use Iam\Authentication\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationTestCase
 {
@@ -19,26 +18,23 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
     public function itGets(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
         $hasher = $this->service(PasswordHasherInterface::class);
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withLogin('ada.lovelace')
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($hasher)
-            ->create();
-        $this->store($identity, $credential);
+            ->withHasher($hasher);
+        $credential = $builder->create();
+        $this->store($credential);
 
         // When
-        $result = $this->ask(new GetPasswordCredentialByLogin('ada.lovelace'));
+        $result = $this->ask(new GetPasswordCredentialByLogin($builder['login']->value));
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($identity->id->toString(), $result->identityId);
-        self::assertSame('ada.lovelace', $result->login);
-        self::assertTrue($hasher->verify($result->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($builder['login']->value, $result->login);
         self::assertTrue($result->identityAuthenticatable);
+
+        self::assertTrue($hasher->verify($result->passwordHash, $builder['password']->value));
     }
 
     #[Test]
@@ -48,6 +44,6 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->ask(new GetPasswordCredentialByLogin('unknown.login'));
+        $this->ask(new GetPasswordCredentialByLogin(PasswordCredentialBuilder::sample('login')->value));
     }
 }

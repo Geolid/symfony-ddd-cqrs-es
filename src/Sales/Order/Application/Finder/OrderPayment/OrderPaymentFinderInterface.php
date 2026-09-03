@@ -16,6 +16,11 @@ interface OrderPaymentFinderInterface extends IterableFinderInterface
     /**
      * @throws OrderPaymentResultNotFoundException
      */
+    public function ofId(string $id): OrderPaymentResult;
+
+    /**
+     * @throws OrderPaymentResultNotFoundException
+     */
     public function ofReference(string $reference): OrderPaymentResult;
 
     public function byStatus(OrderPaymentStatus $status): static;

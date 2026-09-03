@@ -7,9 +7,9 @@ namespace Catalog\Tests\Product\Infrastructure\EventStore;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -26,28 +26,47 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $product = ProductTestFactory::new()->create();
+        $product = ProductBuilder::new()->create();
 
         // When
         $this->repository->save($product);
+        $loaded = $this->repository->load($product->id);
 
         // Then
-        $id = $product->id;
-        self::assertTrue($this->repository->has($id));
-        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
+        self::assertSame($product->id->toString(), $loaded->id->toString());
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = ProductId::generate();
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(ProductId::generate());
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $product = ProductBuilder::new()->create();
+        $this->repository->save($product);
+
+        // When
+        $exists = $this->repository->has($product->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(ProductId::generate());
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

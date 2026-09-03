@@ -20,7 +20,7 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
     public function itAccepts(): void
     {
         // When
-        $this->validateValue(['firstName' => 'Ada', 'lastName' => 'Lovelace']);
+        $this->validateValue(self::fullName());
 
         // Then
         $this->assertNoViolation();
@@ -46,18 +46,21 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'empty first name' => [['firstName' => '', 'lastName' => 'Lovelace']];
-        yield 'whitespace only first name' => [['firstName' => '   ', 'lastName' => 'Lovelace']];
-        yield 'empty last name' => [['firstName' => 'Ada', 'lastName' => '']];
-        yield 'first name too long' => [['firstName' => str_repeat('a', FullName::MAX_LENGTH + 1), 'lastName' => 'Lovelace']];
-        yield 'last name too long' => [['firstName' => 'Ada', 'lastName' => str_repeat('a', FullName::MAX_LENGTH + 1)]];
+        yield 'empty first name' => [self::fullName(['firstName' => ''])];
+        yield 'whitespace only first name' => [self::fullName(['firstName' => '   '])];
+        yield 'empty last name' => [self::fullName(['lastName' => ''])];
+        yield 'first name too long' => [self::fullName(['firstName' => str_repeat('a', FullName::MAX_LENGTH + 1)])];
+        yield 'last name too long' => [self::fullName(['lastName' => str_repeat('a', FullName::MAX_LENGTH + 1)])];
     }
 
     #[Test]
-    public function itDoesNotStopAtTheFirstInvalidField(): void
+    public function itRefusesMultipleFields(): void
     {
+        // Given
+        $value = self::fullName(['firstName' => '', 'lastName' => str_repeat('a', FullName::MAX_LENGTH + 1)]);
+
         // When
-        $this->validateValue(['firstName' => '', 'lastName' => str_repeat('a', FullName::MAX_LENGTH + 1)]);
+        $this->validateValue($value);
 
         // Then
         $this->assertViolationsCount(2);
@@ -65,10 +68,14 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
     }
 
     #[Test]
-    public function itRefusesWhenAFieldIsMissing(): void
+    public function itRefusesWhenFieldMissing(): void
     {
+        // Given
+        $fullName = self::fullName();
+        unset($fullName['lastName']);
+
         // When
-        $this->validateValue(['firstName' => 'Ada']);
+        $this->validateValue($fullName);
 
         // Then
         $this->assertViolationsCount(1);
@@ -80,16 +87,31 @@ final class ValidFullNameTest extends CompoundConstraintTestCase
         return new ValidFullName();
     }
 
+    /**
+     * @param array<string, string> $overrides
+     *
+     * @return array{firstName: string, lastName: string}
+     */
+    private static function fullName(array $overrides = []): array
+    {
+        return $overrides + [
+            'firstName' => 'John',
+            'lastName' => 'Doe',
+        ];
+    }
+
     private function collection(): Assert\Collection
     {
+        $normalizer = 'trim';
+
         return new Assert\Collection(
             fields: [
                 'firstName' => [
-                    new Assert\NotBlank(normalizer: 'trim'),
+                    new Assert\NotBlank(normalizer: $normalizer),
                     new Assert\Length(max: FullName::MAX_LENGTH),
                 ],
                 'lastName' => [
-                    new Assert\NotBlank(normalizer: 'trim'),
+                    new Assert\NotBlank(normalizer: $normalizer),
                     new Assert\Length(max: FullName::MAX_LENGTH),
                 ],
             ],

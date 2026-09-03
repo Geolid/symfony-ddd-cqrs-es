@@ -12,13 +12,23 @@ use Shared\Domain\ValueObject\Money;
 final class MoneyTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(int $cents): void
     {
         // When
-        $money = Money::fromCents(1_500);
+        $money = Money::fromCents($cents);
 
         // Then
-        self::assertSame(1_500, $money->cents);
+        self::assertSame($cents, $money->cents);
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'amount' => [1_500];
+        yield 'zero' => [0];
     }
 
     #[Test]
@@ -42,24 +52,35 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $a = Money::fromCents(1_500);
         $b = Money::fromCents(1_500);
-        $other = Money::fromCents(1_501);
 
         // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertTrue($equals);
     }
 
     #[Test]
-    public function itAddsAnotherAmount(): void
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Money::fromCents(1_500);
+        $b = Money::fromCents(1_499);
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
+    }
+
+    #[Test]
+    public function itAdds(): void
     {
         // When
         $sum = Money::fromCents(1_750)->plus(Money::fromCents(249));
@@ -69,7 +90,7 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
-    public function itMultipliesByAQuantity(): void
+    public function itMultipliesByQuantity(): void
     {
         // When
         $product = Money::fromCents(83)->times(3);

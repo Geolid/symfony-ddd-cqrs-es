@@ -12,10 +12,10 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
 use Sales\Order\Domain\ValueObject\OrderPaymentUniqueKey;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -32,21 +32,21 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsForOrder(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $id = OrderPaymentId::forOrder($orderId)->toString();
+        $paymentFactory = OrderPaymentBuilder::new();
+        $payment = $paymentFactory->create();
 
         // When
         $this->dispatch(new RequestOrderPayment(
-            id: $id,
-            orderId: $orderId,
-            amountInCents: 4_200,
-            reference: 'GLBX-9F3K2M1P',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            id: $payment->id->toString(),
+            orderId: $paymentFactory['orderId'],
+            amountInCents: $paymentFactory['amount']->cents,
+            reference: $paymentFactory['reference']->value,
+            checkoutUrl: $paymentFactory['checkoutUrl'],
         ));
 
         // Then
-        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
-        self::assertSame('GLBX-9F3K2M1P', $result->reference);
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
         self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
 
@@ -54,37 +54,31 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $id = OrderPaymentId::forOrder($orderId)->toString();
-        $payment = OrderPaymentTestFactory::new()
-            ->withOrderId($orderId)
-            ->withAmountInCents(4_200)
-            ->withReference('GLBX-9F3K2M1P')
-            ->withCheckoutUrl('https://fake-checkout.test/?ref=GLBX-9F3K2M1P')
-            ->create();
+        $paymentFactory = OrderPaymentBuilder::new();
+        $payment = $paymentFactory->create();
         $this->store($payment);
 
         // When
         $this->dispatch(new RequestOrderPayment(
-            id: $id,
-            orderId: $orderId,
-            amountInCents: 4_200,
-            reference: 'GLBX-OTHER',
-            checkoutUrl: 'https://fake-checkout.test/?ref=GLBX-OTHER',
+            id: $payment->id->toString(),
+            orderId: $paymentFactory['orderId'],
+            amountInCents: OrderPaymentBuilder::sample('amount')->cents,
+            reference: OrderPaymentBuilder::sample('reference')->value,
+            checkoutUrl: OrderPaymentBuilder::sample('checkoutUrl'),
         ));
 
         // Then
-        $result = $this->finder->ofReference('GLBX-9F3K2M1P');
-        self::assertSame('GLBX-9F3K2M1P', $result->reference);
+        $result = $this->finder->ofReference($paymentFactory['reference']->value);
+        self::assertSame($paymentFactory['reference']->value, $result->reference);
     }
 
     #[Test]
     public function itFailsWhenReferenceAlreadyTaken(): void
     {
         // Given
-        $reference = 'GLBX-9F3K2M1P';
+        $orderId = OrderPaymentBuilder::sample('orderId');
+        $reference = OrderPaymentBuilder::sample('reference')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(OrderPaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
-        $orderId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(PaymentReferenceAlreadyTakenException::class);
@@ -95,7 +89,7 @@ final class RequestOrderPaymentHandlerTest extends AbstractIntegrationTestCase
             orderId: $orderId,
             amountInCents: 4_200,
             reference: $reference,
-            checkoutUrl: \sprintf('https://fake-checkout.test/?ref=%s', $reference),
+            checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));
     }
 }

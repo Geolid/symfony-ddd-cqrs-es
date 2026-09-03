@@ -19,6 +19,15 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFinderInterface
 {
+    public function ofId(string $id): ShipmentResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw ShipmentResultNotFoundException::forId($id);
+    }
+
     public function ofTrackingReference(string $trackingReference): ShipmentResult
     {
         return $this->filter(

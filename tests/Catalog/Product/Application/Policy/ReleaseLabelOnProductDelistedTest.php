@@ -6,23 +6,23 @@ namespace Catalog\Tests\Product\Application\Policy;
 
 use Catalog\Product\Application\Policy\ReleaseLabelOnProductDelisted;
 use Catalog\Product\Domain\Event\ProductDelisted;
+use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLabelOnProductDelisted $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(ReleaseLabelOnProductDelisted::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -30,13 +30,19 @@ final class ReleaseLabelOnProductDelistedTest extends AbstractIntegrationTestCas
     public function itReleases(): void
     {
         // Given
-        $productId = Uuid::uuid7()->toString();
-        $this->uniqueValues->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', $productId);
+        $productId = ProductId::generate()->toString();
+        $label = ProductBuilder::sample('label')->value;
+        $labelKey = UniqueKey::for(ProductUniqueKey::LABEL);
+        $this->uniqueValues->reserve($labelKey, $label, $productId);
+
+        $otherLabel = ProductBuilder::sample('label')->value;
+        $this->uniqueValues->reserve($labelKey, $otherLabel, ProductId::generate()->toString());
 
         // When
-        ($this->policy)(new ProductDelisted($productId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(ReleaseLabelOnProductDelisted::class, new ProductDelisted($productId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6'));
+        self::assertFalse($this->uniqueValues->exists($labelKey, $label));
+        self::assertTrue($this->uniqueValues->exists($labelKey, $otherLabel));
     }
 }

@@ -7,9 +7,9 @@ namespace Iam\Tests\Identity\Infrastructure\EventStore;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -26,28 +26,47 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
 
         // When
         $this->repository->save($identity);
+        $loaded = $this->repository->load($identity->id);
 
         // Then
-        $id = $identity->id;
-        self::assertTrue($this->repository->has($id));
-        self::assertSame($id->toString(), $this->repository->load($id)->id->toString());
+        self::assertSame($identity->id->toString(), $loaded->id->toString());
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = IdentityId::generate();
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(IdentityId::generate());
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $identity = IdentityBuilder::new()->create();
+        $this->repository->save($identity);
+
+        // When
+        $exists = $this->repository->has($identity->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(IdentityId::generate());
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

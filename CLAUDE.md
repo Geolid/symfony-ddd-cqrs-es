@@ -8,7 +8,9 @@ e-commerce flow: customers, orders, shipping, catalog, identity.
 - PHP, Symfony — versions: `composer.json`
 - DDD, CQRS, Event Sourcing (`patchlevel`), Onion layering, Ports & Adapters (driving/driven), Delivery Mechanism (DM)
 
-## Commands (Castor = Docker proxy)
+## Commands
+
+Castor = Docker proxy, reads .env files and inline shell vars.
 
 ```bash
 castor list                                        # tasks

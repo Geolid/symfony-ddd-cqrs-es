@@ -9,11 +9,9 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
 {
@@ -21,15 +19,14 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsReturnWhenDelivered(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
         $this->dispatch(new RequestShipmentReturn($shipment->id->toString()));
 
         // Then
-        $result = $this->service(ShipmentFinderInterface::class)->ofTrackingReference($trackingReference);
+        $result = $this->service(ShipmentFinderInterface::class)->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::RETURN_REQUESTED, $result->status);
     }
 
@@ -37,7 +34,7 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = ShipmentBuilder::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
@@ -50,8 +47,7 @@ final class RequestShipmentReturnHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotDelivered(): void
     {
         // Given
-        $trackingReference = 'ACME-4Q7X2K9';
-        $shipment = ShipmentTestFactory::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
         // Then

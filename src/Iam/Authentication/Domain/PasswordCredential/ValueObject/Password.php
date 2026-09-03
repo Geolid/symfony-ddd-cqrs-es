@@ -8,7 +8,7 @@ use Webmozart\Assert\Assert;
 
 final readonly class Password
 {
-    public const int MIN_LENGTH = 12;
+    public const int MIN_LENGTH = 16;
     public const int MAX_LENGTH = 4096;
 
     public string $value;

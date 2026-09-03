@@ -10,10 +10,10 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryLineProjector;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{position: int, label: string, quantity: int, unit_amount_in_cents: int}
@@ -24,7 +24,7 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnOrderPlaced(): void
     {
         // Given
-        $order = OrderTestFactory::new()->withLines([
+        $order = OrderBuilder::new()->withLines([
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Widget'), Money::fromCents(1_000)), 2),
             OrderLine::of(Product::of(Uuid::uuid7()->toString(), Label::fromString('Gadget'), Money::fromCents(3_000)), 1),
         ])->create();
@@ -48,8 +48,10 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
      */
     private function fetchRows(string $orderId): array
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var list<Row> */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAllAssociative(
+        return $connection->fetchAllAssociative(
             \sprintf(
                 'SELECT position, label, quantity, unit_amount_in_cents FROM %s WHERE order_id = :orderId ORDER BY position ASC',
                 DbalOrderSummaryLineProjector::TABLE,

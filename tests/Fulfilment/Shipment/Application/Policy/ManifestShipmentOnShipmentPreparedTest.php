@@ -5,88 +5,81 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipment\Application\Policy\ManifestShipmentOnShipmentPrepared;
-use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
+use PHPUnit\Framework\MockObject\MockObject;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ManifestShipmentOnShipmentPreparedTest extends AbstractIntegrationTestCase
 {
-    private SpyCarrierGateway $carrier;
+    private CarrierGatewayInterface&MockObject $carrier;
 
-    private ManifestShipmentOnShipmentPrepared $policy;
+    private CommandBusInterface&MockObject $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->carrier = new SpyCarrierGateway();
-        self::getContainer()->set(CarrierGatewayInterface::class, $this->carrier);
+        $this->carrier = $this->createMock(CarrierGatewayInterface::class);
+        $this->replace(CarrierGatewayInterface::class, $this->carrier);
 
-        $this->policy = $this->service(ManifestShipmentOnShipmentPrepared::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->replace(CommandBusInterface::class, $this->commandBus);
     }
 
     #[Test]
     public function itManifests(): void
     {
         // Given
-        $shippingAddress = PostalAddress::of(
-            FullName::of('Ada', 'Lovelace'),
-            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
-        );
-        $shipment = ShipmentTestFactory::new()->withShippingAddress($shippingAddress)->prepared()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
 
+        $deliveryAddress = null;
+        $trackingReference = ShipmentBuilder::sample('trackingReference')->value;
+        $this->carrier->expects(self::once())->method('manifest')
+            ->willReturnCallback(static function (string $shipmentId, PostalAddress $address) use (&$deliveryAddress, $trackingReference): string {
+                $deliveryAddress = $address;
+
+                return $trackingReference;
+            });
+
+        $dispatched = null;
+        $this->commandBus->expects(self::once())->method('dispatch')
+            ->willReturnCallback(static function (CommandInterface $command) use (&$dispatched): void {
+                $dispatched = $command;
+            });
+
         // When
-        ($this->policy)(new ShipmentPrepared($shipment->id->toString(), new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(ManifestShipmentOnShipmentPrepared::class, new ShipmentPrepared($shipment->id->toString(), Clock::get()->now()));
 
         // Then
-        self::assertNotNull($this->carrier->deliveryAddress);
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $this->carrier->deliveryAddress->fullName->firstName,
-                'lastName' => $this->carrier->deliveryAddress->fullName->lastName,
-                'street' => $this->carrier->deliveryAddress->address->street,
-                'postalCode' => $this->carrier->deliveryAddress->address->postalCode,
-                'city' => $this->carrier->deliveryAddress->address->city,
-                'countryCode' => $this->carrier->deliveryAddress->address->countryCode->value,
-            ],
-        );
-        $results = iterator_to_array($this->service(ShipmentFinderInterface::class), false);
-        self::assertCount(1, $results);
-        self::assertSame(ShipmentStatus::MANIFESTED, $results[0]->status);
-        self::assertSame(SpyCarrierGateway::TRACKING_REFERENCE, $results[0]->trackingReference);
-    }
-}
+        self::assertNotNull($deliveryAddress);
+        self::assertSame($this->rawAddress($shipment->shippingAddress), $this->rawAddress($deliveryAddress));
 
-final class SpyCarrierGateway implements CarrierGatewayInterface
-{
-    public const string TRACKING_REFERENCE = 'ACME-4Q7X2K9';
-
-    public ?PostalAddress $deliveryAddress = null;
-
-    public function manifest(string $shipmentId, PostalAddress $deliveryAddress): string
-    {
-        $this->deliveryAddress = $deliveryAddress;
-
-        return self::TRACKING_REFERENCE;
+        self::assertInstanceOf(ManifestShipment::class, $dispatched);
+        self::assertSame($shipment->id->toString(), $dispatched->id);
+        self::assertSame($trackingReference, $dispatched->trackingReference);
     }
 
-    public function manifestReturn(string $shipmentId, PostalAddress $pickupAddress): string
+    /**
+     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     */
+    private function rawAddress(PostalAddress $address): array
     {
-        throw new \LogicException('Not exercised by this test.');
-    }
-
-    public function checkStatus(string $reference): CarrierGatewayStatus
-    {
-        throw new \LogicException('Not exercised by this test.');
+        return [
+            'firstName' => $address->fullName->firstName,
+            'lastName' => $address->fullName->lastName,
+            'street' => $address->address->street,
+            'postalCode' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'countryCode' => $address->address->countryCode->value,
+        ];
     }
 }

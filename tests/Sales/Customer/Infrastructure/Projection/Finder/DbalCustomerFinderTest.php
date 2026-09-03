@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Exception\CustomerResultNotFoundException;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 {
@@ -26,8 +26,9 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = CustomerTestFactory::new()->withEmail('other@example.com')->create();
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->create();
+        $other = CustomerBuilder::new()->create();
+        $builder = CustomerBuilder::new();
+        $customer = $builder->create();
         $this->store($other, $customer);
 
         // When
@@ -35,7 +36,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($customer->id->toString(), $result->id);
-        self::assertSame('buyer@example.com', $result->email);
+        self::assertSame($builder['email']->value, $result->email);
     }
 
     #[Test]

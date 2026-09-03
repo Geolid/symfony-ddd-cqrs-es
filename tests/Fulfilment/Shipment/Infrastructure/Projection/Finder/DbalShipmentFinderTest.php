@@ -9,10 +9,10 @@ use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Shipment;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
@@ -27,21 +27,49 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itGetsById(): void
+    {
+        // Given
+        $other = ShipmentBuilder::new()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($other, $shipment);
+
+        // When
+        $result = $this->finder->ofId($shipment->id->toString());
+
+        // Then
+        self::assertSame($shipment->id->toString(), $result->id);
+        self::assertSame($shipment->orderId, $result->orderId);
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+    }
+
+    #[Test]
+    public function itThrowsWhenIdNotFound(): void
+    {
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
     public function itGetsByTrackingReference(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->prepared()->manifested('ACME-OTHER')->dispatched()->create();
-        $tracked = ShipmentTestFactory::new()->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
+        $trackedFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
+        $tracked = $trackedFactory->create();
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofTrackingReference('ACME-4Q7X2K9');
+        $result = $this->finder->ofTrackingReference($trackedFactory['trackingReference']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame('ACME-4Q7X2K9', $result->trackingReference);
+        self::assertSame($trackedFactory['trackingReference']->value, $result->trackingReference);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
@@ -53,39 +81,39 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofTrackingReference('ACME-NEVER-ISSUED');
+        $this->finder->ofTrackingReference(ShipmentBuilder::sample('trackingReference')->value);
     }
 
     #[Test]
     public function itGetsByReturnTrackingReference(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()
+        $other = ShipmentBuilder::new()
             ->prepared()
-            ->manifested('ACME-OTHER')
+            ->manifested()
             ->dispatched()
             ->delivered()
             ->returnRequested()
-            ->returnManifested('ACME-RETURN-OTHER')
+            ->returnManifested()
             ->create();
-        $tracked = ShipmentTestFactory::new()
+        $trackedFactory = ShipmentBuilder::new()
             ->prepared()
-            ->manifested('ACME-4Q7X2K9')
+            ->manifested()
             ->dispatched()
             ->delivered()
             ->returnRequested()
-            ->returnManifested('ACME-RETURN-1')
-            ->create();
+            ->returnManifested();
+        $tracked = $trackedFactory->create();
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofReturnTrackingReference('ACME-RETURN-1');
+        $result = $this->finder->ofReturnTrackingReference($trackedFactory['returnTrackingReference']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame('ACME-RETURN-1', $result->returnTrackingReference);
+        self::assertSame($trackedFactory['returnTrackingReference']->value, $result->returnTrackingReference);
     }
 
     #[Test]
@@ -95,16 +123,16 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofReturnTrackingReference('ACME-RETURN-NEVER-ISSUED');
+        $this->finder->ofReturnTrackingReference(ShipmentBuilder::sample('returnTrackingReference')->value);
     }
 
     #[Test]
     public function itFiltersByStatus(): void
     {
         // Given
-        $other = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
-        $manifested = ShipmentTestFactory::new()->prepared()->manifested()->create();
-        $dispatched = ShipmentTestFactory::new()->prepared()->manifested()->dispatched()->create();
+        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $manifested = ShipmentBuilder::new()->prepared()->manifested()->create();
+        $dispatched = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
         $this->store($other, $manifested, $dispatched);
 
         // When
@@ -123,15 +151,15 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
-        $notManifested = ShipmentTestFactory::new()->prepared()->create();
-        $staleManifested = ShipmentTestFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
-        $staleDispatched = ShipmentTestFactory::new()
+        $freshManifested = ShipmentBuilder::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
+        $notManifested = ShipmentBuilder::new()->prepared()->create();
+        $staleManifested = ShipmentBuilder::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
+        $staleDispatched = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now->modify('-1 day'))
             ->create();
-        $staleReturnManifested = ShipmentTestFactory::new()
+        $staleReturnManifested = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-5 days'))
             ->dispatched($now->modify('-4 days'))
@@ -139,7 +167,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             ->returnRequested($now->modify('-2 days'))
             ->returnManifested(manifestedAt: $now->modify('-1 day'))
             ->create();
-        $staleReturnDispatched = ShipmentTestFactory::new()
+        $staleReturnDispatched = ShipmentBuilder::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-6 days'))
             ->dispatched($now->modify('-5 days'))
@@ -166,8 +194,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $other = ShipmentTestFactory::new()->create();
-        $shipment = ShipmentTestFactory::new()->withCustomerId($customerId)->create();
+        $other = ShipmentBuilder::new()->create();
+        $shipment = ShipmentBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $shipment);
 
         // When
@@ -182,7 +210,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $shipments = ShipmentTestFactory::new()->many(5)->create();
+        $shipments = ShipmentBuilder::new()->many(5)->create();
         $this->store(...$shipments);
 
         // When

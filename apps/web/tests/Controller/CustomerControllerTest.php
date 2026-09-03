@@ -9,13 +9,13 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Sales\Customer\Domain\ValueObject\CustomerUniqueKey;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -36,7 +36,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
+        $request = $client->getRequest();
+        $requestLocale = $request->getLocale();
+        self::assertSame($locale, $requestLocale);
         self::assertSelectorExists('[data-testid="register-customer-form"]');
     }
 
@@ -121,7 +123,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
             \sprintf('%s[login]', $prefix) => 'buyer-7',
             \sprintf('%s[email]', $prefix) => 'buyer-7@example.com',
             \sprintf('%s[password][first]', $prefix) => 'MyStr0ngP@ssw0rd123!',
-            \sprintf('%s[password][second]', $prefix) => 'Xk9$mQ2vLp7&zR4w',
+            \sprintf('%s[password][second]', $prefix) => 'Marmoset-42-Zephyr!',
         ]);
         $client->submit($form);
 
@@ -138,7 +140,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // When
         $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6@example.com', 'MyStr0ngP@ssw0rd123!');
-        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'Xk9$mQ2vLp7&zR4w');
+        $this->registerCustomer($client, 'buyer-6-retry', 'buyer-6-again@example.com', 'Marmoset-42-Zephyr!');
 
         // Then
         self::assertResponseRedirects($this->path('security_login'));
@@ -155,8 +157,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-3@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -167,9 +169,11 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseRedirects($this->path('_logout_main'));
-        $session = $client->getRequest()->getSession();
+        $request = $client->getRequest();
+        $session = $request->getSession();
         \assert($session instanceof FlashBagAwareSessionInterface);
-        self::assertSame(['sales.customer.flash.erased'], $session->getFlashBag()->get('success'));
+        $successFlashes = $session->getFlashBag()->get('success');
+        self::assertSame(['sales.customer.flash.erased'], $successFlashes);
 
         self::expectException(IdentityResultNotFoundException::class);
         $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
@@ -180,8 +184,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-4@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -198,8 +202,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-locale@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity);
 
@@ -208,7 +212,9 @@ final class CustomerControllerTest extends AbstractWebTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertSame($locale, $client->getRequest()->getLocale());
+        $request = $client->getRequest();
+        $requestLocale = $request->getLocale();
+        self::assertSame($locale, $requestLocale);
         self::assertSelectorExists('[data-testid="change-password-form"]');
     }
 
@@ -226,8 +232,8 @@ final class CustomerControllerTest extends AbstractWebTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityTestFactory::new()->create();
-        $customer = CustomerTestFactory::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->create();
+        $identity = IdentityBuilder::new()->create();
+        $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-5@example.com')->create();
         $this->store($identity, $customer);
         $this->loginAs($client, $identity, 'buyer-5@example.com');
 
@@ -235,7 +241,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         $crawler = $client->request('GET', $this->path('sales_customer_profile'));
         $form = $crawler->filter('[data-testid="change-password-form"]')->form();
         $prefix = $form->getName();
-        $form->setValues([\sprintf('%s[password]', $prefix) => 'Xk9$mQ2vLp7&zR4w']);
+        $form->setValues([\sprintf('%s[password]', $prefix) => 'Marmoset-42-Zephyr!']);
         $client->submit($form);
 
         // Then
@@ -244,7 +250,7 @@ final class CustomerControllerTest extends AbstractWebTestCase
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.customer.flash.password_changed');
 
         $credential = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
-        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Xk9$mQ2vLp7&zR4w'));
+        self::assertTrue($this->service(PasswordHasherInterface::class)->verify($credential->passwordHash, 'Marmoset-42-Zephyr!'));
     }
 
     private function registerCustomer(KernelBrowser $client, string $login, string $email, string $password): void

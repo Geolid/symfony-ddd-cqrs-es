@@ -26,9 +26,11 @@ final class ApiKeySecurityOpenApiFactoryTest extends AbstractApiTestCase
         // Then
         $schemes = $openApi->getComponents()->getSecuritySchemes();
         self::assertNotNull($schemes);
-        self::assertArrayHasKey('OAuth2', $schemes->getArrayCopy());
-        self::assertArrayHasKey('ApiKey', $schemes->getArrayCopy());
-        self::assertSame([['ApiKey' => []]], $openApi->getSecurity());
+        $schemeNames = $schemes->getArrayCopy();
+        self::assertArrayHasKey('OAuth2', $schemeNames);
+        self::assertArrayHasKey('ApiKey', $schemeNames);
+        $security = $openApi->getSecurity();
+        self::assertSame([['ApiKey' => []]], $security);
     }
 }
 

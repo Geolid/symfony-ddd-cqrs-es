@@ -10,77 +10,66 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
 final class ErasedFieldSentinelTest extends TestCase
 {
+    private const string SUBJECT_ID = '10000000-7000-0000-0000-000000000001';
+
     #[Test]
-    public function itReturnsAGenericFallbackUnchanged(): void
+    public function itReturnsFallback(): void
     {
         // Given
         $sentinel = new ErasedFieldSentinel('erased');
 
         // When
-        $result = $sentinel('10000000-7000-0000-0000-000000000001');
+        $result = $sentinel(self::SUBJECT_ID);
 
         // Then
         self::assertSame('erased', $result);
     }
 
     #[Test]
-    public function itReturnsANonStringFallbackUnchanged(): void
+    public function itReturnsNonStringFallback(): void
     {
         // Given
-        $sentinel = new ErasedFieldSentinel(['firstName' => 'erased', 'postalCode' => '00000']);
+        $fallback = ['static' => 'erased', 'code' => '00000'];
+        $sentinel = new ErasedFieldSentinel($fallback);
 
         // When
-        $result = $sentinel('10000000-7000-0000-0000-000000000001');
+        $result = $sentinel(self::SUBJECT_ID);
 
         // Then
-        self::assertSame(['firstName' => 'erased', 'postalCode' => '00000'], $result);
+        self::assertSame($fallback, $result);
     }
 
     #[Test]
-    public function itHashesTheSubjectIdIntoATemplatedFallback(): void
+    public function itHashesSubjectId(): void
     {
         // Given
-        $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
+        $sentinel = new ErasedFieldSentinel('%s-erased');
 
         // When
-        $first = $sentinel('10000000-7000-0000-0000-000000000001');
-        $second = $sentinel('10000000-7000-0000-0000-000000000002');
+        $erased = $sentinel(self::SUBJECT_ID);
+        $anotherErased = $sentinel('10000000-7000-0000-0000-000000000002');
 
         // Then
-        self::assertIsString($first);
-        self::assertMatchesRegularExpression('/^[0-9a-f]{8}@erased\.invalid$/', $first);
-        self::assertNotSame($first, $second);
+        self::assertSame('f0704062-erased', $erased);
+        self::assertNotSame($erased, $anotherErased);
     }
 
     #[Test]
-    public function itDerivesTheFallbackFromTheFirst8CharactersOfTheSubjectIdHash(): void
-    {
-        // Given
-        $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
-
-        // When
-        $result = $sentinel('10000000-7000-0000-0000-000000000001');
-
-        // Then
-        self::assertSame('f0704062@erased.invalid', $result);
-    }
-
-    #[Test]
-    public function itResolvesANestedSentinelWithinAnArrayFallback(): void
+    public function itResolvesNestedSentinel(): void
     {
         // Given
         $sentinel = new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'email' => new ErasedFieldSentinel('%s@erased.invalid'),
+            'static' => 'erased',
+            'hashed' => new ErasedFieldSentinel('%s-erased'),
         ]);
 
         // When
-        $result = $sentinel('10000000-7000-0000-0000-000000000001');
+        $result = $sentinel(self::SUBJECT_ID);
 
         // Then
         self::assertIsArray($result);
-        self::assertSame('erased', $result['firstName']);
-        self::assertIsString($result['email']);
-        self::assertMatchesRegularExpression('/^[0-9a-f]{8}@erased\.invalid$/', $result['email']);
+        self::assertSame('erased', $result['static']);
+        self::assertIsString($result['hashed']);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{8}-erased$/', $result['hashed']);
     }
 }

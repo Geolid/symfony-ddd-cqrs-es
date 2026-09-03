@@ -7,69 +7,84 @@ namespace Sales\Tests\Order\Application\Payment\Reconciliation;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
+use Sales\Order\Application\Payment\PaymentGatewayInterface;
 use Sales\Order\Application\Payment\PaymentGatewayStatus;
 use Sales\Order\Application\Payment\Reconciliation\RequestedOrderPaymentReconciler;
-use Sales\Tests\Order\Support\Doubles\StubPaymentGateway;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Command\CommandBusInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestedOrderPaymentReconcilerTest extends AbstractIntegrationTestCase
 {
     private OrderPaymentFinderInterface $orderPaymentFinder;
+
+    private CommandBusInterface $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->orderPaymentFinder = $this->service(OrderPaymentFinderInterface::class);
+        $this->commandBus = $this->service(CommandBusInterface::class);
     }
 
     #[Test]
     public function itReconcilesWhenAuthorized(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-AUTH0001')->create();
+        $paymentBuilder = OrderPaymentBuilder::new();
+        $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-AUTH0001' => PaymentGatewayStatus::AUTHORIZED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::AUTHORIZED);
+        $reconciler = new RequestedOrderPaymentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-AUTH0001');
+        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(OrderPaymentStatus::AUTHORIZED, $this->orderPaymentFinder->ofReference('GLBX-AUTH0001')->status);
+        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $result->status);
     }
 
     #[Test]
     public function itReconcilesWhenFailed(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-FAIL0001')->create();
+        $paymentBuilder = OrderPaymentBuilder::new();
+        $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-FAIL0001' => PaymentGatewayStatus::DECLINED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::DECLINED);
+        $reconciler = new RequestedOrderPaymentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-FAIL0001');
+        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(OrderPaymentStatus::FAILED, $this->orderPaymentFinder->ofReference('GLBX-FAIL0001')->status);
+        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(OrderPaymentStatus::FAILED, $result->status);
     }
 
     #[Test]
     public function itIgnoresWhenStillPending(): void
     {
         // Given
-        $orderPayment = OrderPaymentTestFactory::new()->withReference('GLBX-PEND0001')->create();
+        $paymentBuilder = OrderPaymentBuilder::new();
+        $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $reconciler = new RequestedOrderPaymentReconciler(new StubPaymentGateway(['GLBX-PEND0001' => PaymentGatewayStatus::REQUESTED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(PaymentGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::REQUESTED);
+        $reconciler = new RequestedOrderPaymentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), 'GLBX-PEND0001');
+        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
 
         // Then
         self::assertFalse($reconciled);
-        self::assertSame(OrderPaymentStatus::REQUESTED, $this->orderPaymentFinder->ofReference('GLBX-PEND0001')->status);
+        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(OrderPaymentStatus::REQUESTED, $result->status);
     }
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
 {
@@ -25,8 +25,10 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
     public function itFiltersByIds(): void
     {
         // Given
-        $other = ProductTestFactory::new()->withLabel('Untouched')->withUnitAmountInCents(500)->create();
-        $cups = ProductTestFactory::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $other = ProductBuilder::new()->create();
+        $label = ProductBuilder::sample('label');
+        $unitAmount = ProductBuilder::sample('unitAmount');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitAmountInCents($unitAmount->cents)->create();
         $this->store($other, $cups);
 
         // When
@@ -35,7 +37,7 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cups->id->toString(), $results[0]->productId);
-        self::assertSame('Espresso cups, set of 6', $results[0]->label);
-        self::assertSame(1_750, $results[0]->unitAmountInCents);
+        self::assertSame($label->value, $results[0]->label);
+        self::assertSame($unitAmount->cents, $results[0]->unitAmountInCents);
     }
 }

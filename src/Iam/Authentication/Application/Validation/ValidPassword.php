@@ -18,12 +18,14 @@ final class ValidPassword extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new Assert\NotBlank(),
-            new Assert\Type('string'),
-            new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH),
-            new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE),
-            new NotCompromisedPassword(skipOnError: true),
-            new ValidValueObject(Password::class, method: 'fromString'),
+            new Assert\Sequentially([
+                new Assert\NotBlank(),
+                new Assert\Type('string'),
+                new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH),
+                new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE),
+                new NotCompromisedPassword(skipOnError: true),
+                new ValidValueObject(Password::class, method: 'fromString'),
+            ]),
         ];
     }
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Query\ListShipmentsPastReconciliationThreshold;
 
 use Fulfilment\Shipment\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThreshold;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ListShipmentsPastReconciliationThresholdHandlerTest extends AbstractIntegrationTestCase
@@ -17,14 +17,14 @@ final class ListShipmentsPastReconciliationThresholdHandlerTest extends Abstract
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ShipmentTestFactory::new()->prepared()
+        $fresh = ShipmentBuilder::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-12 hours'))
             ->create();
-        $dispatched = ShipmentTestFactory::new()->prepared()
+        $dispatched = ShipmentBuilder::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-3 days'))
             ->dispatched()
             ->create();
-        $stuck = ShipmentTestFactory::new()->prepared()
+        $stuck = ShipmentBuilder::new()->prepared()
             ->manifested(manifestedAt: $now->modify('-3 days'))
             ->create();
         $this->store($fresh, $dispatched, $stuck);

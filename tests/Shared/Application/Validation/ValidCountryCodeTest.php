@@ -44,17 +44,12 @@ final class ValidCountryCodeTest extends CompoundConstraintTestCase
     public static function provideRefusedValues(): iterable
     {
         yield 'empty string' => ['', new Assert\NotBlank()];
-        yield 'unknown country code' => ['XX', self::choice()];
-        yield 'lowercase' => ['fr', self::choice()];
+        yield 'unknown country code' => ['XX', new Assert\Choice(callback: CountryCode::values(...))];
+        yield 'lowercase' => ['fr', new Assert\Choice(callback: CountryCode::values(...))];
     }
 
     protected function createCompound(): ValidCountryCode
     {
         return new ValidCountryCode();
-    }
-
-    private static function choice(): Assert\Choice
-    {
-        return new Assert\Choice(callback: CountryCode::values(...));
     }
 }

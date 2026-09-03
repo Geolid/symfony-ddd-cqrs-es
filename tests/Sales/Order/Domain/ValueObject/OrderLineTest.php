@@ -56,21 +56,37 @@ final class OrderLineTest extends TestCase
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();
         $a = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 3);
         $b = OrderLine::of(Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83)), 3);
-        $other = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 4);
 
         // When
-        $equalResult = $a->equals($b);
-        $differentResult = $a->equals($other);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($equalResult);
-        self::assertFalse($differentResult);
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+        $a = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 3);
+
+        $differentProduct = OrderLine::of(Product::of($id, Label::fromString('Plate'), Money::fromCents(83)), 3);
+        $differentQuantity = OrderLine::of(Product::of($id, Label::fromString('Saucer'), Money::fromCents(83)), 4);
+
+        // When
+        $differsOnProduct = $a->equals($differentProduct);
+        $differsOnQuantity = $a->equals($differentQuantity);
+
+        // Then
+        self::assertFalse($differsOnProduct);
+        self::assertFalse($differsOnQuantity);
     }
 
     #[Test]

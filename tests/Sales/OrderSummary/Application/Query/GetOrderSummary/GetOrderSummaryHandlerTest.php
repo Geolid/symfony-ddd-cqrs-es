@@ -10,8 +10,8 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\OrderSummary\Application\Exception\OrderSummaryResultNotFoundException;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
 {
@@ -20,7 +20,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // When

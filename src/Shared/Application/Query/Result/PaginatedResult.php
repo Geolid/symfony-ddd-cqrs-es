@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Application\Query\Result;
 
-use Shared\Application\Query\Pagination;
+use Shared\Application\Finder\PaginationMetadata;
 
 /**
  * @template TResult of object
@@ -18,7 +18,7 @@ final readonly class PaginatedResult implements \IteratorAggregate, \Countable
      */
     public function __construct(
         public array $items,
-        public Pagination $pagination,
+        public PaginationMetadata $pagination,
     ) {
     }
 

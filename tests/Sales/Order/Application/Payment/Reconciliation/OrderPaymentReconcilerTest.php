@@ -10,7 +10,8 @@ use Sales\Order\Application\Exception\UnsupportedOrderPaymentStatusException;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Payment\Reconciliation\OrderPaymentReconciler;
 use Sales\Order\Application\Payment\Reconciliation\OrderPaymentStatusReconcilerInterface;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
 {
@@ -18,10 +19,18 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itDelegatesToSupportingReconciler(): void
     {
         // Given
-        $router = new OrderPaymentReconciler([new StubUnsupportingReconciler(), new StubMatchingReconciler()]);
+        $unsupporting = $this->createMock(OrderPaymentStatusReconcilerInterface::class);
+        $unsupporting->method('supports')->willReturn(false);
+        $unsupporting->expects(self::never())->method('reconcile');
+
+        $matching = $this->createStub(OrderPaymentStatusReconcilerInterface::class);
+        $matching->method('supports')->willReturn(true);
+        $matching->method('reconcile')->willReturn(true);
+
+        $router = new OrderPaymentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::REQUESTED, 'GLBX-9F3K2M1P');
+        $result = $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::REQUESTED, OrderPaymentBuilder::sample('reference')->value);
 
         // Then
         self::assertTrue($result);
@@ -37,32 +46,6 @@ final class OrderPaymentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedOrderPaymentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED, 'GLBX-9F3K2M1P');
-    }
-}
-
-final class StubMatchingReconciler implements OrderPaymentStatusReconcilerInterface
-{
-    public function supports(OrderPaymentStatus $status): bool
-    {
-        return OrderPaymentStatus::REQUESTED === $status;
-    }
-
-    public function reconcile(string $id, string $reference): bool
-    {
-        return true;
-    }
-}
-
-final class StubUnsupportingReconciler implements OrderPaymentStatusReconcilerInterface
-{
-    public function supports(OrderPaymentStatus $status): bool
-    {
-        return false;
-    }
-
-    public function reconcile(string $id, string $reference): bool
-    {
-        throw new \LogicException('Not the supporting reconciler.');
+        $router->reconcile(Uuid::uuid7()->toString(), OrderPaymentStatus::CAPTURED, OrderPaymentBuilder::sample('reference')->value);
     }
 }

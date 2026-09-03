@@ -27,7 +27,7 @@ final class LoginTest extends TestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'login' => ['ada.lovelace'];
+        yield 'login' => ['john.doe'];
         yield 'maximum length' => [str_repeat('a', Login::MAX_LENGTH)];
     }
 
@@ -53,24 +53,30 @@ final class LoginTest extends TestCase
     }
 
     #[Test]
-    public function itNormalizes(): void
+    public function itEquals(): void
     {
+        // Given
+        $a = Login::fromString('john.doe');
+        $b = Login::fromString('  john.doe  ');
+
         // When
-        $login = Login::fromString('  ada.lovelace  ');
+        $equals = $a->equals($b);
 
         // Then
-        self::assertSame('ada.lovelace', $login->value);
+        self::assertTrue($equals);
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itDiffers(): void
     {
+        // Given
+        $a = Login::fromString('john.doe');
+        $b = Login::fromString('jane.smith');
+
         // When
-        $a = Login::fromString('ada.lovelace');
-        $b = Login::fromString('ada.lovelace');
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(Login::fromString('grace.hopper')));
+        self::assertFalse($equals);
     }
 }

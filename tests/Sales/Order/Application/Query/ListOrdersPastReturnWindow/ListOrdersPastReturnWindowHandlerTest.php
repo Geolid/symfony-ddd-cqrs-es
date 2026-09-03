@@ -6,8 +6,8 @@ namespace Sales\Tests\Order\Application\Query\ListOrdersPastReturnWindow;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Query\ListOrdersPastReturnWindow\ListOrdersPastReturnWindow;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTestCase
@@ -17,10 +17,10 @@ final class ListOrdersPastReturnWindowHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $now = Clock::get()->now();
-        $expired = OrderTestFactory::new()->confirmed()->dispatched()
+        $expired = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-19 days'))
             ->create();
-        $withinWindow = OrderTestFactory::new()->confirmed()->dispatched()
+        $withinWindow = OrderBuilder::new()->confirmed()->dispatched()
             ->delivered($now->modify('-2 days'))
             ->create();
         $this->store($withinWindow, $expired);

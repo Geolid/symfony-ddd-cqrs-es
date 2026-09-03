@@ -8,32 +8,33 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Symfony\Component\HttpFoundation\Response;
 use Webhook\Tests\Support\AbstractWebhookTestCase;
 use Webhook\Webhook\PaymentAuthorizedParser;
 
 final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
 {
-    private const string REFERENCE = 'GLBX-9F3K2M1P';
-
     #[Test]
     public function itAcceptsAPaymentAuthorization(): void
     {
         // Given
         $client = self::createClient();
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference(self::REFERENCE)->create();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
+        $orderPayment = $paymentFactory->create();
+        $reference = $paymentFactory['reference']->value;
         $this->store($order, $orderPayment);
-        $body = self::body(self::REFERENCE);
+        $body = self::body($reference);
 
         // When
         $client->request('POST', $this->path(), server: $this->headers(self::sign($body, 'PAYMENT_WEBHOOK_SECRET')), content: $body);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_ACCEPTED);
-        self::assertSame(OrderPaymentStatus::AUTHORIZED, $this->statusOf($orderPayment->id->toString()));
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofId($orderPayment->id->toString());
+        self::assertSame(OrderPaymentStatus::AUTHORIZED, $result->status);
     }
 
     #[Test]
@@ -42,7 +43,7 @@ final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::REFERENCE);
+        $body = self::body(self::anyReference());
 
         // When
         $client->request('POST', $this->path(), server: $this->headers($signature), content: $body);
@@ -107,7 +108,7 @@ final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::REFERENCE)];
+        yield 'method is not POST' => ['GET', self::body(self::anyReference())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -149,14 +150,8 @@ final class PaymentAuthorizedWebhookTest extends AbstractWebhookTestCase
         return json_encode(['paymentReference' => $paymentReference], \JSON_THROW_ON_ERROR);
     }
 
-    private function statusOf(string $id): OrderPaymentStatus
+    private static function anyReference(): string
     {
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference(self::REFERENCE);
-
-        if ($id !== $result->id) {
-            self::fail(\sprintf('OrderPayment "%s" was not projected.', $id));
-        }
-
-        return $result->status;
+        return OrderPaymentBuilder::sample('reference')->value;
     }
 }

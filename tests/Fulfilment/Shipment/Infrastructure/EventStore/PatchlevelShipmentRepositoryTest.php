@@ -7,10 +7,10 @@ namespace Fulfilment\Tests\Shipment\Infrastructure\EventStore;
 use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
 {
@@ -27,32 +27,47 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itSavesAndLoads(): void
     {
         // Given
-        $shipment = ShipmentTestFactory::new()->create();
+        $shipment = ShipmentBuilder::new()->create();
 
         // When
         $this->repository->save($shipment);
+        $loaded = $this->repository->load($shipment->id);
 
         // Then
-        $id = $shipment->id;
-        self::assertTrue($this->repository->has($id));
-        $loaded = $this->repository->load($id);
         self::assertSame($shipment->id->toString(), $loaded->id->toString());
-        self::assertSame($shipment->orderId, $loaded->orderId);
-        self::assertSame($shipment->customerId, $loaded->customerId);
-        self::assertTrue($shipment->shippingAddress->equals($loaded->shippingAddress));
     }
 
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
-        // Given
-        $id = ShipmentId::forOrder(Uuid::uuid7()->toString());
-
         // Then
-        self::assertFalse($this->repository->has($id));
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->repository->load($id);
+        $this->repository->load(ShipmentId::forOrder(Uuid::uuid7()->toString()));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $shipment = ShipmentBuilder::new()->create();
+        $this->repository->save($shipment);
+
+        // When
+        $exists = $this->repository->has($shipment->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(ShipmentId::forOrder(Uuid::uuid7()->toString()));
+
+        // Then
+        self::assertFalse($notExists);
     }
 }

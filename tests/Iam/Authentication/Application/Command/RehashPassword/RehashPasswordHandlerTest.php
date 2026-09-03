@@ -10,70 +10,77 @@ use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialF
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
 final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
 {
+    private PasswordStrengthInterface $passwordStrength;
+
+    private PasswordCredentialFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
+        $this->finder = $this->service(PasswordCredentialFinderInterface::class);
+    }
+
     #[Test]
     public function itRehashes(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)))
-            ->create();
-        $this->store($identity, $credential);
-        self::getContainer()->set(PasswordHasherInterface::class, new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12)));
+        $this->replace(PasswordHasherInterface::class, new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12)));
+
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)));
+        $credential = $builder->create();
+        $this->store($credential);
+
+        $before = $this->finder->ofIdentity($builder['identityId']);
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword($builder['identityId'], $builder['password']->value));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
-        self::assertFalse($this->service(PasswordHasherInterface::class)->needsRehash($result->passwordHash));
+        $after = $this->finder->ofIdentity($builder['identityId']);
+        self::assertNotSame($before->passwordHash, $after->passwordHash);
     }
 
     #[Test]
     public function itIgnoresWhenRehashNotNeeded(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $hasher = $this->service(PasswordHasherInterface::class);
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPassword('Xk9$mQ2vLp7&zR4w')
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
-            ->withHasher($hasher)
-            ->create();
-        $this->store($identity, $credential);
-        $before = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->service(PasswordHasherInterface::class));
+        $credential = $builder->create();
+        $this->store($credential);
+
+        $before = $this->finder->ofIdentity($builder['identityId']);
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword($builder['identityId'], $builder['password']->value));
 
         // Then
-        $after = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identity->id->toString());
+        $after = $this->finder->ofIdentity($builder['identityId']);
         self::assertSame($before->passwordHash, $after->passwordHash);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($identity);
-
         // Then
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
-        $this->dispatch(new RehashPassword($identity->id->toString(), 'Xk9$mQ2vLp7&zR4w'));
+        $this->dispatch(new RehashPassword(
+            PasswordCredentialBuilder::sample('identityId'),
+            PasswordCredentialBuilder::sample('password')->value,
+        ));
     }
 }

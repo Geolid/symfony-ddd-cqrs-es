@@ -39,8 +39,7 @@ if (null !== $existing) {
 
 $chargeReference = fake_api_reference('GLBX-LOCAL', $rawBody);
 
-$checkoutUrl = rtrim((string) getenv('FAKE_CHECKOUT_BASE_URL'), '/').'/?'.http_build_query([
-    'ref' => $chargeReference,
+$checkoutUrl = rtrim((string) getenv('GLOBEX_CHECKOUT_BASE_URL'), '/').'/pay/'.$chargeReference.'?'.http_build_query([
     'total' => filter_var($body['amountInCents'] ?? 0, \FILTER_VALIDATE_INT) ?: 0,
     'returnUrl' => filter_var($body['returnUrl'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
 ]);

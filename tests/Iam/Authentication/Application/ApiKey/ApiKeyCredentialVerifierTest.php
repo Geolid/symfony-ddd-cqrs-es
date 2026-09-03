@@ -10,11 +10,10 @@ use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -30,20 +29,33 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itVerifies(): void
+    public function itAccepts(): void
     {
         // Given
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $credential = $builder->create();
         $this->store($credential);
 
+        // When
+        $verified = $this->verifier->verify($builder['keyId']->value, $builder['secret']);
+
         // Then
-        self::assertTrue($this->verifier->verify($keyId, 'plain-secret'));
-        self::assertFalse($this->verifier->verify($keyId, 'wrong-secret'));
+        self::assertTrue($verified);
+    }
+
+    #[Test]
+    public function itRefuses(): void
+    {
+        // Given
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $credential = $builder->create();
+        $this->store($credential);
+
+        // When
+        $verified = $this->verifier->verify($builder['keyId']->value, 'wrong-secret');
+
+        // Then
+        self::assertFalse($verified);
     }
 
     #[Test]
@@ -53,47 +65,43 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->verifier->verify(KeyId::PREFIX.'fedcba9876543210', 'plain-secret');
+        $this->verifier->verify(
+            ApiKeyCredentialBuilder::sample('keyId')->value,
+            ApiKeyCredentialBuilder::sample('secret'),
+        );
     }
 
     #[Test]
     public function itFailsWhenRevoked(): void
     {
         // Given
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->revoked()
-            ->create();
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->revoked();
+        $credential = $builder->create();
         $this->store($credential);
 
         // Then
         $this->expectException(ApiKeyCredentialRevokedException::class);
 
         // When
-        $this->verifier->verify($keyId, 'plain-secret');
+        $this->verifier->verify($builder['keyId']->value, $builder['secret']);
     }
 
     #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
-        $credential = ApiKeyCredentialTestFactory::new()
+        $identity = IdentityBuilder::new()->suspended()->create();
+
+        $builder = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($this->hasher)
-            ->create();
+            ->withHasher($this->hasher);
+        $credential = $builder->create();
         $this->store($credential, $identity);
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->verifier->verify($keyId, 'plain-secret');
+        $this->verifier->verify($builder['keyId']->value, $builder['secret']);
     }
 }

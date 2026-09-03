@@ -11,8 +11,8 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -30,7 +30,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($order);
 
         // When
@@ -47,7 +47,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->cancelled()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
         $this->store($order);
 
         // When
@@ -62,7 +62,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderTestFactory::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
         $this->store($order);
 
         // When

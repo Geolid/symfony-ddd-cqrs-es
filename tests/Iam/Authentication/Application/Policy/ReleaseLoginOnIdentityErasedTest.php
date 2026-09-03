@@ -8,22 +8,22 @@ use Iam\Authentication\Application\Policy\ReleaseLoginOnIdentityErased;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private ReleaseLoginOnIdentityErased $policy;
     private UniqueValueRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = $this->service(ReleaseLoginOnIdentityErased::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
     }
 
@@ -31,14 +31,20 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
     public function itReleases(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $ownerId = PasswordCredentialId::forIdentity($identityId)->toString();
-        $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace', $ownerId);
+        $identityId = PasswordCredentialBuilder::sample('identityId');
+        $builder = PasswordCredentialBuilder::new()->withIdentityId($identityId);
+        $login = PasswordCredentialBuilder::sample('login')->value;
+        $loginKey = UniqueKey::for(PasswordCredentialUniqueKey::LOGIN);
+        $this->uniqueValues->reserve($loginKey, $login, $builder['id']->toString());
+
+        $otherLogin = PasswordCredentialBuilder::sample('login')->value;
+        $this->uniqueValues->reserve($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
 
         // When
-        ($this->policy)(new IdentityErasedIntegrationEvent($identityId, new \DateTimeImmutable('2026-01-02T00:00:00+00:00')));
+        $this->trigger(ReleaseLoginOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'ada.lovelace'));
+        self::assertFalse($this->uniqueValues->exists($loginKey, $login));
+        self::assertTrue($this->uniqueValues->exists($loginKey, $otherLogin));
     }
 }

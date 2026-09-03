@@ -10,9 +10,9 @@ use Sales\Order\Application\Command\CancelOrderPayment\CancelOrderPayment;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrderPaymentHandlerTest extends AbstractIntegrationTestCase
 {
@@ -20,15 +20,16 @@ final class CancelOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenRequested(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->create();
+        $order = OrderBuilder::new()->create();
+        $paymentFactory = OrderPaymentBuilder::new()->withOrderId($order->id->toString());
+        $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
         // When
         $this->dispatch(new CancelOrderPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(OrderPaymentStatus::CANCELLED, $result->status);
     }
 
@@ -36,8 +37,8 @@ final class CancelOrderPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenFailed(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->failed()->create();
+        $order = OrderBuilder::new()->create();
+        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->failed()->create();
         $this->store($order, $orderPayment);
 
         // When

@@ -9,11 +9,11 @@ use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\ValueObject\ProductId;
 use Catalog\Product\Domain\ValueObject\ProductUniqueKey;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
 {
@@ -22,28 +22,38 @@ final class ListProductForSaleHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ProductId::generate()->toString();
-        $command = new ListProductForSale($id, 'Espresso cups, set of 6', 1_750);
+        $label = ProductBuilder::sample('label')->value;
+        $unitAmountInCents = ProductBuilder::sample('unitAmount')->cents;
 
         // When
-        $this->dispatch($command);
+        $this->dispatch(new ListProductForSale($id, $label, $unitAmountInCents));
 
         // Then
         $result = $this->service(ProductFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame('Espresso cups, set of 6', $result->label);
-        self::assertSame(1_750, $result->unitAmountInCents);
+        self::assertSame($label, $result->label);
+        self::assertSame($unitAmountInCents, $result->unitAmountInCents);
     }
 
     #[Test]
     public function itFailsWhenLabelAlreadyTaken(): void
     {
         // Given
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(ProductUniqueKey::LABEL), 'Espresso cups, set of 6', Uuid::uuid7()->toString());
+        $label = ProductBuilder::sample('label')->value;
+        $this->service(UniqueValueRegistryInterface::class)->reserve(
+            UniqueKey::for(ProductUniqueKey::LABEL),
+            $label,
+            ProductId::generate()->toString(),
+        );
 
         // Then
         $this->expectException(ProductLabelAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ListProductForSale(ProductId::generate()->toString(), 'Espresso cups, set of 6', 1_950));
+        $this->dispatch(new ListProductForSale(
+            ProductId::generate()->toString(),
+            $label,
+            ProductBuilder::sample('unitAmount')->cents,
+        ));
     }
 }

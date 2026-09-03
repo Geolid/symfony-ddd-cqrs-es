@@ -9,34 +9,27 @@ use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;
 use Sales\Order\Application\Policy\InitiateOrderPaymentRefundOnOrderReturned;
 use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Tests\Order\Support\Factory\OrderPaymentTestFactory;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class InitiateOrderPaymentRefundOnOrderReturnedTest extends AbstractIntegrationTestCase
 {
-    private InitiateOrderPaymentRefundOnOrderReturned $policy;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->policy = $this->service(InitiateOrderPaymentRefundOnOrderReturned::class);
-    }
-
     #[Test]
     public function itInitiates(): void
     {
         // Given
-        $order = OrderTestFactory::new()->create();
-        $orderPayment = OrderPaymentTestFactory::new()->withOrderId($order->id->toString())->withReference('GLBX-9F3K2M1P')->authorized()->captured()->create();
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured();
+        $orderPayment = $paymentBuilder->create();
         $this->store($order, $orderPayment);
 
         // When
-        ($this->policy)(new OrderReturned($order->id->toString(), new \DateTimeImmutable('2026-01-12T00:00:00+00:00')));
+        $this->trigger(InitiateOrderPaymentRefundOnOrderReturned::class, new OrderReturned($order->id->toString(), Clock::get()->now()));
 
         // Then
-        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference('GLBX-9F3K2M1P');
+        $result = $this->service(OrderPaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);
         self::assertSame(OrderPaymentStatus::REFUND_INITIATED, $result->status);
     }
 }

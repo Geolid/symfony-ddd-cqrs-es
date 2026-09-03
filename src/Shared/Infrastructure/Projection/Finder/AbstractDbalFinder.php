@@ -39,9 +39,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
      */
     public function paginate(int $page, int $itemsPerPage): PaginatorInterface
     {
-        /** @var DbalPaginator<TResult> */
-        return new DbalPaginator($this->connection, $this->query(...), $this->hydrate(...))
-            ->withPagination($page, $itemsPerPage);
+        return new DbalPaginator($this->connection, $this->query(...), $this->hydrate(...), $page, $itemsPerPage);
     }
 
     /**

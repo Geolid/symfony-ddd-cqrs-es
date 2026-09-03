@@ -15,10 +15,12 @@ final class ValidProductId extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new Assert\NotBlank(),
-            new Assert\Type('string'),
-            new Assert\Uuid(),
-            new ValidValueObject(ProductId::class, method: 'fromString'),
+            new Assert\Sequentially([
+                new Assert\NotBlank(),
+                new Assert\Type('string'),
+                new Assert\Uuid(),
+                new ValidValueObject(ProductId::class, method: 'fromString'),
+            ]),
         ];
     }
 }

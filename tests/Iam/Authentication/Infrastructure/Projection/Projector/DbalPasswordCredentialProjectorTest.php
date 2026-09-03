@@ -5,24 +5,23 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentialProjector;
-use Iam\Identity\Domain\ValueObject\Reason;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{login: string, password_hash: string, defined_at: string, password_changed_at: string, identity_authenticatable: bool}
  */
 final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     private PasswordStrengthInterface $passwordStrength;
     private PasswordHasherInterface $hasher;
 
@@ -31,19 +30,17 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         parent::setUp();
 
         $this->passwordStrength = new StubPasswordStrength();
-        $this->hasher = new StubPasswordHasher();
+        $this->hasher = new FakePasswordHasher();
     }
 
     #[Test]
     public function itProjectsOnPasswordCredentialDefined(): void
     {
         // Given
-        $credential = PasswordCredentialTestFactory::new()
-            ->withLogin('ada.lovelace')
-            ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+        $builder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->create();
+            ->withHasher($this->hasher);
+        $credential = $builder->create();
 
         // When
         $this->store($credential);
@@ -51,9 +48,9 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('ada.lovelace', $row['login']);
-        self::assertSame('2026-01-01 00:00:00', $row['defined_at']);
-        self::assertSame('2026-01-01 00:00:00', $row['password_changed_at']);
+        self::assertSame($builder['login']->value, $row['login']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['defined_at']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['password_changed_at']);
         self::assertTrue((bool) $row['identity_authenticatable']);
     }
 
@@ -61,14 +58,18 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsOnPasswordCredentialChanged(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withPassword('original-password')
-            ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+        $other = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->changed('updated-password', $this->passwordStrength, $this->hasher, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
             ->create();
+        $this->store($other);
+
+        $newPassword = 'updated-password';
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->changed($newPassword, $this->passwordStrength, $this->hasher);
+        $credential = $builder->create();
 
         // When
         $this->store($credential);
@@ -76,26 +77,30 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($this->hasher->hash('updated-password'), $row['password_hash']);
-        self::assertSame('2026-01-01 00:00:00', $row['defined_at']);
-        self::assertSame('2026-01-02 00:00:00', $row['password_changed_at']);
+        self::assertSame($this->hasher->hash($newPassword), $row['password_hash']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['defined_at']);
+        self::assertSame($builder['changedAt']->format(self::DATE_FORMAT), $row['password_changed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertNotSame($this->hasher->hash('updated-password'), $otherRow['password_hash']);
+        self::assertNotSame($this->hasher->hash($newPassword), $otherRow['password_hash']);
     }
 
     #[Test]
     public function itProjectsOnPasswordCredentialRehashed(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withDefinedAt(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'))
+        $otherBuilder = PasswordCredentialBuilder::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->rehashed('original-password', $this->hasher, new \DateTimeImmutable('2026-01-02T00:00:00+00:00'))
-            ->create();
+            ->withHasher($this->hasher);
+        $other = $otherBuilder->create();
+        $this->store($other);
+
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $builder = $builder->rehashed($builder['password']->value, $this->hasher);
+        $credential = $builder->create();
 
         // When
         $this->store($credential);
@@ -103,31 +108,34 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($this->hasher->hash('original-password'), $row['password_hash']);
-        self::assertSame('2026-01-01 00:00:00', $row['defined_at']);
-        self::assertSame('2026-01-01 00:00:00', $row['password_changed_at']);
+        self::assertSame($this->hasher->hash($builder['password']->value), $row['password_hash']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['defined_at']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['password_changed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($this->hasher->hash('other-password'), $otherRow['password_hash']);
+        self::assertSame($this->hasher->hash($otherBuilder['password']->value), $otherRow['password_hash']);
     }
 
     #[Test]
     public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
+        $other = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->suspended()->create();
+        $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->store($identity, $credential);
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         $row = $this->fetchRow($credential->id->toString());
@@ -143,18 +151,22 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential(suspended: true);
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $credential = PasswordCredentialTestFactory::new()
+        $otherIdentity = IdentityBuilder::new()->suspended()->create();
+        $other = PasswordCredentialBuilder::new()
+            ->withIdentityId($otherIdentity->id->toString())
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+
+        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
+        $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->store($credential, $identity);
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), Clock::get()->now());
-        $this->store($identity);
+        $this->store($other, $otherIdentity, $credential, $identity);
 
         // Then
         $row = $this->fetchRow($credential->id->toString());
@@ -170,41 +182,25 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = $this->otherCredential();
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
+        $other = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->erased()->create();
+        $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->store($identity, $credential);
 
         // When
-        $identity->erase(Clock::get()->now());
-        $this->store($identity);
+        $this->store($credential, $identity);
 
         // Then
         self::assertFalse($this->fetchRow($credential->id->toString()));
         self::assertNotFalse($this->fetchRow($other->id->toString()));
-    }
-
-    private function otherCredential(bool $suspended = false, string $password = 'other-password'): PasswordCredential
-    {
-        $identity = IdentityTestFactory::new()->create();
-        $credential = PasswordCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withPassword($password)
-            ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->create();
-        $this->store($identity, $credential);
-
-        if ($suspended) {
-            $identity->suspend(Reason::fromString('Suspected fraudulent activity'), Clock::get()->now());
-            $this->store($identity);
-        }
-
-        return $credential;
     }
 
     /**
@@ -212,8 +208,10 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT login, password_hash, defined_at, password_changed_at, identity_authenticatable FROM %s WHERE id = :id', DbalPasswordCredentialProjector::TABLE),
             ['id' => $id],
         );

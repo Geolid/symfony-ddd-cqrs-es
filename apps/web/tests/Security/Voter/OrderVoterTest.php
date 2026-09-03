@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Web\Security\PasswordUser;
@@ -66,7 +67,7 @@ final class OrderVoterTest extends TestCase
             customerId: $customerId,
             totalAmountInCents: 4_200,
             status: OrderSummaryStatus::PLACED,
-            placedAt: new \DateTimeImmutable('2026-01-01T00:00:00+00:00'),
+            placedAt: Clock::get()->now(),
             cancelledAt: null,
             paymentAmountInCents: null,
             paymentReference: null,

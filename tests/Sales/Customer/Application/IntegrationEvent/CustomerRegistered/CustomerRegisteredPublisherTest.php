@@ -6,9 +6,8 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerRegistered;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $customer = CustomerTestFactory::new()->withEmail('buyer@example.com')->withRegisteredAt($now)->create();
+        $builder = CustomerBuilder::new();
+        $customer = $builder->create();
 
         // When
         $this->store($customer);
@@ -25,7 +24,7 @@ final class CustomerRegisteredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CustomerRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
-        self::assertSame('buyer@example.com', $event->email);
-        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->registeredAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame($builder['email']->value, $event->email);
+        self::assertSame($builder['registeredAt']->format(\DateTimeInterface::ATOM), $event->registeredAt->format(\DateTimeInterface::ATOM));
     }
 }

@@ -21,6 +21,6 @@ final readonly class ReleaseLabelOnProductDelisted
     #[Subscribe(ProductDelisted::class)]
     public function __invoke(ProductDelisted $event): void
     {
-        $this->uniqueValues->releaseAll(UniqueKey::for(ProductUniqueKey::LABEL), $event->id);
+        $this->uniqueValues->release(UniqueKey::for(ProductUniqueKey::LABEL), $event->id);
     }
 }

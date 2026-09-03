@@ -9,9 +9,9 @@ use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
 {
@@ -19,14 +19,15 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $identity = IdentityBuilder::new()->create();
         $this->store($identity);
+
+        // When
+        $this->dispatch(new EraseIdentity($identity->id->toString()));
 
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
-        // When
-        $this->dispatch(new EraseIdentity($identity->id->toString()));
         $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
     }
 
@@ -34,7 +35,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erased()->create();
         $this->store($identity);
 
         // When
@@ -47,13 +48,10 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = IdentityId::generate()->toString();
-
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseIdentity($id));
+        $this->dispatch(new EraseIdentity(IdentityId::generate()->toString()));
     }
 }

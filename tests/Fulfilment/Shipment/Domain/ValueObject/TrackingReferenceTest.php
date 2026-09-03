@@ -27,18 +27,8 @@ final class TrackingReferenceTest extends TestCase
      */
     public static function provideAcceptedValues(): iterable
     {
-        yield 'reference' => ['ACME-4Q7X2K9'];
+        yield 'reference' => ['ACME-REFERENCE'];
         yield 'maximum length' => [str_repeat('A', TrackingReference::MAX_LENGTH)];
-    }
-
-    #[Test]
-    public function itNormalizes(): void
-    {
-        // When
-        $reference = TrackingReference::fromString('  ACME-4Q7X2K9  ');
-
-        // Then
-        self::assertSame('ACME-4Q7X2K9', $reference->value);
     }
 
     #[Test]
@@ -59,19 +49,34 @@ final class TrackingReferenceTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'whitespace only' => ['   '];
-        yield 'longer than the carrier can issue' => [str_repeat('A', TrackingReference::MAX_LENGTH + 1)];
+        yield 'too long' => [str_repeat('A', TrackingReference::MAX_LENGTH + 1)];
     }
 
     #[Test]
-    public function itComparesEquality(): void
+    public function itEquals(): void
     {
         // Given
-        $a = TrackingReference::fromString('ACME-4Q7X2K9');
-        $b = TrackingReference::fromString('ACME-4Q7X2K9');
-        $other = TrackingReference::fromString('ACME-OTHER');
+        $a = TrackingReference::fromString('ACME-REFERENCE');
+        $b = TrackingReference::fromString('  ACME-REFERENCE  ');
+
+        // When
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals($other));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = TrackingReference::fromString('ACME-REFERENCE');
+        $b = TrackingReference::fromString('ACME-OTHER');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

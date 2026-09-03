@@ -6,11 +6,11 @@ namespace Sales\Tests\Customer\Application\IntegrationEvent\CustomerShippingAddr
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
-use Sales\Tests\Customer\Support\Factory\CustomerTestFactory;
+use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerShippingAddressRegisteredPublisherTest extends AbstractIntegrationTestCase
 {
@@ -18,8 +18,9 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
     public function itPublishes(): void
     {
         // Given
-        $customer = CustomerTestFactory::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+        $shippingAddress = PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        $customer = CustomerBuilder::new()
+            ->shippingAddressRegistered($shippingAddress)
             ->create();
 
         // When
@@ -29,7 +30,14 @@ final class CustomerShippingAddressRegisteredPublisherTest extends AbstractInteg
         $event = $this->publishedEventOf(CustomerShippingAddressRegisteredIntegrationEvent::class);
         self::assertSame($customer->id->toString(), $event->customerId);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            [
+                'firstName' => $shippingAddress->fullName->firstName,
+                'lastName' => $shippingAddress->fullName->lastName,
+                'street' => $shippingAddress->address->street,
+                'postalCode' => $shippingAddress->address->postalCode,
+                'city' => $shippingAddress->address->city,
+                'countryCode' => $shippingAddress->address->countryCode->value,
+            ],
             $event->address,
         );
     }

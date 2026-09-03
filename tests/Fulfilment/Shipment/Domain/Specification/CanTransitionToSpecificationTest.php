@@ -42,8 +42,8 @@ final class CanTransitionToSpecificationTest extends TestCase
     public static function provideTransitions(): iterable
     {
         yield 'direct hop' => [ShipmentState::PREPARED, ShipmentState::MANIFESTED, true];
-        yield 'one of two branches' => [ShipmentState::REQUESTED, ShipmentState::PREPARED, true];
-        yield 'the other branch' => [ShipmentState::REQUESTED, ShipmentState::CANCELLED, true];
+        yield 'first branch' => [ShipmentState::REQUESTED, ShipmentState::PREPARED, true];
+        yield 'second branch' => [ShipmentState::REQUESTED, ShipmentState::CANCELLED, true];
         yield 'two hops away' => [ShipmentState::REQUESTED, ShipmentState::MANIFESTED, false];
         yield 'backward' => [ShipmentState::MANIFESTED, ShipmentState::PREPARED, false];
         yield 'dead end' => [ShipmentState::CANCELLED, ShipmentState::PREPARED, false];

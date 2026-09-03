@@ -46,19 +46,14 @@ final class ValidEmailTest extends CompoundConstraintTestCase
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'empty string' => ['', [self::notBlank()]];
-        yield 'whitespace only' => ['   ', [self::notBlank(), new Assert\Email()]];
-        yield 'not a string' => [42, [new Assert\Type('string'), new Assert\Email()]];
-        yield 'out of the address format' => ['buyer-at-example.com', [new Assert\Email()]];
+        yield 'empty string' => ['', [new Assert\NotBlank(normalizer: 'trim')]];
+        yield 'whitespace only' => ['   ', [new Assert\NotBlank(normalizer: 'trim')]];
+        yield 'not a string' => [42, [new Assert\Type('string')]];
+        yield 'malformed address' => ['buyer-at-example.com', [new Assert\Email()]];
     }
 
     protected function createCompound(): ValidEmail
     {
         return new ValidEmail();
-    }
-
-    private static function notBlank(): Assert\NotBlank
-    {
-        return new Assert\NotBlank(normalizer: 'trim');
     }
 }

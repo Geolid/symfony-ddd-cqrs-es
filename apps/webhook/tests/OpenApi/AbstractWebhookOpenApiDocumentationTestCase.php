@@ -42,6 +42,8 @@ abstract class AbstractWebhookOpenApiDocumentationTestCase extends AbstractWebho
     }
 
     /**
+     * @phpstan-pure
+     *
      * @param array<array-key, mixed> $schema
      *
      * @return array<string, array{mixed, mixed}>

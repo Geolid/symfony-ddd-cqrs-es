@@ -4,33 +4,36 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Carrier\Reconciliation;
 
+use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipment\Application\Carrier\Reconciliation\ReturnDispatchedShipmentReconciler;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Doubles\StubCarrierGateway;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ReturnDispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
 {
     private ShipmentFinderInterface $shipmentFinder;
+
+    private CommandBusInterface $commandBus;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+        $this->commandBus = $this->service(CommandBusInterface::class);
     }
 
     #[Test]
     public function itReconcilesWhenReturnReceived(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()
+        $returnTrackingReference = ShipmentBuilder::sample('returnTrackingReference')->value;
+        $shipment = ShipmentBuilder::new()
             ->prepared()
             ->manifested()
             ->dispatched()
@@ -40,22 +43,25 @@ final class ReturnDispatchedShipmentReconcilerTest extends AbstractIntegrationTe
             ->returnDispatched()
             ->create();
         $this->store($shipment);
-        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => CarrierGatewayStatus::RETURN_RECEIVED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(CarrierGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::RETURN_RECEIVED);
+        $reconciler = new ReturnDispatchedShipmentReconciler($carrier, $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $returnTrackingReference);
 
         // Then
         self::assertTrue($reconciled);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $this->shipmentFinder->ofReturnTrackingReference($returnTrackingReference)->status);
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $result->status);
     }
 
     #[Test]
     public function itIgnoresWhenStillReturnDispatched(): void
     {
         // Given
-        $returnTrackingReference = 'ACME-RETURN-1';
-        $shipment = ShipmentTestFactory::new()
+        $returnTrackingReference = ShipmentBuilder::sample('returnTrackingReference')->value;
+        $shipment = ShipmentBuilder::new()
             ->prepared()
             ->manifested()
             ->dispatched()
@@ -65,13 +71,16 @@ final class ReturnDispatchedShipmentReconcilerTest extends AbstractIntegrationTe
             ->returnDispatched()
             ->create();
         $this->store($shipment);
-        $reconciler = new ReturnDispatchedShipmentReconciler(new StubCarrierGateway([$returnTrackingReference => CarrierGatewayStatus::RETURN_DISPATCHED]), $this->service(CommandBusInterface::class));
+        $carrier = $this->createStub(CarrierGatewayInterface::class);
+        $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::RETURN_DISPATCHED);
+        $reconciler = new ReturnDispatchedShipmentReconciler($carrier, $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $returnTrackingReference);
 
         // Then
         self::assertFalse($reconciled);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $this->shipmentFinder->ofReturnTrackingReference($returnTrackingReference)->status);
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $result->status);
     }
 }

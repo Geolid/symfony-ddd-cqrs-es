@@ -6,9 +6,8 @@ namespace Sales\Tests\Order\Application\IntegrationEvent\OrderReturnRequested;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\IntegrationEvent\OrderReturnRequested\OrderReturnRequestedIntegrationEvent;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderReturnRequestedPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class OrderReturnRequestedPublisherTest extends AbstractIntegrationTestCas
     public function itPublishes(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->delivered()->returnRequested($now)->create();
+        $builder = OrderBuilder::new()->confirmed()->dispatched()->delivered()->returnRequested();
+        $order = $builder->create();
 
         // When
         $this->store($order);
@@ -25,6 +24,6 @@ final class OrderReturnRequestedPublisherTest extends AbstractIntegrationTestCas
         // Then
         $event = $this->publishedEventOf(OrderReturnRequestedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($now->format(\DateTimeImmutable::ATOM), $event->requestedAt->format(\DateTimeImmutable::ATOM));
+        self::assertSame($builder['returnRequestedAt']->format(\DateTimeInterface::ATOM), $event->requestedAt->format(\DateTimeInterface::ATOM));
     }
 }

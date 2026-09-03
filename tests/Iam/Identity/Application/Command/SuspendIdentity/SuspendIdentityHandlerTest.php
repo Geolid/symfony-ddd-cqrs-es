@@ -10,9 +10,10 @@ use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 {
@@ -20,26 +21,42 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itSuspends(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
+        $reason = IdentityBuilder::sample('reason')->value;
+        $now = Clock::get()->now();
+
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityStatus::SUSPENDED, $result->status);
+        self::assertSame($reason, $result->reason);
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame(
+            $now->format(\DateTimeInterface::ATOM),
+            $result->suspendedAt?->format(\DateTimeInterface::ATOM),
+        );
+        self::assertNull($result->reactivatedAt);
     }
 
     #[Test]
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->suspended()->create();
+        $builder = IdentityBuilder::new()->suspended();
+        $identity = $builder->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $builder['reason']->value));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -48,27 +65,30 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = IdentityId::generate()->toString();
-
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity($id, 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity(
+            IdentityId::generate()->toString(),
+            IdentityBuilder::sample('reason')->value,
+        ));
     }
 
     #[Test]
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erased()->create();
         $this->store($identity);
 
         // Then
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), 'Suspected fraudulent activity'));
+        $this->dispatch(new SuspendIdentity(
+            $identity->id->toString(),
+            IdentityBuilder::sample('reason')->value,
+        ));
     }
 }

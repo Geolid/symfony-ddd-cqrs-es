@@ -8,22 +8,23 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itProjectsOnIdentityRegistered(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityTestFactory::new()->withRegisteredAt($now)->create();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
 
         // When
         $this->store($identity);
@@ -33,7 +34,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
         self::assertNull($row['reason']);
-        self::assertSame($now->format('Y-m-d H:i:s'), $row['registered_at']);
+        self::assertSame($builder['registeredAt']->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
     }
@@ -42,22 +43,22 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $suspendedAt = $now->modify('+1 day');
-        $other = IdentityTestFactory::new()->create();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($other, $identity);
+        $other = IdentityBuilder::new()->create();
+        $this->store($other);
+
+        $builder = IdentityBuilder::new()->suspended()->reactivated()->suspended();
+        $identity = $builder->create();
 
         // When
-        $identity->suspend(Reason::fromString('Suspected fraudulent activity'), $suspendedAt);
         $this->store($identity);
 
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::SUSPENDED->value, $row['status']);
-        self::assertSame('Suspected fraudulent activity', $row['reason']);
-        self::assertSame($suspendedAt->format('Y-m-d H:i:s'), $row['suspended_at']);
+        self::assertSame($builder['reason']->value, $row['reason']);
+        self::assertSame($builder['suspendedAt']->format(self::DATE_FORMAT), $row['suspended_at']);
+        self::assertNull($row['reactivated_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -70,27 +71,29 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivated(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $reactivatedAt = $now->modify('+1 day');
-        $other = IdentityTestFactory::new()->suspended()->create();
-        $identity = IdentityTestFactory::new()->suspended()->create();
-        $this->store($other, $identity);
+        $otherBuilder = IdentityBuilder::new()->suspended();
+        $other = $otherBuilder->create();
+        $this->store($other);
+
+        $builder = IdentityBuilder::new()->suspended()->reactivated();
+        $identity = $builder->create();
 
         // When
-        $identity->reactivate(Reason::fromString('Appeal upheld'), $reactivatedAt);
         $this->store($identity);
 
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
-        self::assertSame('Appeal upheld', $row['reason']);
-        self::assertSame($reactivatedAt->format('Y-m-d H:i:s'), $row['reactivated_at']);
+        self::assertSame($builder['reason']->value, $row['reason']);
+        self::assertSame($builder['reactivatedAt']->format(self::DATE_FORMAT), $row['reactivated_at']);
+        self::assertNull($row['suspended_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityStatus::SUSPENDED->value, $otherRow['status']);
-        self::assertSame('Suspected fraudulent activity', $otherRow['reason']);
+        self::assertSame($otherBuilder['reason']->value, $otherRow['reason']);
+        self::assertSame($otherBuilder['suspendedAt']->format(self::DATE_FORMAT), $otherRow['suspended_at']);
         self::assertNull($otherRow['reactivated_at']);
     }
 
@@ -98,12 +101,12 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErased(): void
     {
         // Given
-        $other = IdentityTestFactory::new()->create();
-        $identity = IdentityTestFactory::new()->create();
-        $this->store($other, $identity);
+        $other = IdentityBuilder::new()->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->erased()->create();
 
         // When
-        $identity->erase(Clock::get()->now());
         $this->store($identity);
 
         // Then
@@ -116,8 +119,10 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
      */
     private function fetchRow(string $id): array|false
     {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
         /** @var Row|false */
-        return $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class)->fetchAssociative(
+        return $connection->fetchAssociative(
             \sprintf('SELECT id, status, reason, registered_at, suspended_at, reactivated_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );

@@ -9,9 +9,9 @@ use Catalog\Product\Application\Exception\ProductResultNotFoundException;
 use Catalog\Product\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Product\Domain\Exception\ProductNotFoundException;
 use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Tests\Product\Support\Factory\ProductTestFactory;
+use Catalog\Tests\Product\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 {
@@ -19,14 +19,15 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itDelists(): void
     {
         // Given
-        $product = ProductTestFactory::new()->create();
+        $product = ProductBuilder::new()->create();
         $this->store($product);
+
+        // When
+        $this->dispatch(new DelistProduct($product->id->toString()));
 
         // Then
         $this->expectException(ProductResultNotFoundException::class);
 
-        // When
-        $this->dispatch(new DelistProduct($product->id->toString()));
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
     }
 
@@ -34,7 +35,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelisted(): void
     {
         // Given
-        $product = ProductTestFactory::new()->delisted()->create();
+        $product = ProductBuilder::new()->delisted()->create();
         $this->store($product);
 
         // When
@@ -47,13 +48,10 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
-        // Given
-        $id = ProductId::generate()->toString();
-
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct($id));
+        $this->dispatch(new DelistProduct(ProductId::generate()->toString()));
     }
 }

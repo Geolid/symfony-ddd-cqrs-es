@@ -22,13 +22,13 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 final class GlobexPaymentGatewayTest extends TestCase
 {
     #[Test]
-    public function itChargesOrderAndReadsProviderSession(): void
+    public function itRequestsPayment(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
         $response = self::jsonResponse([
             'chargeReference' => 'GLBX-9F3K2M1P',
-            'checkoutUrl' => 'https://fake-checkout.test/?ref=GLBX-9F3K2M1P',
+            'checkoutUrl' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
@@ -36,9 +36,12 @@ final class GlobexPaymentGatewayTest extends TestCase
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
-        self::assertSame('https://fake-checkout.test/?ref=GLBX-9F3K2M1P', $session->checkoutUrl);
-        self::assertSame('https://payments.globex.test/charges', $response->getRequestUrl());
-        self::assertContains('Idempotency-Key: '.$orderId, $response->getRequestOptions()['headers']);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
+
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/charges', $requestUrl);
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: '.$orderId, $headers);
         self::assertSame(
             [
                 'clientReferenceId' => $orderId,
@@ -53,7 +56,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                     'countryCode' => 'FR',
                 ],
             ],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -93,10 +96,10 @@ final class GlobexPaymentGatewayTest extends TestCase
      */
     public static function provideUnreadableResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
-        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
-        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
-        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://fake-checkout.test/?ref=x'])];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
+        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
+        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
+        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
         yield 'checkout url absent' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P'])];
         yield 'checkout url blank' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => ''])];
         yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];
@@ -112,10 +115,11 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->gateway($response)->void('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame('https://payments.globex.test/void', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/void', $requestUrl);
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -139,10 +143,11 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->gateway($response)->refund('GLBX-9F3K2M1P');
 
         // Then
-        self::assertSame('https://payments.globex.test/refund', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/refund', $requestUrl);
         self::assertSame(
             ['reference' => 'GLBX-9F3K2M1P'],
-            json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR),
+            $this->requestBody($response),
         );
     }
 
@@ -167,7 +172,8 @@ final class GlobexPaymentGatewayTest extends TestCase
 
         // Then
         self::assertSame(PaymentGatewayStatus::AUTHORIZED, $status);
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $response->getRequestUrl());
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $requestUrl);
     }
 
     #[Test]
@@ -209,7 +215,7 @@ final class GlobexPaymentGatewayTest extends TestCase
      */
     public static function provideUnreadableStatusResponses(): iterable
     {
-        yield 'body that is not JSON' => [self::jsonResponse('<html></html>')];
+        yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'status absent' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P'])];
         yield 'status blank' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => ''])];
         yield 'status of another type' => [self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 42])];
@@ -237,5 +243,16 @@ final class GlobexPaymentGatewayTest extends TestCase
             FullName::of('Ada', 'Lovelace'),
             Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestBody(MockResponse $response): array
+    {
+        /** @var array<string, mixed> $body */
+        $body = json_decode((string) $response->getRequestOptions()['body'], true, 512, \JSON_THROW_ON_ERROR);
+
+        return $body;
     }
 }

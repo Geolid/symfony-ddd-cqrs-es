@@ -12,9 +12,9 @@ use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
-use Support\Doubles\DummyMessage;
-use Support\Doubles\StubNextMiddleware;
-use Support\Doubles\StubStack;
+use Support\Double\DummyMessage;
+use Support\Double\StubNextMiddleware;
+use Support\Double\StubStack;
 use Symfony\Component\Messenger\Envelope;
 
 final class ErrorContextMessengerMiddlewareTest extends TestCase
@@ -25,6 +25,8 @@ final class ErrorContextMessengerMiddlewareTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->previousHub = SentrySdk::getCurrentHub();
         $this->scope = new Scope();
 
@@ -34,10 +36,12 @@ final class ErrorContextMessengerMiddlewareTest extends TestCase
     protected function tearDown(): void
     {
         SentrySdk::setCurrentHub($this->previousHub);
+
+        parent::tearDown();
     }
 
     #[Test]
-    public function itHandsTheMessageDownUntouched(): void
+    public function itPassesThrough(): void
     {
         // Given
         $envelope = new Envelope(new DummyMessage());
@@ -47,30 +51,32 @@ final class ErrorContextMessengerMiddlewareTest extends TestCase
 
         // Then
         self::assertSame($envelope, $handled);
-        self::assertSame([], $this->contextOfAReport());
+        self::assertSame([], $this->messengerContext());
     }
 
     #[Test]
-    public function itNamesTheMessageInFlightWhenItFails(): void
+    public function itAddsContextWhenStackFails(): void
     {
         // Given
         $failure = new \RuntimeException('Handler blew up.');
 
-        // Then
-        $this->expectExceptionObject($failure);
-
         // When
+        $caught = null;
         try {
             new ErrorContextMessengerMiddleware()->handle(new Envelope(new DummyMessage()), new StubStack(new StubNextMiddleware($failure)));
-        } finally {
-            self::assertSame(['message' => DummyMessage::class], $this->contextOfAReport());
+        } catch (\RuntimeException $exception) {
+            $caught = $exception;
         }
+
+        // Then
+        self::assertSame($failure, $caught);
+        self::assertSame(['message' => DummyMessage::class], $this->messengerContext());
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function contextOfAReport(): array
+    private function messengerContext(): array
     {
         $contexts = $this->scope->applyToEvent(Event::createEvent())?->getContexts() ?? [];
 

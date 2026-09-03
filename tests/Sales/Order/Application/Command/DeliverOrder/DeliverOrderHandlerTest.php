@@ -10,8 +10,8 @@ use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Order\Support\Factory\OrderTestFactory;
-use Support\AbstractIntegrationTestCase;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -28,7 +28,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->confirmed()->dispatched()->create();
         $this->store($order);
 
         // When
@@ -43,7 +43,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotDispatched(): void
     {
         // Given
-        $order = OrderTestFactory::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
         $this->store($order);
 
         // When

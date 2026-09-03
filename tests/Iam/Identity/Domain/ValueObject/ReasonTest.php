@@ -12,13 +12,23 @@ use PHPUnit\Framework\TestCase;
 final class ReasonTest extends TestCase
 {
     #[Test]
-    public function itCreates(): void
+    #[DataProvider('provideAcceptedValues')]
+    public function itCreates(string $value): void
     {
         // When
-        $reason = Reason::fromString('Suspected fraudulent activity');
+        $reason = Reason::fromString($value);
 
         // Then
-        self::assertSame('Suspected fraudulent activity', $reason->value);
+        self::assertSame($value, $reason->value);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAcceptedValues(): iterable
+    {
+        yield 'reason' => ['Suspected fraudulent activity'];
+        yield 'maximum length' => [str_repeat('a', Reason::MAX_LENGTH)];
     }
 
     #[Test]
@@ -39,28 +49,34 @@ final class ReasonTest extends TestCase
     {
         yield 'empty string' => [''];
         yield 'whitespace only' => ['   '];
-        yield 'too long' => [str_repeat('a', 256)];
+        yield 'too long' => [str_repeat('a', Reason::MAX_LENGTH + 1)];
     }
 
     #[Test]
-    public function itNormalizes(): void
+    public function itEquals(): void
     {
-        // When
-        $reason = Reason::fromString('  Suspected fraudulent activity  ');
-
-        // Then
-        self::assertSame('Suspected fraudulent activity', $reason->value);
-    }
-
-    #[Test]
-    public function itComparesEquality(): void
-    {
-        // When
+        // Given
         $a = Reason::fromString('Suspected fraudulent activity');
-        $b = Reason::fromString('Suspected fraudulent activity');
+        $b = Reason::fromString('  Suspected fraudulent activity  ');
+
+        // When
+        $equals = $a->equals($b);
 
         // Then
-        self::assertTrue($a->equals($b));
-        self::assertFalse($a->equals(Reason::fromString('Appeal upheld')));
+        self::assertTrue($equals);
+    }
+
+    #[Test]
+    public function itDiffers(): void
+    {
+        // Given
+        $a = Reason::fromString('Suspected fraudulent activity');
+        $b = Reason::fromString('Appeal upheld');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

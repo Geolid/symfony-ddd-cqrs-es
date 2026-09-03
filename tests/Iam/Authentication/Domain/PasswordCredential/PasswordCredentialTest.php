@@ -13,58 +13,63 @@ use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordHasher;
-use Iam\Tests\Authentication\Support\Doubles\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
 {
+    private PasswordCredentialId $id;
+    private string $identityId;
+    private Login $login;
+    private Password $password;
+    private FakePasswordHasher $hasher;
+    private \DateTimeImmutable $definedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->identityId = PasswordCredentialBuilder::sample('identityId');
+        $this->id = PasswordCredentialId::forIdentity($this->identityId);
+        $this->login = PasswordCredentialBuilder::sample('login');
+        $this->password = PasswordCredentialBuilder::sample('password');
+        $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
+        $this->hasher = new FakePasswordHasher();
+    }
+
     #[Test]
     public function itDefines(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $id = PasswordCredentialId::forIdentity($identityId);
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $hasher = new StubPasswordHasher();
-
         $this
             ->given()
-            ->when(static fn (): PasswordCredential => PasswordCredential::define(
-                $id,
-                $identityId,
-                Login::fromString('ada.lovelace'),
-                Password::fromString('original-password'),
+            ->when(fn (): PasswordCredential => PasswordCredential::define(
+                $this->id,
+                $this->identityId,
+                $this->login,
+                $this->password,
                 new StubPasswordStrength(),
-                $hasher,
-                $now,
+                $this->hasher,
+                $this->definedAt,
             ))
-            ->then(new PasswordCredentialDefined(
-                $id->toString(),
-                $identityId,
-                'ada.lovelace',
-                $hasher->hash('original-password'),
-                $now,
-            ));
+            ->then($this->defined());
     }
 
     #[Test]
     public function itCannotDefineWithWeakPassword(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
             ->given()
-            ->when(static fn (): PasswordCredential => PasswordCredential::define(
-                PasswordCredentialId::forIdentity($identityId),
-                $identityId,
-                Login::fromString('ada.lovelace'),
-                Password::fromString('original-password'),
+            ->when(fn (): PasswordCredential => PasswordCredential::define(
+                $this->id,
+                $this->identityId,
+                $this->login,
+                Password::fromString('passwordpassword'),
                 new StubPasswordStrength(sufficient: false),
-                new StubPasswordHasher(),
-                $now,
+                $this->hasher,
+                $this->definedAt,
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -72,29 +77,20 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itChanges(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $id = PasswordCredentialId::forIdentity($identityId);
-        $hasher = new StubPasswordHasher();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $changedAt = $now->modify('+1 day');
+        $changedAt = PasswordCredentialBuilder::sample('changedAt');
+        $newPassword = 'updated-password';
 
         $this
-            ->given(new PasswordCredentialDefined(
-                $id->toString(),
-                $identityId,
-                'ada.lovelace',
-                $hasher->hash('original-password'),
-                $now,
-            ))
-            ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('updated-password'),
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->change(
+                Password::fromString($newPassword),
                 new StubPasswordStrength(),
-                $hasher,
+                $this->hasher,
                 $changedAt,
             ))
             ->then(new PasswordCredentialChanged(
-                $id->toString(),
-                $hasher->hash('updated-password'),
+                $this->id->toString(),
+                $this->hasher->hash($newPassword),
                 $changedAt,
             ));
     }
@@ -102,24 +98,13 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotChangeToWeakPassword(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $id = PasswordCredentialId::forIdentity($identityId);
-        $hasher = new StubPasswordHasher();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given(new PasswordCredentialDefined(
-                $id->toString(),
-                $identityId,
-                'ada.lovelace',
-                $hasher->hash('original-password'),
-                $now,
-            ))
-            ->when(static fn (PasswordCredential $credential) => $credential->change(
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
                 new StubPasswordStrength(sufficient: false),
-                $hasher,
-                $now->modify('+1 day'),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('changedAt'),
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -127,24 +112,13 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotChangeToSamePassword(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $id = PasswordCredentialId::forIdentity($identityId);
-        $hasher = new StubPasswordHasher();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-
         $this
-            ->given(new PasswordCredentialDefined(
-                $id->toString(),
-                $identityId,
-                'ada.lovelace',
-                $hasher->hash('original-password'),
-                $now,
-            ))
-            ->when(static fn (PasswordCredential $credential) => $credential->change(
-                Password::fromString('original-password'),
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->change(
+                $this->password,
                 new StubPasswordStrength(),
-                $hasher,
-                $now->modify('+1 day'),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('changedAt'),
             ))
             ->expectsException(SamePasswordException::class);
     }
@@ -152,28 +126,18 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRehashes(): void
     {
-        $identityId = Uuid::uuid7()->toString();
-        $id = PasswordCredentialId::forIdentity($identityId);
-        $hasher = new StubPasswordHasher();
-        $now = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
-        $rehashedAt = $now->modify('+1 day');
+        $rehashedAt = PasswordCredentialBuilder::sample('rehashedAt');
 
         $this
-            ->given(new PasswordCredentialDefined(
-                $id->toString(),
-                $identityId,
-                'ada.lovelace',
-                $hasher->hash('original-password'),
-                $now,
-            ))
-            ->when(static fn (PasswordCredential $credential) => $credential->rehash(
-                'original-password',
-                $hasher,
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->rehash(
+                $this->password->value,
+                $this->hasher,
                 $rehashedAt,
             ))
             ->then(new PasswordCredentialRehashed(
-                $id->toString(),
-                $hasher->hash('original-password'),
+                $this->id->toString(),
+                $this->hasher->hash($this->password->value),
                 $rehashedAt,
             ));
     }
@@ -181,5 +145,16 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     protected function aggregateClass(): string
     {
         return PasswordCredential::class;
+    }
+
+    private function defined(): PasswordCredentialDefined
+    {
+        return new PasswordCredentialDefined(
+            $this->id->toString(),
+            $this->identityId,
+            $this->login->value,
+            $this->hasher->hash($this->password->value),
+            $this->definedAt,
+        );
     }
 }

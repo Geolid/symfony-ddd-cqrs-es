@@ -7,11 +7,9 @@ namespace Iam\Tests\Authentication\Application\Query\GetApiKeyCredentialByKeyId;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId\GetApiKeyCredentialByKeyId;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
-use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialTestFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityTestFactory;
+use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTestCase
 {
@@ -19,29 +17,23 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
     public function itGets(): void
     {
         // Given
-        $identity = IdentityTestFactory::new()->create();
-        $keyId = KeyId::PREFIX.'0123456789abcdef';
         $hasher = $this->service(ApiKeyHasherInterface::class);
-        $credential = ApiKeyCredentialTestFactory::new()
-            ->withIdentityId($identity->id->toString())
-            ->withLabel('CI pipeline')
-            ->withKeyId($keyId)
-            ->withSecret('plain-secret')
-            ->withHasher($hasher)
-            ->create();
-        $this->store($identity, $credential);
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($hasher);
+        $credential = $builder->create();
+        $this->store($credential);
 
         // When
-        $result = $this->ask(new GetApiKeyCredentialByKeyId($keyId));
+        $result = $this->ask(new GetApiKeyCredentialByKeyId($builder['keyId']->value));
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($identity->id->toString(), $result->identityId);
-        self::assertSame('CI pipeline', $result->label);
-        self::assertSame($keyId, $result->keyId);
-        self::assertSame($hasher->hash('plain-secret'), $result->secretHash);
+        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($builder['label']->value, $result->label);
+        self::assertSame($builder['keyId']->value, $result->keyId);
         self::assertFalse($result->revoked);
         self::assertTrue($result->identityAuthenticatable);
+
+        self::assertSame($hasher->hash($builder['secret']), $result->secretHash);
     }
 
     #[Test]
@@ -51,6 +43,6 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->ask(new GetApiKeyCredentialByKeyId(KeyId::PREFIX.'fedcba9876543210'));
+        $this->ask(new GetApiKeyCredentialByKeyId(ApiKeyCredentialBuilder::sample('keyId')->value));
     }
 }

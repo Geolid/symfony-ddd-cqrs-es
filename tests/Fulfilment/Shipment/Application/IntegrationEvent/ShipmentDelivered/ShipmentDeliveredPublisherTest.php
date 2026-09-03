@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\IntegrationEvent\ShipmentDelivered;
 
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
-use Fulfilment\Tests\Shipment\Support\Factory\ShipmentTestFactory;
+use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
 {
@@ -16,8 +15,8 @@ final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $shipment = ShipmentTestFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered();
+        $shipment = $builder->create();
 
         // When
         $this->store($shipment);
@@ -25,6 +24,10 @@ final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentDeliveredIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($orderId, $event->orderId);
+        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame(
+            $builder['deliveredAt']->format(\DateTimeInterface::ATOM),
+            $event->deliveredAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }

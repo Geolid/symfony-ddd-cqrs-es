@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Tests\Support;
 
 use Bootstrap\Kernel;
-use Support\AbstractIntegrationTestCase;
+use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpKernel\KernelInterface;
