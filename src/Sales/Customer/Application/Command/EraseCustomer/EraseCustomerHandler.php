@@ -35,6 +35,6 @@ final readonly class EraseCustomerHandler
 
         $this->repository->save($customer);
 
-        $this->uniqueValues->releaseAll(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->id->toString());
+        $this->uniqueValues->release(UniqueKey::for(CustomerUniqueKey::EMAIL), $customer->id->toString());
     }
 }

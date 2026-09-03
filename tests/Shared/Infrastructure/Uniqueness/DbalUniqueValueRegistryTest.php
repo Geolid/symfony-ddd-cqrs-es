@@ -104,6 +104,22 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itReleases(): void
+    {
+        // Given
+        $key = UniqueKey::for(DummyUniqueKey::A);
+        $this->registry->reserve($key, 'value-1', 'owner-1');
+        $this->registry->reserve($key, 'value-2', 'owner-2');
+
+        // When
+        $this->registry->release($key, 'owner-1');
+
+        // Then
+        self::assertFalse($this->registry->exists($key, 'value-1'));
+        self::assertTrue($this->registry->exists($key, 'value-2'));
+    }
+
+    #[Test]
     public function itReleasesAll(): void
     {
         // Given
@@ -111,7 +127,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
         $otherScopeKey = UniqueKey::for(DummyUniqueKey::A, 'scope-2');
         $otherKey = UniqueKey::for(DummyUniqueKey::B, 'scope-1');
         $this->registry->reserve($key, 'value-1', 'owner-1');
-        $this->registry->reserve($key, 'value-2', 'owner-1');
+        $this->registry->reserve($key, 'value-2', 'owner-2');
         $this->registry->reserve($otherScopeKey, 'value-1', 'owner-1');
         $this->registry->reserve($otherKey, 'value-1', 'owner-1');
 
@@ -123,21 +139,5 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
         self::assertFalse($this->registry->exists($key, 'value-2'));
         self::assertTrue($this->registry->exists($otherScopeKey, 'value-1'));
         self::assertTrue($this->registry->exists($otherKey, 'value-1'));
-    }
-
-    #[Test]
-    public function itReleasesAllForOwner(): void
-    {
-        // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
-        $this->registry->reserve($key, 'value-1', 'owner-1');
-        $this->registry->reserve($key, 'value-2', 'owner-2');
-
-        // When
-        $this->registry->releaseAll($key, 'owner-1');
-
-        // Then
-        self::assertFalse($this->registry->exists($key, 'value-1'));
-        self::assertTrue($this->registry->exists($key, 'value-2'));
     }
 }
