@@ -108,8 +108,10 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     {
         // Given
         $key = UniqueKey::for(DummyUniqueKey::A);
+        $otherKey = UniqueKey::for(DummyUniqueKey::B);
         $this->registry->reserve($key, 'value-1', 'owner-1');
         $this->registry->reserve($key, 'value-2', 'owner-2');
+        $this->registry->reserve($otherKey, 'value-3', 'owner-1');
 
         // When
         $this->registry->release($key, 'owner-1');
@@ -117,6 +119,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
         // Then
         self::assertFalse($this->registry->exists($key, 'value-1'));
         self::assertTrue($this->registry->exists($key, 'value-2'));
+        self::assertTrue($this->registry->exists($otherKey, 'value-3'));
     }
 
     #[Test]
