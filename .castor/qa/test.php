@@ -40,7 +40,6 @@ function qa_mutation(
     with(static fn () => compose_exec([
         'vendor/bin/infection', '--threads=max', '--git-diff-lines', '--git-diff-base=origin/main',
         '--min-msi=100', '--ignore-msi-with-no-mutations',
-        '--debug', '-vvv', '--log-verbosity=all',
         ...($coverage ? ['--coverage=var/coverage', '--skip-initial-tests'] : []),
     ]), context: new Context());
 }

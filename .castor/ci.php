@@ -29,5 +29,8 @@ function ci_coverage(): void
 #[AsTask(name: 'mutation', namespace: 'ci', description: 'Run mutation testing')]
 function ci_mutation(): void
 {
-    qa_mutation(coverage: true);
+    // TEMP diagnostic: coverage:false forces its own fresh initial test run instead of
+    // reusing ci:coverage's — isolating whether the escaped-mutant issue is specific to
+    // the --skip-initial-tests/reused-coverage pipeline. To be reverted after the check.
+    qa_mutation(coverage: false);
 }
