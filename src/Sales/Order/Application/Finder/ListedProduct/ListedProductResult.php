@@ -9,7 +9,7 @@ final readonly class ListedProductResult
     public function __construct(
         public string $productId,
         public string $label,
-        public int $unitAmountInCents,
+        public int $unitPriceInCents,
     ) {
     }
 }

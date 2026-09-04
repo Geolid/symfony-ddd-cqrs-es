@@ -18,7 +18,7 @@ final class ProductResourcePropertyDocumentationTest extends AbstractResourcePro
         self::assertSame([
             'id' => ['The identifier of the product.', '0193c5f4-6a2e-7d18-b2c7-6f9e0a4d8b31'],
             'label' => ['The label of the product.', 'Wireless mouse'],
-            'unitAmountInCents' => ['The unit price of the product, in cents.', 2999],
+            'unitPriceInCents' => ['The unit price of the product, in cents.', 2999],
         ], $described);
     }
 }

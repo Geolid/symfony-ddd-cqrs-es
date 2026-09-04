@@ -90,7 +90,7 @@ final class OrderLineTest extends TestCase
     }
 
     #[Test]
-    public function itTotalsUnitAmountOverQuantity(): void
+    public function itTotalsUnitPriceOverQuantity(): void
     {
         // Given
         $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));

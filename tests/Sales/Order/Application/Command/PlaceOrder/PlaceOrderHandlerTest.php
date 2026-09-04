@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
-use Catalog\Product\Domain\ValueObject\ProductId;
-use Catalog\Tests\Product\Support\Builder\ProductBuilder;
+use Catalog\Listing\Domain\ValueObject\ProductId;
+use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Customer\Domain\Customer;
@@ -125,7 +125,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitAmountInCents' => ProductBuilder::sample('unitAmount')->cents]],
+            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitPrice')->cents]],
         ));
     }
 
@@ -135,8 +135,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
         $label = ProductBuilder::sample('label');
-        $unitAmount = ProductBuilder::sample('unitAmount');
-        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitAmountInCents($unitAmount->cents)->create();
+        $unitPrice = ProductBuilder::sample('unitPrice');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
         $this->store($cups);
 
         // Then
@@ -146,37 +146,37 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitAmountInCents' => $unitAmount->cents - 250]],
+            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitPriceInCents' => $unitPrice->cents - 250]],
         ));
     }
 
     /**
-     * @return list<array{productId: string, quantity: int, label: string, unitAmountInCents: int}>
+     * @return list<array{productId: string, quantity: int, label: string, unitPriceInCents: int}>
      */
     private function lines(): array
     {
         $cupsLabel = ProductBuilder::sample('label');
-        $cupsUnitAmount = ProductBuilder::sample('unitAmount');
-        $cups = ProductBuilder::new()->withLabel($cupsLabel->value)->withUnitAmountInCents($cupsUnitAmount->cents)->create();
+        $cupsUnitPrice = ProductBuilder::sample('unitPrice');
+        $cups = ProductBuilder::new()->withLabel($cupsLabel->value)->withUnitPriceInCents($cupsUnitPrice->cents)->create();
 
         $saucerLabel = ProductBuilder::sample('label');
-        $saucerUnitAmount = ProductBuilder::sample('unitAmount');
-        $saucer = ProductBuilder::new()->withLabel($saucerLabel->value)->withUnitAmountInCents($saucerUnitAmount->cents)->create();
+        $saucerUnitPrice = ProductBuilder::sample('unitPrice');
+        $saucer = ProductBuilder::new()->withLabel($saucerLabel->value)->withUnitPriceInCents($saucerUnitPrice->cents)->create();
 
         $this->store($cups, $saucer);
 
         return [
-            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $cupsLabel->value, 'unitAmountInCents' => $cupsUnitAmount->cents],
-            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => $saucerLabel->value, 'unitAmountInCents' => $saucerUnitAmount->cents],
+            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $cupsLabel->value, 'unitPriceInCents' => $cupsUnitPrice->cents],
+            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => $saucerLabel->value, 'unitPriceInCents' => $saucerUnitPrice->cents],
         ];
     }
 
     /**
-     * @param list<array{productId: string, quantity: int, label: string, unitAmountInCents: int}> $lines
+     * @param list<array{productId: string, quantity: int, label: string, unitPriceInCents: int}> $lines
      */
     private function totalAmountInCents(array $lines): int
     {
-        return array_sum(array_map(static fn (array $line): int => $line['quantity'] * $line['unitAmountInCents'], $lines));
+        return array_sum(array_map(static fn (array $line): int => $line['quantity'] * $line['unitPriceInCents'], $lines));
     }
 
     private function registeredCustomer(string $email): Customer

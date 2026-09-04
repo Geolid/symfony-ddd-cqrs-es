@@ -7,7 +7,7 @@ namespace Api\State\Processor;
 use Api\Input\RepriceProductInput;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
+use Catalog\Listing\Application\Command\RepriceProduct\RepriceProduct;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
@@ -26,9 +26,9 @@ final readonly class RepriceProductProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        \assert(null !== $data->unitAmountInCents);
+        \assert(null !== $data->unitPriceInCents);
         \assert(\is_string($uriVariables['id']));
 
-        $this->commandBus->dispatch(new RepriceProduct($uriVariables['id'], $data->unitAmountInCents));
+        $this->commandBus->dispatch(new RepriceProduct($uriVariables['id'], $data->unitPriceInCents));
     }
 }

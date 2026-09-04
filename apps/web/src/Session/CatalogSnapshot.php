@@ -16,7 +16,7 @@ final readonly class CatalogSnapshot
     }
 
     /**
-     * @param array<string, array{label: string, unitAmountInCents: int}> $currentCatalog
+     * @param array<string, array{label: string, unitPriceInCents: int}> $currentCatalog
      */
     public function store(array $currentCatalog): void
     {
@@ -26,7 +26,7 @@ final readonly class CatalogSnapshot
     /**
      * @param list<array{productId: string, quantity: int}> $lines
      *
-     * @return list<array{productId: string, quantity: int, label: string, unitAmountInCents: int}>
+     * @return list<array{productId: string, quantity: int, label: string, unitPriceInCents: int}>
      *
      * @throws MissingCatalogSnapshotException
      */
@@ -42,7 +42,7 @@ final readonly class CatalogSnapshot
                     'productId' => $line['productId'],
                     'quantity' => $line['quantity'],
                     'label' => $product['label'],
-                    'unitAmountInCents' => $product['unitAmountInCents'],
+                    'unitPriceInCents' => $product['unitPriceInCents'],
                 ];
             },
             $lines,
@@ -50,11 +50,11 @@ final readonly class CatalogSnapshot
     }
 
     /**
-     * @return array<string, array{label: string, unitAmountInCents: int}>
+     * @return array<string, array{label: string, unitPriceInCents: int}>
      */
     private function read(): array
     {
-        /** @var array<string, array{label: string, unitAmountInCents: int}> $snapshot */
+        /** @var array<string, array{label: string, unitPriceInCents: int}> $snapshot */
         $snapshot = $this->requestStack->getSession()->get(self::SESSION_KEY, []);
 
         return $snapshot;

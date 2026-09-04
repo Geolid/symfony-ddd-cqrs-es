@@ -28,7 +28,7 @@ final class DbalListedProductFinder extends AbstractDbalFinder implements Listed
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('product_id', 'label', 'unit_amount_in_cents')
+        $qb->select('product_id', 'label', 'unit_price_in_cents')
             ->from(DbalListedProductProjector::TABLE)
             ->orderBy('product_id', 'ASC');
     }

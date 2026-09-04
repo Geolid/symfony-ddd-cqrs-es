@@ -5,7 +5,7 @@ declare(strict_types=1);
 use AfterSales\Withdrawal\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
 use AfterSales\Withdrawal\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Withdrawal\Domain\Exception\WithdrawalWindowExpiredException;
-use Catalog\Product\Application\Exception\ProductLabelAlreadyTakenException;
+use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
 use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;

@@ -60,11 +60,11 @@
                         <tr data-testid="order-line">
                             <td>
                                 <strong>{{ line.label }}</strong><br>
-                                <small class="text-muted">{{ line.unitAmountInCents|amount }} / u</small>
+                                <small class="text-muted">{{ line.unitPriceInCents|amount }} / u</small>
                             </td>
                             <td class="text-center">x{{ line.quantity }}</td>
                             <td class="text-right">
-                                <strong>{{ (line.quantity * line.unitAmountInCents)|amount }}</strong></td>
+                                <strong>{{ (line.quantity * line.unitPriceInCents)|amount }}</strong></td>
                         </tr>
                     {% endfor %}
                     </tbody>

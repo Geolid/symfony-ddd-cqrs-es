@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
-use Catalog\Tests\Product\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalListedProductProjector;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{label: string, unit_amount_in_cents: int|string}
+ * @phpstan-type Row array{label: string, unit_price_in_cents: int|string}
  */
 final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 {
@@ -29,7 +29,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_amount_in_cents']);
+        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
     }
 
     #[Test]
@@ -47,11 +47,11 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(2_000, (int) $row['unit_amount_in_cents']);
+        self::assertSame(2_000, (int) $row['unit_price_in_cents']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_amount_in_cents']);
+        self::assertSame($otherBuilder['unitPrice']->cents, (int) $otherRow['unit_price_in_cents']);
     }
 
     #[Test]
@@ -80,7 +80,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT label, unit_amount_in_cents FROM %s WHERE product_id = :productId',
+                'SELECT label, unit_price_in_cents FROM %s WHERE product_id = :productId',
                 DbalListedProductProjector::TABLE,
             ),
             ['productId' => $productId],

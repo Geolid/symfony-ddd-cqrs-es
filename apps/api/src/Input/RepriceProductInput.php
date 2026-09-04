@@ -12,7 +12,7 @@ final readonly class RepriceProductInput
     public function __construct(
         #[ApiProperty(description: 'The new unit price of the product, in cents.', example: 3_499)]
         #[ValidMoney]
-        public ?int $unitAmountInCents = null,
+        public ?int $unitPriceInCents = null,
     ) {
     }
 }

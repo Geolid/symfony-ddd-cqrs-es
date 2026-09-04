@@ -6,7 +6,7 @@ namespace Api\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Catalog\Product\Application\Command\DelistProduct\DelistProduct;
+use Catalog\Listing\Application\Command\DelistProduct\DelistProduct;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

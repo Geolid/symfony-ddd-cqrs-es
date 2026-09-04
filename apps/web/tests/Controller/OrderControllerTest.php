@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Web\Tests\Controller;
 
-use Catalog\Product\Application\Command\RepriceProduct\RepriceProduct;
-use Catalog\Tests\Product\Support\Builder\ProductBuilder;
+use Catalog\Listing\Application\Command\RepriceProduct\RepriceProduct;
+use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -138,7 +138,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         // Given
         $client = self::browser();
         $this->loginAs($client, $this->createCustomer('buyer-1@example.com'));
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitPriceInCents(1_750)->create();
         $this->store($product);
 
         // When
@@ -168,7 +168,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = IdentityBuilder::new()->create();
         $customer = CustomerBuilder::new()->withId($identity->id->toString())->withEmail('buyer-9@example.com')->create();
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitPriceInCents(1_750)->create();
         $this->store($identity, $customer, $product);
         $this->loginAs($client, $identity);
 
@@ -195,7 +195,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         $client = self::browser();
         $identity = $this->createCustomer('buyer-11@example.com');
         $this->loginAs($client, $identity);
-        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitAmountInCents(1_750)->create();
+        $product = ProductBuilder::new()->withLabel('Espresso cups, set of 6')->withUnitPriceInCents(1_750)->create();
         $this->store($product);
         $crawler = $client->request('GET', $this->path('sales_order_place'));
         $form = $crawler->filter('[data-testid="place-order-form"]')->form();

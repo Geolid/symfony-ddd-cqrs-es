@@ -7,8 +7,8 @@ namespace Api\State\Provider;
 use Api\Resource\ProductResource;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Catalog\Product\Application\Exception\ProductResultNotFoundException;
-use Catalog\Product\Application\Query\GetProduct\GetProduct;
+use Catalog\Listing\Application\Exception\ProductResultNotFoundException;
+use Catalog\Listing\Application\Query\GetProduct\GetProduct;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 

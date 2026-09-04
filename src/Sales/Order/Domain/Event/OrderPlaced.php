@@ -15,7 +15,7 @@ final readonly class OrderPlaced
     /**
      * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
      * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $billingAddress
-     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>                $lines
+     * @param list<array{productId: string, label: string, quantity: int, unitPriceInCents: int}>                 $lines
      */
     public function __construct(
         public string $id,

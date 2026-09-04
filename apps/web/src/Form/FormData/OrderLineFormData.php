@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Web\Form\FormData;
 
-use Catalog\Product\Application\Validation\ValidProductId;
+use Catalog\Listing\Application\Validation\ValidProductId;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class OrderLineFormData

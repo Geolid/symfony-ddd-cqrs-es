@@ -33,7 +33,7 @@ final class ListOrderSummaryLinesHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $results[0]->orderId);
         self::assertSame('Widget', $results[0]->label);
         self::assertSame(2, $results[0]->quantity);
-        self::assertSame(1_500, $results[0]->unitAmountInCents);
+        self::assertSame(1_500, $results[0]->unitPriceInCents);
     }
 
     #[Test]

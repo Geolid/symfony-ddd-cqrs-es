@@ -240,7 +240,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     /**
-     * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
+     * @return list<array{productId: string, label: string, quantity: int, unitPriceInCents: int}>
      */
     private function primitiveLines(): array
     {
@@ -249,7 +249,7 @@ final class OrderTest extends AggregateRootTestCase
                 'productId' => $line->product->id,
                 'label' => $line->product->label->value,
                 'quantity' => $line->quantity,
-                'unitAmountInCents' => $line->product->price->cents,
+                'unitPriceInCents' => $line->product->price->cents,
             ],
             $this->lines,
         );

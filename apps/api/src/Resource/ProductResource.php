@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Api\Resource;
 
-use Api\Input\ListProductForSaleInput;
+use Api\Input\PublishProductInput;
 use Api\Input\RepriceProductInput;
 use Api\State\Processor\DelistProductProcessor;
-use Api\State\Processor\ListProductForSaleProcessor;
+use Api\State\Processor\PublishProductProcessor;
 use Api\State\Processor\RepriceProductProcessor;
 use Api\State\Provider\ProductCollectionProvider;
 use Api\State\Provider\ProductProvider;
@@ -18,7 +18,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
-use Catalog\Product\Application\Finder\Product\ProductResult;
+use Catalog\Listing\Application\Finder\Product\ProductResult;
 
 #[ApiResource(
     shortName: 'Product',
@@ -54,8 +54,8 @@ use Catalog\Product\Application\Finder\Product\ProductResult;
                 summary: 'Lists a new product for sale.',
             ),
             security: 'is_authenticated()',
-            input: ListProductForSaleInput::class,
-            processor: ListProductForSaleProcessor::class,
+            input: PublishProductInput::class,
+            processor: PublishProductProcessor::class,
         ),
         new Post(
             uriTemplate: '/products/{id}/reprice',
@@ -101,7 +101,7 @@ final class ProductResource
         #[ApiProperty(description: 'The label of the product.', example: 'Wireless mouse')]
         public ?string $label = null,
         #[ApiProperty(description: 'The unit price of the product, in cents.', example: 2_999)]
-        public ?int $unitAmountInCents = null,
+        public ?int $unitPriceInCents = null,
     ) {
     }
 
@@ -110,7 +110,7 @@ final class ProductResource
         return new self(
             id: $result->id,
             label: $result->label,
-            unitAmountInCents: $result->unitAmountInCents,
+            unitPriceInCents: $result->unitPriceInCents,
         );
     }
 }

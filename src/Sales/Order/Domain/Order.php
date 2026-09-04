@@ -84,7 +84,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                     'productId' => $line->product->id,
                     'label' => $line->product->label->value,
                     'quantity' => $line->quantity,
-                    'unitAmountInCents' => $line->product->price->cents,
+                    'unitPriceInCents' => $line->product->price->cents,
                 ],
                 $lines,
             )),

@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Catalog\Listing\Application\Finder\Product;
+
+final readonly class ProductResult
+{
+    public function __construct(
+        public string $id,
+        public string $label,
+        public int $unitPriceInCents,
+        public \DateTimeImmutable $listedAt,
+        public ?\DateTimeImmutable $repricedAt,
+    ) {
+    }
+}
