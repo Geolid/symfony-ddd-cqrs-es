@@ -7,8 +7,7 @@ namespace Sales\Order\Application\Finder\Buyer;
 final readonly class PostalAddressResult
 {
     public function __construct(
-        public string $firstName,
-        public string $lastName,
+        public string $recipientName,
         public string $street,
         public string $postalCode,
         public string $city,

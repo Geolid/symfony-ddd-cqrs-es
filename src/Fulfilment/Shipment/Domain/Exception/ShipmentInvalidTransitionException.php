@@ -23,34 +23,4 @@ final class ShipmentInvalidTransitionException extends \DomainException
     {
         return new self(\sprintf('Cannot deliver shipment "%s" with status "%s".', $id->toString(), $current->value));
     }
-
-    public static function cannotRequestReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot request a return for shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
-
-    public static function cannotManifestReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot manifest a return for shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
-
-    public static function cannotDispatchReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot dispatch the return of shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
-
-    public static function cannotReceiveReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot receive a return for shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
-
-    public static function cannotApproveReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot approve the return of shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
-
-    public static function cannotRejectReturn(ShipmentId $id, ShipmentState $current): self
-    {
-        return new self(\sprintf('Cannot reject the return of shipment "%s" with status "%s".', $id->toString(), $current->value));
-    }
 }

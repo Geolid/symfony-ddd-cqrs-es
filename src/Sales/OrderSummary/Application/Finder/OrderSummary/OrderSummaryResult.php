@@ -19,7 +19,7 @@ final readonly class OrderSummaryResult
         public ?string $paymentReference,
         public ?string $paymentCheckoutUrl,
         public ?\DateTimeImmutable $paidAt,
-        public ?string $trackingReference,
+        public ?string $trackingNumber,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
     ) {

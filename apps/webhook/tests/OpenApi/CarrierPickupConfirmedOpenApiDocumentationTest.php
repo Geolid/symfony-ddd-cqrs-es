@@ -56,12 +56,12 @@ final class CarrierPickupConfirmedOpenApiDocumentationTest extends AbstractWebho
         $schema = self::toArray($schemas['CarrierPickupConfirmedPayload']);
 
         self::assertSame([
-            'trackingReference' => [
+            'trackingNumber' => [
                 "The carrier's own tracking reference for the picked-up parcel.",
                 'ACME-4Q7X2K9',
             ],
         ], self::describeProperties($schema));
-        self::assertContains('trackingReference', self::toArray($schema['required']));
+        self::assertContains('trackingNumber', self::toArray($schema['required']));
     }
 
     #[Test]

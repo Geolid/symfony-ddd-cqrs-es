@@ -10,30 +10,20 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Sales\Order\Domain\Event\OrderAnonymized;
 use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Order\Domain\Event\OrderReturnRejected;
-use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
-use Sales\Order\Domain\Exception\OrderNotCompletableException;
-use Sales\Order\Domain\Exception\OrderNotReturnableException;
-use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
-use Sales\Order\Domain\Specification\RetentionExpiredSpecification;
-use Sales\Order\Domain\Specification\ReturnWindowExpiredSpecification;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -49,9 +39,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) PostalAddress $billingAddress;
     public private(set) int $totalAmountInCents;
     private OrderState $state;
-    private \DateTimeImmutable $deliveredAt;
-    private ?\DateTimeImmutable $closedAt = null;
-    private ?\DateTimeImmutable $anonymizedAt = null;
 
     /**
      * @throws OrderAlreadyCancelledException
@@ -90,22 +77,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
             customerId: $customerId,
-            shippingAddress: [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-            billingAddress: [
-                'firstName' => $billingAddress->fullName->firstName,
-                'lastName' => $billingAddress->fullName->lastName,
-                'street' => $billingAddress->address->street,
-                'postalCode' => $billingAddress->address->postalCode,
-                'city' => $billingAddress->address->city,
-                'countryCode' => $billingAddress->address->countryCode->value,
-            ],
+            shippingAddress: $shippingAddress->toArray(),
+            billingAddress: $billingAddress->toArray(),
             lines: array_values(array_map(
                 static fn (OrderLine $line): array => [
                     'productId' => $line->product->id,
@@ -180,98 +153,10 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             deliveredAt: $deliveredAt,
         ));
-    }
-
-    /**
-     * @throws OrderNotCompletableException
-     */
-    public function complete(\DateTimeImmutable $now): void
-    {
-        if ($this->state->isCompleted()) {
-            return;
-        }
-
-        if (!$this->state->isDelivered()) {
-            throw OrderNotCompletableException::forId($this->id);
-        }
-
-        if (!new ReturnWindowExpiredSpecification($now)->isSatisfiedBy($this->deliveredAt)) {
-            return;
-        }
 
         $this->recordThat(new OrderCompleted(
             id: $this->id->toString(),
-            completedAt: $now,
-        ));
-    }
-
-    /**
-     * @throws OrderBelongsToAnotherCustomerException
-     * @throws OrderNotReturnableException
-     * @throws OrderReturnWindowExpiredException
-     */
-    public function requestReturn(string $customerId, \DateTimeImmutable $now): void
-    {
-        if ($this->customerId !== $customerId) {
-            throw OrderBelongsToAnotherCustomerException::forId($this->id);
-        }
-
-        if ($this->state->isReturnRequested()) {
-            return;
-        }
-
-        if (!$this->state->isDelivered()) {
-            throw OrderNotReturnableException::forId($this->id);
-        }
-
-        if (new ReturnWindowExpiredSpecification($now)->isSatisfiedBy($this->deliveredAt)) {
-            throw OrderReturnWindowExpiredException::forId($this->id);
-        }
-
-        $this->recordThat(new OrderReturnRequested(
-            id: $this->id->toString(),
-            requestedAt: $now,
-        ));
-    }
-
-    public function confirmReturn(\DateTimeImmutable $returnedAt): void
-    {
-        if (!$this->state->isReturnRequested()) {
-            return;
-        }
-
-        $this->recordThat(new OrderReturned(
-            id: $this->id->toString(),
-            returnedAt: $returnedAt,
-        ));
-    }
-
-    public function rejectReturn(string $reason, \DateTimeImmutable $rejectedAt): void
-    {
-        if (!$this->state->isReturnRequested()) {
-            return;
-        }
-
-        $this->recordThat(new OrderReturnRejected(
-            id: $this->id->toString(),
-            reason: $reason,
-            rejectedAt: $rejectedAt,
-        ));
-    }
-
-    public function anonymize(\DateTimeImmutable $now): void
-    {
-        if (null !== $this->anonymizedAt) {
-            return;
-        }
-
-        if (null === $this->closedAt || !new RetentionExpiredSpecification($now)->isSatisfiedBy($this->closedAt)) {
-            return;
-        }
-
-        $this->recordThat(new OrderAnonymized(
-            id: $this->id->toString(),
-            anonymizedAt: $now,
+            completedAt: $deliveredAt,
         ));
     }
 
@@ -280,18 +165,10 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = OrderId::fromString($event->id);
         $this->customerId = $event->customerId;
-        $this->shippingAddress = PostalAddress::of(
-            FullName::of($event->shippingAddress['firstName'], $event->shippingAddress['lastName']),
-            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),
-        );
-        $this->billingAddress = PostalAddress::of(
-            FullName::of($event->billingAddress['firstName'], $event->billingAddress['lastName']),
-            Address::of($event->billingAddress['street'], $event->billingAddress['postalCode'], $event->billingAddress['city'], $event->billingAddress['countryCode']),
-        );
+        $this->shippingAddress = $this->toAddress($event->shippingAddress);
+        $this->billingAddress = $this->toAddress($event->billingAddress);
         $this->totalAmountInCents = $event->totalAmountInCents;
         $this->state = OrderState::PLACED;
-        $this->closedAt = null;
-        $this->anonymizedAt = null;
     }
 
     #[Apply]
@@ -304,7 +181,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyCancelled(OrderCancelled $event): void
     {
         $this->state = OrderState::CANCELLED;
-        $this->closedAt = $event->cancelledAt;
     }
 
     #[Apply]
@@ -317,39 +193,22 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyDelivered(OrderDelivered $event): void
     {
         $this->state = OrderState::DELIVERED;
-        $this->deliveredAt = $event->deliveredAt;
     }
 
     #[Apply]
     private function applyCompleted(OrderCompleted $event): void
     {
         $this->state = OrderState::COMPLETED;
-        $this->closedAt = $event->completedAt;
     }
 
-    #[Apply]
-    private function applyReturnRequested(OrderReturnRequested $event): void
+    /**
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     */
+    private function toAddress(array $address): PostalAddress
     {
-        $this->state = OrderState::RETURN_REQUESTED;
-    }
-
-    #[Apply]
-    private function applyReturned(OrderReturned $event): void
-    {
-        $this->state = OrderState::RETURNED;
-        $this->closedAt = $event->returnedAt;
-    }
-
-    #[Apply]
-    private function applyReturnRejected(OrderReturnRejected $event): void
-    {
-        $this->state = OrderState::RETURN_REJECTED;
-        $this->closedAt = $event->rejectedAt;
-    }
-
-    #[Apply]
-    private function applyAnonymized(OrderAnonymized $event): void
-    {
-        $this->anonymizedAt = $event->anonymizedAt;
+        return PostalAddress::of(
+            $address['recipientName'],
+            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
+        );
     }
 }

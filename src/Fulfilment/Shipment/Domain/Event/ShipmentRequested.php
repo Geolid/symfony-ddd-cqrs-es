@@ -12,23 +12,27 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 #[Event('fulfilment.shipment.shipment.requested')]
 final readonly class ShipmentRequested
 {
+    private const array ERASED_ADDRESS = [
+        'recipientName' => 'erased',
+        'street' => 'erased',
+        'postalCode' => '00000',
+        'city' => 'erased',
+        'countryCode' => 'ZZ',
+    ];
+
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $origin
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $destination
      */
     public function __construct(
         public string $id,
-        public string $orderId,
+        public string $reference,
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'lastName' => 'erased',
-            'street' => 'erased',
-            'postalCode' => '00000',
-            'city' => 'erased',
-            'countryCode' => 'ZZ',
-        ]))]
-        public array $shippingAddress,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel(self::ERASED_ADDRESS))]
+        public array $origin,
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel(self::ERASED_ADDRESS))]
+        public array $destination,
         public \DateTimeImmutable $createdAt,
     ) {
     }

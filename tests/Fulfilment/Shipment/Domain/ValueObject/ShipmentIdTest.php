@@ -8,19 +8,18 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class ShipmentIdTest extends TestCase
 {
-    private const string ORDER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
-
     #[Test]
-    public function itDerivesKnownId(): void
+    public function itGenerates(): void
     {
         // When
-        $id = ShipmentId::forOrder(self::ORDER_ID);
+        $id = ShipmentId::generate();
 
         // Then
-        self::assertSame('df2b83ff-c193-53b1-b4f0-ebba2dd89d08', $id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]
@@ -47,8 +46,9 @@ final class ShipmentIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $a = ShipmentId::forOrder(self::ORDER_ID);
-        $b = ShipmentId::forOrder(self::ORDER_ID);
+        $value = ShipmentId::generate()->toString();
+        $a = ShipmentId::fromString($value);
+        $b = ShipmentId::fromString($value);
 
         // When
         $equals = $a->equals($b);
@@ -61,8 +61,8 @@ final class ShipmentIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = ShipmentId::forOrder(self::ORDER_ID);
-        $b = ShipmentId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $a = ShipmentId::generate();
+        $b = ShipmentId::generate();
 
         // When
         $equals = $a->equals($b);

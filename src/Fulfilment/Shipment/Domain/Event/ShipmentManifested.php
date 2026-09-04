@@ -11,7 +11,7 @@ final readonly class ShipmentManifested
 {
     public function __construct(
         public string $id,
-        public string $trackingReference,
+        public string $trackingNumber,
         public \DateTimeImmutable $manifestedAt,
     ) {
     }

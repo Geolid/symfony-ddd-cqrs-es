@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
+use AfterSales\Withdrawal\Application\Command\RequestWithdrawal\RequestWithdrawal;
+use AfterSales\Withdrawal\Application\Exception\OrderResultNotFoundException;
+use AfterSales\Withdrawal\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Product\Application\Finder\Product\ProductResult;
 use Catalog\Product\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
-use Sales\Order\Application\Command\RequestOrderReturn\RequestOrderReturn;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
-use Sales\Order\Domain\Exception\OrderNotReturnableException;
-use Sales\Order\Domain\Exception\OrderReturnWindowExpiredException;
 use Sales\OrderSummary\Application\Query\GetOrderSummary\GetOrderSummary;
 use Sales\OrderSummary\Application\Query\ListOrderSummaries\ListOrderSummaries;
 use Sales\OrderSummary\Application\Query\ListOrderSummaryLines\ListOrderSummaryLines;
@@ -217,12 +217,12 @@ final class OrderController extends AbstractController
         }
 
         try {
-            $this->commandBus->dispatch(new RequestOrderReturn($id, $user->identityId()));
-        } catch (OrderNotReturnableException) {
+            $this->commandBus->dispatch(new RequestWithdrawal($id, $user->identityId()));
+        } catch (OrderResultNotFoundException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.not_returnable'));
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);
-        } catch (OrderReturnWindowExpiredException) {
+        } catch (WithdrawalWindowExpiredException) {
             $this->addFlash('error', $this->translator->trans('sales.order.flash.return_window_expired'));
 
             return $this->redirectToRoute('sales_order_show', ['id' => $id]);

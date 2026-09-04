@@ -47,8 +47,7 @@ final class CheckoutController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->commandBus->dispatch(new RegisterCustomerShippingAddress(
                 customerId: $user->identityId(),
-                firstName: (string) $formData->shipping->fullName->firstName,
-                lastName: (string) $formData->shipping->fullName->lastName,
+                recipientName: (string) $formData->shipping->recipientName,
                 street: (string) $formData->shipping->address->street,
                 postalCode: (string) $formData->shipping->address->postalCode,
                 city: (string) $formData->shipping->address->city,
@@ -56,8 +55,7 @@ final class CheckoutController extends AbstractController
             ));
             $this->commandBus->dispatch(new RegisterCustomerBillingAddress(
                 customerId: $user->identityId(),
-                firstName: (string) $formData->billing->fullName->firstName,
-                lastName: (string) $formData->billing->fullName->lastName,
+                recipientName: (string) $formData->billing->recipientName,
                 street: (string) $formData->billing->address->street,
                 postalCode: (string) $formData->billing->address->postalCode,
                 city: (string) $formData->billing->address->city,

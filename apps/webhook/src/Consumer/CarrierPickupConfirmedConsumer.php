@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Webhook\Consumer;
 
 use Fulfilment\Shipment\Application\Command\DispatchShipment\DispatchShipment;
-use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingReference\GetShipmentByTrackingReference;
+use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingNumber\GetShipmentByTrackingNumber;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -31,7 +31,7 @@ final readonly class CarrierPickupConfirmedConsumer implements ConsumerInterface
     {
         $payload = $event->getPayload();
 
-        $shipment = $this->queryBus->ask(new GetShipmentByTrackingReference($payload['trackingReference']));
+        $shipment = $this->queryBus->ask(new GetShipmentByTrackingNumber($payload['trackingNumber']));
 
         $this->commandBus->dispatch(new DispatchShipment($shipment->id));
     }

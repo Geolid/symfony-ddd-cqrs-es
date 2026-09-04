@@ -73,7 +73,7 @@ final class OrderVoterTest extends TestCase
             paymentReference: null,
             paymentCheckoutUrl: null,
             paidAt: null,
-            trackingReference: null,
+            trackingNumber: null,
             dispatchedAt: null,
             deliveredAt: null,
         );

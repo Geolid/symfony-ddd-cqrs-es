@@ -13,18 +13,16 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderPlaced
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $billingAddress
-     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>                              $lines
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $billingAddress
+     * @param list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>                $lines
      */
     public function __construct(
-        #[DataSubjectId(name: 'sales_order_retention')]
         public string $id,
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'lastName' => 'erased',
+            'recipientName' => 'erased',
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
@@ -32,13 +30,12 @@ final readonly class OrderPlaced
         ]))]
         public array $shippingAddress,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'lastName' => 'erased',
+            'recipientName' => 'erased',
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',
             'countryCode' => 'ZZ',
-        ]), subjectIdName: 'sales_order_retention')]
+        ]))]
         public array $billingAddress,
         public array $lines,
         public int $totalAmountInCents,

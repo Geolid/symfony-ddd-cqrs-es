@@ -6,6 +6,5 @@ namespace Fulfilment\Shipment\Domain\ValueObject;
 
 enum ShipmentUniqueKey: string
 {
-    case TRACKING_REFERENCE = 'fulfilment.shipment.tracking_reference';
-    case RETURN_TRACKING_REFERENCE = 'fulfilment.shipment.return_tracking_reference';
+    case TRACKING_NUMBER = 'fulfilment.shipment.tracking_number';
 }

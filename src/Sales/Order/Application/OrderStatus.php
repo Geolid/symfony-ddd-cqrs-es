@@ -12,9 +12,6 @@ enum OrderStatus: string
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case COMPLETED = 'completed';
-    case RETURN_REQUESTED = 'return_requested';
-    case RETURNED = 'returned';
-    case RETURN_REJECTED = 'return_rejected';
 
     public function isCancelled(): bool
     {

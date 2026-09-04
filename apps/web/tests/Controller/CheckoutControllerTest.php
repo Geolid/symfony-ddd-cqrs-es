@@ -52,12 +52,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertNotNull($buyer);
         self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->shippingAddress),
         );
         self::assertNotNull($buyer->billingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->billingAddress),
         );
     }
@@ -78,12 +78,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertNotNull($buyer);
         self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->shippingAddress),
         );
         self::assertNotNull($buyer->billingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->billingAddress),
         );
     }
@@ -105,12 +105,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         self::assertNotNull($buyer);
         self::assertNotNull($buyer->shippingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->shippingAddress),
         );
         self::assertNotNull($buyer->billingAddress);
         self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ['recipientName' => 'Ada Lovelace', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
             $this->postalAddress($buyer->billingAddress),
         );
     }
@@ -158,14 +158,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
         $prefix = $form->getName();
 
         $values = [
-            \sprintf('%s[shipping][fullName][firstName]', $prefix) => 'Ada',
-            \sprintf('%s[shipping][fullName][lastName]', $prefix) => 'Lovelace',
+            \sprintf('%s[shipping][recipientName]', $prefix) => 'Ada Lovelace',
             \sprintf('%s[shipping][address][street]', $prefix) => '12 rue des Lilas',
             \sprintf('%s[shipping][address][postalCode]', $prefix) => '75001',
             \sprintf('%s[shipping][address][city]', $prefix) => 'Paris',
             \sprintf('%s[shipping][address][countryCode]', $prefix) => 'FR',
-            \sprintf('%s[billing][fullName][firstName]', $prefix) => 'Ada',
-            \sprintf('%s[billing][fullName][lastName]', $prefix) => 'Lovelace',
+            \sprintf('%s[billing][recipientName]', $prefix) => 'Ada Lovelace',
             \sprintf('%s[billing][address][street]', $prefix) => '8 avenue Foch',
             \sprintf('%s[billing][address][postalCode]', $prefix) => '75116',
             \sprintf('%s[billing][address][city]', $prefix) => 'Paris',
@@ -191,13 +189,12 @@ final class CheckoutControllerTest extends AbstractWebTestCase
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function postalAddress(PostalAddressResult $address): array
     {
         return [
-            'firstName' => $address->firstName,
-            'lastName' => $address->lastName,
+            'recipientName' => $address->recipientName,
             'street' => $address->street,
             'postalCode' => $address->postalCode,
             'city' => $address->city,

@@ -7,15 +7,25 @@ namespace Sales\Order\Application\Policy;
 use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
+use Sales\Order\Domain\Repository\OrderRepositoryInterface;
+use Sales\Order\Domain\ValueObject\OrderId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
+/**
+ * A `Shipment` reports DELIVERED for both an outbound leg and a return
+ * pickup — its `reference` is only meaningful to whichever BC requested it,
+ * so a relevance guard against this BC's own repository decides whether it
+ * applies.
+ */
 #[Policy('sales.order.deliver_order_on_shipment_delivered')]
 final readonly class DeliverOrderOnShipmentDelivered
 {
-    public function __construct(private CommandBusInterface $commandBus)
-    {
+    public function __construct(
+        private OrderRepositoryInterface $repository,
+        private CommandBusInterface $commandBus,
+    ) {
     }
 
     /**
@@ -25,6 +35,10 @@ final readonly class DeliverOrderOnShipmentDelivered
     #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
     public function __invoke(ShipmentDeliveredIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new DeliverOrder($event->orderId));
+        if (!$this->repository->has(OrderId::fromString($event->reference))) {
+            return;
+        }
+
+        $this->commandBus->dispatch(new DeliverOrder($event->reference));
     }
 }

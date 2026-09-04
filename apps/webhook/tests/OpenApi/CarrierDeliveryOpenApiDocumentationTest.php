@@ -56,12 +56,12 @@ final class CarrierDeliveryOpenApiDocumentationTest extends AbstractWebhookOpenA
         $schema = self::toArray($schemas['CarrierDeliveryPayload']);
 
         self::assertSame([
-            'trackingReference' => [
+            'trackingNumber' => [
                 "The carrier's own tracking reference for the delivered parcel.",
                 'ACME-4Q7X2K9',
             ],
         ], self::describeProperties($schema));
-        self::assertContains('trackingReference', self::toArray($schema['required']));
+        self::assertContains('trackingNumber', self::toArray($schema['required']));
     }
 
     #[Test]

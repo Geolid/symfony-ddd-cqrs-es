@@ -15,7 +15,6 @@ use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class CustomerTest extends AggregateRootTestCase
@@ -53,7 +52,7 @@ final class CustomerTest extends AggregateRootTestCase
             ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, $setAt))
             ->then(new CustomerShippingAddressRegistered(
                 id: $this->id->toString(),
-                address: $this->primitiveAddress($shippingAddress),
+                address: $shippingAddress->toArray(),
                 setAt: $setAt,
             ));
     }
@@ -67,7 +66,7 @@ final class CustomerTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new CustomerShippingAddressRegistered($this->id->toString(), $this->primitiveAddress($shippingAddress), $setAt),
+                new CustomerShippingAddressRegistered($this->id->toString(), $shippingAddress->toArray(), $setAt),
             )
             ->when(static fn (Customer $customer) => $customer->registerShippingAddress($shippingAddress, CustomerBuilder::sample('shippingAddressRegisteredAt')))
             ->then();
@@ -84,7 +83,7 @@ final class CustomerTest extends AggregateRootTestCase
             ->when(static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, $setAt))
             ->then(new CustomerBillingAddressRegistered(
                 id: $this->id->toString(),
-                address: $this->primitiveAddress($billingAddress),
+                address: $billingAddress->toArray(),
                 setAt: $setAt,
             ));
     }
@@ -98,7 +97,7 @@ final class CustomerTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new CustomerBillingAddressRegistered($this->id->toString(), $this->primitiveAddress($billingAddress), $setAt),
+                new CustomerBillingAddressRegistered($this->id->toString(), $billingAddress->toArray(), $setAt),
             )
             ->when(static fn (Customer $customer) => $customer->registerBillingAddress($billingAddress, CustomerBuilder::sample('billingAddressRegisteredAt')))
             ->then();
@@ -138,26 +137,11 @@ final class CustomerTest extends AggregateRootTestCase
 
     private function shippingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private function billingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
-    }
-
-    /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function primitiveAddress(PostalAddress $address): array
-    {
-        return [
-            'firstName' => $address->fullName->firstName,
-            'lastName' => $address->fullName->lastName,
-            'street' => $address->address->street,
-            'postalCode' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'countryCode' => $address->address->countryCode->value,
-        ];
+        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 }

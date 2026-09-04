@@ -9,13 +9,15 @@ use Shared\Application\Command\CommandInterface;
 final readonly class RequestShipment implements CommandInterface
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $origin
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $destination
      */
     public function __construct(
         public string $id,
-        public string $orderId,
+        public string $reference,
         public string $customerId,
-        public array $shippingAddress,
+        public array $origin,
+        public array $destination,
     ) {
     }
 }

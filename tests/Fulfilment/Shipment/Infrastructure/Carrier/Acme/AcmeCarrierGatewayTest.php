@@ -13,7 +13,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -29,66 +28,35 @@ final class AcmeCarrierGatewayTest extends TestCase
         $response = self::jsonResponse(['trackingNumber' => 'ACME-4Q7X2K9']);
 
         // When
-        $trackingReference = $this->gateway($response)->manifest($shipmentId, $this->deliveryAddress());
+        $trackingNumber = $this->gateway($response)->manifest($shipmentId, $this->originAddress(), $this->destinationAddress());
 
         // Then
-        self::assertSame('ACME-4Q7X2K9', $trackingReference);
+        self::assertSame('ACME-4Q7X2K9', $trackingNumber);
 
         $requestUrl = $response->getRequestUrl();
         self::assertSame('https://carrier.acme.test/shipments', $requestUrl);
         $headers = $response->getRequestOptions()['headers'];
         self::assertContains('Idempotency-Key: '.$shipmentId, $headers);
-        self::assertSame(
-            [
-                'clientReferenceId' => $shipmentId,
-                'destination' => [
-                    'recipient' => 'Ada Lovelace',
-                    'street' => '12 rue des Lilas',
-                    'postalCode' => '75001',
-                    'city' => 'Paris',
-                    'countryCode' => 'FR',
-                ],
-            ],
-            $this->requestBody($response),
-        );
-    }
-
-    #[Test]
-    public function itManifestsReturn(): void
-    {
-        // Given
-        $shipmentId = Uuid::uuid7()->toString();
-        $response = self::jsonResponse(['trackingNumber' => 'ACME-RETURN-4Q7X2K9']);
-
-        // When
-        $returnTrackingReference = $this->gateway($response)->manifestReturn($shipmentId, $this->deliveryAddress());
-
-        // Then
-        self::assertSame('ACME-RETURN-4Q7X2K9', $returnTrackingReference);
-
-        $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://carrier.acme.test/returns', $requestUrl);
-        $headers = $response->getRequestOptions()['headers'];
-        self::assertContains('Idempotency-Key: '.$shipmentId, $headers);
+        $requestBody = $this->requestBody($response);
         self::assertSame(
             [
                 'clientReferenceId' => $shipmentId,
                 'origin' => [
-                    'recipient' => 'Ada Lovelace',
-                    'street' => '12 rue des Lilas',
-                    'postalCode' => '75001',
-                    'city' => 'Paris',
-                    'countryCode' => 'FR',
-                ],
-                'destination' => [
                     'recipient' => 'Returns Department',
                     'street' => "1 rue de l'Entrepot",
                     'postalCode' => '75012',
                     'city' => 'Paris',
                     'countryCode' => 'FR',
                 ],
+                'destination' => [
+                    'recipient' => 'Ada Lovelace',
+                    'street' => '12 rue des Lilas',
+                    'postalCode' => '75001',
+                    'city' => 'Paris',
+                    'countryCode' => 'FR',
+                ],
             ],
-            $this->requestBody($response),
+            $requestBody,
         );
     }
 
@@ -100,7 +68,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         $this->expectException(AcmeClientException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->deliveryAddress());
+        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
     }
 
     /**
@@ -120,18 +88,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         $this->expectException(AcmeClientException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->deliveryAddress());
-    }
-
-    #[Test]
-    #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsWhenReturnManifestResponseUnreadable(MockResponse $response): void
-    {
-        // Then
-        $this->expectException(AcmeClientException::class);
-
-        // When
-        $this->gateway($response)->manifestReturn(Uuid::uuid7()->toString(), $this->deliveryAddress());
+        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
     }
 
     /**
@@ -207,19 +164,17 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     private function gateway(callable|MockResponse $response): AcmeCarrierGateway
     {
-        return new AcmeCarrierGateway(
-            new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')),
-            'Returns Department',
-            "1 rue de l'Entrepot",
-            '75012',
-            'Paris',
-            'FR',
-        );
+        return new AcmeCarrierGateway(new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')));
     }
 
-    private function deliveryAddress(): PostalAddress
+    private function originAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        return PostalAddress::of('Returns Department', Address::of("1 rue de l'Entrepot", '75012', 'Paris', 'FR'));
+    }
+
+    private function destinationAddress(): PostalAddress
+    {
+        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private static function jsonResponse(mixed $body, int $statusCode = 200): MockResponse

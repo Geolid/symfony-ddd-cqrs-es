@@ -18,13 +18,7 @@ final readonly class OrderResult
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $completedAt,
-        public ?\DateTimeImmutable $returnRequestedAt,
-        public ?\DateTimeImmutable $returnedAt,
-        public ?\DateTimeImmutable $returnRejectedAt,
-        public ?string $returnRejectionReason,
         public ?\DateTimeImmutable $cancelledAt,
-        public ?\DateTimeImmutable $closedAt,
-        public ?\DateTimeImmutable $anonymizedAt,
     ) {
     }
 }

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
-use Sales\Order\Application\Command\AnonymizeExpiredOrder\AnonymizeExpiredOrder;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
@@ -23,7 +22,6 @@ return static function (ContainerConfigurator $container): void {
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
             ],
             'routing' => [
-                AnonymizeExpiredOrder::class => 'async',
                 CancelOrphanedOrder::class => 'async',
                 PrepareShipment::class => 'async',
             ],

@@ -16,7 +16,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_reference: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
+ * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_number: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
  */
 final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 {
@@ -110,17 +110,17 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested('ACME-4Q7X2K9')->dispatched()->create();
         $this->store($shipment);
 
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        self::assertSame('ACME-4Q7X2K9', $row['tracking_reference']);
+        self::assertSame('ACME-4Q7X2K9', $row['tracking_number']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertNull($otherRow['tracking_reference']);
+        self::assertNull($otherRow['tracking_number']);
     }
 
     #[Test]
@@ -132,7 +132,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($shipment);
 
         // Then
@@ -155,7 +155,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->create();
+        $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // Then
@@ -177,7 +177,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
-        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->manifested()->dispatched()->create();
+        $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($other, $order, $payment, $shipment);
 
         // When
@@ -209,7 +209,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, payment_checkout_url, paid_at, shipment_status, tracking_reference, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
+                'SELECT customer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, payment_checkout_url, paid_at, shipment_status, tracking_number, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
                 DbalOrderSummaryProjector::TABLE,
             ),
             ['orderId' => $orderId],

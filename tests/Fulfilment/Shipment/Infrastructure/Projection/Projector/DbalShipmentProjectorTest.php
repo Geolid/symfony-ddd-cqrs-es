@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, status: string, tracking_reference: ?string, return_tracking_reference: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, return_manifested_at: ?string, return_dispatched_at: ?string, return_received_at: ?string, return_approved_at: ?string, return_rejected_at: ?string, return_rejection_reason: ?string}
+ * @phpstan-type Row array{reference: string, status: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,9 +30,9 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['customerId'], $row['customer_id']);
+        self::assertSame($builder['reference'], $row['reference']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertNull($row['tracking_reference']);
+        self::assertNull($row['tracking_number']);
     }
 
     #[Test]
@@ -75,7 +75,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(ShipmentStatus::MANIFESTED->value, $row['status']);
-        self::assertSame($builder['trackingReference']->value, $row['tracking_reference']);
+        self::assertSame($builder['trackingNumber']->value, $row['tracking_number']);
         self::assertNotNull($row['manifested_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -155,147 +155,6 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($otherRow['cancelled_at']);
     }
 
-    #[Test]
-    public function itProjectsOnShipmentReturnRequested(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_REQUESTED->value, $row['status']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnShipmentReturnManifested(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested();
-        $shipment = $builder->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED->value, $row['status']);
-        self::assertSame($builder['returnTrackingReference']->value, $row['return_tracking_reference']);
-        self::assertNotNull($row['return_manifested_at']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnShipmentReturnDispatched(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED->value, $row['status']);
-        self::assertNotNull($row['return_dispatched_at']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnShipmentReturnReceived(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED->value, $row['status']);
-        self::assertNotNull($row['return_received_at']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnShipmentReturnApproved(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnApproved()->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_APPROVED->value, $row['status']);
-        self::assertNotNull($row['return_approved_at']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnShipmentReturnRejected(): void
-    {
-        // Given
-        $other = $this->otherShipment();
-        $this->store($other);
-
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->returnRequested()->returnManifested()->returnDispatched()->returnReceived()->returnRejected();
-        $shipment = $builder->create();
-
-        // When
-        $this->store($shipment);
-
-        // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ShipmentStatus::RETURN_REJECTED->value, $row['status']);
-        self::assertNotNull($row['return_rejected_at']);
-        self::assertSame($builder['returnRejectionReason'], $row['return_rejection_reason']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ShipmentStatus::REQUESTED->value, $otherRow['status']);
-    }
-
     private function otherShipment(): Shipment
     {
         return ShipmentBuilder::new()->create();
@@ -311,7 +170,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, status, tracking_reference, return_tracking_reference, manifested_at, dispatched_at, delivered_at, cancelled_at, return_manifested_at, return_dispatched_at, return_received_at, return_approved_at, return_rejected_at, return_rejection_reason FROM %s WHERE id = :id',
+                'SELECT reference, status, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

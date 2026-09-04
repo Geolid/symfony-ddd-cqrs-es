@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipment\Application\Policy;
 
 use Fulfilment\Shipment\Application\Command\RequestShipment\RequestShipment;
+use Fulfilment\Shipment\Application\Warehouse\WarehouseAddressProvider;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
@@ -15,8 +16,10 @@ use Shared\Application\Policy;
 #[Policy('fulfilment.shipment.request_shipment_on_order_confirmed')]
 final readonly class RequestShipmentOnOrderConfirmed
 {
-    public function __construct(private CommandBusInterface $commandBus)
-    {
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private WarehouseAddressProvider $warehouseAddressProvider,
+    ) {
     }
 
     /**
@@ -27,10 +30,11 @@ final readonly class RequestShipmentOnOrderConfirmed
     public function __invoke(OrderConfirmedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new RequestShipment(
-            id: ShipmentId::forOrder($event->orderId)->toString(),
-            orderId: $event->orderId,
+            id: ShipmentId::generate()->toString(),
+            reference: $event->orderId,
             customerId: $event->customerId,
-            shippingAddress: $event->shippingAddress,
+            origin: $this->warehouseAddressProvider->get()->toArray(),
+            destination: $event->shippingAddress,
         ));
     }
 }

@@ -36,7 +36,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(OrderStatus::DELIVERED, $result->status);
+        self::assertSame(OrderStatus::COMPLETED, $result->status);
     }
 
     #[Test]

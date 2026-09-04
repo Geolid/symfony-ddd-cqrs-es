@@ -13,13 +13,8 @@ final class ShipmentResultNotFoundException extends ResultNotFoundException
         return new self(\sprintf('Shipment "%s" not found.', $id));
     }
 
-    public static function forTrackingReference(string $trackingReference): self
+    public static function forTrackingNumber(string $trackingNumber): self
     {
-        return new self(\sprintf('Shipment tracked under reference "%s" not found.', $trackingReference));
-    }
-
-    public static function forReturnTrackingReference(string $returnTrackingReference): self
-    {
-        return new self(\sprintf('Shipment tracked under return reference "%s" not found.', $returnTrackingReference));
+        return new self(\sprintf('Shipment tracked under reference "%s" not found.', $trackingNumber));
     }
 }

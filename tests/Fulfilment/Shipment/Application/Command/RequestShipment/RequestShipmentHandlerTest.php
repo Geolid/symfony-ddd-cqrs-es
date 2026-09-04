@@ -11,10 +11,6 @@ use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
-use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -32,71 +28,47 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $id = ShipmentId::forOrder($orderId)->toString();
+        $id = ShipmentId::generate()->toString();
+        $reference = ShipmentBuilder::sample('reference');
+        $customerId = ShipmentBuilder::sample('customerId');
+        $originData = ShipmentBuilder::sample('origin')->toArray();
+        $destinationData = ShipmentBuilder::sample('destination')->toArray();
 
         // When
-        $this->dispatch(new RequestShipment(
-            $id,
-            $orderId,
-            Uuid::uuid7()->toString(),
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-        ));
+        $this->dispatch(new RequestShipment($id, $reference, $customerId, $originData, $destinationData));
 
         // Then
         $result = $this->service(ShipmentFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame($orderId, $result->orderId);
+        self::assertSame($reference, $result->reference);
         self::assertSame(ShipmentStatus::REQUESTED, $result->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
-        $shippingAddress = $shipment->shippingAddress;
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-        );
+        $shipmentDestination = $shipment->destination->toArray();
+        self::assertSame($destinationData, $shipmentDestination);
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
-        $id = ShipmentId::forOrder($orderId)->toString();
-        $shipment = ShipmentBuilder::new()
-            ->withOrderId($orderId)
-            ->withCustomerId($customerId)
-            ->withShippingAddress(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->create();
+        $builder = ShipmentBuilder::new();
+        $shipment = $builder->create();
         $this->store($shipment);
+        $attemptedDestination = ShipmentBuilder::sample('destination');
 
         // When
         $this->dispatch(new RequestShipment(
-            $id,
-            $orderId,
-            $customerId,
-            ['firstName' => 'Someone', 'lastName' => 'Else', 'street' => '8 avenue Foch', 'postalCode' => '75116', 'city' => 'Paris', 'countryCode' => 'FR'],
+            $shipment->id->toString(),
+            $builder['reference'],
+            $builder['customerId'],
+            $builder['origin']->toArray(),
+            $attemptedDestination->toArray(),
         ));
 
         // Then
-        $shippingAddress = $this->repository->load(ShipmentId::fromString($id))->shippingAddress;
-        self::assertSame(
-            ['firstName' => 'Ada', 'lastName' => 'Lovelace', 'street' => '12 rue des Lilas', 'postalCode' => '75001', 'city' => 'Paris', 'countryCode' => 'FR'],
-            [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
-        );
+        $result = $this->repository->load($shipment->id);
+        $resultDestination = $result->destination->toArray();
+        $originalDestination = $builder['destination']->toArray();
+        self::assertSame($originalDestination, $resultDestination);
     }
 }

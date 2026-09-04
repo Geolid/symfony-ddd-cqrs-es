@@ -10,21 +10,14 @@ final readonly class ShipmentResult
 {
     public function __construct(
         public string $id,
-        public string $orderId,
+        public string $reference,
         public ShipmentStatus $status,
-        public ?string $trackingReference,
-        public ?string $returnTrackingReference,
+        public ?string $trackingNumber,
         public \DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $manifestedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
-        public ?\DateTimeImmutable $returnManifestedAt,
-        public ?\DateTimeImmutable $returnDispatchedAt,
-        public ?\DateTimeImmutable $returnReceivedAt,
-        public ?\DateTimeImmutable $returnApprovedAt,
-        public ?\DateTimeImmutable $returnRejectedAt,
-        public ?string $returnRejectionReason,
     ) {
     }
 }

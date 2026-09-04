@@ -10,7 +10,7 @@ final readonly class ManifestShipment implements CommandInterface
 {
     public function __construct(
         public string $id,
-        public string $trackingReference,
+        public string $trackingNumber,
     ) {
     }
 }

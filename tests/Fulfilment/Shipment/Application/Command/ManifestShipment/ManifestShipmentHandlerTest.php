@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipment\Application\Command\ManifestShipment;
 
 use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
-use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
@@ -38,10 +38,10 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
-        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
+        $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -49,16 +49,16 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWithSameTrackingReference(): void
+    public function itIgnoresWithSameTrackingNumber(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingReference)->create();
+        $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
+        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, $shipment->id->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -75,7 +75,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($id, ShipmentBuilder::new()->manifested()['trackingReference']->value));
+        $this->dispatch(new ManifestShipment($id, ShipmentBuilder::new()->manifested()['trackingNumber']->value));
     }
 
     #[Test]
@@ -89,7 +89,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentAlreadyTrackedException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingReference']->value));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingNumber']->value));
     }
 
     #[Test]
@@ -103,22 +103,22 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentInvalidTransitionException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingReference']->value));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), ShipmentBuilder::new()->manifested()['trackingNumber']->value));
     }
 
     #[Test]
-    public function itFailsWhenTrackingReferenceAlreadyTaken(): void
+    public function itFailsWhenTrackingNumberAlreadyTaken(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::new()->manifested()['trackingReference']->value;
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $trackingReference, ShipmentBuilder::new()->create()->id->toString());
+        $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
+        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
 
         // Then
-        $this->expectException(TrackingReferenceAlreadyTakenException::class);
+        $this->expectException(TrackingNumberAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingReference));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
     }
 }

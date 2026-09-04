@@ -11,7 +11,6 @@ use Sales\Customer\Domain\Repository\CustomerRepositoryInterface;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[CommandHandler]
@@ -33,7 +32,7 @@ final readonly class RegisterCustomerShippingAddressHandler
 
         $customer->registerShippingAddress(
             PostalAddress::of(
-                FullName::of($command->firstName, $command->lastName),
+                $command->recipientName,
                 Address::of($command->street, $command->postalCode, $command->city, $command->countryCode),
             ),
             $this->clock->now(),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipment\Application\Command\ManifestShipment;
 
-use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
@@ -12,7 +12,7 @@ use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentUniqueKey;
-use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingNumber;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Exception\UniqueValueAlreadyTakenException;
@@ -33,19 +33,19 @@ final readonly class ManifestShipmentHandler
      * @throws ShipmentNotFoundException
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
-     * @throws TrackingReferenceAlreadyTakenException
+     * @throws TrackingNumberAlreadyTakenException
      * @throws ShipmentAlreadyExistsException
      */
     public function __invoke(ManifestShipment $command): void
     {
         $shipment = $this->repository->load(ShipmentId::fromString($command->id));
 
-        $shipment->manifest(TrackingReference::fromString($command->trackingReference), $this->clock->now());
+        $shipment->manifest(TrackingNumber::fromString($command->trackingNumber), $this->clock->now());
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_REFERENCE), $command->trackingReference, $command->id);
+            $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw TrackingReferenceAlreadyTakenException::forReference($command->trackingReference, $e);
+            throw TrackingNumberAlreadyTakenException::forTrackingNumber($command->trackingNumber, $e);
         }
 
         $this->repository->save($shipment);

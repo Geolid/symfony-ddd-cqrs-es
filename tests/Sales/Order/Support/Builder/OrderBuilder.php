@@ -10,7 +10,6 @@ use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -30,12 +29,6 @@ use Symfony\Component\Clock\Clock;
  *     cancelledAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
  *     deliveredAt: \DateTimeImmutable,
- *     completedAt: \DateTimeImmutable,
- *     returnRequestedAt: \DateTimeImmutable,
- *     returnedAt: \DateTimeImmutable,
- *     returnRejectionReason: string,
- *     returnRejectedAt: \DateTimeImmutable,
- *     anonymizedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Order, Attributes>
@@ -119,67 +112,17 @@ final class OrderBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function completed(?\DateTimeImmutable $completedAt = null): self
-    {
-        $builder = null !== $completedAt ? $this->withAttributes(completedAt: $completedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->complete($builder['completedAt']),
-        );
-    }
-
-    public function returnRequested(?\DateTimeImmutable $returnRequestedAt = null): self
-    {
-        $builder = null !== $returnRequestedAt ? $this->withAttributes(returnRequestedAt: $returnRequestedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->requestReturn($builder['customerId'], $builder['returnRequestedAt']),
-        );
-    }
-
-    public function returned(?\DateTimeImmutable $returnedAt = null): self
-    {
-        $builder = null !== $returnedAt ? $this->withAttributes(returnedAt: $returnedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->confirmReturn($builder['returnedAt']),
-        );
-    }
-
-    public function returnRejected(
-        ?string $reason = null,
-        ?\DateTimeImmutable $rejectedAt = null,
-    ): self {
-        $builder = $this->withAttributes(...array_filter([
-            'returnRejectionReason' => $reason,
-            'returnRejectedAt' => $rejectedAt,
-        ]));
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->rejectReturn($builder['returnRejectionReason'], $builder['returnRejectedAt']),
-        );
-    }
-
-    public function anonymized(?\DateTimeImmutable $anonymizedAt = null): self
-    {
-        $builder = null !== $anonymizedAt ? $this->withAttributes(anonymizedAt: $anonymizedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->anonymize($builder['anonymizedAt']),
-        );
-    }
-
     protected static function defaults(): array
     {
         return [
             'id' => OrderId::generate(...),
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
-                FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
+                SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
-                FullName::of(SeededFaker::get()->firstName(), SeededFaker::get()->lastName()),
+                SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'lines' => static fn (): array => [OrderLine::of(
@@ -191,12 +134,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
             'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'completedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+18 day'),
-            'returnRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
-            'returnedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
-            'returnRejectionReason' => static fn (): string => SeededFaker::get()->sentence(4),
-            'returnRejectedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
-            'anonymizedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3670 day'),
         ];
     }
 

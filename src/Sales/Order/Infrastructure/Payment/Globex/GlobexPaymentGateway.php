@@ -26,14 +26,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
             'clientReferenceId' => $orderId,
             'amountInCents' => $amountInCents,
             'returnUrl' => $returnUrl,
-            'billingAddress' => [
-                'firstName' => $billingAddress->fullName->firstName,
-                'lastName' => $billingAddress->fullName->lastName,
-                'street' => $billingAddress->address->street,
-                'postalCode' => $billingAddress->address->postalCode,
-                'city' => $billingAddress->address->city,
-                'countryCode' => $billingAddress->address->countryCode->value,
-            ],
+            'billingAddress' => $billingAddress->toArray(),
         ], $orderId);
 
         $chargeReference = $response['chargeReference'] ?? null;

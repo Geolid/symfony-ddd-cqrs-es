@@ -23,7 +23,7 @@ final class OrderResourcePropertyDocumentationTest extends AbstractResourcePrope
             'placedAt' => ['The date and time when the order was placed.', '2026-01-14T09:30:00+00:00'],
             'cancelledAt' => ['The date and time when the order was cancelled, if it was.', '2026-01-15T14:20:00+00:00'],
             'paymentReference' => ['The order payment\'s reference, once a payment has been requested.', 'GLBX-4Q7X2K9'],
-            'trackingReference' => ["The carrier's own tracking reference, once the pickup has been booked.", 'ACME-4Q7X2K9'],
+            'trackingNumber' => ["The carrier's own tracking reference, once the pickup has been booked.", 'ACME-4Q7X2K9'],
         ], $described);
     }
 }

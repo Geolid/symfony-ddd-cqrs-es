@@ -38,13 +38,11 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         $carrier->method('checkStatus')->willReturnMap([
             ['ACME-STUCK9999', CarrierGatewayStatus::DISPATCHED],
             ['ACME-DISPATCHED-STUCK', CarrierGatewayStatus::DELIVERED],
-            ['ACME-RETURN-STUCK', CarrierGatewayStatus::RETURN_DISPATCHED],
-            ['ACME-RETURN-DISPATCHED-STUCK', CarrierGatewayStatus::RETURN_RECEIVED],
         ]);
         self::getContainer()->set(CarrierGatewayInterface::class, $carrier);
         $order = OrderBuilder::new()->create();
         $stuck9999 = ShipmentBuilder::new()
-            ->withOrderId($order->id->toString())
+            ->withReference($order->id->toString())
             ->prepared()
             ->manifested('ACME-STUCK9999', $now->modify('-3 days'))
             ->create();
@@ -62,41 +60,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
             ->manifested('ACME-DISPATCHED-FRESH', $now->modify('-4 days'))
             ->dispatched($now->modify('-12 hours'))
             ->create();
-        $returnStuck = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-5 days'))
-            ->dispatched($now->modify('-4 days 12 hours'))
-            ->delivered($now->modify('-4 days'))
-            ->returnRequested($now->modify('-4 days'))
-            ->returnManifested('ACME-RETURN-STUCK', $now->modify('-3 days'))
-            ->create();
-        $returnFresh = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-5 days'))
-            ->dispatched($now->modify('-4 days 12 hours'))
-            ->delivered($now->modify('-4 days'))
-            ->returnRequested($now->modify('-4 days'))
-            ->returnManifested('ACME-RETURN-FRESH', $now->modify('-12 hours'))
-            ->create();
-        $returnDispatchedStuck = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-6 days'))
-            ->dispatched($now->modify('-5 days 12 hours'))
-            ->delivered($now->modify('-5 days'))
-            ->returnRequested($now->modify('-5 days'))
-            ->returnManifested('ACME-RETURN-DISPATCHED-STUCK', $now->modify('-4 days'))
-            ->returnDispatched($now->modify('-3 days'))
-            ->create();
-        $returnDispatchedFresh = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-6 days'))
-            ->dispatched($now->modify('-5 days 12 hours'))
-            ->delivered($now->modify('-5 days'))
-            ->returnRequested($now->modify('-5 days'))
-            ->returnManifested('ACME-RETURN-DISPATCHED-FRESH', $now->modify('-4 days'))
-            ->returnDispatched($now->modify('-12 hours'))
-            ->create();
-        $this->store($order, $stuck9999, $fresh9999, $dispatchedStuck, $dispatchedFresh, $returnStuck, $returnFresh, $returnDispatchedStuck, $returnDispatchedFresh);
+        $this->store($order, $stuck9999, $fresh9999, $dispatchedStuck, $dispatchedFresh);
         $tester = $this->tester();
 
         // When
@@ -104,7 +68,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
 
         // Then
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('4 shipment(s) reconciled.', $tester->getDisplay());
+        self::assertStringContainsString('2 shipment(s) reconciled.', $tester->getDisplay());
         $stuck9999Result = $this->shipmentFinder->ofId($stuck9999->id->toString());
         self::assertSame(ShipmentStatus::DISPATCHED, $stuck9999Result->status);
         $fresh9999Result = $this->shipmentFinder->ofId($fresh9999->id->toString());
@@ -113,14 +77,6 @@ final class ReconcileShipmentsCommandTest extends AbstractCliTestCase
         self::assertSame(ShipmentStatus::DELIVERED, $dispatchedStuckResult->status);
         $dispatchedFreshResult = $this->shipmentFinder->ofId($dispatchedFresh->id->toString());
         self::assertSame(ShipmentStatus::DISPATCHED, $dispatchedFreshResult->status);
-        $returnStuckResult = $this->shipmentFinder->ofId($returnStuck->id->toString());
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $returnStuckResult->status);
-        $returnFreshResult = $this->shipmentFinder->ofId($returnFresh->id->toString());
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $returnFreshResult->status);
-        $returnDispatchedStuckResult = $this->shipmentFinder->ofId($returnDispatchedStuck->id->toString());
-        self::assertSame(ShipmentStatus::RETURN_RECEIVED, $returnDispatchedStuckResult->status);
-        $returnDispatchedFreshResult = $this->shipmentFinder->ofId($returnDispatchedFresh->id->toString());
-        self::assertSame(ShipmentStatus::RETURN_DISPATCHED, $returnDispatchedFreshResult->status);
     }
 
     #[Test]

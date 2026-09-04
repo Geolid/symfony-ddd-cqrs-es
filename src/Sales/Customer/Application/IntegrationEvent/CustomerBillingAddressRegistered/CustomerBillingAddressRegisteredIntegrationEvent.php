@@ -14,14 +14,13 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class CustomerBillingAddressRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
      */
     public function __construct(
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'lastName' => 'erased',
+            'recipientName' => 'erased',
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',

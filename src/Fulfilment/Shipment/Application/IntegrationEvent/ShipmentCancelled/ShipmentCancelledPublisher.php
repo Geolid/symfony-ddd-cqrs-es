@@ -30,7 +30,7 @@ final readonly class ShipmentCancelledPublisher
     {
         $this->publisher->publish(Shipment::class, $event->id, new ShipmentCancelledIntegrationEvent(
             shipmentId: $event->id,
-            orderId: $this->repository->load(ShipmentId::fromString($event->id))->orderId,
+            reference: $this->repository->load(ShipmentId::fromString($event->id))->reference,
             cancelledAt: $event->cancelledAt,
         ));
     }
