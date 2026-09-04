@@ -23,11 +23,10 @@ final class WithdrawalRequestedPublisherTest extends AbstractIntegrationTestCase
 
         // Then
         $event = $this->publishedEventOf(WithdrawalRequestedIntegrationEvent::class);
-        $shippingAddress = $builder['shippingAddress']->toArray();
         self::assertSame($withdrawal->id->toString(), $event->withdrawalId);
         self::assertSame($builder['orderId'], $event->orderId);
         self::assertSame($builder['buyerId'], $event->buyerId);
-        self::assertSame($shippingAddress, $event->shippingAddress);
+        self::assertSame($builder['shippingAddress']->toArray(), $event->shippingAddress);
         self::assertSame($builder['requestedAt']->format(\DateTimeInterface::ATOM), $event->requestedAt->format(\DateTimeInterface::ATOM));
     }
 }

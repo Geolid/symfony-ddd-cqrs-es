@@ -9,13 +9,13 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Finance\Payment\Application\IntegrationEvent\PaymentCaptured\PaymentCapturedIntegrationEvent;
+use Finance\Payment\Application\IntegrationEvent\PaymentRequested\PaymentRequestedIntegrationEvent;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDispatched\ShipmentDispatchedIntegrationEvent;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentManifested\ShipmentManifestedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
-use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
-use Sales\Order\Application\IntegrationEvent\OrderPaymentRequested\OrderPaymentRequestedIntegrationEvent;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\OrderSummary\Infrastructure\Projection\Transformer\OrderSummaryStatusTransformer;
 use Shared\Infrastructure\Projection\Projector;
@@ -60,8 +60,8 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         ], orderStatus: 'cancelled', types: ['cancelled_at' => Types::DATETIME_IMMUTABLE]);
     }
 
-    #[Subscribe(OrderPaymentRequestedIntegrationEvent::class)]
-    public function onOrderPaymentRequestedIntegrationEvent(OrderPaymentRequestedIntegrationEvent $event): void
+    #[Subscribe(PaymentRequestedIntegrationEvent::class)]
+    public function onPaymentRequestedIntegrationEvent(PaymentRequestedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'payment_amount_in_cents' => $event->amountInCents,
@@ -70,8 +70,8 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         ], paymentStatus: 'requested');
     }
 
-    #[Subscribe(OrderPaymentCapturedIntegrationEvent::class)]
-    public function onOrderPaymentCapturedIntegrationEvent(OrderPaymentCapturedIntegrationEvent $event): void
+    #[Subscribe(PaymentCapturedIntegrationEvent::class)]
+    public function onPaymentCapturedIntegrationEvent(PaymentCapturedIntegrationEvent $event): void
     {
         $this->recompute($event->orderId, [
             'paid_at' => $event->capturedAt,

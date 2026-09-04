@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Command\CancelOrphanedOrdersOfBuyer;
 
+use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrphanedOrdersOfBuyer\CancelOrphanedOrdersOfBuyer;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelOrphanedOrdersOfBuyerHandlerTest extends AbstractIntegrationTestCase
@@ -34,7 +34,7 @@ final class CancelOrphanedOrdersOfBuyerHandlerTest extends AbstractIntegrationTe
         $buyerId = Uuid::uuid7()->toString();
         $alreadyCancelled = OrderBuilder::new()->withBuyerId($buyerId)->cancelled()->create();
         $withCapturedPayment = OrderBuilder::new()->withBuyerId($buyerId)->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
+        $orderPayment = PaymentBuilder::new()->withOrderId($withCapturedPayment->id->toString())->authorized()->captured()->create();
         $placed = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($other, $alreadyCancelled, $withCapturedPayment, $orderPayment, $placed);
 

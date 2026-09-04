@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\OrderSummary\Infrastructure\Projection\Projector\DbalOrderSummaryProjector;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -50,7 +50,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $payment = OrderPaymentBuilder::new()
+        $payment = PaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
@@ -82,7 +82,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
+        $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
         $this->store($payment);
 
         // Then
@@ -176,7 +176,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         $other = OrderBuilder::new()->create();
         $buyerId = Uuid::uuid7()->toString();
         $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
-        $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
+        $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->create();
         $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($other, $order, $payment, $shipment);
 

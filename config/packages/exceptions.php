@@ -6,6 +6,9 @@ use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerExc
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
+use Finance\Payment\Application\Exception\PaymentReferenceAlreadyTakenException;
+use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
 use Fulfilment\Shipping\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
@@ -21,9 +24,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Buyer\Application\Exception\BuyerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
-use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
@@ -71,9 +72,12 @@ return static function (ContainerConfigurator $container): void {
             OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderPaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
-            PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
+
+            // Finance
+            PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
+            PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            PlacedOrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
