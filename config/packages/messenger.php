@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
+use Fulfilment\Shipping\Application\Command\PrepareShipment\PrepareShipment;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;

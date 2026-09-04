@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cli\Console;
 
 use Cli\Console\Input\PrepareShipmentInput;
-use Fulfilment\Shipment\Application\Command\PrepareShipment\PrepareShipment;
+use Fulfilment\Shipping\Application\Command\PrepareShipment\PrepareShipment;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

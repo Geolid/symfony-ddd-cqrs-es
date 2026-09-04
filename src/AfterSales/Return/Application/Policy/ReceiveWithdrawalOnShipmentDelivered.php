@@ -7,7 +7,7 @@ namespace AfterSales\Return\Application\Policy;
 use AfterSales\Return\Application\Command\ReceiveWithdrawal\ReceiveWithdrawal;
 use AfterSales\Return\Domain\Repository\WithdrawalRepositoryInterface;
 use AfterSales\Return\Domain\ValueObject\WithdrawalId;
-use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
+use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;

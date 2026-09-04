@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cli\Tests\Console;
 
 use Cli\Tests\Support\AbstractCliTestCase;
-use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
-use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
+use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipping\Application\ShipmentStatus;
+use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;
 

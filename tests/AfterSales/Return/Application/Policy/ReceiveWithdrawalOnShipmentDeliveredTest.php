@@ -7,7 +7,7 @@ namespace AfterSales\Tests\Return\Application\Policy;
 use AfterSales\Return\Application\Policy\ReceiveWithdrawalOnShipmentDelivered;
 use AfterSales\Return\Domain\Event\WithdrawalReceived;
 use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
-use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
+use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Policy;
 
-use Fulfilment\Shipment\Application\IntegrationEvent\ShipmentDispatched\ShipmentDispatchedIntegrationEvent;
+use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDispatched\ShipmentDispatchedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
