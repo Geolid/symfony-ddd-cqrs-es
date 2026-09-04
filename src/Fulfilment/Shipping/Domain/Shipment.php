@@ -27,12 +27,6 @@ use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
-/**
- * A blind, direction-agnostic transport primitive: move a package from origin to
- * destination. Whether that's an outbound delivery or a return pickup is decided
- * entirely by whichever caller supplies `origin`/`destination` at request time —
- * this aggregate carries no notion of "leg" or business decision of its own.
- */
 #[Aggregate('fulfilment.shipping.shipment')]
 final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 {

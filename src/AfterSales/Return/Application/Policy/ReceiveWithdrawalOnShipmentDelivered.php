@@ -13,11 +13,6 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-/**
- * A `Shipment` reports DELIVERED for both an outbound leg and a return pickup —
- * its `reference` is only meaningful to whichever BC requested it, so a
- * relevance guard against this BC's own repository decides whether it applies.
- */
 #[Policy('after_sales.return.receive_withdrawal_on_shipment_delivered')]
 final readonly class ReceiveWithdrawalOnShipmentDelivered
 {
