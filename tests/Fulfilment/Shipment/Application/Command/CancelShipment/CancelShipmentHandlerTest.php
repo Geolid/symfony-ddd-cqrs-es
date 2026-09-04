@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipment\Application\Command\CancelShipment;
 use Fulfilment\Shipment\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipment\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipment\Application\ShipmentStatus;
-use Fulfilment\Shipment\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -27,11 +26,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPending(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->create();
+        $reference = ShipmentBuilder::sample('reference');
+        $shipment = ShipmentBuilder::new()->withReference($reference)->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($shipment->id->toString()));
+        $this->dispatch(new CancelShipment($reference));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -43,11 +43,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $reference = ShipmentBuilder::sample('reference');
+        $shipment = ShipmentBuilder::new()->withReference($reference)->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($shipment->id->toString()));
+        $this->dispatch(new CancelShipment($reference));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -55,15 +56,16 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
+    public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $id = ShipmentBuilder::new()->create()->id->toString();
-
-        // Then
-        $this->expectException(ShipmentNotFoundException::class);
+        $reference = ShipmentBuilder::sample('reference');
 
         // When
-        $this->dispatch(new CancelShipment($id));
+        $this->dispatch(new CancelShipment($reference));
+
+        // Then
+        $result = $this->finder->ofReferenceOrNull($reference);
+        self::assertNull($result);
     }
 }

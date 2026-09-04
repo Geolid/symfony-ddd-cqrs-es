@@ -24,7 +24,7 @@ final class ShipmentCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentCancelledIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($builder['reference'], $event->reference);
         self::assertSame(
             $builder['cancelledAt']->format(\DateTimeInterface::ATOM),
             $event->cancelledAt->format(\DateTimeInterface::ATOM),

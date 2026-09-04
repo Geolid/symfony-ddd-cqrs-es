@@ -52,8 +52,16 @@ final readonly class Address
             && $this->countryCode === $other->countryCode;
     }
 
-    public function toString(): string
+    /**
+     * @return array{street: string, postalCode: string, city: string, countryCode: string}
+     */
+    public function toArray(): array
     {
-        return \sprintf('%s, %s %s, %s', $this->street, $this->postalCode, $this->city, $this->countryCode->value);
+        return [
+            'street' => $this->street,
+            'postalCode' => $this->postalCode,
+            'city' => $this->city,
+            'countryCode' => $this->countryCode->value,
+        ];
     }
 }

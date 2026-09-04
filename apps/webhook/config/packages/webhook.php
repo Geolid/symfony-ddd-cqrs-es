@@ -5,8 +5,6 @@ declare(strict_types=1);
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webhook\Webhook\CarrierDeliveryParser;
 use Webhook\Webhook\CarrierPickupConfirmedParser;
-use Webhook\Webhook\CarrierReturnPickedUpParser;
-use Webhook\Webhook\CarrierReturnReceivedParser;
 use Webhook\Webhook\PaymentAuthorizedParser;
 use Webhook\Webhook\PaymentFailedParser;
 use Webhook\Webhook\PaymentRefundedParser;
@@ -21,14 +19,6 @@ return static function (ContainerConfigurator $container): void {
                 ],
                 CarrierDeliveryParser::EVENT_TYPE => [
                     'service' => CarrierDeliveryParser::class,
-                    'secret' => '%env(CARRIER_WEBHOOK_SECRET)%',
-                ],
-                CarrierReturnPickedUpParser::EVENT_TYPE => [
-                    'service' => CarrierReturnPickedUpParser::class,
-                    'secret' => '%env(CARRIER_WEBHOOK_SECRET)%',
-                ],
-                CarrierReturnReceivedParser::EVENT_TYPE => [
-                    'service' => CarrierReturnReceivedParser::class,
                     'secret' => '%env(CARRIER_WEBHOOK_SECRET)%',
                 ],
                 PaymentAuthorizedParser::EVENT_TYPE => [

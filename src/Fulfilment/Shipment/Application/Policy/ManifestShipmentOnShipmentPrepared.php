@@ -6,7 +6,7 @@ namespace Fulfilment\Shipment\Application\Policy;
 
 use Fulfilment\Shipment\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipment\Application\Command\ManifestShipment\ManifestShipment;
-use Fulfilment\Shipment\Application\Exception\TrackingReferenceAlreadyTakenException;
+use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipment\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
@@ -26,7 +26,7 @@ final readonly class ManifestShipmentOnShipmentPrepared
     }
 
     /**
-     * @throws TrackingReferenceAlreadyTakenException
+     * @throws TrackingNumberAlreadyTakenException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -35,11 +35,11 @@ final readonly class ManifestShipmentOnShipmentPrepared
     {
         $shipment = $this->repository->load(ShipmentId::fromString($event->id));
 
-        $trackingReference = $this->carrier->manifest($event->id, $shipment->shippingAddress);
+        $trackingNumber = $this->carrier->manifest($event->id, $shipment->origin, $shipment->destination);
 
         $this->commandBus->dispatch(new ManifestShipment(
             id: $event->id,
-            trackingReference: $trackingReference,
+            trackingNumber: $trackingNumber,
         ));
     }
 }

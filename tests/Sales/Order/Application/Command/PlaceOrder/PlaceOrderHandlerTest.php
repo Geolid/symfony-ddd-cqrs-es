@@ -21,7 +21,6 @@ use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -46,8 +45,12 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::PLACED, $result->status);
 
         $order = $this->orderOf($id);
-        self::assertSame($this->primitiveAddress($this->shippingAddress()), $this->primitiveAddress($order->shippingAddress));
-        self::assertSame($this->primitiveAddress($this->billingAddress()), $this->primitiveAddress($order->billingAddress));
+        $shippingAddress = $order->shippingAddress->toArray();
+        $billingAddress = $order->billingAddress->toArray();
+        $expectedShippingAddress = $this->shippingAddress()->toArray();
+        $expectedBillingAddress = $this->billingAddress()->toArray();
+        self::assertSame($expectedShippingAddress, $shippingAddress);
+        self::assertSame($expectedBillingAddress, $billingAddress);
     }
 
     #[Test]
@@ -190,27 +193,12 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
     private function shippingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private function billingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
-    }
-
-    /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function primitiveAddress(PostalAddress $address): array
-    {
-        return [
-            'firstName' => $address->fullName->firstName,
-            'lastName' => $address->fullName->lastName,
-            'street' => $address->address->street,
-            'postalCode' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'countryCode' => $address->address->countryCode->value,
-        ];
+        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 
     private function orderOf(string $id): Order

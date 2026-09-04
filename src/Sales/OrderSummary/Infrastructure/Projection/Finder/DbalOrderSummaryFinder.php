@@ -66,7 +66,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSu
             'payment_reference',
             'payment_checkout_url',
             'paid_at',
-            'tracking_reference',
+            'tracking_number',
             'dispatched_at',
             'delivered_at',
         )

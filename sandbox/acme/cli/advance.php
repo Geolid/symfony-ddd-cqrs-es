@@ -14,55 +14,28 @@ if ('' === $reference) {
 
 $shipments = fake_api_store_read('acme-shipments');
 
-if (isset($shipments[$reference])) {
-    $status = $shipments[$reference]['status'];
-    assert(is_string($status));
-
-    $next = match ($status) {
-        'requested' => ['dispatched', 'carrier-pickup-confirmed'],
-        'dispatched' => ['delivered', 'carrier-delivery'],
-        default => null,
-    };
-
-    if (null === $next) {
-        fwrite(\STDERR, sprintf("Shipment \"%s\" is \"%s\", nothing to advance.\n", $reference, $status));
-        exit(1);
-    }
-
-    [$nextStatus, $eventType] = $next;
-
-    fake_api_call_webhook('CARRIER_WEBHOOK_SECRET', 'X-Carrier-Signature', $eventType, ['trackingReference' => $reference]);
-    fake_api_store_transition_status('acme-shipments', $reference, $nextStatus);
-
-    echo sprintf("Shipment \"%s\": %s -> %s.\n", $reference, $status, $nextStatus);
-    exit(0);
+if (!isset($shipments[$reference])) {
+    fwrite(\STDERR, sprintf("Unknown reference \"%s\".\n", $reference));
+    exit(1);
 }
 
-$returns = fake_api_store_read('acme-returns');
+$status = $shipments[$reference]['status'];
+assert(is_string($status));
 
-if (isset($returns[$reference])) {
-    $status = $returns[$reference]['status'];
-    assert(is_string($status));
+$next = match ($status) {
+    'requested' => ['dispatched', 'carrier-pickup-confirmed'],
+    'dispatched' => ['delivered', 'carrier-delivery'],
+    default => null,
+};
 
-    $next = match ($status) {
-        'requested' => ['return_dispatched', 'carrier-return-picked-up'],
-        'return_dispatched' => ['return_received', 'carrier-return-received'],
-        default => null,
-    };
-
-    if (null === $next) {
-        fwrite(\STDERR, sprintf("Return \"%s\" is \"%s\", nothing to advance.\n", $reference, $status));
-        exit(1);
-    }
-
-    [$nextStatus, $eventType] = $next;
-
-    fake_api_call_webhook('CARRIER_WEBHOOK_SECRET', 'X-Carrier-Signature', $eventType, ['returnTrackingReference' => $reference]);
-    fake_api_store_transition_status('acme-returns', $reference, $nextStatus);
-
-    echo sprintf("Return \"%s\": %s -> %s.\n", $reference, $status, $nextStatus);
-    exit(0);
+if (null === $next) {
+    fwrite(\STDERR, sprintf("Shipment \"%s\" is \"%s\", nothing to advance.\n", $reference, $status));
+    exit(1);
 }
 
-fwrite(\STDERR, sprintf("Unknown reference \"%s\".\n", $reference));
-exit(1);
+[$nextStatus, $eventType] = $next;
+
+fake_api_call_webhook('CARRIER_WEBHOOK_SECRET', 'X-Carrier-Signature', $eventType, ['trackingReference' => $reference]);
+fake_api_store_transition_status('acme-shipments', $reference, $nextStatus);
+
+echo sprintf("Shipment \"%s\": %s -> %s.\n", $reference, $status, $nextStatus);

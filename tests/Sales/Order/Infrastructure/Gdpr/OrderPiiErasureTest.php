@@ -32,7 +32,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsShippingAddressOnCustomerErasure(): void
+    public function itCryptoShredsAddressesOnCustomerErasure(): void
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
@@ -52,28 +52,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
-        self::assertNotSame('erased', $rehydrated->billingAddress['street']);
-    }
-
-    #[Test]
-    public function itCryptoShredsBillingAddressOnBillingRetentionExpiry(): void
-    {
-        // Given
-        $order = OrderBuilder::new()->create();
-        $this->store($order);
-        $serialized = $this->serializedEventOf(
-            OrderPlaced::class,
-            static fn (OrderPlaced $event): bool => $event->id === $order->id->toString(),
-        );
-
-        // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($order->id->toString())));
-
-        // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(OrderPlaced::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
-        self::assertNotSame('erased', $rehydrated->shippingAddress['street']);
     }
 
     #[Test]
@@ -120,10 +99,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function erasedAddress(): array
     {
-        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        return ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
     }
 }

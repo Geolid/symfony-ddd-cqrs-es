@@ -110,8 +110,7 @@ sales:
             label_same_as_shipping: Adresse de facturation identique à l'adresse de livraison
             button_submit: Valider
             address:
-                label_first_name: Prénom
-                label_last_name: Nom
+                label_recipient_name: Nom du destinataire
                 label_street: Rue
                 label_postal_code: Code postal
                 label_city: Ville

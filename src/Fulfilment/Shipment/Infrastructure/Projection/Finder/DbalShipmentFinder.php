@@ -28,22 +28,22 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         )->one() ?? throw ShipmentResultNotFoundException::forId($id);
     }
 
-    public function ofTrackingReference(string $trackingReference): ShipmentResult
+    public function ofTrackingNumber(string $trackingNumber): ShipmentResult
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($trackingReference): void {
-                $qb->andWhere('tracking_reference = :trackingReference')->setParameter('trackingReference', $trackingReference);
+            static function (QueryBuilder $qb) use ($trackingNumber): void {
+                $qb->andWhere('tracking_number = :trackingNumber')->setParameter('trackingNumber', $trackingNumber);
             },
-        )->one() ?? throw ShipmentResultNotFoundException::forTrackingReference($trackingReference);
+        )->one() ?? throw ShipmentResultNotFoundException::forTrackingNumber($trackingNumber);
     }
 
-    public function ofReturnTrackingReference(string $returnTrackingReference): ShipmentResult
+    public function ofReferenceOrNull(string $reference): ?ShipmentResult
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($returnTrackingReference): void {
-                $qb->andWhere('return_tracking_reference = :returnTrackingReference')->setParameter('returnTrackingReference', $returnTrackingReference);
+            static function (QueryBuilder $qb) use ($reference): void {
+                $qb->andWhere('reference = :reference')->setParameter('reference', $reference);
             },
-        )->one() ?? throw ShipmentResultNotFoundException::forReturnTrackingReference($returnTrackingReference);
+        )->one();
     }
 
     public function byStatus(ShipmentStatus ...$statuses): static
@@ -56,16 +56,6 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
-    public function byCustomer(string $customerId): static
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId): void {
-                $qb->andWhere('customer_id = :customerId')
-                    ->setParameter('customerId', $customerId);
-            },
-        );
-    }
-
     public function stalledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
@@ -73,14 +63,10 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
                 $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
                 $manifestedParam = $qb->createNamedParameter(ShipmentStatus::MANIFESTED);
                 $dispatchedParam = $qb->createNamedParameter(ShipmentStatus::DISPATCHED);
-                $returnManifestedParam = $qb->createNamedParameter(ShipmentStatus::RETURN_MANIFESTED);
-                $returnDispatchedParam = $qb->createNamedParameter(ShipmentStatus::RETURN_DISPATCHED);
 
                 $qb->andWhere(
                     "(status = {$manifestedParam} AND manifested_at < {$cutoffParam})
-                    OR (status = {$dispatchedParam} AND dispatched_at < {$cutoffParam})
-                    OR (status = {$returnManifestedParam} AND return_manifested_at < {$cutoffParam})
-                    OR (status = {$returnDispatchedParam} AND return_dispatched_at < {$cutoffParam})",
+                    OR (status = {$dispatchedParam} AND dispatched_at < {$cutoffParam})",
                 );
             },
         );
@@ -88,10 +74,9 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'status', 'tracking_reference', 'return_tracking_reference', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'return_manifested_at', 'return_dispatched_at', 'return_received_at', 'return_approved_at', 'return_rejected_at', 'return_rejection_reason')
+        $qb->select('id', 'reference', 'status', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at')
             ->from(DbalShipmentProjector::TABLE)
-            ->orderBy('created_at', 'ASC')
-            ->addOrderBy('id', 'ASC');
+            ->orderBy('id', 'ASC');
     }
 
     protected function resultClass(): string

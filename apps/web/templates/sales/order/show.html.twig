@@ -118,19 +118,19 @@
                 {% if order.status.isDispatched %}
                     <p data-testid="order-shipment">
                         <strong>{{ 'sales.order.show.shipment_status.dispatched'|trans({'%date%': order.dispatchedAt ? order.dispatchedAt|date('d/m/Y') : null}) }}</strong>
-                        {% if order.trackingReference %}
+                        {% if order.trackingNumber %}
                             <br><small class="text-muted"
                                        data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans }}
-                            <code>{{ order.trackingReference }}</code></small>
+                            <code>{{ order.trackingNumber }}</code></small>
                         {% endif %}
                     </p>
                 {% elseif order.status.isDelivered %}
                     <p data-testid="order-shipment">
                         <strong>{{ 'sales.order.show.shipment_status.delivered'|trans({'%date%': order.deliveredAt ? order.deliveredAt|date('d/m/Y') : null}) }}</strong>
-                        {% if order.trackingReference %}
+                        {% if order.trackingNumber %}
                             <br><small class="text-muted"
                                        data-testid="order-shipment-tracking-reference">{{ 'sales.order.show.shipment_tracking_reference'|trans }}
-                            <code>{{ order.trackingReference }}</code></small>
+                            <code>{{ order.trackingNumber }}</code></small>
                         {% endif %}
                     </p>
                 {% elseif order.status.isPreparing %}

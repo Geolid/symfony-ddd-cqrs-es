@@ -21,16 +21,11 @@ interface ShipmentFinderInterface extends IterableFinderInterface
     /**
      * @throws ShipmentResultNotFoundException
      */
-    public function ofTrackingReference(string $trackingReference): ShipmentResult;
+    public function ofTrackingNumber(string $trackingNumber): ShipmentResult;
 
-    /**
-     * @throws ShipmentResultNotFoundException
-     */
-    public function ofReturnTrackingReference(string $returnTrackingReference): ShipmentResult;
+    public function ofReferenceOrNull(string $reference): ?ShipmentResult;
 
     public function byStatus(ShipmentStatus ...$statuses): static;
-
-    public function byCustomer(string $customerId): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;
 }

@@ -14,15 +14,14 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
      */
     public function __construct(
         public string $orderId,
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'firstName' => 'erased',
-            'lastName' => 'erased',
+            'recipientName' => 'erased',
             'street' => 'erased',
             'postalCode' => '00000',
             'city' => 'erased',

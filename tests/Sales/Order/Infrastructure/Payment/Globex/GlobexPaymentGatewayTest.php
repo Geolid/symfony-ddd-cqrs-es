@@ -13,7 +13,6 @@ use Sales\Order\Infrastructure\Payment\Globex\GlobexClient;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexClientException;
 use Sales\Order\Infrastructure\Payment\Globex\GlobexPaymentGateway;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -48,8 +47,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
                 'billingAddress' => [
-                    'firstName' => 'Ada',
-                    'lastName' => 'Lovelace',
+                    'recipientName' => 'Ada Lovelace',
                     'street' => '12 rue des Lilas',
                     'postalCode' => '75001',
                     'city' => 'Paris',
@@ -240,7 +238,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     private function billingAddress(): PostalAddress
     {
         return PostalAddress::of(
-            FullName::of('Ada', 'Lovelace'),
+            'Ada Lovelace',
             Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
     }

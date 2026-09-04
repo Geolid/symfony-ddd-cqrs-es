@@ -21,7 +21,6 @@ use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\Product;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -63,8 +62,8 @@ final readonly class PlaceOrderHandler
         $order = Order::place(
             id: OrderId::fromString($command->id),
             customerId: $buyer->customerId,
-            shippingAddress: $this->postalAddressOf($buyer->shippingAddress),
-            billingAddress: $this->postalAddressOf($buyer->billingAddress),
+            shippingAddress: $this->toAddress($buyer->shippingAddress),
+            billingAddress: $this->toAddress($buyer->billingAddress),
             lines: array_map(
                 fn (array $line): OrderLine => $this->resolveLine($line, $currentProducts),
                 $command->lines,
@@ -75,10 +74,10 @@ final readonly class PlaceOrderHandler
         $this->repository->save($order);
     }
 
-    private function postalAddressOf(PostalAddressResult $address): PostalAddress
+    private function toAddress(PostalAddressResult $address): PostalAddress
     {
         return PostalAddress::of(
-            FullName::of($address->firstName, $address->lastName),
+            $address->recipientName,
             Address::of($address->street, $address->postalCode, $address->city, $address->countryCode),
         );
     }

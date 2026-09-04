@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -105,22 +104,21 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 
     private function shippingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
+        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private function billingAddress(): PostalAddress
     {
-        return PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
+        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 
     /**
-     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
     private function primitiveAddress(PostalAddress $address): array
     {
         return [
-            'first_name' => $address->fullName->firstName,
-            'last_name' => $address->fullName->lastName,
+            'recipient_name' => $address->recipientName,
             'street' => $address->address->street,
             'postal_code' => $address->address->postalCode,
             'city' => $address->address->city,
@@ -129,11 +127,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
     private function postalAddress(string $json): array
     {
-        /** @var array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
+        /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);
 
         return $decoded;

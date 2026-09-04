@@ -34,7 +34,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['shipping_address' => $this->normalizePostalAddress($event->address)],
+            ['shipping_address' => $this->toAddressData($event->address)],
             ['customer_id' => $event->customerId],
             ['shipping_address' => Types::JSON],
         );
@@ -45,7 +45,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['billing_address' => $this->normalizePostalAddress($event->address)],
+            ['billing_address' => $this->toAddressData($event->address)],
             ['customer_id' => $event->customerId],
             ['billing_address' => Types::JSON],
         );
@@ -74,15 +74,14 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
      *
-     * @return array{first_name: string, last_name: string, street: string, postal_code: string, city: string, country_code: string}
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function normalizePostalAddress(array $address): array
+    private function toAddressData(array $address): array
     {
         return [
-            'first_name' => $address['firstName'],
-            'last_name' => $address['lastName'],
+            'recipient_name' => $address['recipientName'],
             'street' => $address['street'],
             'postal_code' => $address['postalCode'],
             'city' => $address['city'],

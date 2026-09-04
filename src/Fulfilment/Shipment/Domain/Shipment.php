@@ -11,19 +11,13 @@ use Fulfilment\Shipment\Domain\Event\ShipmentDispatched;
 use Fulfilment\Shipment\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipment\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipment\Domain\Event\ShipmentRequested;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnApproved;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnDispatched;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnManifested;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnReceived;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnRejected;
-use Fulfilment\Shipment\Domain\Event\ShipmentReturnRequested;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipment\Domain\Specification\CanTransitionToSpecification;
 use Fulfilment\Shipment\Domain\Specification\HasReachedSpecification;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
-use Fulfilment\Shipment\Domain\ValueObject\TrackingReference;
+use Fulfilment\Shipment\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -31,9 +25,14 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
+/**
+ * A blind, direction-agnostic transport primitive: move a package from origin to
+ * destination. Whether that's an outbound delivery or a return pickup is decided
+ * entirely by whichever caller supplies `origin`/`destination` at request time —
+ * this aggregate carries no notion of "leg" or business decision of its own.
+ */
 #[Aggregate('fulfilment.shipment.shipment')]
 final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 {
@@ -43,47 +42,36 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private const array TRANSITIONS = [
         ShipmentState::REQUESTED->value => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
         ShipmentState::PREPARED->value => [ShipmentState::MANIFESTED, ShipmentState::CANCELLED],
-        ShipmentState::CANCELLED->value => [],
         ShipmentState::MANIFESTED->value => [ShipmentState::DISPATCHED],
         ShipmentState::DISPATCHED->value => [ShipmentState::DELIVERED],
-        ShipmentState::DELIVERED->value => [ShipmentState::RETURN_REQUESTED],
-        ShipmentState::RETURN_REQUESTED->value => [ShipmentState::RETURN_MANIFESTED],
-        ShipmentState::RETURN_MANIFESTED->value => [ShipmentState::RETURN_DISPATCHED],
-        ShipmentState::RETURN_DISPATCHED->value => [ShipmentState::RETURN_RECEIVED],
-        ShipmentState::RETURN_RECEIVED->value => [ShipmentState::RETURN_APPROVED, ShipmentState::RETURN_REJECTED],
-        ShipmentState::RETURN_APPROVED->value => [],
-        ShipmentState::RETURN_REJECTED->value => [],
+        ShipmentState::DELIVERED->value => [],
+        ShipmentState::CANCELLED->value => [],
     ];
 
     #[Id]
     public private(set) ShipmentId $id;
-    public private(set) string $orderId;
+    public private(set) string $reference;
     public private(set) string $customerId;
-    public private(set) PostalAddress $shippingAddress;
-    private ?TrackingReference $trackingReference = null;
-    private ?TrackingReference $returnTrackingReference = null;
+    public private(set) PostalAddress $origin;
+    public private(set) PostalAddress $destination;
+    private ?TrackingNumber $trackingNumber = null;
     private ShipmentState $state;
 
     public static function request(
         ShipmentId $id,
-        string $orderId,
+        string $reference,
         string $customerId,
-        PostalAddress $shippingAddress,
+        PostalAddress $origin,
+        PostalAddress $destination,
         \DateTimeImmutable $createdAt,
     ): self {
         $self = new self();
         $self->recordThat(new ShipmentRequested(
             id: $id->toString(),
-            orderId: $orderId,
+            reference: $reference,
             customerId: $customerId,
-            shippingAddress: [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
+            origin: $origin->toArray(),
+            destination: $destination->toArray(),
             createdAt: $createdAt,
         ));
 
@@ -102,42 +90,20 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function cancel(\DateTimeImmutable $cancelledAt): void
-    {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
-            $this->recordThat(new ShipmentCancellationRejected(
-                id: $this->id->toString(),
-                state: $this->state,
-                rejectedAt: $cancelledAt,
-            ));
-
-            return;
-        }
-
-        $this->recordThat(new ShipmentCancelled(
-            id: $this->id->toString(),
-            cancelledAt: $cancelledAt,
-        ));
-    }
-
     /**
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
      */
-    public function manifest(TrackingReference $trackingReference, \DateTimeImmutable $manifestedAt): void
+    public function manifest(TrackingNumber $trackingNumber, \DateTimeImmutable $manifestedAt): void
     {
         if ($this->state->isManifested()) {
-            \assert(null !== $this->trackingReference);
+            \assert(null !== $this->trackingNumber);
 
-            if ($this->trackingReference->equals($trackingReference)) {
+            if ($this->trackingNumber->equals($trackingNumber)) {
                 return;
             }
 
-            throw ShipmentAlreadyTrackedException::forReference($this->id, $this->trackingReference->value);
+            throw ShipmentAlreadyTrackedException::forReference($this->id, $this->trackingNumber->value);
         }
 
         if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::MANIFESTED)->isSatisfiedBy($this->state)) {
@@ -146,7 +112,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentManifested(
             id: $this->id->toString(),
-            trackingReference: $trackingReference->value,
+            trackingNumber: $trackingNumber->value,
             manifestedAt: $manifestedAt,
         ));
     }
@@ -190,127 +156,25 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function requestReturn(\DateTimeImmutable $requestedAt): void
+    public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
+        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotRequestReturn($this->id, $this->state);
-        }
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::CANCELLED)->isSatisfiedBy($this->state)) {
+            $this->recordThat(new ShipmentCancellationRejected(
+                id: $this->id->toString(),
+                state: $this->state,
+                rejectedAt: $cancelledAt,
+            ));
 
-        $this->recordThat(new ShipmentReturnRequested(
-            id: $this->id->toString(),
-            requestedAt: $requestedAt,
-        ));
-    }
-
-    /**
-     * @throws ShipmentAlreadyTrackedException
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function manifestReturn(TrackingReference $returnTrackingReference, \DateTimeImmutable $manifestedAt): void
-    {
-        if ($this->state->isReturnManifested()) {
-            \assert(null !== $this->returnTrackingReference);
-
-            if ($this->returnTrackingReference->equals($returnTrackingReference)) {
-                return;
-            }
-
-            throw ShipmentAlreadyTrackedException::forReference($this->id, $this->returnTrackingReference->value);
-        }
-
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotManifestReturn($this->id, $this->state);
-        }
-
-        $this->recordThat(new ShipmentReturnManifested(
-            id: $this->id->toString(),
-            returnTrackingReference: $returnTrackingReference->value,
-            manifestedAt: $manifestedAt,
-        ));
-    }
-
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function dispatchReturn(\DateTimeImmutable $dispatchedAt): void
-    {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_DISPATCHED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_DISPATCHED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotDispatchReturn($this->id, $this->state);
-        }
-
-        $this->recordThat(new ShipmentReturnDispatched(
+        $this->recordThat(new ShipmentCancelled(
             id: $this->id->toString(),
-            dispatchedAt: $dispatchedAt,
-        ));
-    }
-
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function receiveReturn(\DateTimeImmutable $receivedAt): void
-    {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_RECEIVED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        // Tolerates skipping RETURN_DISPATCHED — a missed carrier transit scan still receives.
-        if (!new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_MANIFESTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotReceiveReturn($this->id, $this->state);
-        }
-
-        $this->recordThat(new ShipmentReturnReceived(
-            id: $this->id->toString(),
-            receivedAt: $receivedAt,
-        ));
-    }
-
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function approveReturn(\DateTimeImmutable $approvedAt): void
-    {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_APPROVED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_APPROVED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotApproveReturn($this->id, $this->state);
-        }
-
-        $this->recordThat(new ShipmentReturnApproved(
-            id: $this->id->toString(),
-            approvedAt: $approvedAt,
-        ));
-    }
-
-    /**
-     * @throws ShipmentInvalidTransitionException
-     */
-    public function rejectReturn(string $reason, \DateTimeImmutable $rejectedAt): void
-    {
-        if (new HasReachedSpecification(self::TRANSITIONS, ShipmentState::RETURN_REJECTED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, ShipmentState::RETURN_REJECTED)->isSatisfiedBy($this->state)) {
-            throw ShipmentInvalidTransitionException::cannotRejectReturn($this->id, $this->state);
-        }
-
-        $this->recordThat(new ShipmentReturnRejected(
-            id: $this->id->toString(),
-            reason: $reason,
-            rejectedAt: $rejectedAt,
+            cancelledAt: $cancelledAt,
         ));
     }
 
@@ -318,14 +182,11 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRequested(ShipmentRequested $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
-        $this->orderId = $event->orderId;
+        $this->reference = $event->reference;
         $this->customerId = $event->customerId;
-        $this->shippingAddress = PostalAddress::of(
-            FullName::of($event->shippingAddress['firstName'], $event->shippingAddress['lastName']),
-            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),
-        );
-        $this->trackingReference = null;
-        $this->returnTrackingReference = null;
+        $this->origin = $this->toAddress($event->origin);
+        $this->destination = $this->toAddress($event->destination);
+        $this->trackingNumber = null;
         $this->state = ShipmentState::REQUESTED;
     }
 
@@ -338,7 +199,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyManifested(ShipmentManifested $event): void
     {
-        $this->trackingReference = TrackingReference::fromString($event->trackingReference);
+        $this->trackingNumber = TrackingNumber::fromString($event->trackingNumber);
         $this->state = ShipmentState::MANIFESTED;
     }
 
@@ -365,40 +226,14 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     {
     }
 
-    #[Apply]
-    private function applyReturnRequested(ShipmentReturnRequested $event): void
+    /**
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     */
+    private function toAddress(array $address): PostalAddress
     {
-        $this->state = ShipmentState::RETURN_REQUESTED;
-    }
-
-    #[Apply]
-    private function applyReturnManifested(ShipmentReturnManifested $event): void
-    {
-        $this->returnTrackingReference = TrackingReference::fromString($event->returnTrackingReference);
-        $this->state = ShipmentState::RETURN_MANIFESTED;
-    }
-
-    #[Apply]
-    private function applyReturnDispatched(ShipmentReturnDispatched $event): void
-    {
-        $this->state = ShipmentState::RETURN_DISPATCHED;
-    }
-
-    #[Apply]
-    private function applyReturnReceived(ShipmentReturnReceived $event): void
-    {
-        $this->state = ShipmentState::RETURN_RECEIVED;
-    }
-
-    #[Apply]
-    private function applyReturnApproved(ShipmentReturnApproved $event): void
-    {
-        $this->state = ShipmentState::RETURN_APPROVED;
-    }
-
-    #[Apply]
-    private function applyReturnRejected(ShipmentReturnRejected $event): void
-    {
-        $this->state = ShipmentState::RETURN_REJECTED;
+        return PostalAddress::of(
+            $address['recipientName'],
+            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
+        );
     }
 }

@@ -37,7 +37,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
         self::assertNull($result->paymentReference);
         self::assertNull($result->paymentCheckoutUrl);
         self::assertNull($result->paidAt);
-        self::assertNull($result->trackingReference);
+        self::assertNull($result->trackingNumber);
         self::assertNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }

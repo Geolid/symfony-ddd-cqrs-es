@@ -11,7 +11,6 @@ use Fulfilment\Shipment\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[CommandHandler]
@@ -33,12 +32,10 @@ final readonly class RequestShipmentHandler
 
         $shipment = Shipment::request(
             id: $id,
-            orderId: $command->orderId,
+            reference: $command->reference,
             customerId: $command->customerId,
-            shippingAddress: PostalAddress::of(
-                FullName::of($command->shippingAddress['firstName'], $command->shippingAddress['lastName']),
-                Address::of($command->shippingAddress['street'], $command->shippingAddress['postalCode'], $command->shippingAddress['city'], $command->shippingAddress['countryCode']),
-            ),
+            origin: $this->toAddress($command->origin),
+            destination: $this->toAddress($command->destination),
             createdAt: $this->clock->now(),
         );
 
@@ -47,5 +44,16 @@ final readonly class RequestShipmentHandler
         } catch (ShipmentAlreadyExistsException) {
             return;
         }
+    }
+
+    /**
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     */
+    private function toAddress(array $address): PostalAddress
+    {
+        return PostalAddress::of(
+            $address['recipientName'],
+            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
+        );
     }
 }

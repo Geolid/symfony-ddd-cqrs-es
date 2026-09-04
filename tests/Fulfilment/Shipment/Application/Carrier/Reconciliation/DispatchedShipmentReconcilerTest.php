@@ -32,15 +32,15 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenDelivered(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::sample('trackingReference')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
+        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $carrier = $this->createStub(CarrierGatewayInterface::class);
         $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::DELIVERED);
         $reconciler = new DispatchedShipmentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingReference);
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);
 
         // Then
         self::assertTrue($reconciled);
@@ -52,15 +52,15 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenStillDispatched(): void
     {
         // Given
-        $trackingReference = ShipmentBuilder::sample('trackingReference')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingReference)->dispatched()->create();
+        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
+        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $carrier = $this->createStub(CarrierGatewayInterface::class);
         $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::DISPATCHED);
         $reconciler = new DispatchedShipmentReconciler($carrier, $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingReference);
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);
 
         // Then
         self::assertFalse($reconciled);

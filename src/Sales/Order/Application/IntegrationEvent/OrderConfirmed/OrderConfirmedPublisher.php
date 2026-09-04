@@ -12,7 +12,6 @@ use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
-use Shared\Domain\ValueObject\PostalAddress;
 
 #[Publisher('sales.order.publish_order_confirmed')]
 final readonly class OrderConfirmedPublisher
@@ -34,23 +33,8 @@ final readonly class OrderConfirmedPublisher
         $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
             orderId: $event->id,
             customerId: $order->customerId,
-            shippingAddress: $this->normalizePostalAddress($order->shippingAddress),
+            shippingAddress: $order->shippingAddress->toArray(),
             confirmedAt: $event->confirmedAt,
         ));
-    }
-
-    /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function normalizePostalAddress(PostalAddress $address): array
-    {
-        return [
-            'firstName' => $address->fullName->firstName,
-            'lastName' => $address->fullName->lastName,
-            'street' => $address->address->street,
-            'postalCode' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'countryCode' => $address->address->countryCode->value,
-        ];
     }
 }

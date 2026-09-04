@@ -31,7 +31,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = ShipmentBuilder::new()->create();
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
+        $shipment = $builder->create();
         $this->store($other, $shipment);
 
         // When
@@ -39,7 +40,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($shipment->orderId, $result->orderId);
+        self::assertSame($builder['reference'], $result->reference);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
     }
 
@@ -54,76 +55,53 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByTrackingReference(): void
+    public function itGetsByTrackingNumber(): void
     {
         // Given
         $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
-        $trackedFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
-        $tracked = $trackedFactory->create();
+        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
+        $tracked = $builder->create();
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofTrackingReference($trackedFactory['trackingReference']->value);
+        $result = $this->finder->ofTrackingNumber($builder['trackingNumber']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($tracked->orderId, $result->orderId);
+        self::assertSame($builder['reference'], $result->reference);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($trackedFactory['trackingReference']->value, $result->trackingReference);
+        self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
 
     #[Test]
-    public function itThrowsWhenTrackingReferenceNotFound(): void
+    public function itThrowsWhenTrackingNumberNotFound(): void
     {
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofTrackingReference(ShipmentBuilder::sample('trackingReference')->value);
+        $this->finder->ofTrackingNumber(ShipmentBuilder::sample('trackingNumber')->value);
     }
 
     #[Test]
-    public function itGetsByReturnTrackingReference(): void
+    public function itFindsByReference(): void
     {
         // Given
-        $other = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested()
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested()
-            ->create();
-        $trackedFactory = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested()
-            ->dispatched()
-            ->delivered()
-            ->returnRequested()
-            ->returnManifested();
-        $tracked = $trackedFactory->create();
-        $this->store($other, $tracked);
+        $other = ShipmentBuilder::new()->create();
+        $builder = ShipmentBuilder::new();
+        $shipment = $builder->create();
+        $this->store($other, $shipment);
 
         // When
-        $result = $this->finder->ofReturnTrackingReference($trackedFactory['returnTrackingReference']->value);
+        $found = $this->finder->ofReferenceOrNull($builder['reference']);
+        $notFound = $this->finder->ofReferenceOrNull(ShipmentBuilder::sample('reference'));
 
         // Then
-        self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($tracked->orderId, $result->orderId);
-        self::assertSame(ShipmentStatus::RETURN_MANIFESTED, $result->status);
-        self::assertSame($trackedFactory['returnTrackingReference']->value, $result->returnTrackingReference);
-    }
-
-    #[Test]
-    public function itThrowsWhenReturnTrackingReferenceNotFound(): void
-    {
-        // Then
-        $this->expectException(ShipmentResultNotFoundException::class);
-
-        // When
-        $this->finder->ofReturnTrackingReference(ShipmentBuilder::sample('returnTrackingReference')->value);
+        self::assertNotNull($found);
+        self::assertSame($shipment->id->toString(), $found->id);
+        self::assertNull($notFound);
     }
 
     #[Test]
@@ -159,51 +137,17 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now->modify('-1 day'))
             ->create();
-        $staleReturnManifested = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-5 days'))
-            ->dispatched($now->modify('-4 days'))
-            ->delivered($now->modify('-3 days'))
-            ->returnRequested($now->modify('-2 days'))
-            ->returnManifested(manifestedAt: $now->modify('-1 day'))
-            ->create();
-        $staleReturnDispatched = ShipmentBuilder::new()
-            ->prepared()
-            ->manifested(manifestedAt: $now->modify('-6 days'))
-            ->dispatched($now->modify('-5 days'))
-            ->delivered($now->modify('-4 days'))
-            ->returnRequested($now->modify('-3 days'))
-            ->returnManifested(manifestedAt: $now->modify('-2 days'))
-            ->returnDispatched($now->modify('-1 day'))
-            ->create();
-        $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched, $staleReturnManifested, $staleReturnDispatched);
+        $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched);
 
         // When
         $results = iterator_to_array($this->finder->stalledBefore($now));
 
         // Then
-        self::assertCount(4, $results);
+        self::assertCount(2, $results);
         self::assertEqualsCanonicalizing(
-            [$staleManifested->id->toString(), $staleDispatched->id->toString(), $staleReturnManifested->id->toString(), $staleReturnDispatched->id->toString()],
+            [$staleManifested->id->toString(), $staleDispatched->id->toString()],
             array_map(static fn (ShipmentResult $result): string => $result->id, $results),
         );
-    }
-
-    #[Test]
-    public function itFiltersByCustomer(): void
-    {
-        // Given
-        $customerId = Uuid::uuid7()->toString();
-        $other = ShipmentBuilder::new()->create();
-        $shipment = ShipmentBuilder::new()->withCustomerId($customerId)->create();
-        $this->store($other, $shipment);
-
-        // When
-        $results = iterator_to_array($this->finder->byCustomer($customerId));
-
-        // Then
-        self::assertCount(1, $results);
-        self::assertSame($shipment->id->toString(), $results[0]->id);
     }
 
     #[Test]

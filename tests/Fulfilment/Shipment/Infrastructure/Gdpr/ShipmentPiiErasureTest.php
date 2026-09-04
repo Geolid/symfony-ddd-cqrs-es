@@ -16,7 +16,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itCryptoShredsFrozenAddressOnErasure(): void
+    public function itCryptoShredsFrozenAddressesOnErasure(): void
     {
         // Given
         $builder = ShipmentBuilder::new();
@@ -35,9 +35,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentRequested::class, $rehydrated);
-        self::assertSame(
-            ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
-            $rehydrated->shippingAddress,
-        );
+        $erasedAddress = ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        self::assertSame($erasedAddress, $rehydrated->origin);
+        self::assertSame($erasedAddress, $rehydrated->destination);
     }
 }

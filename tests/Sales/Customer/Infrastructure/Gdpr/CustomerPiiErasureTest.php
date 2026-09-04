@@ -14,7 +14,6 @@ use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
 use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -60,7 +59,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerBuilder::new()
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->shippingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
         $serialized = $this->serializedEventOf(
@@ -82,7 +81,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerBuilder::new()
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->billingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
         $this->store($customer);
         $serialized = $this->serializedEventOf(
@@ -100,10 +99,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{firstName: string, lastName: string, street: string, postalCode: string, city: string, countryCode: string}
+     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
      */
     private function erasedAddress(): array
     {
-        return ['firstName' => 'erased', 'lastName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        return ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
     }
 }

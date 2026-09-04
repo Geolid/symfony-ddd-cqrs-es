@@ -30,6 +30,6 @@ final class CarrierPickupConfirmedParser extends AbstractSignedRequestParser
 
     protected function eventId(object $payload): string
     {
-        return $payload->trackingReference;
+        return $payload->trackingNumber;
     }
 }

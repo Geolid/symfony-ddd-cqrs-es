@@ -21,18 +21,11 @@ final readonly class ShipmentReconciler implements ShipmentReconcilerInterface
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, ShipmentStatus $status, ?string $trackingReference, ?string $returnTrackingReference): bool
+    public function reconcile(string $id, ShipmentStatus $status, string $trackingNumber): bool
     {
-        $reference = match ($status) {
-            ShipmentStatus::RETURN_MANIFESTED, ShipmentStatus::RETURN_DISPATCHED => $returnTrackingReference,
-            default => $trackingReference,
-        };
-
-        \assert(null !== $reference);
-
         foreach ($this->reconcilers as $reconciler) {
             if ($reconciler->supports($status)) {
-                return $reconciler->reconcile($id, $reference);
+                return $reconciler->reconcile($id, $trackingNumber);
             }
         }
 

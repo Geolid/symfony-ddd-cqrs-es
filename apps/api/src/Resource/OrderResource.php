@@ -59,7 +59,7 @@ final class OrderResource
         #[ApiProperty(description: 'The order payment\'s reference, once a payment has been requested.', example: 'GLBX-4Q7X2K9')]
         public ?string $paymentReference = null,
         #[ApiProperty(description: "The carrier's own tracking reference, once the pickup has been booked.", example: 'ACME-4Q7X2K9')]
-        public ?string $trackingReference = null,
+        public ?string $trackingNumber = null,
     ) {
     }
 
@@ -73,7 +73,7 @@ final class OrderResource
             placedAt: $result->placedAt,
             cancelledAt: $result->cancelledAt,
             paymentReference: $result->paymentReference,
-            trackingReference: $result->trackingReference,
+            trackingNumber: $result->trackingNumber,
         );
     }
 }

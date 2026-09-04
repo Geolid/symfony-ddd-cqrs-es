@@ -28,6 +28,6 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
-        self::assertSame(OrderStatus::DELIVERED, $result->status);
+        self::assertSame(OrderStatus::COMPLETED, $result->status);
     }
 }

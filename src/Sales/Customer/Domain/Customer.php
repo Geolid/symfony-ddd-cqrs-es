@@ -17,7 +17,6 @@ use Sales\Customer\Domain\Event\CustomerShippingAddressRegistered;
 use Sales\Customer\Domain\ValueObject\CustomerId;
 use Sales\Customer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('sales.customer.customer')]
@@ -52,14 +51,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new CustomerShippingAddressRegistered(
             id: $this->id->toString(),
-            address: [
-                'firstName' => $shippingAddress->fullName->firstName,
-                'lastName' => $shippingAddress->fullName->lastName,
-                'street' => $shippingAddress->address->street,
-                'postalCode' => $shippingAddress->address->postalCode,
-                'city' => $shippingAddress->address->city,
-                'countryCode' => $shippingAddress->address->countryCode->value,
-            ],
+            address: $shippingAddress->toArray(),
             setAt: $registeredAt,
         ));
     }
@@ -72,14 +64,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new CustomerBillingAddressRegistered(
             id: $this->id->toString(),
-            address: [
-                'firstName' => $billingAddress->fullName->firstName,
-                'lastName' => $billingAddress->fullName->lastName,
-                'street' => $billingAddress->address->street,
-                'postalCode' => $billingAddress->address->postalCode,
-                'city' => $billingAddress->address->city,
-                'countryCode' => $billingAddress->address->countryCode->value,
-            ],
+            address: $billingAddress->toArray(),
             setAt: $registeredAt,
         ));
     }
@@ -107,24 +92,29 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyShippingAddressRegistered(CustomerShippingAddressRegistered $event): void
     {
-        $this->shippingAddress = PostalAddress::of(
-            FullName::of($event->address['firstName'], $event->address['lastName']),
-            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city'], $event->address['countryCode']),
-        );
+        $this->shippingAddress = $this->toAddress($event->address);
     }
 
     #[Apply]
     private function applyBillingAddressRegistered(CustomerBillingAddressRegistered $event): void
     {
-        $this->billingAddress = PostalAddress::of(
-            FullName::of($event->address['firstName'], $event->address['lastName']),
-            Address::of($event->address['street'], $event->address['postalCode'], $event->address['city'], $event->address['countryCode']),
-        );
+        $this->billingAddress = $this->toAddress($event->address);
     }
 
     #[Apply]
     private function applyErased(CustomerErased $event): void
     {
         $this->erased = true;
+    }
+
+    /**
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     */
+    private function toAddress(array $address): PostalAddress
+    {
+        return PostalAddress::of(
+            $address['recipientName'],
+            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
+        );
     }
 }

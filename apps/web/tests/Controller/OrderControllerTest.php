@@ -22,7 +22,6 @@ use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\FullName;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -439,7 +438,7 @@ final class OrderControllerTest extends AbstractWebTestCase
         self::assertSelectorTextContains('[data-testid="flash-success"]', 'sales.order.flash.return_requested');
 
         $order = $this->service(OrderFinderInterface::class)->ofId($id);
-        self::assertSame(OrderStatus::RETURN_REQUESTED, $order->status);
+        self::assertSame(OrderStatus::COMPLETED, $order->status);
     }
 
     #[Test]
@@ -494,6 +493,10 @@ final class OrderControllerTest extends AbstractWebTestCase
         $order = OrderBuilder::new()->withCustomerId($owner->id->toString())->create();
         $this->store($order);
         $id = $order->id->toString();
+        $commandBus = $this->service(CommandBusInterface::class);
+        $commandBus->dispatch(new ConfirmOrder($id));
+        $commandBus->dispatch(new DispatchOrder($id));
+        $commandBus->dispatch(new DeliverOrder($id));
         $this->loginAs($client, $this->createCustomer('intruder-request-return@example.com'));
 
         // When
@@ -511,8 +514,8 @@ final class OrderControllerTest extends AbstractWebTestCase
         $customer = CustomerBuilder::new()
             ->withId($identity->id->toString())
             ->withEmail($email)
-            ->shippingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
-            ->billingAddressRegistered(PostalAddress::of(FullName::of('Ada', 'Lovelace'), Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
+            ->shippingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->billingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
             ->create();
         $this->store($identity, $customer);
 

@@ -81,7 +81,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     #[Subscribe(ShipmentDispatchedIntegrationEvent::class)]
     public function onShipmentDispatchedIntegrationEvent(ShipmentDispatchedIntegrationEvent $event): void
     {
-        $this->recompute($event->orderId, [
+        $this->recompute($event->reference, [
             'dispatched_at' => $event->dispatchedAt,
         ], shipmentStatus: 'dispatched', types: ['dispatched_at' => Types::DATETIME_IMMUTABLE]);
     }
@@ -89,15 +89,15 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     #[Subscribe(ShipmentManifestedIntegrationEvent::class)]
     public function onShipmentManifestedIntegrationEvent(ShipmentManifestedIntegrationEvent $event): void
     {
-        $this->recompute($event->orderId, [
-            'tracking_reference' => $event->trackingReference,
+        $this->recompute($event->reference, [
+            'tracking_number' => $event->trackingNumber,
         ]);
     }
 
     #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
     public function onShipmentDeliveredIntegrationEvent(ShipmentDeliveredIntegrationEvent $event): void
     {
-        $this->recompute($event->orderId, [
+        $this->recompute($event->reference, [
             'delivered_at' => $event->deliveredAt,
         ], shipmentStatus: 'delivered', types: ['delivered_at' => Types::DATETIME_IMMUTABLE]);
     }
@@ -120,7 +120,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
         $table->addColumn('payment_checkout_url', Types::STRING, ['length' => 2048, 'notnull' => false, 'default' => null]);
         $table->addColumn('paid_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('shipment_status', Types::STRING, ['length' => 10, 'notnull' => false, 'default' => null]);
-        $table->addColumn('tracking_reference', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
+        $table->addColumn('tracking_number', Types::STRING, ['length' => 64, 'notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);

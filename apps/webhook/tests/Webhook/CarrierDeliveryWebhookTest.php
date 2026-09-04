@@ -23,9 +23,9 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         $client = self::createClient();
         $shipmentFactory = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
         $shipment = $shipmentFactory->create();
-        $trackingReference = $shipmentFactory['trackingReference']->value;
+        $trackingNumber = $shipmentFactory['trackingNumber']->value;
         $this->store($shipment);
-        $body = self::body($trackingReference);
+        $body = self::body($trackingNumber);
 
         // When
         $client->request('POST', self::PATH, server: $this->headers(self::sign($body, 'CARRIER_WEBHOOK_SECRET')), content: $body);
@@ -42,7 +42,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         // Given
         $client = self::createClient();
-        $body = self::body(self::anyTrackingReference());
+        $body = self::body(self::anyTrackingNumber());
 
         // When
         $client->request('POST', self::PATH, server: $this->headers($signature), content: $body);
@@ -81,11 +81,11 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
     {
         yield 'reference blank' => [self::body('')];
         yield 'reference longer than the carrier can issue' => [self::body(str_repeat('A', 65))];
-        // No value at all is mapped to `trackingReference` — COLLECT_DENORMALIZATION_ERRORS
+        // No value at all is mapped to `trackingNumber` — COLLECT_DENORMALIZATION_ERRORS
         // folds this into the same PartialDenormalizationException as a type mismatch below.
         yield 'reference absent' => [json_encode(['unexpected' => 'field'], \JSON_THROW_ON_ERROR)];
-        // A value is mapped to `trackingReference` but of an incompatible type.
-        yield 'reference not a string' => [json_encode(['trackingReference' => ['nested' => 'object']], \JSON_THROW_ON_ERROR)];
+        // A value is mapped to `trackingNumber` but of an incompatible type.
+        yield 'reference not a string' => [json_encode(['trackingNumber' => ['nested' => 'object']], \JSON_THROW_ON_ERROR)];
     }
 
     #[Test]
@@ -107,7 +107,7 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
      */
     public static function provideRequestsNotMatchingTheWebhookShape(): iterable
     {
-        yield 'method is not POST' => ['GET', self::body(self::anyTrackingReference())];
+        yield 'method is not POST' => ['GET', self::body(self::anyTrackingNumber())];
         yield 'body is not syntactically valid JSON' => ['POST', '{invalid'];
     }
 
@@ -139,13 +139,13 @@ final class CarrierDeliveryWebhookTest extends AbstractWebhookTestCase
         return $headers;
     }
 
-    private static function body(string $trackingReference): string
+    private static function body(string $trackingNumber): string
     {
-        return json_encode(['trackingReference' => $trackingReference], \JSON_THROW_ON_ERROR);
+        return json_encode(['trackingNumber' => $trackingNumber], \JSON_THROW_ON_ERROR);
     }
 
-    private static function anyTrackingReference(): string
+    private static function anyTrackingNumber(): string
     {
-        return ShipmentBuilder::sample('trackingReference')->value;
+        return ShipmentBuilder::sample('trackingNumber')->value;
     }
 }
