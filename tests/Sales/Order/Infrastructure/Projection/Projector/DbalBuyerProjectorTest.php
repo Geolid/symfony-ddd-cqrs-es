@@ -41,6 +41,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnBuyerShippingAddressRegistered(): void
     {
         // Given
+        $otherShippingAddress = PostalAddress::of('John Smith', Address::of('5 rue de la République', '69001', 'Lyon', 'FR'));
+        $other = BuyerBuilder::new()
+            ->shippingAddressRegistered($otherShippingAddress)
+            ->create();
+        $this->store($other);
         $shippingAddress = $this->shippingAddress();
         $buyer = BuyerBuilder::new()
             ->shippingAddressRegistered($shippingAddress)
@@ -58,12 +63,25 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
             $this->postalAddress($row['shipping_address']),
         );
         self::assertNull($row['billing_address']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNotNull($otherRow['shipping_address']);
+        self::assertSame(
+            $this->primitiveAddress($otherShippingAddress),
+            $this->postalAddress($otherRow['shipping_address']),
+        );
     }
 
     #[Test]
     public function itProjectsOnBuyerBillingAddressRegistered(): void
     {
         // Given
+        $otherBillingAddress = PostalAddress::of('John Smith', Address::of('5 rue de la République', '69001', 'Lyon', 'FR'));
+        $other = BuyerBuilder::new()
+            ->billingAddressRegistered($otherBillingAddress)
+            ->create();
+        $this->store($other);
         $billingAddress = $this->billingAddress();
         $buyer = BuyerBuilder::new()
             ->billingAddressRegistered($billingAddress)
@@ -81,6 +99,14 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
             $this->postalAddress($row['billing_address']),
         );
         self::assertNull($row['shipping_address']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNotNull($otherRow['billing_address']);
+        self::assertSame(
+            $this->primitiveAddress($otherBillingAddress),
+            $this->postalAddress($otherRow['billing_address']),
+        );
     }
 
     #[Test]
