@@ -2,22 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Domain\Specification;
+namespace Shared\Domain\Specification;
 
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
-
+/**
+ * @template T of \BackedEnum
+ */
 final readonly class CanTransitionToSpecification
 {
     /**
-     * @param array<string, list<ShipmentState>> $transitions
+     * @param array<string, list<T>> $transitions
      */
     public function __construct(
         private array $transitions,
-        private ShipmentState $target,
+        private \BackedEnum $target,
     ) {
     }
 
-    public function isSatisfiedBy(ShipmentState $candidate): bool
+    public function isSatisfiedBy(\BackedEnum $candidate): bool
     {
         return \in_array($this->target, $this->transitions[$candidate->value] ?? [], true);
     }

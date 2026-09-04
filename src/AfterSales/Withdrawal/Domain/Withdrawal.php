@@ -20,6 +20,8 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -32,6 +34,14 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
+
+    /** @var array<string, list<WithdrawalState>> */
+    private const array TRANSITIONS = [
+        WithdrawalState::REQUESTED->value => [WithdrawalState::RECEIVED],
+        WithdrawalState::RECEIVED->value => [WithdrawalState::APPROVED, WithdrawalState::REJECTED],
+        WithdrawalState::APPROVED->value => [],
+        WithdrawalState::REJECTED->value => [],
+    ];
 
     #[Id]
     public private(set) WithdrawalId $id;
@@ -75,12 +85,14 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
 
     public function receive(\DateTimeImmutable $receivedAt): void
     {
-        if (!$this->state->isReceived() && !$this->state->isApproved() && !$this->state->isRejected()) {
-            $this->recordThat(new WithdrawalReceived(
-                id: $this->id->toString(),
-                receivedAt: $receivedAt,
-            ));
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, WithdrawalState::RECEIVED)->isSatisfiedBy($this->state)) {
+            return;
         }
+
+        $this->recordThat(new WithdrawalReceived(
+            id: $this->id->toString(),
+            receivedAt: $receivedAt,
+        ));
     }
 
     /**
@@ -88,11 +100,11 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
      */
     public function approve(\DateTimeImmutable $approvedAt): void
     {
-        if ($this->state->isApproved()) {
+        if (new HasReachedSpecification(self::TRANSITIONS, WithdrawalState::APPROVED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isReceived()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, WithdrawalState::APPROVED)->isSatisfiedBy($this->state)) {
             throw WithdrawalNotReceivedException::forId($this->id);
         }
 
@@ -107,11 +119,11 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
      */
     public function reject(string $reason, \DateTimeImmutable $rejectedAt): void
     {
-        if ($this->state->isRejected()) {
+        if (new HasReachedSpecification(self::TRANSITIONS, WithdrawalState::REJECTED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isReceived()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, WithdrawalState::REJECTED)->isSatisfiedBy($this->state)) {
             throw WithdrawalNotReceivedException::forId($this->id);
         }
 

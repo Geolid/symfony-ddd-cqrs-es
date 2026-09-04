@@ -2,27 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipment\Domain\Specification;
+namespace Shared\Domain\Specification;
 
-use Fulfilment\Shipment\Domain\ValueObject\ShipmentState;
-
+/**
+ * @template T of \BackedEnum
+ */
 final readonly class HasReachedSpecification
 {
     /**
-     * @param array<string, list<ShipmentState>> $transitions
+     * @param array<string, list<T>> $transitions
      */
     public function __construct(
         private array $transitions,
-        private ShipmentState $target,
+        private \BackedEnum $target,
     ) {
     }
 
-    public function isSatisfiedBy(ShipmentState $candidate): bool
+    public function isSatisfiedBy(\BackedEnum $candidate): bool
     {
         return $this->reaches($this->target, $candidate);
     }
 
-    private function reaches(ShipmentState $from, ShipmentState $candidate): bool
+    private function reaches(\BackedEnum $from, \BackedEnum $candidate): bool
     {
         if ($from === $candidate) {
             return true;
