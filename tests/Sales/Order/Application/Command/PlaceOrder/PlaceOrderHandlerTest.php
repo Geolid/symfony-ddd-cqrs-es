@@ -6,6 +6,7 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Domain\Buyer;
@@ -85,15 +86,19 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerAddressesNotCompleted(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->withEmail('buyer@example.com');
+        $buyerBuilder = BuyerBuilder::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $buyer = $buyer->shippingAddressRegistered($this->shippingAddress());
+            $buyerBuilder = $buyerBuilder->shippingAddressRegistered($this->shippingAddress());
         }
+        $buyer = $buyerBuilder->create();
+
+        $payerBuilder = PayerBuilder::new()->withId($buyer->id->toString());
         if ($withBillingAddress) {
-            $buyer = $buyer->billingAddressRegistered($this->billingAddress());
+            $payerBuilder = $payerBuilder->addressRegistered($this->billingAddress());
         }
-        $buyer = $buyer->create();
-        $this->store($buyer);
+        $payer = $payerBuilder->create();
+
+        $this->store($buyer, $payer);
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
@@ -110,6 +115,23 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         yield 'neither address set' => [false, false];
         yield 'only shipping address set' => [true, false];
         yield 'only billing address set' => [false, true];
+    }
+
+    #[Test]
+    public function itFailsWhenPayerNotRegistered(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()
+            ->withEmail('buyer@example.com')
+            ->shippingAddressRegistered($this->shippingAddress())
+            ->create();
+        $this->store($buyer);
+
+        // Then
+        $this->expectException(BuyerAddressesNotCompletedException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -184,9 +206,12 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $buyer = BuyerBuilder::new()
             ->withEmail($email)
             ->shippingAddressRegistered($this->shippingAddress())
-            ->billingAddressRegistered($this->billingAddress())
             ->create();
-        $this->store($buyer);
+        $payer = PayerBuilder::new()
+            ->withId($buyer->id->toString())
+            ->addressRegistered($this->billingAddress())
+            ->create();
+        $this->store($buyer, $payer);
 
         return $buyer;
     }

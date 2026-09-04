@@ -9,9 +9,11 @@ use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
-use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
+use Sales\Order\Application\Finder\Buyer\PostalAddressResult as BuyerPostalAddressResult;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductResult;
+use Sales\Order\Application\Finder\Payer\PayerFinderInterface;
+use Sales\Order\Application\Finder\Payer\PostalAddressResult as PayerPostalAddressResult;
 use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
@@ -31,6 +33,7 @@ final readonly class PlaceOrderHandler
     public function __construct(
         private OrderRepositoryInterface $repository,
         private BuyerFinderInterface $buyerFinder,
+        private PayerFinderInterface $payerFinder,
         private ListedProductFinderInterface $listedProductFinder,
         private ClockInterface $clock,
     ) {
@@ -47,8 +50,9 @@ final readonly class PlaceOrderHandler
     {
         $buyer = $this->buyerFinder->ofIdOrNull($command->buyerId)
             ?? throw BuyerNotRegisteredException::forId($command->buyerId);
+        $payer = $this->payerFinder->ofIdOrNull($command->buyerId);
 
-        if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {
+        if (null === $buyer->shippingAddress || null === $payer?->address) {
             throw BuyerAddressesNotCompletedException::forId($command->buyerId);
         }
 
@@ -63,7 +67,7 @@ final readonly class PlaceOrderHandler
             id: OrderId::fromString($command->id),
             buyerId: $buyer->buyerId,
             shippingAddress: $this->toAddress($buyer->shippingAddress),
-            billingAddress: $this->toAddress($buyer->billingAddress),
+            billingAddress: $this->toAddress($payer->address),
             lines: array_map(
                 fn (array $line): OrderLine => $this->resolveLine($line, $currentProducts),
                 $command->lines,
@@ -74,7 +78,7 @@ final readonly class PlaceOrderHandler
         $this->repository->save($order);
     }
 
-    private function toAddress(PostalAddressResult $address): PostalAddress
+    private function toAddress(BuyerPostalAddressResult|PayerPostalAddressResult $address): PostalAddress
     {
         return PostalAddress::of(
             $address->recipientName,

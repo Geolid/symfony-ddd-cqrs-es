@@ -7,7 +7,6 @@ namespace Sales\Tests\Buyer\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Domain\Buyer;
-use Sales\Buyer\Domain\Event\BuyerBillingAddressRegistered;
 use Sales\Buyer\Domain\Event\BuyerErased;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
@@ -73,37 +72,6 @@ final class BuyerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRegistersBillingAddress(): void
-    {
-        $setAt = BuyerBuilder::sample('billingAddressRegisteredAt');
-        $billingAddress = $this->billingAddress();
-
-        $this
-            ->given($this->registered())
-            ->when(static fn (Buyer $buyer) => $buyer->registerBillingAddress($billingAddress, $setAt))
-            ->then(new BuyerBillingAddressRegistered(
-                id: $this->id->toString(),
-                address: $billingAddress->toArray(),
-                setAt: $setAt,
-            ));
-    }
-
-    #[Test]
-    public function itDoesNotRegisterWhenIdenticalBillingAddress(): void
-    {
-        $billingAddress = $this->billingAddress();
-        $setAt = BuyerBuilder::sample('billingAddressRegisteredAt');
-
-        $this
-            ->given(
-                $this->registered(),
-                new BuyerBillingAddressRegistered($this->id->toString(), $billingAddress->toArray(), $setAt),
-            )
-            ->when(static fn (Buyer $buyer) => $buyer->registerBillingAddress($billingAddress, BuyerBuilder::sample('billingAddressRegisteredAt')))
-            ->then();
-    }
-
-    #[Test]
     public function itErases(): void
     {
         $erasedAt = BuyerBuilder::sample('erasedAt');
@@ -138,10 +106,5 @@ final class BuyerTest extends AggregateRootTestCase
     private function shippingAddress(): PostalAddress
     {
         return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
-    }
-
-    private function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 }

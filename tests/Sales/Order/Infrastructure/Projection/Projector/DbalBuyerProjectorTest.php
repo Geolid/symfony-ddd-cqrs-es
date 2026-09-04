@@ -16,7 +16,6 @@ use Support\TestCase\AbstractIntegrationTestCase;
  * @phpstan-type Row array{
  *     buyer_id: string,
  *     shipping_address: string|null,
- *     billing_address: string|null,
  * }
  */
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
@@ -34,7 +33,6 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNull($row['shipping_address']);
-        self::assertNull($row['billing_address']);
     }
 
     #[Test]
@@ -62,7 +60,6 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
             $this->primitiveAddress($shippingAddress),
             $this->postalAddress($row['shipping_address']),
         );
-        self::assertNull($row['billing_address']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -70,42 +67,6 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(
             $this->primitiveAddress($otherShippingAddress),
             $this->postalAddress($otherRow['shipping_address']),
-        );
-    }
-
-    #[Test]
-    public function itProjectsOnBuyerBillingAddressRegistered(): void
-    {
-        // Given
-        $otherBillingAddress = PostalAddress::of('John Smith', Address::of('5 rue de la République', '69001', 'Lyon', 'FR'));
-        $other = BuyerBuilder::new()
-            ->billingAddressRegistered($otherBillingAddress)
-            ->create();
-        $this->store($other);
-        $billingAddress = $this->billingAddress();
-        $buyer = BuyerBuilder::new()
-            ->billingAddressRegistered($billingAddress)
-            ->create();
-
-        // When
-        $this->store($buyer);
-
-        // Then
-        $row = $this->fetchRow($buyer->id->toString());
-        self::assertNotFalse($row);
-        self::assertNotNull($row['billing_address']);
-        self::assertSame(
-            $this->primitiveAddress($billingAddress),
-            $this->postalAddress($row['billing_address']),
-        );
-        self::assertNull($row['shipping_address']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertNotNull($otherRow['billing_address']);
-        self::assertSame(
-            $this->primitiveAddress($otherBillingAddress),
-            $this->postalAddress($otherRow['billing_address']),
         );
     }
 
@@ -131,11 +92,6 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     private function shippingAddress(): PostalAddress
     {
         return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
-    }
-
-    private function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 
     /**
@@ -173,7 +129,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, shipping_address, billing_address FROM %s WHERE buyer_id = :buyerId',
+                'SELECT buyer_id, shipping_address FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['buyerId' => $buyerId],

@@ -9,7 +9,6 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressRegistered\BuyerBillingAddressRegisteredIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerErased\BuyerErasedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressRegistered\BuyerShippingAddressRegisteredIntegrationEvent;
@@ -40,17 +39,6 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(BuyerBillingAddressRegisteredIntegrationEvent::class)]
-    public function onBuyerBillingAddressRegisteredIntegrationEvent(BuyerBillingAddressRegisteredIntegrationEvent $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            ['billing_address' => $this->toAddressData($event->address)],
-            ['buyer_id' => $event->buyerId],
-            ['billing_address' => Types::JSON],
-        );
-    }
-
     #[Subscribe(BuyerErasedIntegrationEvent::class)]
     public function onBuyerErasedIntegrationEvent(BuyerErasedIntegrationEvent $event): void
     {
@@ -65,7 +53,6 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('buyer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
-        $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('buyer_id'))

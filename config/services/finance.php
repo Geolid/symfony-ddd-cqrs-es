@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
+use Finance\Payer\Infrastructure\Projection\Finder\DbalPayerFinder;
 use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
 use Finance\Payment\Application\Query\ListPaymentsPastReconciliationThreshold\ListPaymentsPastReconciliationThresholdHandler;
@@ -33,5 +35,6 @@ return static function (ContainerConfigurator $container): void {
         // Not otherwise referenced by a service definition; alias+public here or the
         // test container's compiler prunes it.
         $paymentRequesterAlias->public();
+        $services->alias(PayerFinderInterface::class, DbalPayerFinder::class)->public();
     }
 };

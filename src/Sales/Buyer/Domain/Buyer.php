@@ -10,7 +10,6 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Sales\Buyer\Domain\Event\BuyerBillingAddressRegistered;
 use Sales\Buyer\Domain\Event\BuyerErased;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
@@ -28,7 +27,6 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     public private(set) BuyerId $id;
     public private(set) Email $email;
     public private(set) ?PostalAddress $shippingAddress = null;
-    public private(set) ?PostalAddress $billingAddress = null;
     private bool $erased;
 
     public static function register(BuyerId $id, Email $email, \DateTimeImmutable $registeredAt): self
@@ -52,19 +50,6 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new BuyerShippingAddressRegistered(
             id: $this->id->toString(),
             address: $shippingAddress->toArray(),
-            setAt: $registeredAt,
-        ));
-    }
-
-    public function registerBillingAddress(PostalAddress $billingAddress, \DateTimeImmutable $registeredAt): void
-    {
-        if (true === $this->billingAddress?->equals($billingAddress)) {
-            return;
-        }
-
-        $this->recordThat(new BuyerBillingAddressRegistered(
-            id: $this->id->toString(),
-            address: $billingAddress->toArray(),
             setAt: $registeredAt,
         ));
     }
@@ -93,12 +78,6 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     private function applyShippingAddressRegistered(BuyerShippingAddressRegistered $event): void
     {
         $this->shippingAddress = $this->toAddress($event->address);
-    }
-
-    #[Apply]
-    private function applyBillingAddressRegistered(BuyerBillingAddressRegistered $event): void
-    {
-        $this->billingAddress = $this->toAddress($event->address);
     }
 
     #[Apply]

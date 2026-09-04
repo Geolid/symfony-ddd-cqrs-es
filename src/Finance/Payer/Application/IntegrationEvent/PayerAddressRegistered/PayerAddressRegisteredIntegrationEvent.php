@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressRegistered;
+namespace Finance\Payer\Application\IntegrationEvent\PayerAddressRegistered;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -10,15 +10,15 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('integration.sales.buyer.buyer.billing_address_registered')]
-final readonly class BuyerBillingAddressRegisteredIntegrationEvent implements IntegrationEventInterface
+#[Event('integration.finance.payer.payer.address_registered')]
+final readonly class PayerAddressRegisteredIntegrationEvent implements IntegrationEventInterface
 {
     /**
      * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
      */
     public function __construct(
         #[DataSubjectId]
-        public string $buyerId,
+        public string $payerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',
