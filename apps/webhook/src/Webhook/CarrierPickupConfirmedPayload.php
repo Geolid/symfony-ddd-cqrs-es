@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Webhook\Webhook;
 
-use Fulfilment\Shipment\Application\Validation\ValidTrackingNumber;
+use Fulfilment\Shipping\Application\Validation\ValidTrackingNumber;
 use OpenApi\Attributes as OA;
 
 final readonly class CarrierPickupConfirmedPayload

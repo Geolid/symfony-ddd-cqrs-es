@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Finder;
 
-use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Order;

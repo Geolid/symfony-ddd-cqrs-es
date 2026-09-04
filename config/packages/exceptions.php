@@ -6,9 +6,9 @@ use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomer
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
-use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
-use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipment\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Application\Exception\TrackingNumberAlreadyTakenException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Exception\IdentityNotAuthenticatableException;

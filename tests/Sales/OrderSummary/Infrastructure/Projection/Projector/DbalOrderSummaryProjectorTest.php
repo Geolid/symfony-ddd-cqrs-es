@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Fulfilment\Tests\Shipment\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\OrderSummary\Application\OrderSummaryStatus;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Webhook\Consumer;
 
-use Fulfilment\Shipment\Application\Command\DeliverShipment\DeliverShipment;
-use Fulfilment\Shipment\Application\Query\GetShipmentByTrackingNumber\GetShipmentByTrackingNumber;
+use Fulfilment\Shipping\Application\Command\DeliverShipment\DeliverShipment;
+use Fulfilment\Shipping\Application\Query\GetShipmentByTrackingNumber\GetShipmentByTrackingNumber;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
