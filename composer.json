@@ -86,10 +86,6 @@
   "autoload": {
     "psr-4": {
       "Bootstrap\\": "bootstrap/",
-      "Api\\": "apps/api/src/",
-      "Cli\\": "apps/cli/src/",
-      "Web\\": "apps/web/src/",
-      "Webhook\\": "apps/webhook/src/",
       "AfterSales\\": "src/AfterSales/",
       "Catalog\\": "src/Catalog/",
       "Fulfilment\\": "src/Fulfilment/",
@@ -101,10 +97,6 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Api\\Tests\\": "apps/api/tests/",
-      "Cli\\Tests\\": "apps/cli/tests/",
-      "Web\\Tests\\": "apps/web/tests/",
-      "Webhook\\Tests\\": "apps/webhook/tests/",
       "AfterSales\\Tests\\": "tests/AfterSales/",
       "Catalog\\Tests\\": "tests/Catalog/",
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
