@@ -28,6 +28,7 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($builder['buyerId'], $event->buyerId);
         self::assertSame($this->primitiveLines($builder['lines']), $event->lines);
         self::assertSame($this->totalAmountInCents($builder['lines']), $event->totalAmountInCents);
+        self::assertSame($order->billingAddress->toArray(), $event->billingAddress);
         self::assertSame($builder['placedAt']->format(\DateTimeInterface::ATOM), $event->placedAt->format(\DateTimeInterface::ATOM));
     }
 

@@ -31,11 +31,9 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $withdrawal = $this->service(WithdrawalRepositoryInterface::class)->load(WithdrawalId::forOrder($order->id->toString()));
-        $shippingAddress = $withdrawal->shippingAddress->toArray();
-        $expectedShippingAddress = $builder['shippingAddress']->toArray();
         self::assertSame($order->id->toString(), $withdrawal->orderId);
         self::assertSame($builder['buyerId'], $withdrawal->buyerId);
-        self::assertSame($expectedShippingAddress, $shippingAddress);
+        self::assertSame($builder['shippingAddress']->toArray(), $withdrawal->shippingAddress->toArray());
     }
 
     #[Test]

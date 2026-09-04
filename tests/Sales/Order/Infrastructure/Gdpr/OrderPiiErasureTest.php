@@ -9,10 +9,9 @@ use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
-use Sales\Order\Application\IntegrationEvent\OrderPaymentCaptured\OrderPaymentCapturedIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -56,16 +55,15 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsPaymentCapturedShippingAddressOnBuyerErasure(): void
+    public function itCryptoShredsOrderPlacedBillingAddressOnBuyerErasure(): void
     {
         // Given
         $buyerId = Uuid::uuid7()->toString();
         $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
-        $orderPayment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
-        $this->store($order, $orderPayment);
+        $this->store($order);
         $serialized = $this->serializedEventOf(
-            OrderPaymentCapturedIntegrationEvent::class,
-            static fn (OrderPaymentCapturedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),
+            OrderPlacedIntegrationEvent::class,
+            static fn (OrderPlacedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),
         );
 
         // When
@@ -73,8 +71,8 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(OrderPaymentCapturedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
+        self::assertInstanceOf(OrderPlacedIntegrationEvent::class, $rehydrated);
+        self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
     }
 
     #[Test]

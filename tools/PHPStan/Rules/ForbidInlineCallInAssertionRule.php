@@ -160,7 +160,7 @@ final readonly class ForbidInlineCallInAssertionRule implements Rule
             return false;
         }
 
-        $safeMethods = ['format', 'toString', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader', 'getTimezone', 'getName', 'getStatusCode', 'getDisplay', 'getRequest', 'getLocale'];
+        $safeMethods = ['format', 'toString', 'toArray', 'hash', 'verify', 'fetchRow', 'exists', 'needsRehash', 'equals', 'totalItems', 'lastPage', 'currentPage', 'itemsPerPage', 'getTags', 'event', 'header', 'hasHeader', 'getTimezone', 'getName', 'getStatusCode', 'getDisplay', 'getRequest', 'getLocale'];
 
         return \in_array($node->name->toString(), $safeMethods, true);
     }

@@ -25,6 +25,7 @@ final readonly class OrderPlacedPublisher
             buyerId: $event->buyerId,
             lines: $event->lines,
             totalAmountInCents: $event->totalAmountInCents,
+            billingAddress: $event->billingAddress,
             placedAt: $event->placedAt,
         ));
     }

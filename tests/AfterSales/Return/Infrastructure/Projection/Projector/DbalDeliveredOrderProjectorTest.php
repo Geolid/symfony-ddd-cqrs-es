@@ -28,10 +28,8 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        $shippingAddress = $this->postalAddress($row['shipping_address']);
-        $expectedShippingAddress = $this->toAddressData($builder['shippingAddress']->toArray());
         self::assertSame($builder['buyerId'], $row['buyer_id']);
-        self::assertSame($expectedShippingAddress, $shippingAddress);
+        self::assertSame($this->toAddressData($builder['shippingAddress']->toArray()), $this->postalAddress($row['shipping_address']));
         self::assertNotNull($row['delivered_at']);
     }
 

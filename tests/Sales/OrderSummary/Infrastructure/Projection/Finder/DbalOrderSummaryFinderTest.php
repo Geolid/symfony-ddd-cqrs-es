@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\OrderSummary\Infrastructure\Projection\Finder;
 
+use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -13,7 +14,6 @@ use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryFinderInterfa
 use Sales\OrderSummary\Application\Finder\OrderSummary\OrderSummaryResult;
 use Sales\OrderSummary\Application\OrderSummaryStatus;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
-use Sales\Tests\Order\Support\Builder\OrderPaymentBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
@@ -33,7 +33,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
         // Given
         $buyerId = Uuid::uuid7()->toString();
         $order = OrderBuilder::new()->withBuyerId($buyerId)->withTotalAmountInCents(4_200)->create();
-        $payment = OrderPaymentBuilder::new()
+        $payment = PaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
             ->withReference('GLBX-ABC12345')
