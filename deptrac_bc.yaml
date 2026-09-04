@@ -32,9 +32,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Iam/Authentication/.*' }
 
-    - name: Catalog.Product
+    - name: Catalog.Listing
       collectors:
-        - { type: directory, value: 'src/Catalog/Product/.*' }
+        - { type: directory, value: 'src/Catalog/Listing/.*' }
 
     # Global
     - name: Shared
@@ -57,11 +57,11 @@ deptrac:
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
     Sales.Customer:      [ Iam.Identity, Shared, Vendors ]
-    Sales.Order:         [ Sales.Customer, Catalog.Product, Fulfilment.Shipment, AfterSales.Withdrawal, Shared, Vendors ]
+    Sales.Order:         [ Sales.Customer, Catalog.Listing, Fulfilment.Shipment, AfterSales.Withdrawal, Shared, Vendors ]
     Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Fulfilment.Shipment: [ Sales.Order, AfterSales.Withdrawal, Shared, Vendors ]
     AfterSales.Withdrawal: [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
-    Catalog.Product:     [ Shared, Vendors ]
+    Catalog.Listing:     [ Shared, Vendors ]
     Shared:              [ Vendors ]

@@ -11,7 +11,7 @@ use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param list<array{label: string, quantity: int, unitAmountInCents: int}> $lines
+     * @param list<array{label: string, quantity: int, unitPriceInCents: int}> $lines
      */
     public function __construct(
         public string $orderId,

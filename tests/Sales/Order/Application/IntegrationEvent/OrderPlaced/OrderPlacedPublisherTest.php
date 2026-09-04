@@ -42,7 +42,7 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
     /**
      * @param list<OrderLine> $lines
      *
-     * @return list<array{productId: string, label: string, quantity: int, unitAmountInCents: int}>
+     * @return list<array{productId: string, label: string, quantity: int, unitPriceInCents: int}>
      */
     private function primitiveLines(array $lines): array
     {
@@ -51,7 +51,7 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
                 'productId' => $line->product->id,
                 'label' => $line->product->label->value,
                 'quantity' => $line->quantity,
-                'unitAmountInCents' => $line->product->price->cents,
+                'unitPriceInCents' => $line->product->price->cents,
             ],
             $lines,
         );

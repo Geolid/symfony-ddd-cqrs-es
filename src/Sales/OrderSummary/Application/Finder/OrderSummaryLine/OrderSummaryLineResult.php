@@ -10,7 +10,7 @@ final readonly class OrderSummaryLineResult
         public string $orderId,
         public string $label,
         public int $quantity,
-        public int $unitAmountInCents,
+        public int $unitPriceInCents,
     ) {
     }
 }

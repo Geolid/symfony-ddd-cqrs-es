@@ -27,7 +27,7 @@ final readonly class DbalOrderSummaryLineProjector extends AbstractDbalProjector
                 'position' => $position,
                 'label' => $line['label'],
                 'quantity' => $line['quantity'],
-                'unit_amount_in_cents' => $line['unitAmountInCents'],
+                'unit_price_in_cents' => $line['unitPriceInCents'],
             ]);
         }
     }
@@ -42,7 +42,7 @@ final readonly class DbalOrderSummaryLineProjector extends AbstractDbalProjector
         $table->addColumn('position', Types::INTEGER);
         $table->addColumn('label', Types::STRING, ['length' => 255]);
         $table->addColumn('quantity', Types::INTEGER);
-        $table->addColumn('unit_amount_in_cents', Types::INTEGER);
+        $table->addColumn('unit_price_in_cents', Types::INTEGER);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(

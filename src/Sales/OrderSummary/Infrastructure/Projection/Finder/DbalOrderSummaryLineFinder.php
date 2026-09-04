@@ -27,7 +27,7 @@ final class DbalOrderSummaryLineFinder extends AbstractDbalFinder implements Ord
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('order_id', 'label', 'quantity', 'unit_amount_in_cents')
+        $qb->select('order_id', 'label', 'quantity', 'unit_price_in_cents')
             ->from(DbalOrderSummaryLineProjector::TABLE)
             ->orderBy('position', 'ASC');
     }

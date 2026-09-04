@@ -7,8 +7,8 @@ namespace Web\Controller;
 use AfterSales\Withdrawal\Application\Command\RequestWithdrawal\RequestWithdrawal;
 use AfterSales\Withdrawal\Application\Exception\OrderResultNotFoundException;
 use AfterSales\Withdrawal\Domain\Exception\WithdrawalWindowExpiredException;
-use Catalog\Product\Application\Finder\Product\ProductResult;
-use Catalog\Product\Application\Query\ListProducts\ListProducts;
+use Catalog\Listing\Application\Finder\Product\ProductResult;
+use Catalog\Listing\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
@@ -110,9 +110,9 @@ final class OrderController extends AbstractController
         $productPricesInCents = [];
         $currentCatalog = [];
         foreach ($products->items as $product) {
-            $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitAmountInCents / 100, 2))] = $product->id;
-            $productPricesInCents[$product->id] = $product->unitAmountInCents;
-            $currentCatalog[$product->id] = ['label' => $product->label, 'unitAmountInCents' => $product->unitAmountInCents];
+            $productChoices[\sprintf('%s — %s €', $product->label, number_format($product->unitPriceInCents / 100, 2))] = $product->id;
+            $productPricesInCents[$product->id] = $product->unitPriceInCents;
+            $currentCatalog[$product->id] = ['label' => $product->label, 'unitPriceInCents' => $product->unitPriceInCents];
         }
 
         $formData = new PlaceOrderFormData();

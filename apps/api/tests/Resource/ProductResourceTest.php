@@ -6,7 +6,7 @@ namespace Api\Tests\Resource;
 
 use Api\Resource\ProductResource;
 use Api\Tests\Support\AbstractApiTestCase;
-use Catalog\Tests\Product\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -19,7 +19,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityBuilder::new()->create();
-        $product = ProductBuilder::new()->withLabel('Wireless mouse')->withUnitAmountInCents(2_999)->create();
+        $product = ProductBuilder::new()->withLabel('Wireless mouse')->withUnitPriceInCents(2_999)->create();
         $this->store($identity, $product);
         $client = $this->authenticatedClient($identity);
 
@@ -33,7 +33,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         self::assertJsonContains([
             'id' => $product->id->toString(),
             'label' => 'Wireless mouse',
-            'unitAmountInCents' => 2_999,
+            'unitPriceInCents' => 2_999,
         ]);
     }
 
@@ -153,7 +153,7 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // When
         $response = $client->request('POST', '/v1/catalog/products', [
-            'json' => ['label' => 'Wireless mouse', 'unitAmountInCents' => 2_999],
+            'json' => ['label' => 'Wireless mouse', 'unitPriceInCents' => 2_999],
         ]);
 
         // Then
@@ -162,7 +162,7 @@ final class ProductResourceTest extends AbstractApiTestCase
         self::assertMatchesResourceItemJsonSchema(ProductResource::class);
         self::assertJsonContains([
             'label' => 'Wireless mouse',
-            'unitAmountInCents' => 2_999,
+            'unitPriceInCents' => 2_999,
         ]);
         $content = $response->toArray();
         self::assertNotEmpty($content['id']);
@@ -178,7 +178,7 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', '/v1/catalog/products', [
-            'json' => ['label' => 'Wireless mouse', 'unitAmountInCents' => -1],
+            'json' => ['label' => 'Wireless mouse', 'unitPriceInCents' => -1],
         ]);
 
         // Then
@@ -195,7 +195,7 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', '/v1/catalog/products', [
-            'json' => ['label' => '  ', 'unitAmountInCents' => 2_999],
+            'json' => ['label' => '  ', 'unitPriceInCents' => 2_999],
         ]);
 
         // Then
@@ -207,20 +207,20 @@ final class ProductResourceTest extends AbstractApiTestCase
     {
         // Given
         $identity = IdentityBuilder::new()->create();
-        $product = ProductBuilder::new()->withUnitAmountInCents(2_999)->create();
+        $product = ProductBuilder::new()->withUnitPriceInCents(2_999)->create();
         $this->store($identity, $product);
         $client = $this->authenticatedClient($identity);
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
-            'json' => ['unitAmountInCents' => 3_499],
+            'json' => ['unitPriceInCents' => 3_499],
         ]);
 
         // Then
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $client->request('GET', \sprintf('/v1/catalog/products/%s', $product->id->toString()));
-        self::assertJsonContains(['unitAmountInCents' => 3_499]);
+        self::assertJsonContains(['unitPriceInCents' => 3_499]);
     }
 
     #[Test]
@@ -234,7 +234,7 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', $product->id->toString()), [
-            'json' => ['unitAmountInCents' => -1],
+            'json' => ['unitPriceInCents' => -1],
         ]);
 
         // Then
@@ -251,7 +251,7 @@ final class ProductResourceTest extends AbstractApiTestCase
 
         // When
         $client->request('POST', \sprintf('/v1/catalog/products/%s/reprice', Uuid::uuid7()->toString()), [
-            'json' => ['unitAmountInCents' => 3_499],
+            'json' => ['unitPriceInCents' => 3_499],
         ]);
 
         // Then

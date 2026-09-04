@@ -83,8 +83,8 @@ final readonly class PlaceOrderHandler
     }
 
     /**
-     * @param array{productId: string, label: string, unitAmountInCents: int, quantity: int} $line
-     * @param array<string, ListedProductResult>                                             $currentProducts
+     * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $line
+     * @param array<string, ListedProductResult>                                            $currentProducts
      *
      * @throws OutdatedOrderException
      */
@@ -92,10 +92,10 @@ final readonly class PlaceOrderHandler
     {
         $currentResult = $currentProducts[$line['productId']] ?? null;
         $current = null !== $currentResult
-            ? Product::of($currentResult->productId, Label::fromString($currentResult->label), Money::fromCents($currentResult->unitAmountInCents))
+            ? Product::of($currentResult->productId, Label::fromString($currentResult->label), Money::fromCents($currentResult->unitPriceInCents))
             : null;
 
-        if (null === $current || !Money::fromCents($line['unitAmountInCents'])->equals($current->price)) {
+        if (null === $current || !Money::fromCents($line['unitPriceInCents'])->equals($current->price)) {
             throw OutdatedOrderException::forId($line['productId']);
         }
 

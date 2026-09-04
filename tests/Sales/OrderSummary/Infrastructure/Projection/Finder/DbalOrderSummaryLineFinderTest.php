@@ -46,10 +46,10 @@ final class DbalOrderSummaryLineFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $lines[0]->orderId);
         self::assertSame('Widget', $lines[0]->label);
         self::assertSame(2, $lines[0]->quantity);
-        self::assertSame(1_000, $lines[0]->unitAmountInCents);
+        self::assertSame(1_000, $lines[0]->unitPriceInCents);
         self::assertSame($order->id->toString(), $lines[1]->orderId);
         self::assertSame('Gadget', $lines[1]->label);
         self::assertSame(1, $lines[1]->quantity);
-        self::assertSame(3_000, $lines[1]->unitAmountInCents);
+        self::assertSame(3_000, $lines[1]->unitPriceInCents);
     }
 }

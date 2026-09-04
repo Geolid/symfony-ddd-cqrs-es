@@ -16,7 +16,7 @@ use Shared\Domain\ValueObject\Money;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{position: int, label: string, quantity: int, unit_amount_in_cents: int}
+ * @phpstan-type Row array{position: int, label: string, quantity: int, unit_price_in_cents: int}
  */
 final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCase
 {
@@ -38,7 +38,7 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
         self::assertSame(0, $rows[0]['position']);
         self::assertSame('Widget', $rows[0]['label']);
         self::assertSame(2, $rows[0]['quantity']);
-        self::assertSame(1_000, $rows[0]['unit_amount_in_cents']);
+        self::assertSame(1_000, $rows[0]['unit_price_in_cents']);
         self::assertSame(1, $rows[1]['position']);
         self::assertSame('Gadget', $rows[1]['label']);
     }
@@ -53,7 +53,7 @@ final class DbalOrderSummaryLineProjectorTest extends AbstractIntegrationTestCas
         /** @var list<Row> */
         return $connection->fetchAllAssociative(
             \sprintf(
-                'SELECT position, label, quantity, unit_amount_in_cents FROM %s WHERE order_id = :orderId ORDER BY position ASC',
+                'SELECT position, label, quantity, unit_price_in_cents FROM %s WHERE order_id = :orderId ORDER BY position ASC',
                 DbalOrderSummaryLineProjector::TABLE,
             ),
             ['orderId' => $orderId],

@@ -9,15 +9,15 @@ use PHPUnit\Framework\Attributes\Test;
 final class ProductInputPropertyDocumentationTest extends AbstractResourcePropertyDocumentationTestCase
 {
     #[Test]
-    public function itDocumentsTheListProductForSaleInputProperties(): void
+    public function itDocumentsThePublishProductInputProperties(): void
     {
         // When
-        $described = self::describeSchemaProperties('Product.ListProductForSaleInput');
+        $described = self::describeSchemaProperties('Product.PublishProductInput');
 
         // Then
         self::assertSame([
             'label' => ['The label of the product.', 'Wireless mouse'],
-            'unitAmountInCents' => ['The unit price of the product, in cents.', 2999],
+            'unitPriceInCents' => ['The unit price of the product, in cents.', 2999],
         ], $described);
     }
 
@@ -29,7 +29,7 @@ final class ProductInputPropertyDocumentationTest extends AbstractResourceProper
 
         // Then
         self::assertSame([
-            'unitAmountInCents' => ['The new unit price of the product, in cents.', 3_499],
+            'unitPriceInCents' => ['The new unit price of the product, in cents.', 3_499],
         ], $described);
     }
 }
