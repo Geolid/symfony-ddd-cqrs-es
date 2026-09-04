@@ -20,7 +20,7 @@ final class ProductTest extends AggregateRootTestCase
 {
     private ProductId $id;
     private Label $label;
-    private Money $unitAmount;
+    private Money $unitPrice;
     private \DateTimeImmutable $listedAt;
     private \DateTimeImmutable $delistedAt;
 
@@ -30,7 +30,7 @@ final class ProductTest extends AggregateRootTestCase
 
         $this->id = ProductId::generate();
         $this->label = ProductBuilder::sample('label');
-        $this->unitAmount = ProductBuilder::sample('unitAmount');
+        $this->unitPrice = ProductBuilder::sample('unitPrice');
         $this->listedAt = ProductBuilder::sample('listedAt');
         $this->delistedAt = ProductBuilder::sample('delistedAt');
     }
@@ -40,20 +40,20 @@ final class ProductTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Product => Product::list($this->id, $this->label, $this->unitAmount, $this->listedAt))
+            ->when(fn (): Product => Product::list($this->id, $this->label, $this->unitPrice, $this->listedAt))
             ->then($this->listed());
     }
 
     #[Test]
     public function itReprices(): void
     {
-        $repricedUnitAmount = ProductBuilder::sample('unitAmount');
+        $repricedUnitPrice = ProductBuilder::sample('unitPrice');
         $repricedAt = ProductBuilder::sample('repricedAt');
 
         $this
             ->given($this->listed())
-            ->when(static fn (Product $product) => $product->reprice($repricedUnitAmount, $repricedAt))
-            ->then(new ProductRepriced($this->id->toString(), $repricedUnitAmount->cents, $repricedAt));
+            ->when(static fn (Product $product) => $product->reprice($repricedUnitPrice, $repricedAt))
+            ->then(new ProductRepriced($this->id->toString(), $repricedUnitPrice->cents, $repricedAt));
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class ProductTest extends AggregateRootTestCase
                 $this->listed(),
                 $this->delisted(),
             )
-            ->when(static fn (Product $product) => $product->reprice(ProductBuilder::sample('unitAmount'), ProductBuilder::sample('repricedAt')))
+            ->when(static fn (Product $product) => $product->reprice(ProductBuilder::sample('unitPrice'), ProductBuilder::sample('repricedAt')))
             ->expectsException(ProductAlreadyDelistedException::class);
     }
 
@@ -96,7 +96,7 @@ final class ProductTest extends AggregateRootTestCase
 
     private function listed(): ProductListed
     {
-        return new ProductListed($this->id->toString(), $this->label->value, $this->unitAmount->cents, $this->listedAt);
+        return new ProductListed($this->id->toString(), $this->label->value, $this->unitPrice->cents, $this->listedAt);
     }
 
     private function delisted(): ProductDelisted

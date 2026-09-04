@@ -25,7 +25,7 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(ProductListedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame($builder['label']->value, $event->label);
-        self::assertSame($builder['unitAmount']->cents, $event->unitPriceInCents);
+        self::assertSame($builder['unitPrice']->cents, $event->unitPriceInCents);
         self::assertSame(
             $builder['listedAt']->format(\DateTimeInterface::ATOM),
             $event->listedAt->format(\DateTimeInterface::ATOM),

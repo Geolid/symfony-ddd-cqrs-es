@@ -29,7 +29,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
     }
 
     #[Test]
@@ -51,7 +51,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_price_in_cents']);
+        self::assertSame($otherBuilder['unitPrice']->cents, (int) $otherRow['unit_price_in_cents']);
     }
 
     #[Test]

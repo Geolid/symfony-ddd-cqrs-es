@@ -6,5 +6,5 @@ namespace Sales\Customer\Domain\ValueObject;
 
 enum CustomerUniqueKey: string
 {
-    case EMAIL = 'sales.customer.email';
+    case EMAIL = 'sales.customer.customer.email';
 }

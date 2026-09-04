@@ -144,7 +144,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itAcceptsAProductToListForSale(): void
+    public function itAcceptsAProductToPublish(): void
     {
         // Given
         $identity = IdentityBuilder::new()->create();
@@ -169,7 +169,7 @@ final class ProductResourceTest extends AbstractApiTestCase
     }
 
     #[Test]
-    public function itFailsToAcceptANegativeUnitAmount(): void
+    public function itFailsToAcceptANegativeUnitPrice(): void
     {
         // Given
         $identity = IdentityBuilder::new()->create();

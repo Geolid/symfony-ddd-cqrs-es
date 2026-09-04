@@ -19,7 +19,7 @@ use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 #[Projector('catalog.listing.project_products')]
 final readonly class DbalProductProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'catalog_listing';
+    public const string TABLE = 'catalog_listing_product';
 
     #[Subscribe(ProductListed::class)]
     public function onProductListed(ProductListed $event): void
@@ -72,6 +72,6 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addUniqueIndex(['label'], 'catalog_listing_label_unique');
+        $table->addUniqueIndex(['label'], 'catalog_listing_product_label_unique');
     }
 }

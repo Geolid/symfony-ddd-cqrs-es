@@ -39,7 +39,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($product->id->toString(), $result->id);
         self::assertSame($builder['label']->value, $result->label);
-        self::assertSame($builder['unitAmount']->cents, $result->unitPriceInCents);
+        self::assertSame($builder['unitPrice']->cents, $result->unitPriceInCents);
         self::assertSame(
             $builder['listedAt']->format(\DateTimeInterface::ATOM),
             $result->listedAt->format(\DateTimeInterface::ATOM),

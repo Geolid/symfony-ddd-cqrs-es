@@ -6,5 +6,5 @@ namespace Catalog\Listing\Domain\ValueObject;
 
 enum ProductUniqueKey: string
 {
-    case LABEL = 'catalog.listing.label';
+    case LABEL = 'catalog.listing.product.label';
 }

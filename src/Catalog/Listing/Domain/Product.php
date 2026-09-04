@@ -27,13 +27,13 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ProductId $id;
     private bool $delisted;
 
-    public static function list(ProductId $id, Label $label, Money $unitAmount, \DateTimeImmutable $listedAt): self
+    public static function list(ProductId $id, Label $label, Money $unitPrice, \DateTimeImmutable $listedAt): self
     {
         $self = new self();
         $self->recordThat(new ProductListed(
             id: $id->toString(),
             label: $label->value,
-            unitPriceInCents: $unitAmount->cents,
+            unitPriceInCents: $unitPrice->cents,
             listedAt: $listedAt,
         ));
 
@@ -43,7 +43,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws ProductAlreadyDelistedException
      */
-    public function reprice(Money $unitAmount, \DateTimeImmutable $repricedAt): void
+    public function reprice(Money $unitPrice, \DateTimeImmutable $repricedAt): void
     {
         if ($this->delisted) {
             throw ProductAlreadyDelistedException::forId($this->id);
@@ -51,7 +51,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ProductRepriced(
             id: $this->id->toString(),
-            unitPriceInCents: $unitAmount->cents,
+            unitPriceInCents: $unitPrice->cents,
             repricedAt: $repricedAt,
         ));
     }

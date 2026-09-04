@@ -18,12 +18,12 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class PublishProductHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itLists(): void
+    public function itPublishes(): void
     {
         // Given
         $id = ProductId::generate()->toString();
         $label = ProductBuilder::sample('label')->value;
-        $unitPriceInCents = ProductBuilder::sample('unitAmount')->cents;
+        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
 
         // When
         $this->dispatch(new PublishProduct($id, $label, $unitPriceInCents));
@@ -53,7 +53,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PublishProduct(
             ProductId::generate()->toString(),
             $label,
-            ProductBuilder::sample('unitAmount')->cents,
+            ProductBuilder::sample('unitPrice')->cents,
         ));
     }
 }

@@ -45,7 +45,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
 
         self::assertSame($product->id->toString(), $productResult->id);
         self::assertSame($builder['label']->value, $productResult->label);
-        self::assertSame($builder['unitAmount']->cents, $productResult->unitPriceInCents);
+        self::assertSame($builder['unitPrice']->cents, $productResult->unitPriceInCents);
     }
 
     #[Test]

@@ -27,8 +27,8 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         // Given
         $other = ProductBuilder::new()->create();
         $label = ProductBuilder::sample('label');
-        $unitAmount = ProductBuilder::sample('unitAmount');
-        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitAmount->cents)->create();
+        $unitPrice = ProductBuilder::sample('unitPrice');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
         $this->store($other, $cups);
 
         // When
@@ -38,6 +38,6 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         self::assertCount(1, $results);
         self::assertSame($cups->id->toString(), $results[0]->productId);
         self::assertSame($label->value, $results[0]->label);
-        self::assertSame($unitAmount->cents, $results[0]->unitPriceInCents);
+        self::assertSame($unitPrice->cents, $results[0]->unitPriceInCents);
     }
 }

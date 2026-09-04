@@ -31,7 +31,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
         self::assertSame($builder['listedAt']->format(self::DATE_FORMAT), $row['listed_at']);
         self::assertNull($row['repriced_at']);
     }
@@ -44,7 +44,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         $other = $otherBuilder->create();
         $this->store($other);
 
-        $unitPriceInCents = ProductBuilder::sample('unitAmount')->cents;
+        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
         $builder = ProductBuilder::new()->withUnitPriceInCents($unitPriceInCents)->repriced($unitPriceInCents + 100);
         $product = $builder->create();
 
@@ -54,12 +54,12 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['unitAmount']->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
         self::assertSame($builder['repricedAt']->format(self::DATE_FORMAT), $row['repriced_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['unitAmount']->cents, (int) $otherRow['unit_price_in_cents']);
+        self::assertSame($otherBuilder['unitPrice']->cents, (int) $otherRow['unit_price_in_cents']);
         self::assertNull($otherRow['repriced_at']);
     }
 

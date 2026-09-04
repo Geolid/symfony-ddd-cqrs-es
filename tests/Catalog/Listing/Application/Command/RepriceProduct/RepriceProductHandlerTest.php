@@ -18,7 +18,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itReprices(): void
     {
         // Given
-        $unitPriceInCents = ProductBuilder::sample('unitAmount')->cents;
+        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
         $newUnitPriceInCents = $unitPriceInCents + 100;
 
         $product = ProductBuilder::new()->withUnitPriceInCents($unitPriceInCents)->create();
@@ -41,7 +41,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RepriceProduct(
             ProductId::generate()->toString(),
-            ProductBuilder::sample('unitAmount')->cents,
+            ProductBuilder::sample('unitPrice')->cents,
         ));
     }
 }

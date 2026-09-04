@@ -17,7 +17,7 @@ use Webmozart\Assert\Assert;
  * @phpstan-type Attributes = array{
  *     id: ProductId,
  *     label: Label,
- *     unitAmount: Money,
+ *     unitPrice: Money,
  *     listedAt: \DateTimeImmutable,
  *     repricedAt: \DateTimeImmutable,
  *     delistedAt: \DateTimeImmutable,
@@ -39,7 +39,7 @@ final class ProductBuilder extends AbstractAggregateBuilder
 
     public function withUnitPriceInCents(int $unitPriceInCents): self
     {
-        return $this->withAttributes(unitAmount: Money::fromCents($unitPriceInCents));
+        return $this->withAttributes(unitPrice: Money::fromCents($unitPriceInCents));
     }
 
     public function withListedAt(\DateTimeImmutable $listedAt): self
@@ -50,12 +50,12 @@ final class ProductBuilder extends AbstractAggregateBuilder
     public function repriced(?int $unitPriceInCents = null, ?\DateTimeImmutable $repricedAt = null): self
     {
         $builder = $this->withAttributes(...array_filter([
-            'unitAmount' => null !== $unitPriceInCents ? Money::fromCents($unitPriceInCents) : null,
+            'unitPrice' => null !== $unitPriceInCents ? Money::fromCents($unitPriceInCents) : null,
             'repricedAt' => $repricedAt,
         ]));
 
         return $builder->withModifier(
-            static fn (Product $product, self $builder) => $product->reprice($builder['unitAmount'], $builder['repricedAt']),
+            static fn (Product $product, self $builder) => $product->reprice($builder['unitPrice'], $builder['repricedAt']),
         );
     }
 
@@ -77,7 +77,7 @@ final class ProductBuilder extends AbstractAggregateBuilder
 
                 return Label::fromString($label);
             },
-            'unitAmount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+            'unitPrice' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'listedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
             'repricedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'delistedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
@@ -89,7 +89,7 @@ final class ProductBuilder extends AbstractAggregateBuilder
         return Product::list(
             id: $this['id'],
             label: $this['label'],
-            unitAmount: $this['unitAmount'],
+            unitPrice: $this['unitPrice'],
             listedAt: $this['listedAt'],
         );
     }

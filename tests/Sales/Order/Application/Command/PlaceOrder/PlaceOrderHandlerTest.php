@@ -125,7 +125,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitAmount')->cents]],
+            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitPrice')->cents]],
         ));
     }
 
@@ -135,8 +135,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customer = $this->registeredCustomer('buyer@example.com');
         $label = ProductBuilder::sample('label');
-        $unitAmount = ProductBuilder::sample('unitAmount');
-        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitAmount->cents)->create();
+        $unitPrice = ProductBuilder::sample('unitPrice');
+        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
         $this->store($cups);
 
         // Then
@@ -146,7 +146,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
             $customer->id->toString(),
-            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitPriceInCents' => $unitAmount->cents - 250]],
+            [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitPriceInCents' => $unitPrice->cents - 250]],
         ));
     }
 
@@ -156,18 +156,18 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     private function lines(): array
     {
         $cupsLabel = ProductBuilder::sample('label');
-        $cupsUnitAmount = ProductBuilder::sample('unitAmount');
-        $cups = ProductBuilder::new()->withLabel($cupsLabel->value)->withUnitPriceInCents($cupsUnitAmount->cents)->create();
+        $cupsUnitPrice = ProductBuilder::sample('unitPrice');
+        $cups = ProductBuilder::new()->withLabel($cupsLabel->value)->withUnitPriceInCents($cupsUnitPrice->cents)->create();
 
         $saucerLabel = ProductBuilder::sample('label');
-        $saucerUnitAmount = ProductBuilder::sample('unitAmount');
-        $saucer = ProductBuilder::new()->withLabel($saucerLabel->value)->withUnitPriceInCents($saucerUnitAmount->cents)->create();
+        $saucerUnitPrice = ProductBuilder::sample('unitPrice');
+        $saucer = ProductBuilder::new()->withLabel($saucerLabel->value)->withUnitPriceInCents($saucerUnitPrice->cents)->create();
 
         $this->store($cups, $saucer);
 
         return [
-            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $cupsLabel->value, 'unitPriceInCents' => $cupsUnitAmount->cents],
-            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => $saucerLabel->value, 'unitPriceInCents' => $saucerUnitAmount->cents],
+            ['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $cupsLabel->value, 'unitPriceInCents' => $cupsUnitPrice->cents],
+            ['productId' => $saucer->id->toString(), 'quantity' => 3, 'label' => $saucerLabel->value, 'unitPriceInCents' => $saucerUnitPrice->cents],
         ];
     }
 
