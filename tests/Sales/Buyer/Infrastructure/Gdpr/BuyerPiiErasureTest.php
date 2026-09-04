@@ -7,7 +7,6 @@ namespace Sales\Tests\Buyer\Infrastructure\Gdpr;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Buyer\Domain\Event\BuyerBillingAddressRegistered;
 use Sales\Buyer\Domain\Event\BuyerErased;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
@@ -73,28 +72,6 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressRegistered::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->address);
-    }
-
-    #[Test]
-    public function itCryptoShredsBillingAddressOnErasure(): void
-    {
-        // Given
-        $buyer = BuyerBuilder::new()
-            ->billingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR')))
-            ->create();
-        $this->store($buyer);
-        $serialized = $this->serializedEventOf(
-            BuyerBillingAddressRegistered::class,
-            static fn (BuyerBillingAddressRegistered $event): bool => $event->id === $buyer->id->toString(),
-        );
-
-        // When
-        ($this->eraser)(Message::create(new BuyerErased($buyer->id->toString(), Clock::get()->now())));
-
-        // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(BuyerBillingAddressRegistered::class, $rehydrated);
         self::assertSame($this->erasedAddress(), $rehydrated->address);
     }
 

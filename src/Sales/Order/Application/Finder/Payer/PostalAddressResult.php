@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\Command\RegisterBuyerBillingAddress;
+namespace Sales\Order\Application\Finder\Payer;
 
-use Shared\Application\Command\CommandInterface;
-
-final readonly class RegisterBuyerBillingAddress implements CommandInterface
+final readonly class PostalAddressResult
 {
     public function __construct(
-        public string $buyerId,
         public string $recipientName,
         public string $street,
         public string $postalCode,

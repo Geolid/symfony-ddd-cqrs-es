@@ -18,7 +18,6 @@ use Symfony\Component\Clock\Clock;
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
  *     shippingAddressRegisteredAt: \DateTimeImmutable,
- *     billingAddressRegisteredAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
  * }
  *
@@ -50,15 +49,6 @@ final class BuyerBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function billingAddressRegistered(PostalAddress $billingAddress, ?\DateTimeImmutable $registeredAt = null): self
-    {
-        $builder = null !== $registeredAt ? $this->withAttributes(billingAddressRegisteredAt: $registeredAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Buyer $buyer, self $builder) => $buyer->registerBillingAddress($billingAddress, $builder['billingAddressRegisteredAt']),
-        );
-    }
-
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
         $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
@@ -75,7 +65,6 @@ final class BuyerBuilder extends AbstractAggregateBuilder
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
             'shippingAddressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'billingAddressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
         ];
     }
