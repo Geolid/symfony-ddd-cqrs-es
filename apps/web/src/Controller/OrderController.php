@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Web\Controller;
 
-use AfterSales\Withdrawal\Application\Command\RequestWithdrawal\RequestWithdrawal;
-use AfterSales\Withdrawal\Application\Exception\OrderResultNotFoundException;
-use AfterSales\Withdrawal\Domain\Exception\WithdrawalWindowExpiredException;
+use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
+use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
+use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Application\Query\ListProducts\ListProducts;
 use Ramsey\Uuid\Uuid;

@@ -20,9 +20,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Fulfilment/Shipment/.*' }
 
-    - name: AfterSales.Withdrawal
+    - name: AfterSales.Return
       collectors:
-        - { type: directory, value: 'src/AfterSales/Withdrawal/.*' }
+        - { type: directory, value: 'src/AfterSales/Return/.*' }
 
     - name: Iam.Identity
       collectors:
@@ -57,10 +57,10 @@ deptrac:
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
     Sales.Customer:      [ Iam.Identity, Shared, Vendors ]
-    Sales.Order:         [ Sales.Customer, Catalog.Listing, Fulfilment.Shipment, AfterSales.Withdrawal, Shared, Vendors ]
+    Sales.Order:         [ Sales.Customer, Catalog.Listing, Fulfilment.Shipment, AfterSales.Return, Shared, Vendors ]
     Sales.OrderSummary:  [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
-    Fulfilment.Shipment: [ Sales.Order, AfterSales.Withdrawal, Shared, Vendors ]
-    AfterSales.Withdrawal: [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
+    Fulfilment.Shipment: [ Sales.Order, AfterSales.Return, Shared, Vendors ]
+    AfterSales.Return: [ Sales.Order, Fulfilment.Shipment, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]

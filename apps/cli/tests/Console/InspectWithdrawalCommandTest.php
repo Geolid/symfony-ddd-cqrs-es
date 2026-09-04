@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cli\Tests\Console;
 
-use AfterSales\Tests\Withdrawal\Support\Builder\WithdrawalBuilder;
-use AfterSales\Withdrawal\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
-use AfterSales\Withdrawal\Application\IntegrationEvent\WithdrawalRejected\WithdrawalRejectedIntegrationEvent;
+use AfterSales\Return\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
+use AfterSales\Return\Application\IntegrationEvent\WithdrawalRejected\WithdrawalRejectedIntegrationEvent;
+use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
 use Cli\Tests\Support\AbstractCliTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Command\Command;
