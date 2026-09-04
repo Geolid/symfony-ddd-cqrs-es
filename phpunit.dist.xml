@@ -23,8 +23,14 @@
         <!-- DELIVERY MECHANISMS -->
 
         <!-- SUBDOMAINS -->
+        <testsuite name="after_sales">
+            <directory>tests/AfterSales</directory>
+        </testsuite>
         <testsuite name="catalog">
             <directory>tests/Catalog</directory>
+        </testsuite>
+        <testsuite name="finance">
+            <directory>tests/Finance</directory>
         </testsuite>
         <testsuite name="fulfilment">
             <directory>tests/Fulfilment</directory>
