@@ -21,18 +21,6 @@
 
     <testsuites>
         <!-- DELIVERY MECHANISMS -->
-        <testsuite name="api">
-            <directory>apps/api/tests</directory>
-        </testsuite>
-        <testsuite name="cli">
-            <directory>apps/cli/tests</directory>
-        </testsuite>
-        <testsuite name="web">
-            <directory>apps/web/tests</directory>
-        </testsuite>
-        <testsuite name="webhook">
-            <directory>apps/webhook/tests</directory>
-        </testsuite>
 
         <!-- SUBDOMAINS -->
         <testsuite name="catalog">
@@ -69,7 +57,6 @@
             restrictWarnings="true"
     >
         <include>
-            <directory>apps/*/src</directory>
             <directory>src</directory>
         </include>
 

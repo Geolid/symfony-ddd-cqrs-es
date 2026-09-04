@@ -1,6 +1,0 @@
-includes:
-    - ../phpstan.neon
-
-parameters:
-    symfony:
-        consoleApplicationLoader: apps/cli/tests/console-loader.php
