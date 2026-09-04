@@ -25,11 +25,6 @@ use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
-/**
- * The right of withdrawal: a time-boxed, no-fault post-delivery cancellation
- * right the merchant decides on (approve/reject) once the goods are physically
- * back.
- */
 #[Aggregate('after_sales.return.withdrawal')]
 final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
 {

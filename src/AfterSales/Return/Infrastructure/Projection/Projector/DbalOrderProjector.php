@@ -13,11 +13,6 @@ use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegr
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
-/**
- * A local, read-only projection of `Sales.Order`, kept current solely to
- * decide withdrawal eligibility (a delivered order, its shipping address at
- * that moment) — never a general-purpose read of Order's own state.
- */
 #[Projector('after_sales.return.project_orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector
 {

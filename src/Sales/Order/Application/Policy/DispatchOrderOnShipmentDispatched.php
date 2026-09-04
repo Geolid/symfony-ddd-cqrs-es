@@ -13,12 +13,6 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-/**
- * A `Shipment` reports DISPATCHED for both an outbound leg and a return
- * pickup — its `reference` is only meaningful to whichever BC requested it,
- * so a relevance guard against this BC's own repository decides whether it
- * applies.
- */
 #[Policy('sales.order.dispatch_order_on_shipment_dispatched')]
 final readonly class DispatchOrderOnShipmentDispatched
 {
