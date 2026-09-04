@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use AfterSales\Withdrawal\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
-use AfterSales\Withdrawal\Domain\Exception\WithdrawalNotReceivedException;
-use AfterSales\Withdrawal\Domain\Exception\WithdrawalWindowExpiredException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
+use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
 use Fulfilment\Shipment\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipment\Domain\Exception\ShipmentAlreadyTrackedException;

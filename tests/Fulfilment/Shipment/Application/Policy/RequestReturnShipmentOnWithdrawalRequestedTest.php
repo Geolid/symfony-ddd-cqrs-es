@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipment\Application\Policy;
 
-use AfterSales\Withdrawal\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
+use AfterSales\Return\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
 use Fulfilment\Shipment\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipment\Application\Policy\RequestReturnShipmentOnWithdrawalRequested;
 use Fulfilment\Shipment\Application\Warehouse\WarehouseAddressProvider;

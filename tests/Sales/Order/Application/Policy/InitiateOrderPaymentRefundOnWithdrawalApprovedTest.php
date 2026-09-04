@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Application\Policy;
 
-use AfterSales\Withdrawal\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
-use AfterSales\Withdrawal\Domain\ValueObject\WithdrawalId;
+use AfterSales\Return\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
+use AfterSales\Return\Domain\ValueObject\WithdrawalId;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Sales\Order\Application\OrderPaymentStatus;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Policy;
 
-use AfterSales\Withdrawal\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
+use AfterSales\Return\Application\IntegrationEvent\WithdrawalApproved\WithdrawalApprovedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\Command\InitiateOrderPaymentRefund\InitiateOrderPaymentRefund;
 use Sales\Order\Domain\ValueObject\OrderPaymentId;

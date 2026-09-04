@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cli\Console;
 
-use AfterSales\Withdrawal\Application\Command\ApproveWithdrawal\ApproveWithdrawal;
-use AfterSales\Withdrawal\Application\Command\RejectWithdrawal\RejectWithdrawal;
+use AfterSales\Return\Application\Command\ApproveWithdrawal\ApproveWithdrawal;
+use AfterSales\Return\Application\Command\RejectWithdrawal\RejectWithdrawal;
 use Cli\Console\Input\InspectWithdrawalInput;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
