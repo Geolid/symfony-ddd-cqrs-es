@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AfterSales\Return\Application\Command\RequestWithdrawal;
 
-use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
-use AfterSales\Return\Application\Finder\Order\OrderFinderInterface;
+use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
+use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalAlreadyExistsException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
@@ -22,13 +22,13 @@ final readonly class RequestWithdrawalHandler
 {
     public function __construct(
         private WithdrawalRepositoryInterface $repository,
-        private OrderFinderInterface $orderFinder,
+        private DeliveredOrderFinderInterface $orderFinder,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws OrderResultNotFoundException
+     * @throws DeliveredOrderResultNotFoundException
      * @throws CannotRequestWithdrawalForAnotherBuyerException
      * @throws WithdrawalWindowExpiredException
      * @throws WithdrawalAlreadyExistsException

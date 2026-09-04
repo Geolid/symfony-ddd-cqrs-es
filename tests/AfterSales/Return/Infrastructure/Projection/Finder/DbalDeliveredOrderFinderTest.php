@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace AfterSales\Tests\Return\Infrastructure\Projection\Finder;
 
-use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
-use AfterSales\Return\Application\Finder\Order\OrderFinderInterface;
+use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
+use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class DbalOrderFinderTest extends AbstractIntegrationTestCase
+final class DbalDeliveredOrderFinderTest extends AbstractIntegrationTestCase
 {
-    private OrderFinderInterface $finder;
+    private DeliveredOrderFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->finder = $this->service(OrderFinderInterface::class);
+        $this->finder = $this->service(DeliveredOrderFinderInterface::class);
     }
 
     #[Test]
@@ -51,7 +51,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itThrowsWhenIdNotFound(): void
     {
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(DeliveredOrderResultNotFoundException::class);
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());

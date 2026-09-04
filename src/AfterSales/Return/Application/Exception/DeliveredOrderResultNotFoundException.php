@@ -6,7 +6,7 @@ namespace AfterSales\Return\Application\Exception;
 
 use Shared\Application\Exception\ResultNotFoundException;
 
-final class OrderResultNotFoundException extends ResultNotFoundException
+final class DeliveredOrderResultNotFoundException extends ResultNotFoundException
 {
     public static function forId(string $id): self
     {

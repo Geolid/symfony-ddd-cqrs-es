@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AfterSales\Tests\Return\Infrastructure\Projection\Projector;
 
-use AfterSales\Return\Infrastructure\Projection\Projector\DbalOrderProjector;
+use AfterSales\Return\Infrastructure\Projection\Projector\DbalDeliveredOrderProjector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
@@ -13,7 +13,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 /**
  * @phpstan-type Row array{buyer_id: string, shipping_address: string, delivered_at: string}
  */
-final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
+final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itProjectsOnOrderDelivered(): void
@@ -71,7 +71,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT buyer_id, shipping_address, delivered_at FROM %s WHERE order_id = :orderId', DbalOrderProjector::TABLE),
+            \sprintf('SELECT buyer_id, shipping_address, delivered_at FROM %s WHERE order_id = :orderId', DbalDeliveredOrderProjector::TABLE),
             ['orderId' => $orderId],
         );
     }

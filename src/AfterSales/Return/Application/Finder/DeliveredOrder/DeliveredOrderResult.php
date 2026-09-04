@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AfterSales\Return\Application\Finder\Order;
+namespace AfterSales\Return\Application\Finder\DeliveredOrder;
 
-final readonly class OrderResult
+final readonly class DeliveredOrderResult
 {
     public function __construct(
         public string $orderId,

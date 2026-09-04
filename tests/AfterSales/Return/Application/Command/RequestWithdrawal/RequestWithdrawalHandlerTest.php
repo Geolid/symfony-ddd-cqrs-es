@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AfterSales\Tests\Return\Application\Command\RequestWithdrawal;
 
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
-use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
+use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use AfterSales\Return\Domain\Repository\WithdrawalRepositoryInterface;
@@ -61,7 +61,7 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(DeliveredOrderResultNotFoundException::class);
 
         // When
         $this->dispatch(new RequestWithdrawal($orderId, Uuid::uuid7()->toString()));

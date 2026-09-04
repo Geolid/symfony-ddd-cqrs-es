@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AfterSales\Return\Application\Finder\Order;
+namespace AfterSales\Return\Application\Finder\DeliveredOrder;
 
 final readonly class ShippingAddressResult
 {

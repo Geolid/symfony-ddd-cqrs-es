@@ -13,10 +13,10 @@ use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegr
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
-#[Projector('after_sales.return.project_orders')]
-final readonly class DbalOrderProjector extends AbstractDbalProjector
+#[Projector('after_sales.return.project_delivered_orders')]
+final readonly class DbalDeliveredOrderProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'after_sales_return_order';
+    public const string TABLE = 'after_sales_return_delivered_order';
 
     #[Subscribe(OrderDeliveredIntegrationEvent::class)]
     public function onOrderDelivered(OrderDeliveredIntegrationEvent $event): void
