@@ -25,7 +25,7 @@ final class OrderPlacedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(OrderPlacedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($builder['customerId'], $event->customerId);
+        self::assertSame($builder['buyerId'], $event->buyerId);
         self::assertSame($this->primitiveLines($builder['lines']), $event->lines);
         self::assertSame($this->totalAmountInCents($builder['lines']), $event->totalAmountInCents);
         self::assertSame($builder['placedAt']->format(\DateTimeInterface::ATOM), $event->placedAt->format(\DateTimeInterface::ATOM));

@@ -8,10 +8,10 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class BuyerAddressesNotCompletedException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forId(string $customerId): self
+    public static function forId(string $buyerId): self
     {
         return new self(
-            message: \sprintf('Buyer "%s" has not completed their shipping and billing addresses yet.', $customerId),
+            message: \sprintf('Buyer "%s" has not completed their shipping and billing addresses yet.', $buyerId),
         );
     }
 }

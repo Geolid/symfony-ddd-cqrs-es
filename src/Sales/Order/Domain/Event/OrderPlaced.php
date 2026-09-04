@@ -20,7 +20,7 @@ final readonly class OrderPlaced
     public function __construct(
         public string $id,
         #[DataSubjectId]
-        public string $customerId,
+        public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Sales\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Sales\Customer\Infrastructure\Projection\Finder\DbalCustomerFinder;
+use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Buyer\Infrastructure\Projection\Finder\DbalBuyerFinder;
 use Sales\Order\Application\Payment\OrderPaymentRequester;
 use Sales\Order\Application\Payment\OrderPaymentRequesterInterface;
 use Sales\Order\Application\Payment\Reconciliation\OrderPaymentReconciler;
@@ -34,7 +34,7 @@ return static function (ContainerConfigurator $container): void {
     if ('test' === $container->env()) {
         // Not otherwise referenced by a service definition; alias+public here or the
         // test container's compiler prunes it.
-        $services->alias(CustomerFinderInterface::class, DbalCustomerFinder::class)->public();
+        $services->alias(BuyerFinderInterface::class, DbalBuyerFinder::class)->public();
         $orderPaymentRequesterAlias->public();
     }
 };

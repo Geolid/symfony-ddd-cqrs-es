@@ -15,20 +15,20 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInterface
 {
-    public function ofIdOrNull(string $customerId): ?BuyerResult
+    public function ofIdOrNull(string $buyerId): ?BuyerResult
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId): void {
-                $qb->andWhere('customer_id = :customerId')->setParameter('customerId', $customerId);
+            static function (QueryBuilder $qb) use ($buyerId): void {
+                $qb->andWhere('buyer_id = :buyerId')->setParameter('buyerId', $buyerId);
             },
         )->one();
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('customer_id', 'shipping_address', 'billing_address')
+        $qb->select('buyer_id', 'shipping_address', 'billing_address')
             ->from(DbalBuyerProjector::TABLE)
-            ->orderBy('customer_id', 'ASC');
+            ->orderBy('buyer_id', 'ASC');
     }
 
     protected function resultClass(): string

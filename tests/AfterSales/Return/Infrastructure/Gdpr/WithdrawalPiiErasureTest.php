@@ -29,7 +29,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($builder['customerId'])),
+            Message::create(new StubDataSubjectErased($builder['buyerId'])),
         );
 
         // Then

@@ -24,7 +24,7 @@ final class RequestReturnShipmentOnWithdrawalRequestedTest extends AbstractInteg
         // Given
         $withdrawalId = Uuid::uuid7()->toString();
         $orderId = Uuid::uuid7()->toString();
-        $customerId = Uuid::uuid7()->toString();
+        $buyerId = Uuid::uuid7()->toString();
         $originData = ShipmentBuilder::sample('origin')->toArray();
         $warehouseAddressProvider = $this->service(WarehouseAddressProvider::class);
 
@@ -40,7 +40,7 @@ final class RequestReturnShipmentOnWithdrawalRequestedTest extends AbstractInteg
         $this->trigger(RequestReturnShipmentOnWithdrawalRequested::class, new WithdrawalRequestedIntegrationEvent(
             withdrawalId: $withdrawalId,
             orderId: $orderId,
-            customerId: $customerId,
+            buyerId: $buyerId,
             shippingAddress: $originData,
             requestedAt: Clock::get()->now(),
         ));
@@ -49,7 +49,7 @@ final class RequestReturnShipmentOnWithdrawalRequestedTest extends AbstractInteg
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
         self::assertSame($withdrawalId, $dispatched->reference);
-        self::assertSame($customerId, $dispatched->customerId);
+        self::assertSame($buyerId, $dispatched->buyerId);
         $destinationAddress = $warehouseAddressProvider->get()->toArray();
         self::assertSame($originData, $dispatched->origin);
         self::assertSame($destinationAddress, $dispatched->destination);

@@ -20,7 +20,7 @@ interface OrderSummaryFinderInterface extends IterableFinderInterface, Paginatab
      */
     public function ofOrder(string $orderId): OrderSummaryResult;
 
-    public function byCustomer(string $customerId): static;
+    public function byBuyer(string $buyerId): static;
 
     public function byStatus(OrderSummaryStatus $status): static;
 

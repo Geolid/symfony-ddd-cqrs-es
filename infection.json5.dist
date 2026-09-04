@@ -5,6 +5,7 @@
             "src"
         ]
     },
+    "timeout": 60,
     "mutators": {
         "@default": true,
         "ArrayItemRemoval": {

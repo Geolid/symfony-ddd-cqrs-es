@@ -20,7 +20,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: OrderId,
- *     customerId: string,
+ *     buyerId: string,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
  *     lines: list<OrderLine>,
@@ -40,9 +40,9 @@ final class OrderBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: OrderId::fromString($id));
     }
 
-    public function withCustomerId(string $customerId): self
+    public function withBuyerId(string $buyerId): self
     {
-        return $this->withAttributes(customerId: $customerId);
+        return $this->withAttributes(buyerId: $buyerId);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -90,7 +90,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
         $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
 
         return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->cancel($builder['customerId'], $builder['cancelledAt']),
+            static fn (Order $order, self $builder) => $order->cancel($builder['buyerId'], $builder['cancelledAt']),
         );
     }
 
@@ -116,7 +116,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
     {
         return [
             'id' => OrderId::generate(...),
-            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -141,7 +141,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
     {
         return Order::place(
             id: $this['id'],
-            customerId: $this['customerId'],
+            buyerId: $this['buyerId'],
             shippingAddress: $this['shippingAddress'],
             billingAddress: $this['billingAddress'],
             lines: $this['lines'],

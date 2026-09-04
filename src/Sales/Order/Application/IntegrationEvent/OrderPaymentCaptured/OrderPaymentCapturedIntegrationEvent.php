@@ -19,7 +19,7 @@ final readonly class OrderPaymentCapturedIntegrationEvent implements Integration
     public function __construct(
         public string $orderId,
         #[DataSubjectId]
-        public string $customerId,
+        public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',

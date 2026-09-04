@@ -26,7 +26,7 @@ final class ShipmentTest extends AggregateRootTestCase
 {
     private ShipmentId $id;
     private string $reference;
-    private string $customerId;
+    private string $buyerId;
     private PostalAddress $origin;
     private PostalAddress $destination;
     private \DateTimeImmutable $createdAt;
@@ -42,7 +42,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this->id = ShipmentId::generate();
         $this->reference = ShipmentBuilder::sample('reference');
-        $this->customerId = ShipmentBuilder::sample('customerId');
+        $this->buyerId = ShipmentBuilder::sample('buyerId');
         $this->origin = ShipmentBuilder::sample('origin');
         $this->destination = ShipmentBuilder::sample('destination');
         $this->createdAt = ShipmentBuilder::sample('createdAt');
@@ -58,7 +58,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Shipment => Shipment::request($this->id, $this->reference, $this->customerId, $this->origin, $this->destination, $this->createdAt))
+            ->when(fn (): Shipment => Shipment::request($this->id, $this->reference, $this->buyerId, $this->origin, $this->destination, $this->createdAt))
             ->then($this->requested());
     }
 
@@ -255,7 +255,7 @@ final class ShipmentTest extends AggregateRootTestCase
         return new ShipmentRequested(
             $this->id->toString(),
             $this->reference,
-            $this->customerId,
+            $this->buyerId,
             $this->toAddressData($this->origin),
             $this->toAddressData($this->destination),
             $this->createdAt,

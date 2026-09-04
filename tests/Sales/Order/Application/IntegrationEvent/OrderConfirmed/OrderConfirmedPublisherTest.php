@@ -25,7 +25,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(OrderConfirmedIntegrationEvent::class);
         $shippingAddress = $order->shippingAddress->toArray();
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($builder['customerId'], $event->customerId);
+        self::assertSame($builder['buyerId'], $event->buyerId);
         self::assertSame($shippingAddress, $event->shippingAddress);
         self::assertSame($builder['confirmedAt']->format(\DateTimeInterface::ATOM), $event->confirmedAt->format(\DateTimeInterface::ATOM));
     }

@@ -8,7 +8,7 @@ use AfterSales\Return\Domain\Event\WithdrawalApproved;
 use AfterSales\Return\Domain\Event\WithdrawalReceived;
 use AfterSales\Return\Domain\Event\WithdrawalRejected;
 use AfterSales\Return\Domain\Event\WithdrawalRequested;
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use AfterSales\Return\Domain\Specification\WithdrawalWindowExpiredSpecification;
@@ -41,25 +41,25 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) WithdrawalId $id;
     public private(set) string $orderId;
-    public private(set) string $customerId;
+    public private(set) string $buyerId;
     public private(set) PostalAddress $shippingAddress;
     private WithdrawalState $state;
 
     /**
-     * @throws CannotRequestWithdrawalForAnotherCustomerException
+     * @throws CannotRequestWithdrawalForAnotherBuyerException
      * @throws WithdrawalWindowExpiredException
      */
     public static function request(
         WithdrawalId $id,
         string $orderId,
-        string $customerId,
-        string $actingCustomerId,
+        string $buyerId,
+        string $actingBuyerId,
         PostalAddress $shippingAddress,
         \DateTimeImmutable $deliveredAt,
         \DateTimeImmutable $now,
     ): self {
-        if ($customerId !== $actingCustomerId) {
-            throw CannotRequestWithdrawalForAnotherCustomerException::forId($id);
+        if ($buyerId !== $actingBuyerId) {
+            throw CannotRequestWithdrawalForAnotherBuyerException::forId($id);
         }
 
         if (new WithdrawalWindowExpiredSpecification($now)->isSatisfiedBy($deliveredAt)) {
@@ -70,7 +70,7 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new WithdrawalRequested(
             id: $id->toString(),
             orderId: $orderId,
-            customerId: $customerId,
+            buyerId: $buyerId,
             shippingAddress: $shippingAddress->toArray(),
             requestedAt: $now,
         ));
@@ -134,7 +134,7 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = WithdrawalId::fromString($event->id);
         $this->orderId = $event->orderId;
-        $this->customerId = $event->customerId;
+        $this->buyerId = $event->buyerId;
         $this->shippingAddress = PostalAddress::of(
             $event->shippingAddress['recipientName'],
             Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),

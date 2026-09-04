@@ -14,7 +14,7 @@ use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\Order;
@@ -26,7 +26,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class OrderTest extends AggregateRootTestCase
 {
     private OrderId $id;
-    private string $customerId;
+    private string $buyerId;
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;
 
@@ -44,7 +44,7 @@ final class OrderTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = OrderId::generate();
-        $this->customerId = OrderBuilder::sample('customerId');
+        $this->buyerId = OrderBuilder::sample('buyerId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
         $this->billingAddress = OrderBuilder::sample('billingAddress');
         $this->lines = OrderBuilder::sample('lines');
@@ -60,10 +60,10 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::place($this->id, $this->customerId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->placedAt))
+            ->when(fn (): Order => Order::place($this->id, $this->buyerId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->placedAt))
             ->then(new OrderPlaced(
                 $this->id->toString(),
-                $this->customerId,
+                $this->buyerId,
                 $this->shippingAddress->toArray(),
                 $this->billingAddress->toArray(),
                 $this->primitiveLines(),
@@ -77,7 +77,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::place($this->id, $this->customerId, $this->shippingAddress, $this->billingAddress, [], $this->placedAt))
+            ->when(fn (): Order => Order::place($this->id, $this->buyerId, $this->shippingAddress, $this->billingAddress, [], $this->placedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -104,7 +104,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
+            ->when(fn (Order $order) => $order->cancel($this->buyerId, $this->cancelledAt))
             ->then(new OrderCancelled($this->id->toString(), $this->cancelledAt));
     }
 
@@ -113,7 +113,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed(), $this->cancelled())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->buyerId, OrderBuilder::sample('cancelledAt')))
             ->then();
     }
 
@@ -122,7 +122,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed(), $this->confirmed())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
+            ->when(fn (Order $order) => $order->cancel($this->buyerId, $this->cancelledAt))
             ->then(new OrderCancelled($this->id->toString(), $this->cancelledAt));
     }
 
@@ -131,17 +131,17 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed(), $this->confirmed(), $this->dispatched())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->buyerId, OrderBuilder::sample('cancelledAt')))
             ->expectsException(OrderNotCancellableException::class);
     }
 
     #[Test]
-    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
+    public function itCannotCancelWhenBelongingToAnotherBuyer(): void
     {
         $this
             ->given($this->placed())
             ->when(fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), $this->cancelledAt))
-            ->expectsException(OrderBelongsToAnotherCustomerException::class);
+            ->expectsException(OrderBelongsToAnotherBuyerException::class);
     }
 
     #[Test]
@@ -210,7 +210,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         return new OrderPlaced(
             $this->id->toString(),
-            $this->customerId,
+            $this->buyerId,
             $this->shippingAddress->toArray(),
             $this->billingAddress->toArray(),
             $this->primitiveLines(),

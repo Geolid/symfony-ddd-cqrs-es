@@ -29,12 +29,12 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     public function itCancels(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($order);
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $buyerId));
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
@@ -46,12 +46,12 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCancelled(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->cancelled()->create();
         $this->store($order);
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $buyerId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -61,12 +61,12 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNoLongerCancellable(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->dispatched()->create();
         $this->store($order);
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrphanedOrder($order->id->toString(), $buyerId));
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
@@ -78,12 +78,12 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
+        $buyerId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelOrphanedOrder($id, $customerId));
+        $this->dispatch(new CancelOrphanedOrder($id, $buyerId));
     }
 }

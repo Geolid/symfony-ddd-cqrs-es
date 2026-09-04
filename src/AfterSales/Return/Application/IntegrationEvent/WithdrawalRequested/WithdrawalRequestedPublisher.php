@@ -23,7 +23,7 @@ final readonly class WithdrawalRequestedPublisher
         $this->publisher->publish(Withdrawal::class, $event->id, new WithdrawalRequestedIntegrationEvent(
             withdrawalId: $event->id,
             orderId: $event->orderId,
-            customerId: $event->customerId,
+            buyerId: $event->buyerId,
             shippingAddress: $event->shippingAddress,
             requestedAt: $event->requestedAt,
         ));

@@ -15,7 +15,7 @@ final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInte
      */
     public function __construct(
         public string $orderId,
-        public string $customerId,
+        public string $buyerId,
         public array $lines,
         public int $totalAmountInCents,
         public \DateTimeImmutable $placedAt,

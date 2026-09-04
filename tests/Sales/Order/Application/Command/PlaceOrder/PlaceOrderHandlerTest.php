@@ -8,8 +8,8 @@ use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Customer\Domain\Customer;
-use Sales\Customer\Domain\ValueObject\CustomerId;
+use Sales\Buyer\Domain\Buyer;
+use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
@@ -19,7 +19,7 @@ use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
-use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,17 +30,17 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPlaces(): void
     {
         // Given
-        $customer = $this->registeredCustomer('buyer@example.com');
+        $buyer = $this->registeredBuyer('buyer@example.com');
         $id = OrderId::generate()->toString();
         $lines = $this->lines();
 
         // When
-        $this->dispatch(new PlaceOrder($id, $customer->id->toString(), $lines));
+        $this->dispatch(new PlaceOrder($id, $buyer->id->toString(), $lines));
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame($customer->id->toString(), $result->customerId);
+        self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertSame($this->totalAmountInCents($lines), $result->totalAmountInCents);
         self::assertSame(OrderStatus::PLACED, $result->status);
 
@@ -57,27 +57,27 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
-        $customerId = CustomerId::generate()->toString();
+        $buyerId = BuyerId::generate()->toString();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customerId, $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyerId, $this->lines()));
     }
 
     #[Test]
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->withEmail('buyer@example.com')->erased()->create();
-        $this->store($customer);
+        $buyer = BuyerBuilder::new()->withEmail('buyer@example.com')->erased()->create();
+        $this->store($buyer);
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -85,21 +85,21 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerAddressesNotCompleted(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
-        $customer = CustomerBuilder::new()->withEmail('buyer@example.com');
+        $buyer = BuyerBuilder::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $customer = $customer->shippingAddressRegistered($this->shippingAddress());
+            $buyer = $buyer->shippingAddressRegistered($this->shippingAddress());
         }
         if ($withBillingAddress) {
-            $customer = $customer->billingAddressRegistered($this->billingAddress());
+            $buyer = $buyer->billingAddressRegistered($this->billingAddress());
         }
-        $customer = $customer->create();
-        $this->store($customer);
+        $buyer = $buyer->create();
+        $this->store($buyer);
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $customer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     /**
@@ -116,7 +116,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductNotAvailable(): void
     {
         // Given
-        $customer = $this->registeredCustomer('buyer@example.com');
+        $buyer = $this->registeredBuyer('buyer@example.com');
 
         // Then
         $this->expectException(OutdatedOrderException::class);
@@ -124,7 +124,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
-            $customer->id->toString(),
+            $buyer->id->toString(),
             [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitPrice')->cents]],
         ));
     }
@@ -133,7 +133,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductChanged(): void
     {
         // Given
-        $customer = $this->registeredCustomer('buyer@example.com');
+        $buyer = $this->registeredBuyer('buyer@example.com');
         $label = ProductBuilder::sample('label');
         $unitPrice = ProductBuilder::sample('unitPrice');
         $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
@@ -145,7 +145,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new PlaceOrder(
             OrderId::generate()->toString(),
-            $customer->id->toString(),
+            $buyer->id->toString(),
             [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitPriceInCents' => $unitPrice->cents - 250]],
         ));
     }
@@ -179,16 +179,16 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         return array_sum(array_map(static fn (array $line): int => $line['quantity'] * $line['unitPriceInCents'], $lines));
     }
 
-    private function registeredCustomer(string $email): Customer
+    private function registeredBuyer(string $email): Buyer
     {
-        $customer = CustomerBuilder::new()
+        $buyer = BuyerBuilder::new()
             ->withEmail($email)
             ->shippingAddressRegistered($this->shippingAddress())
             ->billingAddressRegistered($this->billingAddress())
             ->create();
-        $this->store($customer);
+        $this->store($buyer);
 
-        return $customer;
+        return $buyer;
     }
 
     private function shippingAddress(): PostalAddress

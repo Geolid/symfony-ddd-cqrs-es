@@ -8,8 +8,8 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class BuyerNotRegisteredException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forId(string $customerId): self
+    public static function forId(string $buyerId): self
     {
-        return new self(\sprintf('Buyer "%s" is not registered.', $customerId));
+        return new self(\sprintf('Buyer "%s" is not registered.', $buyerId));
     }
 }

@@ -19,7 +19,7 @@ final readonly class WithdrawalRequested
         public string $id,
         public string $orderId,
         #[DataSubjectId]
-        public string $customerId,
+        public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',

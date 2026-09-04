@@ -10,7 +10,7 @@ final readonly class OrderSummaryResult
 {
     public function __construct(
         public string $orderId,
-        public string $customerId,
+        public string $buyerId,
         public int $totalAmountInCents,
         public OrderSummaryStatus $status,
         public \DateTimeImmutable $placedAt,

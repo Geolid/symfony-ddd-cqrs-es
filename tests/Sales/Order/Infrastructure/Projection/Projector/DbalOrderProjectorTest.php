@@ -13,7 +13,7 @@ use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, delivered_at: ?string, completed_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{buyer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, dispatched_at: ?string, delivered_at: ?string, completed_at: ?string, cancelled_at: ?string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -21,8 +21,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPlaced(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
 
         // When
         $this->store($order);
@@ -30,7 +30,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($customerId, $row['customer_id']);
+        self::assertSame($buyerId, $row['buyer_id']);
         self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
         self::assertSame(OrderStatus::PLACED->value, $row['status']);
         self::assertNull($row['confirmed_at']);
@@ -160,7 +160,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, delivered_at, completed_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT buyer_id, total_amount_in_cents, status, confirmed_at, dispatched_at, delivered_at, completed_at, cancelled_at FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

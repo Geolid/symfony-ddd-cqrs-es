@@ -19,8 +19,8 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->withTotalAmountInCents(4_200)->create();
         $this->store($order);
 
         // When
@@ -28,7 +28,7 @@ final class GetOrderSummaryHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($customerId, $result->customerId);
+        self::assertSame($buyerId, $result->buyerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PLACED, $result->status);
         self::assertNotNull($result->placedAt);

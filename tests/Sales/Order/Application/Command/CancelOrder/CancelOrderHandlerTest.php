@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\CancelOrder\CancelOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
-use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -32,12 +32,12 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itCancels(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($order);
 
         // When
-        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $buyerId));
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
@@ -49,12 +49,12 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCancelled(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->cancelled()->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->cancelled()->create();
         $this->store($order);
 
         // When
-        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $buyerId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -64,13 +64,13 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPaymentRequestedButNotCaptured(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
         $this->store($order, $payment);
 
         // When
-        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $buyerId));
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
@@ -82,24 +82,24 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = OrderId::generate()->toString();
-        $customerId = Uuid::uuid7()->toString();
+        $buyerId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelOrder($id, $customerId));
+        $this->dispatch(new CancelOrder($id, $buyerId));
     }
 
     #[Test]
-    public function itFailsWhenBelongsToAnotherCustomer(): void
+    public function itFailsWhenBelongsToAnotherBuyer(): void
     {
         // Given
         $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // Then
-        $this->expectException(OrderBelongsToAnotherCustomerException::class);
+        $this->expectException(OrderBelongsToAnotherBuyerException::class);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), Uuid::uuid7()->toString()));
@@ -109,14 +109,14 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotCancellable(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->confirmed()->dispatched()->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->dispatched()->create();
         $this->store($order);
 
         // Then
         $this->expectException(OrderNotCancellableException::class);
 
         // When
-        $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
+        $this->dispatch(new CancelOrder($order->id->toString(), $buyerId));
     }
 }

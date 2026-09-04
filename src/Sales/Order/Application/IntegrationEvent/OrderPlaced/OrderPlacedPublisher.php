@@ -22,7 +22,7 @@ final readonly class OrderPlacedPublisher
     {
         $this->publisher->publish(Order::class, $event->id, new OrderPlacedIntegrationEvent(
             orderId: $event->id,
-            customerId: $event->customerId,
+            buyerId: $event->buyerId,
             lines: $event->lines,
             totalAmountInCents: $event->totalAmountInCents,
             placedAt: $event->placedAt,

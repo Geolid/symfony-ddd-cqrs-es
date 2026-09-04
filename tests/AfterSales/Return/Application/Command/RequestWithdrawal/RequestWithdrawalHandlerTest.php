@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace AfterSales\Tests\Return\Application\Command\RequestWithdrawal;
 
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
-use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use AfterSales\Return\Domain\Repository\WithdrawalRepositoryInterface;
 use AfterSales\Return\Domain\ValueObject\WithdrawalId;
@@ -27,14 +27,14 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // When
-        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['customerId']));
+        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['buyerId']));
 
         // Then
         $withdrawal = $this->service(WithdrawalRepositoryInterface::class)->load(WithdrawalId::forOrder($order->id->toString()));
         $shippingAddress = $withdrawal->shippingAddress->toArray();
         $expectedShippingAddress = $builder['shippingAddress']->toArray();
         self::assertSame($order->id->toString(), $withdrawal->orderId);
-        self::assertSame($builder['customerId'], $withdrawal->customerId);
+        self::assertSame($builder['buyerId'], $withdrawal->buyerId);
         self::assertSame($expectedShippingAddress, $shippingAddress);
     }
 
@@ -45,10 +45,10 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $builder = OrderBuilder::new()->confirmed()->dispatched()->delivered();
         $order = $builder->create();
         $this->store($order);
-        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['customerId']));
+        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['buyerId']));
 
         // When
-        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['customerId']));
+        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['buyerId']));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -61,21 +61,21 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $orderId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(OrderResultNotFoundException::class);
+        $this->expectException(DeliveredOrderResultNotFoundException::class);
 
         // When
         $this->dispatch(new RequestWithdrawal($orderId, Uuid::uuid7()->toString()));
     }
 
     #[Test]
-    public function itFailsWhenBelongingToAnotherCustomer(): void
+    public function itFailsWhenBelongingToAnotherBuyer(): void
     {
         // Given
         $order = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
         $this->store($order);
 
         // Then
-        $this->expectException(CannotRequestWithdrawalForAnotherCustomerException::class);
+        $this->expectException(CannotRequestWithdrawalForAnotherBuyerException::class);
 
         // When
         $this->dispatch(new RequestWithdrawal($order->id->toString(), Uuid::uuid7()->toString()));
@@ -93,6 +93,6 @@ final class RequestWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(WithdrawalWindowExpiredException::class);
 
         // When
-        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['customerId']));
+        $this->dispatch(new RequestWithdrawal($order->id->toString(), $builder['buyerId']));
     }
 }

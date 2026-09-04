@@ -9,10 +9,10 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Customer\Application\IntegrationEvent\CustomerBillingAddressRegistered\CustomerBillingAddressRegisteredIntegrationEvent;
-use Sales\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
-use Sales\Customer\Application\IntegrationEvent\CustomerRegistered\CustomerRegisteredIntegrationEvent;
-use Sales\Customer\Application\IntegrationEvent\CustomerShippingAddressRegistered\CustomerShippingAddressRegisteredIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressRegistered\BuyerBillingAddressRegisteredIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerErased\BuyerErasedIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressRegistered\BuyerShippingAddressRegisteredIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -21,40 +21,40 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_order_buyer';
 
-    #[Subscribe(CustomerRegisteredIntegrationEvent::class)]
-    public function onCustomerRegisteredIntegrationEvent(CustomerRegisteredIntegrationEvent $event): void
+    #[Subscribe(BuyerRegisteredIntegrationEvent::class)]
+    public function onBuyerRegisteredIntegrationEvent(BuyerRegisteredIntegrationEvent $event): void
     {
         $this->connection->insert(self::TABLE, [
-            'customer_id' => $event->customerId,
+            'buyer_id' => $event->buyerId,
         ]);
     }
 
-    #[Subscribe(CustomerShippingAddressRegisteredIntegrationEvent::class)]
-    public function onCustomerShippingAddressRegisteredIntegrationEvent(CustomerShippingAddressRegisteredIntegrationEvent $event): void
+    #[Subscribe(BuyerShippingAddressRegisteredIntegrationEvent::class)]
+    public function onBuyerShippingAddressRegisteredIntegrationEvent(BuyerShippingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
             ['shipping_address' => $this->toAddressData($event->address)],
-            ['customer_id' => $event->customerId],
+            ['buyer_id' => $event->buyerId],
             ['shipping_address' => Types::JSON],
         );
     }
 
-    #[Subscribe(CustomerBillingAddressRegisteredIntegrationEvent::class)]
-    public function onCustomerBillingAddressRegisteredIntegrationEvent(CustomerBillingAddressRegisteredIntegrationEvent $event): void
+    #[Subscribe(BuyerBillingAddressRegisteredIntegrationEvent::class)]
+    public function onBuyerBillingAddressRegisteredIntegrationEvent(BuyerBillingAddressRegisteredIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
             ['billing_address' => $this->toAddressData($event->address)],
-            ['customer_id' => $event->customerId],
+            ['buyer_id' => $event->buyerId],
             ['billing_address' => Types::JSON],
         );
     }
 
-    #[Subscribe(CustomerErasedIntegrationEvent::class)]
-    public function onCustomerErasedIntegrationEvent(CustomerErasedIntegrationEvent $event): void
+    #[Subscribe(BuyerErasedIntegrationEvent::class)]
+    public function onBuyerErasedIntegrationEvent(BuyerErasedIntegrationEvent $event): void
     {
-        $this->connection->delete(self::TABLE, ['customer_id' => $event->customerId]);
+        $this->connection->delete(self::TABLE, ['buyer_id' => $event->buyerId]);
     }
 
     /**
@@ -63,12 +63,12 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     protected function configureSchema(Schema $schema): void
     {
         $table = $schema->createTable(self::TABLE);
-        $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('buyer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
-                ->setColumnNames(UnqualifiedName::unquoted('customer_id'))
+                ->setColumnNames(UnqualifiedName::unquoted('buyer_id'))
                 ->create(),
         );
     }

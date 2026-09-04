@@ -40,7 +40,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'order_id' => $event->orderId,
-                'customer_id' => $event->customerId,
+                'buyer_id' => $event->buyerId,
                 'total_amount_in_cents' => $event->totalAmountInCents,
                 'order_status' => 'placed',
                 'placed_at' => $event->placedAt,
@@ -109,7 +109,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
+        $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('order_status', Types::STRING, ['length' => 10]);
         $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
@@ -129,7 +129,7 @@ final readonly class DbalOrderSummaryProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('order_id'))
                 ->create(),
         );
-        $table->addIndex(['customer_id'], 'sales_order_summary_customer_id_idx');
+        $table->addIndex(['buyer_id'], 'sales_order_summary_buyer_id_idx');
         $table->addIndex(['status'], 'sales_order_summary_status_idx');
     }
 

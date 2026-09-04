@@ -32,7 +32,7 @@ final readonly class OrderPaymentCapturedPublisher
 
         $this->publisher->publish(Order::class, $event->orderId, new OrderPaymentCapturedIntegrationEvent(
             orderId: $event->orderId,
-            customerId: $order->customerId,
+            buyerId: $order->buyerId,
             shippingAddress: $order->shippingAddress->toArray(),
             capturedAt: $event->capturedAt,
         ));
