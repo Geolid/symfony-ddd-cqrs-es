@@ -18,7 +18,7 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: ShipmentId,
  *     reference: string,
- *     customerId: string,
+ *     buyerId: string,
  *     origin: PostalAddress,
  *     destination: PostalAddress,
  *     createdAt: \DateTimeImmutable,
@@ -39,9 +39,9 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(reference: $reference);
     }
 
-    public function withCustomerId(string $customerId): self
+    public function withBuyerId(string $buyerId): self
     {
-        return $this->withAttributes(customerId: $customerId);
+        return $this->withAttributes(buyerId: $buyerId);
     }
 
     public function withOrigin(PostalAddress $origin): self
@@ -114,7 +114,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return [
             'id' => ShipmentId::generate(...),
             'reference' => static fn (): string => Uuid::uuid7()->toString(),
-            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -138,7 +138,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return Shipment::request(
             $this['id'],
             $this['reference'],
-            $this['customerId'],
+            $this['buyerId'],
             $this['origin'],
             $this['destination'],
             $this['createdAt'],

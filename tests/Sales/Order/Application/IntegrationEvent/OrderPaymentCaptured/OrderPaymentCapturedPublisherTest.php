@@ -30,7 +30,7 @@ final class OrderPaymentCapturedPublisherTest extends AbstractIntegrationTestCas
         $event = $this->publishedEventOf(OrderPaymentCapturedIntegrationEvent::class);
         $shippingAddress = $order->shippingAddress->toArray();
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($orderBuilder['customerId'], $event->customerId);
+        self::assertSame($orderBuilder['buyerId'], $event->buyerId);
         self::assertSame($shippingAddress, $event->shippingAddress);
         self::assertSame($paymentBuilder['capturedAt']->format(\DateTimeInterface::ATOM), $event->capturedAt->format(\DateTimeInterface::ATOM));
     }

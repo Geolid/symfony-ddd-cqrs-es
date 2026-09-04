@@ -6,7 +6,7 @@ namespace Sales\Order\Application\Command\CancelOrphanedOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Domain\Exception\OrderAlreadyExistsException;
-use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
@@ -24,7 +24,7 @@ final readonly class CancelOrphanedOrderHandler
 
     /**
      * @throws OrderNotFoundException
-     * @throws OrderBelongsToAnotherCustomerException
+     * @throws OrderBelongsToAnotherBuyerException
      * @throws OrderAlreadyExistsException
      */
     public function __invoke(CancelOrphanedOrder $command): void
@@ -32,7 +32,7 @@ final readonly class CancelOrphanedOrderHandler
         $order = $this->repository->load(OrderId::fromString($command->id));
 
         try {
-            $order->cancel($command->customerId, $this->clock->now());
+            $order->cancel($command->buyerId, $this->clock->now());
             $this->repository->save($order);
         } catch (OrderNotCancellableException) {
         }

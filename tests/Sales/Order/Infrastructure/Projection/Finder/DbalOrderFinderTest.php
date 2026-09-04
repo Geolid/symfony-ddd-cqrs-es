@@ -36,7 +36,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->id);
-        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($builder['buyerId'], $result->buyerId);
         self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::COMPLETED, $result->status);
         self::assertSame($builder['placedAt']->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
@@ -58,16 +58,16 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersByCustomer(): void
+    public function itFiltersByBuyer(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
+        $buyerId = Uuid::uuid7()->toString();
         $other = OrderBuilder::new()->create();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($other, $order);
 
         // When
-        $results = iterator_to_array($this->finder->byCustomer($customerId), false);
+        $results = iterator_to_array($this->finder->byBuyer($buyerId), false);
 
         // Then
         self::assertCount(1, $results);

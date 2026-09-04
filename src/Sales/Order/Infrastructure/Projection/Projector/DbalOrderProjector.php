@@ -31,7 +31,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'customer_id' => $event->customerId,
+                'buyer_id' => $event->buyerId,
                 'total_amount_in_cents' => $event->totalAmountInCents,
                 'status' => OrderStatus::PLACED->value,
                 'placed_at' => $event->placedAt,
@@ -117,7 +117,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
+        $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
@@ -131,6 +131,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['customer_id'], 'sales_order_customer_id_idx');
+        $table->addIndex(['buyer_id'], 'sales_order_buyer_id_idx');
     }
 }

@@ -15,7 +15,7 @@ use Shared\Application\Query\Result\PaginatedResult;
 final readonly class ListOrderSummaries implements QueryInterface
 {
     public function __construct(
-        public ?string $customerId = null,
+        public ?string $buyerId = null,
         public ?OrderSummaryStatus $status = null,
         public int $page = 1,
         public int $itemsPerPage = 20,

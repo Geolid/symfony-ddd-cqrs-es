@@ -28,7 +28,7 @@ final readonly class ShipmentRequested
         public string $id,
         public string $reference,
         #[DataSubjectId]
-        public string $customerId,
+        public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel(self::ERASED_ADDRESS))]
         public array $origin,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel(self::ERASED_ADDRESS))]

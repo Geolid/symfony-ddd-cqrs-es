@@ -26,12 +26,12 @@ final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSu
         )->one() ?? throw OrderSummaryResultNotFoundException::forOrder($orderId);
     }
 
-    public function byCustomer(string $customerId): static
+    public function byBuyer(string $buyerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($customerId): void {
-                $qb->andWhere('customer_id = :customerId')
-                    ->setParameter('customerId', $customerId);
+            static function (QueryBuilder $qb) use ($buyerId): void {
+                $qb->andWhere('buyer_id = :buyerId')
+                    ->setParameter('buyerId', $buyerId);
             },
         );
     }
@@ -57,7 +57,7 @@ final class DbalOrderSummaryFinder extends AbstractDbalFinder implements OrderSu
     {
         $qb->select(
             'order_id',
-            'customer_id',
+            'buyer_id',
             'total_amount_in_cents',
             'status',
             'placed_at',

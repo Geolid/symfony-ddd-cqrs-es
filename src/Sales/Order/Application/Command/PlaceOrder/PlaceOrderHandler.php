@@ -45,11 +45,11 @@ final readonly class PlaceOrderHandler
      */
     public function __invoke(PlaceOrder $command): void
     {
-        $buyer = $this->buyerFinder->ofIdOrNull($command->customerId)
-            ?? throw BuyerNotRegisteredException::forId($command->customerId);
+        $buyer = $this->buyerFinder->ofIdOrNull($command->buyerId)
+            ?? throw BuyerNotRegisteredException::forId($command->buyerId);
 
         if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {
-            throw BuyerAddressesNotCompletedException::forId($command->customerId);
+            throw BuyerAddressesNotCompletedException::forId($command->buyerId);
         }
 
         $productIds = array_column($command->lines, 'productId');
@@ -61,7 +61,7 @@ final readonly class PlaceOrderHandler
 
         $order = Order::place(
             id: OrderId::fromString($command->id),
-            customerId: $buyer->customerId,
+            buyerId: $buyer->buyerId,
             shippingAddress: $this->toAddress($buyer->shippingAddress),
             billingAddress: $this->toAddress($buyer->billingAddress),
             lines: array_map(

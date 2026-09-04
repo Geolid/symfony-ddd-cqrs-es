@@ -30,12 +30,12 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = ShipmentId::generate()->toString();
         $reference = ShipmentBuilder::sample('reference');
-        $customerId = ShipmentBuilder::sample('customerId');
+        $buyerId = ShipmentBuilder::sample('buyerId');
         $originData = ShipmentBuilder::sample('origin')->toArray();
         $destinationData = ShipmentBuilder::sample('destination')->toArray();
 
         // When
-        $this->dispatch(new RequestShipment($id, $reference, $customerId, $originData, $destinationData));
+        $this->dispatch(new RequestShipment($id, $reference, $buyerId, $originData, $destinationData));
 
         // Then
         $result = $this->service(ShipmentFinderInterface::class)->ofId($id);
@@ -60,7 +60,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestShipment(
             $shipment->id->toString(),
             $builder['reference'],
-            $builder['customerId'],
+            $builder['buyerId'],
             $builder['origin']->toArray(),
             $attemptedDestination->toArray(),
         ));

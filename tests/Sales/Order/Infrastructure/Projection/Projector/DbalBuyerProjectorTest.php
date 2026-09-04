@@ -7,14 +7,14 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
-use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
  * @phpstan-type Row array{
- *     customer_id: string,
+ *     buyer_id: string,
  *     shipping_address: string|null,
  *     billing_address: string|null,
  * }
@@ -22,35 +22,35 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsOnCustomerRegistered(): void
+    public function itProjectsOnBuyerRegistered(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $buyer = BuyerBuilder::new()->create();
 
         // When
-        $this->store($customer);
+        $this->store($buyer);
 
         // Then
-        $row = $this->fetchRow($customer->id->toString());
+        $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNull($row['shipping_address']);
         self::assertNull($row['billing_address']);
     }
 
     #[Test]
-    public function itProjectsOnCustomerShippingAddressRegistered(): void
+    public function itProjectsOnBuyerShippingAddressRegistered(): void
     {
         // Given
         $shippingAddress = $this->shippingAddress();
-        $customer = CustomerBuilder::new()
+        $buyer = BuyerBuilder::new()
             ->shippingAddressRegistered($shippingAddress)
             ->create();
 
         // When
-        $this->store($customer);
+        $this->store($buyer);
 
         // Then
-        $row = $this->fetchRow($customer->id->toString());
+        $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
@@ -61,19 +61,19 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnCustomerBillingAddressRegistered(): void
+    public function itProjectsOnBuyerBillingAddressRegistered(): void
     {
         // Given
         $billingAddress = $this->billingAddress();
-        $customer = CustomerBuilder::new()
+        $buyer = BuyerBuilder::new()
             ->billingAddressRegistered($billingAddress)
             ->create();
 
         // When
-        $this->store($customer);
+        $this->store($buyer);
 
         // Then
-        $row = $this->fetchRow($customer->id->toString());
+        $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
         self::assertSame(
@@ -84,22 +84,22 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRemovesOnCustomerErased(): void
+    public function itRemovesOnBuyerErased(): void
     {
         // Given
-        $other = CustomerBuilder::new()->create();
+        $other = BuyerBuilder::new()->create();
         $this->store($other);
-        $customer = CustomerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erased()->create();
 
         // When
-        $this->store($customer);
+        $this->store($buyer);
 
         // Then
-        self::assertFalse($this->fetchRow($customer->id->toString()));
+        self::assertFalse($this->fetchRow($buyer->id->toString()));
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($other->id->toString(), $otherRow['customer_id']);
+        self::assertSame($other->id->toString(), $otherRow['buyer_id']);
     }
 
     private function shippingAddress(): PostalAddress
@@ -140,17 +140,17 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return Row|false
      */
-    private function fetchRow(string $customerId): array|false
+    private function fetchRow(string $buyerId): array|false
     {
         $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
 
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, shipping_address, billing_address FROM %s WHERE customer_id = :customerId',
+                'SELECT buyer_id, shipping_address, billing_address FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
-            ['customerId' => $customerId],
+            ['buyerId' => $buyerId],
         );
     }
 }

@@ -8,7 +8,7 @@ final readonly class OrderResult
 {
     public function __construct(
         public string $orderId,
-        public string $customerId,
+        public string $buyerId,
         public ShippingAddressResult $shippingAddress,
         public \DateTimeImmutable $deliveredAt,
     ) {

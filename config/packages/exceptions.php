@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
@@ -18,14 +18,14 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Sales\Customer\Application\Exception\CustomerEmailAlreadyRegisteredException;
+use Sales\Buyer\Application\Exception\BuyerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OrderPaymentRequestInProgressException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
 use Sales\Order\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -40,7 +40,7 @@ return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
             // AfterSales
-            CannotRequestWithdrawalForAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
+            CannotRequestWithdrawalForAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             WithdrawalWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
             WithdrawalNotReceivedException::class => ['log_level' => 'info', 'status_code' => 409],
 
@@ -64,11 +64,11 @@ return static function (ContainerConfigurator $container): void {
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
             // Sales
-            CustomerEmailAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
+            BuyerEmailAlreadyRegisteredException::class => ['log_level' => 'info', 'status_code' => 409],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
+            OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderPaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],

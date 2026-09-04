@@ -33,7 +33,7 @@ final readonly class RequestShipmentHandler
         $shipment = Shipment::request(
             id: $id,
             reference: $command->reference,
-            customerId: $command->customerId,
+            buyerId: $command->buyerId,
             origin: $this->toAddress($command->origin),
             destination: $this->toAddress($command->destination),
             createdAt: $this->clock->now(),

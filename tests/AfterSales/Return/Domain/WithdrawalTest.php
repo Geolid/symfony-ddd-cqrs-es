@@ -8,7 +8,7 @@ use AfterSales\Return\Domain\Event\WithdrawalApproved;
 use AfterSales\Return\Domain\Event\WithdrawalReceived;
 use AfterSales\Return\Domain\Event\WithdrawalRejected;
 use AfterSales\Return\Domain\Event\WithdrawalRequested;
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use AfterSales\Return\Domain\ValueObject\WithdrawalId;
@@ -23,7 +23,7 @@ final class WithdrawalTest extends AggregateRootTestCase
 {
     private WithdrawalId $id;
     private string $orderId;
-    private string $customerId;
+    private string $buyerId;
     private PostalAddress $shippingAddress;
     private \DateTimeImmutable $deliveredAt;
     private \DateTimeImmutable $requestedAt;
@@ -38,7 +38,7 @@ final class WithdrawalTest extends AggregateRootTestCase
 
         $this->orderId = WithdrawalBuilder::sample('orderId');
         $this->id = WithdrawalId::forOrder($this->orderId);
-        $this->customerId = WithdrawalBuilder::sample('customerId');
+        $this->buyerId = WithdrawalBuilder::sample('buyerId');
         $this->shippingAddress = WithdrawalBuilder::sample('shippingAddress');
         $this->deliveredAt = WithdrawalBuilder::sample('deliveredAt');
         $this->requestedAt = WithdrawalBuilder::sample('requestedAt');
@@ -56,8 +56,8 @@ final class WithdrawalTest extends AggregateRootTestCase
             ->when(fn (): Withdrawal => Withdrawal::request(
                 $this->id,
                 $this->orderId,
-                $this->customerId,
-                $this->customerId,
+                $this->buyerId,
+                $this->buyerId,
                 $this->shippingAddress,
                 $this->deliveredAt,
                 $this->requestedAt,
@@ -75,8 +75,8 @@ final class WithdrawalTest extends AggregateRootTestCase
             ->when(fn (): Withdrawal => Withdrawal::request(
                 $this->id,
                 $this->orderId,
-                $this->customerId,
-                $this->customerId,
+                $this->buyerId,
+                $this->buyerId,
                 $this->shippingAddress,
                 $this->deliveredAt,
                 $now,
@@ -84,27 +84,27 @@ final class WithdrawalTest extends AggregateRootTestCase
             ->then(new WithdrawalRequested(
                 $this->id->toString(),
                 $this->orderId,
-                $this->customerId,
+                $this->buyerId,
                 $this->shippingAddress->toArray(),
                 $now,
             ));
     }
 
     #[Test]
-    public function itCannotRequestForAnotherCustomer(): void
+    public function itCannotRequestForAnotherBuyer(): void
     {
         $this
             ->given()
             ->when(fn (): Withdrawal => Withdrawal::request(
                 $this->id,
                 $this->orderId,
-                $this->customerId,
+                $this->buyerId,
                 Uuid::uuid7()->toString(),
                 $this->shippingAddress,
                 $this->deliveredAt,
                 $this->requestedAt,
             ))
-            ->expectsException(CannotRequestWithdrawalForAnotherCustomerException::class);
+            ->expectsException(CannotRequestWithdrawalForAnotherBuyerException::class);
     }
 
     #[Test]
@@ -117,8 +117,8 @@ final class WithdrawalTest extends AggregateRootTestCase
             ->when(fn (): Withdrawal => Withdrawal::request(
                 $this->id,
                 $this->orderId,
-                $this->customerId,
-                $this->customerId,
+                $this->buyerId,
+                $this->buyerId,
                 $this->shippingAddress,
                 $this->deliveredAt,
                 $now,
@@ -226,7 +226,7 @@ final class WithdrawalTest extends AggregateRootTestCase
         return new WithdrawalRequested(
             $this->id->toString(),
             $this->orderId,
-            $this->customerId,
+            $this->buyerId,
             $this->shippingAddress->toArray(),
             $this->requestedAt,
         );

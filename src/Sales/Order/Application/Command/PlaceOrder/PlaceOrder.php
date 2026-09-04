@@ -13,7 +13,7 @@ final readonly class PlaceOrder implements CommandInterface
      */
     public function __construct(
         public string $id,
-        public string $customerId,
+        public string $buyerId,
         public array $lines,
     ) {
     }

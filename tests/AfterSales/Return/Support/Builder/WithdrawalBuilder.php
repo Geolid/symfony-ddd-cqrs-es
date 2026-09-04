@@ -17,8 +17,8 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: WithdrawalId,
  *     orderId: string,
- *     customerId: string,
- *     actingCustomerId: string,
+ *     buyerId: string,
+ *     actingBuyerId: string,
  *     shippingAddress: PostalAddress,
  *     deliveredAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
@@ -37,14 +37,14 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(orderId: $orderId);
     }
 
-    public function withCustomerId(string $customerId): self
+    public function withBuyerId(string $buyerId): self
     {
-        return $this->withAttributes(customerId: $customerId);
+        return $this->withAttributes(buyerId: $buyerId);
     }
 
-    public function withActingCustomerId(string $actingCustomerId): self
+    public function withActingBuyerId(string $actingBuyerId): self
     {
-        return $this->withAttributes(actingCustomerId: $actingCustomerId);
+        return $this->withAttributes(actingBuyerId: $actingBuyerId);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -101,8 +101,8 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
                 null !== $builder ? $builder['orderId'] : self::sample('orderId'),
             ),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
-            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
-            'actingCustomerId' => static fn (?self $builder): string => null !== $builder ? $builder['customerId'] : self::sample('customerId'),
+            'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'actingBuyerId' => static fn (?self $builder): string => null !== $builder ? $builder['buyerId'] : self::sample('buyerId'),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -121,8 +121,8 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
         return Withdrawal::request(
             id: $this['id'],
             orderId: $this['orderId'],
-            customerId: $this['customerId'],
-            actingCustomerId: $this['actingCustomerId'],
+            buyerId: $this['buyerId'],
+            actingBuyerId: $this['actingBuyerId'],
             shippingAddress: $this['shippingAddress'],
             deliveredAt: $this['deliveredAt'],
             now: $this['requestedAt'],

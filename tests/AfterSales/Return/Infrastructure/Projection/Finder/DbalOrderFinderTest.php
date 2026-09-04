@@ -38,7 +38,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Then
         $shippingAddress = $builder['shippingAddress']->toArray();
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($builder['buyerId'], $result->buyerId);
         self::assertSame($shippingAddress['recipientName'], $result->shippingAddress->recipientName);
         self::assertSame($shippingAddress['street'], $result->shippingAddress->street);
         self::assertSame($shippingAddress['postalCode'], $result->shippingAddress->postalCode);

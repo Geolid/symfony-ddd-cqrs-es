@@ -16,7 +16,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 /**
- * @phpstan-type Row array{customer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_number: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
+ * @phpstan-type Row array{buyer_id: string, total_amount_in_cents: int|string, order_status: string, cancelled_at: ?string, payment_status: ?string, payment_amount_in_cents: int|string|null, payment_reference: ?string, payment_checkout_url: ?string, paid_at: ?string, shipment_status: ?string, tracking_number: ?string, dispatched_at: ?string, delivered_at: ?string, status: string, placed_at: string}
  */
 final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 {
@@ -24,8 +24,8 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPlaced(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->withTotalAmountInCents(4_200)->create();
 
         // When
         $this->store($order);
@@ -33,7 +33,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($customerId, $row['customer_id']);
+        self::assertSame($buyerId, $row['buyer_id']);
         self::assertSame(4_200, (int) $row['total_amount_in_cents']);
         self::assertSame('placed', $row['order_status']);
         self::assertNull($row['payment_status']);
@@ -76,8 +76,8 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPaymentCaptured(): void
     {
         // Given
-        $otherCustomerId = Uuid::uuid7()->toString();
-        $other = OrderBuilder::new()->withCustomerId($otherCustomerId)->create();
+        $otherBuyerId = Uuid::uuid7()->toString();
+        $other = OrderBuilder::new()->withBuyerId($otherBuyerId)->create();
         $order = OrderBuilder::new()->create();
         $this->store($other, $order);
 
@@ -95,7 +95,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherCustomerId, $otherRow['customer_id']);
+        self::assertSame($otherBuyerId, $otherRow['buyer_id']);
         self::assertSame('placed', $otherRow['order_status']);
         self::assertNull($otherRow['payment_status']);
         self::assertSame(OrderSummaryStatus::PLACED->value, $otherRow['status']);
@@ -174,14 +174,14 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = OrderBuilder::new()->create();
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $payment = OrderPaymentBuilder::new()->withOrderId($order->id->toString())->create();
         $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->manifested()->dispatched()->create();
         $this->store($other, $order, $payment, $shipment);
 
         // When
-        $order->cancel($customerId, Clock::get()->now());
+        $order->cancel($buyerId, Clock::get()->now());
         $this->store($order);
 
         // Then
@@ -209,7 +209,7 @@ final class DbalOrderSummaryProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, payment_checkout_url, paid_at, shipment_status, tracking_number, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
+                'SELECT buyer_id, total_amount_in_cents, order_status, cancelled_at, payment_status, payment_amount_in_cents, payment_reference, payment_checkout_url, paid_at, shipment_status, tracking_number, dispatched_at, delivered_at, status, placed_at FROM %s WHERE order_id = :orderId',
                 DbalOrderSummaryProjector::TABLE,
             ),
             ['orderId' => $orderId],

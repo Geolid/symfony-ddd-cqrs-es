@@ -20,7 +20,7 @@ final readonly class WithdrawalRequestedIntegrationEvent implements IntegrationE
         public string $withdrawalId,
         public string $orderId,
         #[DataSubjectId]
-        public string $customerId,
+        public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',

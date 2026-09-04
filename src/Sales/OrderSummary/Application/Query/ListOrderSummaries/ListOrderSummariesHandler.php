@@ -24,8 +24,8 @@ final readonly class ListOrderSummariesHandler
     {
         $finder = $this->orderSummaryFinder;
 
-        if (null !== $query->customerId) {
-            $finder = $finder->byCustomer($query->customerId);
+        if (null !== $query->buyerId) {
+            $finder = $finder->byBuyer($query->buyerId);
         }
 
         if (null !== $query->status) {

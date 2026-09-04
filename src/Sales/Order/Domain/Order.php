@@ -17,7 +17,7 @@ use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
-use Sales\Order\Domain\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -34,7 +34,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) OrderId $id;
-    public private(set) string $customerId;
+    public private(set) string $buyerId;
     public private(set) PostalAddress $shippingAddress;
     public private(set) PostalAddress $billingAddress;
     public private(set) int $totalAmountInCents;
@@ -57,7 +57,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public static function place(
         OrderId $id,
-        string $customerId,
+        string $buyerId,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
         array $lines,
@@ -76,7 +76,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
-            customerId: $customerId,
+            buyerId: $buyerId,
             shippingAddress: $shippingAddress->toArray(),
             billingAddress: $billingAddress->toArray(),
             lines: array_values(array_map(
@@ -108,13 +108,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderBelongsToAnotherCustomerException
+     * @throws OrderBelongsToAnotherBuyerException
      * @throws OrderNotCancellableException
      */
-    public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
+    public function cancel(string $buyerId, \DateTimeImmutable $cancelledAt): void
     {
-        if ($this->customerId !== $customerId) {
-            throw OrderBelongsToAnotherCustomerException::forId($this->id);
+        if ($this->buyerId !== $buyerId) {
+            throw OrderBelongsToAnotherBuyerException::forId($this->id);
         }
 
         if ($this->state->isCancelled()) {
@@ -164,7 +164,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyPlaced(OrderPlaced $event): void
     {
         $this->id = OrderId::fromString($event->id);
-        $this->customerId = $event->customerId;
+        $this->buyerId = $event->buyerId;
         $this->shippingAddress = $this->toAddress($event->shippingAddress);
         $this->billingAddress = $this->toAddress($event->billingAddress);
         $this->totalAmountInCents = $event->totalAmountInCents;

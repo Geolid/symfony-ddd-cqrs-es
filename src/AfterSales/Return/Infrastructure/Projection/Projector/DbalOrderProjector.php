@@ -25,7 +25,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'order_id' => $event->orderId,
-                'customer_id' => $event->customerId,
+                'buyer_id' => $event->buyerId,
                 'shipping_address' => [
                     'recipient_name' => $event->shippingAddress['recipientName'],
                     'street' => $event->shippingAddress['street'],
@@ -46,7 +46,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
+        $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('shipping_address', Types::JSON);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(

@@ -25,10 +25,10 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     public function itLists(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
+        $buyerId = Uuid::uuid7()->toString();
 
         $orders = [
-            OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create(),
+            OrderBuilder::new()->withBuyerId($buyerId)->withTotalAmountInCents(4_200)->create(),
             ...OrderBuilder::new()->many(4)->create(),
         ];
         $this->store(...$orders);
@@ -39,7 +39,7 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
         // Then
         self::assertCount(5, $result);
 
-        self::assertSame($customerId, $result->items[0]->customerId);
+        self::assertSame($buyerId, $result->items[0]->buyerId);
         self::assertSame(4_200, $result->items[0]->totalAmountInCents);
 
         for ($i = 1; $i < 5; ++$i) {
@@ -48,16 +48,16 @@ final class ListOrderSummariesHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itListsByCustomer(): void
+    public function itListsByBuyer(): void
     {
         // Given
         $others = OrderBuilder::new()->many(2)->create();
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($order, ...$others);
 
         // When
-        $result = $this->ask(new ListOrderSummaries(customerId: $customerId));
+        $result = $this->ask(new ListOrderSummaries(buyerId: $buyerId));
 
         // Then
         self::assertCount(1, $result);

@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
-use Sales\Tests\Customer\Support\Builder\CustomerBuilder;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -28,20 +28,22 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsById(): void
     {
         // Given
+        $otherBuyer = BuyerBuilder::new()->create();
+        $this->store($otherBuyer);
         $shippingAddress = $this->shippingAddress();
         $billingAddress = $this->billingAddress();
-        $customer = CustomerBuilder::new()
+        $buyer = BuyerBuilder::new()
             ->shippingAddressRegistered($shippingAddress)
             ->billingAddressRegistered($billingAddress)
             ->create();
-        $this->store($customer);
+        $this->store($buyer);
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id->toString());
+        $result = $this->finder->ofIdOrNull($buyer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
-        self::assertSame($customer->id->toString(), $result->customerId);
+        self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNotNull($result->shippingAddress);
         $shippingResult = [
             'recipientName' => $result->shippingAddress->recipientName,
@@ -68,15 +70,15 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithNoAddress(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
-        $this->store($customer);
+        $buyer = BuyerBuilder::new()->create();
+        $this->store($buyer);
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id->toString());
+        $result = $this->finder->ofIdOrNull($buyer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
-        self::assertSame($customer->id->toString(), $result->customerId);
+        self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
     }
@@ -85,13 +87,13 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithOnlyShippingAddress(): void
     {
         // Given
-        $customer = CustomerBuilder::new()
+        $buyer = BuyerBuilder::new()
             ->shippingAddressRegistered($this->shippingAddress())
             ->create();
-        $this->store($customer);
+        $this->store($buyer);
 
         // When
-        $result = $this->finder->ofIdOrNull($customer->id->toString());
+        $result = $this->finder->ofIdOrNull($buyer->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
@@ -100,7 +102,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNoneForUnknownCustomer(): void
+    public function itFindsNoneForUnknownBuyer(): void
     {
         // When
         $result = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());

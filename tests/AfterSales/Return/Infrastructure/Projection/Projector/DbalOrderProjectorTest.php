@@ -11,7 +11,7 @@ use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, shipping_address: string, delivered_at: string}
+ * @phpstan-type Row array{buyer_id: string, shipping_address: string, delivered_at: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,7 +30,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         $shippingAddress = $this->postalAddress($row['shipping_address']);
         $expectedShippingAddress = $this->toAddressData($builder['shippingAddress']->toArray());
-        self::assertSame($builder['customerId'], $row['customer_id']);
+        self::assertSame($builder['buyerId'], $row['buyer_id']);
         self::assertSame($expectedShippingAddress, $shippingAddress);
         self::assertNotNull($row['delivered_at']);
     }
@@ -71,7 +71,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT customer_id, shipping_address, delivered_at FROM %s WHERE order_id = :orderId', DbalOrderProjector::TABLE),
+            \sprintf('SELECT buyer_id, shipping_address, delivered_at FROM %s WHERE order_id = :orderId', DbalOrderProjector::TABLE),
             ['orderId' => $orderId],
         );
     }

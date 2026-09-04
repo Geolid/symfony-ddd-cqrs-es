@@ -6,5 +6,5 @@ namespace Sales\Order\Application\Finder\Buyer;
 
 interface BuyerFinderInterface
 {
-    public function ofIdOrNull(string $customerId): ?BuyerResult;
+    public function ofIdOrNull(string $buyerId): ?BuyerResult;
 }

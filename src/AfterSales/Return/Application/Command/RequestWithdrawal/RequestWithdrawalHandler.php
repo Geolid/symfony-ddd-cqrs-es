@@ -6,7 +6,7 @@ namespace AfterSales\Return\Application\Command\RequestWithdrawal;
 
 use AfterSales\Return\Application\Exception\OrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\Order\OrderFinderInterface;
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherCustomerException;
+use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalAlreadyExistsException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use AfterSales\Return\Domain\Repository\WithdrawalRepositoryInterface;
@@ -29,7 +29,7 @@ final readonly class RequestWithdrawalHandler
 
     /**
      * @throws OrderResultNotFoundException
-     * @throws CannotRequestWithdrawalForAnotherCustomerException
+     * @throws CannotRequestWithdrawalForAnotherBuyerException
      * @throws WithdrawalWindowExpiredException
      * @throws WithdrawalAlreadyExistsException
      */
@@ -46,8 +46,8 @@ final readonly class RequestWithdrawalHandler
         $withdrawal = Withdrawal::request(
             id: $id,
             orderId: $order->orderId,
-            customerId: $order->customerId,
-            actingCustomerId: $command->customerId,
+            buyerId: $order->buyerId,
+            actingBuyerId: $command->buyerId,
             shippingAddress: PostalAddress::of(
                 $order->shippingAddress->recipientName,
                 Address::of($order->shippingAddress->street, $order->shippingAddress->postalCode, $order->shippingAddress->city, $order->shippingAddress->countryCode),

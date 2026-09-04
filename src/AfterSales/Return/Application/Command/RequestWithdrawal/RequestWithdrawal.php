@@ -10,7 +10,7 @@ final readonly class RequestWithdrawal implements CommandInterface
 {
     public function __construct(
         public string $orderId,
-        public string $customerId,
+        public string $buyerId,
     ) {
     }
 }

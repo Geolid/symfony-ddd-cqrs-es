@@ -32,7 +32,7 @@ final readonly class OrderConfirmedPublisher
 
         $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
             orderId: $event->id,
-            customerId: $order->customerId,
+            buyerId: $order->buyerId,
             shippingAddress: $order->shippingAddress->toArray(),
             confirmedAt: $event->confirmedAt,
         ));

@@ -31,8 +31,8 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     public function itGetsByOrder(): void
     {
         // Given
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->withTotalAmountInCents(4_200)->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->withTotalAmountInCents(4_200)->create();
         $payment = OrderPaymentBuilder::new()
             ->withOrderId($order->id->toString())
             ->withAmountInCents(2_500)
@@ -47,7 +47,7 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($customerId, $result->customerId);
+        self::assertSame($buyerId, $result->buyerId);
         self::assertSame(4_200, $result->totalAmountInCents);
         self::assertSame(OrderSummaryStatus::PAYMENT_PENDING, $result->status);
         self::assertNull($result->cancelledAt);
@@ -71,16 +71,16 @@ final class DbalOrderSummaryFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersByCustomer(): void
+    public function itFiltersByBuyer(): void
     {
         // Given
-        $other = OrderBuilder::new()->withCustomerId(Uuid::uuid7()->toString())->create();
-        $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $other = OrderBuilder::new()->withBuyerId(Uuid::uuid7()->toString())->create();
+        $buyerId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
         $this->store($other, $order);
 
         // When
-        $results = iterator_to_array($this->finder->byCustomer($customerId));
+        $results = iterator_to_array($this->finder->byBuyer($buyerId));
 
         // Then
         self::assertCount(1, $results);
