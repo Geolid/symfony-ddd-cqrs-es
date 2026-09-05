@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Checkout;
 
-use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
-use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 use Shared\Application\DrivingPort;
 
 #[DrivingPort]

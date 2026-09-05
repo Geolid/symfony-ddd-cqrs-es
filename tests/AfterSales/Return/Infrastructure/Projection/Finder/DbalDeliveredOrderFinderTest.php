@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AfterSales\Tests\Return\Infrastructure\Projection\Finder;
 
-use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
+use AfterSales\Return\Application\Finder\DeliveredOrder\Exception\DeliveredOrderResultNotFoundException;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;

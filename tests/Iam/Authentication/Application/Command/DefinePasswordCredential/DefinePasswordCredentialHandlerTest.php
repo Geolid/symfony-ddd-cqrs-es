@@ -6,9 +6,9 @@ namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
 use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
-use Iam\Authentication\Application\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
+use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
@@ -82,7 +82,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         );
 
         // Then
-        $this->expectException(LoginAlreadyTakenException::class);
+        $this->expectException(PasswordCredentialLoginAlreadyTakenException::class);
 
         // When
         $this->dispatch(new DefinePasswordCredential(

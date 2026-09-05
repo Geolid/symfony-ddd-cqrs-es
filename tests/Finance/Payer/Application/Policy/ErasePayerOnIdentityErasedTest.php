@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payer\Application\Policy;
 
-use Finance\Payer\Application\Exception\PayerResultNotFoundException;
+use Finance\Payer\Application\Finder\Payer\Exception\PayerResultNotFoundException;
 use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
 use Finance\Payer\Application\Policy\ErasePayerOnIdentityErased;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;

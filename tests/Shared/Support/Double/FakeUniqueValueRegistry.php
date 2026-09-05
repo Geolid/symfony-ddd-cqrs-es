@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Support\Double;
 
-use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 

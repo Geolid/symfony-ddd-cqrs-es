@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
-use Iam\Authentication\Application\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Exception\LoginAlreadyTakenException;
+use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
+use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
@@ -19,7 +19,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialI
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
@@ -37,7 +37,7 @@ final readonly class DefinePasswordCredentialHandler
     }
 
     /**
-     * @throws LoginAlreadyTakenException
+     * @throws PasswordCredentialLoginAlreadyTakenException
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
      * @throws PasswordCredentialAlreadyExistsException
@@ -55,7 +55,7 @@ final readonly class DefinePasswordCredentialHandler
         try {
             $this->uniqueValues->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString());
         } catch (UniqueValueAlreadyTakenException $e) {
-            throw LoginAlreadyTakenException::forLogin($login->value, $e);
+            throw PasswordCredentialLoginAlreadyTakenException::forLogin($login->value, $e);
         }
 
         $credential = PasswordCredential::define(

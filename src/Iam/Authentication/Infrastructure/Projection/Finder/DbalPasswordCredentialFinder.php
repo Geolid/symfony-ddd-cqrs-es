@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Authentication\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentialProjector;

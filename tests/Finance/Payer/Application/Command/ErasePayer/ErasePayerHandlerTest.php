@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Payer\Application\Command\ErasePayer;
 
 use Finance\Payer\Application\Command\ErasePayer\ErasePayer;
-use Finance\Payer\Application\Exception\PayerResultNotFoundException;
+use Finance\Payer\Application\Finder\Payer\Exception\PayerResultNotFoundException;
 use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
 use Finance\Payer\Domain\Exception\PayerNotFoundException;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;

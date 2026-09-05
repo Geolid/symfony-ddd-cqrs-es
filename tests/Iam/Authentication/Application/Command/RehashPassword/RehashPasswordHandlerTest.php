@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\RehashPassword;
 
 use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
-use Iam\Authentication\Application\Exception\PasswordCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;

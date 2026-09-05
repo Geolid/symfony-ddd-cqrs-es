@@ -7,7 +7,7 @@ namespace Fulfilment\Shipping\Infrastructure\Projection\Finder;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
-use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;

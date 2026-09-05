@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Tests\Buyer\Application\Command\RegisterBuyer;
 
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Application\Command\RegisterBuyer\RegisterBuyer;
-use Sales\Buyer\Application\Exception\BuyerEmailAlreadyRegisteredException;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
@@ -34,7 +34,7 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenEmailAlreadyRegistered(): void
+    public function itFailsWhenEmailAlreadyTaken(): void
     {
         // Given
         $id = BuyerId::generate()->toString();
@@ -43,7 +43,7 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email, $existingId);
 
         // Then
-        $this->expectException(BuyerEmailAlreadyRegisteredException::class);
+        $this->expectException(BuyerEmailAlreadyTakenException::class);
 
         // When
         $this->dispatch(new RegisterBuyer($id, $email));

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AfterSales\Tests\Return\Application\Command\RequestWithdrawal;
 
+use AfterSales\Return\Application\Command\RequestWithdrawal\Exception\ActiveWithdrawalAlreadyExistsException;
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
-use AfterSales\Return\Application\Exception\ActiveWithdrawalAlreadyExistsException;
-use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
+use AfterSales\Return\Application\Finder\DeliveredOrder\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\Withdrawal\WithdrawalFinderInterface;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;

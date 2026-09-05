@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Refund\Application\Command\InitiateRefund;
 
 use Finance\Refund\Application\Command\InitiateRefund\InitiateRefund;
-use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
+use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
 use Finance\Refund\Domain\Repository\RefundRepositoryInterface;
 use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;

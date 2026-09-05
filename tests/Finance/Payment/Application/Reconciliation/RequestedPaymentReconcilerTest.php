@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Reconciliation;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
-use Finance\Payment\Application\Checkout\PaymentGatewayStatus;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Application\Reconciliation\RequestedPaymentReconciler;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;

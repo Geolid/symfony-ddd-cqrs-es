@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Application\Uniqueness;
 
-use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
 
 interface UniqueValueRegistryInterface
 {

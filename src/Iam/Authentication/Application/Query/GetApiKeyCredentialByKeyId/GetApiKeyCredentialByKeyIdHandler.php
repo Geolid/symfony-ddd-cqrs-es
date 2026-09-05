@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId;
 
-use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResult;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Shared\Application\Query\QueryHandler;
 
 #[QueryHandler]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Finder\PlacedOrder;
 
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 
 interface PlacedOrderFinderInterface
 {

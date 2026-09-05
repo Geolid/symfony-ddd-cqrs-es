@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Finder\Product;
 
-use Catalog\Listing\Application\Exception\ProductResultNotFoundException;
+use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Shared\Application\Finder\IterableFinderInterface;
 use Shared\Application\Finder\PaginatableFinderInterface;
 

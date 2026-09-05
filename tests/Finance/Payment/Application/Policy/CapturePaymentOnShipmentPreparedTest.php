@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Policy;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
-use Finance\Payment\Application\Checkout\PaymentGatewayStatus;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\CapturePaymentOnShipmentPrepared;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;

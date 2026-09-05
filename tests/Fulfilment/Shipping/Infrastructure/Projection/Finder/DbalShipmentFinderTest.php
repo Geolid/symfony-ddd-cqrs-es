@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Finder;
 
-use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentDirection;

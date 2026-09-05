@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AfterSales\Return\Infrastructure\Projection\Finder;
 
-use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderResult;
+use AfterSales\Return\Application\Finder\DeliveredOrder\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Infrastructure\Projection\Projector\DbalDeliveredOrderProjector;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;

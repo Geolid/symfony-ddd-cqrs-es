@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Finder\ApiKeyCredential;
 
-use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 
 interface ApiKeyCredentialFinderInterface
 {

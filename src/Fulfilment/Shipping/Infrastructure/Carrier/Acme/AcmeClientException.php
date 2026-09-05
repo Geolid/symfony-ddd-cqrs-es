@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Carrier\Acme;
 
-final class AcmeClientException extends \RuntimeException
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
+
+final class AcmeClientException extends CarrierGatewayException
 {
     public static function networkFailure(string $path, string $reason): self
     {

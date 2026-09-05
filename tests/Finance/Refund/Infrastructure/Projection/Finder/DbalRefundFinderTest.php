@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Refund\Infrastructure\Projection\Finder;
 
-use Finance\Refund\Application\Exception\RefundResultNotFoundException;
+use Finance\Refund\Application\Finder\Refund\Exception\RefundResultNotFoundException;
 use Finance\Refund\Application\Finder\Refund\RefundFinderInterface;
 use Finance\Refund\Application\RefundStatus;
 use Finance\Tests\Refund\Support\Builder\RefundBuilder;

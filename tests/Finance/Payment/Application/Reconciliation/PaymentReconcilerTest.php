@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Reconciliation;
 
-use Finance\Payment\Application\Exception\UnsupportedPaymentStatusException;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\Reconciliation\Exception\UnsupportedPaymentStatusException;
 use Finance\Payment\Application\Reconciliation\PaymentReconciler;
 use Finance\Payment\Application\Reconciliation\PaymentStatusReconcilerInterface;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Listing\Application\Query\GetProduct;
 
-use Catalog\Listing\Application\Exception\ProductResultNotFoundException;
+use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Query\GetProduct\GetProduct;
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;

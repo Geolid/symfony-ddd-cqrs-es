@@ -6,10 +6,10 @@ namespace Fulfilment\Shipping\Application\Manifest;
 
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
-use Fulfilment\Shipping\Application\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\PostalAddressResult;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Shared\Application\Command\CommandBusInterface;

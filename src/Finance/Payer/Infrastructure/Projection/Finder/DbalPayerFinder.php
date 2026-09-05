@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Payer\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Finance\Payer\Application\Exception\PayerResultNotFoundException;
+use Finance\Payer\Application\Finder\Payer\Exception\PayerResultNotFoundException;
 use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
 use Finance\Payer\Application\Finder\Payer\PayerResult;
 use Finance\Payer\Infrastructure\Projection\Projector\DbalPayerProjector;

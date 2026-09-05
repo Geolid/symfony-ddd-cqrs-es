@@ -6,8 +6,8 @@ namespace Sales\Tests\Buyer\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Buyer\Application\Exception\BuyerResultNotFoundException;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Buyer\Application\Finder\Buyer\Exception\BuyerResultNotFoundException;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

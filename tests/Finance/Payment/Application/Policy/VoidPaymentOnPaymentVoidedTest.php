@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Policy;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
 use Finance\Payment\Application\Policy\VoidPaymentOnPaymentVoided;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;

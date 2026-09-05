@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Reconciliation;
 
-use Finance\Payment\Application\Exception\UnsupportedPaymentStatusException;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\Reconciliation\Exception\UnsupportedPaymentStatusException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class PaymentReconciler implements PaymentReconcilerInterface

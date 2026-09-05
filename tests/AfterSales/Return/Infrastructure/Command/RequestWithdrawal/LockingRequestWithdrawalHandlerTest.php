@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AfterSales\Tests\Return\Infrastructure\Command\RequestWithdrawal;
 
+use AfterSales\Return\Application\Command\RequestWithdrawal\Exception\WithdrawalRequestInProgressException;
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
-use AfterSales\Return\Application\Exception\WithdrawalRequestInProgressException;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;

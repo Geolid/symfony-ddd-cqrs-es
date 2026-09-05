@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Policy;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayException;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Policy;
@@ -16,6 +17,9 @@ final readonly class RefundPaymentOnPaymentRefundRequired
     {
     }
 
+    /**
+     * @throws PaymentGatewayException
+     */
     #[Subscribe(PaymentRefundRequired::class)]
     public function __invoke(PaymentRefundRequired $event): void
     {

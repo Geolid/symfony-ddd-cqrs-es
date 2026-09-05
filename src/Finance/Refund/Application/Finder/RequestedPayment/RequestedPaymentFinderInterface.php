@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Refund\Application\Finder\RequestedPayment;
 
-use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
+use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
 
 interface RequestedPaymentFinderInterface
 {
