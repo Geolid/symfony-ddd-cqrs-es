@@ -16,6 +16,7 @@ final readonly class RefundResult
         public RefundStatus $status,
         public \DateTimeImmutable $initiatedAt,
         public ?\DateTimeImmutable $refundedAt,
+        public ?\DateTimeImmutable $failedAt,
     ) {
     }
 }

@@ -10,6 +10,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Finance\Refund\Application\RefundStatus;
 use Finance\Refund\Domain\Event\RefundConfirmed;
+use Finance\Refund\Domain\Event\RefundFailed;
 use Finance\Refund\Domain\Event\RefundInitiated;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
@@ -51,6 +52,20 @@ final readonly class DbalRefundProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(RefundFailed::class)]
+    public function onRefundFailed(RefundFailed $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => RefundStatus::FAILED->value,
+                'failed_at' => $event->failedAt,
+            ],
+            ['id' => $event->id],
+            ['failed_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -64,6 +79,7 @@ final readonly class DbalRefundProjector extends AbstractDbalProjector
         $table->addColumn('status', Types::STRING, ['length' => 9]);
         $table->addColumn('initiated_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('refunded_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

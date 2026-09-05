@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Finance\Refund\Domain;
 
 use Finance\Refund\Domain\Event\RefundConfirmed;
+use Finance\Refund\Domain\Event\RefundFailed;
 use Finance\Refund\Domain\Event\RefundInitiated;
 use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Refund\Domain\ValueObject\RefundState;
@@ -59,6 +60,18 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function fail(\DateTimeImmutable $failedAt): void
+    {
+        if (!$this->state->isInitiated()) {
+            return;
+        }
+
+        $this->recordThat(new RefundFailed(
+            id: $this->id->toString(),
+            failedAt: $failedAt,
+        ));
+    }
+
     #[Apply]
     private function applyInitiated(RefundInitiated $event): void
     {
@@ -73,5 +86,11 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
     private function applyConfirmed(RefundConfirmed $event): void
     {
         $this->state = RefundState::REFUNDED;
+    }
+
+    #[Apply]
+    private function applyFailed(RefundFailed $event): void
+    {
+        $this->state = RefundState::FAILED;
     }
 }

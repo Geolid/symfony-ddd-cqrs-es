@@ -24,6 +24,7 @@ use Symfony\Component\Clock\Clock;
  *     failedAt: \DateTimeImmutable,
  *     capturedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
+ *     rejectedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Payment, Attributes>
@@ -91,6 +92,15 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function refundRejected(?\DateTimeImmutable $rejectedAt = null): self
+    {
+        $builder = null !== $rejectedAt ? $this->withAttributes(rejectedAt: $rejectedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Payment $orderPayment, self $builder) => $orderPayment->rejectRefund($builder['rejectedAt']),
+        );
+    }
+
     protected static function defaults(): array
     {
         return [
@@ -103,6 +113,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'capturedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'rejectedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
         ];
     }
 

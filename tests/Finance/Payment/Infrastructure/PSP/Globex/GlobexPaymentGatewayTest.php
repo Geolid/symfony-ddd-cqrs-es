@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Infrastructure\PSP\Globex;
 
+use Finance\Payment\Application\PSP\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Application\PSP\PaymentTransientFailureException;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexClient;
-use Finance\Payment\Infrastructure\PSP\Globex\GlobexClientException;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexPaymentGateway;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -59,11 +60,11 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('provideUnreachableProviders')]
-    public function itThrowsWhenPaymentProviderUnreachable(callable|MockResponse $response): void
+    #[DataProvider('provideTransientFailures')]
+    public function itThrowsTransientWhenPaymentProviderUnreachable(callable|MockResponse $response): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentTransientFailureException::class);
 
         // When
         $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
@@ -72,18 +73,28 @@ final class GlobexPaymentGatewayTest extends TestCase
     /**
      * @return iterable<string, array{callable|MockResponse}>
      */
-    public static function provideUnreachableProviders(): iterable
+    public static function provideTransientFailures(): iterable
     {
         yield 'connection refused' => [static fn () => throw new TransportException('Connection refused')];
         yield 'provider out of order' => [self::jsonResponse([], 500)];
     }
 
     #[Test]
-    #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsWhenChargeResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenPaymentRequestRejected(): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentFatalFailureException::class);
+
+        // When
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreadableResponses')]
+    public function itThrowsFatalWhenChargeResponseUnreadable(MockResponse $response): void
+    {
+        // Then
+        $this->expectException(PaymentFatalFailureException::class);
 
         // When
         $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
@@ -122,10 +133,10 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenVoidingAndPaymentProviderUnreachable(): void
+    public function itThrowsTransientWhenVoidingAndPaymentProviderUnreachable(): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentTransientFailureException::class);
 
         // When
         $this->gateway(static fn () => throw new TransportException('Connection refused'))->void('GLBX-9F3K2M1P');
@@ -150,10 +161,10 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenRefundingAndPaymentProviderUnreachable(): void
+    public function itThrowsTransientWhenRefundingAndPaymentProviderUnreachable(): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentTransientFailureException::class);
 
         // When
         $this->gateway(static fn () => throw new TransportException('Connection refused'))->refund('GLBX-9F3K2M1P');
@@ -175,10 +186,10 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenCheckingStatusAndPaymentProviderUnreachable(): void
+    public function itThrowsTransientWhenCheckingStatusAndPaymentProviderUnreachable(): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentTransientFailureException::class);
 
         // When
         $this->gateway(static fn () => throw new TransportException('Connection refused'))->checkStatus('GLBX-9F3K2M1P');
@@ -186,23 +197,23 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableStatusResponses')]
-    public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenStatusResponseUnreadable(MockResponse $response): void
     {
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentFatalFailureException::class);
 
         // When
         $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');
     }
 
     #[Test]
-    public function itThrowsWhenStatusUnrecognized(): void
+    public function itThrowsFatalWhenStatusUnrecognized(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'teleported']);
 
         // Then
-        $this->expectException(GlobexClientException::class);
+        $this->expectException(PaymentFatalFailureException::class);
 
         // When
         $this->gateway($response)->checkStatus('GLBX-9F3K2M1P');

@@ -44,6 +44,7 @@ final class DbalRefundFinderTest extends AbstractIntegrationTestCase
         self::assertSame(RefundStatus::INITIATED, $result->status);
         self::assertSame($builder['initiatedAt']->format(\DateTimeInterface::ATOM), $result->initiatedAt->format(\DateTimeInterface::ATOM));
         self::assertNull($result->refundedAt);
+        self::assertNull($result->failedAt);
     }
 
     #[Test]

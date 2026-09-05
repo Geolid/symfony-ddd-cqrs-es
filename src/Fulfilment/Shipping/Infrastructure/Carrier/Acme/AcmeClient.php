@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Carrier\Acme;
 
+use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
+use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -23,7 +27,7 @@ final readonly class AcmeClient
      *
      * @return mixed[]
      *
-     * @throws AcmeClientException
+     * @throws CarrierGatewayException
      */
     public function post(string $path, array $body, ?string $idempotencyKey = null): array
     {
@@ -38,7 +42,7 @@ final readonly class AcmeClient
     /**
      * @return mixed[]
      *
-     * @throws AcmeClientException
+     * @throws CarrierGatewayException
      */
     public function get(string $path): array
     {
@@ -50,16 +54,18 @@ final readonly class AcmeClient
      *
      * @return mixed[]
      *
-     * @throws AcmeClientException
+     * @throws CarrierGatewayException
      */
     private function request(string $method, string $path, array $options = []): array
     {
         try {
             return $this->client->request($method, $path, $options)->toArray();
-        } catch (TransportExceptionInterface|HttpExceptionInterface $e) {
-            throw AcmeClientException::networkFailure($path, $e->getMessage());
+        } catch (TransportExceptionInterface|ServerExceptionInterface $e) {
+            throw CarrierTransientFailureException::forReason(\sprintf('Acme network failure on "%s": %s', $path, $e->getMessage()), $e);
+        } catch (ClientExceptionInterface $e) {
+            throw CarrierFatalFailureException::forReason(\sprintf('Acme rejected the payload on "%s": %s', $path, $e->getMessage()), $e);
         } catch (DecodingExceptionInterface $e) {
-            throw AcmeClientException::invalidResponse($path, $e->getMessage());
+            throw CarrierFatalFailureException::forReason(\sprintf('Acme invalid response on "%s": %s', $path, $e->getMessage()), $e);
         }
     }
 }

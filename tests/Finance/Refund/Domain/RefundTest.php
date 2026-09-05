@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Refund\Domain;
 
 use Finance\Refund\Domain\Event\RefundConfirmed;
+use Finance\Refund\Domain\Event\RefundFailed;
 use Finance\Refund\Domain\Event\RefundInitiated;
 use Finance\Refund\Domain\Refund;
 use Finance\Refund\Domain\ValueObject\RefundId;
@@ -20,6 +21,7 @@ final class RefundTest extends AggregateRootTestCase
     private Money $amount;
     private \DateTimeImmutable $initiatedAt;
     private \DateTimeImmutable $refundedAt;
+    private \DateTimeImmutable $failedAt;
 
     protected function setUp(): void
     {
@@ -30,6 +32,7 @@ final class RefundTest extends AggregateRootTestCase
         $this->amount = RefundBuilder::sample('amount');
         $this->initiatedAt = RefundBuilder::sample('initiatedAt');
         $this->refundedAt = RefundBuilder::sample('refundedAt');
+        $this->failedAt = RefundBuilder::sample('failedAt');
     }
 
     #[Test]
@@ -62,6 +65,33 @@ final class RefundTest extends AggregateRootTestCase
         $this
             ->given($this->initiated(), new RefundConfirmed(RefundId::forPayment($this->paymentId)->toString(), $this->refundedAt))
             ->when(static fn (Refund $refund) => $refund->confirm(RefundBuilder::sample('refundedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotConfirmWhenAlreadyFailed(): void
+    {
+        $this
+            ->given($this->initiated(), new RefundFailed(RefundId::forPayment($this->paymentId)->toString(), $this->failedAt))
+            ->when(static fn (Refund $refund) => $refund->confirm(RefundBuilder::sample('refundedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itFailsWhenInitiated(): void
+    {
+        $this
+            ->given($this->initiated())
+            ->when(fn (Refund $refund) => $refund->fail($this->failedAt))
+            ->then(new RefundFailed(RefundId::forPayment($this->paymentId)->toString(), $this->failedAt));
+    }
+
+    #[Test]
+    public function itDoesNotFailWhenAlreadyConfirmed(): void
+    {
+        $this
+            ->given($this->initiated(), new RefundConfirmed(RefundId::forPayment($this->paymentId)->toString(), $this->refundedAt))
+            ->when(static fn (Refund $refund) => $refund->fail(RefundBuilder::sample('failedAt')))
             ->then();
     }
 
