@@ -7,8 +7,10 @@ namespace Shared\Domain\Gdpr;
 final readonly class ErasedValueObjectSentinel
 {
     /**
-     * @param ErasedFieldSentinel<string> $sentinel
-     * @param class-string                $class
+     * @param ErasedFieldSentinel<mixed> $sentinel a single fallback value, or an array of one per
+     *                                             constructor argument (nesting another sentinel
+     *                                             for a Value Object composed of Value Objects)
+     * @param class-string               $class
      */
     public function __construct(
         private ErasedFieldSentinel $sentinel,
@@ -19,6 +21,9 @@ final readonly class ErasedValueObjectSentinel
 
     public function __invoke(string $subjectId): object
     {
-        return ($this->class)::{$this->method}(($this->sentinel)($subjectId));
+        $value = ($this->sentinel)($subjectId);
+        $args = \is_array($value) ? $value : [$value];
+
+        return ($this->class)::{$this->method}(...$args);
     }
 }

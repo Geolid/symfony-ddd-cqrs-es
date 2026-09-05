@@ -15,7 +15,6 @@ use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\DataSubjectErasureInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Shared\Domain\Gdpr\ErasedPostalAddressSentinel;
 use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
 
 final class EventTest
@@ -51,7 +50,6 @@ final class EventTest
                     Selector::withFilepath('#/ValueObject/#', true),
                 ),
                 Selector::classname(ErasedValueObjectSentinel::class),
-                Selector::classname(ErasedPostalAddressSentinel::class),
                 ...$this->esMetadataSelectors(),
             )
             ->because('A recorded fact must decode forever despite other types changing, and its personal data must stay erasable without rewriting history.');
