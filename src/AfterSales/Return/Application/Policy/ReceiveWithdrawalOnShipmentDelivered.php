@@ -35,8 +35,6 @@ final readonly class ReceiveWithdrawalOnShipmentDelivered
             return;
         }
 
-        $withdrawal = $this->repository->load($id);
-
-        $this->commandBus->dispatch(new ReceiveWithdrawal($withdrawal->orderId));
+        $this->commandBus->dispatch(new ReceiveWithdrawal($id->toString()));
     }
 }

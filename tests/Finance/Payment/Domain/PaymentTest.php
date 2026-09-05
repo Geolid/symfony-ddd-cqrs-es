@@ -8,8 +8,7 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
-use Finance\Payment\Domain\Event\PaymentRefunded;
-use Finance\Payment\Domain\Event\PaymentRefundInitiated;
+use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\Payment;
@@ -106,10 +105,21 @@ final class PaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotFailWhenAuthorized(): void
+    public function itFailsWhenAuthorized(): void
     {
+        $failedAt = PaymentBuilder::sample('failedAt');
+
         $this
             ->given($this->requested(), $this->authorized())
+            ->when(static fn (Payment $orderPayment) => $orderPayment->fail($failedAt))
+            ->then(new PaymentFailed($this->id->toString(), $this->orderId, $failedAt));
+    }
+
+    #[Test]
+    public function itDoesNotFailWhenCaptured(): void
+    {
+        $this
+            ->given($this->requested(), $this->authorized(), $this->captured())
             ->when(static fn (Payment $orderPayment) => $orderPayment->fail(PaymentBuilder::sample('failedAt')))
             ->then();
     }
@@ -164,14 +174,14 @@ final class PaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itInitiatesWhenCancelledAfterCapture(): void
+    public function itRequiresRefundWhenCancelledAfterCapture(): void
     {
         $cancelledAt = PaymentBuilder::sample('cancelledAt');
 
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
             ->when(static fn (Payment $orderPayment) => $orderPayment->cancel($cancelledAt))
-            ->then(new PaymentRefundInitiated($this->id->toString(), $this->orderId, $this->reference->value, $cancelledAt));
+            ->then(new PaymentRefundRequired($this->id->toString(), $this->orderId, $this->reference->value, $cancelledAt));
     }
 
     #[Test]
@@ -183,52 +193,6 @@ final class PaymentTest extends AggregateRootTestCase
                 new PaymentFailed($this->id->toString(), $this->orderId, PaymentBuilder::sample('failedAt')),
             )
             ->when(static fn (Payment $orderPayment) => $orderPayment->cancel(PaymentBuilder::sample('cancelledAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itInitiatesWhenCaptured(): void
-    {
-        $refundInitiatedAt = PaymentBuilder::sample('refundInitiatedAt');
-
-        $this
-            ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->initiateRefund($refundInitiatedAt))
-            ->then(new PaymentRefundInitiated($this->id->toString(), $this->orderId, $this->reference->value, $refundInitiatedAt));
-    }
-
-    #[Test]
-    public function itDoesNotInitiateWhenUncaptured(): void
-    {
-        $this
-            ->given($this->requested(), $this->authorized())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->initiateRefund(PaymentBuilder::sample('refundInitiatedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itConfirmsWhenInitiated(): void
-    {
-        $refundInitiatedAt = PaymentBuilder::sample('refundInitiatedAt');
-        $refundConfirmedAt = PaymentBuilder::sample('refundConfirmedAt');
-
-        $this
-            ->given(
-                $this->requested(),
-                $this->authorized(),
-                $this->captured(),
-                new PaymentRefundInitiated($this->id->toString(), $this->orderId, $this->reference->value, $refundInitiatedAt),
-            )
-            ->when(static fn (Payment $orderPayment) => $orderPayment->confirmRefund($refundConfirmedAt))
-            ->then(new PaymentRefunded($this->id->toString(), $this->orderId, $refundConfirmedAt));
-    }
-
-    #[Test]
-    public function itDoesNotConfirmWhenNotInitiated(): void
-    {
-        $this
-            ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->confirmRefund(PaymentBuilder::sample('refundConfirmedAt')))
             ->then();
     }
 

@@ -21,6 +21,7 @@ final readonly class PaymentRequestedPublisher
     public function __invoke(PaymentRequested $event): void
     {
         $this->publisher->publish(Payment::class, $event->id, new PaymentRequestedIntegrationEvent(
+            paymentId: $event->id,
             orderId: $event->orderId,
             amountInCents: $event->amountInCents,
             reference: $event->reference,

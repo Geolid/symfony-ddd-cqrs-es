@@ -8,19 +8,18 @@ use AfterSales\Return\Domain\ValueObject\WithdrawalId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class WithdrawalIdTest extends TestCase
 {
-    private const string ORDER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
-
     #[Test]
-    public function itDerivesKnownId(): void
+    public function itGenerates(): void
     {
         // When
-        $id = WithdrawalId::forOrder(self::ORDER_ID);
+        $id = WithdrawalId::generate();
 
         // Then
-        self::assertSame('63e4bd4f-9fbd-5b2a-a37a-39ea595b003e', $id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]
@@ -47,8 +46,9 @@ final class WithdrawalIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $a = WithdrawalId::forOrder(self::ORDER_ID);
-        $b = WithdrawalId::forOrder(self::ORDER_ID);
+        $value = WithdrawalId::generate()->toString();
+        $a = WithdrawalId::fromString($value);
+        $b = WithdrawalId::fromString($value);
 
         // When
         $equals = $a->equals($b);
@@ -61,8 +61,8 @@ final class WithdrawalIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = WithdrawalId::forOrder(self::ORDER_ID);
-        $b = WithdrawalId::forOrder('0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $a = WithdrawalId::generate();
+        $b = WithdrawalId::generate();
 
         // When
         $equals = $a->equals($b);

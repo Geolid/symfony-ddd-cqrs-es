@@ -28,7 +28,7 @@ final readonly class RejectWithdrawalHandler
      */
     public function __invoke(RejectWithdrawal $command): void
     {
-        $withdrawal = $this->repository->load(WithdrawalId::forOrder($command->orderId));
+        $withdrawal = $this->repository->load(WithdrawalId::fromString($command->id));
         $withdrawal->reject($command->reason, $this->clock->now());
         $this->repository->save($withdrawal);
     }

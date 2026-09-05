@@ -11,6 +11,7 @@ use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 final readonly class PaymentRequestedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(
+        public string $paymentId,
         public string $orderId,
         public int $amountInCents,
         public string $reference,

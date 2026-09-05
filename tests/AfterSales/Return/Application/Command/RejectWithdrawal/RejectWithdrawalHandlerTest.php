@@ -8,9 +8,9 @@ use AfterSales\Return\Application\Command\RejectWithdrawal\RejectWithdrawal;
 use AfterSales\Return\Application\IntegrationEvent\WithdrawalRejected\WithdrawalRejectedIntegrationEvent;
 use AfterSales\Return\Domain\Exception\WithdrawalNotFoundException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
+use AfterSales\Return\Domain\ValueObject\WithdrawalId;
 use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RejectWithdrawalHandlerTest extends AbstractIntegrationTestCase
@@ -25,7 +25,7 @@ final class RejectWithdrawalHandlerTest extends AbstractIntegrationTestCase
         $reason = WithdrawalBuilder::sample('reason');
 
         // When
-        $this->dispatch(new RejectWithdrawal($builder['orderId'], $reason));
+        $this->dispatch(new RejectWithdrawal($withdrawal->id->toString(), $reason));
 
         // Then
         $event = $this->publishedEventOf(WithdrawalRejectedIntegrationEvent::class);
@@ -38,12 +38,11 @@ final class RejectWithdrawalHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRejected(): void
     {
         // Given
-        $builder = WithdrawalBuilder::new()->received()->rejected();
-        $withdrawal = $builder->create();
+        $withdrawal = WithdrawalBuilder::new()->received()->rejected()->create();
         $this->store($withdrawal);
 
         // When
-        $this->dispatch(new RejectWithdrawal($builder['orderId'], WithdrawalBuilder::sample('reason')));
+        $this->dispatch(new RejectWithdrawal($withdrawal->id->toString(), WithdrawalBuilder::sample('reason')));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -53,27 +52,26 @@ final class RejectWithdrawalHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotReceived(): void
     {
         // Given
-        $builder = WithdrawalBuilder::new();
-        $withdrawal = $builder->create();
+        $withdrawal = WithdrawalBuilder::new()->create();
         $this->store($withdrawal);
 
         // Then
         $this->expectException(WithdrawalNotReceivedException::class);
 
         // When
-        $this->dispatch(new RejectWithdrawal($builder['orderId'], WithdrawalBuilder::sample('reason')));
+        $this->dispatch(new RejectWithdrawal($withdrawal->id->toString(), WithdrawalBuilder::sample('reason')));
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $id = WithdrawalId::generate()->toString();
 
         // Then
         $this->expectException(WithdrawalNotFoundException::class);
 
         // When
-        $this->dispatch(new RejectWithdrawal($orderId, WithdrawalBuilder::sample('reason')));
+        $this->dispatch(new RejectWithdrawal($id, WithdrawalBuilder::sample('reason')));
     }
 }

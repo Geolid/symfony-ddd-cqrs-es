@@ -28,7 +28,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itDeliversWhenDispatched(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->create();
         $this->store($order);
 
         // When
@@ -36,7 +36,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(OrderStatus::COMPLETED, $result->status);
+        self::assertSame(OrderStatus::DELIVERED, $result->status);
     }
 
     #[Test]

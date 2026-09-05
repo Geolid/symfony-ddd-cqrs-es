@@ -24,8 +24,6 @@ use Symfony\Component\Clock\Clock;
  *     failedAt: \DateTimeImmutable,
  *     capturedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
- *     refundInitiatedAt: \DateTimeImmutable,
- *     refundConfirmedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Payment, Attributes>
@@ -93,24 +91,6 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function refundInitiated(?\DateTimeImmutable $refundInitiatedAt = null): self
-    {
-        $builder = null !== $refundInitiatedAt ? $this->withAttributes(refundInitiatedAt: $refundInitiatedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->initiateRefund($builder['refundInitiatedAt']),
-        );
-    }
-
-    public function refundConfirmed(?\DateTimeImmutable $refundConfirmedAt = null): self
-    {
-        $builder = null !== $refundConfirmedAt ? $this->withAttributes(refundConfirmedAt: $refundConfirmedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->confirmRefund($builder['refundConfirmedAt']),
-        );
-    }
-
     protected static function defaults(): array
     {
         return [
@@ -123,8 +103,6 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'capturedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'refundInitiatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'refundConfirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
         ];
     }
 

@@ -9,7 +9,6 @@ use AfterSales\Return\Domain\Repository\WithdrawalRepositoryInterface;
 use AfterSales\Return\Domain\ValueObject\WithdrawalId;
 use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelWithdrawalRepositoryTest extends AbstractIntegrationTestCase
@@ -44,7 +43,7 @@ final class PatchlevelWithdrawalRepositoryTest extends AbstractIntegrationTestCa
         $this->expectException(WithdrawalNotFoundException::class);
 
         // When
-        $this->repository->load(WithdrawalId::forOrder(Uuid::uuid7()->toString()));
+        $this->repository->load(WithdrawalId::generate());
     }
 
     #[Test]
@@ -65,7 +64,7 @@ final class PatchlevelWithdrawalRepositoryTest extends AbstractIntegrationTestCa
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(WithdrawalId::forOrder(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has(WithdrawalId::generate());
 
         // Then
         self::assertFalse($notExists);

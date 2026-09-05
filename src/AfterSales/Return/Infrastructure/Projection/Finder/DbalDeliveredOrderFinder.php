@@ -8,6 +8,7 @@ use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundExceptio
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderResult;
 use AfterSales\Return\Infrastructure\Projection\Projector\DbalDeliveredOrderProjector;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
@@ -23,6 +24,16 @@ final class DbalDeliveredOrderFinder extends AbstractDbalFinder implements Deliv
                 $qb->andWhere('order_id = :orderId')->setParameter('orderId', $orderId);
             },
         )->one() ?? throw DeliveredOrderResultNotFoundException::forId($orderId);
+    }
+
+    public function byIds(string ...$orderIds): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($orderIds): void {
+                $qb->andWhere('order_id IN (:orderIds)')
+                    ->setParameter('orderIds', $orderIds, ArrayParameterType::STRING);
+            },
+        );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void

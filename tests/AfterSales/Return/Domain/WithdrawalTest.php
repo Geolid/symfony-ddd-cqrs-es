@@ -37,7 +37,7 @@ final class WithdrawalTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->orderId = WithdrawalBuilder::sample('orderId');
-        $this->id = WithdrawalId::forOrder($this->orderId);
+        $this->id = WithdrawalId::generate();
         $this->buyerId = WithdrawalBuilder::sample('buyerId');
         $this->shippingAddress = WithdrawalBuilder::sample('shippingAddress');
         $this->deliveredAt = WithdrawalBuilder::sample('deliveredAt');

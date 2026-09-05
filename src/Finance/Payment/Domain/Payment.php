@@ -8,8 +8,7 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
-use Finance\Payment\Domain\Event\PaymentRefunded;
-use Finance\Payment\Domain\Event\PaymentRefundInitiated;
+use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentId;
@@ -80,7 +79,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function fail(\DateTimeImmutable $failedAt): void
     {
-        if (!$this->state->isRequested()) {
+        if (!$this->state->isRequested() && !$this->state->isAuthorized()) {
             return;
         }
 
@@ -124,35 +123,13 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if ($this->state->isCaptured()) {
-            $this->initiateRefund($cancelledAt);
+            $this->recordThat(new PaymentRefundRequired(
+                id: $this->id->toString(),
+                orderId: $this->orderId,
+                reference: $this->reference->value,
+                requiredAt: $cancelledAt,
+            ));
         }
-    }
-
-    public function initiateRefund(\DateTimeImmutable $initiatedAt): void
-    {
-        if (!$this->state->isCaptured()) {
-            return;
-        }
-
-        $this->recordThat(new PaymentRefundInitiated(
-            id: $this->id->toString(),
-            orderId: $this->orderId,
-            reference: $this->reference->value,
-            initiatedAt: $initiatedAt,
-        ));
-    }
-
-    public function confirmRefund(\DateTimeImmutable $refundedAt): void
-    {
-        if (!$this->state->isRefundInitiated()) {
-            return;
-        }
-
-        $this->recordThat(new PaymentRefunded(
-            id: $this->id->toString(),
-            orderId: $this->orderId,
-            refundedAt: $refundedAt,
-        ));
     }
 
     #[Apply]
@@ -196,14 +173,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyRefundInitiated(PaymentRefundInitiated $event): void
+    private function applyRefundRequired(PaymentRefundRequired $event): void
     {
-        $this->state = PaymentState::REFUND_INITIATED;
-    }
-
-    #[Apply]
-    private function applyRefunded(PaymentRefunded $event): void
-    {
-        $this->state = PaymentState::REFUNDED;
     }
 }

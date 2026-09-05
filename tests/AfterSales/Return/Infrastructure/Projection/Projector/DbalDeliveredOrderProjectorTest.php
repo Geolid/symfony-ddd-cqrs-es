@@ -19,7 +19,7 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $builder = OrderBuilder::new()->confirmed()->dispatched()->delivered();
+        $builder = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered();
         $order = $builder->create();
 
         // When

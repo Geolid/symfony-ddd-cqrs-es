@@ -9,7 +9,7 @@ use Shared\Application\Command\CommandInterface;
 final readonly class RejectWithdrawal implements CommandInterface
 {
     public function __construct(
-        public string $orderId,
+        public string $id,
         public string $reason,
     ) {
     }

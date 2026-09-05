@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use AfterSales\Return\Application\Exception\ActiveWithdrawalAlreadyExistsException;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
@@ -25,7 +26,6 @@ use Sales\Buyer\Application\Exception\BuyerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -44,6 +44,7 @@ return static function (ContainerConfigurator $container): void {
             CannotRequestWithdrawalForAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             WithdrawalWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
             WithdrawalNotReceivedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ActiveWithdrawalAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Catalog
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -70,7 +71,6 @@ return static function (ContainerConfigurator $container): void {
             BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
-            OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 

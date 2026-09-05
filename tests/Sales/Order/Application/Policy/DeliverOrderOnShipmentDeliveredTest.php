@@ -20,7 +20,7 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
     public function itDelivers(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->create();
         $this->store($order);
 
         // When
@@ -28,6 +28,6 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
 
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
-        self::assertSame(OrderStatus::COMPLETED, $result->status);
+        self::assertSame(OrderStatus::DELIVERED, $result->status);
     }
 }

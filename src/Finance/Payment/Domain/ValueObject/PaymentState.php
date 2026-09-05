@@ -11,8 +11,6 @@ enum PaymentState: string
     case FAILED = 'failed';
     case CAPTURED = 'captured';
     case CANCELLED = 'cancelled';
-    case REFUND_INITIATED = 'refund_initiated';
-    case REFUNDED = 'refunded';
 
     public function isRequested(): bool
     {
@@ -37,15 +35,5 @@ enum PaymentState: string
     public function isCancelled(): bool
     {
         return self::CANCELLED === $this;
-    }
-
-    public function isRefundInitiated(): bool
-    {
-        return self::REFUND_INITIATED === $this;
-    }
-
-    public function isRefunded(): bool
-    {
-        return self::REFUNDED === $this;
     }
 }
