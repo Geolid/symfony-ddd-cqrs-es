@@ -27,10 +27,6 @@ final readonly class ListWithdrawalEligibleOrdersHandler
      */
     public function __invoke(ListWithdrawalEligibleOrders $query): array
     {
-        if ([] === $query->orderIds) {
-            return [];
-        }
-
         /** @var array<string, DeliveredOrderResult> $orders */
         $orders = iterator_to_array($this->orderFinder->byIds(...$query->orderIds)->indexBy(
             static fn (DeliveredOrderResult $result): string => $result->orderId,

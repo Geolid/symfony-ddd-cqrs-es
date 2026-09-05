@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AfterSales\Tests\Return\Application\Query\ListWithdrawalEligibleOrders;
 
 use AfterSales\Return\Application\Query\ListWithdrawalEligibleOrders\ListWithdrawalEligibleOrders;
+use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -18,14 +19,17 @@ final class ListWithdrawalEligibleOrdersHandlerTest extends AbstractIntegrationT
         // Given
         $eligible = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
         $expired = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered(Clock::get()->now()->modify('-15 days'))->create();
-        $this->store($eligible, $expired);
+        $withActiveWithdrawal = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $withdrawal = WithdrawalBuilder::new()->withOrderId($withActiveWithdrawal->id->toString())->create();
+        $this->store($eligible, $expired, $withActiveWithdrawal, $withdrawal);
 
         // When
-        $results = $this->ask(new ListWithdrawalEligibleOrders([$eligible->id->toString(), $expired->id->toString()]));
+        $results = $this->ask(new ListWithdrawalEligibleOrders([$eligible->id->toString(), $expired->id->toString(), $withActiveWithdrawal->id->toString()]));
 
         // Then
         self::assertTrue($results[$eligible->id->toString()]);
         self::assertFalse($results[$expired->id->toString()]);
+        self::assertFalse($results[$withActiveWithdrawal->id->toString()]);
     }
 
     #[Test]
