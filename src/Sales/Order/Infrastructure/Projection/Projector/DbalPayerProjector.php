@@ -33,7 +33,7 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['address' => $this->toAddressData($event->address)],
+            ['address' => $this->addressRow($event->address)],
             ['payer_id' => $event->payerId],
             ['address' => Types::JSON],
         );
@@ -65,7 +65,7 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
      *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function toAddressData(array $address): array
+    private function addressRow(array $address): array
     {
         return [
             'recipient_name' => $address['recipientName'],

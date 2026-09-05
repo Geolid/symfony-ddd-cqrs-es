@@ -37,8 +37,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'reference' => $event->reference,
                 'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'origin' => $this->toAddressData($event->origin),
-                'destination' => $this->toAddressData($event->destination),
+                'origin' => $this->addressRow($event->origin),
+                'destination' => $this->addressRow($event->destination),
                 'created_at' => $event->createdAt,
             ],
             ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
@@ -142,7 +142,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function toAddressData(PostalAddress $address): array
+    private function addressRow(PostalAddress $address): array
     {
         return [
             'recipient_name' => $address->recipientName,
