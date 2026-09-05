@@ -8,6 +8,7 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
+use Finance\Payment\Domain\Event\PaymentRefundRejected;
 use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
@@ -132,6 +133,15 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
     }
 
+    public function rejectRefund(\DateTimeImmutable $rejectedAt): void
+    {
+        $this->recordThat(new PaymentRefundRejected(
+            id: $this->id->toString(),
+            orderId: $this->orderId,
+            rejectedAt: $rejectedAt,
+        ));
+    }
+
     #[Apply]
     private function applyRequested(PaymentRequested $event): void
     {
@@ -174,6 +184,11 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Apply]
     private function applyRefundRequired(PaymentRefundRequired $event): void
+    {
+    }
+
+    #[Apply]
+    private function applyRefundRejected(PaymentRefundRejected $event): void
     {
     }
 }

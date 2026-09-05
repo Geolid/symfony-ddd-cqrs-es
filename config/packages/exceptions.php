@@ -11,6 +11,10 @@ use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlr
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
+use Finance\Payment\Application\PSP\PaymentGatewayException;
+use Finance\Payment\Application\PSP\PaymentTransientFailureException;
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
+use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
@@ -57,6 +61,8 @@ return static function (ContainerConfigurator $container): void {
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentTrackingNumberAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
+            CarrierTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
+            CarrierGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -82,6 +88,8 @@ return static function (ContainerConfigurator $container): void {
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             PlacedOrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
+            PaymentTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
+            PaymentGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

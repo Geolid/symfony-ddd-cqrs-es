@@ -7,10 +7,14 @@ namespace Finance\Tests\Payment\Application\Policy;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\CapturePaymentOnShipmentPrepared;
+use Finance\Payment\Application\PSP\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Application\PSP\PaymentTransientFailureException;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
+use Patchlevel\EventSourcing\Message\Message;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
@@ -24,6 +28,8 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
 
     private PaymentFinderInterface $finder;
 
+    private CapturePaymentOnShipmentPrepared $policy;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -32,6 +38,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $this->replace(PaymentGatewayInterface::class, $this->paymentGateway);
 
         $this->finder = $this->service(PaymentFinderInterface::class);
+        $this->policy = $this->service(CapturePaymentOnShipmentPrepared::class);
     }
 
     #[Test]
@@ -114,5 +121,40 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         // Then
         $result = $this->finder->ofReference($paymentBuilder['reference']->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
+    }
+
+    #[Test]
+    #[AllowMockObjectsWithoutExpectations]
+    public function itIgnoresFatalGatewayFailure(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $payment = $paymentBuilder->create();
+        $this->store($order, $payment);
+        $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
+        $error = PaymentFatalFailureException::forReason('rejected');
+
+        // When
+        $this->policy->onGatewayFailure($message, $error);
+
+        // Then
+        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(PaymentStatus::FAILED, $result->status);
+    }
+
+    #[Test]
+    #[AllowMockObjectsWithoutExpectations]
+    public function itRethrowsTransientGatewayFailure(): void
+    {
+        // Given
+        $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), Clock::get()->now()));
+        $error = PaymentTransientFailureException::forReason('unreachable');
+
+        // Then
+        $this->expectExceptionObject($error);
+
+        // When
+        $this->policy->onGatewayFailure($message, $error);
     }
 }

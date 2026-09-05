@@ -10,12 +10,14 @@ use PHPat\Selector\SelectorInterface;
 use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
+use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy;
 use Shared\Application\Processor;
 use Shared\Infrastructure\Projection\Projector;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Tools\PHPat\Selector\ConcreteImplementation;
+use Tools\PHPat\Selector\DependsOnClass;
 
 final class SubscriptionTest
 {
@@ -29,13 +31,16 @@ final class SubscriptionTest
     }
 
     #[TestRule]
-    public function neverHandlesOwnFailure(): Rule
+    public function neverHandlesOwnFailureWithoutCompensation(): Rule
     {
         return PHPat::rule()
-            ->classes($this->subscribers())
+            ->classes(Selector::AllOf(
+                $this->subscribers(),
+                Selector::Not(new DependsOnClass(CommandBusInterface::class)),
+            ))
             ->shouldNot()->dependOn()
             ->classes(Selector::classname(OnFailed::class))
-            ->because('A silently skipped failure lets state drift from the truth it should reflect.');
+            ->because('A silently skipped failure must still dispatch a compensating command — logging alone lets state drift from the truth it should reflect.');
     }
 
     #[TestRule]

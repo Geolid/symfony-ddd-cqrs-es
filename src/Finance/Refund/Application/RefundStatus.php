@@ -8,4 +8,5 @@ enum RefundStatus: string
 {
     case INITIATED = 'initiated';
     case REFUNDED = 'refunded';
+    case FAILED = 'failed';
 }

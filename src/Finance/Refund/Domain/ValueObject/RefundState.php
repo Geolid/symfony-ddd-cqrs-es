@@ -8,6 +8,7 @@ enum RefundState: string
 {
     case INITIATED = 'initiated';
     case REFUNDED = 'refunded';
+    case FAILED = 'failed';
 
     public function isInitiated(): bool
     {

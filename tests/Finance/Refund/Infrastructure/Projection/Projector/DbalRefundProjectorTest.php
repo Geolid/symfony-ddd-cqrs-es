@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{payment_id: string, order_id: string, amount_in_cents: int|string, status: string, initiated_at: string, refunded_at: ?string}
+ * @phpstan-type Row array{payment_id: string, order_id: string, amount_in_cents: int|string, status: string, initiated_at: string, refunded_at: ?string, failed_at: ?string}
  */
 final class DbalRefundProjectorTest extends AbstractIntegrationTestCase
 {
@@ -34,6 +34,7 @@ final class DbalRefundProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($builder['amount']->cents, (int) $row['amount_in_cents']);
         self::assertSame(RefundStatus::INITIATED->value, $row['status']);
         self::assertNull($row['refunded_at']);
+        self::assertNull($row['failed_at']);
     }
 
     #[Test]
@@ -58,6 +59,28 @@ final class DbalRefundProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(RefundStatus::INITIATED->value, $otherRow['status']);
     }
 
+    #[Test]
+    public function itProjectsOnRefundFailed(): void
+    {
+        // Given
+        $other = RefundBuilder::new()->create();
+        $this->store($other);
+        $refund = RefundBuilder::new()->failed()->create();
+
+        // When
+        $this->store($refund);
+
+        // Then
+        $row = $this->fetchRow($refund->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(RefundStatus::FAILED->value, $row['status']);
+        self::assertNotNull($row['failed_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(RefundStatus::INITIATED->value, $otherRow['status']);
+    }
+
     /**
      * @return Row|false
      */
@@ -67,7 +90,7 @@ final class DbalRefundProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT payment_id, order_id, amount_in_cents, status, initiated_at, refunded_at FROM %s WHERE id = :id', DbalRefundProjector::TABLE),
+            \sprintf('SELECT payment_id, order_id, amount_in_cents, status, initiated_at, refunded_at, failed_at FROM %s WHERE id = :id', DbalRefundProjector::TABLE),
             ['id' => $id],
         );
     }

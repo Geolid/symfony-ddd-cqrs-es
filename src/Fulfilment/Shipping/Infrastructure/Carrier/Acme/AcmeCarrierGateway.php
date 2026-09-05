@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Carrier\Acme;
 
+use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -18,7 +20,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     }
 
     /**
-     * @throws AcmeClientException
+     * @throws CarrierGatewayException
      */
     public function manifest(string $shipmentId, PostalAddress $origin, PostalAddress $destination): string
     {
@@ -31,14 +33,14 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $trackingNumber = $response['trackingNumber'] ?? null;
 
         if (!\is_string($trackingNumber) || '' === $trackingNumber) {
-            throw AcmeClientException::invalidResponse(self::SHIPMENT_PATH, 'A manifest response carries a non-empty "trackingNumber".');
+            throw CarrierFatalFailureException::forReason('A manifest response carries a non-empty "trackingNumber".');
         }
 
         return $trackingNumber;
     }
 
     /**
-     * @throws AcmeClientException
+     * @throws CarrierGatewayException
      */
     public function checkStatus(string $reference): CarrierGatewayStatus
     {
@@ -47,13 +49,13 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         $status = $response['status'] ?? null;
 
         if (!\is_string($status) || '' === $status) {
-            throw AcmeClientException::invalidResponse(self::TRACKER_PATH, 'A status response carries a non-empty "status".');
+            throw CarrierFatalFailureException::forReason('A status response carries a non-empty "status".');
         }
 
         try {
             return CarrierGatewayStatus::from($status);
         } catch (\ValueError) {
-            throw AcmeClientException::invalidResponse(self::TRACKER_PATH, \sprintf('A status response carries a recognized "status", got "%s".', $status));
+            throw CarrierFatalFailureException::forReason(\sprintf('A status response carries a recognized "status", got "%s".', $status));
         }
     }
 

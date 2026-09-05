@@ -6,12 +6,15 @@ namespace Finance\Payment\Application\Policy;
 
 use Finance\Payment\Application\Command\CapturePayment\CapturePayment;
 use Finance\Payment\Application\Command\FailPayment\FailPayment;
+use Finance\Payment\Application\PSP\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
+use Patchlevel\EventSourcing\Attribute\OnFailed;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -51,5 +54,26 @@ final readonly class CapturePaymentOnShipmentPrepared
         if ($command instanceof CommandInterface) {
             $this->commandBus->dispatch($command);
         }
+    }
+
+    /**
+     * A rejected capture request will never succeed by retrying as-is (a malformed
+     * payload, a declined reference) — it's marked failed the same way a gateway-side
+     * decline already is, instead of leaving the Payment stuck AUTHORIZED forever.
+     *
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[OnFailed]
+    public function onGatewayFailure(Message $message, \Throwable $error): void
+    {
+        if (!$error instanceof PaymentFatalFailureException) {
+            throw $error;
+        }
+
+        $event = $message->event();
+        \assert($event instanceof ShipmentPreparedIntegrationEvent);
+
+        $this->commandBus->dispatch(new FailPayment(PaymentId::forOrder($event->reference)->toString()));
     }
 }

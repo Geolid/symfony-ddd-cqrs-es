@@ -19,6 +19,7 @@ use Symfony\Component\Clock\Clock;
  *     amount: Money,
  *     initiatedAt: \DateTimeImmutable,
  *     refundedAt: \DateTimeImmutable,
+ *     failedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Refund, Attributes>
@@ -54,6 +55,15 @@ final class RefundBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function failed(?\DateTimeImmutable $failedAt = null): self
+    {
+        $builder = null !== $failedAt ? $this->withAttributes(failedAt: $failedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Refund $refund, self $builder) => $refund->fail($builder['failedAt']),
+        );
+    }
+
     protected static function defaults(): array
     {
         return [
@@ -62,6 +72,7 @@ final class RefundBuilder extends AbstractAggregateBuilder
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'initiatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
             'refundedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
         ];
     }
 

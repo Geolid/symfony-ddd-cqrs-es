@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Infrastructure\Carrier\Acme;
 
+use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
+use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
 use Fulfilment\Shipping\Infrastructure\Carrier\Acme\AcmeCarrierGateway;
 use Fulfilment\Shipping\Infrastructure\Carrier\Acme\AcmeClient;
-use Fulfilment\Shipping\Infrastructure\Carrier\Acme\AcmeClientException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -61,11 +62,11 @@ final class AcmeCarrierGatewayTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('provideUnreachableCarriers')]
-    public function itThrowsWhenCarrierUnreachable(callable|MockResponse $response): void
+    #[DataProvider('provideTransientFailures')]
+    public function itThrowsTransientWhenCarrierUnreachable(callable|MockResponse $response): void
     {
         // Then
-        $this->expectException(AcmeClientException::class);
+        $this->expectException(CarrierTransientFailureException::class);
 
         // When
         $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
@@ -74,18 +75,28 @@ final class AcmeCarrierGatewayTest extends TestCase
     /**
      * @return iterable<string, array{callable|MockResponse}>
      */
-    public static function provideUnreachableCarriers(): iterable
+    public static function provideTransientFailures(): iterable
     {
         yield 'connection refused' => [static fn () => throw new TransportException('Connection refused')];
         yield 'carrier out of order' => [self::jsonResponse([], 500)];
     }
 
     #[Test]
-    #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsWhenManifestResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenManifestRequestRejected(): void
     {
         // Then
-        $this->expectException(AcmeClientException::class);
+        $this->expectException(CarrierFatalFailureException::class);
+
+        // When
+        $this->gateway(self::jsonResponse(['error' => 'invalid address'], 400))->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreadableResponses')]
+    public function itThrowsFatalWhenManifestResponseUnreadable(MockResponse $response): void
+    {
+        // Then
+        $this->expectException(CarrierFatalFailureException::class);
 
         // When
         $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
@@ -118,10 +129,10 @@ final class AcmeCarrierGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenCheckingStatusAndCarrierUnreachable(): void
+    public function itThrowsTransientWhenCheckingStatusAndCarrierUnreachable(): void
     {
         // Then
-        $this->expectException(AcmeClientException::class);
+        $this->expectException(CarrierTransientFailureException::class);
 
         // When
         $this->gateway(static fn () => throw new TransportException('Connection refused'))->checkStatus('ACME-4Q7X2K9');
@@ -129,23 +140,23 @@ final class AcmeCarrierGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableStatusResponses')]
-    public function itThrowsWhenStatusResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenStatusResponseUnreadable(MockResponse $response): void
     {
         // Then
-        $this->expectException(AcmeClientException::class);
+        $this->expectException(CarrierFatalFailureException::class);
 
         // When
         $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
     }
 
     #[Test]
-    public function itThrowsWhenStatusUnrecognized(): void
+    public function itThrowsFatalWhenStatusUnrecognized(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'ACME-4Q7X2K9', 'status' => 'teleported']);
 
         // Then
-        $this->expectException(AcmeClientException::class);
+        $this->expectException(CarrierFatalFailureException::class);
 
         // When
         $this->gateway($response)->checkStatus('ACME-4Q7X2K9');
