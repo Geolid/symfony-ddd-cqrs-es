@@ -11,6 +11,7 @@ use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\ShipmentManifester;
+use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,6 +25,8 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
 {
     private CarrierGatewayInterface&MockObject $carrier;
 
+    private ShipmentFinderInterface $finder;
+
     private ShipmentManifester $service;
 
     protected function setUp(): void
@@ -31,8 +34,9 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->carrier = $this->createMock(CarrierGatewayInterface::class);
+        $this->finder = $this->service(ShipmentFinderInterface::class);
         $this->service = new ShipmentManifester(
-            $this->service(ShipmentFinderInterface::class),
+            $this->finder,
             $this->service(PaymentCaptureFinderInterface::class),
             $this->carrier,
             $this->service(CommandBusInterface::class),
@@ -58,6 +62,9 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($trackingNumber, $result);
+        $manifested = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $manifested->status);
+        self::assertSame($trackingNumber, $manifested->trackingNumber);
     }
 
     #[Test]
@@ -75,6 +82,9 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($trackingNumber, $result);
+        $manifested = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $manifested->status);
+        self::assertSame($trackingNumber, $manifested->trackingNumber);
     }
 
     #[Test]
@@ -94,7 +104,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->cancelled()->create();
+        $shipment = ShipmentBuilder::new()->withDirection(ShipmentDirection::RETURN)->prepared()->cancelled()->create();
         $this->store($shipment);
         $this->carrier->expects(self::never())->method('manifest');
 

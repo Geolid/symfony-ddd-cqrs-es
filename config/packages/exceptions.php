@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use AfterSales\Return\Application\Exception\ActiveWithdrawalAlreadyExistsException;
+use AfterSales\Return\Application\Exception\WithdrawalRequestInProgressException;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
@@ -46,6 +47,7 @@ return static function (ContainerConfigurator $container): void {
             WithdrawalWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
             WithdrawalNotReceivedException::class => ['log_level' => 'info', 'status_code' => 409],
             ActiveWithdrawalAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
+            WithdrawalRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Catalog
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],

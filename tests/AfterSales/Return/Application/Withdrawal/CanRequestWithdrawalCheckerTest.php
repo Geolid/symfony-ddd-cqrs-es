@@ -81,14 +81,17 @@ final class CanRequestWithdrawalCheckerTest extends AbstractIntegrationTestCase
     {
         // Given
         $eligible = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
-        $ineligible = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered(Clock::get()->now()->modify('-15 days'))->create();
-        $this->store($eligible, $ineligible);
+        $expired = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered(Clock::get()->now()->modify('-15 days'))->create();
+        $withActiveWithdrawal = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $withdrawal = WithdrawalBuilder::new()->withOrderId($withActiveWithdrawal->id->toString())->create();
+        $this->store($eligible, $expired, $withActiveWithdrawal, $withdrawal);
 
         // When
-        $results = $this->checker->forOrders($eligible->id->toString(), $ineligible->id->toString());
+        $results = $this->checker->forOrders($eligible->id->toString(), $expired->id->toString(), $withActiveWithdrawal->id->toString());
 
         // Then
         self::assertTrue($results[$eligible->id->toString()]);
-        self::assertFalse($results[$ineligible->id->toString()]);
+        self::assertFalse($results[$expired->id->toString()]);
+        self::assertFalse($results[$withActiveWithdrawal->id->toString()]);
     }
 }

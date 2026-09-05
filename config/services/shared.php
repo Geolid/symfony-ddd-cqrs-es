@@ -17,6 +17,7 @@ use Shared\Infrastructure\Messaging\SymfonyQueryBus;
 use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
 use Shared\Infrastructure\Sentry\AppIdTagger;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\Lock\LockFactory;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -37,6 +38,7 @@ return static function (ContainerConfigurator $container): void {
         // Fetched by type from the container; must be public for that.
         $commandBusAlias->public();
         $queryBusAlias->public();
+        $services->alias(LockFactory::class, 'lock.factory')->public();
     }
 
     if ('prod' === $container->env()) {
