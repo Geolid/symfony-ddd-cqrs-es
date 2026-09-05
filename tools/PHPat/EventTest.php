@@ -44,6 +44,10 @@ final class EventTest
                     Selector::isEnum(),
                     Selector::withFilepath('#/Domain/#', true),
                 ),
+                Selector::AllOf(
+                    Selector::Not(Selector::isEnum()),
+                    Selector::withFilepath('#/ValueObject/#', true),
+                ),
                 ...$this->esMetadataSelectors(),
             )
             ->because('A recorded fact must decode forever despite other types changing, and its personal data must stay erasable without rewriting history.');

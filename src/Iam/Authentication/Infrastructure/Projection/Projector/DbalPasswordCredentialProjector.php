@@ -30,7 +30,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $this->connection->insert(self::TABLE, [
             'id' => $event->id,
             'identity_id' => $event->identityId,
-            'login' => $event->login,
+            'login' => $event->login->value,
             'password_hash' => $event->passwordHash,
             'defined_at' => $event->definedAt,
             'password_changed_at' => $event->definedAt,
