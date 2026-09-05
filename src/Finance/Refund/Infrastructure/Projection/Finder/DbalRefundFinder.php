@@ -29,7 +29,8 @@ final class DbalRefundFinder extends AbstractDbalFinder implements RefundFinderI
     {
         $qb->select('id', 'payment_id', 'order_id', 'amount_in_cents', 'status', 'initiated_at', 'refunded_at')
             ->from(DbalRefundProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->orderBy('initiated_at', 'ASC')
+            ->addOrderBy('id', 'ASC');
     }
 
     protected function resultClass(): string

@@ -73,6 +73,28 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     }
 
     #[Test]
+    public function itIgnoresWhenGatewayReturnsUnexpectedStatus(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $payment = $paymentBuilder->create();
+        $this->store($order, $payment);
+        $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::AUTHORIZED);
+
+        // When
+        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(
+            Uuid::uuid7()->toString(),
+            $order->id->toString(),
+            Clock::get()->now(),
+        ));
+
+        // Then
+        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
+    }
+
+    #[Test]
     public function itFailsPaymentWhenGatewayDeclines(): void
     {
         // Given

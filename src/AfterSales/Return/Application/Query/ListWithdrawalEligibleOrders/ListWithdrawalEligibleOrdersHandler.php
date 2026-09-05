@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace AfterSales\Return\Application\Withdrawal;
+namespace AfterSales\Return\Application\Query\ListWithdrawalEligibleOrders;
 
-use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderResult;
 use AfterSales\Return\Application\Finder\Withdrawal\WithdrawalFinderInterface;
 use AfterSales\Return\Application\Finder\Withdrawal\WithdrawalResult;
 use AfterSales\Return\Domain\Specification\WithdrawalWindowExpiredSpecification;
 use Psr\Clock\ClockInterface;
+use Shared\Application\Query\QueryHandler;
 
-final readonly class CanRequestWithdrawalChecker implements CanRequestWithdrawalInterface
+#[QueryHandler]
+final readonly class ListWithdrawalEligibleOrdersHandler
 {
     public function __construct(
         private DeliveredOrderFinderInterface $orderFinder,
@@ -21,43 +22,28 @@ final readonly class CanRequestWithdrawalChecker implements CanRequestWithdrawal
     ) {
     }
 
-    public function forOrder(string $orderId): bool
-    {
-        try {
-            $order = $this->orderFinder->ofId($orderId);
-        } catch (DeliveredOrderResultNotFoundException) {
-            return false;
-        }
-
-        if ($this->withdrawalFinder->byOrder($orderId)->active()->count() > 0) {
-            return false;
-        }
-
-        return !new WithdrawalWindowExpiredSpecification($this->clock->now())->isSatisfiedBy($order->deliveredAt);
-    }
-
     /**
      * @return array<string, bool>
      */
-    public function forOrders(string ...$orderIds): array
+    public function __invoke(ListWithdrawalEligibleOrders $query): array
     {
-        if ([] === $orderIds) {
+        if ([] === $query->orderIds) {
             return [];
         }
 
         /** @var array<string, DeliveredOrderResult> $orders */
-        $orders = iterator_to_array($this->orderFinder->byIds(...$orderIds)->indexBy(
+        $orders = iterator_to_array($this->orderFinder->byIds(...$query->orderIds)->indexBy(
             static fn (DeliveredOrderResult $result): string => $result->orderId,
         ));
 
-        $activeOrderIds = iterator_to_array($this->withdrawalFinder->byOrders(...$orderIds)->active()->indexBy(
+        $activeOrderIds = iterator_to_array($this->withdrawalFinder->byOrders(...$query->orderIds)->active()->indexBy(
             static fn (WithdrawalResult $result): string => $result->orderId,
         ));
 
         $now = $this->clock->now();
 
         return array_combine(
-            $orderIds,
+            $query->orderIds,
             array_map(
                 static function (string $orderId) use ($orders, $activeOrderIds, $now): bool {
                     $order = $orders[$orderId] ?? null;
@@ -68,7 +54,7 @@ final readonly class CanRequestWithdrawalChecker implements CanRequestWithdrawal
 
                     return !new WithdrawalWindowExpiredSpecification($now)->isSatisfiedBy($order->deliveredAt);
                 },
-                $orderIds,
+                $query->orderIds,
             ),
         );
     }

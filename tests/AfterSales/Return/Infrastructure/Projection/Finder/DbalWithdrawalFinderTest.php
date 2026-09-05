@@ -37,6 +37,26 @@ final class DbalWithdrawalFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFiltersByOrders(): void
+    {
+        // Given
+        $other = WithdrawalBuilder::new()->create();
+        $first = WithdrawalBuilder::new()->create();
+        $second = WithdrawalBuilder::new()->create();
+        $this->store($other, $first, $second);
+
+        // When
+        $results = iterator_to_array($this->finder->byOrders($first->orderId, $second->orderId));
+
+        // Then
+        self::assertCount(2, $results);
+        self::assertEqualsCanonicalizing(
+            [$first->id->toString(), $second->id->toString()],
+            array_map(static fn ($result): string => $result->id, $results),
+        );
+    }
+
+    #[Test]
     public function itFiltersActive(): void
     {
         // Given

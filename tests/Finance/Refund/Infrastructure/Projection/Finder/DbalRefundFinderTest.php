@@ -11,6 +11,7 @@ use Finance\Tests\Refund\Support\Builder\RefundBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class DbalRefundFinderTest extends AbstractIntegrationTestCase
 {
@@ -27,7 +28,7 @@ final class DbalRefundFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = RefundBuilder::new()->create();
+        $other = RefundBuilder::new()->withInitiatedAt(Clock::get()->now()->modify('-1 day'))->create();
         $builder = RefundBuilder::new();
         $refund = $builder->create();
         $this->store($other, $refund);
