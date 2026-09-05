@@ -10,8 +10,13 @@ interface CarrierGatewayInterface
 {
     /**
      * @return string the carrier's own tracking reference
+     *
+     * @throws CarrierGatewayException
      */
     public function manifest(string $shipmentId, PostalAddress $origin, PostalAddress $destination): string;
 
+    /**
+     * @throws CarrierGatewayException
+     */
     public function checkStatus(string $reference): CarrierGatewayStatus;
 }

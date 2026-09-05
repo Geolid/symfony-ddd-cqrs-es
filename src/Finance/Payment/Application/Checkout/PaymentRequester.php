@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Checkout;
 
+use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
-use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Shared\Application\Command\CommandBusInterface;

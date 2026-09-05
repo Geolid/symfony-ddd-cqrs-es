@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\Finder\Order\OrderResult;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;

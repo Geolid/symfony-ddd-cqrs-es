@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Listing\Application\Command\PublishProduct;
 
+use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Listing\Application\Command\PublishProduct\PublishProduct;
-use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Listing\Domain\ValueObject\ProductUniqueKey;

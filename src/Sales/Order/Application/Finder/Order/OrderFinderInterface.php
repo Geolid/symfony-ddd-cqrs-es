@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Order\Application\Finder\Order;
 
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Shared\Application\Finder\IterableFinderInterface;
 
 /**

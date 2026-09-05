@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Buyer\Application\Finder\Buyer;
 
-use Sales\Buyer\Application\Exception\BuyerResultNotFoundException;
+use Sales\Buyer\Application\Finder\Buyer\Exception\BuyerResultNotFoundException;
 
 interface BuyerFinderInterface
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Refund\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
+use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
 use Finance\Refund\Application\Finder\RequestedPayment\RequestedPaymentFinderInterface;
 use Finance\Refund\Application\Finder\RequestedPayment\RequestedPaymentResult;
 use Finance\Refund\Infrastructure\Projection\Projector\DbalRequestedPaymentProjector;

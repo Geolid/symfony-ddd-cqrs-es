@@ -6,7 +6,7 @@ namespace Finance\Payment\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
-use Finance\Payment\Application\Exception\PaymentResultNotFoundException;
+use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;

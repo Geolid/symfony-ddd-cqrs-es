@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Infrastructure\Checkout;
 
+use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
-use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Infrastructure\Checkout\LockingPaymentRequester;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;

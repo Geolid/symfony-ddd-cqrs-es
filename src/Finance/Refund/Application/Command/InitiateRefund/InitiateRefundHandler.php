@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Refund\Application\Command\InitiateRefund;
 
-use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
+use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
 use Finance\Refund\Application\Finder\RequestedPayment\RequestedPaymentFinderInterface;
 use Finance\Refund\Domain\Exception\RefundAlreadyExistsException;
 use Finance\Refund\Domain\Refund;

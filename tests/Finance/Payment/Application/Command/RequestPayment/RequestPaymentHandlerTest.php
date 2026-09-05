@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Command\RequestPayment;
 
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
-use Finance\Payment\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\ValueObject\PaymentId;

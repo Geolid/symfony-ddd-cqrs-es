@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Infrastructure\Projection\Finder;
 
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

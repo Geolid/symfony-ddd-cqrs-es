@@ -6,7 +6,7 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Exception\OrderResultNotFoundException;
+use Sales\Order\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;

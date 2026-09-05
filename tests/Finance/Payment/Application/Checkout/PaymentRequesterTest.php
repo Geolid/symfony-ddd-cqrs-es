@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Checkout;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
+use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
 use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentSession;
-use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\Query\GetPaymentByReference\GetPaymentByReference;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Infrastructure\Checkout;
 
+use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
-use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
 use Shared\Infrastructure\Locking\LockingTrait;
 use Shared\Infrastructure\Locking\LockNotAcquiredException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;

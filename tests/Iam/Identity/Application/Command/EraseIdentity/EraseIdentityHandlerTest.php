@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
-use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
+use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\ValueObject\IdentityId;

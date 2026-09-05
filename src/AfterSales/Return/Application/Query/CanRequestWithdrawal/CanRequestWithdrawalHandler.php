@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AfterSales\Return\Application\Query\CanRequestWithdrawal;
 
-use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
+use AfterSales\Return\Application\Finder\DeliveredOrder\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\Withdrawal\WithdrawalFinderInterface;
 use AfterSales\Return\Domain\Specification\WithdrawalWindowExpiredSpecification;
 use Psr\Clock\ClockInterface;

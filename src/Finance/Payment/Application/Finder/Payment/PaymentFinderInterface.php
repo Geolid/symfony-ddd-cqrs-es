@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Finder\Payment;
 
-use Finance\Payment\Application\Exception\PaymentResultNotFoundException;
+use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\PaymentStatus;
 use Shared\Application\Finder\IterableFinderInterface;
 

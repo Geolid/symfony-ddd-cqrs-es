@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payer\Application\Finder\Payer;
 
-use Finance\Payer\Application\Exception\PayerResultNotFoundException;
+use Finance\Payer\Application\Finder\Payer\Exception\PayerResultNotFoundException;
 
 interface PayerFinderInterface
 {

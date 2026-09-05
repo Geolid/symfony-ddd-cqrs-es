@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Sales\Buyer\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Sales\Buyer\Application\Exception\BuyerResultNotFoundException;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Buyer\Application\Finder\Buyer\BuyerResult;
+use Sales\Buyer\Application\Finder\Buyer\Exception\BuyerResultNotFoundException;
 use Sales\Buyer\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 

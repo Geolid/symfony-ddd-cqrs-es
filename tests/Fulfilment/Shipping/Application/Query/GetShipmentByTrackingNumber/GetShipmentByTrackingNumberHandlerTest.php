@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Query\GetShipmentByTrackingNumber;
 
-use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Query\GetShipmentByTrackingNumber\GetShipmentByTrackingNumber;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;

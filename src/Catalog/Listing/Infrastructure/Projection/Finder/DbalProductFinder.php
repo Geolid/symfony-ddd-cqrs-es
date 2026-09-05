@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Infrastructure\Projection\Finder;
 
-use Catalog\Listing\Application\Exception\ProductResultNotFoundException;
+use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Infrastructure\Projection\Projector\DbalProductProjector;

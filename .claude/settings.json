@@ -2,6 +2,21 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "permissions": {
+    "allow": [
+      "Bash(castor:*)"
+    ],
+    "deny": [
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.local.php)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
+      "Read(**/credentials*)"
+    ],
+    "ask": []
+  },
   "enabledMcpjsonServers": [
     "context7"
   ],
@@ -31,28 +46,6 @@
           }
         ]
       }
-    ]
-  },
-  "permissions": {
-    "allow": [
-      "Bash(castor:*)"
-    ],
-    "deny": [
-      "Read(**/.env.local)",
-      "Read(**/.env.*.local)",
-      "Read(**/.env.local.php)",
-      "Read(**/*.pem)",
-      "Read(**/*.key)",
-      "Read(**/id_rsa*)",
-      "Read(**/credentials*)"
-    ],
-    "ask": [
-      "Bash(castor sh:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git merge:*)",
-      "Bash(gh pr:*)",
-      "Bash(gh issue:*)"
     ]
   }
 }

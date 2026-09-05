@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Policy;
 
-use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
-use Finance\Payment\Application\Checkout\PaymentGatewayStatus;
 use Finance\Payment\Application\Command\CapturePayment\CapturePayment;
 use Finance\Payment\Application\Command\FailPayment\FailPayment;
+use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;

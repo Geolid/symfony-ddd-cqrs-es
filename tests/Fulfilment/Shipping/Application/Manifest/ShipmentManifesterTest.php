@@ -6,10 +6,10 @@ namespace Fulfilment\Tests\Shipping\Application\Manifest;
 
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipping\Application\Exception\ManifestDeniedException;
-use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifest\ShipmentManifester;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;

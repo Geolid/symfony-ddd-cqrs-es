@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Iam\Identity\Application\Exception\IdentityResultNotFoundException;
+use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;

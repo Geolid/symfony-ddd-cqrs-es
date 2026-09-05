@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace AfterSales\Return\Infrastructure\Command\RequestWithdrawal;
 
+use AfterSales\Return\Application\Command\RequestWithdrawal\Exception\WithdrawalRequestInProgressException;
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawal;
 use AfterSales\Return\Application\Command\RequestWithdrawal\RequestWithdrawalHandler;
-use AfterSales\Return\Application\Exception\WithdrawalRequestInProgressException;
 use Shared\Infrastructure\Locking\LockingTrait;
 use Shared\Infrastructure\Locking\LockNotAcquiredException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;

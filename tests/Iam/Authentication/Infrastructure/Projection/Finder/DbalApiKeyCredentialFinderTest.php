@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
-use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;

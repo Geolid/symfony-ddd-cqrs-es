@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Query\GetApiKeyCredentialByKeyId;
 
-use Iam\Authentication\Application\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Application\Query\GetApiKeyCredentialByKeyId\GetApiKeyCredentialByKeyId;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;

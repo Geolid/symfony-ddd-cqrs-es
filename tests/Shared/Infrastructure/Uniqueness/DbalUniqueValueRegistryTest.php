@@ -6,7 +6,7 @@ namespace Shared\Tests\Infrastructure\Uniqueness;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Infrastructure\Uniqueness\DbalUniqueValueRegistry;
 use Shared\Tests\Support\Double\DummyUniqueKey;

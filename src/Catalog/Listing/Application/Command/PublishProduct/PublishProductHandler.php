@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Command\PublishProduct;
 
-use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
+use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Listing\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Listing\Domain\Product;
 use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;
@@ -12,7 +12,7 @@ use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Listing\Domain\ValueObject\ProductUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\Label;

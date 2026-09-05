@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Command\PlaceOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
-use Sales\Order\Application\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Exception\OutdatedOrderException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\PostalAddressResult as BuyerPostalAddressResult;
 use Sales\Order\Application\Finder\ListedProduct\ListedProductFinderInterface;

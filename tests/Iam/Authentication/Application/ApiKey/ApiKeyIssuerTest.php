@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\ApiKey;
 
 use Iam\Authentication\Application\ApiKey\ApiKeyIssuerInterface;
-use Iam\Authentication\Application\Exception\LabelAlreadyTakenException;
+use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
@@ -59,7 +59,7 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
         );
 
         // Then
-        $this->expectException(LabelAlreadyTakenException::class);
+        $this->expectException(ApiKeyCredentialLabelAlreadyTakenException::class);
 
         // When
         $this->issuer->issueFor($identityId, $label);

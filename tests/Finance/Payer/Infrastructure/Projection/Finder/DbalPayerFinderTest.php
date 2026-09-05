@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payer\Infrastructure\Projection\Finder;
 
-use Finance\Payer\Application\Exception\PayerResultNotFoundException;
+use Finance\Payer\Application\Finder\Payer\Exception\PayerResultNotFoundException;
 use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\Test;

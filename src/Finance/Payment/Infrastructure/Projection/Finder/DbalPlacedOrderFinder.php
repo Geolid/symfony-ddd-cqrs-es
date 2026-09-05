@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Payment\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Finance\Payment\Application\Exception\PlacedOrderResultNotFoundException;
+use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderResult;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPlacedOrderProjector;

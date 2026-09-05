@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Command\ManifestShipment;
 
+use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
-use Fulfilment\Shipping\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
@@ -116,7 +116,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // Then
-        $this->expectException(TrackingNumberAlreadyTakenException::class);
+        $this->expectException(ShipmentTrackingNumberAlreadyTakenException::class);
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
