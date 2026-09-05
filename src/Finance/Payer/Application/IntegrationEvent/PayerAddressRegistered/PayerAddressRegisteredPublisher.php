@@ -22,7 +22,7 @@ final readonly class PayerAddressRegisteredPublisher
     {
         $this->publisher->publish(Payer::class, $event->id, new PayerAddressRegisteredIntegrationEvent(
             payerId: $event->id,
-            address: $event->address,
+            address: $event->address->toArray(),
             setAt: $event->setAt,
         ));
     }

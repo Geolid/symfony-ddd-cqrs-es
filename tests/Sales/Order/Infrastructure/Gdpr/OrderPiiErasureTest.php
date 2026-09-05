@@ -12,6 +12,8 @@ use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegr
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -50,8 +52,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
-        self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
+        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
+        self::assertSame($erasedAddress->toArray(), $rehydrated->shippingAddress->toArray());
+        self::assertSame($erasedAddress->toArray(), $rehydrated->billingAddress->toArray());
     }
 
     #[Test]

@@ -102,8 +102,8 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
         return new ApiKeyCredentialIssued(
             $this->id->toString(),
             $this->identityId,
-            $this->label->value,
-            $this->keyId->value,
+            $this->label,
+            $this->keyId,
             $this->hasher->hash($this->secret),
             $this->issuedAt,
         );

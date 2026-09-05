@@ -85,7 +85,7 @@ final class WithdrawalTest extends AggregateRootTestCase
                 $this->id->toString(),
                 $this->orderId,
                 $this->buyerId,
-                $this->shippingAddress->toArray(),
+                $this->shippingAddress,
                 $now,
             ));
     }
@@ -227,7 +227,7 @@ final class WithdrawalTest extends AggregateRootTestCase
             $this->id->toString(),
             $this->orderId,
             $this->buyerId,
-            $this->shippingAddress->toArray(),
+            $this->shippingAddress,
             $this->requestedAt,
         );
     }

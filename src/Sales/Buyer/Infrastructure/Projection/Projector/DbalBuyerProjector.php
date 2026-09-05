@@ -26,7 +26,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'email' => $event->email,
+                'email' => $event->email->value,
                 'registered_at' => $event->registeredAt,
             ],
             ['registered_at' => Types::DATETIME_IMMUTABLE],

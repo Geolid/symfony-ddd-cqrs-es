@@ -54,7 +54,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentitySuspended(
             id: $this->id->toString(),
-            reason: $reason->value,
+            reason: $reason,
             suspendedAt: $suspendedAt,
         ));
     }
@@ -74,7 +74,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new IdentityReactivated(
             id: $this->id->toString(),
-            reason: $reason->value,
+            reason: $reason,
             reactivatedAt: $reactivatedAt,
         ));
     }

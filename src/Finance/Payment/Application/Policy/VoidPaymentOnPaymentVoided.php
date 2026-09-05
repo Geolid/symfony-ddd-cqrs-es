@@ -23,6 +23,6 @@ final readonly class VoidPaymentOnPaymentVoided
     #[Subscribe(PaymentVoided::class)]
     public function __invoke(PaymentVoided $event): void
     {
-        $this->paymentGateway->void($event->reference);
+        $this->paymentGateway->void($event->reference->value);
     }
 }

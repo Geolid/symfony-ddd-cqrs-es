@@ -14,7 +14,6 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('finance.payer.payer')]
@@ -46,7 +45,7 @@ final class Payer implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PayerAddressRegistered(
             id: $this->id->toString(),
-            address: $address->toArray(),
+            address: $address,
             setAt: $registeredAt,
         ));
     }
@@ -73,23 +72,12 @@ final class Payer implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyAddressRegistered(PayerAddressRegistered $event): void
     {
-        $this->address = $this->toAddress($event->address);
+        $this->address = $event->address;
     }
 
     #[Apply]
     private function applyErased(PayerErased $event): void
     {
         $this->erased = true;
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

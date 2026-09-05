@@ -9,6 +9,8 @@ use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -35,7 +37,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(WithdrawalRequested::class, $rehydrated);
-        $erasedAddress = ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
-        self::assertSame($erasedAddress, $rehydrated->shippingAddress);
+        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
+        self::assertSame($erasedAddress->toArray(), $rehydrated->shippingAddress->toArray());
     }
 }

@@ -28,7 +28,6 @@ use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -85,8 +84,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderPlaced(
             id: $id->toString(),
             buyerId: $buyerId,
-            shippingAddress: $shippingAddress->toArray(),
-            billingAddress: $billingAddress->toArray(),
+            shippingAddress: $shippingAddress,
+            billingAddress: $billingAddress,
             lines: array_values(array_map(
                 static fn (OrderLine $line): array => [
                     'productId' => $line->product->id,
@@ -96,7 +95,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
                 ],
                 $lines,
             )),
-            totalAmountInCents: $total->cents,
+            totalAmount: $total,
             placedAt: $placedAt,
         ));
 
@@ -232,9 +231,9 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = OrderId::fromString($event->id);
         $this->buyerId = $event->buyerId;
-        $this->shippingAddress = $this->toAddress($event->shippingAddress);
-        $this->billingAddress = $this->toAddress($event->billingAddress);
-        $this->totalAmountInCents = $event->totalAmountInCents;
+        $this->shippingAddress = $event->shippingAddress;
+        $this->billingAddress = $event->billingAddress;
+        $this->totalAmountInCents = $event->totalAmount->cents;
         $this->state = OrderState::PLACED;
     }
 
@@ -290,16 +289,5 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyDisputed(OrderDisputed $event): void
     {
         $this->state = OrderState::DISPUTED;
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

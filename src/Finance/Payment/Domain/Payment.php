@@ -47,8 +47,8 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new PaymentRequested(
             id: $id->toString(),
             orderId: $orderId,
-            amountInCents: $amount->cents,
-            reference: $reference->value,
+            amount: $amount,
+            reference: $reference,
             checkoutUrl: $checkoutUrl,
             requestedAt: $requestedAt,
         ));
@@ -62,7 +62,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new PaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
-                reference: $this->reference->value,
+                reference: $this->reference,
                 voidedAt: $authorizedAt,
             ));
         }
@@ -118,7 +118,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new PaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
-                reference: $this->reference->value,
+                reference: $this->reference,
                 voidedAt: $cancelledAt,
             ));
         }
@@ -127,7 +127,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             $this->recordThat(new PaymentRefundRequired(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
-                reference: $this->reference->value,
+                reference: $this->reference,
                 requiredAt: $cancelledAt,
             ));
         }
@@ -147,7 +147,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = PaymentId::fromString($event->id);
         $this->orderId = $event->orderId;
-        $this->reference = PaymentReference::fromString($event->reference);
+        $this->reference = $event->reference;
         $this->checkoutUrl = $event->checkoutUrl;
         $this->state = PaymentState::REQUESTED;
     }

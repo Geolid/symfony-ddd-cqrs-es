@@ -50,7 +50,8 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerRegistered::class, $rehydrated);
         $sentinel = new ErasedFieldSentinel('%s@erased.invalid');
-        self::assertSame($sentinel($buyer->id->toString()), $rehydrated->email);
+        $expectedEmail = $sentinel($buyer->id->toString());
+        self::assertSame($expectedEmail, $rehydrated->email->value);
     }
 
     #[Test]
@@ -72,14 +73,11 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressRegistered::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->address);
+        self::assertSame($this->erasedAddress()->toArray(), $rehydrated->address->toArray());
     }
 
-    /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function erasedAddress(): array
+    private function erasedAddress(): PostalAddress
     {
-        return ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
     }
 }

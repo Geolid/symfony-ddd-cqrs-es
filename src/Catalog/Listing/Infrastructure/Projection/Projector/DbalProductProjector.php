@@ -28,8 +28,8 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'label' => $event->label,
-                'unit_price_in_cents' => $event->unitPriceInCents,
+                'label' => $event->label->value,
+                'unit_price_in_cents' => $event->unitPrice->cents,
                 'listed_at' => $event->listedAt,
             ],
             ['listed_at' => Types::DATETIME_IMMUTABLE],
@@ -42,7 +42,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'unit_price_in_cents' => $event->unitPriceInCents,
+                'unit_price_in_cents' => $event->unitPrice->cents,
                 'repriced_at' => $event->repricedAt,
             ],
             ['id' => $event->id],

@@ -29,8 +29,8 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
         $this->connection->insert(self::TABLE, [
             'id' => $event->id,
             'identity_id' => $event->identityId,
-            'label' => $event->label,
-            'key_id' => $event->keyId,
+            'label' => $event->label->value,
+            'key_id' => $event->keyId->value,
             'secret_hash' => $event->secretHash,
             'issued_at' => $event->issuedAt,
             'revoked' => false,

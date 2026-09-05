@@ -24,6 +24,7 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class OrderTest extends AggregateRootTestCase
@@ -77,10 +78,10 @@ final class OrderTest extends AggregateRootTestCase
             ->then(new OrderPlaced(
                 $this->id->toString(),
                 $this->buyerId,
-                $this->shippingAddress->toArray(),
-                $this->billingAddress->toArray(),
+                $this->shippingAddress,
+                $this->billingAddress,
                 $this->primitiveLines(),
-                $this->totalAmountInCents(),
+                $this->totalAmount(),
                 $this->placedAt,
             ));
     }
@@ -302,10 +303,10 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderPlaced(
             $this->id->toString(),
             $this->buyerId,
-            $this->shippingAddress->toArray(),
-            $this->billingAddress->toArray(),
+            $this->shippingAddress,
+            $this->billingAddress,
             $this->primitiveLines(),
-            $this->totalAmountInCents(),
+            $this->totalAmount(),
             $this->placedAt,
         );
     }
@@ -340,9 +341,13 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt);
     }
 
-    private function totalAmountInCents(): int
+    private function totalAmount(): Money
     {
-        return array_sum(array_map(static fn (OrderLine $line): int => $line->total()->cents, $this->lines));
+        return array_reduce(
+            $this->lines,
+            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
+            Money::fromCents(0),
+        );
     }
 
     /**

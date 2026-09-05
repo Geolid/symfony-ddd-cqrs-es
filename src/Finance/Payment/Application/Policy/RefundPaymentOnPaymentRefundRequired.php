@@ -31,7 +31,7 @@ final readonly class RefundPaymentOnPaymentRefundRequired
     #[Subscribe(PaymentRefundRequired::class)]
     public function __invoke(PaymentRefundRequired $event): void
     {
-        $this->paymentGateway->refund($event->reference);
+        $this->paymentGateway->refund($event->reference->value);
     }
 
     /**

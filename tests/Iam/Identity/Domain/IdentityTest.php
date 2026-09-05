@@ -89,7 +89,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->suspended(),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate($reason, $reactivatedAt))
-            ->then(new IdentityReactivated($this->id->toString(), $reason->value, $reactivatedAt));
+            ->then(new IdentityReactivated($this->id->toString(), $reason, $reactivatedAt));
     }
 
     #[Test]
@@ -147,7 +147,7 @@ final class IdentityTest extends AggregateRootTestCase
 
     private function suspended(): IdentitySuspended
     {
-        return new IdentitySuspended($this->id->toString(), $this->reason->value, $this->suspendedAt);
+        return new IdentitySuspended($this->id->toString(), $this->reason, $this->suspendedAt);
     }
 
     private function erased(): IdentityErased

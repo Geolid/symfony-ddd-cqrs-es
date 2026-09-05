@@ -37,7 +37,7 @@ final class BuyerTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(fn (): Buyer => Buyer::register($this->id, $this->email, $this->registeredAt))
-            ->then(new BuyerRegistered($this->id->toString(), $this->email->value, $this->registeredAt));
+            ->then(new BuyerRegistered($this->id->toString(), $this->email, $this->registeredAt));
     }
 
     #[Test]
@@ -51,7 +51,7 @@ final class BuyerTest extends AggregateRootTestCase
             ->when(static fn (Buyer $buyer) => $buyer->registerShippingAddress($shippingAddress, $setAt))
             ->then(new BuyerShippingAddressRegistered(
                 id: $this->id->toString(),
-                address: $shippingAddress->toArray(),
+                address: $shippingAddress,
                 setAt: $setAt,
             ));
     }
@@ -65,7 +65,7 @@ final class BuyerTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new BuyerShippingAddressRegistered($this->id->toString(), $shippingAddress->toArray(), $setAt),
+                new BuyerShippingAddressRegistered($this->id->toString(), $shippingAddress, $setAt),
             )
             ->when(static fn (Buyer $buyer) => $buyer->registerShippingAddress($shippingAddress, BuyerBuilder::sample('shippingAddressRegisteredAt')))
             ->then();
@@ -100,7 +100,7 @@ final class BuyerTest extends AggregateRootTestCase
 
     private function registered(): BuyerRegistered
     {
-        return new BuyerRegistered($this->id->toString(), $this->email->value, $this->registeredAt);
+        return new BuyerRegistered($this->id->toString(), $this->email, $this->registeredAt);
     }
 
     private function shippingAddress(): PostalAddress

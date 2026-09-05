@@ -106,7 +106,7 @@ final class RefundTest extends AggregateRootTestCase
             RefundId::forPayment($this->paymentId)->toString(),
             $this->paymentId,
             $this->orderId,
-            $this->amount->cents,
+            $this->amount,
             $this->initiatedAt,
         );
     }

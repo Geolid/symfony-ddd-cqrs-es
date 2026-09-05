@@ -15,7 +15,6 @@ use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('sales.buyer.buyer')]
@@ -34,7 +33,7 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new BuyerRegistered(
             id: $id->toString(),
-            email: $email->value,
+            email: $email,
             registeredAt: $registeredAt,
         ));
 
@@ -49,7 +48,7 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new BuyerShippingAddressRegistered(
             id: $this->id->toString(),
-            address: $shippingAddress->toArray(),
+            address: $shippingAddress,
             setAt: $registeredAt,
         ));
     }
@@ -70,30 +69,19 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(BuyerRegistered $event): void
     {
         $this->id = BuyerId::fromString($event->id);
-        $this->email = Email::fromString($event->email);
+        $this->email = $event->email;
         $this->erased = false;
     }
 
     #[Apply]
     private function applyShippingAddressRegistered(BuyerShippingAddressRegistered $event): void
     {
-        $this->shippingAddress = $this->toAddress($event->address);
+        $this->shippingAddress = $event->address;
     }
 
     #[Apply]
     private function applyErased(BuyerErased $event): void
     {
         $this->erased = true;
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

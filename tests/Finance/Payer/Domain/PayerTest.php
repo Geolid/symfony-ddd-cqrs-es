@@ -48,7 +48,7 @@ final class PayerTest extends AggregateRootTestCase
             ->when(static fn (Payer $payer) => $payer->registerAddress($address, $setAt))
             ->then(new PayerAddressRegistered(
                 id: $this->id->toString(),
-                address: $address->toArray(),
+                address: $address,
                 setAt: $setAt,
             ));
     }
@@ -62,7 +62,7 @@ final class PayerTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new PayerAddressRegistered($this->id->toString(), $address->toArray(), $setAt),
+                new PayerAddressRegistered($this->id->toString(), $address, $setAt),
             )
             ->when(static fn (Payer $payer) => $payer->registerAddress($address, PayerBuilder::sample('addressRegisteredAt')))
             ->then();

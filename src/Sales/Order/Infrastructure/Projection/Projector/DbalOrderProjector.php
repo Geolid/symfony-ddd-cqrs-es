@@ -36,7 +36,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'buyer_id' => $event->buyerId,
-                'total_amount_in_cents' => $event->totalAmountInCents,
+                'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => OrderStatus::PLACED->value,
                 'placed_at' => $event->placedAt,
             ],

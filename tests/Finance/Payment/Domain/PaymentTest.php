@@ -90,7 +90,7 @@ final class PaymentTest extends AggregateRootTestCase
                 new PaymentCancelled($this->id->toString(), $this->orderId, $cancelledAt),
             )
             ->when(static fn (Payment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
-            ->then(new PaymentVoided($this->id->toString(), $this->orderId, $this->reference->value, $lateAuthorizedAt));
+            ->then(new PaymentVoided($this->id->toString(), $this->orderId, $this->reference, $lateAuthorizedAt));
     }
 
     #[Test]
@@ -170,7 +170,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->authorized())
             ->when(static fn (Payment $orderPayment) => $orderPayment->cancel($cancelledAt))
-            ->then(new PaymentVoided($this->id->toString(), $this->orderId, $this->reference->value, $cancelledAt));
+            ->then(new PaymentVoided($this->id->toString(), $this->orderId, $this->reference, $cancelledAt));
     }
 
     #[Test]
@@ -181,7 +181,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
             ->when(static fn (Payment $orderPayment) => $orderPayment->cancel($cancelledAt))
-            ->then(new PaymentRefundRequired($this->id->toString(), $this->orderId, $this->reference->value, $cancelledAt));
+            ->then(new PaymentRefundRequired($this->id->toString(), $this->orderId, $this->reference, $cancelledAt));
     }
 
     #[Test]
@@ -206,8 +206,8 @@ final class PaymentTest extends AggregateRootTestCase
         return new PaymentRequested(
             $this->id->toString(),
             $this->orderId,
-            $this->amount->cents,
-            $this->reference->value,
+            $this->amount,
+            $this->reference,
             $this->checkoutUrl,
             $this->requestedAt,
         );

@@ -260,8 +260,8 @@ final class ShipmentTest extends AggregateRootTestCase
             $this->reference,
             $this->direction,
             $this->buyerId,
-            $this->toAddressData($this->origin),
-            $this->toAddressData($this->destination),
+            $this->origin,
+            $this->destination,
             $this->createdAt,
         );
     }
@@ -273,7 +273,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
     private function manifested(): ShipmentManifested
     {
-        return new ShipmentManifested($this->id->toString(), $this->trackingNumber->value, $this->manifestedAt);
+        return new ShipmentManifested($this->id->toString(), $this->trackingNumber, $this->manifestedAt);
     }
 
     private function dispatched(): ShipmentDispatched
@@ -284,19 +284,5 @@ final class ShipmentTest extends AggregateRootTestCase
     private function delivered(): ShipmentDelivered
     {
         return new ShipmentDelivered($this->id->toString(), $this->deliveredAt);
-    }
-
-    /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function toAddressData(PostalAddress $address): array
-    {
-        return [
-            'recipientName' => $address->recipientName,
-            'street' => $address->address->street,
-            'postalCode' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'countryCode' => $address->address->countryCode->value,
-        ];
     }
 }
