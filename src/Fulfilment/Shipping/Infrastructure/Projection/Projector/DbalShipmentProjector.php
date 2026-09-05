@@ -8,6 +8,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipping\Domain\Event\ShipmentDelivered;
@@ -33,10 +34,13 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'reference' => $event->reference,
+                'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
+                'origin' => $this->toAddressData($event->origin),
+                'destination' => $this->toAddressData($event->destination),
                 'created_at' => $event->createdAt,
             ],
-            ['created_at' => Types::DATETIME_IMMUTABLE],
+            ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -115,7 +119,10 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('reference', Types::STRING, ['length' => 36]);
+        $table->addColumn('direction', Types::STRING, ['length' => 8]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('origin', Types::JSON);
+        $table->addColumn('destination', Types::JSON);
         $table->addColumn('tracking_number', Types::STRING, ['length' => TrackingNumber::MAX_LENGTH, 'notnull' => false, 'default' => null]);
         $table->addColumn('created_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('manifested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
@@ -129,5 +136,21 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
         $table->addIndex(['reference'], 'fulfilment_shipping_reference_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
+    }
+
+    /**
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     *
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
+     */
+    private function toAddressData(array $address): array
+    {
+        return [
+            'recipient_name' => $address['recipientName'],
+            'street' => $address['street'],
+            'postal_code' => $address['postalCode'],
+            'city' => $address['city'],
+            'country_code' => $address['countryCode'],
+        ];
     }
 }

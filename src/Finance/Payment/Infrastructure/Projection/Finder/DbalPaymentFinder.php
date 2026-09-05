@@ -51,19 +51,15 @@ final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinde
             static function (QueryBuilder $qb) use ($cutoff): void {
                 $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
                 $requestedParam = $qb->createNamedParameter(PaymentStatus::REQUESTED);
-                $refundInitiatedParam = $qb->createNamedParameter(PaymentStatus::REFUND_INITIATED);
 
-                $qb->andWhere(
-                    "(status = {$requestedParam} AND requested_at < {$cutoffParam})
-                    OR (status = {$refundInitiatedParam} AND refund_initiated_at < {$cutoffParam})",
-                );
+                $qb->andWhere("status = {$requestedParam} AND requested_at < {$cutoffParam}");
             },
         );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_initiated_at', 'refunded_at')
+        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at')
             ->from(DbalPaymentProjector::TABLE)
             ->orderBy('requested_at', 'ASC')
             ->addOrderBy('id', 'ASC');

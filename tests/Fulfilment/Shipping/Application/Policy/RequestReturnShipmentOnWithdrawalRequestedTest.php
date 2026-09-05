@@ -7,6 +7,7 @@ namespace Fulfilment\Tests\Shipping\Application\Policy;
 use AfterSales\Return\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipping\Application\Policy\RequestReturnShipmentOnWithdrawalRequested;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -49,6 +50,7 @@ final class RequestReturnShipmentOnWithdrawalRequestedTest extends AbstractInteg
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
         self::assertSame($withdrawalId, $dispatched->reference);
+        self::assertSame(ShipmentDirection::RETURN, $dispatched->direction);
         self::assertSame($buyerId, $dispatched->buyerId);
         $destinationAddress = $warehouseAddressProvider->get()->toArray();
         self::assertSame($originData, $dispatched->origin);

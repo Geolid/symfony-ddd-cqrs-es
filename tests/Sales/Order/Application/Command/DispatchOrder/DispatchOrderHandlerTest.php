@@ -25,10 +25,10 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDispatchesWhenConfirmed(): void
+    public function itDispatchesWhenPrepared(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->prepared()->create();
         $this->store($order);
 
         // When
@@ -41,7 +41,7 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotConfirmed(): void
+    public function itIgnoresWhenNotPrepared(): void
     {
         // Given
         $order = OrderBuilder::new()->create();

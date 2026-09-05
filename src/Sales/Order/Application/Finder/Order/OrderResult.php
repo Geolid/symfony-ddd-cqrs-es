@@ -15,9 +15,12 @@ final readonly class OrderResult
         public OrderStatus $status,
         public \DateTimeImmutable $placedAt,
         public ?\DateTimeImmutable $confirmedAt,
+        public ?\DateTimeImmutable $preparedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
-        public ?\DateTimeImmutable $completedAt,
+        public ?\DateTimeImmutable $returnRequestedAt,
+        public ?\DateTimeImmutable $returnedAt,
+        public ?\DateTimeImmutable $disputedAt,
         public ?\DateTimeImmutable $cancelledAt,
     ) {
     }

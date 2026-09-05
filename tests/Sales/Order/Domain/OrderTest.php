@@ -7,13 +7,16 @@ namespace Sales\Tests\Order\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\Event\OrderAborted;
 use Sales\Order\Domain\Event\OrderCancelled;
-use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
+use Sales\Order\Domain\Event\OrderDisputed;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Event\OrderPrepared;
+use Sales\Order\Domain\Event\OrderReturned;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -35,9 +38,14 @@ final class OrderTest extends AggregateRootTestCase
 
     private \DateTimeImmutable $placedAt;
     private \DateTimeImmutable $confirmedAt;
+    private \DateTimeImmutable $preparedAt;
     private \DateTimeImmutable $cancelledAt;
+    private \DateTimeImmutable $abortedAt;
     private \DateTimeImmutable $dispatchedAt;
     private \DateTimeImmutable $deliveredAt;
+    private \DateTimeImmutable $returnRequestedAt;
+    private \DateTimeImmutable $returnedAt;
+    private \DateTimeImmutable $disputedAt;
 
     protected function setUp(): void
     {
@@ -50,9 +58,14 @@ final class OrderTest extends AggregateRootTestCase
         $this->lines = OrderBuilder::sample('lines');
         $this->placedAt = OrderBuilder::sample('placedAt');
         $this->confirmedAt = OrderBuilder::sample('confirmedAt');
+        $this->preparedAt = OrderBuilder::sample('preparedAt');
         $this->cancelledAt = OrderBuilder::sample('cancelledAt');
+        $this->abortedAt = OrderBuilder::sample('abortedAt');
         $this->dispatchedAt = OrderBuilder::sample('dispatchedAt');
         $this->deliveredAt = OrderBuilder::sample('deliveredAt');
+        $this->returnRequestedAt = OrderBuilder::sample('returnRequestedAt');
+        $this->returnedAt = OrderBuilder::sample('returnedAt');
+        $this->disputedAt = OrderBuilder::sample('disputedAt');
     }
 
     #[Test]
@@ -100,6 +113,24 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itPreparesWhenConfirmed(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed())
+            ->when(fn (Order $order) => $order->prepare($this->preparedAt))
+            ->then(new OrderPrepared($this->id->toString(), $this->preparedAt));
+    }
+
+    #[Test]
+    public function itDoesNotPrepareWhenNotConfirmed(): void
+    {
+        $this
+            ->given($this->placed())
+            ->when(static fn (Order $order) => $order->prepare(OrderBuilder::sample('preparedAt')))
+            ->then();
+    }
+
+    #[Test]
     public function itCancels(): void
     {
         $this
@@ -127,10 +158,10 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCancelWhenDispatched(): void
+    public function itCannotCancelWhenPrepared(): void
     {
         $this
-            ->given($this->placed(), $this->confirmed(), $this->dispatched())
+            ->given($this->placed(), $this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->cancel($this->buyerId, OrderBuilder::sample('cancelledAt')))
             ->expectsException(OrderNotCancellableException::class);
     }
@@ -145,60 +176,120 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDispatchesWhenConfirmed(): void
+    public function itAbortsWhenPlaced(): void
     {
         $this
-            ->given($this->placed(), $this->confirmed())
+            ->given($this->placed())
+            ->when(fn (Order $order) => $order->abort($this->abortedAt))
+            ->then(new OrderAborted($this->id->toString(), $this->abortedAt));
+    }
+
+    #[Test]
+    public function itAbortsWhenPrepared(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared())
+            ->when(fn (Order $order) => $order->abort($this->abortedAt))
+            ->then(new OrderAborted($this->id->toString(), $this->abortedAt));
+    }
+
+    #[Test]
+    public function itDoesNotAbortWhenDispatched(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched())
+            ->when(static fn (Order $order) => $order->abort(OrderBuilder::sample('abortedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDispatchesWhenPrepared(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
             ->then(new OrderDispatched($this->id->toString(), $this->dispatchedAt));
     }
 
     #[Test]
-    public function itDoesNotDispatchWhenNotConfirmed(): void
+    public function itDoesNotDispatchWhenNotPrepared(): void
     {
         $this
-            ->given($this->placed())
+            ->given($this->placed(), $this->confirmed())
             ->when(static fn (Order $order) => $order->dispatch(OrderBuilder::sample('dispatchedAt')))
             ->then();
     }
 
     #[Test]
-    public function itDeliversAndCompletesWhenDispatched(): void
+    public function itDeliversWhenDispatched(): void
     {
         $this
-            ->given($this->placed(), $this->confirmed(), $this->dispatched())
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
-            ->then(
-                new OrderDelivered($this->id->toString(), $this->deliveredAt),
-                new OrderCompleted($this->id->toString(), $this->deliveredAt),
-            );
+            ->then(new OrderDelivered($this->id->toString(), $this->deliveredAt));
     }
 
     #[Test]
     public function itDoesNotDeliverWhenNotDispatched(): void
     {
         $this
-            ->given($this->placed(), $this->confirmed())
+            ->given($this->placed(), $this->confirmed(), $this->prepared())
             ->when(static fn (Order $order) => $order->deliver(OrderBuilder::sample('deliveredAt')))
             ->then();
     }
 
     #[Test]
-    public function itEnsuresNotCancelled(): void
+    public function itRequestsReturnWhenDelivered(): void
     {
         $this
-            ->given($this->placed())
-            ->when(static fn (Order $order) => $order->ensureNotCancelled())
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
+            ->when(fn (Order $order) => $order->requestReturn($this->returnRequestedAt))
+            ->then(new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt));
+    }
+
+    #[Test]
+    public function itDoesNotRequestReturnWhenNotDelivered(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched())
+            ->when(static fn (Order $order) => $order->requestReturn(OrderBuilder::sample('returnRequestedAt')))
             ->then();
     }
 
     #[Test]
-    public function itCannotEnsureNotCancelledWhenCancelled(): void
+    public function itReturnsWhenReturnRequested(): void
     {
         $this
-            ->given($this->placed(), $this->cancelled())
-            ->when(static fn (Order $order) => $order->ensureNotCancelled())
-            ->expectsException(OrderAlreadyCancelledException::class);
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered(), $this->returnRequested())
+            ->when(fn (Order $order) => $order->return($this->returnedAt))
+            ->then(new OrderReturned($this->id->toString(), $this->returnedAt));
+    }
+
+    #[Test]
+    public function itDoesNotReturnWhenNotReturnRequested(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
+            ->when(static fn (Order $order) => $order->return(OrderBuilder::sample('returnedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDisputesWhenReturnRequested(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered(), $this->returnRequested())
+            ->when(fn (Order $order) => $order->dispute($this->disputedAt))
+            ->then(new OrderDisputed($this->id->toString(), $this->disputedAt));
+    }
+
+    #[Test]
+    public function itDoesNotDisputeWhenNotReturnRequested(): void
+    {
+        $this
+            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
+            ->when(static fn (Order $order) => $order->dispute(OrderBuilder::sample('disputedAt')))
+            ->then();
     }
 
     protected function aggregateClass(): string
@@ -224,6 +315,11 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderConfirmed($this->id->toString(), $this->confirmedAt);
     }
 
+    private function prepared(): OrderPrepared
+    {
+        return new OrderPrepared($this->id->toString(), $this->preparedAt);
+    }
+
     private function cancelled(): OrderCancelled
     {
         return new OrderCancelled($this->id->toString(), $this->cancelledAt);
@@ -232,6 +328,16 @@ final class OrderTest extends AggregateRootTestCase
     private function dispatched(): OrderDispatched
     {
         return new OrderDispatched($this->id->toString(), $this->dispatchedAt);
+    }
+
+    private function delivered(): OrderDelivered
+    {
+        return new OrderDelivered($this->id->toString(), $this->deliveredAt);
+    }
+
+    private function returnRequested(): OrderReturnRequested
+    {
+        return new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt);
     }
 
     private function totalAmountInCents(): int

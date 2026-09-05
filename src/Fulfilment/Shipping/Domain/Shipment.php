@@ -13,6 +13,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
@@ -45,6 +46,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) ShipmentId $id;
     public private(set) string $reference;
+    public private(set) ShipmentDirection $direction;
     public private(set) string $buyerId;
     public private(set) PostalAddress $origin;
     public private(set) PostalAddress $destination;
@@ -54,6 +56,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public static function request(
         ShipmentId $id,
         string $reference,
+        ShipmentDirection $direction,
         string $buyerId,
         PostalAddress $origin,
         PostalAddress $destination,
@@ -63,6 +66,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new ShipmentRequested(
             id: $id->toString(),
             reference: $reference,
+            direction: $direction,
             buyerId: $buyerId,
             origin: $origin->toArray(),
             destination: $destination->toArray(),
@@ -177,6 +181,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = ShipmentId::fromString($event->id);
         $this->reference = $event->reference;
+        $this->direction = $event->direction;
         $this->buyerId = $event->buyerId;
         $this->origin = $this->toAddress($event->origin);
         $this->destination = $this->toAddress($event->destination);

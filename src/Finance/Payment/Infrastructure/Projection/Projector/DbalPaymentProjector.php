@@ -13,8 +13,6 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
-use Finance\Payment\Domain\Event\PaymentRefunded;
-use Finance\Payment\Domain\Event\PaymentRefundInitiated;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
@@ -115,34 +113,6 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(PaymentRefundInitiated::class)]
-    public function onPaymentRefundInitiated(PaymentRefundInitiated $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => PaymentStatus::REFUND_INITIATED->value,
-                'refund_initiated_at' => $event->initiatedAt,
-            ],
-            ['id' => $event->id],
-            ['refund_initiated_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
-    #[Subscribe(PaymentRefunded::class)]
-    public function onPaymentRefunded(PaymentRefunded $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => PaymentStatus::REFUNDED->value,
-                'refunded_at' => $event->refundedAt,
-            ],
-            ['id' => $event->id],
-            ['refunded_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
     /**
      * @codeCoverageIgnore
      */
@@ -160,8 +130,6 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $table->addColumn('captured_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('refund_initiated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('refunded_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

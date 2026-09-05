@@ -6,6 +6,7 @@ namespace Fulfilment\Tests\Shipping\Application\Command\RequestShipment;
 
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
@@ -35,12 +36,13 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $destinationData = ShipmentBuilder::sample('destination')->toArray();
 
         // When
-        $this->dispatch(new RequestShipment($id, $reference, $buyerId, $originData, $destinationData));
+        $this->dispatch(new RequestShipment($id, $reference, ShipmentDirection::OUTBOUND, $buyerId, $originData, $destinationData));
 
         // Then
         $result = $this->service(ShipmentFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
         self::assertSame($reference, $result->reference);
+        self::assertSame(ShipmentDirection::OUTBOUND, $result->direction);
         self::assertSame(ShipmentStatus::REQUESTED, $result->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
         $shipmentDestination = $shipment->destination->toArray();
@@ -60,6 +62,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestShipment(
             $shipment->id->toString(),
             $builder['reference'],
+            ShipmentDirection::OUTBOUND,
             $builder['buyerId'],
             $builder['origin']->toArray(),
             $attemptedDestination->toArray(),

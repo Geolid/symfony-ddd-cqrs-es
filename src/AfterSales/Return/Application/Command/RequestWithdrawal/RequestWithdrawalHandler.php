@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace AfterSales\Return\Application\Command\RequestWithdrawal;
 
+use AfterSales\Return\Application\Exception\ActiveWithdrawalAlreadyExistsException;
 use AfterSales\Return\Application\Exception\DeliveredOrderResultNotFoundException;
 use AfterSales\Return\Application\Finder\DeliveredOrder\DeliveredOrderFinderInterface;
+use AfterSales\Return\Application\Finder\Withdrawal\WithdrawalFinderInterface;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalAlreadyExistsException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
@@ -22,6 +24,7 @@ final readonly class RequestWithdrawalHandler
 {
     public function __construct(
         private WithdrawalRepositoryInterface $repository,
+        private WithdrawalFinderInterface $withdrawalFinder,
         private DeliveredOrderFinderInterface $orderFinder,
         private ClockInterface $clock,
     ) {
@@ -32,19 +35,18 @@ final readonly class RequestWithdrawalHandler
      * @throws CannotRequestWithdrawalForAnotherBuyerException
      * @throws WithdrawalWindowExpiredException
      * @throws WithdrawalAlreadyExistsException
+     * @throws ActiveWithdrawalAlreadyExistsException
      */
     public function __invoke(RequestWithdrawal $command): void
     {
-        $id = WithdrawalId::forOrder($command->orderId);
-
-        if ($this->repository->has($id)) {
-            return;
+        if ($this->withdrawalFinder->byOrder($command->orderId)->active()->count() > 0) {
+            throw ActiveWithdrawalAlreadyExistsException::forOrder($command->orderId);
         }
 
         $order = $this->orderFinder->ofId($command->orderId);
 
         $withdrawal = Withdrawal::request(
-            id: $id,
+            id: WithdrawalId::generate(),
             orderId: $order->orderId,
             buyerId: $order->buyerId,
             actingBuyerId: $command->buyerId,

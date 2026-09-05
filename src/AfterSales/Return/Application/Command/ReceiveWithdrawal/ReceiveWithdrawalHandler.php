@@ -26,7 +26,7 @@ final readonly class ReceiveWithdrawalHandler
      */
     public function __invoke(ReceiveWithdrawal $command): void
     {
-        $withdrawal = $this->repository->load(WithdrawalId::forOrder($command->orderId));
+        $withdrawal = $this->repository->load(WithdrawalId::fromString($command->id));
         $withdrawal->receive($this->clock->now());
         $this->repository->save($withdrawal);
     }

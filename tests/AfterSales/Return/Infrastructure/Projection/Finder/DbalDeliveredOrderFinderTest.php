@@ -26,9 +26,9 @@ final class DbalDeliveredOrderFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = OrderBuilder::new()->confirmed()->dispatched()->delivered()->create();
+        $other = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
         $this->store($other);
-        $builder = OrderBuilder::new()->confirmed()->dispatched()->delivered();
+        $builder = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered();
         $order = $builder->create();
         $this->store($order);
 
@@ -55,5 +55,21 @@ final class DbalDeliveredOrderFinderTest extends AbstractIntegrationTestCase
 
         // When
         $this->finder->ofId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
+    public function itFiltersByIds(): void
+    {
+        // Given
+        $other = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $this->store($other, $order);
+
+        // When
+        $results = iterator_to_array($this->finder->byIds($order->id->toString()));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($order->id->toString(), $results[0]->orderId);
     }
 }

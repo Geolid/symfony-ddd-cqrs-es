@@ -10,19 +10,24 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Sales\Order\Domain\Event\OrderAborted;
 use Sales\Order\Domain\Event\OrderCancelled;
-use Sales\Order\Domain\Event\OrderCompleted;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
+use Sales\Order\Domain\Event\OrderDisputed;
 use Sales\Order\Domain\Event\OrderPlaced;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
+use Sales\Order\Domain\Event\OrderPrepared;
+use Sales\Order\Domain\Event\OrderReturned;
+use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
+use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -32,6 +37,19 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
 
+    /** @var array<string, list<OrderState>> */
+    private const array TRANSITIONS = [
+        OrderState::PLACED->value => [OrderState::CONFIRMED, OrderState::CANCELLED],
+        OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED],
+        OrderState::PREPARED->value => [OrderState::DISPATCHED, OrderState::CANCELLED],
+        OrderState::DISPATCHED->value => [OrderState::DELIVERED],
+        OrderState::DELIVERED->value => [OrderState::RETURN_REQUESTED],
+        OrderState::RETURN_REQUESTED->value => [OrderState::RETURNED, OrderState::DISPUTED],
+        OrderState::CANCELLED->value => [],
+        OrderState::RETURNED->value => [],
+        OrderState::DISPUTED->value => [],
+    ];
+
     #[Id]
     public private(set) OrderId $id;
     public private(set) string $buyerId;
@@ -39,16 +57,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) PostalAddress $billingAddress;
     public private(set) int $totalAmountInCents;
     private OrderState $state;
-
-    /**
-     * @throws OrderAlreadyCancelledException
-     */
-    public function ensureNotCancelled(): void
-    {
-        if ($this->state->isCancelled()) {
-            throw OrderAlreadyCancelledException::forId($this->id);
-        }
-    }
 
     /**
      * @param list<OrderLine> $lines
@@ -97,13 +105,25 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function confirm(\DateTimeImmutable $confirmedAt): void
     {
-        if (!$this->state->isPlaced()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::CONFIRMED)->isSatisfiedBy($this->state)) {
             return;
         }
 
         $this->recordThat(new OrderConfirmed(
             id: $this->id->toString(),
             confirmedAt: $confirmedAt,
+        ));
+    }
+
+    public function prepare(\DateTimeImmutable $preparedAt): void
+    {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::PREPARED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        $this->recordThat(new OrderPrepared(
+            id: $this->id->toString(),
+            preparedAt: $preparedAt,
         ));
     }
 
@@ -117,11 +137,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherBuyerException::forId($this->id);
         }
 
-        if ($this->state->isCancelled()) {
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
             return;
         }
 
-        if (!$this->state->isCancellable()) {
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::PREPARED)->isSatisfiedBy($this->state)) {
             throw OrderNotCancellableException::forId($this->id);
         }
 
@@ -131,9 +151,25 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function abort(\DateTimeImmutable $abortedAt): void
+    {
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::DISPATCHED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        $this->recordThat(new OrderAborted(
+            id: $this->id->toString(),
+            abortedAt: $abortedAt,
+        ));
+    }
+
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->state->isConfirmed()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DISPATCHED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -145,7 +181,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->state->isDispatched()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DELIVERED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -153,10 +189,41 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             deliveredAt: $deliveredAt,
         ));
+    }
 
-        $this->recordThat(new OrderCompleted(
+    public function requestReturn(\DateTimeImmutable $requestedAt): void
+    {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        $this->recordThat(new OrderReturnRequested(
             id: $this->id->toString(),
-            completedAt: $deliveredAt,
+            requestedAt: $requestedAt,
+        ));
+    }
+
+    public function return(\DateTimeImmutable $returnedAt): void
+    {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::RETURNED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        $this->recordThat(new OrderReturned(
+            id: $this->id->toString(),
+            returnedAt: $returnedAt,
+        ));
+    }
+
+    public function dispute(\DateTimeImmutable $disputedAt): void
+    {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DISPUTED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        $this->recordThat(new OrderDisputed(
+            id: $this->id->toString(),
+            disputedAt: $disputedAt,
         ));
     }
 
@@ -178,7 +245,19 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
+    private function applyPrepared(OrderPrepared $event): void
+    {
+        $this->state = OrderState::PREPARED;
+    }
+
+    #[Apply]
     private function applyCancelled(OrderCancelled $event): void
+    {
+        $this->state = OrderState::CANCELLED;
+    }
+
+    #[Apply]
+    private function applyAborted(OrderAborted $event): void
     {
         $this->state = OrderState::CANCELLED;
     }
@@ -196,9 +275,21 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCompleted(OrderCompleted $event): void
+    private function applyReturnRequested(OrderReturnRequested $event): void
     {
-        $this->state = OrderState::COMPLETED;
+        $this->state = OrderState::RETURN_REQUESTED;
+    }
+
+    #[Apply]
+    private function applyReturned(OrderReturned $event): void
+    {
+        $this->state = OrderState::RETURNED;
+    }
+
+    #[Apply]
+    private function applyDisputed(OrderDisputed $event): void
+    {
+        $this->state = OrderState::DISPUTED;
     }
 
     /**

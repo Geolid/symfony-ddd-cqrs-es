@@ -10,6 +10,8 @@ use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
 use Finance\Payment\Application\Query\ListPaymentsPastReconciliationThreshold\ListPaymentsPastReconciliationThresholdHandler;
 use Finance\Payment\Application\Reconciliation\PaymentReconciler;
 use Finance\Payment\Application\Reconciliation\PaymentStatusReconcilerInterface;
+use Finance\Refund\Application\Finder\Refund\RefundFinderInterface;
+use Finance\Refund\Infrastructure\Projection\Finder\DbalRefundFinder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
@@ -36,5 +38,6 @@ return static function (ContainerConfigurator $container): void {
         // test container's compiler prunes it.
         $paymentRequesterAlias->public();
         $services->alias(PayerFinderInterface::class, DbalPayerFinder::class)->public();
+        $services->alias(RefundFinderInterface::class, DbalRefundFinder::class)->public();
     }
 };

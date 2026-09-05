@@ -7,6 +7,7 @@ namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Finder;
 use Fulfilment\Shipping\Application\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
@@ -41,7 +42,10 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
         self::assertSame($builder['reference'], $result->reference);
+        self::assertSame(ShipmentDirection::OUTBOUND, $result->direction);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+        self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
+        self::assertSame($builder['destination']->recipientName, $result->destination->recipientName);
     }
 
     #[Test]

@@ -32,6 +32,11 @@ use Symfony\Component\Clock\Clock;
  */
 final class WithdrawalBuilder extends AbstractAggregateBuilder
 {
+    public function withId(string $id): self
+    {
+        return $this->withAttributes(id: WithdrawalId::fromString($id));
+    }
+
     public function withOrderId(string $orderId): self
     {
         return $this->withAttributes(orderId: $orderId);
@@ -97,9 +102,7 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
     protected static function defaults(): array
     {
         return [
-            'id' => static fn (?self $builder): WithdrawalId => WithdrawalId::forOrder(
-                null !== $builder ? $builder['orderId'] : self::sample('orderId'),
-            ),
+            'id' => WithdrawalId::generate(...),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'actingBuyerId' => static fn (?self $builder): string => null !== $builder ? $builder['buyerId'] : self::sample('buyerId'),

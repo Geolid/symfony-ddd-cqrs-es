@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use AfterSales\Return\Application\Exception\ActiveWithdrawalAlreadyExistsException;
+use AfterSales\Return\Application\Exception\WithdrawalRequestInProgressException;
 use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
 use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
 use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
@@ -9,6 +11,7 @@ use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
 use Finance\Payment\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
+use Fulfilment\Shipping\Application\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
@@ -25,7 +28,6 @@ use Sales\Buyer\Application\Exception\BuyerEmailAlreadyRegisteredException;
 use Sales\Order\Application\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Exception\OutdatedOrderException;
-use Sales\Order\Domain\Exception\OrderAlreadyCancelledException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -44,6 +46,8 @@ return static function (ContainerConfigurator $container): void {
             CannotRequestWithdrawalForAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             WithdrawalWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
             WithdrawalNotReceivedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ActiveWithdrawalAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
+            WithdrawalRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Catalog
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -52,6 +56,7 @@ return static function (ContainerConfigurator $container): void {
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingNumberAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -70,7 +75,6 @@ return static function (ContainerConfigurator $container): void {
             BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
-            OrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 

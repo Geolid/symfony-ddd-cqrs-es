@@ -14,6 +14,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Shipment;
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
@@ -26,6 +27,7 @@ final class ShipmentTest extends AggregateRootTestCase
 {
     private ShipmentId $id;
     private string $reference;
+    private ShipmentDirection $direction;
     private string $buyerId;
     private PostalAddress $origin;
     private PostalAddress $destination;
@@ -42,6 +44,7 @@ final class ShipmentTest extends AggregateRootTestCase
 
         $this->id = ShipmentId::generate();
         $this->reference = ShipmentBuilder::sample('reference');
+        $this->direction = ShipmentBuilder::sample('direction');
         $this->buyerId = ShipmentBuilder::sample('buyerId');
         $this->origin = ShipmentBuilder::sample('origin');
         $this->destination = ShipmentBuilder::sample('destination');
@@ -58,7 +61,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Shipment => Shipment::request($this->id, $this->reference, $this->buyerId, $this->origin, $this->destination, $this->createdAt))
+            ->when(fn (): Shipment => Shipment::request($this->id, $this->reference, $this->direction, $this->buyerId, $this->origin, $this->destination, $this->createdAt))
             ->then($this->requested());
     }
 
@@ -255,6 +258,7 @@ final class ShipmentTest extends AggregateRootTestCase
         return new ShipmentRequested(
             $this->id->toString(),
             $this->reference,
+            $this->direction,
             $this->buyerId,
             $this->toAddressData($this->origin),
             $this->toAddressData($this->destination),

@@ -10,6 +10,8 @@ interface PaymentGatewayInterface
 {
     public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession;
 
+    public function capture(string $reference): PaymentGatewayStatus;
+
     public function void(string $reference): void;
 
     public function refund(string $reference): void;

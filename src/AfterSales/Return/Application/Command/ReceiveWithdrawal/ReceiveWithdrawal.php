@@ -8,7 +8,7 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class ReceiveWithdrawal implements CommandInterface
 {
-    public function __construct(public string $orderId)
+    public function __construct(public string $id)
     {
     }
 }

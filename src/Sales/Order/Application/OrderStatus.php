@@ -8,10 +8,13 @@ enum OrderStatus: string
 {
     case PLACED = 'placed';
     case CONFIRMED = 'confirmed';
-    case CANCELLED = 'cancelled';
+    case PREPARED = 'prepared';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
-    case COMPLETED = 'completed';
+    case RETURN_REQUESTED = 'return_requested';
+    case RETURNED = 'returned';
+    case DISPUTED = 'disputed';
+    case CANCELLED = 'cancelled';
 
     public function isCancelled(): bool
     {

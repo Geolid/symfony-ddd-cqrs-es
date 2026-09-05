@@ -46,6 +46,14 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws GlobexClientException
      */
+    public function capture(string $reference): PaymentGatewayStatus
+    {
+        return $this->parseStatus($this->globexClient->post('/capture', ['reference' => $reference]), '/capture');
+    }
+
+    /**
+     * @throws GlobexClientException
+     */
     public function void(string $reference): void
     {
         $this->globexClient->post('/void', ['reference' => $reference]);
@@ -64,18 +72,26 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function checkStatus(string $reference): PaymentGatewayStatus
     {
-        $response = $this->globexClient->get(self::CHARGES_PATH.'/'.$reference);
+        return $this->parseStatus($this->globexClient->get(self::CHARGES_PATH.'/'.$reference), self::CHARGES_PATH);
+    }
 
+    /**
+     * @param array<string, mixed> $response
+     *
+     * @throws GlobexClientException
+     */
+    private function parseStatus(array $response, string $path): PaymentGatewayStatus
+    {
         $status = $response['status'] ?? null;
 
         if (!\is_string($status) || '' === $status) {
-            throw GlobexClientException::invalidResponse(self::CHARGES_PATH, 'A status response carries a non-empty "status".');
+            throw GlobexClientException::invalidResponse($path, 'A response carries a non-empty "status".');
         }
 
         try {
             return PaymentGatewayStatus::from($status);
         } catch (\ValueError) {
-            throw GlobexClientException::invalidResponse(self::CHARGES_PATH, \sprintf('A status response carries a recognized "status", got "%s".', $status));
+            throw GlobexClientException::invalidResponse($path, \sprintf('A response carries a recognized "status", got "%s".', $status));
         }
     }
 }

@@ -23,6 +23,7 @@ final class PaymentRequestedPublisherTest extends AbstractIntegrationTestCase
 
         // Then
         $event = $this->publishedEventOf(PaymentRequestedIntegrationEvent::class);
+        self::assertSame($orderPayment->id->toString(), $event->paymentId);
         self::assertSame($builder['orderId'], $event->orderId);
         self::assertSame($builder['amount']->cents, $event->amountInCents);
         self::assertSame($builder['reference']->value, $event->reference);

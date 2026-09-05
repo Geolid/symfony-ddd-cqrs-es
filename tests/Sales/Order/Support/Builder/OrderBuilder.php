@@ -26,9 +26,14 @@ use Symfony\Component\Clock\Clock;
  *     lines: list<OrderLine>,
  *     placedAt: \DateTimeImmutable,
  *     confirmedAt: \DateTimeImmutable,
+ *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
+ *     abortedAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
  *     deliveredAt: \DateTimeImmutable,
+ *     returnRequestedAt: \DateTimeImmutable,
+ *     returnedAt: \DateTimeImmutable,
+ *     disputedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Order, Attributes>
@@ -85,12 +90,30 @@ final class OrderBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function prepared(?\DateTimeImmutable $preparedAt = null): self
+    {
+        $builder = null !== $preparedAt ? $this->withAttributes(preparedAt: $preparedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->prepare($builder['preparedAt']),
+        );
+    }
+
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
 
         return $builder->withModifier(
             static fn (Order $order, self $builder) => $order->cancel($builder['buyerId'], $builder['cancelledAt']),
+        );
+    }
+
+    public function aborted(?\DateTimeImmutable $abortedAt = null): self
+    {
+        $builder = null !== $abortedAt ? $this->withAttributes(abortedAt: $abortedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->abort($builder['abortedAt']),
         );
     }
 
@@ -109,6 +132,33 @@ final class OrderBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (Order $order, self $builder) => $order->deliver($builder['deliveredAt']),
+        );
+    }
+
+    public function returnRequested(?\DateTimeImmutable $returnRequestedAt = null): self
+    {
+        $builder = null !== $returnRequestedAt ? $this->withAttributes(returnRequestedAt: $returnRequestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->requestReturn($builder['returnRequestedAt']),
+        );
+    }
+
+    public function returned(?\DateTimeImmutable $returnedAt = null): self
+    {
+        $builder = null !== $returnedAt ? $this->withAttributes(returnedAt: $returnedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->return($builder['returnedAt']),
+        );
+    }
+
+    public function disputed(?\DateTimeImmutable $disputedAt = null): self
+    {
+        $builder = null !== $disputedAt ? $this->withAttributes(disputedAt: $disputedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->dispute($builder['disputedAt']),
         );
     }
 
@@ -131,9 +181,14 @@ final class OrderBuilder extends AbstractAggregateBuilder
             )],
             'placedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
             'confirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'preparedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
-            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'abortedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
+            'returnRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
+            'returnedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+6 day'),
+            'disputedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+6 day'),
         ];
     }
 

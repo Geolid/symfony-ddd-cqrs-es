@@ -62,7 +62,7 @@ final class CancelOrphanedOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->dispatched()->create();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->prepared()->dispatched()->create();
         $this->store($order);
 
         // When

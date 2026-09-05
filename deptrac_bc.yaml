@@ -28,6 +28,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Finance/Payer/.*' }
 
+    - name: Finance.Refund
+      collectors:
+        - { type: directory, value: 'src/Finance/Refund/.*' }
+
     - name: Iam.Identity
       collectors:
         - { type: directory, value: 'src/Iam/Identity/.*' }
@@ -62,10 +66,11 @@ deptrac:
   ruleset:
     Sales.Buyer:      [ Iam.Identity, Shared, Vendors ]
     Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, AfterSales.Return, Finance.Payment, Finance.Payer, Shared, Vendors ]
-    Fulfilment.Shipping: [ Sales.Order, AfterSales.Return, Shared, Vendors ]
+    Fulfilment.Shipping: [ Sales.Order, AfterSales.Return, Finance.Payment, Shared, Vendors ]
     AfterSales.Return: [ Sales.Order, Fulfilment.Shipping, Shared, Vendors ]
-    Finance.Payment: [ Sales.Order, AfterSales.Return, Shared, Vendors ]
+    Finance.Payment: [ Sales.Order, Fulfilment.Shipping, AfterSales.Return, Shared, Vendors ]
     Finance.Payer: [ Iam.Identity, Shared, Vendors ]
+    Finance.Refund: [ Finance.Payment, AfterSales.Return, Shared, Vendors ]
     Iam.Identity:        [ Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]
