@@ -18,6 +18,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -36,8 +37,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'reference' => $event->reference,
                 'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'origin' => $this->toAddressData($event->origin->toArray()),
-                'destination' => $this->toAddressData($event->destination->toArray()),
+                'origin' => $this->toAddressData($event->origin),
+                'destination' => $this->toAddressData($event->destination),
                 'created_at' => $event->createdAt,
             ],
             ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
@@ -139,18 +140,16 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function toAddressData(array $address): array
+    private function toAddressData(PostalAddress $address): array
     {
         return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
+            'recipient_name' => $address->recipientName,
+            'street' => $address->address->street,
+            'postal_code' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'country_code' => $address->address->countryCode->value,
         ];
     }
 }
