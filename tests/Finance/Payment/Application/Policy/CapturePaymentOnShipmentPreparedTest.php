@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Finance\Tests\Payment\Application\Policy;
+
+use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
+use Finance\Payment\Application\Checkout\PaymentGatewayStatus;
+use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
+use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\Policy\CapturePaymentOnShipmentPrepared;
+use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
+use Ramsey\Uuid\Uuid;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
+
+final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTestCase
+{
+    private PaymentGatewayInterface&MockObject $paymentGateway;
+
+    private PaymentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
+        $this->replace(PaymentGatewayInterface::class, $this->paymentGateway);
+
+        $this->finder = $this->service(PaymentFinderInterface::class);
+    }
+
+    #[Test]
+    public function itCaptures(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $payment = $paymentBuilder->create();
+        $this->store($order, $payment);
+        $this->paymentGateway->expects(self::once())->method('capture')
+            ->with($paymentBuilder['reference']->value)
+            ->willReturn(PaymentGatewayStatus::CAPTURED);
+
+        // When
+        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(
+            Uuid::uuid7()->toString(),
+            $order->id->toString(),
+            Clock::get()->now(),
+        ));
+
+        // Then
+        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(PaymentStatus::CAPTURED, $result->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenNotFound(): void
+    {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('capture');
+
+        // When
+        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(
+            Uuid::uuid7()->toString(),
+            Uuid::uuid7()->toString(),
+            Clock::get()->now(),
+        ));
+    }
+
+    #[Test]
+    public function itFailsPaymentWhenGatewayDeclines(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $payment = $paymentBuilder->create();
+        $this->store($order, $payment);
+        $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::DECLINED);
+
+        // When
+        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(
+            Uuid::uuid7()->toString(),
+            $order->id->toString(),
+            Clock::get()->now(),
+        ));
+
+        // Then
+        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        self::assertSame(PaymentStatus::FAILED, $result->status);
+    }
+}

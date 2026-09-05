@@ -66,7 +66,7 @@ deptrac:
   ruleset:
     Sales.Buyer:      [ Iam.Identity, Shared, Vendors ]
     Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, AfterSales.Return, Finance.Payment, Finance.Payer, Shared, Vendors ]
-    Fulfilment.Shipping: [ Sales.Order, AfterSales.Return, Shared, Vendors ]
+    Fulfilment.Shipping: [ Sales.Order, AfterSales.Return, Finance.Payment, Shared, Vendors ]
     AfterSales.Return: [ Sales.Order, Fulfilment.Shipping, Shared, Vendors ]
     Finance.Payment: [ Sales.Order, Fulfilment.Shipping, AfterSales.Return, Shared, Vendors ]
     Finance.Payer: [ Iam.Identity, Shared, Vendors ]

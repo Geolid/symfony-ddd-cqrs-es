@@ -41,7 +41,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private const array TRANSITIONS = [
         OrderState::PLACED->value => [OrderState::CONFIRMED, OrderState::CANCELLED],
         OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED],
-        OrderState::PREPARED->value => [OrderState::DISPATCHED],
+        OrderState::PREPARED->value => [OrderState::DISPATCHED, OrderState::CANCELLED],
         OrderState::DISPATCHED->value => [OrderState::DELIVERED],
         OrderState::DELIVERED->value => [OrderState::RETURN_REQUESTED],
         OrderState::RETURN_REQUESTED->value => [OrderState::RETURNED, OrderState::DISPUTED],
@@ -49,9 +49,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         OrderState::RETURNED->value => [],
         OrderState::DISPUTED->value => [],
     ];
-
-    /** @var list<OrderState> */
-    private const array ABORTABLE = [OrderState::PLACED, OrderState::CONFIRMED, OrderState::PREPARED];
 
     #[Id]
     public private(set) OrderId $id;
@@ -144,7 +141,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::PREPARED)->isSatisfiedBy($this->state)) {
             throw OrderNotCancellableException::forId($this->id);
         }
 
@@ -156,7 +153,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function abort(\DateTimeImmutable $abortedAt): void
     {
-        if (!\in_array($this->state, self::ABORTABLE, true)) {
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
+            return;
+        }
+
+        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::DISPATCHED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -202,7 +203,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function returnGoods(\DateTimeImmutable $returnedAt): void
+    public function return(\DateTimeImmutable $returnedAt): void
     {
         if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::RETURNED)->isSatisfiedBy($this->state)) {
             return;

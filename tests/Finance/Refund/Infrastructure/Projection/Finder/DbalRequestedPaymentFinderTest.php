@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Refund\Infrastructure\Projection\Finder;
 
-use Finance\Refund\Application\Exception\PlacedPaymentResultNotFoundException;
-use Finance\Refund\Application\Finder\PlacedPayment\PlacedPaymentFinderInterface;
+use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
+use Finance\Refund\Application\Finder\RequestedPayment\RequestedPaymentFinderInterface;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class DbalPlacedPaymentFinderTest extends AbstractIntegrationTestCase
+final class DbalRequestedPaymentFinderTest extends AbstractIntegrationTestCase
 {
-    private PlacedPaymentFinderInterface $finder;
+    private RequestedPaymentFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->finder = $this->service(PlacedPaymentFinderInterface::class);
+        $this->finder = $this->service(RequestedPaymentFinderInterface::class);
     }
 
     #[Test]
@@ -44,7 +44,7 @@ final class DbalPlacedPaymentFinderTest extends AbstractIntegrationTestCase
     public function itThrowsWhenOrderNotFound(): void
     {
         // Then
-        $this->expectException(PlacedPaymentResultNotFoundException::class);
+        $this->expectException(RequestedPaymentResultNotFoundException::class);
 
         // When
         $this->finder->ofOrder(Uuid::uuid7()->toString());

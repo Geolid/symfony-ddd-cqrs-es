@@ -6,6 +6,7 @@ namespace Fulfilment\Tests\Shipping\Application\Policy;
 
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipping\Application\Policy\RequestShipmentOnOrderConfirmed;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -48,6 +49,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         self::assertTrue(Uuid::isValid($dispatched->id));
         $originAddress = $warehouseAddressProvider->get()->toArray();
         self::assertSame($orderId, $dispatched->reference);
+        self::assertSame(ShipmentDirection::OUTBOUND, $dispatched->direction);
         self::assertSame($buyerId, $dispatched->buyerId);
         self::assertSame($originAddress, $dispatched->origin);
         self::assertSame($destinationData, $dispatched->destination);

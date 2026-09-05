@@ -14,9 +14,9 @@ use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
 #[Projector('finance.refund.project_placed_payments')]
-final readonly class DbalPlacedPaymentProjector extends AbstractDbalProjector
+final readonly class DbalRequestedPaymentProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'finance_refund_placed_payment';
+    public const string TABLE = 'finance_refund_requested_payment';
 
     #[Subscribe(PaymentRequestedIntegrationEvent::class)]
     public function onPaymentRequested(PaymentRequestedIntegrationEvent $event): void

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Refund\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Finance\Refund\Infrastructure\Projection\Projector\DbalPlacedPaymentProjector;
+use Finance\Refund\Infrastructure\Projection\Projector\DbalRequestedPaymentProjector;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -13,7 +13,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 /**
  * @phpstan-type Row array{payment_id: string, amount_in_cents: int|string}
  */
-final class DbalPlacedPaymentProjectorTest extends AbstractIntegrationTestCase
+final class DbalRequestedPaymentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itProjectsOnPaymentRequested(): void
@@ -41,7 +41,7 @@ final class DbalPlacedPaymentProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT payment_id, amount_in_cents FROM %s WHERE order_id = :orderId', DbalPlacedPaymentProjector::TABLE),
+            \sprintf('SELECT payment_id, amount_in_cents FROM %s WHERE order_id = :orderId', DbalRequestedPaymentProjector::TABLE),
             ['orderId' => $orderId],
         );
     }

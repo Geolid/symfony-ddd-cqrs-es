@@ -27,7 +27,7 @@ final readonly class ReturnOrderHandler
     public function __invoke(ReturnOrder $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
-        $order->returnGoods($this->clock->now());
+        $order->return($this->clock->now());
         $this->repository->save($order);
     }
 }

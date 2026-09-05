@@ -30,8 +30,8 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) PaymentId $id;
     public private(set) string $checkoutUrl;
+    public private(set) PaymentReference $reference;
     private string $orderId;
-    private PaymentReference $reference;
     private PaymentState $state;
 
     public static function request(

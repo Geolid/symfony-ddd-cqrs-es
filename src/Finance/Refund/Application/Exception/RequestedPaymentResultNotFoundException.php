@@ -6,7 +6,7 @@ namespace Finance\Refund\Application\Exception;
 
 use Shared\Application\Exception\ResultNotFoundException;
 
-final class PlacedPaymentResultNotFoundException extends ResultNotFoundException
+final class RequestedPaymentResultNotFoundException extends ResultNotFoundException
 {
     public static function forOrder(string $orderId): self
     {

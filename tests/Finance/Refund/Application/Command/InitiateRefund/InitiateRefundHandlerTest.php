@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Refund\Application\Command\InitiateRefund;
 
 use Finance\Refund\Application\Command\InitiateRefund\InitiateRefund;
-use Finance\Refund\Application\Exception\PlacedPaymentResultNotFoundException;
+use Finance\Refund\Application\Exception\RequestedPaymentResultNotFoundException;
 use Finance\Refund\Domain\Repository\RefundRepositoryInterface;
 use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
@@ -50,13 +50,13 @@ final class InitiateRefundHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenPlacedPaymentNotFound(): void
+    public function itFailsWhenRequestedPaymentNotFound(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(PlacedPaymentResultNotFoundException::class);
+        $this->expectException(RequestedPaymentResultNotFoundException::class);
 
         // When
         $this->dispatch(new InitiateRefund($orderId));

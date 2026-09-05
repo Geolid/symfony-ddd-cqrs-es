@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Finance\Payment\Application\Policy;
+
+use Finance\Payment\Application\Checkout\PaymentGatewayInterface;
+use Finance\Payment\Application\Checkout\PaymentGatewayStatus;
+use Finance\Payment\Application\Command\CapturePayment\CapturePayment;
+use Finance\Payment\Application\Command\FailPayment\FailPayment;
+use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
+use Finance\Payment\Domain\ValueObject\PaymentId;
+use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Policy;
+
+#[Policy('finance.payment.capture_payment_on_shipment_prepared')]
+final readonly class CapturePaymentOnShipmentPrepared
+{
+    public function __construct(
+        private PaymentRepositoryInterface $repository,
+        private PaymentGatewayInterface $paymentGateway,
+        private CommandBusInterface $commandBus,
+    ) {
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Subscribe(ShipmentPreparedIntegrationEvent::class)]
+    public function __invoke(ShipmentPreparedIntegrationEvent $event): void
+    {
+        $id = PaymentId::forOrder($event->reference);
+
+        if (!$this->repository->has($id)) {
+            return;
+        }
+
+        $payment = $this->repository->load($id);
+
+        $command = match ($this->paymentGateway->capture($payment->reference->value)) {
+            PaymentGatewayStatus::CAPTURED => new CapturePayment($id->toString()),
+            PaymentGatewayStatus::DECLINED => new FailPayment($id->toString()),
+            default => null,
+        };
+
+        if ($command instanceof CommandInterface) {
+            $this->commandBus->dispatch($command);
+        }
+    }
+}

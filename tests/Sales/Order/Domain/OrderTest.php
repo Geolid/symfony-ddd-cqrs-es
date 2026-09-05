@@ -261,7 +261,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered(), $this->returnRequested())
-            ->when(fn (Order $order) => $order->returnGoods($this->returnedAt))
+            ->when(fn (Order $order) => $order->return($this->returnedAt))
             ->then(new OrderReturned($this->id->toString(), $this->returnedAt));
     }
 
@@ -270,7 +270,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
-            ->when(static fn (Order $order) => $order->returnGoods(OrderBuilder::sample('returnedAt')))
+            ->when(static fn (Order $order) => $order->return(OrderBuilder::sample('returnedAt')))
             ->then();
     }
 

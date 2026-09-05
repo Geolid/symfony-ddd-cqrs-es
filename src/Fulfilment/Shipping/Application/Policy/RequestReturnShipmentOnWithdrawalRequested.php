@@ -6,6 +6,7 @@ namespace Fulfilment\Shipping\Application\Policy;
 
 use AfterSales\Return\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
+use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -32,6 +33,7 @@ final readonly class RequestReturnShipmentOnWithdrawalRequested
         $this->commandBus->dispatch(new RequestShipment(
             id: ShipmentId::generate()->toString(),
             reference: $event->withdrawalId,
+            direction: ShipmentDirection::RETURN,
             buyerId: $event->buyerId,
             origin: $event->shippingAddress,
             destination: $this->warehouseAddressProvider->get()->toArray(),

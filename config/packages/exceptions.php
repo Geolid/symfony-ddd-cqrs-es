@@ -10,6 +10,7 @@ use Catalog\Listing\Application\Exception\ProductLabelAlreadyTakenException;
 use Finance\Payment\Application\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Exception\PlacedOrderAlreadyCancelledException;
+use Fulfilment\Shipping\Application\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Exception\TrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
@@ -53,6 +54,7 @@ return static function (ContainerConfigurator $container): void {
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             TrackingNumberAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],

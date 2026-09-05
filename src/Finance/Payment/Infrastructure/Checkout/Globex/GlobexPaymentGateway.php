@@ -46,6 +46,26 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws GlobexClientException
      */
+    public function capture(string $reference): PaymentGatewayStatus
+    {
+        $response = $this->globexClient->post('/capture', ['reference' => $reference]);
+
+        $status = $response['status'] ?? null;
+
+        if (!\is_string($status) || '' === $status) {
+            throw GlobexClientException::invalidResponse('/capture', 'A capture response carries a non-empty "status".');
+        }
+
+        try {
+            return PaymentGatewayStatus::from($status);
+        } catch (\ValueError) {
+            throw GlobexClientException::invalidResponse('/capture', \sprintf('A capture response carries a recognized "status", got "%s".', $status));
+        }
+    }
+
+    /**
+     * @throws GlobexClientException
+     */
     public function void(string $reference): void
     {
         $this->globexClient->post('/void', ['reference' => $reference]);

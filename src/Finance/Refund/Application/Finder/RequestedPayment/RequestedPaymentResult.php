@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Finance\Refund\Application\Finder\PlacedPayment;
+namespace Finance\Refund\Application\Finder\RequestedPayment;
 
-final readonly class PlacedPaymentResult
+final readonly class RequestedPaymentResult
 {
     public function __construct(
         public string $orderId,

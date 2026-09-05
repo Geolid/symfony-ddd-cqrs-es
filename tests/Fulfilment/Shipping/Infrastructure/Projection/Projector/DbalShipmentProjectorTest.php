@@ -10,10 +10,11 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{reference: string, status: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{reference: string, direction: string, status: string, origin: string, destination: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,7 +32,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['reference'], $row['reference']);
+        self::assertSame($builder['direction']->value, $row['direction']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
+        self::assertSame($this->primitiveAddress($builder['origin']), $this->postalAddress($row['origin']));
+        self::assertSame($this->primitiveAddress($builder['destination']), $this->postalAddress($row['destination']));
         self::assertNull($row['tracking_number']);
     }
 
@@ -161,6 +165,31 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
+     */
+    private function primitiveAddress(PostalAddress $address): array
+    {
+        return [
+            'recipient_name' => $address->recipientName,
+            'street' => $address->address->street,
+            'postal_code' => $address->address->postalCode,
+            'city' => $address->address->city,
+            'country_code' => $address->address->countryCode->value,
+        ];
+    }
+
+    /**
+     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
+     */
+    private function postalAddress(string $json): array
+    {
+        /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
+        $decoded = json_decode($json, true);
+
+        return $decoded;
+    }
+
+    /**
      * @return Row|false
      */
     private function fetchRow(string $id): array|false
@@ -170,7 +199,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT reference, status, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT reference, direction, status, origin, destination, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

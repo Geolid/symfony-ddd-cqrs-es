@@ -149,7 +149,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
         $builder = null !== $returnedAt ? $this->withAttributes(returnedAt: $returnedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->returnGoods($builder['returnedAt']),
+            static fn (Order $order, self $builder) => $order->return($builder['returnedAt']),
         );
     }
 
