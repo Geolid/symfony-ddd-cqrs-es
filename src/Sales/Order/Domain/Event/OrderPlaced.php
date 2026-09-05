@@ -7,6 +7,7 @@ namespace Sales\Order\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
+use Sales\Order\Domain\ValueObject\OrderLine;
 use Shared\Domain\Gdpr\ErasedPostalAddressSentinel;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -15,7 +16,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class OrderPlaced
 {
     /**
-     * @param list<array{productId: string, label: string, quantity: int, unitPriceInCents: int}> $lines
+     * @param list<OrderLine> $lines
      */
     public function __construct(
         public string $id,

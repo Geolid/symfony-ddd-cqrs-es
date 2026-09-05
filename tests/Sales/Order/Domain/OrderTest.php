@@ -80,7 +80,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->buyerId,
                 $this->shippingAddress,
                 $this->billingAddress,
-                $this->primitiveLines(),
+                $this->lines,
                 $this->totalAmount(),
                 $this->placedAt,
             ));
@@ -305,7 +305,7 @@ final class OrderTest extends AggregateRootTestCase
             $this->buyerId,
             $this->shippingAddress,
             $this->billingAddress,
-            $this->primitiveLines(),
+            $this->lines,
             $this->totalAmount(),
             $this->placedAt,
         );
@@ -347,22 +347,6 @@ final class OrderTest extends AggregateRootTestCase
             $this->lines,
             static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
             Money::fromCents(0),
-        );
-    }
-
-    /**
-     * @return list<array{productId: string, label: string, quantity: int, unitPriceInCents: int}>
-     */
-    private function primitiveLines(): array
-    {
-        return array_map(
-            static fn (OrderLine $line): array => [
-                'productId' => $line->product->id,
-                'label' => $line->product->label->value,
-                'quantity' => $line->quantity,
-                'unitPriceInCents' => $line->product->price->cents,
-            ],
-            $this->lines,
         );
     }
 }

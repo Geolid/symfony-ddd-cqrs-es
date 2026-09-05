@@ -86,15 +86,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             buyerId: $buyerId,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            lines: array_values(array_map(
-                static fn (OrderLine $line): array => [
-                    'productId' => $line->product->id,
-                    'label' => $line->product->label->value,
-                    'quantity' => $line->quantity,
-                    'unitPriceInCents' => $line->product->price->cents,
-                ],
-                $lines,
-            )),
+            lines: $lines,
             totalAmount: $total,
             placedAt: $placedAt,
         ));
