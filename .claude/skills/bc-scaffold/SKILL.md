@@ -8,13 +8,15 @@ effort: low
 ---
 ## Procedure
 
-### 1. Choose the Subdomain
+### 1. Choose the Subdomain and name the BC
 
-List `src/`; pick an existing one. A new Subdomain only if none fits:
+List `src/`; pick an existing Subdomain. A new Subdomain only if none fits:
 
 1. psr-4 entry (`autoload` + `autoload-dev`) in `composer.json`, then `composer dump-autoload`
 2. Create `config/services/<lowercase-subdomain>.php` (`SubdomainServiceLoader::load($services, '<Subdomain>')`)
 3. Add `<testsuite name="<lowercase-subdomain>"><directory>tests/<Subdomain></directory></testsuite>` to `phpunit.dist.xml`
+
+If the BC will host 2+ aggregates, name it after the capability/process it serves — never after one of its own aggregates, and never a word that only stutters against an aggregate name it will contain.
 
 ### 2. Create the structure
 
@@ -27,7 +29,7 @@ List `src/`; pick an existing one. A new Subdomain only if none fits:
 ### 4. Write the skeleton
 
 - A minimal root Aggregate (look at 2-3 existing Aggregates, extract the shared pattern) + its first Domain Event
-- `Domain/Repository/XxxRepositoryInterface` + implementation under `Infrastructure/Persistence/**/Repository/`
+- `Domain/Repository/<Aggregate>RepositoryInterface` + implementation under `Infrastructure/EventStore/<Vendor><Aggregate>Repository`
 - An `AggregateRootTestCase`-based test alongside the Aggregate, from the start (see `tests/Sales/Order/Domain/OrderTest.php`)
 
 ### 5. Validate

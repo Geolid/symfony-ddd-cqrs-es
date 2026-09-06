@@ -15,7 +15,10 @@ Unique — list `apps/` for precedent.
 ### 2. Create the structure
 
 - `apps/<dm>/src/` — new psr-4 entry in the root `composer.json` (`autoload` + `autoload-dev`), then `composer dump-autoload`
-- `apps/<dm>/config/routes.php` (attribute routing over `apps/<dm>/src/Controller/`) for an HTTP-facing DM; skip it for a console-only DM. `bundles.php` only if the DM needs a bundle absent from the global `config/bundles.php` (e.g. Twig — see `apps/web`); `config/packages/*` only for config specific to that DM, not already covered by the shared `config/packages/`. `Kernel.php` always imports from `apps/<dm>/config/` once `appId` is set — the directory itself must exist even for a console-only DM with nothing else to put there; an empty `bundles.php` returning `[]` is enough.
+- `apps/<dm>/config/` — must exist even for a console-only DM with nothing else to put there; `Kernel.php` always imports from it once `appId` is set.
+  - `routes.php` — attribute routing over `apps/<dm>/src/Controller/`; HTTP-facing DM only, skip for console-only.
+  - `bundles.php` — only if the DM needs a bundle absent from the global `config/bundles.php`; otherwise an empty `bundles.php` returning `[]` is enough.
+  - `config/packages/*` — only for config specific to that DM, not already covered by the shared `config/packages/`.
 
 ### 3. Wire the isolation
 
