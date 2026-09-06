@@ -70,13 +70,15 @@ final class IdentityBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => IdentityId::generate(...),
-            'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
-            'suspendedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'reactivatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
-            'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'erasedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
         ];
     }
 

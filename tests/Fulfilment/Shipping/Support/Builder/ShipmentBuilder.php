@@ -118,6 +118,8 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => ShipmentId::generate(...),
             'sourceId' => static fn (): string => Uuid::uuid7()->toString(),
@@ -131,13 +133,13 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'createdAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'preparedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'createdAt' => static fn (): \DateTimeImmutable => $now,
+            'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
             'trackingNumber' => static fn (): TrackingNumber => TrackingNumber::fromString(SeededFaker::get()->unique()->regexify('ACME-[A-Z0-9]{8}')),
-            'manifestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
-            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
+            'manifestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
         ];
     }
 

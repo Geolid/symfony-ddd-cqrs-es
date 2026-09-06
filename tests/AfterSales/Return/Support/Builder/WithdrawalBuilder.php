@@ -101,6 +101,8 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => WithdrawalId::generate(...),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
@@ -110,12 +112,12 @@ final class WithdrawalBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('-3 days'),
-            'requestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'receivedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'approvedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('-3 days'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now,
+            'receivedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'approvedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
             'reason' => static fn (): string => SeededFaker::get()->sentence(4),
-            'rejectedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'rejectedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
         ];
     }
 

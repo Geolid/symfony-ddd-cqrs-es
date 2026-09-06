@@ -127,20 +127,22 @@ final class PaymentBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
             'checkoutUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
-            'requestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'authorizedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'capturedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
-            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now,
+            'authorizedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'capturedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'refundId' => static fn (): string => Uuid::uuid7()->toString(),
-            'refundRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'refundFailedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'confirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
+            'refundRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'refundFailedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
         ];
     }
 

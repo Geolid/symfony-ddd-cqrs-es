@@ -72,14 +72,16 @@ final class RefundBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => RefundId::generate(...),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-            'initiatedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'refundedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'failedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'initiatedAt' => static fn (): \DateTimeImmutable => $now,
+            'refundedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 

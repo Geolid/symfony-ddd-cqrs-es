@@ -77,6 +77,8 @@ final class ApiKeyCredentialBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => ApiKeyCredentialId::generate(...),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
@@ -87,8 +89,8 @@ final class ApiKeyCredentialBuilder extends AbstractAggregateBuilder
             },
             'keyId' => static fn (): KeyId => KeyId::fromString(KeyId::PREFIX.bin2hex(random_bytes(8))),
             'secret' => static fn (): string => bin2hex(random_bytes(32)),
-            'issuedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'revokedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'issuedAt' => static fn (): \DateTimeImmutable => $now,
+            'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 
