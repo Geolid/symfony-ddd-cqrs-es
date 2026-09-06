@@ -4,39 +4,51 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\Projection;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 final class SnakeCaseKeysTest extends TestCase
 {
+    /**
+     * @param array<array-key, mixed> $data
+     * @param array<array-key, mixed> $expected
+     */
     #[Test]
-    public function itConvertsCamelCaseKeys(): void
+    #[DataProvider('provideCamelCaseArrays')]
+    public function itConverts(array $data, array $expected): void
     {
         // When
-        $result = SnakeCaseKeys::from(['recipientName' => 'Ada Lovelace', 'postalCode' => '75001']);
+        $result = SnakeCaseKeys::from($data);
 
         // Then
-        self::assertSame(['recipient_name' => 'Ada Lovelace', 'postal_code' => '75001'], $result);
+        self::assertSame($expected, $result);
     }
 
-    #[Test]
-    public function itConvertsNestedArrayKeysRecursively(): void
+    /**
+     * @return iterable<string, array{array<array-key, mixed>, array<array-key, mixed>}>
+     */
+    public static function provideCamelCaseArrays(): iterable
     {
-        // When
-        $result = SnakeCaseKeys::from(['recipientName' => 'Ada Lovelace', 'address' => ['postalCode' => '75001', 'countryCode' => 'FR']]);
+        yield 'flat key' => [
+            ['camelCaseKey' => 'value'],
+            ['camel_case_key' => 'value'],
+        ];
 
-        // Then
-        self::assertSame(['recipient_name' => 'Ada Lovelace', 'address' => ['postal_code' => '75001', 'country_code' => 'FR']], $result);
-    }
+        yield 'nested array value' => [
+            ['outerKey' => ['innerKey' => 'value']],
+            ['outer_key' => ['inner_key' => 'value']],
+        ];
 
-    #[Test]
-    public function itLeavesNonArrayValuesUntouched(): void
-    {
-        // When
-        $result = SnakeCaseKeys::from(['isActive' => true, 'itemCount' => 3]);
+        yield 'non-array values of any type stay untouched' => [
+            ['flagKey' => true, 'countKey' => 3],
+            ['flag_key' => true, 'count_key' => 3],
+        ];
 
-        // Then
-        self::assertSame(['is_active' => true, 'item_count' => 3], $result);
+        yield 'already snake_case key stays unchanged' => [
+            ['already_snake' => 'value'],
+            ['already_snake' => 'value'],
+        ];
     }
 }
