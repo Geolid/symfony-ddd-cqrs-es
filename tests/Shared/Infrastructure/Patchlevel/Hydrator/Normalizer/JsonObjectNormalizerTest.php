@@ -139,8 +139,7 @@ final class JsonObjectNormalizerTest extends TestCase
             self::fail('Expected '.InvalidArgument::class.' to be thrown.');
         } catch (InvalidArgument $exception) {
             // Then
-            $previous = $exception->getPrevious();
-            self::assertInstanceOf(\JsonException::class, $previous);
+            self::assertInstanceOf(\JsonException::class, $exception->getPrevious());
         }
     }
 
