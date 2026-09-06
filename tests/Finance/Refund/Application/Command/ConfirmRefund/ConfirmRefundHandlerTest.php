@@ -11,7 +11,6 @@ use Finance\Refund\Domain\Exception\RefundNotFoundException;
 use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Tests\Refund\Support\Builder\RefundBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ConfirmRefundHandlerTest extends AbstractIntegrationTestCase
@@ -49,7 +48,7 @@ final class ConfirmRefundHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = RefundId::forPayment(Uuid::uuid7()->toString())->toString();
+        $id = RefundId::generate()->toString();
 
         // Then
         $this->expectException(RefundNotFoundException::class);

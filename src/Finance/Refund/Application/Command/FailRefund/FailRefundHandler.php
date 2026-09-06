@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Finance\Refund\Application\Command\FailRefund;
 
-use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
-use Finance\Refund\Application\Finder\RequestedPayment\RequestedPaymentFinderInterface;
 use Finance\Refund\Domain\Exception\RefundAlreadyExistsException;
 use Finance\Refund\Domain\Exception\RefundNotFoundException;
 use Finance\Refund\Domain\Repository\RefundRepositoryInterface;
@@ -18,22 +16,17 @@ final readonly class FailRefundHandler
 {
     public function __construct(
         private RefundRepositoryInterface $repository,
-        private RequestedPaymentFinderInterface $requestedPaymentFinder,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws RequestedPaymentResultNotFoundException
      * @throws RefundNotFoundException
      * @throws RefundAlreadyExistsException
      */
     public function __invoke(FailRefund $command): void
     {
-        $requestedPayment = $this->requestedPaymentFinder->ofOrder($command->orderId);
-        $id = RefundId::forPayment($requestedPayment->paymentId);
-
-        $refund = $this->repository->load($id);
+        $refund = $this->repository->load(RefundId::fromString($command->refundId));
         $refund->fail($this->clock->now());
         $this->repository->save($refund);
     }

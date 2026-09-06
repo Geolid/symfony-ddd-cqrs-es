@@ -9,7 +9,6 @@ use Finance\Refund\Domain\Repository\RefundRepositoryInterface;
 use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Tests\Refund\Support\Builder\RefundBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelRefundRepositoryTest extends AbstractIntegrationTestCase
@@ -44,7 +43,7 @@ final class PatchlevelRefundRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(RefundNotFoundException::class);
 
         // When
-        $this->repository->load(RefundId::forPayment(Uuid::uuid7()->toString()));
+        $this->repository->load(RefundId::generate());
     }
 
     #[Test]
@@ -65,7 +64,7 @@ final class PatchlevelRefundRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(RefundId::forPayment(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has(RefundId::generate());
 
         // Then
         self::assertFalse($notExists);

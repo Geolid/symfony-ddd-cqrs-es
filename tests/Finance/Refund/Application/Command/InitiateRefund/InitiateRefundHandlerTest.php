@@ -6,8 +6,7 @@ namespace Finance\Tests\Refund\Application\Command\InitiateRefund;
 
 use Finance\Refund\Application\Command\InitiateRefund\InitiateRefund;
 use Finance\Refund\Application\Finder\RequestedPayment\Exception\RequestedPaymentResultNotFoundException;
-use Finance\Refund\Domain\Repository\RefundRepositoryInterface;
-use Finance\Refund\Domain\ValueObject\RefundId;
+use Finance\Refund\Domain\Event\RefundInitiated;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -27,26 +26,10 @@ final class InitiateRefundHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new InitiateRefund($paymentBuilder['orderId']));
 
         // Then
-        $refund = $this->service(RefundRepositoryInterface::class)->load(RefundId::forPayment($payment->id->toString()));
-        self::assertSame($payment->id->toString(), $refund->paymentId);
-        self::assertSame($paymentBuilder['orderId'], $refund->orderId);
-        self::assertSame($paymentBuilder['amount']->cents, $refund->amountInCents);
-    }
-
-    #[Test]
-    public function itIgnoresWhenAlreadyInitiated(): void
-    {
-        // Given
-        $paymentBuilder = PaymentBuilder::new();
-        $payment = $paymentBuilder->create();
-        $this->store($payment);
-        $this->dispatch(new InitiateRefund($paymentBuilder['orderId']));
-
-        // When
-        $this->dispatch(new InitiateRefund($paymentBuilder['orderId']));
-
-        // Then
-        self::expectNotToPerformAssertions();
+        $event = $this->publishedEventOf(RefundInitiated::class);
+        self::assertSame($payment->id->toString(), $event->paymentId);
+        self::assertSame($paymentBuilder['orderId'], $event->orderId);
+        self::assertSame($paymentBuilder['amount']->cents, $event->amount->cents);
     }
 
     #[Test]

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Policy;
 
-use Finance\Payment\Application\IntegrationEvent\PaymentRefundRejected\PaymentRefundRejectedIntegrationEvent;
-use Finance\Payment\Application\Policy\RefundPaymentOnPaymentRefundRequired;
+use Finance\Payment\Application\IntegrationEvent\PaymentRefundFailed\PaymentRefundFailedIntegrationEvent;
+use Finance\Payment\Application\Policy\RefundPaymentOnPaymentRefundInitiated;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Domain\Event\PaymentRefundRequired;
-use Finance\Payment\Domain\ValueObject\PaymentReference;
+use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Domain\Event\PaymentRefundInitiated;
+use Finance\Refund\Domain\ValueObject\RefundId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -20,11 +21,11 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegrationTestCase
+final class RefundPaymentOnPaymentRefundInitiatedTest extends AbstractIntegrationTestCase
 {
     private PaymentGatewayInterface&MockObject $paymentGateway;
 
-    private RefundPaymentOnPaymentRefundRequired $policy;
+    private RefundPaymentOnPaymentRefundInitiated $policy;
 
     protected function setUp(): void
     {
@@ -32,37 +33,45 @@ final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegration
 
         $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
         $this->replace(PaymentGatewayInterface::class, $this->paymentGateway);
-        $this->policy = $this->service(RefundPaymentOnPaymentRefundRequired::class);
+        $this->policy = $this->service(RefundPaymentOnPaymentRefundInitiated::class);
     }
 
     #[Test]
     public function itRefunds(): void
     {
         // Given
-        $reference = 'GLBX-'.Uuid::uuid7()->toString();
-        $this->paymentGateway->expects(self::once())->method('refund')->with($reference);
+        $reference = PaymentBuilder::sample('reference');
+        $this->paymentGateway->expects(self::once())->method('refund')->with($reference->value)->willReturn(PaymentGatewayStatus::REFUNDING);
 
         // When
-        $this->trigger(RefundPaymentOnPaymentRefundRequired::class, new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), PaymentReference::fromString($reference), Clock::get()->now()));
+        $this->trigger(RefundPaymentOnPaymentRefundInitiated::class, new PaymentRefundInitiated(
+            Uuid::uuid7()->toString(),
+            Uuid::uuid7()->toString(),
+            RefundId::generate()->toString(),
+            $reference,
+            Clock::get()->now(),
+        ));
     }
 
     #[Test]
     #[AllowMockObjectsWithoutExpectations]
-    public function itRejectsRefundWhenGatewayFailureFatal(): void
+    public function itFailsRefundWhenGatewayFailureFatal(): void
     {
         // Given
-        $builder = PaymentBuilder::new()->authorized()->captured();
+        $refundId = RefundId::generate()->toString();
+        $builder = PaymentBuilder::new()->authorized()->captured()->refundRequested($refundId);
         $payment = $builder->create();
         $this->store($payment);
-        $message = Message::create(new PaymentRefundRequired($payment->id->toString(), $builder['orderId'], $builder['reference'], Clock::get()->now()));
+        $message = Message::create(new PaymentRefundInitiated($payment->id->toString(), $builder['orderId'], $refundId, $builder['reference'], Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');
 
         // When
         $this->policy->onGatewayFailure($message, $error);
 
         // Then
-        $event = $this->publishedEventOf(PaymentRefundRejectedIntegrationEvent::class);
+        $event = $this->publishedEventOf(PaymentRefundFailedIntegrationEvent::class);
         self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($refundId, $event->refundId);
     }
 
     #[Test]
@@ -70,7 +79,7 @@ final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegration
     public function itRethrowsTransientGatewayFailure(): void
     {
         // Given
-        $message = Message::create(new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), PaymentReference::fromString('GLBX-x'), Clock::get()->now()));
+        $message = Message::create(new PaymentRefundInitiated(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), RefundId::generate()->toString(), PaymentBuilder::sample('reference'), Clock::get()->now()));
         $error = PaymentTransientFailureException::forReason('unreachable');
 
         // Then

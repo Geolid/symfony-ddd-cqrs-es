@@ -22,7 +22,7 @@ fake_api_store_mutate('acme-shipments', static function (array $records) use ($t
     $records[$trackingNumber] = [
         'reference' => $trackingNumber,
         'idempotencyKey' => $idempotencyKey,
-        'clientReferenceId' => filter_var($body['clientReferenceId'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'merchantReference' => filter_var($body['merchantReference'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
         'status' => 'requested',
         'createdAt' => gmdate('c'),
     ];

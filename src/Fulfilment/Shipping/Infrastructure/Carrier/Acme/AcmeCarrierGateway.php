@@ -25,7 +25,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     public function manifest(string $shipmentId, PostalAddress $origin, PostalAddress $destination): string
     {
         $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
-            'clientReferenceId' => $shipmentId,
+            'merchantReference' => $shipmentId,
             'origin' => $this->postalAddressPayload($origin),
             'destination' => $this->postalAddressPayload($destination),
         ], $shipmentId);

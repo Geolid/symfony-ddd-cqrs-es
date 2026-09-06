@@ -48,7 +48,7 @@ fake_api_store_mutate('globex-charges', static function (array $records) use ($c
     $records[$chargeReference] = [
         'reference' => $chargeReference,
         'idempotencyKey' => $idempotencyKey,
-        'clientReferenceId' => filter_var($body['clientReferenceId'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'merchantReference' => filter_var($body['merchantReference'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
         'checkoutUrl' => $checkoutUrl,
         'amountInCents' => filter_var($body['amountInCents'] ?? 0, \FILTER_VALIDATE_INT) ?: 0,
         'status' => 'requested',
