@@ -34,8 +34,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($builder['reference'], $row['reference']);
         self::assertSame($builder['direction']->value, $row['direction']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertSame($this->postalAddress($builder['origin']), $this->decodedPostalAddress($row['origin']));
-        self::assertSame($this->postalAddress($builder['destination']), $this->decodedPostalAddress($row['destination']));
+        self::assertSame($this->postalAddress($builder['origin']), $this->decoded($row['origin']));
+        self::assertSame($this->postalAddress($builder['destination']), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
     }
 
@@ -181,7 +181,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function decodedPostalAddress(string $json): array
+    private function decoded(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

@@ -53,7 +53,7 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($row['address']);
         self::assertSame(
             $this->postalAddress($builder['postalAddress']),
-            $this->decodedPostalAddress($row['address']),
+            $this->decoded($row['address']),
         );
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -61,7 +61,7 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotNull($otherRow['address']);
         self::assertSame(
             $this->postalAddress($otherBuilder['postalAddress']),
-            $this->decodedPostalAddress($otherRow['address']),
+            $this->decoded($otherRow['address']),
         );
     }
 
@@ -101,7 +101,7 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function decodedPostalAddress(string $json): array
+    private function decoded(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);
