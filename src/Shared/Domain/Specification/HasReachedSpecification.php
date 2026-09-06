@@ -47,8 +47,10 @@ final readonly class HasReachedSpecification
         $status = [];
 
         return array_any(
-            array_map(strval(...), array_keys($this->transitions)),
-            fn (string $start): bool => !isset($status[$start]) && $this->visit($start, $status),
+            array_keys($this->transitions),
+            function (int|string $start) use (&$status): bool {
+                return !isset($status[$start]) && $this->visit((string) $start, $status);
+            },
         );
     }
 
