@@ -48,8 +48,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(WithdrawalRequested::class, $rehydrated);
-        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
-        self::assertSame($erasedAddress->toArray(), $rehydrated->shippingAddress->toArray());
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->shippingAddress->toArray());
     }
 
     #[Test]
@@ -70,7 +69,11 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(WithdrawalRequestedIntegrationEvent::class, $rehydrated);
-        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
-        self::assertSame($erasedAddress->toArray(), $rehydrated->shippingAddress);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->shippingAddress);
+    }
+
+    private function erasedPostalAddress(): PostalAddress
+    {
+        return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
     }
 }

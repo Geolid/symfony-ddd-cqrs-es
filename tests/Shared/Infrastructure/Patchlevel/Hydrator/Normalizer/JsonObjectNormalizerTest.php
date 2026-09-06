@@ -87,16 +87,6 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
-    public function itDenormalizesNull(): void
-    {
-        // When
-        $value = $this->normalizer->denormalize(null);
-
-        // Then
-        self::assertNull($value);
-    }
-
-    #[Test]
     public function itDenormalizesFromAlreadyDecodedArray(): void
     {
         // When
@@ -108,13 +98,13 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenDenormalizingWrongType(): void
+    public function itDenormalizesNull(): void
     {
-        // Then
-        $this->expectException(InvalidArgument::class);
-
         // When
-        $this->normalizer->denormalize(123);
+        $value = $this->normalizer->denormalize(null);
+
+        // Then
+        self::assertNull($value);
     }
 
     #[Test]
@@ -141,6 +131,16 @@ final class JsonObjectNormalizerTest extends TestCase
             // Then
             self::assertInstanceOf(\JsonException::class, $exception->getPrevious());
         }
+    }
+
+    #[Test]
+    public function itThrowsWhenDenormalizingWrongType(): void
+    {
+        // Then
+        $this->expectException(InvalidArgument::class);
+
+        // When
+        $this->normalizer->denormalize(123);
     }
 
     #[Test]
