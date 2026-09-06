@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payment\Application\PSP;
+namespace Finance\Payment\Application\PSP\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

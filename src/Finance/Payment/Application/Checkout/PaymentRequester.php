@@ -48,7 +48,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
 
         $billingAddress = PostalAddress::of(
             $order->billingAddress->recipientName,
-            Address::of($order->billingAddress->street, $order->billingAddress->postalCode, $order->billingAddress->city, $order->billingAddress->countryCode),
+            Address::of($order->billingAddress->address->street, $order->billingAddress->address->postalCode, $order->billingAddress->address->city, $order->billingAddress->address->countryCode),
         );
 
         $session = $this->paymentGateway->requestPayment($orderId, $order->amountInCents, $returnUrl, $billingAddress);

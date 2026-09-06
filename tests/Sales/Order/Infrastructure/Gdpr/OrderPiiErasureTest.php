@@ -100,10 +100,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
+     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
      */
     private function erasedAddress(): array
     {
-        return ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        return ['recipientName' => 'erased', 'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ']];
     }
 }

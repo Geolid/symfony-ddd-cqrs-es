@@ -49,13 +49,10 @@ final readonly class RequestShipmentHandler
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $address
      */
     private function toPostalAddress(array $address): PostalAddress
     {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
+        return PostalAddress::of($address['recipientName'], Address::of(...$address['address']));
     }
 }

@@ -44,20 +44,22 @@ final class JsonObjectNormalizer implements Normalizer, HydratorAwareNormalizer
             return null;
         }
 
-        if (!\is_string($value) || null === $this->hydrator) {
-            throw InvalidArgument::withWrongType('string|null', $value);
+        if (null === $this->hydrator) {
+            throw InvalidArgument::withWrongType('string|array<string, mixed>|null', $value);
+        }
+
+        if (\is_string($value)) {
+            try {
+                $value = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+            } catch (\JsonException $exception) {
+                throw InvalidArgument::fromThrowable($exception);
+            }
         }
 
         try {
-            $decoded = json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw InvalidArgument::fromThrowable($exception);
-        }
-
-        try {
-            $decoded = Assert::isMap($decoded);
+            $decoded = Assert::isMap($value);
         } catch (\InvalidArgumentException) {
-            throw InvalidArgument::withWrongType('array<string, mixed>', $decoded);
+            throw InvalidArgument::withWrongType('array<string, mixed>', $value);
         }
 
         return $this->hydrator->hydrate($this->className, $decoded);

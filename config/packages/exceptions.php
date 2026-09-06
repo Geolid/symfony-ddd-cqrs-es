@@ -11,10 +11,10 @@ use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlr
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
-use Finance\Payment\Application\PSP\PaymentGatewayException;
-use Finance\Payment\Application\PSP\PaymentTransientFailureException;
-use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
-use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
+use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;

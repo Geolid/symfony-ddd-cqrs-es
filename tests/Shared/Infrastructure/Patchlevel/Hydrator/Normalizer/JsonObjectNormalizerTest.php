@@ -97,13 +97,24 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
+    public function itDenormalizesFromAlreadyDecodedArray(): void
+    {
+        // When
+        $object = $this->normalizer->denormalize(['value' => 'x']);
+
+        // Then
+        self::assertInstanceOf(DummyNestedObject::class, $object);
+        self::assertSame('x', $object->value);
+    }
+
+    #[Test]
     public function itThrowsWhenDenormalizingWrongType(): void
     {
         // Then
         $this->expectException(InvalidArgument::class);
 
         // When
-        $this->normalizer->denormalize(['value' => 'x']);
+        $this->normalizer->denormalize(123);
     }
 
     #[Test]

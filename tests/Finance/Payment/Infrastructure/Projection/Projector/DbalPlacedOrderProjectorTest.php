@@ -9,6 +9,7 @@ use Finance\Payment\Infrastructure\Projection\Projector\DbalPlacedOrderProjector
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -64,19 +65,13 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array<string, mixed> $address
      *
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
+     * @return array<string, mixed>
      */
     private function postalAddress(array $address): array
     {
-        return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
-        ];
+        return SnakeCaseKeys::from($address);
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Infrastructure\Locking;
+namespace Shared\Infrastructure\Locking\Exception;
 
 final class LockNotAcquiredException extends \RuntimeException
 {

@@ -41,10 +41,12 @@ final class DbalPayerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->address);
         $addressResult = [
             'recipientName' => $result->address->recipientName,
-            'street' => $result->address->street,
-            'postalCode' => $result->address->postalCode,
-            'city' => $result->address->city,
-            'countryCode' => $result->address->countryCode,
+            'address' => [
+                'street' => $result->address->address->street,
+                'postalCode' => $result->address->address->postalCode,
+                'city' => $result->address->address->city,
+                'countryCode' => $result->address->address->countryCode,
+            ],
         ];
         self::assertSame($builder['postalAddress']->toArray(), $addressResult);
     }

@@ -82,7 +82,7 @@ final readonly class PlaceOrderHandler
     {
         return PostalAddress::of(
             $address->recipientName,
-            Address::of($address->street, $address->postalCode, $address->city, $address->countryCode),
+            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
         );
     }
 

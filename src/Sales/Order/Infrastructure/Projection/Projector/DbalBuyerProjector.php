@@ -14,6 +14,7 @@ use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPost
 use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('sales.order.project_buyers')]
 final readonly class DbalBuyerProjector extends AbstractDbalProjector
@@ -33,7 +34,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['shipping_address' => $this->postalAddress($event->postalAddress)],
+            ['shipping_address' => SnakeCaseKeys::from($event->postalAddress)],
             ['buyer_id' => $event->buyerId],
             ['shipping_address' => Types::JSON],
         );
@@ -58,21 +59,5 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('buyer_id'))
                 ->create(),
         );
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
-     *
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(array $postalAddress): array
-    {
-        return [
-            'recipient_name' => $postalAddress['recipientName'],
-            'street' => $postalAddress['street'],
-            'postal_code' => $postalAddress['postalCode'],
-            'city' => $postalAddress['city'],
-            'country_code' => $postalAddress['countryCode'],
-        ];
     }
 }

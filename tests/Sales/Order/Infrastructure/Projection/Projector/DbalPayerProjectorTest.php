@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalPayerProjector;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -52,7 +52,7 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['address']);
         self::assertSame(
-            $this->postalAddress($builder['postalAddress']),
+            SnakeCaseKeys::from($builder['postalAddress']->toArray()),
             $this->decoded($row['address']),
         );
 
@@ -60,7 +60,7 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['address']);
         self::assertSame(
-            $this->postalAddress($otherBuilder['postalAddress']),
+            SnakeCaseKeys::from($otherBuilder['postalAddress']->toArray()),
             $this->decoded($otherRow['address']),
         );
     }
@@ -82,20 +82,6 @@ final class DbalPayerProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($other->id->toString(), $otherRow['payer_id']);
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(PostalAddress $postalAddress): array
-    {
-        return [
-            'recipient_name' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postal_code' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'country_code' => $postalAddress->address->countryCode->value,
-        ];
     }
 
     /**

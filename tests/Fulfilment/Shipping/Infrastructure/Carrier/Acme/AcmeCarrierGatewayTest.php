@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
-use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierFatalFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Infrastructure\Carrier\Acme\AcmeCarrierGateway;
 use Fulfilment\Shipping\Infrastructure\Carrier\Acme\AcmeClient;
 use PHPUnit\Framework\Attributes\DataProvider;

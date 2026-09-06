@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipping\Application\Carrier;
+namespace Fulfilment\Shipping\Application\Carrier\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

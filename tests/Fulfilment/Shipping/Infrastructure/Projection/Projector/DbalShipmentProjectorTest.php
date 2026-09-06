@@ -10,7 +10,7 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -34,8 +34,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($builder['reference'], $row['reference']);
         self::assertSame($builder['direction']->value, $row['direction']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertSame($this->postalAddress($builder['origin']), $this->decoded($row['origin']));
-        self::assertSame($this->postalAddress($builder['destination']), $this->decoded($row['destination']));
+        self::assertSame(SnakeCaseKeys::from($builder['origin']->toArray()), $this->decoded($row['origin']));
+        self::assertSame(SnakeCaseKeys::from($builder['destination']->toArray()), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
     }
 
@@ -162,20 +162,6 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     private function otherShipment(): Shipment
     {
         return ShipmentBuilder::new()->create();
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(PostalAddress $postalAddress): array
-    {
-        return [
-            'recipient_name' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postal_code' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'country_code' => $postalAddress->address->countryCode->value,
-        ];
     }
 
     /**

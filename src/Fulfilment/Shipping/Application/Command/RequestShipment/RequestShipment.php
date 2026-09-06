@@ -10,8 +10,8 @@ use Shared\Application\Command\CommandInterface;
 final readonly class RequestShipment implements CommandInterface
 {
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $origin
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $destination
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $origin
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $destination
      */
     public function __construct(
         public string $id,

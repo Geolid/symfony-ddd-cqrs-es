@@ -6,9 +6,9 @@ namespace Finance\Tests\Payment\Application\Policy;
 
 use Finance\Payment\Application\IntegrationEvent\PaymentRefundRejected\PaymentRefundRejectedIntegrationEvent;
 use Finance\Payment\Application\Policy\RefundPaymentOnPaymentRefundRequired;
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Application\PSP\PaymentTransientFailureException;
 use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;

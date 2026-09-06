@@ -14,17 +14,14 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class BuyerPostalAddressDefinedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $postalAddress
      */
     public function __construct(
         #[DataSubjectId]
         public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
-            'street' => 'erased',
-            'postalCode' => '00000',
-            'city' => 'erased',
-            'countryCode' => 'ZZ',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
         ]))]
         public array $postalAddress,
         public \DateTimeImmutable $definedAt,

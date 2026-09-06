@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\Policy;
 
 use Finance\Payment\Application\Command\RejectPaymentRefund\RejectPaymentRefund;
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
-use Finance\Payment\Application\PSP\PaymentGatewayException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Patchlevel\EventSourcing\Attribute\OnFailed;

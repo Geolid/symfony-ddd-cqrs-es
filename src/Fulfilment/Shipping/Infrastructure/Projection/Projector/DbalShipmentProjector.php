@@ -18,9 +18,9 @@ use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('fulfilment.shipping.project_shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector
@@ -37,8 +37,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'reference' => $event->reference,
                 'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'origin' => $this->postalAddress($event->origin),
-                'destination' => $this->postalAddress($event->destination),
+                'origin' => SnakeCaseKeys::from($event->origin->toArray()),
+                'destination' => SnakeCaseKeys::from($event->destination->toArray()),
                 'created_at' => $event->createdAt,
             ],
             ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
@@ -137,19 +137,5 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
         $table->addIndex(['reference'], 'fulfilment_shipping_reference_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(PostalAddress $postalAddress): array
-    {
-        return [
-            'recipient_name' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postal_code' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'country_code' => $postalAddress->address->countryCode->value,
-        ];
     }
 }

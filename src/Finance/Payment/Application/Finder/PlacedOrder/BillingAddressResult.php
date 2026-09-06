@@ -8,10 +8,7 @@ final readonly class BillingAddressResult
 {
     public function __construct(
         public string $recipientName,
-        public string $street,
-        public string $postalCode,
-        public string $city,
-        public string $countryCode,
+        public AddressResult $address,
     ) {
     }
 }

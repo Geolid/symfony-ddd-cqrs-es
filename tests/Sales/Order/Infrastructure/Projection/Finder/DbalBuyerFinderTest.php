@@ -41,10 +41,12 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->shippingAddress);
         $shippingResult = [
             'recipientName' => $result->shippingAddress->recipientName,
-            'street' => $result->shippingAddress->street,
-            'postalCode' => $result->shippingAddress->postalCode,
-            'city' => $result->shippingAddress->city,
-            'countryCode' => $result->shippingAddress->countryCode,
+            'address' => [
+                'street' => $result->shippingAddress->address->street,
+                'postalCode' => $result->shippingAddress->address->postalCode,
+                'city' => $result->shippingAddress->address->city,
+                'countryCode' => $result->shippingAddress->address->countryCode,
+            ],
         ];
         self::assertSame($builder['postalAddress']->toArray(), $shippingResult);
     }

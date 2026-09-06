@@ -14,6 +14,7 @@ use Finance\Payer\Application\IntegrationEvent\PayerRegistered\PayerRegisteredIn
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('sales.order.project_payers')]
 final readonly class DbalPayerProjector extends AbstractDbalProjector
@@ -33,7 +34,7 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['address' => $this->postalAddress($event->postalAddress)],
+            ['address' => SnakeCaseKeys::from($event->postalAddress)],
             ['payer_id' => $event->payerId],
             ['address' => Types::JSON],
         );
@@ -58,21 +59,5 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('payer_id'))
                 ->create(),
         );
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
-     *
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(array $postalAddress): array
-    {
-        return [
-            'recipient_name' => $postalAddress['recipientName'],
-            'street' => $postalAddress['street'],
-            'postal_code' => $postalAddress['postalCode'],
-            'city' => $postalAddress['city'],
-            'country_code' => $postalAddress['countryCode'],
-        ];
     }
 }

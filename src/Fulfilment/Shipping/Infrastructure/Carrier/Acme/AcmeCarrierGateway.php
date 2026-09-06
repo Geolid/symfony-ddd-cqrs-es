@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
-use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierFatalFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface

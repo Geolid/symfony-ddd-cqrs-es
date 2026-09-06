@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Infrastructure\PSP\Globex;
 
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
-use Finance\Payment\Application\PSP\PaymentGatewayException;
-use Finance\Payment\Application\PSP\PaymentTransientFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
+use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;

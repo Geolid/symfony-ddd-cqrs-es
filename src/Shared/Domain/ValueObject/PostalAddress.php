@@ -35,10 +35,10 @@ final readonly class PostalAddress
     }
 
     /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
+     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
      */
     public function toArray(): array
     {
-        return ['recipientName' => $this->recipientName, ...$this->address->toArray()];
+        return ['recipientName' => $this->recipientName, 'address' => $this->address->toArray()];
     }
 }

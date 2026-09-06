@@ -12,6 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('after_sales.return.project_delivered_orders')]
 final readonly class DbalDeliveredOrderProjector extends AbstractDbalProjector
@@ -26,13 +27,7 @@ final readonly class DbalDeliveredOrderProjector extends AbstractDbalProjector
             [
                 'order_id' => $event->orderId,
                 'buyer_id' => $event->buyerId,
-                'shipping_address' => [
-                    'recipient_name' => $event->shippingAddress['recipientName'],
-                    'street' => $event->shippingAddress['street'],
-                    'postal_code' => $event->shippingAddress['postalCode'],
-                    'city' => $event->shippingAddress['city'],
-                    'country_code' => $event->shippingAddress['countryCode'],
-                ],
+                'shipping_address' => SnakeCaseKeys::from($event->shippingAddress),
                 'delivered_at' => $event->deliveredAt,
             ],
             ['shipping_address' => Types::JSON, 'delivered_at' => Types::DATETIME_IMMUTABLE],
