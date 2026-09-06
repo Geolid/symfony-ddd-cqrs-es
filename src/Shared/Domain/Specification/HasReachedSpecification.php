@@ -64,11 +64,11 @@ final readonly class HasReachedSpecification
         foreach ($this->transitions[$value] ?? [] as $next) {
             $nextValue = (string) $next->value;
 
-            if (isset($status[$nextValue])) {
-                if (false === $status[$nextValue]) {
-                    return true;
-                }
-            } elseif ($this->visit($nextValue, $status)) {
+            if (match ($status[$nextValue] ?? null) {
+                false => true,
+                true => false,
+                null => $this->visit($nextValue, $status),
+            }) {
                 return true;
             }
         }
