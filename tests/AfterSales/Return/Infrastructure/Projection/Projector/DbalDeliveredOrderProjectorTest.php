@@ -29,7 +29,7 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['buyerId'], $row['buyer_id']);
-        self::assertSame($this->postalAddress($builder['shippingAddress']->toArray()), $this->decodedAddress($row['shipping_address']));
+        self::assertSame($this->postalAddress($builder['shippingAddress']->toArray()), $this->decodedPostalAddress($row['shipping_address']));
         self::assertNotNull($row['delivered_at']);
     }
 
@@ -52,7 +52,7 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function decodedAddress(string $json): array
+    private function decodedPostalAddress(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);
