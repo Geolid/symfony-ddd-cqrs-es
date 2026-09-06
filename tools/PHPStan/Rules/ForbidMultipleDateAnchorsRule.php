@@ -16,6 +16,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @implements Rule<ClassMethod>
@@ -74,7 +75,7 @@ final class ForbidMultipleDateAnchorsRule implements Rule
 
         return $node->var instanceof StaticCall
             && $node->var->class instanceof Name
-            && \in_array(ltrim((string) $node->var->class, '\\'), ['Clock', \Symfony\Component\Clock\Clock::class], true)
+            && \in_array(ltrim((string) $node->var->class, '\\'), ['Clock', Clock::class], true)
             && $node->var->name instanceof Identifier
             && 'get' === $node->var->name->toString();
     }
