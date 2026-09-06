@@ -52,9 +52,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlaced::class, $rehydrated);
-        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
-        self::assertSame($erasedAddress->toArray(), $rehydrated->shippingAddress->toArray());
-        self::assertSame($erasedAddress->toArray(), $rehydrated->billingAddress->toArray());
+        $erasedPostalAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
+        self::assertSame($erasedPostalAddress->toArray(), $rehydrated->shippingAddress->toArray());
+        self::assertSame($erasedPostalAddress->toArray(), $rehydrated->billingAddress->toArray());
     }
 
     #[Test]
@@ -75,7 +75,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderPlacedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->billingAddress);
+        self::assertSame($this->erasedPostalAddress(), $rehydrated->billingAddress);
     }
 
     #[Test]
@@ -96,13 +96,13 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderConfirmedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->shippingAddress);
+        self::assertSame($this->erasedPostalAddress(), $rehydrated->shippingAddress);
     }
 
     /**
      * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
      */
-    private function erasedAddress(): array
+    private function erasedPostalAddress(): array
     {
         return ['recipientName' => 'erased', 'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ']];
     }
