@@ -29,10 +29,10 @@ final readonly class PrepareOrderOnShipmentPrepared
     #[Subscribe(ShipmentPreparedIntegrationEvent::class)]
     public function __invoke(ShipmentPreparedIntegrationEvent $event): void
     {
-        if (!$this->repository->has(OrderId::fromString($event->reference))) {
+        if (!$this->repository->has(OrderId::fromString($event->sourceId))) {
             return;
         }
 
-        $this->commandBus->dispatch(new PrepareOrder($event->reference));
+        $this->commandBus->dispatch(new PrepareOrder($event->sourceId));
     }
 }

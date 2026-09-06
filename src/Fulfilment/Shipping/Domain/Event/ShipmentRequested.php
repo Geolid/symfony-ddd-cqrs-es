@@ -18,7 +18,7 @@ final readonly class ShipmentRequested
 {
     public function __construct(
         public string $id,
-        public string $reference,
+        public string $sourceId,
         public ShipmentDirection $direction,
         #[DataSubjectId]
         public string $buyerId,

@@ -32,7 +32,7 @@ final readonly class RequestReturnShipmentOnWithdrawalRequested
     {
         $this->commandBus->dispatch(new RequestShipment(
             id: ShipmentId::generate()->toString(),
-            reference: $event->withdrawalId,
+            sourceId: $event->withdrawalId,
             direction: ShipmentDirection::RETURN,
             buyerId: $event->buyerId,
             origin: $event->shippingAddress,

@@ -49,7 +49,7 @@ final class RequestReturnShipmentOnWithdrawalRequestedTest extends AbstractInteg
         // Then
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
-        self::assertSame($withdrawalId, $dispatched->reference);
+        self::assertSame($withdrawalId, $dispatched->sourceId);
         self::assertSame(ShipmentDirection::RETURN, $dispatched->direction);
         self::assertSame($buyerId, $dispatched->buyerId);
         $destinationAddress = $warehouseAddressProvider->get()->toArray();

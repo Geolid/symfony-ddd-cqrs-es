@@ -40,7 +40,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
         }
 
         if (ShipmentDirection::OUTBOUND === $shipment->direction) {
-            $paymentCapture = $this->paymentCaptureFinder->ofOrderOrNull($shipment->reference);
+            $paymentCapture = $this->paymentCaptureFinder->ofOrderOrNull($shipment->sourceId);
 
             if (null === $paymentCapture || !$paymentCapture->captured) {
                 throw ManifestDeniedException::forUncapturedPayment($shipmentId);

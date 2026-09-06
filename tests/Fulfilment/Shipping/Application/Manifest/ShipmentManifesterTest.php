@@ -49,7 +49,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderBuilder::new()->create();
         $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
-        $shipmentBuilder = ShipmentBuilder::new()->withReference($order->id->toString())->prepared();
+        $shipmentBuilder = ShipmentBuilder::new()->withSourceId($order->id->toString())->prepared();
         $shipment = $shipmentBuilder->create();
         $this->store($order, $payment, $shipment);
         $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
@@ -121,7 +121,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderBuilder::new()->create();
         $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->create();
-        $shipment = ShipmentBuilder::new()->withReference($order->id->toString())->prepared()->create();
+        $shipment = ShipmentBuilder::new()->withSourceId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);
         $this->carrier->expects(self::never())->method('manifest');
 

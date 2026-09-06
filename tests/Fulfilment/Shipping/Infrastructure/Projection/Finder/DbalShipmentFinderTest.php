@@ -41,7 +41,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($builder['reference'], $result->reference);
+        self::assertSame($builder['sourceId'], $result->sourceId);
         self::assertSame(ShipmentDirection::OUTBOUND, $result->direction);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
@@ -72,7 +72,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($builder['reference'], $result->reference);
+        self::assertSame($builder['sourceId'], $result->sourceId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
         self::assertNotNull($result->dispatchedAt);
@@ -90,7 +90,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsByReference(): void
+    public function itFindsBySourceId(): void
     {
         // Given
         $other = ShipmentBuilder::new()->create();
@@ -99,8 +99,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $shipment);
 
         // When
-        $found = $this->finder->ofReferenceOrNull($builder['reference']);
-        $notFound = $this->finder->ofReferenceOrNull(ShipmentBuilder::sample('reference'));
+        $found = $this->finder->ofSourceOrNull($builder['sourceId']);
+        $notFound = $this->finder->ofSourceOrNull(ShipmentBuilder::sample('sourceId'));
 
         // Then
         self::assertNotNull($found);

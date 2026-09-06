@@ -26,7 +26,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class ShipmentTest extends AggregateRootTestCase
 {
     private ShipmentId $id;
-    private string $reference;
+    private string $sourceId;
     private ShipmentDirection $direction;
     private string $buyerId;
     private PostalAddress $origin;
@@ -43,7 +43,7 @@ final class ShipmentTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = ShipmentId::generate();
-        $this->reference = ShipmentBuilder::sample('reference');
+        $this->sourceId = ShipmentBuilder::sample('sourceId');
         $this->direction = ShipmentBuilder::sample('direction');
         $this->buyerId = ShipmentBuilder::sample('buyerId');
         $this->origin = ShipmentBuilder::sample('origin');
@@ -61,7 +61,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Shipment => Shipment::request($this->id, $this->reference, $this->direction, $this->buyerId, $this->origin, $this->destination, $this->createdAt))
+            ->when(fn (): Shipment => Shipment::request($this->id, $this->sourceId, $this->direction, $this->buyerId, $this->origin, $this->destination, $this->createdAt))
             ->then($this->requested());
     }
 
@@ -93,7 +93,7 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotManifestWhenAlreadyManifestedWithSameReference(): void
+    public function itDoesNotManifestWhenAlreadyManifestedWithSameSourceId(): void
     {
         $this
             ->given($this->requested(), $this->manifested())
@@ -102,7 +102,7 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotManifestWhenAlreadyManifestedWithDifferentReference(): void
+    public function itCannotManifestWhenAlreadyManifestedWithDifferentSourceId(): void
     {
         $this
             ->given($this->requested(), $this->manifested())
@@ -257,7 +257,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         return new ShipmentRequested(
             $this->id->toString(),
-            $this->reference,
+            $this->sourceId,
             $this->direction,
             $this->buyerId,
             $this->origin,

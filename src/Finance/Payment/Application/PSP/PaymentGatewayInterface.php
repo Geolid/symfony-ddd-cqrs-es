@@ -23,12 +23,12 @@ interface PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function void(string $reference): void;
+    public function void(string $reference): PaymentGatewayStatus;
 
     /**
      * @throws PaymentGatewayException
      */
-    public function refund(string $reference): void;
+    public function refund(string $reference): PaymentGatewayStatus;
 
     /**
      * @throws PaymentGatewayException

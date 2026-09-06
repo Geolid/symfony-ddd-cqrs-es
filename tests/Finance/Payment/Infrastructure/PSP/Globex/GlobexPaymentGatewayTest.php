@@ -44,7 +44,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertContains('Idempotency-Key: '.$orderId, $headers);
         self::assertSame(
             [
-                'clientReferenceId' => $orderId,
+                'merchantReference' => $orderId,
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
                 'billingAddress' => [
@@ -121,15 +121,13 @@ final class GlobexPaymentGatewayTest extends TestCase
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'voided']);
 
         // When
-        $this->gateway($response)->void('GLBX-9F3K2M1P');
+        $status = $this->gateway($response)->void('GLBX-9F3K2M1P');
 
         // Then
+        self::assertSame(PaymentGatewayStatus::VOIDED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/void', $requestUrl);
-        self::assertSame(
-            ['reference' => 'GLBX-9F3K2M1P'],
-            $this->requestBody($response),
-        );
+        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P/void', $requestUrl);
+        self::assertSame([], $this->requestBody($response));
     }
 
     #[Test]
@@ -149,15 +147,13 @@ final class GlobexPaymentGatewayTest extends TestCase
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'refunding']);
 
         // When
-        $this->gateway($response)->refund('GLBX-9F3K2M1P');
+        $status = $this->gateway($response)->refund('GLBX-9F3K2M1P');
 
         // Then
+        self::assertSame(PaymentGatewayStatus::REFUNDING, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/refund', $requestUrl);
-        self::assertSame(
-            ['reference' => 'GLBX-9F3K2M1P'],
-            $this->requestBody($response),
-        );
+        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P/refund', $requestUrl);
+        self::assertSame([], $this->requestBody($response));
     }
 
     #[Test]

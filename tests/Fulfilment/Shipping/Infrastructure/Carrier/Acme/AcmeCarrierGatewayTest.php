@@ -41,7 +41,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         $requestBody = $this->requestBody($response);
         self::assertSame(
             [
-                'clientReferenceId' => $shipmentId,
+                'merchantReference' => $shipmentId,
                 'origin' => [
                     'recipient' => 'Returns Department',
                     'street' => "1 rue de l'Entrepot",
@@ -125,7 +125,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         // Then
         self::assertSame(CarrierGatewayStatus::DISPATCHED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://carrier.acme.test/trackers/ACME-4Q7X2K9', $requestUrl);
+        self::assertSame('https://carrier.acme.test/tracking/ACME-4Q7X2K9', $requestUrl);
     }
 
     #[Test]

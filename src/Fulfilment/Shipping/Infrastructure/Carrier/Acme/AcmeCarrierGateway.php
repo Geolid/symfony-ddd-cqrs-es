@@ -13,7 +13,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {
     private const string SHIPMENT_PATH = '/shipments';
-    private const string TRACKER_PATH = '/trackers';
+    private const string TRACKING_PATH = '/tracking';
 
     public function __construct(private AcmeClient $acmeClient)
     {
@@ -25,7 +25,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     public function manifest(string $shipmentId, PostalAddress $origin, PostalAddress $destination): string
     {
         $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
-            'clientReferenceId' => $shipmentId,
+            'merchantReference' => $shipmentId,
             'origin' => $this->postalAddressPayload($origin),
             'destination' => $this->postalAddressPayload($destination),
         ], $shipmentId);
@@ -44,7 +44,7 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
      */
     public function checkStatus(string $reference): CarrierGatewayStatus
     {
-        $response = $this->acmeClient->get(self::TRACKER_PATH.'/'.$reference);
+        $response = $this->acmeClient->get(\sprintf('%s/%s', self::TRACKING_PATH, $reference));
 
         $status = $response['status'] ?? null;
 

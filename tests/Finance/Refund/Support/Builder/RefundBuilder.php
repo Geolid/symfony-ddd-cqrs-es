@@ -14,6 +14,7 @@ use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Attributes = array{
+ *     id: RefundId,
  *     paymentId: string,
  *     orderId: string,
  *     amount: Money,
@@ -26,6 +27,11 @@ use Symfony\Component\Clock\Clock;
  */
 final class RefundBuilder extends AbstractAggregateBuilder
 {
+    public function withId(string $id): self
+    {
+        return $this->withAttributes(id: RefundId::fromString($id));
+    }
+
     public function withPaymentId(string $paymentId): self
     {
         return $this->withAttributes(paymentId: $paymentId);
@@ -67,6 +73,7 @@ final class RefundBuilder extends AbstractAggregateBuilder
     protected static function defaults(): array
     {
         return [
+            'id' => RefundId::generate(...),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
@@ -78,11 +85,9 @@ final class RefundBuilder extends AbstractAggregateBuilder
 
     protected function build(): Refund
     {
-        $paymentId = $this['paymentId'];
-
         return Refund::initiate(
-            id: RefundId::forPayment($paymentId),
-            paymentId: $paymentId,
+            id: $this['id'],
+            paymentId: $this['paymentId'],
             orderId: $this['orderId'],
             amount: $this['amount'],
             initiatedAt: $this['initiatedAt'],

@@ -48,7 +48,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
         $originAddress = $warehouseAddressProvider->get()->toArray();
-        self::assertSame($orderId, $dispatched->reference);
+        self::assertSame($orderId, $dispatched->sourceId);
         self::assertSame(ShipmentDirection::OUTBOUND, $dispatched->direction);
         self::assertSame($buyerId, $dispatched->buyerId);
         self::assertSame($originAddress, $dispatched->origin);

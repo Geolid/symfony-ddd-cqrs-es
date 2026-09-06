@@ -18,7 +18,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: ShipmentId,
- *     reference: string,
+ *     sourceId: string,
  *     direction: ShipmentDirection,
  *     buyerId: string,
  *     origin: PostalAddress,
@@ -36,9 +36,9 @@ use Symfony\Component\Clock\Clock;
  */
 final class ShipmentBuilder extends AbstractAggregateBuilder
 {
-    public function withReference(string $reference): self
+    public function withSourceId(string $sourceId): self
     {
-        return $this->withAttributes(reference: $reference);
+        return $this->withAttributes(sourceId: $sourceId);
     }
 
     public function withDirection(ShipmentDirection $direction): self
@@ -120,7 +120,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
     {
         return [
             'id' => ShipmentId::generate(...),
-            'reference' => static fn (): string => Uuid::uuid7()->toString(),
+            'sourceId' => static fn (): string => Uuid::uuid7()->toString(),
             'direction' => static fn (): ShipmentDirection => ShipmentDirection::OUTBOUND,
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(
@@ -145,7 +145,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
     {
         return Shipment::request(
             $this['id'],
-            $this['reference'],
+            $this['sourceId'],
             $this['direction'],
             $this['buyerId'],
             $this['origin'],

@@ -83,6 +83,9 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->failedAt);
         self::assertNull($result->cancelledAt);
+        self::assertNull($result->refundRequestedAt);
+        self::assertNull($result->refundFailedAt);
+        self::assertNull($result->refundedAt);
     }
 
     #[Test]

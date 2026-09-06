@@ -15,12 +15,20 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Money;
 
 #[Aggregate('finance.refund.refund')]
 final class Refund implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
+
+    /** @var array<string, list<RefundState>> */
+    private const array TRANSITIONS = [
+        RefundState::INITIATED->value => [RefundState::REFUNDED, RefundState::FAILED],
+        RefundState::REFUNDED->value => [],
+        RefundState::FAILED->value => [],
+    ];
 
     #[Id]
     public private(set) RefundId $id;
@@ -50,7 +58,7 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
 
     public function confirm(\DateTimeImmutable $refundedAt): void
     {
-        if (!$this->state->isInitiated()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, RefundState::REFUNDED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -62,7 +70,7 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
 
     public function fail(\DateTimeImmutable $failedAt): void
     {
-        if (!$this->state->isInitiated()) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, RefundState::FAILED)->isSatisfiedBy($this->state)) {
             return;
         }
 

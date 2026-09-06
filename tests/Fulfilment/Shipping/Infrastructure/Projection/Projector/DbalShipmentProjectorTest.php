@@ -14,7 +14,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{reference: string, direction: string, status: string, origin: string, destination: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{source_id: string, direction: string, status: string, origin: string, destination: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,7 +31,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['reference'], $row['reference']);
+        self::assertSame($builder['sourceId'], $row['source_id']);
         self::assertSame($builder['direction']->value, $row['direction']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
         self::assertSame(SnakeCaseKeys::from($builder['origin']->toArray()), $this->decoded($row['origin']));
@@ -185,7 +185,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT reference, direction, status, origin, destination, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT source_id, direction, status, origin, destination, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

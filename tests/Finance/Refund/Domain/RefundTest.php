@@ -16,6 +16,7 @@ use Shared\Domain\ValueObject\Money;
 
 final class RefundTest extends AggregateRootTestCase
 {
+    private RefundId $id;
     private string $paymentId;
     private string $orderId;
     private Money $amount;
@@ -27,6 +28,7 @@ final class RefundTest extends AggregateRootTestCase
     {
         parent::setUp();
 
+        $this->id = RefundId::generate();
         $this->paymentId = RefundBuilder::sample('paymentId');
         $this->orderId = RefundBuilder::sample('orderId');
         $this->amount = RefundBuilder::sample('amount');
@@ -41,7 +43,7 @@ final class RefundTest extends AggregateRootTestCase
         $this
             ->given()
             ->when(fn (): Refund => Refund::initiate(
-                RefundId::forPayment($this->paymentId),
+                $this->id,
                 $this->paymentId,
                 $this->orderId,
                 $this->amount,
@@ -56,14 +58,14 @@ final class RefundTest extends AggregateRootTestCase
         $this
             ->given($this->initiated())
             ->when(fn (Refund $refund) => $refund->confirm($this->refundedAt))
-            ->then(new RefundConfirmed(RefundId::forPayment($this->paymentId)->toString(), $this->refundedAt));
+            ->then(new RefundConfirmed($this->id->toString(), $this->refundedAt));
     }
 
     #[Test]
     public function itDoesNotConfirmWhenAlreadyConfirmed(): void
     {
         $this
-            ->given($this->initiated(), new RefundConfirmed(RefundId::forPayment($this->paymentId)->toString(), $this->refundedAt))
+            ->given($this->initiated(), new RefundConfirmed($this->id->toString(), $this->refundedAt))
             ->when(static fn (Refund $refund) => $refund->confirm(RefundBuilder::sample('refundedAt')))
             ->then();
     }
@@ -72,7 +74,7 @@ final class RefundTest extends AggregateRootTestCase
     public function itDoesNotConfirmWhenAlreadyFailed(): void
     {
         $this
-            ->given($this->initiated(), new RefundFailed(RefundId::forPayment($this->paymentId)->toString(), $this->failedAt))
+            ->given($this->initiated(), new RefundFailed($this->id->toString(), $this->failedAt))
             ->when(static fn (Refund $refund) => $refund->confirm(RefundBuilder::sample('refundedAt')))
             ->then();
     }
@@ -83,14 +85,14 @@ final class RefundTest extends AggregateRootTestCase
         $this
             ->given($this->initiated())
             ->when(fn (Refund $refund) => $refund->fail($this->failedAt))
-            ->then(new RefundFailed(RefundId::forPayment($this->paymentId)->toString(), $this->failedAt));
+            ->then(new RefundFailed($this->id->toString(), $this->failedAt));
     }
 
     #[Test]
     public function itDoesNotFailWhenAlreadyConfirmed(): void
     {
         $this
-            ->given($this->initiated(), new RefundConfirmed(RefundId::forPayment($this->paymentId)->toString(), $this->refundedAt))
+            ->given($this->initiated(), new RefundConfirmed($this->id->toString(), $this->refundedAt))
             ->when(static fn (Refund $refund) => $refund->fail(RefundBuilder::sample('failedAt')))
             ->then();
     }
@@ -103,7 +105,7 @@ final class RefundTest extends AggregateRootTestCase
     private function initiated(): RefundInitiated
     {
         return new RefundInitiated(
-            RefundId::forPayment($this->paymentId)->toString(),
+            $this->id->toString(),
             $this->paymentId,
             $this->orderId,
             $this->amount,

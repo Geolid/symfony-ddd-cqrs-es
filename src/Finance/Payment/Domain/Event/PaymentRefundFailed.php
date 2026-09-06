@@ -6,13 +6,14 @@ namespace Finance\Payment\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('finance.payment.payment.refund_rejected')]
-final readonly class PaymentRefundRejected
+#[Event('finance.payment.payment.refund_failed')]
+final readonly class PaymentRefundFailed
 {
     public function __construct(
         public string $id,
         public string $orderId,
-        public \DateTimeImmutable $rejectedAt,
+        public string $refundId,
+        public \DateTimeImmutable $failedAt,
     ) {
     }
 }

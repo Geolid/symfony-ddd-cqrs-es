@@ -13,6 +13,9 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
+use Finance\Payment\Domain\Event\PaymentRefundConfirmed;
+use Finance\Payment\Domain\Event\PaymentRefundFailed;
+use Finance\Payment\Domain\Event\PaymentRefundInitiated;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
@@ -113,6 +116,48 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(PaymentRefundInitiated::class)]
+    public function onPaymentRefundInitiated(PaymentRefundInitiated $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => PaymentStatus::REFUNDING->value,
+                'refund_requested_at' => $event->requestedAt,
+            ],
+            ['id' => $event->id],
+            ['refund_requested_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
+    #[Subscribe(PaymentRefundFailed::class)]
+    public function onPaymentRefundFailed(PaymentRefundFailed $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => PaymentStatus::CAPTURED->value,
+                'refund_failed_at' => $event->failedAt,
+            ],
+            ['id' => $event->id],
+            ['refund_failed_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
+    #[Subscribe(PaymentRefundConfirmed::class)]
+    public function onPaymentRefundConfirmed(PaymentRefundConfirmed $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => PaymentStatus::REFUNDED->value,
+                'refunded_at' => $event->confirmedAt,
+            ],
+            ['id' => $event->id],
+            ['refunded_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -130,6 +175,9 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $table->addColumn('captured_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refund_requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refund_failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('refunded_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

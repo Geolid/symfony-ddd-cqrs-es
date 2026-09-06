@@ -25,7 +25,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
     {
         $response = $this->globexClient->post(self::CHARGES_PATH, [
-            'clientReferenceId' => $orderId,
+            'merchantReference' => $orderId,
             'amountInCents' => $amountInCents,
             'returnUrl' => $returnUrl,
             'billingAddress' => $this->postalAddressPayload($billingAddress),
@@ -50,23 +50,23 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function capture(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->post('/capture', ['reference' => $reference]));
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/capture', self::CHARGES_PATH, $reference), []));
     }
 
     /**
      * @throws PaymentGatewayException
      */
-    public function void(string $reference): void
+    public function void(string $reference): PaymentGatewayStatus
     {
-        $this->globexClient->post('/void', ['reference' => $reference]);
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/void', self::CHARGES_PATH, $reference), []));
     }
 
     /**
      * @throws PaymentGatewayException
      */
-    public function refund(string $reference): void
+    public function refund(string $reference): PaymentGatewayStatus
     {
-        $this->globexClient->post('/refund', ['reference' => $reference]);
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/refund', self::CHARGES_PATH, $reference), []));
     }
 
     /**
@@ -74,7 +74,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function checkStatus(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->get(self::CHARGES_PATH.'/'.$reference));
+        return $this->parseStatus($this->globexClient->get(\sprintf('%s/%s', self::CHARGES_PATH, $reference)));
     }
 
     /**

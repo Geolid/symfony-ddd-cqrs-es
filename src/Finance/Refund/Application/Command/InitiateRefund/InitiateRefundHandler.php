@@ -31,24 +31,15 @@ final readonly class InitiateRefundHandler
     public function __invoke(InitiateRefund $command): void
     {
         $requestedPayment = $this->requestedPaymentFinder->ofOrder($command->orderId);
-        $id = RefundId::forPayment($requestedPayment->paymentId);
-
-        if ($this->repository->has($id)) {
-            return;
-        }
 
         $refund = Refund::initiate(
-            id: $id,
+            id: RefundId::generate(),
             paymentId: $requestedPayment->paymentId,
             orderId: $command->orderId,
             amount: Money::fromCents($requestedPayment->amountInCents),
             initiatedAt: $this->clock->now(),
         );
 
-        try {
-            $this->repository->save($refund);
-        } catch (RefundAlreadyExistsException) {
-            return;
-        }
+        $this->repository->save($refund);
     }
 }

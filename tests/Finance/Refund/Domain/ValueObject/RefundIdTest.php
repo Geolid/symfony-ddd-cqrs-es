@@ -8,19 +8,18 @@ use Finance\Refund\Domain\ValueObject\RefundId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Ramsey\Uuid\Uuid;
 
 final class RefundIdTest extends TestCase
 {
-    private const string PAYMENT_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
-
     #[Test]
-    public function itDerivesKnownId(): void
+    public function itGenerates(): void
     {
         // When
-        $id = RefundId::forPayment(self::PAYMENT_ID);
+        $id = RefundId::generate();
 
         // Then
-        self::assertSame('fbf4bcb3-1850-528f-9a2f-5520caf92b1a', $id->toString());
+        self::assertTrue(Uuid::isValid($id->toString()));
     }
 
     #[Test]
@@ -47,8 +46,9 @@ final class RefundIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $a = RefundId::forPayment(self::PAYMENT_ID);
-        $b = RefundId::forPayment(self::PAYMENT_ID);
+        $value = RefundId::generate()->toString();
+        $a = RefundId::fromString($value);
+        $b = RefundId::fromString($value);
 
         // When
         $equals = $a->equals($b);
@@ -61,8 +61,8 @@ final class RefundIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = RefundId::forPayment(self::PAYMENT_ID);
-        $b = RefundId::forPayment('0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $a = RefundId::generate();
+        $b = RefundId::generate();
 
         // When
         $equals = $a->equals($b);

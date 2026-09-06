@@ -23,7 +23,7 @@ interface ShipmentFinderInterface extends IterableFinderInterface
      */
     public function ofTrackingNumber(string $trackingNumber): ShipmentResult;
 
-    public function ofReferenceOrNull(string $reference): ?ShipmentResult;
+    public function ofSourceOrNull(string $sourceId): ?ShipmentResult;
 
     public function byStatus(ShipmentStatus ...$statuses): static;
 
