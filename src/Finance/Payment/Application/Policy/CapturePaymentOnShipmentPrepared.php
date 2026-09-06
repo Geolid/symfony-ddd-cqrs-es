@@ -37,7 +37,7 @@ final readonly class CapturePaymentOnShipmentPrepared
     #[Subscribe(ShipmentPreparedIntegrationEvent::class)]
     public function __invoke(ShipmentPreparedIntegrationEvent $event): void
     {
-        $id = PaymentId::forOrder($event->reference);
+        $id = PaymentId::forOrder($event->sourceId);
 
         if (!$this->repository->has($id)) {
             return;
@@ -57,10 +57,6 @@ final readonly class CapturePaymentOnShipmentPrepared
     }
 
     /**
-     * A rejected capture request will never succeed by retrying as-is (a malformed
-     * payload, a declined reference) — it's marked failed the same way a gateway-side
-     * decline already is, instead of leaving the Payment stuck AUTHORIZED forever.
-     *
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -74,6 +70,6 @@ final readonly class CapturePaymentOnShipmentPrepared
         $event = $message->event();
         \assert($event instanceof ShipmentPreparedIntegrationEvent);
 
-        $this->commandBus->dispatch(new FailPayment(PaymentId::forOrder($event->reference)->toString()));
+        $this->commandBus->dispatch(new FailPayment(PaymentId::forOrder($event->sourceId)->toString()));
     }
 }

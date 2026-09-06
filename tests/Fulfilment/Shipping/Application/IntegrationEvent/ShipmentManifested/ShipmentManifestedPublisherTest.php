@@ -24,7 +24,7 @@ final class ShipmentManifestedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentManifestedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($builder['reference'], $event->reference);
+        self::assertSame($builder['sourceId'], $event->sourceId);
         self::assertSame($builder['trackingNumber']->value, $event->trackingNumber);
     }
 }

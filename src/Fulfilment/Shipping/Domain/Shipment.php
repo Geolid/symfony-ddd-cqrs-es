@@ -44,7 +44,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) ShipmentId $id;
-    public private(set) string $reference;
+    public private(set) string $sourceId;
     public private(set) ShipmentDirection $direction;
     public private(set) string $buyerId;
     public private(set) PostalAddress $origin;
@@ -54,7 +54,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public static function request(
         ShipmentId $id,
-        string $reference,
+        string $sourceId,
         ShipmentDirection $direction,
         string $buyerId,
         PostalAddress $origin,
@@ -64,7 +64,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new ShipmentRequested(
             id: $id->toString(),
-            reference: $reference,
+            sourceId: $sourceId,
             direction: $direction,
             buyerId: $buyerId,
             origin: $origin,
@@ -179,7 +179,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRequested(ShipmentRequested $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
-        $this->reference = $event->reference;
+        $this->sourceId = $event->sourceId;
         $this->direction = $event->direction;
         $this->buyerId = $event->buyerId;
         $this->origin = $event->origin;

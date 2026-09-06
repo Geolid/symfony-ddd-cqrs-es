@@ -30,18 +30,18 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = ShipmentId::generate()->toString();
-        $reference = ShipmentBuilder::sample('reference');
+        $sourceId = ShipmentBuilder::sample('sourceId');
         $buyerId = ShipmentBuilder::sample('buyerId');
         $originData = ShipmentBuilder::sample('origin')->toArray();
         $destinationData = ShipmentBuilder::sample('destination')->toArray();
 
         // When
-        $this->dispatch(new RequestShipment($id, $reference, ShipmentDirection::OUTBOUND, $buyerId, $originData, $destinationData));
+        $this->dispatch(new RequestShipment($id, $sourceId, ShipmentDirection::OUTBOUND, $buyerId, $originData, $destinationData));
 
         // Then
         $result = $this->service(ShipmentFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
-        self::assertSame($reference, $result->reference);
+        self::assertSame($sourceId, $result->sourceId);
         self::assertSame(ShipmentDirection::OUTBOUND, $result->direction);
         self::assertSame(ShipmentStatus::REQUESTED, $result->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
@@ -61,7 +61,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RequestShipment(
             $shipment->id->toString(),
-            $builder['reference'],
+            $builder['sourceId'],
             ShipmentDirection::OUTBOUND,
             $builder['buyerId'],
             $builder['origin']->toArray(),

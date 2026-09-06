@@ -26,12 +26,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPending(): void
     {
         // Given
-        $reference = ShipmentBuilder::sample('reference');
-        $shipment = ShipmentBuilder::new()->withReference($reference)->create();
+        $sourceId = ShipmentBuilder::sample('sourceId');
+        $shipment = ShipmentBuilder::new()->withSourceId($sourceId)->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($reference));
+        $this->dispatch(new CancelShipment($sourceId));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -43,12 +43,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $reference = ShipmentBuilder::sample('reference');
-        $shipment = ShipmentBuilder::new()->withReference($reference)->prepared()->manifested()->dispatched()->delivered()->create();
+        $sourceId = ShipmentBuilder::sample('sourceId');
+        $shipment = ShipmentBuilder::new()->withSourceId($sourceId)->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($reference));
+        $this->dispatch(new CancelShipment($sourceId));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -59,13 +59,13 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $reference = ShipmentBuilder::sample('reference');
+        $sourceId = ShipmentBuilder::sample('sourceId');
 
         // When
-        $this->dispatch(new CancelShipment($reference));
+        $this->dispatch(new CancelShipment($sourceId));
 
         // Then
-        $result = $this->finder->ofReferenceOrNull($reference);
+        $result = $this->finder->ofSourceOrNull($sourceId);
         self::assertNull($result);
     }
 }

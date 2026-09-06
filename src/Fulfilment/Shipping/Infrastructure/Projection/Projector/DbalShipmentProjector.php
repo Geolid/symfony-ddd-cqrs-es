@@ -34,7 +34,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'reference' => $event->reference,
+                'source_id' => $event->sourceId,
                 'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
                 'origin' => SnakeCaseKeys::from($event->origin->toArray()),
@@ -119,7 +119,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('reference', Types::STRING, ['length' => 36]);
+        $table->addColumn('source_id', Types::STRING, ['length' => 36]);
         $table->addColumn('direction', Types::STRING, ['length' => 8]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('origin', Types::JSON);
@@ -135,7 +135,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['reference'], 'fulfilment_shipping_reference_idx');
+        $table->addIndex(['source_id'], 'fulfilment_shipping_source_id_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
     }
 }

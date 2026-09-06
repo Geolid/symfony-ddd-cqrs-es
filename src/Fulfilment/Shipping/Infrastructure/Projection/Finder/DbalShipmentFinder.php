@@ -37,11 +37,11 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         )->one() ?? throw ShipmentResultNotFoundException::forTrackingNumber($trackingNumber);
     }
 
-    public function ofReferenceOrNull(string $reference): ?ShipmentResult
+    public function ofSourceOrNull(string $sourceId): ?ShipmentResult
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($reference): void {
-                $qb->andWhere('reference = :reference')->setParameter('reference', $reference);
+            static function (QueryBuilder $qb) use ($sourceId): void {
+                $qb->andWhere('source_id = :sourceId')->setParameter('sourceId', $sourceId);
             },
         )->one();
     }
@@ -74,7 +74,7 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'reference', 'direction', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at')
+        $qb->select('id', 'source_id', 'direction', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at')
             ->from(DbalShipmentProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

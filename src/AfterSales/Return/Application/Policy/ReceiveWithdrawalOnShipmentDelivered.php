@@ -29,7 +29,7 @@ final readonly class ReceiveWithdrawalOnShipmentDelivered
     #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
     public function __invoke(ShipmentDeliveredIntegrationEvent $event): void
     {
-        $id = WithdrawalId::fromString($event->reference);
+        $id = WithdrawalId::fromString($event->sourceId);
 
         if (!$this->repository->has($id)) {
             return;

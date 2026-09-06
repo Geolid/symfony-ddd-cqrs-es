@@ -32,7 +32,7 @@ final readonly class RequestShipmentOnOrderConfirmed
     {
         $this->commandBus->dispatch(new RequestShipment(
             id: ShipmentId::generate()->toString(),
-            reference: $event->orderId,
+            sourceId: $event->orderId,
             direction: ShipmentDirection::OUTBOUND,
             buyerId: $event->buyerId,
             origin: $this->warehouseAddressProvider->get()->toArray(),

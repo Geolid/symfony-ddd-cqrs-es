@@ -12,7 +12,7 @@ final readonly class ShipmentDispatchedIntegrationEvent implements IntegrationEv
 {
     public function __construct(
         public string $shipmentId,
-        public string $reference,
+        public string $sourceId,
         public \DateTimeImmutable $dispatchedAt,
     ) {
     }

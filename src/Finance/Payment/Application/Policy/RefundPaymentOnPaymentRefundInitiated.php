@@ -35,10 +35,6 @@ final readonly class RefundPaymentOnPaymentRefundInitiated
     }
 
     /**
-     * A refund request Globex rejects outright will never succeed by retrying as-is —
-     * recorded on the Payment itself so Finance.Refund's own tracked Refund gets marked
-     * failed too, instead of staying INITIATED with the money never actually returned.
-     *
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
