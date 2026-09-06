@@ -164,6 +164,8 @@ final class OrderBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => OrderId::generate(...),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
@@ -179,16 +181,16 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
                 SeededFaker::get()->numberBetween(1, 5),
             )],
-            'placedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'confirmedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'preparedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
-            'cancelledAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'abortedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'dispatchedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+3 day'),
-            'deliveredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+4 day'),
-            'returnRequestedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+5 day'),
-            'returnedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+6 day'),
-            'disputedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+6 day'),
+            'placedAt' => static fn (): \DateTimeImmutable => $now,
+            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'abortedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
+            'returnRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
+            'returnedAt' => static fn (): \DateTimeImmutable => $now->modify('+6 day'),
+            'disputedAt' => static fn (): \DateTimeImmutable => $now->modify('+6 day'),
         ];
     }
 

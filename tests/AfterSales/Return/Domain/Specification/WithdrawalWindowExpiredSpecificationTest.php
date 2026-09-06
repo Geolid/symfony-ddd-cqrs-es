@@ -8,6 +8,7 @@ use AfterSales\Return\Domain\Specification\WithdrawalWindowExpiredSpecification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\Clock;
 
 final class WithdrawalWindowExpiredSpecificationTest extends TestCase
 {
@@ -30,10 +31,10 @@ final class WithdrawalWindowExpiredSpecificationTest extends TestCase
      */
     public static function provideThreshold(): iterable
     {
-        $deliveredAt = new \DateTimeImmutable('2026-01-01T00:00:00+00:00');
+        $now = Clock::get()->now();
 
-        yield 'within window' => [$deliveredAt, $deliveredAt->modify('+9 days'), false];
-        yield 'at window boundary' => [$deliveredAt, $deliveredAt->modify('+14 days'), false];
-        yield 'past window' => [$deliveredAt, $deliveredAt->modify('+19 days'), true];
+        yield 'within window' => [$now->modify('-9 days'), $now, false];
+        yield 'at window boundary' => [$now->modify('-14 days'), $now, false];
+        yield 'past window' => [$now->modify('-19 days'), $now, true];
     }
 }

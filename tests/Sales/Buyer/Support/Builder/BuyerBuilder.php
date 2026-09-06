@@ -65,16 +65,18 @@ final class BuyerBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => BuyerId::generate(...),
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
-            'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
+            'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'postalAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'postalAddressDefinedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'postalAddressDefinedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'erasedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
         ];
     }
 

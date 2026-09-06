@@ -106,6 +106,8 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => static fn (?self $builder): PasswordCredentialId => PasswordCredentialId::forIdentity(
                 null !== $builder ? $builder['identityId'] : self::sample('identityId'),
@@ -113,9 +115,9 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'login' => static fn (): Login => Login::fromString(SeededFaker::get()->unique()->userName()),
             'password' => static fn (): Password => Password::fromString('Marmoset-42-Zephyr!'),
-            'definedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'changedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'rehashedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'definedAt' => static fn (): \DateTimeImmutable => $now,
+            'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'rehashedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
         ];
     }
 

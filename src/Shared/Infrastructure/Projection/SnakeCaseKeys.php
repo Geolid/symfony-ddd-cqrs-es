@@ -12,8 +12,6 @@ final class SnakeCaseKeys
      * @param array<array-key, mixed> $data
      *
      * @return array<array-key, mixed>
-     *
-     * @phpstan-pure
      */
     public static function from(array $data): array
     {

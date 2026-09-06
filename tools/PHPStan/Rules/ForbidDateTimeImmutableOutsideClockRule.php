@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tools\PHPStan\Rules;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
@@ -40,8 +39,7 @@ final class ForbidDateTimeImmutableOutsideClockRule implements Rule
             return [];
         }
 
-        if (str_contains($scope->getFile(), '/Domain/')
-            || $this->isRawHydration($node)
+        if ($this->isDomainSourceFile($scope->getFile())
             || 'denormalize' === $scope->getFunctionName()) {
             return [];
         }
@@ -51,18 +49,14 @@ final class ForbidDateTimeImmutableOutsideClockRule implements Rule
             : 'an injected ClockInterface ($this->clock->now())';
 
         return [
-            RuleErrorBuilder::message(\sprintf('Forbidden: new \%s(...) outside Domain/ or a raw hydration.', $class))
+            RuleErrorBuilder::message(\sprintf('Forbidden: new \%s(...) outside Domain/.', $class))
                 ->tip(\sprintf('Use %s instead.', $fix))
-                ->identifier('app.tests.noDateTimeOutsideClock')->build(),
+                ->identifier('app.datetime.noOutsideClock')->build(),
         ];
     }
 
-    private function isRawHydration(New_ $node): bool
+    private function isDomainSourceFile(string $file): bool
     {
-        if ([] === $node->getArgs()) {
-            return false;
-        }
-
-        return $node->getArgs()[0]->value instanceof ArrayDimFetch;
+        return str_contains($file, '/src/') && str_contains($file, '/Domain/');
     }
 }

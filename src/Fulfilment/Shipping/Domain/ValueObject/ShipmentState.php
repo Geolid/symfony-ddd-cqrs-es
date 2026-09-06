@@ -13,9 +13,6 @@ enum ShipmentState: string
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
 
-    /**
-     * @phpstan-pure
-     */
     public function isManifested(): bool
     {
         return self::MANIFESTED === $this;

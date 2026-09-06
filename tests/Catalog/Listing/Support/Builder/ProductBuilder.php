@@ -70,6 +70,8 @@ final class ProductBuilder extends AbstractAggregateBuilder
 
     protected static function defaults(): array
     {
+        $now = Clock::get()->now();
+
         return [
             'id' => ProductId::generate(...),
             'label' => static function (): Label {
@@ -78,9 +80,9 @@ final class ProductBuilder extends AbstractAggregateBuilder
                 return Label::fromString($label);
             },
             'unitPrice' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-            'listedAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'repricedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
-            'delistedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
+            'listedAt' => static fn (): \DateTimeImmutable => $now,
+            'repricedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'delistedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
         ];
     }
 
