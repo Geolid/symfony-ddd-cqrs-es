@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/shared/reference.php';
-require dirname(__DIR__, 2).'/shared/request.php';
 require dirname(__DIR__, 2).'/shared/store.php';
 
 $reference = filter_var($_GET['reference'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
