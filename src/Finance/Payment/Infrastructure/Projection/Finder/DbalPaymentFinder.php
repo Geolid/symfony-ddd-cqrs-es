@@ -59,7 +59,7 @@ final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinde
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at')
+        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at', 'refund_requested_at', 'refund_failed_at', 'refunded_at')
             ->from(DbalPaymentProjector::TABLE)
             ->orderBy('requested_at', 'ASC')
             ->addOrderBy('id', 'ASC');
