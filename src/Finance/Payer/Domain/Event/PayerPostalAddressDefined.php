@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Domain\Event;
+namespace Finance\Payer\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -12,8 +12,8 @@ use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
-#[Event('sales.buyer.buyer.shipping_address_registered')]
-final readonly class BuyerShippingAddressRegistered
+#[Event('finance.payer.payer.postal_address_defined')]
+final readonly class PayerPostalAddressDefined
 {
     public function __construct(
         #[DataSubjectId]
@@ -26,8 +26,8 @@ final readonly class BuyerShippingAddressRegistered
             PostalAddress::class,
             'of',
         ))]
-        public PostalAddress $address,
-        public \DateTimeImmutable $setAt,
+        public PostalAddress $postalAddress,
+        public \DateTimeImmutable $definedAt,
     ) {
     }
 }

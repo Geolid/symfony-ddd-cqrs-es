@@ -8,13 +8,11 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
-use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
 
 final class BuyerTest extends AggregateRootTestCase
 {
@@ -41,33 +39,33 @@ final class BuyerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRegistersShippingAddress(): void
+    public function itDefinesPostalAddress(): void
     {
-        $setAt = BuyerBuilder::sample('shippingAddressRegisteredAt');
-        $shippingAddress = $this->shippingAddress();
+        $definedAt = BuyerBuilder::sample('postalAddressDefinedAt');
+        $postalAddress = BuyerBuilder::sample('postalAddress');
 
         $this
             ->given($this->registered())
-            ->when(static fn (Buyer $buyer) => $buyer->registerShippingAddress($shippingAddress, $setAt))
-            ->then(new BuyerShippingAddressRegistered(
+            ->when(static fn (Buyer $buyer) => $buyer->definePostalAddress($postalAddress, $definedAt))
+            ->then(new BuyerPostalAddressDefined(
                 id: $this->id->toString(),
-                address: $shippingAddress,
-                setAt: $setAt,
+                postalAddress: $postalAddress,
+                definedAt: $definedAt,
             ));
     }
 
     #[Test]
-    public function itDoesNotRegisterWhenIdenticalShippingAddress(): void
+    public function itDoesNotDefineWhenIdenticalPostalAddress(): void
     {
-        $shippingAddress = $this->shippingAddress();
-        $setAt = BuyerBuilder::sample('shippingAddressRegisteredAt');
+        $postalAddress = BuyerBuilder::sample('postalAddress');
+        $definedAt = BuyerBuilder::sample('postalAddressDefinedAt');
 
         $this
             ->given(
                 $this->registered(),
-                new BuyerShippingAddressRegistered($this->id->toString(), $shippingAddress, $setAt),
+                new BuyerPostalAddressDefined($this->id->toString(), $postalAddress, $definedAt),
             )
-            ->when(static fn (Buyer $buyer) => $buyer->registerShippingAddress($shippingAddress, BuyerBuilder::sample('shippingAddressRegisteredAt')))
+            ->when(static fn (Buyer $buyer) => $buyer->definePostalAddress($postalAddress, BuyerBuilder::sample('postalAddressDefinedAt')))
             ->then();
     }
 
@@ -101,10 +99,5 @@ final class BuyerTest extends AggregateRootTestCase
     private function registered(): BuyerRegistered
     {
         return new BuyerRegistered($this->id->toString(), $this->email, $this->registeredAt);
-    }
-
-    private function shippingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 }

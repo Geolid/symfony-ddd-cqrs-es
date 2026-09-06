@@ -8,8 +8,8 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Finance\Payer\Application\IntegrationEvent\PayerAddressRegistered\PayerAddressRegisteredIntegrationEvent;
 use Finance\Payer\Application\IntegrationEvent\PayerErased\PayerErasedIntegrationEvent;
+use Finance\Payer\Application\IntegrationEvent\PayerPostalAddressDefined\PayerPostalAddressDefinedIntegrationEvent;
 use Finance\Payer\Application\IntegrationEvent\PayerRegistered\PayerRegisteredIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
@@ -28,12 +28,12 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
         ]);
     }
 
-    #[Subscribe(PayerAddressRegisteredIntegrationEvent::class)]
-    public function onPayerAddressRegisteredIntegrationEvent(PayerAddressRegisteredIntegrationEvent $event): void
+    #[Subscribe(PayerPostalAddressDefinedIntegrationEvent::class)]
+    public function onPayerPostalAddressDefinedIntegrationEvent(PayerPostalAddressDefinedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['address' => $this->addressRow($event->address)],
+            ['address' => $this->postalAddress($event->postalAddress)],
             ['payer_id' => $event->payerId],
             ['address' => Types::JSON],
         );
@@ -61,18 +61,18 @@ final readonly class DbalPayerProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
      *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function addressRow(array $address): array
+    private function postalAddress(array $postalAddress): array
     {
         return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
+            'recipient_name' => $postalAddress['recipientName'],
+            'street' => $postalAddress['street'],
+            'postal_code' => $postalAddress['postalCode'],
+            'city' => $postalAddress['city'],
+            'country_code' => $postalAddress['countryCode'],
         ];
     }
 }

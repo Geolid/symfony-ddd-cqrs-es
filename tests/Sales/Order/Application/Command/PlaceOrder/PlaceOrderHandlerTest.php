@@ -21,8 +21,6 @@ use Sales\Order\Domain\Order;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
@@ -31,7 +29,15 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPlaces(): void
     {
         // Given
-        $buyer = $this->registeredBuyer('buyer@example.com');
+        $buyerBuilder = BuyerBuilder::new()
+            ->withEmail('buyer@example.com')
+            ->postalAddressDefined();
+        $buyer = $buyerBuilder->create();
+        $payerBuilder = PayerBuilder::new()
+            ->withId($buyer->id->toString())
+            ->postalAddressDefined();
+        $payer = $payerBuilder->create();
+        $this->store($buyer, $payer);
         $id = OrderId::generate()->toString();
         $lines = $this->lines();
 
@@ -46,12 +52,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::PLACED, $result->status);
 
         $order = $this->orderOf($id);
-        $shippingAddress = $order->shippingAddress->toArray();
-        $billingAddress = $order->billingAddress->toArray();
-        $expectedShippingAddress = $this->shippingAddress()->toArray();
-        $expectedBillingAddress = $this->billingAddress()->toArray();
-        self::assertSame($expectedShippingAddress, $shippingAddress);
-        self::assertSame($expectedBillingAddress, $billingAddress);
+        self::assertSame($buyerBuilder['postalAddress']->toArray(), $order->shippingAddress->toArray());
+        self::assertSame($payerBuilder['postalAddress']->toArray(), $order->billingAddress->toArray());
     }
 
     #[Test]
@@ -88,13 +90,13 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $buyerBuilder = BuyerBuilder::new()->withEmail('buyer@example.com');
         if ($withShippingAddress) {
-            $buyerBuilder = $buyerBuilder->shippingAddressRegistered($this->shippingAddress());
+            $buyerBuilder = $buyerBuilder->postalAddressDefined();
         }
         $buyer = $buyerBuilder->create();
 
         $payerBuilder = PayerBuilder::new()->withId($buyer->id->toString());
         if ($withBillingAddress) {
-            $payerBuilder = $payerBuilder->addressRegistered($this->billingAddress());
+            $payerBuilder = $payerBuilder->postalAddressDefined();
         }
         $payer = $payerBuilder->create();
 
@@ -123,7 +125,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $buyer = BuyerBuilder::new()
             ->withEmail('buyer@example.com')
-            ->shippingAddressRegistered($this->shippingAddress())
+            ->postalAddressDefined()
             ->create();
         $this->store($buyer);
 
@@ -205,25 +207,15 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         $buyer = BuyerBuilder::new()
             ->withEmail($email)
-            ->shippingAddressRegistered($this->shippingAddress())
+            ->postalAddressDefined()
             ->create();
         $payer = PayerBuilder::new()
             ->withId($buyer->id->toString())
-            ->addressRegistered($this->billingAddress())
+            ->postalAddressDefined()
             ->create();
         $this->store($buyer, $payer);
 
         return $buyer;
-    }
-
-    private function shippingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
-    }
-
-    private function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 
     private function orderOf(string $id): Order

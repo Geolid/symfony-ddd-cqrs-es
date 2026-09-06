@@ -10,8 +10,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Buyer\Application\IntegrationEvent\BuyerErased\BuyerErasedIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPostalAddressDefinedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
-use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressRegistered\BuyerShippingAddressRegisteredIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -28,12 +28,12 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         ]);
     }
 
-    #[Subscribe(BuyerShippingAddressRegisteredIntegrationEvent::class)]
-    public function onBuyerShippingAddressRegisteredIntegrationEvent(BuyerShippingAddressRegisteredIntegrationEvent $event): void
+    #[Subscribe(BuyerPostalAddressDefinedIntegrationEvent::class)]
+    public function onBuyerPostalAddressDefinedIntegrationEvent(BuyerPostalAddressDefinedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['shipping_address' => $this->addressRow($event->address)],
+            ['shipping_address' => $this->postalAddress($event->postalAddress)],
             ['buyer_id' => $event->buyerId],
             ['shipping_address' => Types::JSON],
         );
@@ -61,18 +61,18 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
      *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function addressRow(array $address): array
+    private function postalAddress(array $postalAddress): array
     {
         return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
+            'recipient_name' => $postalAddress['recipientName'],
+            'street' => $postalAddress['street'],
+            'postal_code' => $postalAddress['postalCode'],
+            'city' => $postalAddress['city'],
+            'country_code' => $postalAddress['countryCode'],
         ];
     }
 }

@@ -30,7 +30,7 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($this->totalAmountInCents($builder['lines']), $row['amount_in_cents']);
-        self::assertSame($this->expectedAddressRow($builder['billingAddress']->toArray()), $this->storedAddressRow($row['billing_address']));
+        self::assertSame($this->postalAddress($builder['billingAddress']->toArray()), $this->decodedAddress($row['billing_address']));
         self::assertFalse((bool) $row['cancelled']);
     }
 
@@ -68,7 +68,7 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
      *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function expectedAddressRow(array $address): array
+    private function postalAddress(array $address): array
     {
         return [
             'recipient_name' => $address['recipientName'],
@@ -82,7 +82,7 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function storedAddressRow(string $json): array
+    private function decodedAddress(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

@@ -26,8 +26,8 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     {
         $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
             'clientReferenceId' => $shipmentId,
-            'origin' => $this->addressPayload($origin),
-            'destination' => $this->addressPayload($destination),
+            'origin' => $this->postalAddressPayload($origin),
+            'destination' => $this->postalAddressPayload($destination),
         ], $shipmentId);
 
         $trackingNumber = $response['trackingNumber'] ?? null;
@@ -62,14 +62,14 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     /**
      * @return array{recipient: string, street: string, postalCode: string, city: string, countryCode: string}
      */
-    private function addressPayload(PostalAddress $address): array
+    private function postalAddressPayload(PostalAddress $postalAddress): array
     {
         return [
-            'recipient' => $address->recipientName,
-            'street' => $address->address->street,
-            'postalCode' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'countryCode' => $address->address->countryCode->value,
+            'recipient' => $postalAddress->recipientName,
+            'street' => $postalAddress->address->street,
+            'postalCode' => $postalAddress->address->postalCode,
+            'city' => $postalAddress->address->city,
+            'countryCode' => $postalAddress->address->countryCode->value,
         ];
     }
 }

@@ -6,15 +6,18 @@ namespace Finance\Tests\Payer\Support\Builder;
 
 use Finance\Payer\Domain\Payer;
 use Finance\Payer\Domain\ValueObject\PayerId;
+use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
+use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Attributes = array{
  *     id: PayerId,
  *     registeredAt: \DateTimeImmutable,
- *     addressRegisteredAt: \DateTimeImmutable,
+ *     postalAddress: PostalAddress,
+ *     postalAddressDefinedAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
  * }
  *
@@ -32,12 +35,15 @@ final class PayerBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(registeredAt: $registeredAt);
     }
 
-    public function addressRegistered(PostalAddress $address, ?\DateTimeImmutable $registeredAt = null): self
+    public function postalAddressDefined(?PostalAddress $postalAddress = null, ?\DateTimeImmutable $definedAt = null): self
     {
-        $builder = null !== $registeredAt ? $this->withAttributes(addressRegisteredAt: $registeredAt) : $this;
+        $builder = $this->withAttributes(...array_filter(
+            ['postalAddress' => $postalAddress, 'postalAddressDefinedAt' => $definedAt],
+            static fn (mixed $value): bool => null !== $value,
+        ));
 
         return $builder->withModifier(
-            static fn (Payer $payer, self $builder) => $payer->registerAddress($address, $builder['addressRegisteredAt']),
+            static fn (Payer $payer, self $builder) => $payer->definePostalAddress($builder['postalAddress'], $builder['postalAddressDefinedAt']),
         );
     }
 
@@ -55,7 +61,11 @@ final class PayerBuilder extends AbstractAggregateBuilder
         return [
             'id' => PayerId::generate(...),
             'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'addressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'postalAddress' => static fn (): PostalAddress => PostalAddress::of(
+                SeededFaker::get()->name(),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+            ),
+            'postalAddressDefinedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
         ];
     }

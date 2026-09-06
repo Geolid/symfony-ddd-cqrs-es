@@ -70,7 +70,7 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itPlacesDerivingTotalFromLines(): void
+    public function itPlaces(): void
     {
         $this
             ->given()

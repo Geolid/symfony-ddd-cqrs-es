@@ -8,8 +8,8 @@ use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
-use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
@@ -55,16 +55,16 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsShippingAddressOnErasure(): void
+    public function itCryptoShredsPostalAddressOnErasure(): void
     {
         // Given
         $buyer = BuyerBuilder::new()
-            ->shippingAddressRegistered(PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->postalAddressDefined()
             ->create();
         $this->store($buyer);
         $serialized = $this->serializedEventOf(
-            BuyerShippingAddressRegistered::class,
-            static fn (BuyerShippingAddressRegistered $event): bool => $event->id === $buyer->id->toString(),
+            BuyerPostalAddressDefined::class,
+            static fn (BuyerPostalAddressDefined $event): bool => $event->id === $buyer->id->toString(),
         );
 
         // When
@@ -72,11 +72,11 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(BuyerShippingAddressRegistered::class, $rehydrated);
-        self::assertSame($this->erasedAddress()->toArray(), $rehydrated->address->toArray());
+        self::assertInstanceOf(BuyerPostalAddressDefined::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
     }
 
-    private function erasedAddress(): PostalAddress
+    private function erasedPostalAddress(): PostalAddress
     {
         return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
     }

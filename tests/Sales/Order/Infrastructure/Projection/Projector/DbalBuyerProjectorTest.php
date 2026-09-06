@@ -8,7 +8,6 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -36,18 +35,14 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnBuyerShippingAddressRegistered(): void
+    public function itProjectsOnBuyerPostalAddressDefined(): void
     {
         // Given
-        $otherShippingAddress = PostalAddress::of('John Smith', Address::of('5 rue de la République', '69001', 'Lyon', 'FR'));
-        $other = BuyerBuilder::new()
-            ->shippingAddressRegistered($otherShippingAddress)
-            ->create();
+        $otherBuilder = BuyerBuilder::new()->postalAddressDefined();
+        $other = $otherBuilder->create();
         $this->store($other);
-        $shippingAddress = $this->shippingAddress();
-        $buyer = BuyerBuilder::new()
-            ->shippingAddressRegistered($shippingAddress)
-            ->create();
+        $builder = BuyerBuilder::new()->postalAddressDefined();
+        $buyer = $builder->create();
 
         // When
         $this->store($buyer);
@@ -57,16 +52,16 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            $this->expectedAddressRow($shippingAddress),
-            $this->storedAddressRow($row['shipping_address']),
+            $this->postalAddress($builder['postalAddress']),
+            $this->decodedAddress($row['shipping_address']),
         );
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['shipping_address']);
         self::assertSame(
-            $this->expectedAddressRow($otherShippingAddress),
-            $this->storedAddressRow($otherRow['shipping_address']),
+            $this->postalAddress($otherBuilder['postalAddress']),
+            $this->decodedAddress($otherRow['shipping_address']),
         );
     }
 
@@ -89,29 +84,24 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($other->id->toString(), $otherRow['buyer_id']);
     }
 
-    private function shippingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
-    }
-
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function expectedAddressRow(PostalAddress $address): array
+    private function postalAddress(PostalAddress $postalAddress): array
     {
         return [
-            'recipient_name' => $address->recipientName,
-            'street' => $address->address->street,
-            'postal_code' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'country_code' => $address->address->countryCode->value,
+            'recipient_name' => $postalAddress->recipientName,
+            'street' => $postalAddress->address->street,
+            'postal_code' => $postalAddress->address->postalCode,
+            'city' => $postalAddress->address->city,
+            'country_code' => $postalAddress->address->countryCode->value,
         ];
     }
 
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function storedAddressRow(string $json): array
+    private function decodedAddress(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

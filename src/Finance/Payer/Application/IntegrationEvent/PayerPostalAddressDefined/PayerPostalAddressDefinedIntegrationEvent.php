@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressRegistered;
+namespace Finance\Payer\Application\IntegrationEvent\PayerPostalAddressDefined;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -10,15 +10,15 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 
-#[Event('integration.sales.buyer.buyer.shipping_address_registered')]
-final readonly class BuyerShippingAddressRegisteredIntegrationEvent implements IntegrationEventInterface
+#[Event('integration.finance.payer.payer.postal_address_defined')]
+final readonly class PayerPostalAddressDefinedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $postalAddress
      */
     public function __construct(
         #[DataSubjectId]
-        public string $buyerId,
+        public string $payerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'street' => 'erased',
@@ -26,8 +26,8 @@ final readonly class BuyerShippingAddressRegisteredIntegrationEvent implements I
             'city' => 'erased',
             'countryCode' => 'ZZ',
         ]))]
-        public array $address,
-        public \DateTimeImmutable $setAt,
+        public array $postalAddress,
+        public \DateTimeImmutable $definedAt,
     ) {
     }
 }

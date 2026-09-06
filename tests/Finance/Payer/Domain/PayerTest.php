@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payer\Domain;
 
-use Finance\Payer\Domain\Event\PayerAddressRegistered;
 use Finance\Payer\Domain\Event\PayerErased;
+use Finance\Payer\Domain\Event\PayerPostalAddressDefined;
 use Finance\Payer\Domain\Event\PayerRegistered;
 use Finance\Payer\Domain\Payer;
 use Finance\Payer\Domain\ValueObject\PayerId;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class PayerTest extends AggregateRootTestCase
 {
     private PayerId $id;
     private \DateTimeImmutable $registeredAt;
+    private PostalAddress $postalAddress;
 
     protected function setUp(): void
     {
@@ -26,6 +26,7 @@ final class PayerTest extends AggregateRootTestCase
 
         $this->id = PayerId::generate();
         $this->registeredAt = PayerBuilder::sample('registeredAt');
+        $this->postalAddress = PayerBuilder::sample('postalAddress');
     }
 
     #[Test]
@@ -38,33 +39,33 @@ final class PayerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRegistersAddress(): void
+    public function itDefinesPostalAddress(): void
     {
-        $setAt = PayerBuilder::sample('addressRegisteredAt');
-        $address = $this->address();
+        $definedAt = PayerBuilder::sample('postalAddressDefinedAt');
+        $postalAddress = $this->postalAddress;
 
         $this
             ->given($this->registered())
-            ->when(static fn (Payer $payer) => $payer->registerAddress($address, $setAt))
-            ->then(new PayerAddressRegistered(
+            ->when(static fn (Payer $payer) => $payer->definePostalAddress($postalAddress, $definedAt))
+            ->then(new PayerPostalAddressDefined(
                 id: $this->id->toString(),
-                address: $address,
-                setAt: $setAt,
+                postalAddress: $postalAddress,
+                definedAt: $definedAt,
             ));
     }
 
     #[Test]
-    public function itDoesNotRegisterWhenIdenticalAddress(): void
+    public function itDoesNotDefineWhenIdenticalPostalAddress(): void
     {
-        $address = $this->address();
-        $setAt = PayerBuilder::sample('addressRegisteredAt');
+        $postalAddress = $this->postalAddress;
+        $definedAt = PayerBuilder::sample('postalAddressDefinedAt');
 
         $this
             ->given(
                 $this->registered(),
-                new PayerAddressRegistered($this->id->toString(), $address, $setAt),
+                new PayerPostalAddressDefined($this->id->toString(), $postalAddress, $definedAt),
             )
-            ->when(static fn (Payer $payer) => $payer->registerAddress($address, PayerBuilder::sample('addressRegisteredAt')))
+            ->when(static fn (Payer $payer) => $payer->definePostalAddress($postalAddress, PayerBuilder::sample('postalAddressDefinedAt')))
             ->then();
     }
 
@@ -98,10 +99,5 @@ final class PayerTest extends AggregateRootTestCase
     private function registered(): PayerRegistered
     {
         return new PayerRegistered($this->id->toString(), $this->registeredAt);
-    }
-
-    private function address(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 }

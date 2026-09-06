@@ -9,8 +9,6 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
@@ -30,10 +28,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         // Given
         $otherBuyer = BuyerBuilder::new()->create();
         $this->store($otherBuyer);
-        $shippingAddress = $this->shippingAddress();
-        $buyer = BuyerBuilder::new()
-            ->shippingAddressRegistered($shippingAddress)
-            ->create();
+        $builder = BuyerBuilder::new()->postalAddressDefined();
+        $buyer = $builder->create();
         $this->store($buyer);
 
         // When
@@ -50,8 +46,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             'city' => $result->shippingAddress->city,
             'countryCode' => $result->shippingAddress->countryCode,
         ];
-        $expectedShippingAddress = $shippingAddress->toArray();
-        self::assertSame($expectedShippingAddress, $shippingResult);
+        self::assertSame($builder['postalAddress']->toArray(), $shippingResult);
     }
 
     #[Test]
@@ -78,10 +73,5 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertNull($result);
-    }
-
-    private function shippingAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 }

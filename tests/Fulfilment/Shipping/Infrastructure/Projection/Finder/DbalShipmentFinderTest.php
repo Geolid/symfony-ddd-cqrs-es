@@ -165,7 +165,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $results = iterator_to_array($this->finder);
 
         // Then
-        self::assertSame($this->shipmentIds(...$shipments), $this->resultIds($results));
+        self::assertSame($this->ids(...$shipments), $this->resultIds($results));
     }
 
     #[Test]
@@ -181,7 +181,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     /**
      * @return list<string>
      */
-    private function shipmentIds(Shipment ...$shipments): array
+    private function ids(Shipment ...$shipments): array
     {
         $ids = [];
         foreach ($shipments as $shipment) {
