@@ -30,18 +30,8 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['buyerId'], $row['buyer_id']);
-        self::assertSame($this->postalAddress($builder['shippingAddress']->toArray()), $this->decoded($row['shipping_address']));
+        self::assertSame(SnakeCaseKeys::from($builder['shippingAddress']->toArray()), $this->decoded($row['shipping_address']));
         self::assertNotNull($row['delivered_at']);
-    }
-
-    /**
-     * @param array<string, mixed> $address
-     *
-     * @return array<string, mixed>
-     */
-    private function postalAddress(array $address): array
-    {
-        return SnakeCaseKeys::from($address);
     }
 
     /**

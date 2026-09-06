@@ -31,7 +31,7 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($this->totalAmountInCents($builder['lines']), $row['amount_in_cents']);
-        self::assertSame($this->postalAddress($builder['billingAddress']->toArray()), $this->decoded($row['billing_address']));
+        self::assertSame(SnakeCaseKeys::from($builder['billingAddress']->toArray()), $this->decoded($row['billing_address']));
         self::assertFalse((bool) $row['cancelled']);
     }
 
@@ -62,16 +62,6 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
     private function totalAmountInCents(array $lines): int
     {
         return array_sum(array_map(static fn (OrderLine $line): int => $line->total()->cents, $lines));
-    }
-
-    /**
-     * @param array<string, mixed> $address
-     *
-     * @return array<string, mixed>
-     */
-    private function postalAddress(array $address): array
-    {
-        return SnakeCaseKeys::from($address);
     }
 
     /**

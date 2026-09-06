@@ -133,11 +133,15 @@ final class JsonObjectNormalizerTest extends TestCase
     #[Test]
     public function itThrowsWhenDenormalizingInvalidJson(): void
     {
-        // Then
-        $this->expectException(InvalidArgument::class);
-
         // When
-        $this->normalizer->denormalize('{invalid');
+        try {
+            $this->normalizer->denormalize('{invalid');
+            self::fail('Expected '.InvalidArgument::class.' to be thrown.');
+        } catch (InvalidArgument $exception) {
+            // Then
+            $previous = $exception->getPrevious();
+            self::assertInstanceOf(\JsonException::class, $previous);
+        }
     }
 
     #[Test]
