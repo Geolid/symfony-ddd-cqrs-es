@@ -62,15 +62,13 @@ final readonly class HasReachedSpecification
         $status[$value] = false;
 
         foreach ($this->transitions[$value] ?? [] as $next) {
-            if (($status[$next->value] ?? null) === false) {
-                return true;
-            }
+            $nextValue = (string) $next->value;
 
-            if (($status[$next->value] ?? null) === true) {
-                continue;
-            }
-
-            if ($this->visit((string) $next->value, $status)) {
+            if (match ($status[$nextValue] ?? null) {
+                false => true,
+                true => false,
+                null => $this->visit($nextValue, $status),
+            }) {
                 return true;
             }
         }
