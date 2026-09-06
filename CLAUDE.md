@@ -1,7 +1,8 @@
 # Project
 
-A Symfony showcase of a DDD/CQRS/Event Sourcing architecture, modeling a small
-e-commerce flow: customers, orders, shipping, catalog, identity.
+A Symfony showcase of a DDD/CQRS/Event Sourcing architecture, modeling an
+e-commerce flow: identity, catalog, sales (buyer/order), finance (payment/refund),
+fulfilment (shipping), after-sales (return).
 
 ## Stack & Architecture
 

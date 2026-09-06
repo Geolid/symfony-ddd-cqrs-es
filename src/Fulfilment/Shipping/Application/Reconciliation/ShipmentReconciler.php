@@ -18,6 +18,7 @@ final readonly class ShipmentReconciler implements ShipmentReconcilerInterface
     }
 
     /**
+     * @throws UnsupportedShipmentStatusException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */

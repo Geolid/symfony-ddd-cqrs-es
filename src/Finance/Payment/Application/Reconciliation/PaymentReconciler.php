@@ -18,6 +18,7 @@ final readonly class PaymentReconciler implements PaymentReconcilerInterface
     }
 
     /**
+     * @throws UnsupportedPaymentStatusException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
