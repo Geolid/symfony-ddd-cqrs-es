@@ -51,7 +51,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         $self->recordThat(new PasswordCredentialDefined(
             id: $id->toString(),
             identityId: $identityId,
-            login: $login->value,
+            login: $login,
             passwordHash: $hasher->hash($password->value),
             definedAt: $definedAt,
         ));

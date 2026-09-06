@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Domain\PasswordCredential\Event;
 
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
@@ -17,7 +18,7 @@ final readonly class PasswordCredentialDefined
         #[DataSubjectId]
         public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('erased-%s'))]
-        public string $login,
+        public Login $login,
         public string $passwordHash,
         public \DateTimeImmutable $definedAt,
     ) {

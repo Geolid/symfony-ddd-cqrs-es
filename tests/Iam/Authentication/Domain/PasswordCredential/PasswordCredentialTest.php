@@ -152,7 +152,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         return new PasswordCredentialDefined(
             $this->id->toString(),
             $this->identityId,
-            $this->login->value,
+            $this->login,
             $this->hasher->hash($this->password->value),
             $this->definedAt,
         );
