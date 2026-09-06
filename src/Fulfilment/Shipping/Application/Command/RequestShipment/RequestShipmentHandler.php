@@ -36,8 +36,8 @@ final readonly class RequestShipmentHandler
             reference: $command->reference,
             direction: ShipmentDirection::from($command->direction->value),
             buyerId: $command->buyerId,
-            origin: $this->toAddress($command->origin),
-            destination: $this->toAddress($command->destination),
+            origin: $this->toPostalAddress($command->origin),
+            destination: $this->toPostalAddress($command->destination),
             createdAt: $this->clock->now(),
         );
 
@@ -49,13 +49,10 @@ final readonly class RequestShipmentHandler
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $address
      */
-    private function toAddress(array $address): PostalAddress
+    private function toPostalAddress(array $address): PostalAddress
     {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
+        return PostalAddress::of($address['recipientName'], Address::of(...$address['address']));
     }
 }

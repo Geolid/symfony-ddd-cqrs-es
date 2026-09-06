@@ -9,6 +9,8 @@ use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -35,8 +37,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentRequested::class, $rehydrated);
-        $erasedAddress = ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
-        self::assertSame($erasedAddress, $rehydrated->origin);
-        self::assertSame($erasedAddress, $rehydrated->destination);
+        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
+        self::assertSame($erasedAddress->toArray(), $rehydrated->origin->toArray());
+        self::assertSame($erasedAddress->toArray(), $rehydrated->destination->toArray());
     }
 }

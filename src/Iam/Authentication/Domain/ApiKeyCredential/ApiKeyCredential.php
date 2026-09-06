@@ -42,8 +42,8 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
         $self->recordThat(new ApiKeyCredentialIssued(
             id: $id->toString(),
             identityId: $identityId,
-            label: $label->value,
-            keyId: $keyId->value,
+            label: $label,
+            keyId: $keyId,
             secretHash: $hasher->hash($secret),
             issuedAt: $issuedAt,
         ));

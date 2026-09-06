@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Infrastructure\PSP\Globex;
 
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Payment\Application\PSP\PaymentTransientFailureException;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexClient;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexPaymentGateway;
 use PHPUnit\Framework\Attributes\DataProvider;

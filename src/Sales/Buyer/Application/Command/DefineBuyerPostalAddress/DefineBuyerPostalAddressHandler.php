@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\Command\RegisterBuyerShippingAddress;
+namespace Sales\Buyer\Application\Command\DefineBuyerPostalAddress;
 
 use Psr\Clock\ClockInterface;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
@@ -14,7 +14,7 @@ use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[CommandHandler]
-final readonly class RegisterBuyerShippingAddressHandler
+final readonly class DefineBuyerPostalAddressHandler
 {
     public function __construct(
         private BuyerRepositoryInterface $repository,
@@ -26,11 +26,11 @@ final readonly class RegisterBuyerShippingAddressHandler
      * @throws BuyerNotFoundException
      * @throws BuyerAlreadyExistsException
      */
-    public function __invoke(RegisterBuyerShippingAddress $command): void
+    public function __invoke(DefineBuyerPostalAddress $command): void
     {
         $buyer = $this->repository->load(BuyerId::fromString($command->buyerId));
 
-        $buyer->registerShippingAddress(
+        $buyer->definePostalAddress(
             PostalAddress::of(
                 $command->recipientName,
                 Address::of($command->street, $command->postalCode, $command->city, $command->countryCode),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shared\Domain\Gdpr;
 
 /**
- * @template T
+ * @template-covariant T
  */
 final readonly class ErasedFieldSentinel
 {
@@ -26,7 +26,7 @@ final readonly class ErasedFieldSentinel
 
         if (\is_array($this->fallbackValue)) {
             return array_map(
-                static fn (mixed $value): mixed => $value instanceof self ? $value($subjectId) : $value,
+                static fn (mixed $value): mixed => \is_callable($value) ? $value($subjectId) : $value,
                 $this->fallbackValue,
             );
         }

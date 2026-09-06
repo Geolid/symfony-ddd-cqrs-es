@@ -6,10 +6,11 @@ namespace Finance\Tests\Payment\Application\Policy;
 
 use Finance\Payment\Application\IntegrationEvent\PaymentRefundRejected\PaymentRefundRejectedIntegrationEvent;
 use Finance\Payment\Application\Policy\RefundPaymentOnPaymentRefundRequired;
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Application\PSP\PaymentTransientFailureException;
 use Finance\Payment\Domain\Event\PaymentRefundRequired;
+use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -42,7 +43,7 @@ final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegration
         $this->paymentGateway->expects(self::once())->method('refund')->with($reference);
 
         // When
-        $this->trigger(RefundPaymentOnPaymentRefundRequired::class, new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, Clock::get()->now()));
+        $this->trigger(RefundPaymentOnPaymentRefundRequired::class, new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), PaymentReference::fromString($reference), Clock::get()->now()));
     }
 
     #[Test]
@@ -53,7 +54,7 @@ final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegration
         $builder = PaymentBuilder::new()->authorized()->captured();
         $payment = $builder->create();
         $this->store($payment);
-        $message = Message::create(new PaymentRefundRequired($payment->id->toString(), $builder['orderId'], $builder['reference']->value, Clock::get()->now()));
+        $message = Message::create(new PaymentRefundRequired($payment->id->toString(), $builder['orderId'], $builder['reference'], Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');
 
         // When
@@ -69,7 +70,7 @@ final class RefundPaymentOnPaymentRefundRequiredTest extends AbstractIntegration
     public function itRethrowsTransientGatewayFailure(): void
     {
         // Given
-        $message = Message::create(new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 'GLBX-x', Clock::get()->now()));
+        $message = Message::create(new PaymentRefundRequired(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), PaymentReference::fromString('GLBX-x'), Clock::get()->now()));
         $error = PaymentTransientFailureException::forReason('unreachable');
 
         // Then

@@ -22,8 +22,8 @@ final readonly class ProductListedPublisher
     {
         $this->publisher->publish(Product::class, $event->id, new ProductListedIntegrationEvent(
             productId: $event->id,
-            label: $event->label,
-            unitPriceInCents: $event->unitPriceInCents,
+            label: $event->label->value,
+            unitPriceInCents: $event->unitPrice->cents,
             listedAt: $event->listedAt,
         ));
     }

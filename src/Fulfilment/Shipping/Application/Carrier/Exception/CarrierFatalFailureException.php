@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payment\Application\PSP;
+namespace Fulfilment\Shipping\Application\Carrier\Exception;
 
-final class PaymentFatalFailureException extends PaymentGatewayException
+final class CarrierFatalFailureException extends CarrierGatewayException
 {
     public static function forReason(string $reason, ?\Throwable $previous = null): self
     {

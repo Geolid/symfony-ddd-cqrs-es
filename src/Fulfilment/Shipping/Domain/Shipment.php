@@ -25,7 +25,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('fulfilment.shipping.shipment')]
@@ -68,8 +67,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
             reference: $reference,
             direction: $direction,
             buyerId: $buyerId,
-            origin: $origin->toArray(),
-            destination: $destination->toArray(),
+            origin: $origin,
+            destination: $destination,
             createdAt: $createdAt,
         ));
 
@@ -110,7 +109,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new ShipmentManifested(
             id: $this->id->toString(),
-            trackingNumber: $trackingNumber->value,
+            trackingNumber: $trackingNumber,
             manifestedAt: $manifestedAt,
         ));
     }
@@ -183,8 +182,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $this->reference = $event->reference;
         $this->direction = $event->direction;
         $this->buyerId = $event->buyerId;
-        $this->origin = $this->toAddress($event->origin);
-        $this->destination = $this->toAddress($event->destination);
+        $this->origin = $event->origin;
+        $this->destination = $event->destination;
         $this->trackingNumber = null;
         $this->state = ShipmentState::REQUESTED;
     }
@@ -198,7 +197,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyManifested(ShipmentManifested $event): void
     {
-        $this->trackingNumber = TrackingNumber::fromString($event->trackingNumber);
+        $this->trackingNumber = $event->trackingNumber;
         $this->state = ShipmentState::MANIFESTED;
     }
 
@@ -223,16 +222,5 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyCancellationRejected(ShipmentCancellationRejected $event): void
     {
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

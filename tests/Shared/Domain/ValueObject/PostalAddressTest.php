@@ -31,7 +31,10 @@ final class PostalAddressTest extends TestCase
         self::assertSame(CountryCode::FR, $postalAddress->address->countryCode);
         $primitivePostalAddress = $postalAddress->toArray();
         self::assertSame(
-            ['recipientName' => $recipientName, 'street' => '10 Rue de la Paix', 'postalCode' => '75002', 'city' => 'Paris', 'countryCode' => 'FR'],
+            [
+                'recipientName' => $recipientName,
+                'address' => ['street' => '10 Rue de la Paix', 'postalCode' => '75002', 'city' => 'Paris', 'countryCode' => 'FR'],
+            ],
             $primitivePostalAddress,
         );
     }

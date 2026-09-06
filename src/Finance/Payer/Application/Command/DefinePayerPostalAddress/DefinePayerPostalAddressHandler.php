@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payer\Application\Command\RegisterPayerAddress;
+namespace Finance\Payer\Application\Command\DefinePayerPostalAddress;
 
 use Finance\Payer\Domain\Exception\PayerAlreadyExistsException;
 use Finance\Payer\Domain\Exception\PayerNotFoundException;
@@ -14,7 +14,7 @@ use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[CommandHandler]
-final readonly class RegisterPayerAddressHandler
+final readonly class DefinePayerPostalAddressHandler
 {
     public function __construct(
         private PayerRepositoryInterface $repository,
@@ -26,11 +26,11 @@ final readonly class RegisterPayerAddressHandler
      * @throws PayerNotFoundException
      * @throws PayerAlreadyExistsException
      */
-    public function __invoke(RegisterPayerAddress $command): void
+    public function __invoke(DefinePayerPostalAddress $command): void
     {
         $payer = $this->repository->load(PayerId::fromString($command->payerId));
 
-        $payer->registerAddress(
+        $payer->definePostalAddress(
             PostalAddress::of(
                 $command->recipientName,
                 Address::of($command->street, $command->postalCode, $command->city, $command->countryCode),

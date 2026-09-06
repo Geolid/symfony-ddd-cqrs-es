@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payer\Domain;
 
-use Finance\Payer\Domain\Event\PayerAddressRegistered;
 use Finance\Payer\Domain\Event\PayerErased;
+use Finance\Payer\Domain\Event\PayerPostalAddressDefined;
 use Finance\Payer\Domain\Event\PayerRegistered;
 use Finance\Payer\Domain\ValueObject\PayerId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -14,7 +14,6 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('finance.payer.payer')]
@@ -24,7 +23,7 @@ final class Payer implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) PayerId $id;
-    public private(set) ?PostalAddress $address = null;
+    public private(set) ?PostalAddress $postalAddress = null;
     private bool $erased;
 
     public static function register(PayerId $id, \DateTimeImmutable $registeredAt): self
@@ -38,16 +37,16 @@ final class Payer implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function registerAddress(PostalAddress $address, \DateTimeImmutable $registeredAt): void
+    public function definePostalAddress(PostalAddress $postalAddress, \DateTimeImmutable $definedAt): void
     {
-        if (true === $this->address?->equals($address)) {
+        if (true === $this->postalAddress?->equals($postalAddress)) {
             return;
         }
 
-        $this->recordThat(new PayerAddressRegistered(
+        $this->recordThat(new PayerPostalAddressDefined(
             id: $this->id->toString(),
-            address: $address->toArray(),
-            setAt: $registeredAt,
+            postalAddress: $postalAddress,
+            definedAt: $definedAt,
         ));
     }
 
@@ -71,25 +70,14 @@ final class Payer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyAddressRegistered(PayerAddressRegistered $event): void
+    private function applyPostalAddressDefined(PayerPostalAddressDefined $event): void
     {
-        $this->address = $this->toAddress($event->address);
+        $this->postalAddress = $event->postalAddress;
     }
 
     #[Apply]
     private function applyErased(PayerErased $event): void
     {
         $this->erased = true;
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

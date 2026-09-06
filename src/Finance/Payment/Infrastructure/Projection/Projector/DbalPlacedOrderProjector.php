@@ -13,6 +13,7 @@ use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegr
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('finance.payment.project_placed_orders')]
 final readonly class DbalPlacedOrderProjector extends AbstractDbalProjector
@@ -27,13 +28,7 @@ final readonly class DbalPlacedOrderProjector extends AbstractDbalProjector
             [
                 'order_id' => $event->orderId,
                 'amount_in_cents' => $event->totalAmountInCents,
-                'billing_address' => [
-                    'recipient_name' => $event->billingAddress['recipientName'],
-                    'street' => $event->billingAddress['street'],
-                    'postal_code' => $event->billingAddress['postalCode'],
-                    'city' => $event->billingAddress['city'],
-                    'country_code' => $event->billingAddress['countryCode'],
-                ],
+                'billing_address' => SnakeCaseKeys::from($event->billingAddress),
                 'cancelled' => false,
             ],
             ['billing_address' => Types::JSON, 'cancelled' => Types::BOOLEAN],

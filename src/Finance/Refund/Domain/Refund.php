@@ -41,7 +41,7 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             paymentId: $paymentId,
             orderId: $orderId,
-            amountInCents: $amount->cents,
+            amount: $amount,
             initiatedAt: $initiatedAt,
         ));
 
@@ -78,7 +78,7 @@ final class Refund implements AggregateRoot, AggregateRootMetadataAware
         $this->id = RefundId::fromString($event->id);
         $this->paymentId = $event->paymentId;
         $this->orderId = $event->orderId;
-        $this->amountInCents = $event->amountInCents;
+        $this->amountInCents = $event->amount->cents;
         $this->state = RefundState::INITIATED;
     }
 

@@ -30,7 +30,7 @@ final readonly class DbalRefundProjector extends AbstractDbalProjector
                 'id' => $event->id,
                 'payment_id' => $event->paymentId,
                 'order_id' => $event->orderId,
-                'amount_in_cents' => $event->amountInCents,
+                'amount_in_cents' => $event->amount->cents,
                 'status' => RefundStatus::INITIATED->value,
                 'initiated_at' => $event->initiatedAt,
             ],

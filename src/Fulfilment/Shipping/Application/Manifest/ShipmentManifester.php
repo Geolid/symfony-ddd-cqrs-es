@@ -47,7 +47,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
             }
         }
 
-        $trackingNumber = $this->carrier->manifest($shipmentId, $this->toAddress($shipment->origin), $this->toAddress($shipment->destination));
+        $trackingNumber = $this->carrier->manifest($shipmentId, $this->toPostalAddress($shipment->origin), $this->toPostalAddress($shipment->destination));
 
         $this->commandBus->dispatch(new ManifestShipment(
             id: $shipmentId,
@@ -57,11 +57,11 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
         return $trackingNumber;
     }
 
-    private function toAddress(PostalAddressResult $address): PostalAddress
+    private function toPostalAddress(PostalAddressResult $address): PostalAddress
     {
         return PostalAddress::of(
             $address->recipientName,
-            Address::of($address->street, $address->postalCode, $address->city, $address->countryCode),
+            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
         );
     }
 }

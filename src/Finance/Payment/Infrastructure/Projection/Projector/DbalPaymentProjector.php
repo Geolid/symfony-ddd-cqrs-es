@@ -33,8 +33,8 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'order_id' => $event->orderId,
-                'amount_in_cents' => $event->amountInCents,
-                'reference' => $event->reference,
+                'amount_in_cents' => $event->amount->cents,
+                'reference' => $event->reference->value,
                 'checkout_url' => $event->checkoutUrl,
                 'status' => PaymentStatus::REQUESTED->value,
                 'requested_at' => $event->requestedAt,

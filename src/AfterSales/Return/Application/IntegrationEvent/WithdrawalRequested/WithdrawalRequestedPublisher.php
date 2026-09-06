@@ -24,7 +24,7 @@ final readonly class WithdrawalRequestedPublisher
             withdrawalId: $event->id,
             orderId: $event->orderId,
             buyerId: $event->buyerId,
-            shippingAddress: $event->shippingAddress,
+            shippingAddress: $event->shippingAddress->toArray(),
             requestedAt: $event->requestedAt,
         ));
     }

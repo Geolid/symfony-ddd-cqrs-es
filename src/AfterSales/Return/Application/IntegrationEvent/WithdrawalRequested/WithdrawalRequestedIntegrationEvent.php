@@ -14,7 +14,7 @@ use Shared\Domain\Gdpr\ErasedFieldSentinel;
 final readonly class WithdrawalRequestedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $shippingAddress
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $shippingAddress
      */
     public function __construct(
         public string $withdrawalId,
@@ -23,10 +23,7 @@ final readonly class WithdrawalRequestedIntegrationEvent implements IntegrationE
         public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
-            'street' => 'erased',
-            'postalCode' => '00000',
-            'city' => 'erased',
-            'countryCode' => 'ZZ',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
         ]))]
         public array $shippingAddress,
         public \DateTimeImmutable $requestedAt,

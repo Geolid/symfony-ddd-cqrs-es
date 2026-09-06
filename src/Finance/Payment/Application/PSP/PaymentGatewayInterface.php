@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\PSP;
 
 use Finance\Payment\Application\Checkout\PaymentSession;
+use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Shared\Domain\ValueObject\PostalAddress;
 
 interface PaymentGatewayInterface

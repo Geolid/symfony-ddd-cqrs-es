@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\Command\RegisterBuyerShippingAddress;
+namespace Sales\Buyer\Application\Command\DefineBuyerPostalAddress;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class RegisterBuyerShippingAddress implements CommandInterface
+final readonly class DefineBuyerPostalAddress implements CommandInterface
 {
     public function __construct(
         public string $buyerId,

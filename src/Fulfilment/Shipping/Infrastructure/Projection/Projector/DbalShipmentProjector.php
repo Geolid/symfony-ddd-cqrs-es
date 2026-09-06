@@ -20,6 +20,7 @@ use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('fulfilment.shipping.project_shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector
@@ -36,8 +37,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'reference' => $event->reference,
                 'direction' => ShipmentDirection::from($event->direction->value)->value,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'origin' => $this->toAddressData($event->origin),
-                'destination' => $this->toAddressData($event->destination),
+                'origin' => SnakeCaseKeys::from($event->origin->toArray()),
+                'destination' => SnakeCaseKeys::from($event->destination->toArray()),
                 'created_at' => $event->createdAt,
             ],
             ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
@@ -61,7 +62,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => ShipmentStatus::MANIFESTED->value,
-                'tracking_number' => $event->trackingNumber,
+                'tracking_number' => $event->trackingNumber->value,
                 'manifested_at' => $event->manifestedAt,
             ],
             ['id' => $event->id],
@@ -136,21 +137,5 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
         $table->addIndex(['reference'], 'fulfilment_shipping_reference_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     *
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function toAddressData(array $address): array
-    {
-        return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
-        ];
     }
 }

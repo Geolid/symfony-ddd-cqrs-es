@@ -9,8 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Payer\PayerFinderInterface;
 use Sales\Order\Application\Finder\Payer\PayerResult;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalPayerFinderTest extends AbstractIntegrationTestCase
@@ -30,10 +28,8 @@ final class DbalPayerFinderTest extends AbstractIntegrationTestCase
         // Given
         $otherPayer = PayerBuilder::new()->create();
         $this->store($otherPayer);
-        $address = $this->address();
-        $payer = PayerBuilder::new()
-            ->addressRegistered($address)
-            ->create();
+        $builder = PayerBuilder::new()->postalAddressDefined();
+        $payer = $builder->create();
         $this->store($payer);
 
         // When
@@ -45,13 +41,14 @@ final class DbalPayerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result->address);
         $addressResult = [
             'recipientName' => $result->address->recipientName,
-            'street' => $result->address->street,
-            'postalCode' => $result->address->postalCode,
-            'city' => $result->address->city,
-            'countryCode' => $result->address->countryCode,
+            'address' => [
+                'street' => $result->address->address->street,
+                'postalCode' => $result->address->address->postalCode,
+                'city' => $result->address->address->city,
+                'countryCode' => $result->address->address->countryCode,
+            ],
         ];
-        $expectedAddress = $address->toArray();
-        self::assertSame($expectedAddress, $addressResult);
+        self::assertSame($builder['postalAddress']->toArray(), $addressResult);
     }
 
     #[Test]
@@ -78,10 +75,5 @@ final class DbalPayerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertNull($result);
-    }
-
-    private function address(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('8 avenue Foch', '75116', 'Paris', 'FR'));
     }
 }

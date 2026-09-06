@@ -44,7 +44,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => IdentityState::SUSPENDED->value,
-                'reason' => $event->reason,
+                'reason' => $event->reason->value,
                 'suspended_at' => $event->suspendedAt,
                 'reactivated_at' => null,
             ],
@@ -60,7 +60,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'status' => IdentityState::ACTIVE->value,
-                'reason' => $event->reason,
+                'reason' => $event->reason->value,
                 'reactivated_at' => $event->reactivatedAt,
                 'suspended_at' => null,
             ],

@@ -9,6 +9,7 @@ use Finance\Payment\Infrastructure\Projection\Projector\DbalPlacedOrderProjector
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -30,7 +31,7 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($this->totalAmountInCents($builder['lines']), $row['amount_in_cents']);
-        self::assertSame($this->toAddressData($builder['billingAddress']->toArray()), $this->postalAddress($row['billing_address']));
+        self::assertSame(SnakeCaseKeys::from($builder['billingAddress']->toArray()), $this->decoded($row['billing_address']));
         self::assertFalse((bool) $row['cancelled']);
     }
 
@@ -64,25 +65,9 @@ final class DbalPlacedOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function toAddressData(array $address): array
-    {
-        return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
-        ];
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(string $json): array
+    private function decoded(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

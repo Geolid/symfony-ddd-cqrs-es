@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payer\Infrastructure\Gdpr;
 
-use Finance\Payer\Domain\Event\PayerAddressRegistered;
+use Finance\Payer\Application\IntegrationEvent\PayerPostalAddressDefined\PayerPostalAddressDefinedIntegrationEvent;
 use Finance\Payer\Domain\Event\PayerErased;
+use Finance\Payer\Domain\Event\PayerPostalAddressDefined;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
@@ -31,16 +32,16 @@ final class PayerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsAddressOnErasure(): void
+    public function itCryptoShredsPostalAddressOnErasure(): void
     {
         // Given
         $payer = PayerBuilder::new()
-            ->addressRegistered(PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR')))
+            ->postalAddressDefined()
             ->create();
         $this->store($payer);
         $serialized = $this->serializedEventOf(
-            PayerAddressRegistered::class,
-            static fn (PayerAddressRegistered $event): bool => $event->id === $payer->id->toString(),
+            PayerPostalAddressDefined::class,
+            static fn (PayerPostalAddressDefined $event): bool => $event->id === $payer->id->toString(),
         );
 
         // When
@@ -48,15 +49,34 @@ final class PayerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(PayerAddressRegistered::class, $rehydrated);
-        self::assertSame($this->erasedAddress(), $rehydrated->address);
+        self::assertInstanceOf(PayerPostalAddressDefined::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
     }
 
-    /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function erasedAddress(): array
+    #[Test]
+    public function itCryptoShredsPayerPostalAddressDefinedIntegrationEventOnErasure(): void
     {
-        return ['recipientName' => 'erased', 'street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'];
+        // Given
+        $payer = PayerBuilder::new()
+            ->postalAddressDefined()
+            ->create();
+        $this->store($payer);
+        $serialized = $this->serializedEventOf(
+            PayerPostalAddressDefinedIntegrationEvent::class,
+            static fn (PayerPostalAddressDefinedIntegrationEvent $event): bool => $event->payerId === $payer->id->toString(),
+        );
+
+        // When
+        ($this->eraser)(Message::create(new PayerErased($payer->id->toString(), Clock::get()->now())));
+
+        // Then
+        $rehydrated = $this->serializer->deserialize($serialized);
+        self::assertInstanceOf(PayerPostalAddressDefinedIntegrationEvent::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress);
+    }
+
+    private function erasedPostalAddress(): PostalAddress
+    {
+        return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
     }
 }

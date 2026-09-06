@@ -7,6 +7,7 @@ namespace Sales\Tests\Buyer\Support\Builder;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
+use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
@@ -17,7 +18,8 @@ use Symfony\Component\Clock\Clock;
  *     id: BuyerId,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
- *     shippingAddressRegisteredAt: \DateTimeImmutable,
+ *     postalAddress: PostalAddress,
+ *     postalAddressDefinedAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
  * }
  *
@@ -40,12 +42,15 @@ final class BuyerBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(registeredAt: $registeredAt);
     }
 
-    public function shippingAddressRegistered(PostalAddress $shippingAddress, ?\DateTimeImmutable $registeredAt = null): self
+    public function postalAddressDefined(?PostalAddress $postalAddress = null, ?\DateTimeImmutable $definedAt = null): self
     {
-        $builder = null !== $registeredAt ? $this->withAttributes(shippingAddressRegisteredAt: $registeredAt) : $this;
+        $builder = $this->withAttributes(...array_filter(
+            ['postalAddress' => $postalAddress, 'postalAddressDefinedAt' => $definedAt],
+            static fn (mixed $value): bool => null !== $value,
+        ));
 
         return $builder->withModifier(
-            static fn (Buyer $buyer, self $builder) => $buyer->registerShippingAddress($shippingAddress, $builder['shippingAddressRegisteredAt']),
+            static fn (Buyer $buyer, self $builder) => $buyer->definePostalAddress($builder['postalAddress'], $builder['postalAddressDefinedAt']),
         );
     }
 
@@ -64,7 +69,11 @@ final class BuyerBuilder extends AbstractAggregateBuilder
             'id' => BuyerId::generate(...),
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => Clock::get()->now(),
-            'shippingAddressRegisteredAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
+            'postalAddress' => static fn (): PostalAddress => PostalAddress::of(
+                SeededFaker::get()->name(),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+            ),
+            'postalAddressDefinedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+1 day'),
             'erasedAt' => static fn (): \DateTimeImmutable => Clock::get()->now()->modify('+2 day'),
         ];
     }

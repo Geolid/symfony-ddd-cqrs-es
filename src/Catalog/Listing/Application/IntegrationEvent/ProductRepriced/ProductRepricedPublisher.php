@@ -22,7 +22,7 @@ final readonly class ProductRepricedPublisher
     {
         $this->publisher->publish(Product::class, $event->id, new ProductRepricedIntegrationEvent(
             productId: $event->id,
-            unitPriceInCents: $event->unitPriceInCents,
+            unitPriceInCents: $event->unitPrice->cents,
             repricedAt: $event->repricedAt,
         ));
     }

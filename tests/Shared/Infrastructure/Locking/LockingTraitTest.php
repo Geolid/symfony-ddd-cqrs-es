@@ -7,8 +7,8 @@ namespace Shared\Tests\Infrastructure\Locking;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Shared\Infrastructure\Locking\Exception\LockNotAcquiredException;
 use Shared\Infrastructure\Locking\LockingTrait;
-use Shared\Infrastructure\Locking\LockNotAcquiredException;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\SharedLockInterface;
 

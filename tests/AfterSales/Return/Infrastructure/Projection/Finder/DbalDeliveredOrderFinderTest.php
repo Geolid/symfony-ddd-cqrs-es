@@ -40,10 +40,10 @@ final class DbalDeliveredOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($builder['buyerId'], $result->buyerId);
         self::assertSame($shippingAddress['recipientName'], $result->shippingAddress->recipientName);
-        self::assertSame($shippingAddress['street'], $result->shippingAddress->street);
-        self::assertSame($shippingAddress['postalCode'], $result->shippingAddress->postalCode);
-        self::assertSame($shippingAddress['city'], $result->shippingAddress->city);
-        self::assertSame($shippingAddress['countryCode'], $result->shippingAddress->countryCode);
+        self::assertSame($shippingAddress['address']['street'], $result->shippingAddress->address->street);
+        self::assertSame($shippingAddress['address']['postalCode'], $result->shippingAddress->address->postalCode);
+        self::assertSame($shippingAddress['address']['city'], $result->shippingAddress->address->city);
+        self::assertSame($shippingAddress['address']['countryCode'], $result->shippingAddress->address->countryCode);
         self::assertSame($builder['deliveredAt']->format(\DateTimeInterface::ATOM), $result->deliveredAt->format(\DateTimeInterface::ATOM));
     }
 

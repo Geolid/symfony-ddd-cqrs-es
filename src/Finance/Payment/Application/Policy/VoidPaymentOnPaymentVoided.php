@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Policy;
 
-use Finance\Payment\Application\PSP\PaymentGatewayException;
+use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -23,6 +23,6 @@ final readonly class VoidPaymentOnPaymentVoided
     #[Subscribe(PaymentVoided::class)]
     public function __invoke(PaymentVoided $event): void
     {
-        $this->paymentGateway->void($event->reference);
+        $this->paymentGateway->void($event->reference->value);
     }
 }

@@ -10,7 +10,7 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -34,8 +34,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($builder['reference'], $row['reference']);
         self::assertSame($builder['direction']->value, $row['direction']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertSame($this->primitiveAddress($builder['origin']), $this->postalAddress($row['origin']));
-        self::assertSame($this->primitiveAddress($builder['destination']), $this->postalAddress($row['destination']));
+        self::assertSame(SnakeCaseKeys::from($builder['origin']->toArray()), $this->decoded($row['origin']));
+        self::assertSame(SnakeCaseKeys::from($builder['destination']->toArray()), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
     }
 
@@ -167,21 +167,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function primitiveAddress(PostalAddress $address): array
-    {
-        return [
-            'recipient_name' => $address->recipientName,
-            'street' => $address->address->street,
-            'postal_code' => $address->address->postalCode,
-            'city' => $address->address->city,
-            'country_code' => $address->address->countryCode->value,
-        ];
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(string $json): array
+    private function decoded(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

@@ -40,10 +40,10 @@ final class DbalPlacedOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($this->totalAmountInCents($builder['lines']), $result->amountInCents);
         self::assertSame($billingAddress['recipientName'], $result->billingAddress->recipientName);
-        self::assertSame($billingAddress['street'], $result->billingAddress->street);
-        self::assertSame($billingAddress['postalCode'], $result->billingAddress->postalCode);
-        self::assertSame($billingAddress['city'], $result->billingAddress->city);
-        self::assertSame($billingAddress['countryCode'], $result->billingAddress->countryCode);
+        self::assertSame($billingAddress['address']['street'], $result->billingAddress->address->street);
+        self::assertSame($billingAddress['address']['postalCode'], $result->billingAddress->address->postalCode);
+        self::assertSame($billingAddress['address']['city'], $result->billingAddress->address->city);
+        self::assertSame($billingAddress['address']['countryCode'], $result->billingAddress->address->countryCode);
         self::assertFalse($result->cancelled);
     }
 

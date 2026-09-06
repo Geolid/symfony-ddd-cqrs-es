@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Carrier\Acme;
 
-use Fulfilment\Shipping\Application\Carrier\CarrierFatalFailureException;
-use Fulfilment\Shipping\Application\Carrier\CarrierGatewayException;
-use Fulfilment\Shipping\Application\Carrier\CarrierTransientFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierFatalFailureException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
+use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;

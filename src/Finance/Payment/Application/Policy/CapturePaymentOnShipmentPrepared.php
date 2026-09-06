@@ -6,7 +6,7 @@ namespace Finance\Payment\Application\Policy;
 
 use Finance\Payment\Application\Command\CapturePayment\CapturePayment;
 use Finance\Payment\Application\Command\FailPayment\FailPayment;
-use Finance\Payment\Application\PSP\PaymentFatalFailureException;
+use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;

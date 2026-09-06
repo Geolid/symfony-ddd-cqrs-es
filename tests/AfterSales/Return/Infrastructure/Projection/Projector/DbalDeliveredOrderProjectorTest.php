@@ -8,6 +8,7 @@ use AfterSales\Return\Infrastructure\Projection\Projector\DbalDeliveredOrderProj
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -29,30 +30,14 @@ final class DbalDeliveredOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['buyerId'], $row['buyer_id']);
-        self::assertSame($this->toAddressData($builder['shippingAddress']->toArray()), $this->postalAddress($row['shipping_address']));
+        self::assertSame(SnakeCaseKeys::from($builder['shippingAddress']->toArray()), $this->decoded($row['shipping_address']));
         self::assertNotNull($row['delivered_at']);
     }
 
     /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     *
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
-    private function toAddressData(array $address): array
-    {
-        return [
-            'recipient_name' => $address['recipientName'],
-            'street' => $address['street'],
-            'postal_code' => $address['postalCode'],
-            'city' => $address['city'],
-            'country_code' => $address['countryCode'],
-        ];
-    }
-
-    /**
-     * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
-     */
-    private function postalAddress(string $json): array
+    private function decoded(string $json): array
     {
         /** @var array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string} $decoded */
         $decoded = json_decode($json, true);

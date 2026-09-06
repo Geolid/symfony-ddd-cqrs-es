@@ -11,11 +11,10 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
-use Sales\Buyer\Domain\Event\BuyerShippingAddressRegistered;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('sales.buyer.buyer')]
@@ -26,7 +25,7 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) BuyerId $id;
     public private(set) Email $email;
-    public private(set) ?PostalAddress $shippingAddress = null;
+    public private(set) ?PostalAddress $postalAddress = null;
     private bool $erased;
 
     public static function register(BuyerId $id, Email $email, \DateTimeImmutable $registeredAt): self
@@ -34,23 +33,23 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new BuyerRegistered(
             id: $id->toString(),
-            email: $email->value,
+            email: $email,
             registeredAt: $registeredAt,
         ));
 
         return $self;
     }
 
-    public function registerShippingAddress(PostalAddress $shippingAddress, \DateTimeImmutable $registeredAt): void
+    public function definePostalAddress(PostalAddress $postalAddress, \DateTimeImmutable $definedAt): void
     {
-        if (true === $this->shippingAddress?->equals($shippingAddress)) {
+        if (true === $this->postalAddress?->equals($postalAddress)) {
             return;
         }
 
-        $this->recordThat(new BuyerShippingAddressRegistered(
+        $this->recordThat(new BuyerPostalAddressDefined(
             id: $this->id->toString(),
-            address: $shippingAddress->toArray(),
-            setAt: $registeredAt,
+            postalAddress: $postalAddress,
+            definedAt: $definedAt,
         ));
     }
 
@@ -70,30 +69,19 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(BuyerRegistered $event): void
     {
         $this->id = BuyerId::fromString($event->id);
-        $this->email = Email::fromString($event->email);
+        $this->email = $event->email;
         $this->erased = false;
     }
 
     #[Apply]
-    private function applyShippingAddressRegistered(BuyerShippingAddressRegistered $event): void
+    private function applyPostalAddressDefined(BuyerPostalAddressDefined $event): void
     {
-        $this->shippingAddress = $this->toAddress($event->address);
+        $this->postalAddress = $event->postalAddress;
     }
 
     #[Apply]
     private function applyErased(BuyerErased $event): void
     {
         $this->erased = true;
-    }
-
-    /**
-     * @param array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string} $address
-     */
-    private function toAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address['recipientName'],
-            Address::of($address['street'], $address['postalCode'], $address['city'], $address['countryCode']),
-        );
     }
 }

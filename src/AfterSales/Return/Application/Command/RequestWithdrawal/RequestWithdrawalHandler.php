@@ -52,7 +52,7 @@ final readonly class RequestWithdrawalHandler
             actingBuyerId: $command->buyerId,
             shippingAddress: PostalAddress::of(
                 $order->shippingAddress->recipientName,
-                Address::of($order->shippingAddress->street, $order->shippingAddress->postalCode, $order->shippingAddress->city, $order->shippingAddress->countryCode),
+                Address::of($order->shippingAddress->address->street, $order->shippingAddress->address->postalCode, $order->shippingAddress->address->city, $order->shippingAddress->address->countryCode),
             ),
             deliveredAt: $order->deliveredAt,
             now: $this->clock->now(),

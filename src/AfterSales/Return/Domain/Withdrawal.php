@@ -22,7 +22,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('after_sales.return.withdrawal')]
@@ -71,7 +70,7 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             orderId: $orderId,
             buyerId: $buyerId,
-            shippingAddress: $shippingAddress->toArray(),
+            shippingAddress: $shippingAddress,
             requestedAt: $now,
         ));
 
@@ -135,10 +134,7 @@ final class Withdrawal implements AggregateRoot, AggregateRootMetadataAware
         $this->id = WithdrawalId::fromString($event->id);
         $this->orderId = $event->orderId;
         $this->buyerId = $event->buyerId;
-        $this->shippingAddress = PostalAddress::of(
-            $event->shippingAddress['recipientName'],
-            Address::of($event->shippingAddress['street'], $event->shippingAddress['postalCode'], $event->shippingAddress['city'], $event->shippingAddress['countryCode']),
-        );
+        $this->shippingAddress = $event->shippingAddress;
         $this->state = WithdrawalState::REQUESTED;
     }
 
