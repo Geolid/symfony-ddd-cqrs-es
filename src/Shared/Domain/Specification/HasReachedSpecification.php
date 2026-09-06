@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Domain\Specification;
 
+use Webmozart\Assert\Assert;
+
 /**
  * @template T of \BackedEnum
  */
@@ -16,6 +18,7 @@ final readonly class HasReachedSpecification
         private array $transitions,
         private \BackedEnum $target,
     ) {
+        Assert::false($this->hasCycle(), 'The transitions graph must be acyclic.');
     }
 
     public function isSatisfiedBy(\BackedEnum $candidate): bool
@@ -34,6 +37,43 @@ final readonly class HasReachedSpecification
                 return true;
             }
         }
+
+        return false;
+    }
+
+    private function hasCycle(): bool
+    {
+        /** @var array<string, bool> $status */
+        $status = [];
+
+        return array_any(
+            array_map(strval(...), array_keys($this->transitions)),
+            fn (string $start): bool => !isset($status[$start]) && $this->visit($start, $status),
+        );
+    }
+
+    /**
+     * @param array<string, bool> $status false = in progress, true = fully explored
+     */
+    private function visit(string $value, array &$status): bool
+    {
+        $status[$value] = false;
+
+        foreach ($this->transitions[$value] ?? [] as $next) {
+            if (($status[$next->value] ?? null) === false) {
+                return true;
+            }
+
+            if (($status[$next->value] ?? null) === true) {
+                continue;
+            }
+
+            if ($this->visit((string) $next->value, $status)) {
+                return true;
+            }
+        }
+
+        $status[$value] = true;
 
         return false;
     }

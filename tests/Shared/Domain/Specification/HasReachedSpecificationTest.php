@@ -48,4 +48,20 @@ final class HasReachedSpecificationTest extends TestCase
         yield 'dead end itself' => [DummyState::FAILED, DummyState::FAILED, true];
         yield 'dead end' => [DummyState::FAILED, DummyState::SUCCESS, false];
     }
+
+    #[Test]
+    public function itProtectsInvariants(): void
+    {
+        // Given
+        $transitions = [
+            DummyState::PENDING->value => [DummyState::PROCESSING],
+            DummyState::PROCESSING->value => [DummyState::PENDING],
+        ];
+
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new HasReachedSpecification($transitions, DummyState::PENDING);
+    }
 }
