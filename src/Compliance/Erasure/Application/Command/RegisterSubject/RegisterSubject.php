@@ -9,7 +9,7 @@ use Shared\Application\Command\CommandInterface;
 final readonly class RegisterSubject implements CommandInterface
 {
     public function __construct(
-        public string $id,
+        public string $identityId,
         public \DateTimeImmutable $registeredAt,
     ) {
     }

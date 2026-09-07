@@ -26,7 +26,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = SubjectId::fromString(Uuid::uuid7()->toString());
-        $subject = Subject::register($id, Clock::get()->now());
+        $subject = Subject::register($id, Uuid::uuid7()->toString(), Clock::get()->now());
 
         // When
         $this->store($subject);

@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Compliance\Tests\Erasure\Infrastructure\Projection\Finder;
+
+use Compliance\Erasure\Application\Finder\Buyer\BuyerFinderInterface;
+use Compliance\Erasure\Application\Finder\Buyer\BuyerResult;
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+
+final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
+{
+    private BuyerFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(BuyerFinderInterface::class);
+    }
+
+    #[Test]
+    public function itFindsById(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
+        $this->store($buyer);
+
+        // When
+        $result = $this->finder->ofIdOrNull($buyer->id->toString());
+
+        // Then
+        self::assertInstanceOf(BuyerResult::class, $result);
+        self::assertSame($buyer->id->toString(), $result->buyerId);
+        self::assertSame($identityId, $result->identityId);
+    }
+
+    #[Test]
+    public function itFindsNoneForUnknownBuyer(): void
+    {
+        // When
+        $result = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
+
+        // Then
+        self::assertNull($result);
+    }
+}

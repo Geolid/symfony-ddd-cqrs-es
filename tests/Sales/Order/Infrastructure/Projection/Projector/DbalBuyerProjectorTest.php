@@ -7,6 +7,7 @@ namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
@@ -15,7 +16,9 @@ use Support\TestCase\AbstractIntegrationTestCase;
 /**
  * @phpstan-type Row array{
  *     buyer_id: string,
+ *     identity_id: string,
  *     shipping_address: string|null,
+ *     billing_address: string|null,
  *     erasure_pending: bool,
  * }
  */
@@ -34,17 +37,18 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNull($row['shipping_address']);
+        self::assertNull($row['billing_address']);
         self::assertFalse((bool) $row['erasure_pending']);
     }
 
     #[Test]
-    public function itProjectsOnBuyerPostalAddressDefined(): void
+    public function itProjectsOnBuyerShippingAddressDefined(): void
     {
         // Given
-        $otherBuilder = BuyerBuilder::new()->postalAddressDefined();
+        $otherBuilder = BuyerBuilder::new()->shippingAddressDefined();
         $other = $otherBuilder->create();
         $this->store($other);
-        $builder = BuyerBuilder::new()->postalAddressDefined();
+        $builder = BuyerBuilder::new()->shippingAddressDefined();
         $buyer = $builder->create();
 
         // When
@@ -55,7 +59,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            SnakeCaseKeys::from($builder['postalAddress']->toArray()),
+            SnakeCaseKeys::from($builder['shippingAddress']->toArray()),
             $this->decoded($row['shipping_address']),
         );
 
@@ -63,8 +67,39 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['shipping_address']);
         self::assertSame(
-            SnakeCaseKeys::from($otherBuilder['postalAddress']->toArray()),
+            SnakeCaseKeys::from($otherBuilder['shippingAddress']->toArray()),
             $this->decoded($otherRow['shipping_address']),
+        );
+    }
+
+    #[Test]
+    public function itProjectsOnBuyerBillingAddressDefined(): void
+    {
+        // Given
+        $otherBuilder = BuyerBuilder::new()->billingAddressDefined();
+        $other = $otherBuilder->create();
+        $this->store($other);
+        $builder = BuyerBuilder::new()->billingAddressDefined();
+        $buyer = $builder->create();
+
+        // When
+        $this->store($buyer);
+
+        // Then
+        $row = $this->fetchRow($buyer->id->toString());
+        self::assertNotFalse($row);
+        self::assertNotNull($row['billing_address']);
+        self::assertSame(
+            SnakeCaseKeys::from($builder['billingAddress']->toArray()),
+            $this->decoded($row['billing_address']),
+        );
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNotNull($otherRow['billing_address']);
+        self::assertSame(
+            SnakeCaseKeys::from($otherBuilder['billingAddress']->toArray()),
+            $this->decoded($otherRow['billing_address']),
         );
     }
 
@@ -93,8 +128,9 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = BuyerBuilder::new()->create();
         $this->store($other);
-        $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->create();
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
+        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->create();
 
         // When
         $this->store($buyer, $subject);
@@ -113,11 +149,13 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErasureCancelledIntegrationEvent(): void
     {
         // Given
-        $other = BuyerBuilder::new()->create();
-        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->erasureRequested()->create();
+        $otherIdentityId = Uuid::uuid7()->toString();
+        $other = BuyerBuilder::new()->withIdentityId($otherIdentityId)->create();
+        $otherSubject = SubjectBuilder::new()->withIdentityId($otherIdentityId)->erasureRequested()->create();
         $this->store($other, $otherSubject);
-        $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->erasureCancelled()->create();
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
+        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->erasureCancelled()->create();
 
         // When
         $this->store($buyer, $subject);
@@ -153,7 +191,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, shipping_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
+                'SELECT buyer_id, identity_id, shipping_address, billing_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['buyerId' => $buyerId],

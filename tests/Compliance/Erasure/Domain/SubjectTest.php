@@ -22,6 +22,7 @@ use Symfony\Component\Clock\Clock;
 final class SubjectTest extends AggregateRootTestCase
 {
     private SubjectId $id;
+    private string $identityId = '';
     private ErasureHoldReference $reference;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $requestedAt;
@@ -51,7 +52,7 @@ final class SubjectTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Subject => Subject::register($this->id, $this->registeredAt))
+            ->when(fn (): Subject => Subject::register($this->id, $this->identityId, $this->registeredAt))
             ->then($this->registered());
     }
 
@@ -115,7 +116,7 @@ final class SubjectTest extends AggregateRootTestCase
         $this
             ->given($this->registered(), $this->requested())
             ->when(fn (Subject $subject) => $subject->cancelErasure($this->cancelledAt))
-            ->then(new SubjectErasureCancelled($this->id->toString(), $this->cancelledAt));
+            ->then(new SubjectErasureCancelled($this->id->toString(), $this->identityId, $this->cancelledAt));
     }
 
     #[Test]
@@ -133,7 +134,7 @@ final class SubjectTest extends AggregateRootTestCase
         $this
             ->given($this->registered(), $this->requested())
             ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
-            ->then(new SubjectErased($this->id->toString(), $this->erasedAt));
+            ->then(new SubjectErased($this->id->toString(), $this->identityId, $this->erasedAt));
     }
 
     #[Test]
@@ -169,7 +170,7 @@ final class SubjectTest extends AggregateRootTestCase
         $this
             ->given($this->registered(), $this->requested(), $this->placed(), $this->lifted())
             ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
-            ->then(new SubjectErased($this->id->toString(), $this->erasedAt));
+            ->then(new SubjectErased($this->id->toString(), $this->identityId, $this->erasedAt));
     }
 
     protected function aggregateClass(): string
@@ -179,7 +180,7 @@ final class SubjectTest extends AggregateRootTestCase
 
     private function registered(): SubjectRegistered
     {
-        return new SubjectRegistered($this->id->toString(), $this->registeredAt);
+        return new SubjectRegistered($this->id->toString(), $this->identityId, $this->registeredAt);
     }
 
     private function placed(): SubjectErasureHoldPlaced
@@ -194,6 +195,6 @@ final class SubjectTest extends AggregateRootTestCase
 
     private function requested(): SubjectErasureRequested
     {
-        return new SubjectErasureRequested($this->id->toString(), $this->requestedAt);
+        return new SubjectErasureRequested($this->id->toString(), $this->identityId, $this->requestedAt);
     }
 }

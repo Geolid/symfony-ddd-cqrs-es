@@ -7,6 +7,7 @@ namespace Compliance\Tests\Erasure\Application\Command\RegisterSubject;
 use Compliance\Erasure\Application\Command\RegisterSubject\RegisterSubject;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
 use Compliance\Erasure\Application\SubjectStatus;
+use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -27,12 +28,13 @@ final class RegisterSubjectHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
 
         // When
-        $this->dispatch(new RegisterSubject($id, Clock::get()->now()));
+        $this->dispatch(new RegisterSubject($identityId, Clock::get()->now()));
 
         // Then
+        $id = SubjectId::forIdentity($identityId)->toString();
         $result = $this->finder->ofId($id);
         self::assertSame(SubjectStatus::RETAINED, $result->status);
     }

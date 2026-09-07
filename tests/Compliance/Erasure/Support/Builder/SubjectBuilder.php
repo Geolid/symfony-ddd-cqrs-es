@@ -17,6 +17,7 @@ use Webmozart\Assert\Assert;
 /**
  * @phpstan-type Attributes = array{
  *     id: SubjectId,
+ *     identityId: string,
  *     registeredAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
@@ -31,6 +32,11 @@ final class SubjectBuilder extends AbstractAggregateBuilder
     public function withId(string $id): self
     {
         return $this->withAttributes(id: SubjectId::fromString($id));
+    }
+
+    public function withIdentityId(string $identityId): self
+    {
+        return $this->withAttributes(identityId: $identityId);
     }
 
     public function withActiveHolds(ErasureHold ...$activeHolds): self
@@ -109,7 +115,10 @@ final class SubjectBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => static fn (): SubjectId => SubjectId::fromString(Uuid::uuid7()->toString()),
+            'id' => static fn (?self $builder): SubjectId => SubjectId::forIdentity(
+                null !== $builder ? $builder['identityId'] : self::sample('identityId'),
+            ),
+            'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'requestedAt' => static fn (): \DateTimeImmutable => $now,
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
@@ -122,6 +131,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
     {
         return Subject::register(
             id: $this['id'],
+            identityId: $this['identityId'],
             registeredAt: $this['registeredAt'],
         );
     }

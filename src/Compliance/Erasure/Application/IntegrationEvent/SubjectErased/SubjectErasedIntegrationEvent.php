@@ -12,6 +12,7 @@ final readonly class SubjectErasedIntegrationEvent implements IntegrationEventIn
 {
     public function __construct(
         public string $subjectId,
+        public string $identityId,
         public \DateTimeImmutable $erasedAt,
     ) {
     }

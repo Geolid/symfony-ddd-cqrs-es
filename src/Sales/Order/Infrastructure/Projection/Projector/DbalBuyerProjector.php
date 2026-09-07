@@ -11,9 +11,10 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressDefined\BuyerBillingAddressDefinedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerErased\BuyerErasedIntegrationEvent;
-use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPostalAddressDefinedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressDefined\BuyerShippingAddressDefinedIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
@@ -30,20 +31,32 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'buyer_id' => $event->buyerId,
+                'identity_id' => $event->identityId,
                 'erasure_pending' => false,
             ],
             ['erasure_pending' => Types::BOOLEAN],
         );
     }
 
-    #[Subscribe(BuyerPostalAddressDefinedIntegrationEvent::class)]
-    public function onBuyerPostalAddressDefinedIntegrationEvent(BuyerPostalAddressDefinedIntegrationEvent $event): void
+    #[Subscribe(BuyerShippingAddressDefinedIntegrationEvent::class)]
+    public function onBuyerShippingAddressDefinedIntegrationEvent(BuyerShippingAddressDefinedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
             ['shipping_address' => SnakeCaseKeys::from($event->postalAddress)],
             ['buyer_id' => $event->buyerId],
             ['shipping_address' => Types::JSON],
+        );
+    }
+
+    #[Subscribe(BuyerBillingAddressDefinedIntegrationEvent::class)]
+    public function onBuyerBillingAddressDefinedIntegrationEvent(BuyerBillingAddressDefinedIntegrationEvent $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['billing_address' => SnakeCaseKeys::from($event->postalAddress)],
+            ['buyer_id' => $event->buyerId],
+            ['billing_address' => Types::JSON],
         );
     }
 
@@ -59,7 +72,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_pending' => true],
-            ['buyer_id' => $event->subjectId],
+            ['identity_id' => $event->identityId],
             ['erasure_pending' => Types::BOOLEAN],
         );
     }
@@ -70,7 +83,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_pending' => false],
-            ['buyer_id' => $event->subjectId],
+            ['identity_id' => $event->identityId],
             ['erasure_pending' => Types::BOOLEAN],
         );
     }
@@ -82,7 +95,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('buyer_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
+        $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('erasure_pending', Types::BOOLEAN, ['default' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

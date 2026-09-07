@@ -20,16 +20,16 @@ final class EraseBuyerOnIdentityErasedTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withId($id)->create();
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
         $this->store($buyer);
 
         // Then
         $this->expectException(BuyerResultNotFoundException::class);
 
         // When
-        $this->trigger(EraseBuyerOnIdentityErased::class, new IdentityErasedIntegrationEvent($id, Clock::get()->now()));
-        $this->service(BuyerFinderInterface::class)->ofId($id);
+        $this->trigger(EraseBuyerOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
+        $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
     }
 
     #[Test]

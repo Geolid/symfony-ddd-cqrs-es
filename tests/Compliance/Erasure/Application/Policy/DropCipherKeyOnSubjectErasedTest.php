@@ -40,7 +40,7 @@ final class DropCipherKeyOnSubjectErasedTest extends AbstractIntegrationTestCase
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnSubjectErased::class, new SubjectErased($subjectId, $now->modify('+1 day')));
+        $this->trigger(DropCipherKeyOnSubjectErased::class, new SubjectErased($subjectId, Uuid::uuid7()->toString(), $now->modify('+1 day')));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);

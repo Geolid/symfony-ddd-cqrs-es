@@ -6,11 +6,11 @@ namespace Sales\Tests\Buyer\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Domain\Buyer;
+use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerErased;
-use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
+use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
@@ -18,6 +18,7 @@ use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 final class BuyerTest extends AggregateRootTestCase
 {
     private BuyerId $id;
+    private string $identityId;
     private Email $email;
     private \DateTimeImmutable $registeredAt;
 
@@ -25,7 +26,8 @@ final class BuyerTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = BuyerId::fromString(Uuid::uuid7()->toString());
+        $this->identityId = BuyerBuilder::sample('identityId');
+        $this->id = BuyerId::forIdentity($this->identityId);
         $this->email = BuyerBuilder::sample('email');
         $this->registeredAt = BuyerBuilder::sample('registeredAt');
     }
@@ -35,38 +37,71 @@ final class BuyerTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Buyer => Buyer::register($this->id, $this->email, $this->registeredAt))
-            ->then(new BuyerRegistered($this->id->toString(), $this->email, $this->registeredAt));
+            ->when(fn (): Buyer => Buyer::register($this->id, $this->identityId, $this->email, $this->registeredAt))
+            ->then(new BuyerRegistered($this->id->toString(), $this->identityId, $this->email, $this->registeredAt));
     }
 
     #[Test]
-    public function itDefinesPostalAddress(): void
+    public function itDefinesShippingAddress(): void
     {
-        $definedAt = BuyerBuilder::sample('postalAddressDefinedAt');
-        $postalAddress = BuyerBuilder::sample('postalAddress');
+        $definedAt = BuyerBuilder::sample('shippingAddressDefinedAt');
+        $shippingAddress = BuyerBuilder::sample('shippingAddress');
 
         $this
             ->given($this->registered())
-            ->when(static fn (Buyer $buyer) => $buyer->definePostalAddress($postalAddress, $definedAt))
-            ->then(new BuyerPostalAddressDefined(
+            ->when(static fn (Buyer $buyer) => $buyer->defineShippingAddress($shippingAddress, $definedAt))
+            ->then(new BuyerShippingAddressDefined(
                 id: $this->id->toString(),
-                postalAddress: $postalAddress,
+                identityId: $this->identityId,
+                postalAddress: $shippingAddress,
                 definedAt: $definedAt,
             ));
     }
 
     #[Test]
-    public function itDoesNotDefineWhenIdenticalPostalAddress(): void
+    public function itDoesNotDefineWhenIdenticalShippingAddress(): void
     {
-        $postalAddress = BuyerBuilder::sample('postalAddress');
-        $definedAt = BuyerBuilder::sample('postalAddressDefinedAt');
+        $shippingAddress = BuyerBuilder::sample('shippingAddress');
+        $definedAt = BuyerBuilder::sample('shippingAddressDefinedAt');
 
         $this
             ->given(
                 $this->registered(),
-                new BuyerPostalAddressDefined($this->id->toString(), $postalAddress, $definedAt),
+                new BuyerShippingAddressDefined($this->id->toString(), $this->identityId, $shippingAddress, $definedAt),
             )
-            ->when(static fn (Buyer $buyer) => $buyer->definePostalAddress($postalAddress, BuyerBuilder::sample('postalAddressDefinedAt')))
+            ->when(static fn (Buyer $buyer) => $buyer->defineShippingAddress($shippingAddress, BuyerBuilder::sample('shippingAddressDefinedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDefinesBillingAddress(): void
+    {
+        $definedAt = BuyerBuilder::sample('billingAddressDefinedAt');
+        $billingAddress = BuyerBuilder::sample('billingAddress');
+
+        $this
+            ->given($this->registered())
+            ->when(static fn (Buyer $buyer) => $buyer->defineBillingAddress($billingAddress, $definedAt))
+            ->then(new BuyerBillingAddressDefined(
+                id: $this->id->toString(),
+                identityId: $this->identityId,
+                postalAddress: $billingAddress,
+                definedAt: $definedAt,
+            ));
+    }
+
+    #[Test]
+    public function itDoesNotDefineWhenIdenticalBillingAddress(): void
+    {
+        $billingAddress = BuyerBuilder::sample('billingAddress');
+        $definedAt = BuyerBuilder::sample('billingAddressDefinedAt');
+
+        $this
+            ->given(
+                $this->registered(),
+                new BuyerBillingAddressDefined($this->id->toString(), $this->identityId, $billingAddress, $definedAt),
+            )
+            ->when(static fn (Buyer $buyer) => $buyer->defineBillingAddress($billingAddress, BuyerBuilder::sample('billingAddressDefinedAt')))
             ->then();
     }
 
@@ -99,6 +134,6 @@ final class BuyerTest extends AggregateRootTestCase
 
     private function registered(): BuyerRegistered
     {
-        return new BuyerRegistered($this->id->toString(), $this->email, $this->registeredAt);
+        return new BuyerRegistered($this->id->toString(), $this->identityId, $this->email, $this->registeredAt);
     }
 }

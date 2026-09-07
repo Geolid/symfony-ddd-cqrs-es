@@ -22,6 +22,7 @@ final readonly class SubjectErasureRequestedPublisher
     {
         $this->publisher->publish(Subject::class, $event->id, new SubjectErasureRequestedIntegrationEvent(
             subjectId: $event->id,
+            identityId: $event->identityId,
             requestedAt: $event->requestedAt,
         ));
     }

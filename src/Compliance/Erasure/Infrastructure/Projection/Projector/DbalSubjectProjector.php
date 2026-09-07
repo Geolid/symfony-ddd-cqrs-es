@@ -32,9 +32,11 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'status' => SubjectStatus::RETAINED->value,
+                'registered_at' => $event->registeredAt,
                 'requested_at' => null,
                 'active_hold_count' => 0,
             ],
+            ['registered_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -101,6 +103,7 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
+        $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('active_hold_count', Types::INTEGER, ['default' => 0]);
         $table->addPrimaryKeyConstraint(

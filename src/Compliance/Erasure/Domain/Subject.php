@@ -36,16 +36,18 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) SubjectId $id;
+    public private(set) string $identityId;
     public private(set) SubjectState $state;
     private \DateTimeImmutable $requestedAt;
     /** @var array<string, ErasureHold> */
     private array $activeHolds = [];
 
-    public static function register(SubjectId $id, \DateTimeImmutable $registeredAt): self
+    public static function register(SubjectId $id, string $identityId, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
         $self->recordThat(new SubjectRegistered(
             id: $id->toString(),
+            identityId: $identityId,
             registeredAt: $registeredAt,
         ));
 
@@ -86,6 +88,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new SubjectErasureRequested(
             id: $this->id->toString(),
+            identityId: $this->identityId,
             requestedAt: $requestedAt,
         ));
     }
@@ -98,6 +101,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new SubjectErasureCancelled(
             id: $this->id->toString(),
+            identityId: $this->identityId,
             cancelledAt: $cancelledAt,
         ));
     }
@@ -118,6 +122,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new SubjectErased(
             id: $this->id->toString(),
+            identityId: $this->identityId,
             erasedAt: $now,
         ));
     }
@@ -126,6 +131,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(SubjectRegistered $event): void
     {
         $this->id = SubjectId::fromString($event->id);
+        $this->identityId = $event->identityId;
         $this->state = SubjectState::RETAINED;
     }
 

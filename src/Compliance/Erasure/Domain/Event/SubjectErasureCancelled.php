@@ -11,6 +11,7 @@ final readonly class SubjectErasureCancelled
 {
     public function __construct(
         public string $id,
+        public string $identityId,
         public \DateTimeImmutable $cancelledAt,
     ) {
     }

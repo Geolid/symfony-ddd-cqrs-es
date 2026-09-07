@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Compliance\Erasure\Application\Policy;
 
 use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
+use Compliance\Erasure\Application\Finder\Buyer\BuyerFinderInterface;
+use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
@@ -16,8 +18,10 @@ final readonly class LiftSubjectErasureHoldOnOrderDelivered
 {
     private const string SOURCE_TYPE = 'sales.order.order';
 
-    public function __construct(private CommandBusInterface $commandBus)
-    {
+    public function __construct(
+        private BuyerFinderInterface $buyerFinder,
+        private CommandBusInterface $commandBus,
+    ) {
     }
 
     /**
@@ -27,8 +31,14 @@ final readonly class LiftSubjectErasureHoldOnOrderDelivered
     #[Subscribe(OrderDeliveredIntegrationEvent::class)]
     public function __invoke(OrderDeliveredIntegrationEvent $event): void
     {
+        $buyer = $this->buyerFinder->ofIdOrNull($event->buyerId);
+
+        if (null === $buyer) {
+            return;
+        }
+
         $this->commandBus->dispatch(new LiftSubjectErasureHold(
-            subjectId: $event->buyerId,
+            subjectId: SubjectId::forIdentity($buyer->identityId)->toString(),
             sourceType: self::SOURCE_TYPE,
             sourceId: $event->orderId,
         ));

@@ -10,9 +10,10 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerErased;
-use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
+use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -24,15 +25,18 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) BuyerId $id;
+    public private(set) string $identityId;
     public private(set) Email $email;
-    public private(set) ?PostalAddress $postalAddress = null;
+    public private(set) ?PostalAddress $shippingAddress = null;
+    public private(set) ?PostalAddress $billingAddress = null;
     private bool $erased;
 
-    public static function register(BuyerId $id, Email $email, \DateTimeImmutable $registeredAt): self
+    public static function register(BuyerId $id, string $identityId, Email $email, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
         $self->recordThat(new BuyerRegistered(
             id: $id->toString(),
+            identityId: $identityId,
             email: $email,
             registeredAt: $registeredAt,
         ));
@@ -40,15 +44,30 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function definePostalAddress(PostalAddress $postalAddress, \DateTimeImmutable $definedAt): void
+    public function defineShippingAddress(PostalAddress $shippingAddress, \DateTimeImmutable $definedAt): void
     {
-        if (true === $this->postalAddress?->equals($postalAddress)) {
+        if (true === $this->shippingAddress?->equals($shippingAddress)) {
             return;
         }
 
-        $this->recordThat(new BuyerPostalAddressDefined(
+        $this->recordThat(new BuyerShippingAddressDefined(
             id: $this->id->toString(),
-            postalAddress: $postalAddress,
+            identityId: $this->identityId,
+            postalAddress: $shippingAddress,
+            definedAt: $definedAt,
+        ));
+    }
+
+    public function defineBillingAddress(PostalAddress $billingAddress, \DateTimeImmutable $definedAt): void
+    {
+        if (true === $this->billingAddress?->equals($billingAddress)) {
+            return;
+        }
+
+        $this->recordThat(new BuyerBillingAddressDefined(
+            id: $this->id->toString(),
+            identityId: $this->identityId,
+            postalAddress: $billingAddress,
             definedAt: $definedAt,
         ));
     }
@@ -69,14 +88,21 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(BuyerRegistered $event): void
     {
         $this->id = BuyerId::fromString($event->id);
+        $this->identityId = $event->identityId;
         $this->email = $event->email;
         $this->erased = false;
     }
 
     #[Apply]
-    private function applyPostalAddressDefined(BuyerPostalAddressDefined $event): void
+    private function applyShippingAddressDefined(BuyerShippingAddressDefined $event): void
     {
-        $this->postalAddress = $event->postalAddress;
+        $this->shippingAddress = $event->postalAddress;
+    }
+
+    #[Apply]
+    private function applyBillingAddressDefined(BuyerBillingAddressDefined $event): void
+    {
+        $this->billingAddress = $event->postalAddress;
     }
 
     #[Apply]

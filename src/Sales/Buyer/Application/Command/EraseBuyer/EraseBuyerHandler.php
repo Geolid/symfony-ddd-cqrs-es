@@ -10,6 +10,7 @@ use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
+use Shared\Application\CipherKey\CipherKeyDropperInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
@@ -20,6 +21,7 @@ final readonly class EraseBuyerHandler
     public function __construct(
         private BuyerRepositoryInterface $repository,
         private UniqueValueRegistryInterface $uniqueValues,
+        private CipherKeyDropperInterface $cipherKeyDropper,
         private ClockInterface $clock,
     ) {
     }
@@ -36,5 +38,6 @@ final readonly class EraseBuyerHandler
         $this->repository->save($buyer);
 
         $this->uniqueValues->release(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->id->toString());
+        $this->cipherKeyDropper->drop($buyer->id->toString());
     }
 }

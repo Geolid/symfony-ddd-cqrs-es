@@ -9,7 +9,7 @@ use Shared\Application\Command\CommandInterface;
 final readonly class RegisterBuyer implements CommandInterface
 {
     public function __construct(
-        public string $id,
+        public string $identityId,
         public string $email,
     ) {
     }

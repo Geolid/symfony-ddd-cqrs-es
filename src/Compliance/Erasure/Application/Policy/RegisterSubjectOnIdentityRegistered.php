@@ -26,7 +26,7 @@ final readonly class RegisterSubjectOnIdentityRegistered
     public function __invoke(IdentityRegisteredIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new RegisterSubject(
-            id: $event->identityId,
+            identityId: $event->identityId,
             registeredAt: $event->registeredAt,
         ));
     }

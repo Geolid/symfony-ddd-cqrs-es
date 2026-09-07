@@ -19,8 +19,8 @@ final readonly class RegisterSubjectHandler
 
     public function __invoke(RegisterSubject $command): void
     {
-        $id = SubjectId::fromString($command->id);
-        $subject = Subject::register($id, $command->registeredAt);
+        $id = SubjectId::forIdentity($command->identityId);
+        $subject = Subject::register($id, $command->identityId, $command->registeredAt);
 
         try {
             $this->repository->save($subject);

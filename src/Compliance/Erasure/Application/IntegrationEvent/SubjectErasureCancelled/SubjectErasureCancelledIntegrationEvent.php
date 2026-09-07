@@ -12,6 +12,7 @@ final readonly class SubjectErasureCancelledIntegrationEvent implements Integrat
 {
     public function __construct(
         public string $subjectId,
+        public string $identityId,
         public \DateTimeImmutable $cancelledAt,
     ) {
     }

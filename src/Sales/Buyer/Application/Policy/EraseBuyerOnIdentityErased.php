@@ -29,10 +29,12 @@ final readonly class EraseBuyerOnIdentityErased
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
     public function __invoke(IdentityErasedIntegrationEvent $event): void
     {
-        if (!$this->repository->has(BuyerId::fromString($event->identityId))) {
+        $buyerId = BuyerId::forIdentity($event->identityId);
+
+        if (!$this->repository->has($buyerId)) {
             return;
         }
 
-        $this->commandBus->dispatch(new EraseBuyer($event->identityId));
+        $this->commandBus->dispatch(new EraseBuyer($buyerId->toString()));
     }
 }

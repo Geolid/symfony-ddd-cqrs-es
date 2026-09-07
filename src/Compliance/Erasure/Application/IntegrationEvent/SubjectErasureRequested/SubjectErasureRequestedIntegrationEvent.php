@@ -12,6 +12,7 @@ final readonly class SubjectErasureRequestedIntegrationEvent implements Integrat
 {
     public function __construct(
         public string $subjectId,
+        public string $identityId,
         public \DateTimeImmutable $requestedAt,
     ) {
     }

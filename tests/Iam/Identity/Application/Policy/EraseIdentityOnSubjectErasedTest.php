@@ -28,7 +28,7 @@ final class EraseIdentityOnSubjectErasedTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->trigger(EraseIdentityOnSubjectErased::class, new SubjectErasedIntegrationEvent($id, Clock::get()->now()));
+        $this->trigger(EraseIdentityOnSubjectErased::class, new SubjectErasedIntegrationEvent(Uuid::uuid7()->toString(), $id, Clock::get()->now()));
         $this->service(IdentityFinderInterface::class)->ofId($id);
     }
 }

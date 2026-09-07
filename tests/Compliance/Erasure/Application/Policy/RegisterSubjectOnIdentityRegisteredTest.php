@@ -39,7 +39,7 @@ final class RegisterSubjectOnIdentityRegisteredTest extends AbstractIntegrationT
 
         // Then
         self::assertInstanceOf(RegisterSubject::class, $dispatched);
-        self::assertSame($identityId, $dispatched->id);
+        self::assertSame($identityId, $dispatched->identityId);
         self::assertSame($registeredAt, $dispatched->registeredAt);
     }
 }

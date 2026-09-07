@@ -5,31 +5,17 @@ declare(strict_types=1);
 namespace Compliance\Erasure\Domain\ValueObject;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootId;
-use Webmozart\Assert\Assert;
+use Ramsey\Uuid\Uuid;
+use Shared\Domain\UuidTrait;
 
 final readonly class SubjectId implements AggregateRootId
 {
-    private string $value;
+    use UuidTrait;
 
-    private function __construct(string $value)
+    private const string IDENTITY_NAMESPACE = '5e1c2e83-d133-40db-b766-9f180f9f154c';
+
+    public static function forIdentity(string $identityId): self
     {
-        Assert::uuid($value, 'An identifier must be a valid UUID, %s given.');
-
-        $this->value = $value;
-    }
-
-    public static function fromString(string $id): self
-    {
-        return new self($id);
-    }
-
-    public function equals(self $other): bool
-    {
-        return $this->value === $other->value;
-    }
-
-    public function toString(): string
-    {
-        return $this->value;
+        return new self(Uuid::uuid5(self::IDENTITY_NAMESPACE, $identityId)->toString());
     }
 }

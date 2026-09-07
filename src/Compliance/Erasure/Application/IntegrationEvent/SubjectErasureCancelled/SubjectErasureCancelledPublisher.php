@@ -22,6 +22,7 @@ final readonly class SubjectErasureCancelledPublisher
     {
         $this->publisher->publish(Subject::class, $event->id, new SubjectErasureCancelledIntegrationEvent(
             subjectId: $event->id,
+            identityId: $event->identityId,
             cancelledAt: $event->cancelledAt,
         ));
     }

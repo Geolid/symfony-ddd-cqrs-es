@@ -17,6 +17,7 @@ final readonly class BuyerRegistered
     public function __construct(
         #[DataSubjectId]
         public string $id,
+        public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('%s@erased.invalid'), Email::class, 'fromString'))]
         public Email $email,
         public \DateTimeImmutable $registeredAt,

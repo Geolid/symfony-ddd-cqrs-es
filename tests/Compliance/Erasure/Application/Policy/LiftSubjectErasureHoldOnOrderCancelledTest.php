@@ -6,9 +6,11 @@ namespace Compliance\Tests\Erasure\Application\Policy;
 
 use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
 use Compliance\Erasure\Application\Policy\LiftSubjectErasureHoldOnOrderCancelled;
+use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -21,7 +23,8 @@ final class LiftSubjectErasureHoldOnOrderCancelledTest extends AbstractIntegrati
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $buyerId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
 
         $dispatched = null;
         $commandBus = $this->createMock(CommandBusInterface::class);
@@ -31,16 +34,18 @@ final class LiftSubjectErasureHoldOnOrderCancelledTest extends AbstractIntegrati
                 $dispatched = $command;
             });
 
+        $this->store($buyer);
+
         // When
         $this->trigger(LiftSubjectErasureHoldOnOrderCancelled::class, new OrderCancelledIntegrationEvent(
             orderId: $orderId,
-            buyerId: $buyerId,
+            buyerId: $buyer->id->toString(),
             cancelledAt: Clock::get()->now(),
         ));
 
         // Then
         self::assertInstanceOf(LiftSubjectErasureHold::class, $dispatched);
-        self::assertSame($buyerId, $dispatched->subjectId);
+        self::assertSame(SubjectId::forIdentity($identityId)->toString(), $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);
     }

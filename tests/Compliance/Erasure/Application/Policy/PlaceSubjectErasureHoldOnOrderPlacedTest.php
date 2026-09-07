@@ -6,9 +6,11 @@ namespace Compliance\Tests\Erasure\Application\Policy;
 
 use Compliance\Erasure\Application\Command\PlaceSubjectErasureHold\PlaceSubjectErasureHold;
 use Compliance\Erasure\Application\Policy\PlaceSubjectErasureHoldOnOrderPlaced;
+use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
@@ -22,7 +24,8 @@ final class PlaceSubjectErasureHoldOnOrderPlacedTest extends AbstractIntegration
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $buyerId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
 
         $dispatched = null;
         $commandBus = $this->createMock(CommandBusInterface::class);
@@ -32,10 +35,12 @@ final class PlaceSubjectErasureHoldOnOrderPlacedTest extends AbstractIntegration
                 $dispatched = $command;
             });
 
+        $this->store($buyer);
+
         // When
         $this->trigger(PlaceSubjectErasureHoldOnOrderPlaced::class, new OrderPlacedIntegrationEvent(
             orderId: $orderId,
-            buyerId: $buyerId,
+            buyerId: $buyer->id->toString(),
             lines: [],
             totalAmountInCents: 1_000,
             billingAddress: OrderBuilder::sample('billingAddress')->toArray(),
@@ -44,7 +49,7 @@ final class PlaceSubjectErasureHoldOnOrderPlacedTest extends AbstractIntegration
 
         // Then
         self::assertInstanceOf(PlaceSubjectErasureHold::class, $dispatched);
-        self::assertSame($buyerId, $dispatched->subjectId);
+        self::assertSame(SubjectId::forIdentity($identityId)->toString(), $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);
     }

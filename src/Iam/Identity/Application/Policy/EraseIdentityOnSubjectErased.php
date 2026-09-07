@@ -25,6 +25,6 @@ final readonly class EraseIdentityOnSubjectErased
     #[Subscribe(SubjectErasedIntegrationEvent::class)]
     public function __invoke(SubjectErasedIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new EraseIdentity($event->subjectId));
+        $this->commandBus->dispatch(new EraseIdentity($event->identityId));
     }
 }

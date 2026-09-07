@@ -43,7 +43,7 @@ final class DbalSubjectFinder extends AbstractDbalFinder implements SubjectFinde
     {
         $qb->select('id', 'status', 'requested_at', 'active_hold_count')
             ->from(DbalSubjectProjector::TABLE)
-            ->orderBy('requested_at', 'ASC')
+            ->orderBy('registered_at', 'ASC')
             ->addOrderBy('id', 'ASC');
     }
 
