@@ -22,6 +22,7 @@ final class SubjectTest extends AggregateRootTestCase
 {
     private SubjectId $id;
     private HoldReference $reference;
+    private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $placedAt;
     private \DateTimeImmutable $liftedAt;
@@ -34,6 +35,7 @@ final class SubjectTest extends AggregateRootTestCase
 
         $this->id = SubjectId::fromString(Uuid::uuid7()->toString());
         $this->reference = SubjectBuilder::sample('reference');
+        $this->registeredAt = SubjectBuilder::sample('registeredAt');
         $this->requestedAt = SubjectBuilder::sample('requestedAt');
         $this->placedAt = SubjectBuilder::sample('placedAt');
         $this->liftedAt = SubjectBuilder::sample('liftedAt');
@@ -42,28 +44,19 @@ final class SubjectTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itPlacesHoldWhenNew(): void
+    public function itRegisters(): void
     {
         $this
             ->given()
-            ->when(fn (): Subject => Subject::place($this->id, $this->reference, $this->placedAt))
-            ->then($this->registered($this->placedAt), $this->placed());
-    }
-
-    #[Test]
-    public function itRequestsErasureWhenNew(): void
-    {
-        $this
-            ->given()
-            ->when(fn (): Subject => Subject::request($this->id, $this->requestedAt))
-            ->then($this->registered($this->requestedAt), $this->requested());
+            ->when(fn (): Subject => Subject::register($this->id, $this->registeredAt))
+            ->then($this->registered());
     }
 
     #[Test]
     public function itPlacesHold(): void
     {
         $this
-            ->given($this->registered($this->requestedAt))
+            ->given($this->registered())
             ->when(fn (Subject $subject) => $subject->placeHold($this->reference, $this->placedAt))
             ->then($this->placed());
     }
@@ -72,7 +65,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotPlaceHoldWhenAlreadyActive(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->placed())
+            ->given($this->registered(), $this->placed())
             ->when(fn (Subject $subject) => $subject->placeHold($this->reference, SubjectBuilder::sample('placedAt')))
             ->then();
     }
@@ -81,7 +74,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itLiftsHold(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->placed())
+            ->given($this->registered(), $this->placed())
             ->when(fn (Subject $subject) => $subject->liftHold($this->reference, $this->liftedAt))
             ->then($this->lifted());
     }
@@ -90,7 +83,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotLiftHoldWhenNotActive(): void
     {
         $this
-            ->given($this->registered($this->requestedAt))
+            ->given($this->registered())
             ->when(fn (Subject $subject) => $subject->liftHold($this->reference, $this->liftedAt))
             ->then();
     }
@@ -99,7 +92,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itRequestsErasure(): void
     {
         $this
-            ->given($this->registered($this->requestedAt))
+            ->given($this->registered())
             ->when(fn (Subject $subject) => $subject->requestErasure($this->requestedAt))
             ->then($this->requested());
     }
@@ -108,7 +101,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotRequestErasureWhenAlreadyErasing(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested())
+            ->given($this->registered(), $this->requested())
             ->when(static fn (Subject $subject) => $subject->requestErasure(SubjectBuilder::sample('requestedAt')))
             ->then();
     }
@@ -117,7 +110,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itCancelsErasure(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested())
+            ->given($this->registered(), $this->requested())
             ->when(fn (Subject $subject) => $subject->cancelErasure($this->cancelledAt))
             ->then(new SubjectErasureCancelled($this->id->toString(), $this->cancelledAt));
     }
@@ -126,7 +119,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotCancelErasureWhenRetained(): void
     {
         $this
-            ->given($this->registered($this->requestedAt))
+            ->given($this->registered())
             ->when(static fn (Subject $subject) => $subject->cancelErasure(SubjectBuilder::sample('cancelledAt')))
             ->then();
     }
@@ -135,7 +128,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itReleases(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested())
+            ->given($this->registered(), $this->requested())
             ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
             ->then(new SubjectErased($this->id->toString(), $this->releasedAt));
     }
@@ -144,7 +137,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotReleaseWhenRetained(): void
     {
         $this
-            ->given($this->registered($this->requestedAt))
+            ->given($this->registered())
             ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
             ->then();
     }
@@ -153,7 +146,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotReleaseWhenRetentionNotExpired(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested())
+            ->given($this->registered(), $this->requested())
             ->when(fn (Subject $subject) => $subject->release($this->requestedAt->modify('+1 day')))
             ->then();
     }
@@ -162,7 +155,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itDoesNotReleaseWhenHoldsActive(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested(), $this->placed())
+            ->given($this->registered(), $this->requested(), $this->placed())
             ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
             ->then();
     }
@@ -171,7 +164,7 @@ final class SubjectTest extends AggregateRootTestCase
     public function itReleasesAfterHoldLifted(): void
     {
         $this
-            ->given($this->registered($this->requestedAt), $this->requested(), $this->placed(), $this->lifted())
+            ->given($this->registered(), $this->requested(), $this->placed(), $this->lifted())
             ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
             ->then(new SubjectErased($this->id->toString(), $this->releasedAt));
     }
@@ -181,9 +174,9 @@ final class SubjectTest extends AggregateRootTestCase
         return Subject::class;
     }
 
-    private function registered(\DateTimeImmutable $registeredAt): SubjectRegistered
+    private function registered(): SubjectRegistered
     {
-        return new SubjectRegistered($this->id->toString(), $registeredAt);
+        return new SubjectRegistered($this->id->toString(), $this->registeredAt);
     }
 
     private function placed(): HoldPlaced

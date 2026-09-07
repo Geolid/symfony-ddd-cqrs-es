@@ -32,7 +32,7 @@ final class DbalSubjectFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($subject->id->toString(), $result->id);
-        self::assertSame(SubjectStatus::ERASING, $result->status);
+        self::assertSame(SubjectStatus::RETAINED, $result->status);
         self::assertSame(0, $result->activeHoldCount);
     }
 
@@ -51,9 +51,9 @@ final class DbalSubjectFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = SubjectBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = SubjectBuilder::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $released = SubjectBuilder::new()->withRequestedAt($now->modify('-31 days'))->released()->create();
+        $fresh = SubjectBuilder::new()->requested($now->modify('-1 day'))->create();
+        $due = SubjectBuilder::new()->requested($now->modify('-31 days'))->create();
+        $released = SubjectBuilder::new()->requested($now->modify('-31 days'))->released()->create();
         $this->store($fresh, $due, $released);
 
         // When

@@ -20,11 +20,19 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 
 #[Aggregate('compliance.erasure.subject')]
 final class Subject implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
+
+    /** @var array<string, list<SubjectState>> */
+    private const array TRANSITIONS = [
+        SubjectState::RETAINED->value => [SubjectState::ERASING],
+        SubjectState::ERASING->value => [SubjectState::RETAINED, SubjectState::ERASED],
+        SubjectState::ERASED->value => [],
+    ];
 
     #[Id]
     public private(set) SubjectId $id;
@@ -33,26 +41,13 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     /** @var array<string, \DateTimeImmutable> */
     private array $activeHolds = [];
 
-    public static function place(SubjectId $id, HoldReference $reference, \DateTimeImmutable $placedAt): self
+    public static function register(SubjectId $id, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
         $self->recordThat(new SubjectRegistered(
             id: $id->toString(),
-            registeredAt: $placedAt,
+            registeredAt: $registeredAt,
         ));
-        $self->placeHold($reference, $placedAt);
-
-        return $self;
-    }
-
-    public static function request(SubjectId $id, \DateTimeImmutable $requestedAt): self
-    {
-        $self = new self();
-        $self->recordThat(new SubjectRegistered(
-            id: $id->toString(),
-            registeredAt: $requestedAt,
-        ));
-        $self->requestErasure($requestedAt);
 
         return $self;
     }
@@ -85,7 +80,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     public function requestErasure(\DateTimeImmutable $requestedAt): void
     {
-        if (SubjectState::RETAINED !== $this->state) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, SubjectState::ERASING)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -97,7 +92,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     public function cancelErasure(\DateTimeImmutable $cancelledAt): void
     {
-        if (SubjectState::ERASING !== $this->state) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, SubjectState::RETAINED)->isSatisfiedBy($this->state)) {
             return;
         }
 
@@ -109,7 +104,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     public function release(\DateTimeImmutable $now): void
     {
-        if (SubjectState::ERASING !== $this->state) {
+        if (!new CanTransitionToSpecification(self::TRANSITIONS, SubjectState::ERASED)->isSatisfiedBy($this->state)) {
             return;
         }
 

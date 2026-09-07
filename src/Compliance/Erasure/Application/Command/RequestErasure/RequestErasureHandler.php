@@ -7,7 +7,6 @@ namespace Compliance\Erasure\Application\Command\RequestErasure;
 use Compliance\Erasure\Domain\Exception\SubjectAlreadyExistsException;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
 use Compliance\Erasure\Domain\Repository\SubjectRepositoryInterface;
-use Compliance\Erasure\Domain\Subject;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
@@ -27,16 +26,8 @@ final readonly class RequestErasureHandler
      */
     public function __invoke(RequestErasure $command): void
     {
-        $id = SubjectId::fromString($command->subjectId);
-        $now = $this->clock->now();
-
-        if ($this->repository->has($id)) {
-            $subject = $this->repository->load($id);
-            $subject->requestErasure($now);
-        } else {
-            $subject = Subject::request($id, $now);
-        }
-
+        $subject = $this->repository->load(SubjectId::fromString($command->subjectId));
+        $subject->requestErasure($this->clock->now());
         $this->repository->save($subject);
     }
 }

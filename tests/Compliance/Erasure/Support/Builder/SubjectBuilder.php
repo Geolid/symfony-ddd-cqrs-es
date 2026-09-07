@@ -15,6 +15,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: SubjectId,
+ *     registeredAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
  *     reference: HoldReference,
@@ -30,11 +31,6 @@ final class SubjectBuilder extends AbstractAggregateBuilder
     public function withId(string $id): self
     {
         return $this->withAttributes(id: SubjectId::fromString($id));
-    }
-
-    public function withRequestedAt(\DateTimeImmutable $requestedAt): self
-    {
-        return $this->withAttributes(requestedAt: $requestedAt);
     }
 
     public function heldBy(?HoldReference $reference = null, ?\DateTimeImmutable $placedAt = null): self
@@ -55,6 +51,15 @@ final class SubjectBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (Subject $subject, self $builder) => $subject->liftHold($builder['reference'], $builder['liftedAt']),
+        );
+    }
+
+    public function requested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Subject $subject, self $builder) => $subject->requestErasure($builder['requestedAt']),
         );
     }
 
@@ -82,6 +87,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): SubjectId => SubjectId::fromString(Uuid::uuid7()->toString()),
+            'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'requestedAt' => static fn (): \DateTimeImmutable => $now,
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'reference' => static fn (): HoldReference => HoldReference::for('compliance.tests.source', Uuid::uuid7()->toString()),
@@ -93,9 +99,9 @@ final class SubjectBuilder extends AbstractAggregateBuilder
 
     protected function build(): Subject
     {
-        return Subject::request(
+        return Subject::register(
             id: $this['id'],
-            requestedAt: $this['requestedAt'],
+            registeredAt: $this['registeredAt'],
         );
     }
 }

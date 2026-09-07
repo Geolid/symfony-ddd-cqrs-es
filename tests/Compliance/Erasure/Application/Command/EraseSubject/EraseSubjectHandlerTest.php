@@ -29,7 +29,7 @@ final class EraseSubjectHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-31 days'))->create();
+        $subject = SubjectBuilder::new()->requested(Clock::get()->now()->modify('-31 days'))->create();
         $this->store($subject);
 
         // When
@@ -44,7 +44,7 @@ final class EraseSubjectHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRetentionNotExpired(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-1 day'))->create();
+        $subject = SubjectBuilder::new()->requested(Clock::get()->now()->modify('-1 day'))->create();
         $this->store($subject);
 
         // When
@@ -60,7 +60,7 @@ final class EraseSubjectHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $subject = SubjectBuilder::new()
-            ->withRequestedAt(Clock::get()->now()->modify('-31 days'))
+            ->requested(Clock::get()->now()->modify('-31 days'))
             ->heldBy()
             ->create();
         $this->store($subject);

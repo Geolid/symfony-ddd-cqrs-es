@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasure\Application\Command\LiftHold;
 
 use Compliance\Erasure\Application\Command\LiftHold\LiftHold;
-use Compliance\Erasure\Application\Command\PlaceHold\PlaceHold;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
+use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
+use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -26,15 +27,15 @@ final class LiftHoldHandlerTest extends AbstractIntegrationTestCase
     public function itLifts(): void
     {
         // Given
-        $subjectId = Uuid::uuid7()->toString();
-        $sourceId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', $sourceId));
+        $builder = SubjectBuilder::new()->heldBy();
+        $subject = $builder->create();
+        $this->store($subject);
 
         // When
-        $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', $sourceId));
+        $this->dispatch(new LiftHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
 
         // Then
-        $result = $this->finder->ofId($subjectId);
+        $result = $this->finder->ofId($subject->id->toString());
         self::assertSame(0, $result->activeHoldCount);
     }
 
@@ -42,27 +43,27 @@ final class LiftHoldHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotActive(): void
     {
         // Given
-        $subjectId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
+        $subject = SubjectBuilder::new()->heldBy()->create();
+        $this->store($subject);
 
         // When
-        $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftHold($subject->id->toString(), 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
-        $result = $this->finder->ofId($subjectId);
+        $result = $this->finder->ofId($subject->id->toString());
         self::assertSame(1, $result->activeHoldCount);
     }
 
     #[Test]
-    public function itIgnoresWhenNotFound(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
 
+        // Then
+        $this->expectException(SubjectNotFoundException::class);
+
         // When
         $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
-
-        // Then
-        self::expectNotToPerformAssertions();
     }
 }

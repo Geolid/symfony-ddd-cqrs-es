@@ -17,9 +17,9 @@ final class ListSubjectsDueForErasureHandlerTest extends AbstractIntegrationTest
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = SubjectBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = SubjectBuilder::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $cancelled = SubjectBuilder::new()->withRequestedAt($now->modify('-31 days'))->cancelled()->create();
+        $fresh = SubjectBuilder::new()->requested($now->modify('-1 day'))->create();
+        $due = SubjectBuilder::new()->requested($now->modify('-31 days'))->create();
+        $cancelled = SubjectBuilder::new()->requested($now->modify('-31 days'))->cancelled()->create();
         $this->store($fresh, $due, $cancelled);
 
         // When

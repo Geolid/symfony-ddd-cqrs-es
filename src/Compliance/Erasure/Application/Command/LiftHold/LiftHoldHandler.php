@@ -27,13 +27,7 @@ final readonly class LiftHoldHandler
      */
     public function __invoke(LiftHold $command): void
     {
-        $id = SubjectId::fromString($command->subjectId);
-
-        if (!$this->repository->has($id)) {
-            return;
-        }
-
-        $subject = $this->repository->load($id);
+        $subject = $this->repository->load(SubjectId::fromString($command->subjectId));
         $subject->liftHold(HoldReference::for($command->sourceType, $command->sourceId), $this->clock->now());
         $this->repository->save($subject);
     }

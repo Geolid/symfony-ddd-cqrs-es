@@ -7,11 +7,11 @@ Document de travail : remise en question du découpage `src/*/*`. Ne pas confond
 Une frontière de BC se juge sur la théorie DDD/CQRS/ES, jamais sur la forme du code existant ou une convention déjà écrite. Quatre critères, à appliquer ensemble :
 
 1. **Vocabulaire distinct** — le langage ubiquitaire d'un côté de la frontière a-t-il un sens que l'autre côté n'a aucune raison de porter (ex: "numéro de TVA" n'a aucun sens côté livraison) ? Si les deux côtés emploient les mêmes mots pour la même chose, ce n'est pas une frontière.
-2. **Direction d'intégration acyclique** — le context map doit être orienté. Une dépendance dans les deux sens entre deux BC (A dépend de B et B dépend de A) signifie qu'aucun des deux ne peut évoluer ou se déployer indépendamment de l'autre : c'est un seul modèle coupé en deux, pas deux BC.
+2. **Direction d'intégration acyclique — au niveau du processus, pas du graphe brut.** Une dépendance dans les deux sens entre deux BC ne disqualifie que si elle relie les deux dans **une seule opération métier** : compléter cette opération exige un aller-retour entre les deux BC où aucun des deux ne peut conclure seul, et/ou les deux répliquent le même sous-état l'un de l'autre (c'est la forme réelle du cas Payment/Refund ci-dessous). Deux flux d'événements indépendants et unidirectionnels qui pointent chacun dans un sens différent entre les deux mêmes BC — chaque BC réagissant à l'autre pour une raison propre et sans coordination synchrone ni état partagé — ne sont **pas** ce cycle-là, même si le graphe de dépendances, lu brut, semble bidirectionnel. **Erreur commise en session (2026-09-07)** : `register()` sur `Compliance.Erasure` réagissant à `IdentityRegisteredIntegrationEvent` a été rejeté à tort comme "cycle avec `Iam.Identity → Compliance.Erasure`" sans vérifier que `Sales.Order ↔ Compliance.Erasure` est déjà bidirectionnel et accepté dans ce même `deptrac_bc.yaml`, pour exactement la même raison bénigne (holds vs projection `erasurePending`, aucune décision jointe). Toujours vérifier le ruleset complet, jamais seulement l'arête citée, avant de disqualifier sur ce critère.
 3. **Cadence et moteur de changement propres** — les deux côtés changent-ils pour des raisons différentes, portées par des parties prenantes différentes (ex: loi fiscale vs intégration technique d'un PSP) ? Un mimétisme d'état (un côté rejoue exactement le sous-cycle de l'autre) n'est pas un moteur de changement propre.
 4. **Invariant et multiplicité réels** — le concept a-t-il une règle de cohérence qui n'existe nulle part ailleurs (ex: numérotation séquentielle légale, solde remboursable ≤ montant capturé), et/ou une multiplicité réelle (1-N) qui justifie sa propre identité et son propre stream ? Un aggregate qui ne fait que refléter l'état d'un autre sans invariant propre n'est pas un concept autonome.
 
-Un split qui échoue sur le critère 2 (cycle) est disqualifié à lui seul, indépendamment des trois autres.
+Un split qui échoue sur le critère 2 — au sens processus, pas graphe — est disqualifié à lui seul, indépendamment des trois autres.
 
 ## Analyse actuelle : `Finance.Payment` / `Finance.Refund`
 
@@ -125,8 +125,7 @@ Nom : `Subject` conservé (terme GDPR standard, déjà référencé par les attr
 - `ERASING`/`ERASED`, pas `PENDING_ERASURE` : aligné sur un précédent déjà présent dans ce repo, `PaymentState::REFUNDING → REFUNDED` (participe présent = en cours, participe passé = terminé, toujours un seul mot).
 
 ```php
-public static function place(SubjectId $id, HoldReference $reference, \DateTimeImmutable $placedAt): self    // genesis paresseuse, déclenchée par le premier hold
-public static function request(SubjectId $id, \DateTimeImmutable $requestedAt): self                          // genesis paresseuse, déclenchée par la demande d'effacement
+public static function register(SubjectId $id, \DateTimeImmutable $registeredAt): self    // né à l'inscription identité
 public function placeHold(HoldReference $reference, \DateTimeImmutable $placedAt): void
 public function liftHold(HoldReference $reference, \DateTimeImmutable $liftedAt): void
 public function requestErasure(\DateTimeImmutable $requestedAt): void                     // RETAINED -> ERASING
@@ -134,15 +133,29 @@ public function cancelErasure(\DateTimeImmutable $cancelledAt): void            
 public function release(\DateTimeImmutable $now): void                                     // ERASING -> ERASED
 ```
 
-### Correction : genesis paresseuse (`place()`/`request()`), pas `register()` sur inscription identité
+`register()` réagit à `IdentityRegisteredIntegrationEvent` via une Policy `RegisterSubjectOnIdentityRegistered` (`Compliance.Erasure`). Tous les `Application/Command/*Handler` (`PlaceHold`, `LiftHold`, `RequestErasure`, `CancelErasureRequest`, `EraseSubject`) font un `load()` inconditionnel — aucun `has()`-check, aucun branchement statique/instance.
 
-Le premier jet ci-dessus (`register()` déclenché par une Policy `RegisterSubjectOnIdentityRegistered` abonnée à `IdentityRegisteredIntegrationEvent`) a été abandonné en implémentation, avant tout commit : il exige `Compliance.Erasure → Iam.Identity` dans `deptrac_bc.yaml`, alors que `Iam.Identity → Compliance.Erasure` existe déjà (pour `EraseIdentityOnSubjectErased`, abonné à `SubjectErasedIntegrationEvent`) — un cycle bidirectionnel, disqualifié à lui seul par le critère 2 (direction d'intégration acyclique) des 4 critères de frontière de BC déjà établis dans ce repo.
+### Épisode corrigé (2026-09-07) : genèse paresseuse (`place()`/`request()`) rejetée à tort, `register()` restauré
 
-Retenu à la place : genesis paresseuse via deux factories statiques, chacune déclenchée par le premier event métier qui a réellement besoin que `Subject` existe — `place()` (premier `PlaceHold`) ou `request()` (première `RequestErasure`) — jamais un `register()` séparé. Chaque `Application/Command/*Handler` fait le `has()`-check lui-même (`has() ? load()+méthode d'instance : Factory statique`), jamais un troisième point d'entrée générique. Pas de race : le premier hold arrive toujours après la commande d'achat qui l'a déclenché (`OrderPlacedIntegrationEvent`), donc l'ordre id→existence est garanti côté métier même si `Iam.Identity` ne notifie jamais `Compliance.Erasure` de l'inscription elle-même.
+`register()` a été abandonné en implémentation au profit d'une genèse paresseuse à deux factories statiques (`place()` déclenché par le premier `PlaceHold`, `request()` par la première `RequestErasure`, chaque Handler faisant `has() ? load()+méthode d'instance : Factory statique`), au motif que `register()` exigerait `Compliance.Erasure → Iam.Identity` dans `deptrac_bc.yaml`, alors que `Iam.Identity → Compliance.Erasure` existe déjà (`EraseIdentityOnSubjectErased`) — jugé cycle disqualifiant par le critère 2. **Ce motif était faux** : `Sales.Order ↔ Compliance.Erasure` est déjà bidirectionnel dans ce même `deptrac_bc.yaml` et déjà accepté, pour la même raison bénigne (deux flux d'événements indépendants et unidirectionnels, aucune décision jointe, aucun état partagé) — voir la reformulation du critère 2 plus haut. La disqualification n'aurait jamais dû s'appliquer ici non plus.
+
+La genèse paresseuse est donc revenue en arrière : `register()` restauré comme seule genèse, `deptrac_bc.yaml` reçoit `Iam.Identity` dans les dépendances autorisées de `Compliance.Erasure`, tous les Handlers redeviennent uniformes (`load()` inconditionnel, plus de branchement create-or-load). Ça supprime au passage l'asymétrie de nommage `place()`/`placeHold()` (un mot d'écart pour des préconditions opposées) qui avait été notée sans être reliée au vrai problème.
+
+### Correction : guards de transition par `TRANSITIONS`/`CanTransitionToSpecification`, pas des comparaisons d'enum brutes
+
+`requestErasure()`/`cancelErasure()`/`release()` comparaient directement `$this->state` à un cas de `SubjectState` (`SubjectState::RETAINED !== $this->state`). `Subject` a un vrai graphe de transitions (`ERASING -> RETAINED` est un arc de retour réel, pas seulement des cas isolés à identifier), même taille que `Finance.Refund` (3 états, un état à deux arcs sortants), qui utilise déjà `private const array TRANSITIONS` + `CanTransitionToSpecification` pour ses deux transitions gardées. `Subject` suit désormais le même patron :
+```php
+private const array TRANSITIONS = [
+    SubjectState::RETAINED->value => [SubjectState::ERASING],
+    SubjectState::ERASING->value  => [SubjectState::RETAINED, SubjectState::ERASED],
+    SubjectState::ERASED->value   => [],
+];
+```
+`requestErasure()`/`cancelErasure()`/`release()` gardent chacun via `CanTransitionToSpecification(self::TRANSITIONS, <cible>)->isSatisfiedBy($this->state)` — `release()` garde ce guard EN PLUS de ses deux guards indépendants déjà en place (fenêtre de rétention, holds actifs), qui ne sont pas des préoccupations de graphe de transitions. `SubjectState::isErasing()`/`isErased()` n'avaient alors plus aucun appelant réel (vérifié par grep) — supprimés avec leur test, `SubjectStateTest.php` (un enum sans méthode n'a pas de test dédié, même précédent que `RefundState`, qui n'en a pas non plus).
 
 `release()` ne prend aucun collaborateur injecté — tout est déjà interne à l'aggregate :
 ```php
-if ($this->state !== SubjectState::ERASING) return;
+if (!new CanTransitionToSpecification(self::TRANSITIONS, SubjectState::ERASED)->isSatisfiedBy($this->state)) return;
 if (!new ErasureRetentionExpiredSpecification($now)->isSatisfiedBy($this->requestedAt)) return;
 if (count($this->activeHolds) > 0) return;
 $this->recordThat(new SubjectErased(...));

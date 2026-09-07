@@ -78,5 +78,5 @@ deptrac:
     Iam.Identity:        [ Compliance.Erasure, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]
-    Compliance.Erasure:  [ Sales.Order, Shared, Vendors ]
+    Compliance.Erasure:  [ Sales.Order, Iam.Identity, Shared, Vendors ]
     Shared:              [ Vendors ]

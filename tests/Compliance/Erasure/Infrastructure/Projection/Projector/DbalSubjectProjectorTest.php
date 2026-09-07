@@ -6,7 +6,6 @@ namespace Compliance\Tests\Erasure\Infrastructure\Projection\Projector;
 
 use Compliance\Erasure\Application\SubjectStatus;
 use Compliance\Erasure\Domain\Subject;
-use Compliance\Erasure\Domain\ValueObject\HoldReference;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Compliance\Erasure\Infrastructure\Projection\Projector\DbalSubjectProjector;
 use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
@@ -26,8 +25,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = SubjectId::fromString(Uuid::uuid7()->toString());
-        $reference = HoldReference::for('compliance.tests.source', Uuid::uuid7()->toString());
-        $subject = Subject::place($id, $reference, Clock::get()->now());
+        $subject = Subject::register($id, Clock::get()->now());
 
         // When
         $this->store($subject);
@@ -42,7 +40,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErasureRequested(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->create();
+        $subject = SubjectBuilder::new()->requested()->create();
 
         // When
         $this->store($subject);
@@ -57,9 +55,9 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErasureCancelled(): void
     {
         // Given
-        $other = SubjectBuilder::new()->create();
+        $other = SubjectBuilder::new()->requested()->create();
         $this->store($other);
-        $subject = SubjectBuilder::new()->cancelled()->create();
+        $subject = SubjectBuilder::new()->requested()->cancelled()->create();
 
         // When
         $this->store($subject);
@@ -78,9 +76,9 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErased(): void
     {
         // Given
-        $other = SubjectBuilder::new()->create();
+        $other = SubjectBuilder::new()->requested()->create();
         $this->store($other);
-        $subject = SubjectBuilder::new()->released()->create();
+        $subject = SubjectBuilder::new()->requested()->released()->create();
 
         // When
         $this->store($subject);
