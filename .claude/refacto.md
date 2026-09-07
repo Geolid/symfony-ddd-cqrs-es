@@ -22,6 +22,8 @@ Corrigé après une première erreur (voir Note méthodologique en fin de docume
 
 Corrigé après une première erreur (idem) : la multiplicité réelle d'un remboursement (un paiement capturé peut légitimement en subir plusieurs dans le temps — retour partiel, mais aussi geste commercial, ajustement) est une propriété du concept `Refund` lui-même, pas de `Withdrawal` qui n'était qu'UN déclencheur parmi d'autres possibles. Retirer `Withdrawal` retire un déclencheur ; ça ne change rien à ce que `Refund` EST. Verdict de la section `Finance.Payment`/`Finance.Refund` plus bas inchangé : fusion en 1 BC, 2 aggregates.
 
+**SUPERSEDÉ (2026-09-07)** — ce raisonnement répond à la mauvaise question. Il vérifie que `Refund` resterait un concept valide SI un déclencheur existait ; il ne vérifie jamais qu'un déclencheur existe encore une fois `Withdrawal` retiré. Voir la correction en fin de section "Analyse actuelle : `Finance.Payment` / `Finance.Refund`" plus bas : le second déclencheur (`Payment::cancel()` sur un paiement capturé) s'avère structurellement inatteignable, indépendamment de `Withdrawal`. `Finance.Refund` est supprimé en entier, pas fusionné.
+
 ### Rappel : `Sales.Cart` reste à construire (conception déjà actée plus bas)
 
 `Cart`/`CartLine` (Entity, mutable, `checkout()` gardien de fraîcheur) — voir section `Sales.Order`/`OrderLine`/`Cart` plus bas pour le détail complet. Seule vraie question encore ouverte : `Cart` mérite-t-il sa propre BC (`Sales.Cart`, sœur de `Sales.Buyer`/`Sales.Order`) ou reste-t-il un aggregate à l'intérieur de `Sales.Order` ? Pas encore appliqué le test à 4 critères dessus explicitement.
@@ -66,6 +68,19 @@ Fusionner `Finance.Payment` et `Finance.Refund` en une seule BC. Garder `Payment
 ### Hors scope immédiat, mais qualifié par les critères
 
 Si `Refund` devait un jour émettre des avoirs (crédit fiscal/comptable), ce serait une **troisième** BC (`Finance.Billing`/`Invoicing`), pas un maintien de `Refund` séparé de `Payment`. L'avoir a son propre vocabulaire (numérotation légale, mentions fiscales), sa propre cadence de changement (loi fiscale, pas intégration PSP), et une relation naturellement acyclique (`Billing` écoute `RefundConfirmed`, ne renvoie jamais rien à `Refund`) — passe les 4 critères sans réserve, contrairement au cas `Payment`/`Refund` actuel.
+
+### Correction (2026-09-07) : le verdict de fusion est remplacé par une suppression — plus aucun déclencheur atteignable
+
+Question posée par l'utilisateur pendant la planification de la fusion ci-dessus : si une commande ne peut être annulée qu'avant préparation, et que le paiement n'est capturé qu'au moment de la préparation, la branche `CAPTURED` de `Payment::cancel()` (celle qui produit `PaymentRefundRequired`, seul déclencheur de `Refund` restant après le retrait de `Withdrawal`) a-t-elle seulement une chance de s'exécuter un jour ?
+
+Vérifié dans le code réel, chaîne complète :
+- `Payment::capture()` n'est déclenché que par `ShipmentPreparedIntegrationEvent` (`CapturePaymentOnShipmentPrepared`).
+- `Order::cancel()` (buyer, seul appelant `CancelOrder` — y compris `CancelOrdersOnBuyerErased`) jette `OrderNotCancellableException` dès que `Order` atteint `PREPARED` — état atteint via ce **même** `ShipmentPreparedIntegrationEvent` (`PrepareOrderOnShipmentPrepared`). L'annulation buyer est donc bloquée exactement au moment où le paiement vient d'être capturé, jamais après.
+- `Order::abort()` (système) n'a qu'un seul appelant, `AbortOrderOnPaymentFailed`, réagissant à `PaymentFailedIntegrationEvent`. Or `Payment::fail()` n'est atteignable que depuis `REQUESTED`/`AUTHORIZED` (`TRANSITIONS[CAPTURED]` ne menait qu'à `REFUNDING`, aucun chemin vers `FAILED`) — un paiement déjà capturé ne peut plus jamais échouer, donc `abort()` ne peut plus se déclencher après capture non plus.
+
+Les deux seuls chemins vers `Payment::cancel()` sont donc structurellement bloqués avant que la capture n'ait jamais lieu. La branche `CAPTURED` de `Payment::cancel()` est du code mort — et avec elle, tout `Finance.Refund`, puisque son seul autre déclencheur (`Withdrawal::approve()`) était déjà supprimé. Exactement le même raisonnement que celui qui a justifié le retrait de `Withdrawal` (voir "Périmètre du showcase" en tête de document) : pas de valeur pédagogique à garder un concept que rien ne peut jamais déclencher.
+
+**Verdict remplacé** : `Finance.Refund` est supprimé en entier (aggregate, BC, `deptrac_bc.yaml`, wiring DI), pas fusionné dans `Finance.Payment`. `Payment::cancel()` perd sa branche `CAPTURED`/`PaymentRefundRequired` ; `Payment` perd `PaymentState::REFUNDING`/`REFUNDED`, `pendingRefundId`, `requestRefund()`/`confirmRefund()`/`failRefund()`, les Integration Events `PaymentRefundRequired`/`RefundInitiated`/`PaymentRefundConfirmed`/`PaymentRefundFailed` et leurs Publishers/Policies ; `PaymentGatewayInterface::refund()` (et `PaymentGatewayStatus::REFUNDING`/`REFUNDED`) disparaît aussi, plus aucun appelant. `GOAL.md` mis à jour en conséquence. Toute l'analyse de découpage BC ci-dessus (critères 1-4, verdict "fusion 1 BC/2 aggregates") reste correcte en tant que raisonnement — elle répondait juste à une question qui ne se posait plus une fois la portée d'exécution du domaine vérifiée.
 
 ## Analyse conceptuelle : `Iam.Identity` / `Iam.Authentication` / futur `Iam.Access`
 

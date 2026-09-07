@@ -10,8 +10,6 @@ enum PaymentState: string
     case AUTHORIZED = 'authorized';
     case FAILED = 'failed';
     case CAPTURED = 'captured';
-    case REFUNDING = 'refunding';
-    case REFUNDED = 'refunded';
     case CANCELLED = 'cancelled';
 
     public function isRequested(): bool
@@ -22,11 +20,6 @@ enum PaymentState: string
     public function isAuthorized(): bool
     {
         return self::AUTHORIZED === $this;
-    }
-
-    public function isCaptured(): bool
-    {
-        return self::CAPTURED === $this;
     }
 
     public function isCancelled(): bool

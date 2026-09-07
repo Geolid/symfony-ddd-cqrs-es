@@ -141,32 +141,6 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itRefundsCharge(): void
-    {
-        // Given
-        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'refunding']);
-
-        // When
-        $status = $this->gateway($response)->refund('GLBX-9F3K2M1P');
-
-        // Then
-        self::assertSame(PaymentGatewayStatus::REFUNDING, $status);
-        $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P/refund', $requestUrl);
-        self::assertSame([], $this->requestBody($response));
-    }
-
-    #[Test]
-    public function itThrowsTransientWhenRefundingAndPaymentProviderUnreachable(): void
-    {
-        // Then
-        $this->expectException(PaymentTransientFailureException::class);
-
-        // When
-        $this->gateway(static fn () => throw new TransportException('Connection refused'))->refund('GLBX-9F3K2M1P');
-    }
-
-    #[Test]
     public function itChecksChargeStatus(): void
     {
         // Given

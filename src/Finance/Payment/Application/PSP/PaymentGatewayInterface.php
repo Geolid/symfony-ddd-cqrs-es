@@ -28,10 +28,5 @@ interface PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function refund(string $reference): PaymentGatewayStatus;
-
-    /**
-     * @throws PaymentGatewayException
-     */
     public function checkStatus(string $reference): PaymentGatewayStatus;
 }

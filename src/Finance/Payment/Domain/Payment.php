@@ -8,10 +8,6 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
-use Finance\Payment\Domain\Event\PaymentRefundConfirmed;
-use Finance\Payment\Domain\Event\PaymentRefundFailed;
-use Finance\Payment\Domain\Event\PaymentRefundInitiated;
-use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentId;
@@ -35,9 +31,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     private const array TRANSITIONS = [
         PaymentState::REQUESTED->value => [PaymentState::AUTHORIZED, PaymentState::FAILED, PaymentState::CANCELLED],
         PaymentState::AUTHORIZED->value => [PaymentState::CAPTURED, PaymentState::FAILED, PaymentState::CANCELLED],
-        PaymentState::CAPTURED->value => [PaymentState::REFUNDING],
-        PaymentState::REFUNDING->value => [PaymentState::REFUNDED, PaymentState::CAPTURED],
-        PaymentState::REFUNDED->value => [],
+        PaymentState::CAPTURED->value => [],
         PaymentState::FAILED->value => [],
         PaymentState::CANCELLED->value => [],
     ];
@@ -48,7 +42,6 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     public private(set) PaymentReference $reference;
     private string $orderId;
     private PaymentState $state;
-    private ?string $pendingRefundId = null;
 
     public static function request(
         PaymentId $id,
@@ -137,58 +130,6 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
                 voidedAt: $cancelledAt,
             ));
         }
-
-        if ($this->state->isCaptured()) {
-            $this->recordThat(new PaymentRefundRequired(
-                id: $this->id->toString(),
-                orderId: $this->orderId,
-                reference: $this->reference,
-                requiredAt: $cancelledAt,
-            ));
-        }
-    }
-
-    public function requestRefund(string $refundId, \DateTimeImmutable $requestedAt): void
-    {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, PaymentState::REFUNDING)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        $this->recordThat(new PaymentRefundInitiated(
-            id: $this->id->toString(),
-            orderId: $this->orderId,
-            refundId: $refundId,
-            reference: $this->reference,
-            requestedAt: $requestedAt,
-        ));
-    }
-
-    public function failRefund(string $refundId, \DateTimeImmutable $failedAt): void
-    {
-        if ($refundId !== $this->pendingRefundId) {
-            return;
-        }
-
-        $this->recordThat(new PaymentRefundFailed(
-            id: $this->id->toString(),
-            orderId: $this->orderId,
-            refundId: $refundId,
-            failedAt: $failedAt,
-        ));
-    }
-
-    public function confirmRefund(string $refundId, \DateTimeImmutable $confirmedAt): void
-    {
-        if ($refundId !== $this->pendingRefundId) {
-            return;
-        }
-
-        $this->recordThat(new PaymentRefundConfirmed(
-            id: $this->id->toString(),
-            orderId: $this->orderId,
-            refundId: $refundId,
-            confirmedAt: $confirmedAt,
-        ));
     }
 
     #[Apply]
@@ -229,31 +170,5 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     private function applyVoided(PaymentVoided $event): void
     {
         $this->state = PaymentState::CANCELLED;
-    }
-
-    #[Apply]
-    private function applyRefundRequired(PaymentRefundRequired $event): void
-    {
-    }
-
-    #[Apply]
-    private function applyRefundInitiated(PaymentRefundInitiated $event): void
-    {
-        $this->state = PaymentState::REFUNDING;
-        $this->pendingRefundId = $event->refundId;
-    }
-
-    #[Apply]
-    private function applyRefundFailed(PaymentRefundFailed $event): void
-    {
-        $this->state = PaymentState::CAPTURED;
-        $this->pendingRefundId = null;
-    }
-
-    #[Apply]
-    private function applyRefundConfirmed(PaymentRefundConfirmed $event): void
-    {
-        $this->state = PaymentState::REFUNDED;
-        $this->pendingRefundId = null;
     }
 }

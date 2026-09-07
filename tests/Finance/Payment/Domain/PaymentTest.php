@@ -8,7 +8,6 @@ use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
-use Finance\Payment\Domain\Event\PaymentRefundRequired;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\Payment;
@@ -174,14 +173,12 @@ final class PaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRequiresRefundWhenCancelledAfterCapture(): void
+    public function itDoesNotCancelWhenCaptured(): void
     {
-        $cancelledAt = PaymentBuilder::sample('cancelledAt');
-
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->cancel($cancelledAt))
-            ->then(new PaymentRefundRequired($this->id->toString(), $this->orderId, $this->reference, $cancelledAt));
+            ->when(static fn (Payment $orderPayment) => $orderPayment->cancel(PaymentBuilder::sample('cancelledAt')))
+            ->then();
     }
 
     #[Test]

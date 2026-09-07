@@ -11,6 +11,4 @@ enum PaymentGatewayStatus: string
     case CAPTURED = 'captured';
     case DECLINED = 'declined';
     case VOIDED = 'voided';
-    case REFUNDING = 'refunding';
-    case REFUNDED = 'refunded';
 }
