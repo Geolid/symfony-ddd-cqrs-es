@@ -7,10 +7,10 @@ namespace Iam\Tests\Authentication\Application\ApiKey;
 use Iam\Authentication\Application\ApiKey\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -55,7 +55,7 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
-            ApiKeyCredentialId::generate()->toString(),
+            Uuid::uuid7()->toString(),
         );
 
         // Then

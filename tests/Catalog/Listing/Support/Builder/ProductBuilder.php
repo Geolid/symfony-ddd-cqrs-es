@@ -6,6 +6,7 @@ namespace Catalog\Tests\Listing\Support\Builder;
 
 use Catalog\Listing\Domain\Product;
 use Catalog\Listing\Domain\ValueObject\ProductId;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\Builder\AbstractAggregateBuilder;
@@ -73,7 +74,7 @@ final class ProductBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => ProductId::generate(...),
+            'id' => static fn (): ProductId => ProductId::fromString(Uuid::uuid7()->toString()),
             'label' => static function (): Label {
                 Assert::string($label = SeededFaker::get()->unique()->words(3, true));
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Buyer\Support\Builder;
 
+use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
@@ -68,7 +69,7 @@ final class BuyerBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => BuyerId::generate(...),
+            'id' => static fn (): BuyerId => BuyerId::fromString(Uuid::uuid7()->toString()),
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'postalAddress' => static fn (): PostalAddress => PostalAddress::of(

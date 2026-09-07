@@ -16,7 +16,7 @@ final class BuyerIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = BuyerId::generate();
+        $id = BuyerId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class BuyerIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = BuyerId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = BuyerId::fromString($value);
         $b = BuyerId::fromString($value);
 
@@ -61,8 +61,8 @@ final class BuyerIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = BuyerId::generate();
-        $b = BuyerId::generate();
+        $a = BuyerId::fromString(Uuid::uuid7()->toString());
+        $b = BuyerId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

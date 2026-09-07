@@ -16,7 +16,7 @@ final class IdentityIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = IdentityId::generate();
+        $id = IdentityId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class IdentityIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = IdentityId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = IdentityId::fromString($value);
         $b = IdentityId::fromString($value);
 
@@ -61,8 +61,8 @@ final class IdentityIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = IdentityId::generate();
-        $b = IdentityId::generate();
+        $a = IdentityId::fromString(Uuid::uuid7()->toString());
+        $b = IdentityId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

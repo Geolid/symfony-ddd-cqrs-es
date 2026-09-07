@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
@@ -43,7 +44,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load(IdentityId::generate());
+        $this->repository->load(IdentityId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(IdentityId::generate());
+        $notExists = $this->repository->has(IdentityId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

@@ -6,8 +6,8 @@ namespace Finance\Tests\Payer\Application\Command\RegisterPayer;
 
 use Finance\Payer\Application\Command\RegisterPayer\RegisterPayer;
 use Finance\Payer\Application\Finder\Payer\PayerFinderInterface;
-use Finance\Payer\Domain\ValueObject\PayerId;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RegisterPayerHandlerTest extends AbstractIntegrationTestCase
@@ -16,7 +16,7 @@ final class RegisterPayerHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = PayerId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
 
         // When
         $this->dispatch(new RegisterPayer($id));

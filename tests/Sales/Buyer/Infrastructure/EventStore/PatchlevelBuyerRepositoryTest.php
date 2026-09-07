@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Buyer\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
@@ -43,7 +44,7 @@ final class PatchlevelBuyerRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotFoundException::class);
 
         // When
-        $this->repository->load(BuyerId::generate());
+        $this->repository->load(BuyerId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelBuyerRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(BuyerId::generate());
+        $notExists = $this->repository->has(BuyerId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

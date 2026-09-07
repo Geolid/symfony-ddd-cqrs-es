@@ -11,7 +11,6 @@ use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerPendingErasureException;
@@ -38,7 +37,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
             ->postalAddressDefined();
         $payer = $payerBuilder->create();
         $this->store($buyer, $payer);
-        $id = OrderId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $lines = $this->lines();
 
         // When
@@ -60,13 +59,13 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerNotRegistered(): void
     {
         // Given
-        $buyerId = BuyerId::generate()->toString();
+        $buyerId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyerId, $this->lines()));
+        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyerId, $this->lines()));
     }
 
     #[Test]
@@ -80,7 +79,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerNotRegisteredException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -96,7 +95,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerPendingErasureException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -122,7 +121,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     /**
@@ -148,7 +147,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerAddressesNotCompletedException::class);
 
         // When
-        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
+        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));
     }
 
     #[Test]
@@ -164,9 +163,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             $buyer->id->toString(),
-            [['productId' => ProductId::generate()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitPrice')->cents]],
+            [['productId' => Uuid::uuid7()->toString(), 'quantity' => 1, 'label' => ProductBuilder::sample('label')->value, 'unitPriceInCents' => ProductBuilder::sample('unitPrice')->cents]],
         ));
     }
 
@@ -187,7 +186,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PlaceOrder(
-            OrderId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             $buyer->id->toString(),
             [['productId' => $cups->id->toString(), 'quantity' => 1, 'label' => $label->value, 'unitPriceInCents' => $unitPrice->cents - 250]],
         ));

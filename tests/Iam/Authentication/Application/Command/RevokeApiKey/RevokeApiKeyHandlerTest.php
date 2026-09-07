@@ -9,10 +9,10 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinde
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -80,7 +80,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RevokeApiKey(
-            ApiKeyCredentialId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             ApiKeyCredentialBuilder::sample('identityId'),
         ));
     }

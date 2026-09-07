@@ -6,11 +6,11 @@ namespace Finance\Payment\Domain\ValueObject;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootId;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\DerivedUuidTrait;
+use Shared\Domain\UuidTrait;
 
 final readonly class PaymentId implements AggregateRootId
 {
-    use DerivedUuidTrait;
+    use UuidTrait;
 
     private const string ORDER_NAMESPACE = '9c3e7a1d-4f52-4b6a-8e0d-1a2b3c4d5e6f';
 

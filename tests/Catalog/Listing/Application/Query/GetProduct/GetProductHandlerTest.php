@@ -6,9 +6,9 @@ namespace Catalog\Tests\Listing\Application\Query\GetProduct;
 
 use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Query\GetProduct\GetProduct;
-use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetProductHandlerTest extends AbstractIntegrationTestCase
@@ -42,6 +42,6 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->ask(new GetProduct(ProductId::generate()->toString()));
+        $this->ask(new GetProduct(Uuid::uuid7()->toString()));
     }
 }

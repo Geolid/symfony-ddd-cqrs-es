@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Application\Command\DeliverOrder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
-use Sales\Order\Domain\ValueObject\OrderId;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -57,7 +57,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

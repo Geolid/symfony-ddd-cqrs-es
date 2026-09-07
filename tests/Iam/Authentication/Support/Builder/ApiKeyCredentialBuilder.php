@@ -80,7 +80,7 @@ final class ApiKeyCredentialBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => ApiKeyCredentialId::generate(...),
+            'id' => static fn (): ApiKeyCredentialId => ApiKeyCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'label' => static function (): Label {
                 Assert::string($label = SeededFaker::get()->unique()->words(2, true));

@@ -8,9 +8,9 @@ use Catalog\Listing\Application\Command\DelistProduct\DelistProduct;
 use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
-use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
@@ -52,6 +52,6 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct(ProductId::generate()->toString()));
+        $this->dispatch(new DelistProduct(Uuid::uuid7()->toString()));
     }
 }

@@ -16,7 +16,7 @@ final class ApiKeyCredentialIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = ApiKeyCredentialId::generate();
+        $id = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class ApiKeyCredentialIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = ApiKeyCredentialId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = ApiKeyCredentialId::fromString($value);
         $b = ApiKeyCredentialId::fromString($value);
 
@@ -61,8 +61,8 @@ final class ApiKeyCredentialIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = ApiKeyCredentialId::generate();
-        $b = ApiKeyCredentialId::generate();
+        $a = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
+        $b = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

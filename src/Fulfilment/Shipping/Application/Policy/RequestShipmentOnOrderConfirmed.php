@@ -30,7 +30,7 @@ final readonly class RequestShipmentOnOrderConfirmed
     public function __invoke(OrderConfirmedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new RequestShipment(
-            id: ShipmentId::generate()->toString(),
+            id: ShipmentId::forOrder($event->orderId)->toString(),
             orderId: $event->orderId,
             buyerId: $event->buyerId,
             origin: $this->warehouseAddressProvider->get()->toArray(),

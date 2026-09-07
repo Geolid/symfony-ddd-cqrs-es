@@ -15,6 +15,7 @@ use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 
 final class IdentityTest extends AggregateRootTestCase
 {
@@ -28,7 +29,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = IdentityId::generate();
+        $this->id = IdentityId::fromString(Uuid::uuid7()->toString());
         $this->reason = IdentityBuilder::sample('reason');
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');

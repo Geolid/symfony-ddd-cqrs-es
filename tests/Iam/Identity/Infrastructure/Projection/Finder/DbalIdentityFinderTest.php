@@ -9,9 +9,9 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Identity;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\PaginationTrait;
@@ -56,7 +56,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(IdentityId::generate()->toString());
+        $this->finder()->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]

@@ -11,6 +11,7 @@ use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +29,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $id = ShipmentId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $orderId = ShipmentBuilder::sample('orderId');
         $buyerId = ShipmentBuilder::sample('buyerId');
         $originData = ShipmentBuilder::sample('origin')->toArray();

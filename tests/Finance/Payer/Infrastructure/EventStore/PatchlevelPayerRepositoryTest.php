@@ -9,6 +9,7 @@ use Finance\Payer\Domain\Repository\PayerRepositoryInterface;
 use Finance\Payer\Domain\ValueObject\PayerId;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelPayerRepositoryTest extends AbstractIntegrationTestCase
@@ -43,7 +44,7 @@ final class PatchlevelPayerRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(PayerNotFoundException::class);
 
         // When
-        $this->repository->load(PayerId::generate());
+        $this->repository->load(PayerId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelPayerRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(PayerId::generate());
+        $notExists = $this->repository->has(PayerId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

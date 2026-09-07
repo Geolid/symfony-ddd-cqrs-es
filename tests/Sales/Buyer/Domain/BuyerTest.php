@@ -6,6 +6,7 @@ namespace Sales\Tests\Buyer\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Event\BuyerErased;
 use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
@@ -24,7 +25,7 @@ final class BuyerTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = BuyerId::generate();
+        $this->id = BuyerId::fromString(Uuid::uuid7()->toString());
         $this->email = BuyerBuilder::sample('email');
         $this->registeredAt = BuyerBuilder::sample('registeredAt');
     }

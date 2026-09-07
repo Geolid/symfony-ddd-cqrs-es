@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Order\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Order\Domain\Exception\OrderNotFoundException;
 use Sales\Order\Domain\Repository\OrderRepositoryInterface;
 use Sales\Order\Domain\ValueObject\OrderId;
@@ -43,7 +44,7 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->repository->load(OrderId::generate());
+        $this->repository->load(OrderId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(OrderId::generate());
+        $notExists = $this->repository->has(OrderId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

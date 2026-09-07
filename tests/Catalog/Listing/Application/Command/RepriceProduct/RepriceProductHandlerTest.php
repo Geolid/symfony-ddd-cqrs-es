@@ -7,9 +7,9 @@ namespace Catalog\Tests\Listing\Application\Command\RepriceProduct;
 use Catalog\Listing\Application\Command\RepriceProduct\RepriceProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
-use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
@@ -40,7 +40,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RepriceProduct(
-            ProductId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             ProductBuilder::sample('unitPrice')->cents,
         ));
     }

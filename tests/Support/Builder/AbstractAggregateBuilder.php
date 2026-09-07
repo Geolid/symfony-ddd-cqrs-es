@@ -92,7 +92,7 @@ abstract class AbstractAggregateBuilder implements \ArrayAccess
     public static function sample(string $name): mixed
     {
         if ('id' === $name) {
-            throw new \LogicException('The aggregate root id is never read bare via sample() — call the id Value Object\'s own named factory (::generate()/::forX()) directly instead.');
+            throw new \LogicException('The aggregate root id is never read bare via sample() — call the id Value Object\'s own named factory (::fromString()/::forX()) directly instead.');
         }
 
         return (static::defaults()[$name])(null);
