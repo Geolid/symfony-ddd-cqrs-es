@@ -13,9 +13,7 @@ use PHPat\Test\PHPat;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy;
-use Shared\Application\Processor;
 use Shared\Infrastructure\Projection\Projector;
-use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 use Tools\PHPat\Selector\ConcreteImplementation;
 use Tools\PHPat\Selector\DependsOnClass;
 
@@ -54,16 +52,6 @@ final class SubscriptionTest
     }
 
     #[TestRule]
-    public function processorsApplyOwnAttribute(): Rule
-    {
-        return PHPat::rule()
-            ->classes($this->processors())
-            ->should()->applyAttribute()
-            ->classes(Selector::classname(Processor::class))
-            ->because('A technical reaction to an event never wired up silently never fires.');
-    }
-
-    #[TestRule]
     public function projectorsApplyOwnAttribute(): Rule
     {
         return PHPat::rule()
@@ -80,7 +68,7 @@ final class SubscriptionTest
             ->classes($this->publishers())
             ->should()->applyAttribute()
             ->classes(Selector::classname(Publisher::class))
-            ->because('Publishing needs its own group — sharing Policy\'s, Processor\'s, or Projector\'s would break store()\'s guarantee of when a fact actually crosses the boundary.');
+            ->because('Publishing needs its own group — sharing Policy\'s or Projector\'s would break store()\'s guarantee of when a fact actually crosses the boundary.');
     }
 
     private function subscribers(): SelectorInterface
@@ -88,7 +76,6 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::AnyOf(
                 Selector::appliesAttribute(Policy::class),
-                Selector::appliesAttribute(Processor::class),
                 Selector::appliesAttribute(Projector::class),
                 Selector::appliesAttribute(Publisher::class),
             ),
@@ -101,17 +88,6 @@ final class SubscriptionTest
         return Selector::AllOf(
             Selector::withFilepath('#/Application/Policy/#', true),
             Selector::Not(Selector::withFilepath('#/Shared/#', true)),
-            ...ConcreteImplementation::selectors(),
-        );
-    }
-
-    private function processors(): SelectorInterface
-    {
-        return Selector::AllOf(
-            Selector::classname('#Processor$#', true),
-            Selector::Not(Selector::classname(Processor::class)),
-            Selector::Not(Selector::implements(EnvVarProcessorInterface::class)),
-            Selector::Not(Selector::withFilepath('#/apps/#', true)),
             ...ConcreteImplementation::selectors(),
         );
     }
