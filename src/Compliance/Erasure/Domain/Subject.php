@@ -65,7 +65,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new HoldPlaced(
             id: $this->id->toString(),
-            reference: $reference->toString(),
+            reference: $reference,
             placedAt: $placedAt,
         ));
     }
@@ -78,7 +78,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new HoldLifted(
             id: $this->id->toString(),
-            reference: $reference->toString(),
+            reference: $reference,
             liftedAt: $liftedAt,
         ));
     }
@@ -137,13 +137,13 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyPlaced(HoldPlaced $event): void
     {
-        $this->activeHolds[$event->reference] = $event->placedAt;
+        $this->activeHolds[$event->reference->toString()] = $event->placedAt;
     }
 
     #[Apply]
     private function applyLifted(HoldLifted $event): void
     {
-        unset($this->activeHolds[$event->reference]);
+        unset($this->activeHolds[$event->reference->toString()]);
     }
 
     #[Apply]

@@ -7,7 +7,6 @@ namespace Compliance\Tests\Erasure\Application\Command\LiftHold;
 use Compliance\Erasure\Application\Command\LiftHold\LiftHold;
 use Compliance\Erasure\Application\Command\PlaceHold\PlaceHold;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
-use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -29,10 +28,10 @@ final class LiftHoldHandlerTest extends AbstractIntegrationTestCase
         // Given
         $subjectId = Uuid::uuid7()->toString();
         $sourceId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', $sourceId));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', $sourceId));
 
         // When
-        $this->dispatch(new LiftHold($subjectId, 'sales.order.order', $sourceId));
+        $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', $sourceId));
 
         // Then
         $result = $this->finder->ofId($subjectId);
@@ -44,10 +43,10 @@ final class LiftHoldHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // When
-        $this->dispatch(new LiftHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
         $result = $this->finder->ofId($subjectId);
@@ -55,15 +54,15 @@ final class LiftHoldHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
+    public function itIgnoresWhenNotFound(): void
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
 
-        // Then
-        $this->expectException(SubjectNotFoundException::class);
-
         // When
-        $this->dispatch(new LiftHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }

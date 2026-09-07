@@ -28,7 +28,7 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
         $subjectId = Uuid::uuid7()->toString();
 
         // When
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
         $result = $this->finder->ofId($subjectId);
@@ -40,10 +40,10 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // When
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
         $result = $this->finder->ofId($subjectId);
@@ -56,10 +56,10 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
         // Given
         $subjectId = Uuid::uuid7()->toString();
         $sourceId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', $sourceId));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', $sourceId));
 
         // When
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', $sourceId));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', $sourceId));
 
         // Then
         $result = $this->finder->ofId($subjectId);

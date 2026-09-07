@@ -14,20 +14,20 @@ final class HoldReferenceTest extends TestCase
     public function itCreatesFor(): void
     {
         // When
-        $reference = HoldReference::for('sales.order.order', 'order-1');
+        $reference = HoldReference::for('compliance.tests.source', 'order-1');
 
         // Then
-        self::assertSame('sales.order.order', $reference->sourceType);
+        self::assertSame('compliance.tests.source', $reference->sourceType);
         self::assertSame('order-1', $reference->sourceId);
-        self::assertSame('sales.order.order:order-1', $reference->toString());
+        self::assertSame('compliance.tests.source:order-1', $reference->toString());
     }
 
     #[Test]
     public function itEquals(): void
     {
         // Given
-        $a = HoldReference::for('sales.order.order', 'order-1');
-        $b = HoldReference::for('sales.order.order', 'order-1');
+        $a = HoldReference::for('compliance.tests.source', 'order-1');
+        $b = HoldReference::for('compliance.tests.source', 'order-1');
 
         // When
         $equals = $a->equals($b);
@@ -40,8 +40,8 @@ final class HoldReferenceTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = HoldReference::for('sales.order.order', 'order-1');
-        $b = HoldReference::for('sales.order.order', 'order-2');
+        $a = HoldReference::for('compliance.tests.source', 'order-1');
+        $b = HoldReference::for('compliance.tests.source', 'order-2');
 
         // When
         $equals = $a->equals($b);

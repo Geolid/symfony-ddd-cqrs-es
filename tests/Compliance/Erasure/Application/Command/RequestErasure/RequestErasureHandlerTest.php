@@ -42,7 +42,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $subjectId = Uuid::uuid7()->toString();
-        $this->dispatch(new PlaceHold($subjectId, 'sales.order.order', Uuid::uuid7()->toString()));
+        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // When
         $this->dispatch(new RequestErasure($subjectId));

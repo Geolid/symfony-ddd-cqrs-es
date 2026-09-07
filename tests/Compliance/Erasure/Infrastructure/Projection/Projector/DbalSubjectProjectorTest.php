@@ -26,7 +26,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = SubjectId::fromString(Uuid::uuid7()->toString());
-        $reference = HoldReference::for('sales.order.order', Uuid::uuid7()->toString());
+        $reference = HoldReference::for('compliance.tests.source', Uuid::uuid7()->toString());
         $subject = Subject::place($id, $reference, Clock::get()->now());
 
         // When

@@ -125,13 +125,20 @@ Nom : `Subject` conservé (terme GDPR standard, déjà référencé par les attr
 - `ERASING`/`ERASED`, pas `PENDING_ERASURE` : aligné sur un précédent déjà présent dans ce repo, `PaymentState::REFUNDING → REFUNDED` (participe présent = en cours, participe passé = terminé, toujours un seul mot).
 
 ```php
-public static function register(SubjectId $id, \DateTimeImmutable $registeredAt): self   // né à l'inscription identité, pas à la demande d'effacement — état initial RETAINED
+public static function place(SubjectId $id, HoldReference $reference, \DateTimeImmutable $placedAt): self    // genesis paresseuse, déclenchée par le premier hold
+public static function request(SubjectId $id, \DateTimeImmutable $requestedAt): self                          // genesis paresseuse, déclenchée par la demande d'effacement
 public function placeHold(HoldReference $reference, \DateTimeImmutable $placedAt): void
 public function liftHold(HoldReference $reference, \DateTimeImmutable $liftedAt): void
 public function requestErasure(\DateTimeImmutable $requestedAt): void                     // RETAINED -> ERASING
 public function cancelErasure(\DateTimeImmutable $cancelledAt): void                       // ERASING -> RETAINED
 public function release(\DateTimeImmutable $now): void                                     // ERASING -> ERASED
 ```
+
+### Correction : genesis paresseuse (`place()`/`request()`), pas `register()` sur inscription identité
+
+Le premier jet ci-dessus (`register()` déclenché par une Policy `RegisterSubjectOnIdentityRegistered` abonnée à `IdentityRegisteredIntegrationEvent`) a été abandonné en implémentation, avant tout commit : il exige `Compliance.Erasure → Iam.Identity` dans `deptrac_bc.yaml`, alors que `Iam.Identity → Compliance.Erasure` existe déjà (pour `EraseIdentityOnSubjectErased`, abonné à `SubjectErasedIntegrationEvent`) — un cycle bidirectionnel, disqualifié à lui seul par le critère 2 (direction d'intégration acyclique) des 4 critères de frontière de BC déjà établis dans ce repo.
+
+Retenu à la place : genesis paresseuse via deux factories statiques, chacune déclenchée par le premier event métier qui a réellement besoin que `Subject` existe — `place()` (premier `PlaceHold`) ou `request()` (première `RequestErasure`) — jamais un `register()` séparé. Chaque `Application/Command/*Handler` fait le `has()`-check lui-même (`has() ? load()+méthode d'instance : Factory statique`), jamais un troisième point d'entrée générique. Pas de race : le premier hold arrive toujours après la commande d'achat qui l'a déclenché (`OrderPlacedIntegrationEvent`), donc l'ordre id→existence est garanti côté métier même si `Iam.Identity` ne notifie jamais `Compliance.Erasure` de l'inscription elle-même.
 
 `release()` ne prend aucun collaborateur injecté — tout est déjà interne à l'aggregate :
 ```php

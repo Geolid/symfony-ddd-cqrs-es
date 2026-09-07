@@ -188,12 +188,12 @@ final class SubjectTest extends AggregateRootTestCase
 
     private function placed(): HoldPlaced
     {
-        return new HoldPlaced($this->id->toString(), $this->reference->toString(), $this->placedAt);
+        return new HoldPlaced($this->id->toString(), $this->reference, $this->placedAt);
     }
 
     private function lifted(): HoldLifted
     {
-        return new HoldLifted($this->id->toString(), $this->reference->toString(), $this->liftedAt);
+        return new HoldLifted($this->id->toString(), $this->reference, $this->liftedAt);
     }
 
     private function requested(): SubjectErasureRequested
