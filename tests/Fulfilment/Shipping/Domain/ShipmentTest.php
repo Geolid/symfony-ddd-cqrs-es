@@ -20,6 +20,7 @@ use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class ShipmentTest extends AggregateRootTestCase
@@ -40,7 +41,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ShipmentId::generate();
+        $this->id = ShipmentId::fromString(Uuid::uuid7()->toString());
         $this->orderId = ShipmentBuilder::sample('orderId');
         $this->buyerId = ShipmentBuilder::sample('buyerId');
         $this->origin = ShipmentBuilder::sample('origin');

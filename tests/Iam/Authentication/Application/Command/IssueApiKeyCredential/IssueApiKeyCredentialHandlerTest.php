@@ -7,10 +7,10 @@ namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
 use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -23,7 +23,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $id = ApiKeyCredentialId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $keyId = ApiKeyCredentialBuilder::sample('keyId')->value;
         $secret = ApiKeyCredentialBuilder::sample('secret');
@@ -59,7 +59,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
-            ApiKeyCredentialId::generate()->toString(),
+            Uuid::uuid7()->toString(),
         );
 
         // Then
@@ -67,7 +67,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new IssueApiKeyCredential(
-            ApiKeyCredentialId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             $identityId,
             $label,
             ApiKeyCredentialBuilder::sample('keyId')->value,

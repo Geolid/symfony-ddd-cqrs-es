@@ -16,7 +16,7 @@ final class ShipmentIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = ShipmentId::generate();
+        $id = ShipmentId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class ShipmentIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = ShipmentId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = ShipmentId::fromString($value);
         $b = ShipmentId::fromString($value);
 
@@ -61,8 +61,8 @@ final class ShipmentIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = ShipmentId::generate();
-        $b = ShipmentId::generate();
+        $a = ShipmentId::fromString(Uuid::uuid7()->toString());
+        $b = ShipmentId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

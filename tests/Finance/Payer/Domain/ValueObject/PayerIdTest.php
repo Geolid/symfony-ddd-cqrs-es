@@ -16,7 +16,7 @@ final class PayerIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = PayerId::generate();
+        $id = PayerId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class PayerIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = PayerId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = PayerId::fromString($value);
         $b = PayerId::fromString($value);
 
@@ -61,8 +61,8 @@ final class PayerIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = PayerId::generate();
-        $b = PayerId::generate();
+        $a = PayerId::fromString(Uuid::uuid7()->toString());
+        $b = PayerId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use Ramsey\Uuid\Uuid;
 use Webmozart\Assert\Assert;
 
 trait UuidTrait
@@ -16,11 +15,6 @@ trait UuidTrait
         Assert::uuid($value, 'An identifier must be a valid UUID, %s given.');
 
         $this->value = $value;
-    }
-
-    public static function generate(): static
-    {
-        return new static(Uuid::uuid7()->toString());
     }
 
     public static function fromString(string $id): static

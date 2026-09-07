@@ -8,9 +8,9 @@ use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundEx
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Domain\Product;
-use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\PaginationTrait;
@@ -54,7 +54,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ProductId::generate()->toString());
+        $this->finder()->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]

@@ -7,10 +7,10 @@ namespace Catalog\Tests\Listing\Application\Command\PublishProduct;
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Listing\Application\Command\PublishProduct\PublishProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Listing\Domain\ValueObject\ProductUniqueKey;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -21,7 +21,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $id = ProductId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $label = ProductBuilder::sample('label')->value;
         $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
 
@@ -43,7 +43,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
         $this->service(UniqueValueRegistryInterface::class)->reserve(
             UniqueKey::for(ProductUniqueKey::LABEL),
             $label,
-            ProductId::generate()->toString(),
+            Uuid::uuid7()->toString(),
         );
 
         // Then
@@ -51,7 +51,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new PublishProduct(
-            ProductId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             $label,
             ProductBuilder::sample('unitPrice')->cents,
         ));

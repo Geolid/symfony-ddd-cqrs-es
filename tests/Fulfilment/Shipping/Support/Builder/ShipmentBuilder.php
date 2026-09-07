@@ -114,7 +114,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => ShipmentId::generate(...),
+            'id' => static fn (): ShipmentId => ShipmentId::fromString(Uuid::uuid7()->toString()),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(

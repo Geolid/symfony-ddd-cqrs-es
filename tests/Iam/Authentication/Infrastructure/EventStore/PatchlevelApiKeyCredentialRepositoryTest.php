@@ -10,6 +10,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegrationTestCase
@@ -46,7 +47,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
         $this->expectException(ApiKeyCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(ApiKeyCredentialId::generate());
+        $this->repository->load(ApiKeyCredentialId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -67,7 +68,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(ApiKeyCredentialId::generate());
+        $notExists = $this->repository->has(ApiKeyCredentialId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

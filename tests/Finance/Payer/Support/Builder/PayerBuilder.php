@@ -6,6 +6,7 @@ namespace Finance\Tests\Payer\Support\Builder;
 
 use Finance\Payer\Domain\Payer;
 use Finance\Payer\Domain\ValueObject\PayerId;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
@@ -61,7 +62,7 @@ final class PayerBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => PayerId::generate(...),
+            'id' => static fn (): PayerId => PayerId::fromString(Uuid::uuid7()->toString()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'postalAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),

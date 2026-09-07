@@ -16,7 +16,7 @@ final class ProductIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = ProductId::generate();
+        $id = ProductId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class ProductIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = ProductId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = ProductId::fromString($value);
         $b = ProductId::fromString($value);
 
@@ -61,8 +61,8 @@ final class ProductIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = ProductId::generate();
-        $b = ProductId::generate();
+        $a = ProductId::fromString(Uuid::uuid7()->toString());
+        $b = ProductId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

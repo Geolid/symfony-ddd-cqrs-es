@@ -11,6 +11,7 @@ use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +29,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $id = ShipmentId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $orderId = ShipmentBuilder::sample('orderId');
         $buyerId = ShipmentBuilder::sample('buyerId');
         $originData = ShipmentBuilder::sample('origin')->toArray();
@@ -45,30 +46,5 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipment = $this->repository->load(ShipmentId::fromString($id));
         $shipmentDestination = $shipment->destination->toArray();
         self::assertSame($destinationData, $shipmentDestination);
-    }
-
-    #[Test]
-    public function itIgnoresWhenAlreadyRequested(): void
-    {
-        // Given
-        $builder = ShipmentBuilder::new();
-        $shipment = $builder->create();
-        $this->store($shipment);
-        $attemptedDestination = ShipmentBuilder::sample('destination');
-
-        // When
-        $this->dispatch(new RequestShipment(
-            $shipment->id->toString(),
-            $builder['orderId'],
-            $builder['buyerId'],
-            $builder['origin']->toArray(),
-            $attemptedDestination->toArray(),
-        ));
-
-        // Then
-        $result = $this->repository->load($shipment->id);
-        $resultDestination = $result->destination->toArray();
-        $originalDestination = $builder['destination']->toArray();
-        self::assertSame($originalDestination, $resultDestination);
     }
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Sales\Tests\Buyer\Application\Command\RegisterBuyer;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Application\Command\RegisterBuyer\RegisterBuyer;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
-use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -21,7 +21,7 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = BuyerId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
         $email = BuyerBuilder::sample('email')->value;
 
         // When
@@ -37,8 +37,8 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenEmailAlreadyTaken(): void
     {
         // Given
-        $id = BuyerId::generate()->toString();
-        $existingId = BuyerId::generate()->toString();
+        $id = Uuid::uuid7()->toString();
+        $existingId = Uuid::uuid7()->toString();
         $email = BuyerBuilder::sample('email')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email, $existingId);
 

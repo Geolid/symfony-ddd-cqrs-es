@@ -13,6 +13,7 @@ use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 
@@ -28,7 +29,7 @@ final class ProductTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ProductId::generate();
+        $this->id = ProductId::fromString(Uuid::uuid7()->toString());
         $this->label = ProductBuilder::sample('label');
         $this->unitPrice = ProductBuilder::sample('unitPrice');
         $this->listedAt = ProductBuilder::sample('listedAt');

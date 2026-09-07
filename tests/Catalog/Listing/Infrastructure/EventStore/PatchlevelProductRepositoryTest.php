@@ -9,6 +9,7 @@ use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
@@ -43,7 +44,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->repository->load(ProductId::generate());
+        $this->repository->load(ProductId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(ProductId::generate());
+        $notExists = $this->repository->has(ProductId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

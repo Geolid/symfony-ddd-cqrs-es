@@ -9,9 +9,9 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -70,7 +70,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new SuspendIdentity(
-            IdentityId::generate()->toString(),
+            Uuid::uuid7()->toString(),
             IdentityBuilder::sample('reason')->value,
         ));
     }

@@ -12,6 +12,7 @@ use Finance\Payer\Domain\ValueObject\PayerId;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class PayerTest extends AggregateRootTestCase
@@ -24,7 +25,7 @@ final class PayerTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = PayerId::generate();
+        $this->id = PayerId::fromString(Uuid::uuid7()->toString());
         $this->registeredAt = PayerBuilder::sample('registeredAt');
         $this->postalAddress = PayerBuilder::sample('postalAddress');
     }

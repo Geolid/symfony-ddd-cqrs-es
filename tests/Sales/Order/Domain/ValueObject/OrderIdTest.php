@@ -16,7 +16,7 @@ final class OrderIdTest extends TestCase
     public function itGenerates(): void
     {
         // When
-        $id = OrderId::generate();
+        $id = OrderId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
@@ -46,7 +46,7 @@ final class OrderIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $value = OrderId::generate()->toString();
+        $value = Uuid::uuid7()->toString();
         $a = OrderId::fromString($value);
         $b = OrderId::fromString($value);
 
@@ -61,8 +61,8 @@ final class OrderIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = OrderId::generate();
-        $b = OrderId::generate();
+        $a = OrderId::fromString(Uuid::uuid7()->toString());
+        $b = OrderId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);

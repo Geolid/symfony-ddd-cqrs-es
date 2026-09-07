@@ -9,6 +9,7 @@ use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
@@ -43,7 +44,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->repository->load(ShipmentId::generate());
+        $this->repository->load(ShipmentId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -64,7 +65,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(ShipmentId::generate());
+        $notExists = $this->repository->has(ShipmentId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Support\Builder;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
+use Ramsey\Uuid\Uuid;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
@@ -73,7 +74,7 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => IdentityId::generate(...),
+            'id' => static fn (): IdentityId => IdentityId::fromString(Uuid::uuid7()->toString()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),

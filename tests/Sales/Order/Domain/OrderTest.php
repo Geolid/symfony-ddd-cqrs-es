@@ -46,7 +46,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = OrderId::generate();
+        $this->id = OrderId::fromString(Uuid::uuid7()->toString());
         $this->buyerId = OrderBuilder::sample('buyerId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
         $this->billingAddress = OrderBuilder::sample('billingAddress');

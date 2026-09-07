@@ -137,7 +137,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => OrderId::generate(...),
+            'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),

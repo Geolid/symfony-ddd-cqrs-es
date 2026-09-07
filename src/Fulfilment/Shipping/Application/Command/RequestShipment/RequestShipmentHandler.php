@@ -25,11 +25,6 @@ final readonly class RequestShipmentHandler
     public function __invoke(RequestShipment $command): void
     {
         $id = ShipmentId::fromString($command->id);
-
-        if ($this->repository->has($id)) {
-            return;
-        }
-
         $shipment = Shipment::request(
             id: $id,
             orderId: $command->orderId,

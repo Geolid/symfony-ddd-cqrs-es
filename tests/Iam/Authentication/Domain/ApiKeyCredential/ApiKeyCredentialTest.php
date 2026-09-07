@@ -14,6 +14,7 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 
 final class ApiKeyCredentialTest extends AggregateRootTestCase
@@ -30,7 +31,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ApiKeyCredentialId::generate();
+        $this->id = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
         $this->identityId = ApiKeyCredentialBuilder::sample('identityId');
         $this->keyId = ApiKeyCredentialBuilder::sample('keyId');
         $this->label = ApiKeyCredentialBuilder::sample('label');
