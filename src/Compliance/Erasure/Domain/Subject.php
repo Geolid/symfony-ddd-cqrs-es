@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Domain;
 
-use Compliance\Erasure\Domain\Event\HoldLifted;
-use Compliance\Erasure\Domain\Event\HoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErased;
 use Compliance\Erasure\Domain\Event\SubjectErasureCancelled;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldLifted;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErasureRequested;
 use Compliance\Erasure\Domain\Event\SubjectRegistered;
 use Compliance\Erasure\Domain\Specification\ErasureRetentionExpiredSpecification;
-use Compliance\Erasure\Domain\ValueObject\HoldReference;
+use Compliance\Erasure\Domain\ValueObject\ErasureHoldReference;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Compliance\Erasure\Domain\ValueObject\SubjectState;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -52,26 +52,26 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function placeHold(HoldReference $reference, \DateTimeImmutable $placedAt): void
+    public function placeErasureHold(ErasureHoldReference $reference, \DateTimeImmutable $placedAt): void
     {
         if (isset($this->activeHolds[$reference->toString()])) {
             return;
         }
 
-        $this->recordThat(new HoldPlaced(
+        $this->recordThat(new SubjectErasureHoldPlaced(
             id: $this->id->toString(),
             reference: $reference,
             placedAt: $placedAt,
         ));
     }
 
-    public function liftHold(HoldReference $reference, \DateTimeImmutable $liftedAt): void
+    public function liftErasureHold(ErasureHoldReference $reference, \DateTimeImmutable $liftedAt): void
     {
         if (!isset($this->activeHolds[$reference->toString()])) {
             return;
         }
 
-        $this->recordThat(new HoldLifted(
+        $this->recordThat(new SubjectErasureHoldLifted(
             id: $this->id->toString(),
             reference: $reference,
             liftedAt: $liftedAt,
@@ -130,13 +130,13 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyPlaced(HoldPlaced $event): void
+    private function applyErasureHoldPlaced(SubjectErasureHoldPlaced $event): void
     {
         $this->activeHolds[$event->reference->toString()] = $event->placedAt;
     }
 
     #[Apply]
-    private function applyLifted(HoldLifted $event): void
+    private function applyErasureHoldLifted(SubjectErasureHoldLifted $event): void
     {
         unset($this->activeHolds[$event->reference->toString()]);
     }

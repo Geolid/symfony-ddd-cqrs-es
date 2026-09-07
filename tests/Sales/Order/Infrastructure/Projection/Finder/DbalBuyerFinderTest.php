@@ -75,7 +75,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->create();
         $this->store($buyer, $subject);
 
         // When

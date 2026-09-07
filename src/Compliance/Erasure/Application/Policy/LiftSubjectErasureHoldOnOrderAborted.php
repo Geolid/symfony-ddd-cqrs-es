@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\PlaceSubjectHold\PlaceSubjectHold;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-#[Policy('compliance.erasure.place_subject_hold_on_order_placed')]
-final readonly class PlaceSubjectHoldOnOrderPlaced
+#[Policy('compliance.erasure.lift_subject_erasure_hold_on_order_aborted')]
+final readonly class LiftSubjectErasureHoldOnOrderAborted
 {
     private const string SOURCE_TYPE = 'sales.order.order';
 
@@ -24,10 +24,10 @@ final readonly class PlaceSubjectHoldOnOrderPlaced
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(OrderPlacedIntegrationEvent::class)]
-    public function __invoke(OrderPlacedIntegrationEvent $event): void
+    #[Subscribe(OrderAbortedIntegrationEvent::class)]
+    public function __invoke(OrderAbortedIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new PlaceSubjectHold(
+        $this->commandBus->dispatch(new LiftSubjectErasureHold(
             subjectId: $event->buyerId,
             sourceType: self::SOURCE_TYPE,
             sourceId: $event->orderId,

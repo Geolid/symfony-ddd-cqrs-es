@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
-use Compliance\Erasure\Application\Policy\LiftSubjectHoldOnOrderDelivered;
+use Compliance\Erasure\Application\Command\PlaceSubjectErasureHold\PlaceSubjectErasureHold;
+use Compliance\Erasure\Application\Policy\PlaceSubjectErasureHoldOnOrderPlaced;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class LiftSubjectHoldOnOrderDeliveredTest extends AbstractIntegrationTestCase
+final class PlaceSubjectErasureHoldOnOrderPlacedTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itLifts(): void
+    public function itPlaces(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -33,15 +33,17 @@ final class LiftSubjectHoldOnOrderDeliveredTest extends AbstractIntegrationTestC
             });
 
         // When
-        $this->trigger(LiftSubjectHoldOnOrderDelivered::class, new OrderDeliveredIntegrationEvent(
+        $this->trigger(PlaceSubjectErasureHoldOnOrderPlaced::class, new OrderPlacedIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
-            shippingAddress: OrderBuilder::sample('shippingAddress')->toArray(),
-            deliveredAt: Clock::get()->now(),
+            lines: [],
+            totalAmountInCents: 1_000,
+            billingAddress: OrderBuilder::sample('billingAddress')->toArray(),
+            placedAt: Clock::get()->now(),
         ));
 
         // Then
-        self::assertInstanceOf(LiftSubjectHold::class, $dispatched);
+        self::assertInstanceOf(PlaceSubjectErasureHold::class, $dispatched);
         self::assertSame($buyerId, $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);

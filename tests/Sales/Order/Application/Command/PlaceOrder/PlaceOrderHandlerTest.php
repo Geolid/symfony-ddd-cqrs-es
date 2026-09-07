@@ -89,7 +89,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identityId = Uuid::uuid7()->toString();
         $buyer = BuyerBuilder::new()->withId($identityId)->create();
-        $subject = SubjectBuilder::new()->withId($identityId)->requested()->create();
+        $subject = SubjectBuilder::new()->withId($identityId)->erasureRequested()->create();
         $this->store($buyer, $subject);
 
         // Then

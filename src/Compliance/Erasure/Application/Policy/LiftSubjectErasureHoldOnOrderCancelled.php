@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-#[Policy('compliance.erasure.lift_subject_hold_on_order_cancelled')]
-final readonly class LiftSubjectHoldOnOrderCancelled
+#[Policy('compliance.erasure.lift_subject_erasure_hold_on_order_cancelled')]
+final readonly class LiftSubjectErasureHoldOnOrderCancelled
 {
     private const string SOURCE_TYPE = 'sales.order.order';
 
@@ -27,7 +27,7 @@ final readonly class LiftSubjectHoldOnOrderCancelled
     #[Subscribe(OrderCancelledIntegrationEvent::class)]
     public function __invoke(OrderCancelledIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new LiftSubjectHold(
+        $this->commandBus->dispatch(new LiftSubjectErasureHold(
             subjectId: $event->buyerId,
             sourceType: self::SOURCE_TYPE,
             sourceId: $event->orderId,

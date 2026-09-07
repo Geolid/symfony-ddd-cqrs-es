@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
-use Compliance\Erasure\Application\Policy\LiftSubjectHoldOnOrderAborted;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
+use Compliance\Erasure\Application\Policy\LiftSubjectErasureHoldOnOrderDelivered;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class LiftSubjectHoldOnOrderAbortedTest extends AbstractIntegrationTestCase
+final class LiftSubjectErasureHoldOnOrderDeliveredTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itLifts(): void
@@ -32,14 +33,15 @@ final class LiftSubjectHoldOnOrderAbortedTest extends AbstractIntegrationTestCas
             });
 
         // When
-        $this->trigger(LiftSubjectHoldOnOrderAborted::class, new OrderAbortedIntegrationEvent(
+        $this->trigger(LiftSubjectErasureHoldOnOrderDelivered::class, new OrderDeliveredIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
-            abortedAt: Clock::get()->now(),
+            shippingAddress: OrderBuilder::sample('shippingAddress')->toArray(),
+            deliveredAt: Clock::get()->now(),
         ));
 
         // Then
-        self::assertInstanceOf(LiftSubjectHold::class, $dispatched);
+        self::assertInstanceOf(LiftSubjectErasureHold::class, $dispatched);
         self::assertSame($buyerId, $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Domain;
 
-use Compliance\Erasure\Domain\Event\HoldLifted;
-use Compliance\Erasure\Domain\Event\HoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErased;
 use Compliance\Erasure\Domain\Event\SubjectErasureCancelled;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldLifted;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErasureRequested;
 use Compliance\Erasure\Domain\Event\SubjectRegistered;
 use Compliance\Erasure\Domain\Subject;
-use Compliance\Erasure\Domain\ValueObject\HoldReference;
+use Compliance\Erasure\Domain\ValueObject\ErasureHoldReference;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -21,7 +21,7 @@ use Ramsey\Uuid\Uuid;
 final class SubjectTest extends AggregateRootTestCase
 {
     private SubjectId $id;
-    private HoldReference $reference;
+    private ErasureHoldReference $reference;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $placedAt;
@@ -53,38 +53,38 @@ final class SubjectTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itPlacesHold(): void
+    public function itPlacesErasureHold(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Subject $subject) => $subject->placeHold($this->reference, $this->placedAt))
+            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, $this->placedAt))
             ->then($this->placed());
     }
 
     #[Test]
-    public function itDoesNotPlaceHoldWhenAlreadyActive(): void
+    public function itDoesNotPlaceErasureHoldWhenAlreadyActive(): void
     {
         $this
             ->given($this->registered(), $this->placed())
-            ->when(fn (Subject $subject) => $subject->placeHold($this->reference, SubjectBuilder::sample('placedAt')))
+            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, SubjectBuilder::sample('placedAt')))
             ->then();
     }
 
     #[Test]
-    public function itLiftsHold(): void
+    public function itLiftsErasureHold(): void
     {
         $this
             ->given($this->registered(), $this->placed())
-            ->when(fn (Subject $subject) => $subject->liftHold($this->reference, $this->liftedAt))
+            ->when(fn (Subject $subject) => $subject->liftErasureHold($this->reference, $this->liftedAt))
             ->then($this->lifted());
     }
 
     #[Test]
-    public function itDoesNotLiftHoldWhenNotActive(): void
+    public function itDoesNotLiftErasureHoldWhenNotActive(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Subject $subject) => $subject->liftHold($this->reference, $this->liftedAt))
+            ->when(fn (Subject $subject) => $subject->liftErasureHold($this->reference, $this->liftedAt))
             ->then();
     }
 
@@ -161,7 +161,7 @@ final class SubjectTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErasesAfterHoldLifted(): void
+    public function itErasesAfterErasureHoldLifted(): void
     {
         $this
             ->given($this->registered(), $this->requested(), $this->placed(), $this->lifted())
@@ -179,14 +179,14 @@ final class SubjectTest extends AggregateRootTestCase
         return new SubjectRegistered($this->id->toString(), $this->registeredAt);
     }
 
-    private function placed(): HoldPlaced
+    private function placed(): SubjectErasureHoldPlaced
     {
-        return new HoldPlaced($this->id->toString(), $this->reference, $this->placedAt);
+        return new SubjectErasureHoldPlaced($this->id->toString(), $this->reference, $this->placedAt);
     }
 
-    private function lifted(): HoldLifted
+    private function lifted(): SubjectErasureHoldLifted
     {
-        return new HoldLifted($this->id->toString(), $this->reference, $this->liftedAt);
+        return new SubjectErasureHoldLifted($this->id->toString(), $this->reference, $this->liftedAt);
     }
 
     private function requested(): SubjectErasureRequested

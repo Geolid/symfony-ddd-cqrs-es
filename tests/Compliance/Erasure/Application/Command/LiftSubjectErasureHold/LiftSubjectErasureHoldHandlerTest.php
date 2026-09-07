@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Tests\Erasure\Application\Command\LiftSubjectHold;
+namespace Compliance\Tests\Erasure\Application\Command\LiftSubjectErasureHold;
 
-use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
 use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class LiftSubjectHoldHandlerTest extends AbstractIntegrationTestCase
+final class LiftSubjectErasureHoldHandlerTest extends AbstractIntegrationTestCase
 {
     private SubjectFinderInterface $finder;
 
@@ -27,12 +27,12 @@ final class LiftSubjectHoldHandlerTest extends AbstractIntegrationTestCase
     public function itLifts(): void
     {
         // Given
-        $builder = SubjectBuilder::new()->heldBy();
+        $builder = SubjectBuilder::new()->erasureHoldPlaced();
         $subject = $builder->create();
         $this->store($subject);
 
         // When
-        $this->dispatch(new LiftSubjectHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
+        $this->dispatch(new LiftSubjectErasureHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
 
         // Then
         $result = $this->finder->ofId($subject->id->toString());
@@ -43,11 +43,11 @@ final class LiftSubjectHoldHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotActive(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->heldBy()->create();
+        $subject = SubjectBuilder::new()->erasureHoldPlaced()->create();
         $this->store($subject);
 
         // When
-        $this->dispatch(new LiftSubjectHold($subject->id->toString(), 'compliance.tests.source', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftSubjectErasureHold($subject->id->toString(), 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
         $result = $this->finder->ofId($subject->id->toString());
@@ -64,6 +64,6 @@ final class LiftSubjectHoldHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SubjectNotFoundException::class);
 
         // When
-        $this->dispatch(new LiftSubjectHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftSubjectErasureHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
     }
 }

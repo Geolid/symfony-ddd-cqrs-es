@@ -94,7 +94,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $other = BuyerBuilder::new()->create();
         $this->store($other);
         $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->create();
 
         // When
         $this->store($buyer, $subject);
@@ -114,10 +114,10 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = BuyerBuilder::new()->create();
-        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->requested()->create();
+        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->erasureRequested()->create();
         $this->store($other, $otherSubject);
         $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->cancelled()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->erasureCancelled()->create();
 
         // When
         $this->store($buyer, $subject);
@@ -137,10 +137,10 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = BuyerBuilder::new()->create();
-        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->requested()->create();
+        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->erasureRequested()->create();
         $this->store($other, $otherSubject);
         $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->erased()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->erased()->create();
 
         // When
         $this->store($buyer, $subject);

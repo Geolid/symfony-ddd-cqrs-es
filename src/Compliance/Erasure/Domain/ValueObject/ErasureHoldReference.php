@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Domain\ValueObject;
 
-final readonly class HoldReference
+final readonly class ErasureHoldReference
 {
     private function __construct(
         public string $sourceType,

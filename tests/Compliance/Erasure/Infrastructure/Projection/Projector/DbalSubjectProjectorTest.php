@@ -40,7 +40,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErasureRequested(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->requested()->create();
+        $subject = SubjectBuilder::new()->erasureRequested()->create();
 
         // When
         $this->store($subject);
@@ -55,9 +55,9 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErasureCancelled(): void
     {
         // Given
-        $other = SubjectBuilder::new()->requested()->create();
+        $other = SubjectBuilder::new()->erasureRequested()->create();
         $this->store($other);
-        $subject = SubjectBuilder::new()->requested()->cancelled()->create();
+        $subject = SubjectBuilder::new()->erasureRequested()->erasureCancelled()->create();
 
         // When
         $this->store($subject);
@@ -76,9 +76,9 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnSubjectErased(): void
     {
         // Given
-        $other = SubjectBuilder::new()->requested()->create();
+        $other = SubjectBuilder::new()->erasureRequested()->create();
         $this->store($other);
-        $subject = SubjectBuilder::new()->requested()->erased()->create();
+        $subject = SubjectBuilder::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($subject);

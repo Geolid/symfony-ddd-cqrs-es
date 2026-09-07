@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
-use Compliance\Erasure\Application\Policy\LiftSubjectHoldOnOrderCancelled;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
+use Compliance\Erasure\Application\Policy\LiftSubjectErasureHoldOnOrderAborted;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class LiftSubjectHoldOnOrderCancelledTest extends AbstractIntegrationTestCase
+final class LiftSubjectErasureHoldOnOrderAbortedTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itLifts(): void
@@ -32,14 +32,14 @@ final class LiftSubjectHoldOnOrderCancelledTest extends AbstractIntegrationTestC
             });
 
         // When
-        $this->trigger(LiftSubjectHoldOnOrderCancelled::class, new OrderCancelledIntegrationEvent(
+        $this->trigger(LiftSubjectErasureHoldOnOrderAborted::class, new OrderAbortedIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
-            cancelledAt: Clock::get()->now(),
+            abortedAt: Clock::get()->now(),
         ));
 
         // Then
-        self::assertInstanceOf(LiftSubjectHold::class, $dispatched);
+        self::assertInstanceOf(LiftSubjectErasureHold::class, $dispatched);
         self::assertSame($buyerId, $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);

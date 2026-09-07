@@ -6,7 +6,7 @@ namespace Compliance\Tests\Erasure\Support\Builder;
 
 use Compliance\Erasure\Domain\Specification\ErasureRetentionExpiredSpecification;
 use Compliance\Erasure\Domain\Subject;
-use Compliance\Erasure\Domain\ValueObject\HoldReference;
+use Compliance\Erasure\Domain\ValueObject\ErasureHoldReference;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Ramsey\Uuid\Uuid;
 use Support\Builder\AbstractAggregateBuilder;
@@ -18,7 +18,7 @@ use Symfony\Component\Clock\Clock;
  *     registeredAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
- *     reference: HoldReference,
+ *     reference: ErasureHoldReference,
  *     placedAt: \DateTimeImmutable,
  *     liftedAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
@@ -33,7 +33,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: SubjectId::fromString($id));
     }
 
-    public function heldBy(?HoldReference $reference = null, ?\DateTimeImmutable $placedAt = null): self
+    public function erasureHoldPlaced(?ErasureHoldReference $reference = null, ?\DateTimeImmutable $placedAt = null): self
     {
         $builder = $this->withAttributes(...array_filter([
             'reference' => $reference,
@@ -41,20 +41,20 @@ final class SubjectBuilder extends AbstractAggregateBuilder
         ], static fn (mixed $value): bool => null !== $value));
 
         return $builder->withModifier(
-            static fn (Subject $subject, self $builder) => $subject->placeHold($builder['reference'], $builder['placedAt']),
+            static fn (Subject $subject, self $builder) => $subject->placeErasureHold($builder['reference'], $builder['placedAt']),
         );
     }
 
-    public function liftedHold(?\DateTimeImmutable $liftedAt = null): self
+    public function erasureHoldLifted(?\DateTimeImmutable $liftedAt = null): self
     {
         $builder = null !== $liftedAt ? $this->withAttributes(liftedAt: $liftedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Subject $subject, self $builder) => $subject->liftHold($builder['reference'], $builder['liftedAt']),
+            static fn (Subject $subject, self $builder) => $subject->liftErasureHold($builder['reference'], $builder['liftedAt']),
         );
     }
 
-    public function requested(?\DateTimeImmutable $requestedAt = null): self
+    public function erasureRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
 
@@ -63,7 +63,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
+    public function erasureCancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
 
@@ -90,7 +90,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'requestedAt' => static fn (): \DateTimeImmutable => $now,
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
-            'reference' => static fn (): HoldReference => HoldReference::for('compliance.tests.source', Uuid::uuid7()->toString()),
+            'reference' => static fn (): ErasureHoldReference => ErasureHoldReference::for('compliance.tests.source', Uuid::uuid7()->toString()),
             'placedAt' => static fn (): \DateTimeImmutable => $now,
             'liftedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'erasedAt' => static fn (): \DateTimeImmutable => $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1)),

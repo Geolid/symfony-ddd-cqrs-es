@@ -28,7 +28,7 @@ final class CancelSubjectErasureHandlerTest extends AbstractIntegrationTestCase
     public function itCancels(): void
     {
         // Given
-        $subject = SubjectBuilder::new()->requested()->create();
+        $subject = SubjectBuilder::new()->erasureRequested()->create();
         $this->store($subject);
 
         // When

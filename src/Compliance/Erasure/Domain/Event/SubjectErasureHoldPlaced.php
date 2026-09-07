@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Domain\Event;
 
-use Compliance\Erasure\Domain\ValueObject\HoldReference;
+use Compliance\Erasure\Domain\ValueObject\ErasureHoldReference;
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('compliance.erasure.subject.hold_placed')]
-final readonly class HoldPlaced
+#[Event('compliance.erasure.subject.erasure_hold_placed')]
+final readonly class SubjectErasureHoldPlaced
 {
     public function __construct(
         public string $id,
-        public HoldReference $reference,
+        public ErasureHoldReference $reference,
         public \DateTimeImmutable $placedAt,
     ) {
     }

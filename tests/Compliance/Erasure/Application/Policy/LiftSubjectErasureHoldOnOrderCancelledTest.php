@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\PlaceSubjectHold\PlaceSubjectHold;
-use Compliance\Erasure\Application\Policy\PlaceSubjectHoldOnOrderPlaced;
+use Compliance\Erasure\Application\Command\LiftSubjectErasureHold\LiftSubjectErasureHold;
+use Compliance\Erasure\Application\Policy\LiftSubjectErasureHoldOnOrderCancelled;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class PlaceSubjectHoldOnOrderPlacedTest extends AbstractIntegrationTestCase
+final class LiftSubjectErasureHoldOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itPlaces(): void
+    public function itLifts(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
@@ -33,17 +32,14 @@ final class PlaceSubjectHoldOnOrderPlacedTest extends AbstractIntegrationTestCas
             });
 
         // When
-        $this->trigger(PlaceSubjectHoldOnOrderPlaced::class, new OrderPlacedIntegrationEvent(
+        $this->trigger(LiftSubjectErasureHoldOnOrderCancelled::class, new OrderCancelledIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
-            lines: [],
-            totalAmountInCents: 1_000,
-            billingAddress: OrderBuilder::sample('billingAddress')->toArray(),
-            placedAt: Clock::get()->now(),
+            cancelledAt: Clock::get()->now(),
         ));
 
         // Then
-        self::assertInstanceOf(PlaceSubjectHold::class, $dispatched);
+        self::assertInstanceOf(LiftSubjectErasureHold::class, $dispatched);
         self::assertSame($buyerId, $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Compliance\Erasure\Infrastructure\Projection\Projector;
 
 use Compliance\Erasure\Application\SubjectStatus;
-use Compliance\Erasure\Domain\Event\HoldLifted;
-use Compliance\Erasure\Domain\Event\HoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErased;
 use Compliance\Erasure\Domain\Event\SubjectErasureCancelled;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldLifted;
+use Compliance\Erasure\Domain\Event\SubjectErasureHoldPlaced;
 use Compliance\Erasure\Domain\Event\SubjectErasureRequested;
 use Compliance\Erasure\Domain\Event\SubjectRegistered;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
@@ -38,8 +38,8 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(HoldPlaced::class)]
-    public function onHoldPlaced(HoldPlaced $event): void
+    #[Subscribe(SubjectErasureHoldPlaced::class)]
+    public function onSubjectErasureHoldPlaced(SubjectErasureHoldPlaced $event): void
     {
         $this->connection->executeStatement(
             \sprintf('UPDATE %s SET active_hold_count = active_hold_count + 1 WHERE id = :id', self::TABLE),
@@ -47,8 +47,8 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(HoldLifted::class)]
-    public function onHoldLifted(HoldLifted $event): void
+    #[Subscribe(SubjectErasureHoldLifted::class)]
+    public function onSubjectErasureHoldLifted(SubjectErasureHoldLifted $event): void
     {
         $this->connection->executeStatement(
             \sprintf('UPDATE %s SET active_hold_count = active_hold_count - 1 WHERE id = :id', self::TABLE),
