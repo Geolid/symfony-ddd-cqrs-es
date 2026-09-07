@@ -38,7 +38,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     public private(set) SubjectId $id;
     public private(set) SubjectState $state;
     private \DateTimeImmutable $requestedAt;
-    /** @var array<string, \DateTimeImmutable> */
+    /** @var array<string, ErasureHold> */
     private array $activeHolds = [];
 
     public static function register(SubjectId $id, \DateTimeImmutable $registeredAt): self
@@ -132,7 +132,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyErasureHoldPlaced(SubjectErasureHoldPlaced $event): void
     {
-        $this->activeHolds[$event->reference->toString()] = $event->placedAt;
+        $this->activeHolds[$event->reference->toString()] = new ErasureHold($event->reference, $event->placedAt);
     }
 
     #[Apply]

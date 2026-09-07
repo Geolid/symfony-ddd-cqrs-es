@@ -37,8 +37,8 @@ final class SubjectTest extends AggregateRootTestCase
         $this->reference = SubjectBuilder::sample('reference');
         $this->registeredAt = SubjectBuilder::sample('registeredAt');
         $this->requestedAt = SubjectBuilder::sample('requestedAt');
-        $this->placedAt = SubjectBuilder::sample('placedAt');
-        $this->liftedAt = SubjectBuilder::sample('liftedAt');
+        $this->placedAt = SubjectBuilder::sample('erasureHoldPlacedAt');
+        $this->liftedAt = SubjectBuilder::sample('erasureHoldLiftedAt');
         $this->cancelledAt = SubjectBuilder::sample('cancelledAt');
         $this->erasedAt = SubjectBuilder::sample('erasedAt');
     }
@@ -66,7 +66,7 @@ final class SubjectTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->placed())
-            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, SubjectBuilder::sample('placedAt')))
+            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, SubjectBuilder::sample('erasureHoldPlacedAt')))
             ->then();
     }
 
