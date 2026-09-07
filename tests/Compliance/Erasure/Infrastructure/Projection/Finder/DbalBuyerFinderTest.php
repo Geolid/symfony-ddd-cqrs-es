@@ -26,6 +26,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsById(): void
     {
         // Given
+        $other = BuyerBuilder::new()->create();
+        $this->store($other);
         $identityId = Uuid::uuid7()->toString();
         $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
         $this->store($buyer);
