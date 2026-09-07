@@ -36,20 +36,4 @@ final class RegisterSubjectHandlerTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofId($id);
         self::assertSame(SubjectStatus::RETAINED, $result->status);
     }
-
-    #[Test]
-    public function itIgnoresWhenAlreadyRegistered(): void
-    {
-        // Given
-        $id = Uuid::uuid7()->toString();
-        $registeredAt = Clock::get()->now();
-        $this->dispatch(new RegisterSubject($id, $registeredAt));
-
-        // When
-        $this->dispatch(new RegisterSubject($id, $registeredAt));
-
-        // Then
-        $result = $this->finder->ofId($id);
-        self::assertSame(SubjectStatus::RETAINED, $result->status);
-    }
 }

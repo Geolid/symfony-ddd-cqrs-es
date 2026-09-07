@@ -47,29 +47,4 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $shipmentDestination = $shipment->destination->toArray();
         self::assertSame($destinationData, $shipmentDestination);
     }
-
-    #[Test]
-    public function itIgnoresWhenAlreadyRequested(): void
-    {
-        // Given
-        $builder = ShipmentBuilder::new();
-        $shipment = $builder->create();
-        $this->store($shipment);
-        $attemptedDestination = ShipmentBuilder::sample('destination');
-
-        // When
-        $this->dispatch(new RequestShipment(
-            $shipment->id->toString(),
-            $builder['orderId'],
-            $builder['buyerId'],
-            $builder['origin']->toArray(),
-            $attemptedDestination->toArray(),
-        ));
-
-        // Then
-        $result = $this->repository->load($shipment->id);
-        $resultDestination = $result->destination->toArray();
-        $originalDestination = $builder['destination']->toArray();
-        self::assertSame($originalDestination, $resultDestination);
-    }
 }

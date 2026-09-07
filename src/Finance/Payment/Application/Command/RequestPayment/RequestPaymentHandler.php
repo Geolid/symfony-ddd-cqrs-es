@@ -35,12 +35,6 @@ final readonly class RequestPaymentHandler
     {
         $id = PaymentId::fromString($command->id);
 
-        // Fast path for a sequential retry; a concurrent one still races past this
-        // check (TOCTOU) — save()'s own uniqueness guard below closes that gap.
-        if ($this->repository->has($id)) {
-            return;
-        }
-
         try {
             $this->uniqueValues->reserve(UniqueKey::for(PaymentUniqueKey::REFERENCE), $command->reference, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {

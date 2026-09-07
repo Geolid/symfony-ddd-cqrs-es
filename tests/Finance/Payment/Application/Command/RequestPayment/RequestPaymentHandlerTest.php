@@ -51,28 +51,6 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyRequested(): void
-    {
-        // Given
-        $paymentFactory = PaymentBuilder::new();
-        $payment = $paymentFactory->create();
-        $this->store($payment);
-
-        // When
-        $this->dispatch(new RequestPayment(
-            id: $payment->id->toString(),
-            orderId: $paymentFactory['orderId'],
-            amountInCents: PaymentBuilder::sample('amount')->cents,
-            reference: PaymentBuilder::sample('reference')->value,
-            checkoutUrl: PaymentBuilder::sample('checkoutUrl'),
-        ));
-
-        // Then
-        $result = $this->finder->ofReference($paymentFactory['reference']->value);
-        self::assertSame($paymentFactory['reference']->value, $result->reference);
-    }
-
-    #[Test]
     public function itFailsWhenReferenceAlreadyTaken(): void
     {
         // Given

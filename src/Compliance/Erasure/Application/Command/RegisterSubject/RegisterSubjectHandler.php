@@ -20,13 +20,6 @@ final readonly class RegisterSubjectHandler
     public function __invoke(RegisterSubject $command): void
     {
         $id = SubjectId::fromString($command->id);
-
-        // Fast path for a sequential retry; a concurrent one still races past this
-        // check (TOCTOU) — save()'s own uniqueness guard below closes that gap.
-        if ($this->repository->has($id)) {
-            return;
-        }
-
         $subject = Subject::register($id, $command->registeredAt);
 
         try {

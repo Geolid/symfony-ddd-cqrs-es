@@ -21,18 +21,18 @@ final readonly class CancelPaymentHandler
     }
 
     /**
-     * @throws PaymentNotFoundException
      * @throws PaymentAlreadyExistsException
      */
     public function __invoke(CancelPayment $command): void
     {
         $id = PaymentId::fromString($command->id);
 
-        if (!$this->repository->has($id)) {
+        try {
+            $orderPayment = $this->repository->load($id);
+        } catch (PaymentNotFoundException) {
             return;
         }
 
-        $orderPayment = $this->repository->load($id);
         $orderPayment->cancel($this->clock->now());
         $this->repository->save($orderPayment);
     }
