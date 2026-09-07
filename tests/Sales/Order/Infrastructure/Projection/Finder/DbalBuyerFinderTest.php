@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
+use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
@@ -49,6 +50,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
             ],
         ];
         self::assertSame($builder['postalAddress']->toArray(), $shippingResult);
+        self::assertFalse($result->erasurePending);
     }
 
     #[Test]
@@ -65,6 +67,23 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNull($result->shippingAddress);
+        self::assertFalse($result->erasurePending);
+    }
+
+    #[Test]
+    public function itFindsWithPendingErasure(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->create();
+        $this->store($buyer, $subject);
+
+        // When
+        $result = $this->finder->ofIdOrNull($buyer->id->toString());
+
+        // Then
+        self::assertInstanceOf(BuyerResult::class, $result);
+        self::assertTrue($result->erasurePending);
     }
 
     #[Test]

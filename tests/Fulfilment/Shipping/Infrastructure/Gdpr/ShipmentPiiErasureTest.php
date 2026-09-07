@@ -6,13 +6,11 @@ namespace Fulfilment\Tests\Shipping\Infrastructure\Gdpr;
 
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
-use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
@@ -30,9 +28,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->service(DataSubjectEraserProcessor::class))(
-            Message::create(new StubDataSubjectErased($builder['buyerId'])),
-        );
+        $this->service(CipherKeyStore::class)->removeWithSubjectId($builder['buyerId']);
 
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);

@@ -6,13 +6,15 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Buyer\Domain\Buyer;
+use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerPendingErasureException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -29,9 +31,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPlaces(): void
     {
         // Given
-        $buyerBuilder = BuyerBuilder::new()
-            ->withEmail('buyer@example.com')
-            ->postalAddressDefined();
+        $buyerBuilder = BuyerBuilder::new()->postalAddressDefined();
         $buyer = $buyerBuilder->create();
         $payerBuilder = PayerBuilder::new()
             ->withId($buyer->id->toString())
@@ -73,7 +73,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->withEmail('buyer@example.com')->erased()->create();
+        $buyer = BuyerBuilder::new()->erased()->create();
         $this->store($buyer);
 
         // Then
@@ -84,11 +84,27 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenBuyerPendingErasure(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $buyer = BuyerBuilder::new()->withId($identityId)->create();
+        $subject = SubjectBuilder::new()->withId($identityId)->create();
+        $this->store($buyer, $subject);
+
+        // Then
+        $this->expectException(BuyerPendingErasureException::class);
+
+        // When
+        $this->dispatch(new PlaceOrder(OrderId::generate()->toString(), $buyer->id->toString(), $this->lines()));
+    }
+
+    #[Test]
     #[DataProvider('provideIncompleteAddresses')]
     public function itFailsWhenBuyerAddressesNotCompleted(bool $withShippingAddress, bool $withBillingAddress): void
     {
         // Given
-        $buyerBuilder = BuyerBuilder::new()->withEmail('buyer@example.com');
+        $buyerBuilder = BuyerBuilder::new();
         if ($withShippingAddress) {
             $buyerBuilder = $buyerBuilder->postalAddressDefined();
         }
@@ -124,7 +140,6 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $buyer = BuyerBuilder::new()
-            ->withEmail('buyer@example.com')
             ->postalAddressDefined()
             ->create();
         $this->store($buyer);
@@ -140,7 +155,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductNotAvailable(): void
     {
         // Given
-        $buyer = $this->registeredBuyer('buyer@example.com');
+        $buyer = BuyerBuilder::new()->postalAddressDefined()->create();
+        $payer = PayerBuilder::new()->withId($buyer->id->toString())->postalAddressDefined()->create();
+        $this->store($buyer, $payer);
 
         // Then
         $this->expectException(OutdatedOrderException::class);
@@ -157,7 +174,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductChanged(): void
     {
         // Given
-        $buyer = $this->registeredBuyer('buyer@example.com');
+        $buyer = BuyerBuilder::new()->postalAddressDefined()->create();
+        $payer = PayerBuilder::new()->withId($buyer->id->toString())->postalAddressDefined()->create();
+        $this->store($buyer, $payer);
         $label = ProductBuilder::sample('label');
         $unitPrice = ProductBuilder::sample('unitPrice');
         $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
@@ -201,21 +220,6 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     private function totalAmountInCents(array $lines): int
     {
         return array_sum(array_map(static fn (array $line): int => $line['quantity'] * $line['unitPriceInCents'], $lines));
-    }
-
-    private function registeredBuyer(string $email): Buyer
-    {
-        $buyer = BuyerBuilder::new()
-            ->withEmail($email)
-            ->postalAddressDefined()
-            ->create();
-        $payer = PayerBuilder::new()
-            ->withId($buyer->id->toString())
-            ->postalAddressDefined()
-            ->create();
-        $this->store($buyer, $payer);
-
-        return $buyer;
     }
 
     private function orderOf(string $id): Order
