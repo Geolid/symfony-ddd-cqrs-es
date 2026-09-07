@@ -8,8 +8,8 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedValueObjectSentinel;
 
 #[Event('iam.authentication.password_credential.defined')]
 final readonly class PasswordCredentialDefined

@@ -8,8 +8,8 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Sales\Buyer\Domain\ValueObject\Email;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedValueObjectSentinel;
 
 #[Event('sales.buyer.buyer.registered')]
 final readonly class BuyerRegistered

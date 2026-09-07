@@ -13,8 +13,8 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedValueObjectSentinel;
 
 final class EventTest
 {

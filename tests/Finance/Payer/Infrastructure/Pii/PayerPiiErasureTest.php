@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Finance\Tests\Payer\Infrastructure\Gdpr;
+namespace Finance\Tests\Payer\Infrastructure\Pii;
 
 use Finance\Payer\Application\IntegrationEvent\PayerPostalAddressDefined\PayerPostalAddressDefinedIntegrationEvent;
 use Finance\Payer\Domain\Event\PayerPostalAddressDefined;

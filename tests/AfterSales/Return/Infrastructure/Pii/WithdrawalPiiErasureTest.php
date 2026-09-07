@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AfterSales\Tests\Return\Infrastructure\Gdpr;
+namespace AfterSales\Tests\Return\Infrastructure\Pii;
 
 use AfterSales\Return\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
 use AfterSales\Return\Domain\Event\WithdrawalRequested;

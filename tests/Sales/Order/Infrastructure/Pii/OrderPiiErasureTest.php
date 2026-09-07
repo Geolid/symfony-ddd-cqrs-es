@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Infrastructure\Gdpr;
+namespace Sales\Tests\Order\Infrastructure\Pii;
 
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;

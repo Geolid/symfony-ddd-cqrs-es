@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Buyer\Infrastructure\Gdpr;
+namespace Sales\Tests\Buyer\Infrastructure\Pii;
 
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -11,7 +11,7 @@ use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPost
 use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
