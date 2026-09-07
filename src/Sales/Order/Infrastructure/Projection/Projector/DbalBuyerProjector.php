@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Projection\Projector;
 
-use Compliance\Erasure\Application\IntegrationEvent\SubjectErased\SubjectErasedIntegrationEvent;
 use Compliance\Erasure\Application\IntegrationEvent\SubjectErasureCancelled\SubjectErasureCancelledIntegrationEvent;
 use Compliance\Erasure\Application\IntegrationEvent\SubjectErasureRequested\SubjectErasureRequestedIntegrationEvent;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
@@ -67,17 +66,6 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
 
     #[Subscribe(SubjectErasureCancelledIntegrationEvent::class)]
     public function onSubjectErasureCancelledIntegrationEvent(SubjectErasureCancelledIntegrationEvent $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            ['erasure_pending' => false],
-            ['buyer_id' => $event->subjectId],
-            ['erasure_pending' => Types::BOOLEAN],
-        );
-    }
-
-    #[Subscribe(SubjectErasedIntegrationEvent::class)]
-    public function onSubjectErasedIntegrationEvent(SubjectErasedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,

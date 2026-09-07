@@ -14,9 +14,10 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
- * @phpstan-type Row array{status: string, requested_at: string|null}
+ * @phpstan-type Row array{status: string, requested_at: string|null, active_hold_count: int|string}
  */
 final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
 {
@@ -34,6 +35,51 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($id->toString());
         self::assertNotFalse($row);
         self::assertSame(SubjectStatus::RETAINED->value, $row['status']);
+    }
+
+    #[Test]
+    public function itProjectsOnSubjectErasureHoldPlaced(): void
+    {
+        // Given
+        $other = SubjectBuilder::new()->erasureHoldPlaced()->erasureHoldPlaced()->create();
+        $this->store($other);
+        $subject = SubjectBuilder::new()->erasureHoldPlaced()->create();
+
+        // When
+        $this->store($subject);
+
+        // Then
+        $row = $this->fetchRow($subject->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(1, (int) $row['active_hold_count']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(2, (int) $otherRow['active_hold_count']);
+    }
+
+    #[Test]
+    public function itProjectsOnSubjectErasureHoldLifted(): void
+    {
+        // Given
+        $other = SubjectBuilder::new()->erasureHoldPlaced()->erasureHoldPlaced()->create();
+        $this->store($other);
+        $builder = SubjectBuilder::new()->erasureHoldPlaced()->erasureHoldPlaced();
+        Assert::notEmpty($builder['activeHolds']);
+        $reference = array_first($builder['activeHolds'])->reference;
+        $subject = $builder->erasureHoldLifted($reference)->create();
+
+        // When
+        $this->store($subject);
+
+        // Then
+        $row = $this->fetchRow($subject->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(1, (int) $row['active_hold_count']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(2, (int) $otherRow['active_hold_count']);
     }
 
     #[Test]
@@ -102,7 +148,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT status, requested_at FROM %s WHERE id = :id', DbalSubjectProjector::TABLE),
+            \sprintf('SELECT status, requested_at, active_hold_count FROM %s WHERE id = :id', DbalSubjectProjector::TABLE),
             ['id' => $id],
         );
     }

@@ -132,29 +132,6 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertTrue((bool) $otherRow['erasure_pending']);
     }
 
-    #[Test]
-    public function itProjectsOnSubjectErasedIntegrationEvent(): void
-    {
-        // Given
-        $other = BuyerBuilder::new()->create();
-        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->erasureRequested()->create();
-        $this->store($other, $otherSubject);
-        $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->erased()->create();
-
-        // When
-        $this->store($buyer, $subject);
-
-        // Then
-        $row = $this->fetchRow($buyer->id->toString());
-        self::assertNotFalse($row);
-        self::assertFalse((bool) $row['erasure_pending']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertTrue((bool) $otherRow['erasure_pending']);
-    }
-
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */

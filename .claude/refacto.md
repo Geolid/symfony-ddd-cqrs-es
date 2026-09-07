@@ -2,6 +2,34 @@
 
 Document de travail : remise en question du découpage `src/*/*`. Ne pas confondre avec `GOAL.md` (référence as-built) ou `TODO.md` (backlog) — ce fichier ne contient que l'analyse de frontières, pas l'état des états/transitions.
 
+## Périmètre du showcase (2026-09-07) — analyse seule, aucune modification exécutée
+
+Décision de l'utilisateur, pas encore exécutée en code : le but du showcase est de démontrer ES/Onion/DDD/CQRS sur le même domaine exposé par plusieurs DM — pas de couvrir l'exhaustivité d'un vrai e-commerce. Périmètre final visé : catalogue de produit, `Cart`, `Order`, une Compliance qui bloque l'effacement tant que des commandes existent, un cron qui simule la préparation et efface le compte au bout de 30 jours, l'annulation d'une commande tant qu'elle n'a pas commencé à être préparée, un paiement annulé sauf si déjà préparé (capturé), la livraison, et IAM complet (rôles + auth API/password). **`AfterSales.Return`/`Withdrawal` et le leg retour de `Shipment` n'entrent pas dans ce périmètre** — vérifié : ces deux BC ne démontrent aucun patron architectural que Order/Payment/Shipping/Compliance.Erasure ne démontrent déjà (même forme de state machine, mêmes Policy/Integration Event déjà vus ailleurs) ; les garder incomplets (sans jamais aller au remboursement partiel) ne rajoute que du code à maintenir, pas de valeur pédagogique.
+
+### À retirer entièrement (vérifié exhaustivement par grep, rien d'assumé)
+
+- **`src/AfterSales/Return/` en entier** (`Withdrawal`, toutes ses Commands/Events/Policies/Finders/Projectors/Infrastructure) + `tests/AfterSales/Return/`.
+- **Le leg retour de `Fulfilment.Shipping`** : `ShipmentDirection` (enum Domain + Application), `RequestReturnShipmentOnWithdrawalRequested`. Une fois `AfterSales.Return` retiré, plus rien n'émet `WithdrawalRequestedIntegrationEvent` — cette policy et l'enum de direction deviennent orphelines.
+- **Policies dans les BC qui réagissaient à `Withdrawal`** : `InitiateRefundOnWithdrawalApproved` (`Finance.Refund`), `RequestOrderReturnOnWithdrawalRequested`/`DisputeOrderOnWithdrawalRejected`/`ReturnOrderOnWithdrawalApproved` (`Sales.Order`).
+- **`OrderState`/`OrderStatus`** perdent `RETURN_REQUESTED`/`RETURNED`/`DISPUTED` — plus de retour à représenter côté `Order`.
+- **`deptrac_bc.yaml`** : layer `AfterSales.Return` retiré, et retiré des rulesets de `Sales.Order`, `Fulfilment.Shipping`, `Finance.Payment`, `Finance.Refund` (les 4 le référencent aujourd'hui).
+
+### `Fulfilment.Shipping` — seul `ShipmentDirection` disparaît, l'aggregate ne se renomme pas
+
+Corrigé après une première erreur (voir Note méthodologique en fin de document) : `Shipment` reste `Shipment`. Le nom n'a jamais affirmé "je gère les deux sens" — c'était le champ `ShipmentDirection` qui l'affirmait, explicitement. Une fois ce champ retiré, l'aggregate redevient un nom générique et correct ("un mouvement physique tracké"), exactement comme `Order`/`Payment` n'ont jamais eu besoin d'un mot pour dire "je ne gère qu'un sens". `origin`/`destination` restent (un futur multi-entrepôt reste possible sans lien avec le retour). Un futur besoin de retour, s'il revient un jour, aurait de toute façon son propre nom distinct (`Withdrawal`, ou autre), jamais un renommage préventif de `Shipment` aujourd'hui.
+
+### `Finance.Refund` reste un aggregate séparé de `Payment` — pas remis en cause par le retrait du retour
+
+Corrigé après une première erreur (idem) : la multiplicité réelle d'un remboursement (un paiement capturé peut légitimement en subir plusieurs dans le temps — retour partiel, mais aussi geste commercial, ajustement) est une propriété du concept `Refund` lui-même, pas de `Withdrawal` qui n'était qu'UN déclencheur parmi d'autres possibles. Retirer `Withdrawal` retire un déclencheur ; ça ne change rien à ce que `Refund` EST. Verdict de la section `Finance.Payment`/`Finance.Refund` plus bas inchangé : fusion en 1 BC, 2 aggregates.
+
+### Rappel : `Sales.Cart` reste à construire (conception déjà actée plus bas)
+
+`Cart`/`CartLine` (Entity, mutable, `checkout()` gardien de fraîcheur) — voir section `Sales.Order`/`OrderLine`/`Cart` plus bas pour le détail complet. Seule vraie question encore ouverte : `Cart` mérite-t-il sa propre BC (`Sales.Cart`, sœur de `Sales.Buyer`/`Sales.Order`) ou reste-t-il un aggregate à l'intérieur de `Sales.Order` ? Pas encore appliqué le test à 4 critères dessus explicitement.
+
+### `OrderLine` reste un Entity — pas remis en cause par le retrait du retour
+
+Corrigé après une première erreur (idem) : la classification Entity vs VO d'`OrderLine` s'est décidée sur ce que le concept EST (une ligne de commande a une identité locale, indépendamment de qui la lit aujourd'hui), jamais sur l'existence d'une commande d'amendement dans ce showcase. Que ce showcase construise ou non l'amendement post-paiement ne change rien à la nature du concept. Verdict de la section `Sales.Order`/`OrderLine`/`Cart` plus bas inchangé.
+
 ## Critères d'évaluation d'une frontière de BC
 
 Une frontière de BC se juge sur la théorie DDD/CQRS/ES, jamais sur la forme du code existant ou une convention déjà écrite. Quatre critères, à appliquer ensemble :
@@ -248,6 +276,60 @@ Corrigé aussi : `erasureHoldLifted()`'s `liftedAt` par défaut s'ancre sur `$ho
 
 ### Note méthodologique
 Une itération de cette conception a justifié un choix (`Order::HOLD_SOURCE_TYPE`) en citant qu'une convention de `.claude/rules/domain.md` "couvrait déjà ce cas" — erreur signalée en session : les rules sont extraites du code, pas une source de vérité théorique indépendante. Toute conclusion de ce document s'appuie sur la théorie DDD/CQRS/ES et la structure réelle du code vérifiée en session, jamais sur le texte d'une règle comme justification en soi.
+
+**Récidive (2026-09-07), dans la section "Périmètre du showcase" elle-même** : au moment même d'écrire le principe "restriction de scope ≠ dégradation de la modélisation", il a été violé dans le même message — `Finance.Refund` et `OrderLine` présentés comme "questions ouvertes" au seul motif que ce showcase ne construira pas le remboursement partiel/l'amendement, exactement le travers que le principe interdit. Corrigé, tranché : les deux restent inchangés (voir sections dédiées). Renommage `Shipment`→`Delivery` proposé au même moment, justifié à tort par "laisser la place à un futur `Return`" — `return` est un mot-clé PHP réservé, cette classe n'aurait de toute façon jamais pu exister sous ce nom ; sans cette fausse prémisse, aucune raison réelle de renommer ne restait. Retiré. Signalé par l'utilisateur, pas détecté en session.
+
+## Conception : `Sales.Order` / `OrderLine` / futur `Sales.Cart`
+
+Déclenché par une question de l'utilisateur : `OrderLine` (`Domain/ValueObject/OrderLine.php`) est-il vraiment un VO, ou un faux VO qui simplifie un problème de conception non résolu ? Section reconstruite le 2026-09-07 après une perte accidentelle (édition concurrente ayant écrasé une version antérieure du fichier).
+
+### `OrderLine` : Entity, sur le principe, pas sur l'usage actuel
+
+Vérifié dans le code : `Order::place()` prend `list<OrderLine>` une fois, calcule `totalAmountInCents` par un simple fold, et **ne garde même pas `$lines` comme propriété de l'aggregate** — seul le total dérivé survit dans l'état. Aucune méthode `addLine()`/`removeLine()` n'existe. Première réponse (erronée) : `OrderLine` reste VO parce que rien ne le mute aujourd'hui. **Corrigé après contestation de l'utilisateur** : le test Entity-vs-VO d'Evans n'est jamais "est-ce mutable aujourd'hui" — c'est "le domaine a-t-il besoin de référencer CETTE occurrence précise, distincte d'une autre identique en valeur, à travers le temps ?". Deux lignes de même produit/quantité dans une commande, si un retour partiel par ligne existe un jour, doivent rester individuellement adressables — impossible sans identité propre. Classer Entity/VO sur "y a-t-il un appelant aujourd'hui" est la même erreur que celle déjà commise sur `Subject`/`register()` : juger la conception sur le code actuel plutôt que sur le concept.
+
+Retenu : `OrderLine` mérite une identité locale (position/séquence dans la commande, pas nécessairement un UUID globalement significatif) — mais les **commandes** `AddOrderLine`/`RemoveOrderLine` restent volontairement non construites tant qu'aucun besoin réel ne les réclame (vrai YAGNI, sur la capacité, pas sur la donnée). `Order` doit conserver `list<OrderLine> $lines` comme véritable état — vérifié : `OrderPlaced` porte déjà `list<OrderLine> $lines` en permanence dans le store, donc ajouter la propriété et la peupler dans `applyPlaced()` ne demande aucun changement d'event, aucun upcaster.
+
+### Le calcul du total : pas un Domain Service, la résolution du prix reste à la frontière Application
+
+Question de l'utilisateur : le total devrait-il être calculé par un Domain Service, instancié par l'aggregate ? Nuancé : un Domain Service se justifie pour une opération ayant besoin de collaborateurs hors de ce que l'Entity/VO possède déjà (taxes, promotions, synchronisation catalogue) — pas pour sommer des `Money` déjà résolus. Le principe déjà validé sur `Subject` s'applique : un fait pouvant changer demain pour la même donnée (le prix catalogue) ne rentre jamais dans une transition, il se résout avant, à la frontière Application — ce que `PlaceOrderHandler` fait déjà en lisant `ListedProductFinderInterface` avant d'appeler `Order::place()`. Une fois les prix résolus/figés dans chaque `OrderLine`, sommer reste un calcul pur, sans collaborateur — pas de Domain Service nécessaire pour ça spécifiquement.
+
+### `PriceIntegrityService` proposé puis rejeté : patcher un trou avec un autre trou
+
+Constat initial : `PlaceOrderHandler::resolveLine()` compare le prix **soumis par le client** au prix catalogue courant, rejette (`OutdatedOrderException`) si ça diverge. Proposition initiale : extraire cette comparaison en Domain Service nommé (`PriceIntegrityService`). **Rejetée par l'utilisateur, à raison** : nommer/extraire la comparaison ne supprime pas le vrai trou — tant qu'un champ `unitPriceInCents` existe dans le contrat de `PlaceOrder` (vérifié : il y est), n'importe quel appelant peut relire le prix courant et le soumettre tel quel, validant trivialement n'importe quelle vérification côté domaine. Un service mieux nommé autour d'une entrée non fiable reste une entrée non fiable.
+
+Vérifié dans `apps-pre-freeze` (`apps/web/src/Session/CatalogSnapshot.php`) : le vrai mécanisme existant capture le prix affiché en session à la visite ; le formulaire de checkout ne soumet que `productId`+`quantity`, jamais de prix — le DM Web synthétise lui-même le prix depuis la snapshot. Le check domaine actuel (submitted vs courant) protège donc contre la **péremption** d'un appelant honnête (le DM Web), pas contre la **fraude** d'un appelant qui contrôlerait directement le prix — et rien dans le domaine ne distingue les deux cas ; un futur DM API/CLI pourrait soumettre n'importe quel prix tant qu'il correspond au prix courant.
+
+Deuxième proposition (rejetée aussi, par l'utilisateur) : supprimer le prix du contrat de `PlaceOrder`, résoudre inconditionnellement depuis le catalogue courant, déplacer l'alerte de péremption dans une Query non contraignante avant confirmation. Rejetée parce que "accepter silencieusement" prive `Order` de tout rôle de gardien sur sa propre invariant — la lecture soigneuse de la projection Catalog devient décorative si rien n'est jamais rejeté dessus.
+
+### Retenu : `Sales.Cart`, nouvel aggregate, gardien réel de la fraîcheur
+
+Un `Cart` (aggregate `Sales`, propriété du Buyer) résout le problème sans les deux trous précédents :
+- porte le cycle de vie mutable (`addLine()`/`removeLine()`/`changeQuantity()`) — la mutabilité appartient réellement à la phase pré-achat, jamais après.
+- se tient à jour en réagissant réellement au catalogue (Policy sur `ProductRepriced`/`ProductDelisted`, Integration Events de `Catalog.Listing`) — la fraîcheur devient un état maintenu en continu, pas un artefact de session d'un seul DM.
+- `checkout()` est un vrai guard d'aggregate (même patron que `CanTransitionToSpecification` ailleurs dans ce repo) : refuse si une ligne est devenue invalide — pas une suggestion d'UI contournable.
+
+`PlaceOrder` devient `PlaceOrder(cartId, buyerId)` — plus aucune ligne ni prix soumis. `Order::place()` se construit depuis l'état déjà validé du `Cart` au checkout.
+
+### États de `Cart` : pas de "PÉRIMÉ"/"ABANDONNÉ" — même raisonnement déjà appliqué deux fois à `Withdrawal`/`Subject`
+
+Question de l'utilisateur : `Cart` a-t-il besoin d'un état "périmé"/"abandonné", une durée de vie ? Non — un fait purement temporel sans conséquence distincte se calcule en direct à la lecture, jamais stocké comme transition d'aggregate, exactement le principe déjà énoncé dans `GOAL.md` pour `CanRequestWithdrawal` : *"Un check TTL/expiration se calcule en live à la lecture, jamais stocké — le matérialiser demanderait un mécanisme actif pour le recalculer périodiquement, on réintroduirait le job planifié qu'on a précisément éliminé."* Le test décisif : un panier périmé doit-il refuser quelque chose que `checkout()` (guard de fraîcheur des lignes) ne refuse pas déjà ? Non — l'âge du panier n'est pas le bon signal, la fraîcheur des lignes l'est déjà plus précisément.
+
+`Cart` n'a donc que deux états réels : ouvert (mutable) → checkout (terminal, devient `Order`).
+
+Hypothèse soulevée : un cron quotidien de relance email ("n'oublie pas ton panier") reste possible sans contredire ça, à condition de ne pas confondre "état" et "fait enregistré". Sans rien enregistrer, un cron interrogeant "paniers inactifs depuis 24h" toutes les 24h renverrait le même panier indéfiniment (spam) — pas un problème d'état du panier, un problème d'idempotence de l'action d'envoi. Solution dans le même patron déjà établi (`ListSubjectsDueForErasureHandler`) : le cron interroge en live "paniers ouverts, inactifs, jamais relancés (ou relancés il y a plus de X jours)", dispatch une commande par panier éligible, et si l'envoi réussit, `Cart` enregistre un fait horodaté (`Cart::remind()` → `CartAbandonmentReminderSent`, ou un simple `lastRemindedAt`) — jamais une transition d'état qui bloquerait `checkout()`, juste une donnée lue par la prochaine exécution du cron. Ce fait mérite sa place par le même test que `domain.md` applique déjà aux champs d'aggregate : un accès légitime (la requête du cron) suffit, pas besoin d'être une garde. Hors périmètre du showcase actuel — juste vérifié que la modélisation ne l'empêche pas.
+
+### Réconciliation : `Cart` et l'identité d'`OrderLine` répondent à deux questions différentes, pas une seule
+
+Point de friction relevé par l'utilisateur ("on tourne en rond") : `Cart` semblait annuler le besoin d'identité sur `OrderLine`. Distingué : `Cart`/`CartLine` répond à *avant l'achat* (fraîcheur, édition libre) ; l'identité sur `OrderLine` répond à *après l'achat* (un futur amendement SAV/retour partiel sur une commande déjà validée) — `Cart` a fini son rôle au moment du `checkout()`, il ne fournit rien pour l'après. Les deux se cumulent, aucune contradiction : `CartLine` (Entity, mutable librement) avant, `OrderLine` (Entity, identité conservée mais aucune commande de mutation construite) après.
+
+### Chantiers ouverts, non résolus par ce qui précède — vérifié, "amender une commande payée" n'est PAS juste "ajouter une commande"
+
+Question directe de l'utilisateur : la possibilité d'amendement reste-t-elle "juste extensible en ajoutant des commands plus tard" ? Non — vérifié, deux aggregates déjà connus comme sous-dimensionnés bloquent réellement, indépendamment de la forme de données `OrderLine` :
+
+- **`Finance.Refund` ne supporte pas le remboursement partiel/multiple** — déjà noté dans l'analyse Payment/Refund plus haut : `pendingRefundId` singulier, `REFUNDING` exclusif sur `Payment`. Amender une ligne d'une commande payée implique de rembourser exactement le montant de cette ligne tout en gardant le reste capturé — aucun mécanisme actuel ne sait représenter "combien reste encore remboursable" ni gérer plusieurs remboursements partiels contre un seul paiement.
+- **`Fulfilment.Shipping`/`Sales.Order` n'ont pas de granularité par ligne** — un seul `Shipment` par `Order` aujourd'hui (nuance : ce chantier concernait le retour, désormais hors périmètre — voir "Périmètre du showcase" en tête de document ; reste vrai pour un hypothétique amendement futur qui devrait scinder une expédition déjà partie).
+
+Le fix `OrderLine`/`$lines` reste correct et nécessaire (il évite de fermer la porte au niveau de la donnée), mais il n'est pas suffisant — ces chantiers restent entiers, non commencés, à traiter le jour où l'amendement post-paiement devient un besoin réel plutôt qu'une possibilité conceptuelle à préserver.
 
 ## Autres paires examinées (pour mémoire, non tranchées ici)
 
