@@ -167,6 +167,15 @@ final class SubjectTest extends AggregateRootTestCase
             ->then();
     }
 
+    #[Test]
+    public function itReleasesAfterHoldLifted(): void
+    {
+        $this
+            ->given($this->registered($this->requestedAt), $this->requested(), $this->placed(), $this->lifted())
+            ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
+            ->then(new SubjectErased($this->id->toString(), $this->releasedAt));
+    }
+
     protected function aggregateClass(): string
     {
         return Subject::class;

@@ -30,7 +30,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     public private(set) SubjectId $id;
     public private(set) SubjectState $state;
     private \DateTimeImmutable $requestedAt;
-    /** @var list<string> */
+    /** @var array<string, true> */
     private array $activeHolds = [];
 
     public static function place(SubjectId $id, HoldReference $reference, \DateTimeImmutable $placedAt): self
@@ -59,7 +59,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     public function placeHold(HoldReference $reference, \DateTimeImmutable $placedAt): void
     {
-        if (\in_array($reference->toString(), $this->activeHolds, true)) {
+        if (isset($this->activeHolds[$reference->toString()])) {
             return;
         }
 
@@ -72,7 +72,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
 
     public function liftHold(HoldReference $reference, \DateTimeImmutable $liftedAt): void
     {
-        if (!\in_array($reference->toString(), $this->activeHolds, true)) {
+        if (!isset($this->activeHolds[$reference->toString()])) {
             return;
         }
 
@@ -137,13 +137,13 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyPlaced(HoldPlaced $event): void
     {
-        $this->activeHolds[] = $event->reference;
+        $this->activeHolds[$event->reference] = true;
     }
 
     #[Apply]
     private function applyLifted(HoldLifted $event): void
     {
-        $this->activeHolds = array_values(array_diff($this->activeHolds, [$event->reference]));
+        unset($this->activeHolds[$event->reference]);
     }
 
     #[Apply]

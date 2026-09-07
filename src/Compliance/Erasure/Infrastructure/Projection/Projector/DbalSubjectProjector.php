@@ -35,7 +35,6 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
                 'requested_at' => null,
                 'active_hold_count' => 0,
             ],
-            ['requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -81,7 +80,6 @@ final readonly class DbalSubjectProjector extends AbstractDbalProjector
                 'requested_at' => null,
             ],
             ['id' => $event->id],
-            ['requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
