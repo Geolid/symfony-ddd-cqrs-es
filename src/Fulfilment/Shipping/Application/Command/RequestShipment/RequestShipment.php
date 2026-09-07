@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Command\RequestShipment;
 
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Shared\Application\Command\CommandInterface;
 
 final readonly class RequestShipment implements CommandInterface
@@ -15,8 +14,7 @@ final readonly class RequestShipment implements CommandInterface
      */
     public function __construct(
         public string $id,
-        public string $sourceId,
-        public ShipmentDirection $direction,
+        public string $orderId,
         public string $buyerId,
         public array $origin,
         public array $destination,

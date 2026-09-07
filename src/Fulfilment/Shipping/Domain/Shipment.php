@@ -13,7 +13,6 @@ use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
@@ -44,8 +43,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) ShipmentId $id;
-    public private(set) string $sourceId;
-    public private(set) ShipmentDirection $direction;
+    public private(set) string $orderId;
     public private(set) string $buyerId;
     public private(set) PostalAddress $origin;
     public private(set) PostalAddress $destination;
@@ -54,8 +52,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public static function request(
         ShipmentId $id,
-        string $sourceId,
-        ShipmentDirection $direction,
+        string $orderId,
         string $buyerId,
         PostalAddress $origin,
         PostalAddress $destination,
@@ -64,8 +61,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new ShipmentRequested(
             id: $id->toString(),
-            sourceId: $sourceId,
-            direction: $direction,
+            orderId: $orderId,
             buyerId: $buyerId,
             origin: $origin,
             destination: $destination,
@@ -179,8 +175,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRequested(ShipmentRequested $event): void
     {
         $this->id = ShipmentId::fromString($event->id);
-        $this->sourceId = $event->sourceId;
-        $this->direction = $event->direction;
+        $this->orderId = $event->orderId;
         $this->buyerId = $event->buyerId;
         $this->origin = $event->origin;
         $this->destination = $event->destination;

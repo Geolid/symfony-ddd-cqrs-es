@@ -7,7 +7,6 @@ namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Finder;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
@@ -41,8 +40,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($builder['sourceId'], $result->sourceId);
-        self::assertSame(ShipmentDirection::OUTBOUND, $result->direction);
+        self::assertSame($builder['orderId'], $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
         self::assertSame($builder['destination']->recipientName, $result->destination->recipientName);
@@ -72,7 +70,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($builder['sourceId'], $result->sourceId);
+        self::assertSame($builder['orderId'], $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
         self::assertNotNull($result->dispatchedAt);
@@ -90,7 +88,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsBySourceId(): void
+    public function itFindsByOrder(): void
     {
         // Given
         $other = ShipmentBuilder::new()->create();
@@ -99,8 +97,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $shipment);
 
         // When
-        $found = $this->finder->ofSourceOrNull($builder['sourceId']);
-        $notFound = $this->finder->ofSourceOrNull(ShipmentBuilder::sample('sourceId'));
+        $found = $this->finder->ofOrderOrNull($builder['orderId']);
+        $notFound = $this->finder->ofOrderOrNull(ShipmentBuilder::sample('orderId'));
 
         // Then
         self::assertNotNull($found);

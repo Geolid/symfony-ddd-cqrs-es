@@ -8,7 +8,6 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipping\Domain\Event\ShipmentDelivered;
@@ -34,8 +33,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'source_id' => $event->sourceId,
-                'direction' => ShipmentDirection::from($event->direction->value)->value,
+                'order_id' => $event->orderId,
                 'status' => ShipmentStatus::REQUESTED->value,
                 'origin' => SnakeCaseKeys::from($event->origin->toArray()),
                 'destination' => SnakeCaseKeys::from($event->destination->toArray()),
@@ -119,8 +117,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('source_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('direction', Types::STRING, ['length' => 8]);
+        $table->addColumn('order_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('origin', Types::JSON);
         $table->addColumn('destination', Types::JSON);
@@ -135,7 +132,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['source_id'], 'fulfilment_shipping_source_id_idx');
+        $table->addIndex(['order_id'], 'fulfilment_shipping_order_id_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
     }
 }

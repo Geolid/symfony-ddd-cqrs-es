@@ -37,7 +37,7 @@ final readonly class CapturePaymentOnShipmentPrepared
     #[Subscribe(ShipmentPreparedIntegrationEvent::class)]
     public function __invoke(ShipmentPreparedIntegrationEvent $event): void
     {
-        $id = PaymentId::forOrder($event->sourceId);
+        $id = PaymentId::forOrder($event->orderId);
 
         if (!$this->repository->has($id)) {
             return;
@@ -70,6 +70,6 @@ final readonly class CapturePaymentOnShipmentPrepared
         $event = $message->event();
         \assert($event instanceof ShipmentPreparedIntegrationEvent);
 
-        $this->commandBus->dispatch(new FailPayment(PaymentId::forOrder($event->sourceId)->toString()));
+        $this->commandBus->dispatch(new FailPayment(PaymentId::forOrder($event->orderId)->toString()));
     }
 }

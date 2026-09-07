@@ -16,10 +16,6 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Fulfilment/Shipping/.*' }
 
-    - name: AfterSales.Return
-      collectors:
-        - { type: directory, value: 'src/AfterSales/Return/.*' }
-
     - name: Finance.Payment
       collectors:
         - { type: directory, value: 'src/Finance/Payment/.*' }
@@ -69,12 +65,11 @@ deptrac:
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
     Sales.Buyer:      [ Iam.Identity, Shared, Vendors ]
-    Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, AfterSales.Return, Finance.Payment, Finance.Payer, Compliance.Erasure, Shared, Vendors ]
-    Fulfilment.Shipping: [ Sales.Order, AfterSales.Return, Finance.Payment, Shared, Vendors ]
-    AfterSales.Return: [ Sales.Order, Fulfilment.Shipping, Shared, Vendors ]
-    Finance.Payment: [ Sales.Order, Fulfilment.Shipping, AfterSales.Return, Finance.Refund, Shared, Vendors ]
+    Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Finance.Payer, Compliance.Erasure, Shared, Vendors ]
+    Fulfilment.Shipping: [ Sales.Order, Finance.Payment, Shared, Vendors ]
+    Finance.Payment: [ Sales.Order, Fulfilment.Shipping, Finance.Refund, Shared, Vendors ]
     Finance.Payer: [ Iam.Identity, Shared, Vendors ]
-    Finance.Refund: [ Finance.Payment, AfterSales.Return, Shared, Vendors ]
+    Finance.Refund: [ Finance.Payment, Shared, Vendors ]
     Iam.Identity:        [ Compliance.Erasure, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]

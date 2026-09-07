@@ -18,9 +18,6 @@ final readonly class OrderResult
         public ?\DateTimeImmutable $preparedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
-        public ?\DateTimeImmutable $returnRequestedAt,
-        public ?\DateTimeImmutable $returnedAt,
-        public ?\DateTimeImmutable $disputedAt,
         public ?\DateTimeImmutable $cancelledAt,
     ) {
     }

@@ -26,12 +26,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPending(): void
     {
         // Given
-        $sourceId = ShipmentBuilder::sample('sourceId');
-        $shipment = ShipmentBuilder::new()->withSourceId($sourceId)->create();
+        $orderId = ShipmentBuilder::sample('orderId');
+        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($sourceId));
+        $this->dispatch(new CancelShipment($orderId));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -43,12 +43,12 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $sourceId = ShipmentBuilder::sample('sourceId');
-        $shipment = ShipmentBuilder::new()->withSourceId($sourceId)->prepared()->manifested()->dispatched()->delivered()->create();
+        $orderId = ShipmentBuilder::sample('orderId');
+        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
-        $this->dispatch(new CancelShipment($sourceId));
+        $this->dispatch(new CancelShipment($orderId));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -59,13 +59,13 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $sourceId = ShipmentBuilder::sample('sourceId');
+        $orderId = ShipmentBuilder::sample('orderId');
 
         // When
-        $this->dispatch(new CancelShipment($sourceId));
+        $this->dispatch(new CancelShipment($orderId));
 
         // Then
-        $result = $this->finder->ofSourceOrNull($sourceId);
+        $result = $this->finder->ofOrderOrNull($orderId);
         self::assertNull($result);
     }
 }

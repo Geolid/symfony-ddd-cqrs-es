@@ -12,7 +12,6 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifest\ShipmentManifester;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -49,33 +48,13 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderBuilder::new()->create();
         $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->captured()->create();
-        $shipmentBuilder = ShipmentBuilder::new()->withSourceId($order->id->toString())->prepared();
+        $shipmentBuilder = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared();
         $shipment = $shipmentBuilder->create();
         $this->store($order, $payment, $shipment);
         $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
         $this->carrier->expects(self::once())->method('manifest')
             ->with($shipment->id->toString(), $shipmentBuilder['origin'], $shipmentBuilder['destination'])
             ->willReturn($trackingNumber);
-
-        // When
-        $result = $this->service->manifest($shipment->id->toString());
-
-        // Then
-        self::assertSame($trackingNumber, $result);
-        $manifested = $this->finder->ofId($shipment->id->toString());
-        self::assertSame(ShipmentStatus::MANIFESTED, $manifested->status);
-        self::assertSame($trackingNumber, $manifested->trackingNumber);
-    }
-
-    #[Test]
-    public function itManifestsWhenReturn(): void
-    {
-        // Given
-        $shipmentBuilder = ShipmentBuilder::new()->withDirection(ShipmentDirection::RETURN)->prepared();
-        $shipment = $shipmentBuilder->create();
-        $this->store($shipment);
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
-        $this->carrier->expects(self::once())->method('manifest')->willReturn($trackingNumber);
 
         // When
         $result = $this->service->manifest($shipment->id->toString());
@@ -104,7 +83,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->withDirection(ShipmentDirection::RETURN)->prepared()->cancelled()->create();
+        $shipment = ShipmentBuilder::new()->prepared()->cancelled()->create();
         $this->store($shipment);
         $this->carrier->expects(self::never())->method('manifest');
 
@@ -121,7 +100,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderBuilder::new()->create();
         $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->create();
-        $shipment = ShipmentBuilder::new()->withSourceId($order->id->toString())->prepared()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);
         $this->carrier->expects(self::never())->method('manifest');
 

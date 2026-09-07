@@ -12,7 +12,7 @@ final readonly class ShipmentManifestedIntegrationEvent implements IntegrationEv
 {
     public function __construct(
         public string $shipmentId,
-        public string $sourceId,
+        public string $orderId,
         public string $trackingNumber,
     ) {
     }

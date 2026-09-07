@@ -29,10 +29,10 @@ final readonly class DeliverOrderOnShipmentDelivered
     #[Subscribe(ShipmentDeliveredIntegrationEvent::class)]
     public function __invoke(ShipmentDeliveredIntegrationEvent $event): void
     {
-        if (!$this->repository->has(OrderId::fromString($event->sourceId))) {
+        if (!$this->repository->has(OrderId::fromString($event->orderId))) {
             return;
         }
 
-        $this->commandBus->dispatch(new DeliverOrder($event->sourceId));
+        $this->commandBus->dispatch(new DeliverOrder($event->orderId));
     }
 }

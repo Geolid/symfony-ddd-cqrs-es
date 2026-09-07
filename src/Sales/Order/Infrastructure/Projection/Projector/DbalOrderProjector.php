@@ -15,11 +15,8 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
-use Sales\Order\Domain\Event\OrderDisputed;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
-use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Order\Domain\Event\OrderReturnRequested;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -128,48 +125,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(OrderReturnRequested::class)]
-    public function onOrderReturnRequested(OrderReturnRequested $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => OrderStatus::RETURN_REQUESTED->value,
-                'return_requested_at' => $event->requestedAt,
-            ],
-            ['id' => $event->id],
-            ['return_requested_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
-    #[Subscribe(OrderReturned::class)]
-    public function onOrderReturned(OrderReturned $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => OrderStatus::RETURNED->value,
-                'returned_at' => $event->returnedAt,
-            ],
-            ['id' => $event->id],
-            ['returned_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
-    #[Subscribe(OrderDisputed::class)]
-    public function onOrderDisputed(OrderDisputed $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => OrderStatus::DISPUTED->value,
-                'disputed_at' => $event->disputedAt,
-            ],
-            ['id' => $event->id],
-            ['disputed_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
     /**
      * @codeCoverageIgnore
      */
@@ -179,15 +134,12 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
-        $table->addColumn('status', Types::STRING, ['length' => 17]);
+        $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('prepared_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('return_requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('returned_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('disputed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

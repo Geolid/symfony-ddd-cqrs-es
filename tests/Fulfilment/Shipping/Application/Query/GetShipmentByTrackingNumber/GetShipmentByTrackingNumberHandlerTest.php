@@ -27,7 +27,7 @@ final class GetShipmentByTrackingNumberHandlerTest extends AbstractIntegrationTe
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($builder['sourceId'], $result->sourceId);
+        self::assertSame($builder['orderId'], $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
         self::assertNotNull($result->createdAt);

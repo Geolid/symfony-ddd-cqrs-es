@@ -28,7 +28,7 @@ final readonly class CancelShipmentHandler
      */
     public function __invoke(CancelShipment $command): void
     {
-        $result = $this->finder->ofSourceOrNull($command->sourceId);
+        $result = $this->finder->ofOrderOrNull($command->orderId);
 
         if (null === $result) {
             return;
