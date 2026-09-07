@@ -8,7 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
 
 #[Event('integration.after_sales.return.withdrawal.requested')]
 final readonly class WithdrawalRequestedIntegrationEvent implements IntegrationEventInterface

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipping\Infrastructure\Gdpr;
+namespace Fulfilment\Tests\Shipping\Infrastructure\Pii;
 
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\Domain\Gdpr;
+namespace Shared\Tests\Domain\Pii;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shared\Domain\Gdpr\ErasedFieldSentinel;
-use Shared\Domain\Gdpr\ErasedValueObjectSentinel;
+use Shared\Domain\Pii\ErasedFieldSentinel;
+use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Tests\Support\Double\DummyValueObject;
 
 final class ErasedValueObjectSentinelTest extends TestCase
