@@ -30,7 +30,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     public private(set) SubjectId $id;
     public private(set) SubjectState $state;
     private \DateTimeImmutable $requestedAt;
-    /** @var array<string, true> */
+    /** @var array<string, \DateTimeImmutable> */
     private array $activeHolds = [];
 
     public static function place(SubjectId $id, HoldReference $reference, \DateTimeImmutable $placedAt): self
@@ -137,7 +137,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyPlaced(HoldPlaced $event): void
     {
-        $this->activeHolds[$event->reference] = true;
+        $this->activeHolds[$event->reference] = $event->placedAt;
     }
 
     #[Apply]
