@@ -31,6 +31,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerPendingErasureException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
@@ -79,6 +80,7 @@ return static function (ContainerConfigurator $container): void {
             BuyerEmailAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            BuyerPendingErasureException::class => ['log_level' => 'info', 'status_code' => 422],
             OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],

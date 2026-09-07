@@ -29,6 +29,9 @@
         <testsuite name="catalog">
             <directory>tests/Catalog</directory>
         </testsuite>
+        <testsuite name="compliance">
+            <directory>tests/Compliance</directory>
+        </testsuite>
         <testsuite name="finance">
             <directory>tests/Finance</directory>
         </testsuite>

@@ -26,7 +26,7 @@ final class CancelPaymentOnOrderCancelledTest extends AbstractIntegrationTestCas
         $this->store($payment);
 
         // When
-        $this->trigger(CancelPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Clock::get()->now()));
+        $this->trigger(CancelPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Uuid::uuid7()->toString(), Clock::get()->now()));
 
         // Then
         $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);
@@ -40,7 +40,7 @@ final class CancelPaymentOnOrderCancelledTest extends AbstractIntegrationTestCas
         $orderId = Uuid::uuid7()->toString();
 
         // When
-        $this->trigger(CancelPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Clock::get()->now()));
+        $this->trigger(CancelPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Uuid::uuid7()->toString(), Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

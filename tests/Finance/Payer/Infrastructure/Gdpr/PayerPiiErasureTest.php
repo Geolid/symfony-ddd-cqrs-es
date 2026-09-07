@@ -5,21 +5,18 @@ declare(strict_types=1);
 namespace Finance\Tests\Payer\Infrastructure\Gdpr;
 
 use Finance\Payer\Application\IntegrationEvent\PayerPostalAddressDefined\PayerPostalAddressDefinedIntegrationEvent;
-use Finance\Payer\Domain\Event\PayerErased;
 use Finance\Payer\Domain\Event\PayerPostalAddressDefined;
 use Finance\Tests\Payer\Support\Builder\PayerBuilder;
-use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class PayerPiiErasureTest extends AbstractIntegrationTestCase
 {
-    private DataSubjectEraserProcessor $eraser;
+    private CipherKeyStore $cipherKeyStore;
 
     private EventSerializer $serializer;
 
@@ -27,7 +24,7 @@ final class PayerPiiErasureTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->cipherKeyStore = $this->service(CipherKeyStore::class);
         $this->serializer = $this->service(EventSerializer::class);
     }
 
@@ -45,7 +42,7 @@ final class PayerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new PayerErased($payer->id->toString(), Clock::get()->now())));
+        $this->cipherKeyStore->removeWithSubjectId($payer->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -67,7 +64,7 @@ final class PayerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new PayerErased($payer->id->toString(), Clock::get()->now())));
+        $this->cipherKeyStore->removeWithSubjectId($payer->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);

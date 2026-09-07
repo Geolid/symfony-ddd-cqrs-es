@@ -25,6 +25,6 @@ final class CancelShipmentOnOrderAbortedTest extends AbstractIntegrationTestCase
         $commandBus->expects(self::once())->method('dispatch')->with(new CancelShipment($orderId));
 
         // When
-        $this->trigger(CancelShipmentOnOrderAborted::class, new OrderAbortedIntegrationEvent($orderId, Clock::get()->now()));
+        $this->trigger(CancelShipmentOnOrderAborted::class, new OrderAbortedIntegrationEvent($orderId, Uuid::uuid7()->toString(), Clock::get()->now()));
     }
 }

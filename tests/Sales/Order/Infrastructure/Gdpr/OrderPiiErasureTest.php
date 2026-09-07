@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Gdpr;
 
-use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
@@ -14,13 +14,11 @@ use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 {
-    private DataSubjectEraserProcessor $eraser;
+    private CipherKeyStore $cipherKeyStore;
 
     private EventSerializer $serializer;
 
@@ -28,7 +26,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->cipherKeyStore = $this->service(CipherKeyStore::class);
         $this->serializer = $this->service(EventSerializer::class);
     }
 
@@ -47,7 +45,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($buyerId)));
+        $this->cipherKeyStore->removeWithSubjectId($buyerId);
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -70,7 +68,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($buyerId)));
+        $this->cipherKeyStore->removeWithSubjectId($buyerId);
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -91,7 +89,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($buyerId)));
+        $this->cipherKeyStore->removeWithSubjectId($buyerId);
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);

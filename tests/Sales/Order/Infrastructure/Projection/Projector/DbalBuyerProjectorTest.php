@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
+use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
@@ -15,6 +16,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
  * @phpstan-type Row array{
  *     buyer_id: string,
  *     shipping_address: string|null,
+ *     erasure_pending: bool,
  * }
  */
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
@@ -32,6 +34,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
         self::assertNull($row['shipping_address']);
+        self::assertFalse((bool) $row['erasure_pending']);
     }
 
     #[Test]
@@ -84,6 +87,51 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($other->id->toString(), $otherRow['buyer_id']);
     }
 
+    #[Test]
+    public function itProjectsOnSubjectErasureRequestedIntegrationEvent(): void
+    {
+        // Given
+        $other = BuyerBuilder::new()->create();
+        $this->store($other);
+        $buyer = BuyerBuilder::new()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->create();
+
+        // When
+        $this->store($buyer, $subject);
+
+        // Then
+        $row = $this->fetchRow($buyer->id->toString());
+        self::assertNotFalse($row);
+        self::assertTrue((bool) $row['erasure_pending']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertFalse((bool) $otherRow['erasure_pending']);
+    }
+
+    #[Test]
+    public function itProjectsOnSubjectErasureCancelledIntegrationEvent(): void
+    {
+        // Given
+        $other = BuyerBuilder::new()->create();
+        $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->erasureRequested()->create();
+        $this->store($other, $otherSubject);
+        $buyer = BuyerBuilder::new()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->erasureCancelled()->create();
+
+        // When
+        $this->store($buyer, $subject);
+
+        // Then
+        $row = $this->fetchRow($buyer->id->toString());
+        self::assertNotFalse($row);
+        self::assertFalse((bool) $row['erasure_pending']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertTrue((bool) $otherRow['erasure_pending']);
+    }
+
     /**
      * @return array{recipient_name: string, street: string, postal_code: string, city: string, country_code: string}
      */
@@ -105,7 +153,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, shipping_address FROM %s WHERE buyer_id = :buyerId',
+                'SELECT buyer_id, shipping_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['buyerId' => $buyerId],

@@ -7,18 +7,16 @@ namespace AfterSales\Tests\Return\Infrastructure\Gdpr;
 use AfterSales\Return\Application\IntegrationEvent\WithdrawalRequested\WithdrawalRequestedIntegrationEvent;
 use AfterSales\Return\Domain\Event\WithdrawalRequested;
 use AfterSales\Tests\Return\Support\Builder\WithdrawalBuilder;
-use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
-use Shared\Tests\Support\Double\StubDataSubjectErased;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
 {
-    private DataSubjectEraserProcessor $eraser;
+    private CipherKeyStore $cipherKeyStore;
 
     private EventSerializer $serializer;
 
@@ -26,7 +24,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->cipherKeyStore = $this->service(CipherKeyStore::class);
         $this->serializer = $this->service(EventSerializer::class);
     }
 
@@ -43,7 +41,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($builder['buyerId'])));
+        $this->cipherKeyStore->removeWithSubjectId($builder['buyerId']);
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -64,7 +62,7 @@ final class WithdrawalPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new StubDataSubjectErased($builder['buyerId'])));
+        $this->cipherKeyStore->removeWithSubjectId($builder['buyerId']);
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);

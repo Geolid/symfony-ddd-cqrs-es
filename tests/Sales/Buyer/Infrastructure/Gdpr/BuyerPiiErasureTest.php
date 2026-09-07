@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Buyer\Infrastructure\Gdpr;
 
-use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPostalAddressDefinedIntegrationEvent;
-use Sales\Buyer\Domain\Event\BuyerErased;
 use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\Gdpr\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Infrastructure\Gdpr\DataSubjectEraserProcessor;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
 {
-    private DataSubjectEraserProcessor $eraser;
+    private CipherKeyStore $cipherKeyStore;
 
     private EventSerializer $serializer;
 
@@ -29,7 +26,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->eraser = $this->service(DataSubjectEraserProcessor::class);
+        $this->cipherKeyStore = $this->service(CipherKeyStore::class);
         $this->serializer = $this->service(EventSerializer::class);
     }
 
@@ -45,7 +42,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new BuyerErased($buyer->id->toString(), Clock::get()->now())));
+        $this->cipherKeyStore->removeWithSubjectId($buyer->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -69,7 +66,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new BuyerErased($buyer->id->toString(), Clock::get()->now())));
+        $this->cipherKeyStore->removeWithSubjectId($buyer->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -91,7 +88,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        ($this->eraser)(Message::create(new BuyerErased($buyer->id->toString(), Clock::get()->now())));
+        $this->cipherKeyStore->removeWithSubjectId($buyer->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);

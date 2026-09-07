@@ -12,6 +12,7 @@ final readonly class OrderAbortedIntegrationEvent implements IntegrationEventInt
 {
     public function __construct(
         public string $orderId,
+        public string $buyerId,
         public \DateTimeImmutable $abortedAt,
     ) {
     }
