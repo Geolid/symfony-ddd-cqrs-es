@@ -26,7 +26,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsById(): void
     {
         // Given
-        $other = BuyerBuilder::new()->create();
+        $otherIdentityId = Uuid::uuid7()->toString();
+        $other = BuyerBuilder::new()->withIdentityId($otherIdentityId)->create();
         $this->store($other);
         $identityId = Uuid::uuid7()->toString();
         $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
@@ -34,11 +35,16 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 
         // When
         $result = $this->finder->ofIdOrNull($buyer->id->toString());
+        $otherResult = $this->finder->ofIdOrNull($other->id->toString());
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertSame($identityId, $result->identityId);
+
+        self::assertInstanceOf(BuyerResult::class, $otherResult);
+        self::assertSame($other->id->toString(), $otherResult->buyerId);
+        self::assertSame($otherIdentityId, $otherResult->identityId);
     }
 
     #[Test]
