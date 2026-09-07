@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasure\Application\Command\LiftHold;
+namespace Compliance\Erasure\Application\Command\PlaceSubjectHold;
 
 use Compliance\Erasure\Domain\Exception\SubjectAlreadyExistsException;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
@@ -13,7 +13,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class LiftHoldHandler
+final readonly class PlaceSubjectHoldHandler
 {
     public function __construct(
         private SubjectRepositoryInterface $repository,
@@ -25,10 +25,10 @@ final readonly class LiftHoldHandler
      * @throws SubjectNotFoundException
      * @throws SubjectAlreadyExistsException
      */
-    public function __invoke(LiftHold $command): void
+    public function __invoke(PlaceSubjectHold $command): void
     {
         $subject = $this->repository->load(SubjectId::fromString($command->subjectId));
-        $subject->liftHold(HoldReference::for($command->sourceType, $command->sourceId), $this->clock->now());
+        $subject->placeHold(HoldReference::for($command->sourceType, $command->sourceId), $this->clock->now());
         $this->repository->save($subject);
     }
 }

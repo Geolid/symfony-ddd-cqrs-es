@@ -27,7 +27,7 @@ final readonly class EraseSubjectHandler
     public function __invoke(EraseSubject $command): void
     {
         $subject = $this->repository->load(SubjectId::fromString($command->subjectId));
-        $subject->release($this->clock->now());
+        $subject->erase($this->clock->now());
         $this->repository->save($subject);
     }
 }

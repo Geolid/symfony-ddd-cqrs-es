@@ -102,7 +102,7 @@ final class Subject implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function release(\DateTimeImmutable $now): void
+    public function erase(\DateTimeImmutable $now): void
     {
         if (!new CanTransitionToSpecification(self::TRANSITIONS, SubjectState::ERASED)->isSatisfiedBy($this->state)) {
             return;

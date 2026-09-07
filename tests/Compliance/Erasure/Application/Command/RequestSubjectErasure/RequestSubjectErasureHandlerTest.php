@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Tests\Erasure\Application\Command\RequestErasure;
+namespace Compliance\Tests\Erasure\Application\Command\RequestSubjectErasure;
 
-use Compliance\Erasure\Application\Command\RequestErasure\RequestErasure;
+use Compliance\Erasure\Application\Command\RequestSubjectErasure\RequestSubjectErasure;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
 use Compliance\Erasure\Application\SubjectStatus;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
+final class RequestSubjectErasureHandlerTest extends AbstractIntegrationTestCase
 {
     private SubjectFinderInterface $finder;
 
@@ -32,7 +32,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $this->store($subject);
 
         // When
-        $this->dispatch(new RequestErasure($subject->id->toString()));
+        $this->dispatch(new RequestSubjectErasure($subject->id->toString()));
 
         // Then
         $result = $this->finder->ofId($subject->id->toString());
@@ -49,6 +49,6 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SubjectNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestErasure($subjectId));
+        $this->dispatch(new RequestSubjectErasure($subjectId));
     }
 }

@@ -21,7 +21,7 @@ use Symfony\Component\Clock\Clock;
  *     reference: HoldReference,
  *     placedAt: \DateTimeImmutable,
  *     liftedAt: \DateTimeImmutable,
- *     releasedAt: \DateTimeImmutable,
+ *     erasedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Subject, Attributes>
@@ -72,12 +72,12 @@ final class SubjectBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function released(?\DateTimeImmutable $releasedAt = null): self
+    public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
-        $builder = null !== $releasedAt ? $this->withAttributes(releasedAt: $releasedAt) : $this;
+        $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Subject $subject, self $builder) => $subject->release($builder['releasedAt']),
+            static fn (Subject $subject, self $builder) => $subject->erase($builder['erasedAt']),
         );
     }
 
@@ -93,7 +93,7 @@ final class SubjectBuilder extends AbstractAggregateBuilder
             'reference' => static fn (): HoldReference => HoldReference::for('compliance.tests.source', Uuid::uuid7()->toString()),
             'placedAt' => static fn (): \DateTimeImmutable => $now,
             'liftedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
-            'releasedAt' => static fn (): \DateTimeImmutable => $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1)),
+            'erasedAt' => static fn (): \DateTimeImmutable => $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1)),
         ];
     }
 

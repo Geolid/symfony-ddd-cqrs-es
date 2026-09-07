@@ -27,7 +27,7 @@ final class SubjectTest extends AggregateRootTestCase
     private \DateTimeImmutable $placedAt;
     private \DateTimeImmutable $liftedAt;
     private \DateTimeImmutable $cancelledAt;
-    private \DateTimeImmutable $releasedAt;
+    private \DateTimeImmutable $erasedAt;
 
     protected function setUp(): void
     {
@@ -40,7 +40,7 @@ final class SubjectTest extends AggregateRootTestCase
         $this->placedAt = SubjectBuilder::sample('placedAt');
         $this->liftedAt = SubjectBuilder::sample('liftedAt');
         $this->cancelledAt = SubjectBuilder::sample('cancelledAt');
-        $this->releasedAt = SubjectBuilder::sample('releasedAt');
+        $this->erasedAt = SubjectBuilder::sample('erasedAt');
     }
 
     #[Test]
@@ -125,48 +125,48 @@ final class SubjectTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itReleases(): void
+    public function itErases(): void
     {
         $this
             ->given($this->registered(), $this->requested())
-            ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
-            ->then(new SubjectErased($this->id->toString(), $this->releasedAt));
+            ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
+            ->then(new SubjectErased($this->id->toString(), $this->erasedAt));
     }
 
     #[Test]
-    public function itDoesNotReleaseWhenRetained(): void
+    public function itDoesNotEraseWhenRetained(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
+            ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
             ->then();
     }
 
     #[Test]
-    public function itDoesNotReleaseWhenRetentionNotExpired(): void
+    public function itDoesNotEraseWhenRetentionNotExpired(): void
     {
         $this
             ->given($this->registered(), $this->requested())
-            ->when(fn (Subject $subject) => $subject->release($this->requestedAt->modify('+1 day')))
+            ->when(fn (Subject $subject) => $subject->erase($this->requestedAt->modify('+1 day')))
             ->then();
     }
 
     #[Test]
-    public function itDoesNotReleaseWhenHoldsActive(): void
+    public function itDoesNotEraseWhenHoldsActive(): void
     {
         $this
             ->given($this->registered(), $this->requested(), $this->placed())
-            ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
+            ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
             ->then();
     }
 
     #[Test]
-    public function itReleasesAfterHoldLifted(): void
+    public function itErasesAfterHoldLifted(): void
     {
         $this
             ->given($this->registered(), $this->requested(), $this->placed(), $this->lifted())
-            ->when(fn (Subject $subject) => $subject->release($this->releasedAt))
-            ->then(new SubjectErased($this->id->toString(), $this->releasedAt));
+            ->when(fn (Subject $subject) => $subject->erase($this->erasedAt))
+            ->then(new SubjectErased($this->id->toString(), $this->erasedAt));
     }
 
     protected function aggregateClass(): string

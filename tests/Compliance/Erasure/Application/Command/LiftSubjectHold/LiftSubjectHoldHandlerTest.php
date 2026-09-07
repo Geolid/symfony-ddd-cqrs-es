@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Tests\Erasure\Application\Command\PlaceHold;
+namespace Compliance\Tests\Erasure\Application\Command\LiftSubjectHold;
 
-use Compliance\Erasure\Application\Command\PlaceHold\PlaceHold;
+use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
 use Compliance\Erasure\Application\Finder\Subject\SubjectFinderInterface;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
 use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
+final class LiftSubjectHoldHandlerTest extends AbstractIntegrationTestCase
 {
     private SubjectFinderInterface $finder;
 
@@ -24,22 +24,7 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itPlaces(): void
-    {
-        // Given
-        $subject = SubjectBuilder::new()->create();
-        $this->store($subject);
-
-        // When
-        $this->dispatch(new PlaceHold($subject->id->toString(), 'compliance.tests.source', Uuid::uuid7()->toString()));
-
-        // Then
-        $result = $this->finder->ofId($subject->id->toString());
-        self::assertSame(1, $result->activeHoldCount);
-    }
-
-    #[Test]
-    public function itIgnoresWhenAlreadyPlaced(): void
+    public function itLifts(): void
     {
         // Given
         $builder = SubjectBuilder::new()->heldBy();
@@ -47,7 +32,22 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
         $this->store($subject);
 
         // When
-        $this->dispatch(new PlaceHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
+        $this->dispatch(new LiftSubjectHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
+
+        // Then
+        $result = $this->finder->ofId($subject->id->toString());
+        self::assertSame(0, $result->activeHoldCount);
+    }
+
+    #[Test]
+    public function itIgnoresWhenNotActive(): void
+    {
+        // Given
+        $subject = SubjectBuilder::new()->heldBy()->create();
+        $this->store($subject);
+
+        // When
+        $this->dispatch(new LiftSubjectHold($subject->id->toString(), 'compliance.tests.source', Uuid::uuid7()->toString()));
 
         // Then
         $result = $this->finder->ofId($subject->id->toString());
@@ -64,6 +64,6 @@ final class PlaceHoldHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SubjectNotFoundException::class);
 
         // When
-        $this->dispatch(new PlaceHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
+        $this->dispatch(new LiftSubjectHold($subjectId, 'compliance.tests.source', Uuid::uuid7()->toString()));
     }
 }

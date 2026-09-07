@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftHold\LiftHold;
-use Compliance\Erasure\Application\Policy\LiftHoldOnOrderDelivered;
+use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
+use Compliance\Erasure\Application\Policy\LiftSubjectHoldOnOrderCancelled;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class LiftHoldOnOrderDeliveredTest extends AbstractIntegrationTestCase
+final class LiftSubjectHoldOnOrderCancelledTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itLifts(): void
@@ -33,15 +32,14 @@ final class LiftHoldOnOrderDeliveredTest extends AbstractIntegrationTestCase
             });
 
         // When
-        $this->trigger(LiftHoldOnOrderDelivered::class, new OrderDeliveredIntegrationEvent(
+        $this->trigger(LiftSubjectHoldOnOrderCancelled::class, new OrderCancelledIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
-            shippingAddress: OrderBuilder::sample('shippingAddress')->toArray(),
-            deliveredAt: Clock::get()->now(),
+            cancelledAt: Clock::get()->now(),
         ));
 
         // Then
-        self::assertInstanceOf(LiftHold::class, $dispatched);
+        self::assertInstanceOf(LiftSubjectHold::class, $dispatched);
         self::assertSame($buyerId, $dispatched->subjectId);
         self::assertSame('sales.order.order', $dispatched->sourceType);
         self::assertSame($orderId, $dispatched->sourceId);

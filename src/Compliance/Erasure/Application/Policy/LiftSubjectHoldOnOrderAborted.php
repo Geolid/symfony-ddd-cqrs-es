@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\LiftHold\LiftHold;
+use Compliance\Erasure\Application\Command\LiftSubjectHold\LiftSubjectHold;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
+use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-#[Policy('compliance.erasure.lift_hold_on_order_delivered')]
-final readonly class LiftHoldOnOrderDelivered
+#[Policy('compliance.erasure.lift_subject_hold_on_order_aborted')]
+final readonly class LiftSubjectHoldOnOrderAborted
 {
     private const string SOURCE_TYPE = 'sales.order.order';
 
@@ -24,10 +24,10 @@ final readonly class LiftHoldOnOrderDelivered
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(OrderDeliveredIntegrationEvent::class)]
-    public function __invoke(OrderDeliveredIntegrationEvent $event): void
+    #[Subscribe(OrderAbortedIntegrationEvent::class)]
+    public function __invoke(OrderAbortedIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new LiftHold(
+        $this->commandBus->dispatch(new LiftSubjectHold(
             subjectId: $event->buyerId,
             sourceType: self::SOURCE_TYPE,
             sourceId: $event->orderId,

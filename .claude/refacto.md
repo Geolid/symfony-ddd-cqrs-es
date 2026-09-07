@@ -201,6 +201,20 @@ final readonly class PlaceHoldOnOrderPlaced
 ### Rejeté : déplacer `ErasedFieldSentinel` de `Shared` vers `Compliance.Erasure.Domain`
 Objectif visé : rendre explicite dans `deptrac_bc.yaml` le graphe des BC concernées par le crypto-shredding. Rejeté : `Compliance.Erasure` dépend aujourd'hui de `Sales.Order` seul (holds) ; si `Sales.Buyer`/`Finance.Payer`/futur `Communication.Subscriber` doivent importer le Sentinel depuis `Compliance.Erasure` pour leurs propres champs personnels, la dépendance devient cyclique dès que Compliance a besoin, plus tard, de lire directement l'un de ces BC (probable vu la trajectoire de cette conception). `ErasedFieldSentinel` ne porte d'ailleurs aucune décision métier de Compliance — pure fonction de formatage, légitimement `Shared`, au même titre que `Money`/`UniqueKey`. La visibilité du graphe GDPR recherchée existe déjà, plus précisément, via un grep/règle statique sur `#[SensitiveData]`/`#[DataSubjectId]` — field par field, sans dépendance de code entre BC.
 
+### Correction (2026-09-07) : `release()` → `erase()`, Commands renommés pour référencer `Subject`
+
+Deux incohérences de nommage signalées par l'utilisateur, vérifiées contre le code réel :
+
+1. `EraseSubjectHandler` appelait `$subject->release(...)`, alors que tout autre `Erase<X>` du repo appelle `->erase()` sur son aggregate (`EraseIdentityHandler`→`$identity->erase()`, `EraseBuyerHandler`→`$buyer->erase()`, `ErasePayerHandler`→`$payer->erase()`). `Subject::release()` était même incohérent avec son propre event (`SubjectErased`, pas `SubjectReleased`) — chaque transition à outcome unique du repo enregistre `<Aggregate><VerbeAuParticipe>` (`Refund::confirm()`→`RefundConfirmed`...). Vérifié : `Payment::cancel()` diverge bien de son event selon l'état (plusieurs outcomes possibles), mais `Subject::release()` n'a qu'un seul outcome (`SubjectErased` si les guards passent) — cette exception ne s'applique donc pas ici. Renommé `Subject::release()` → `Subject::erase()`.
+
+2. Un Command référence toujours le nom de l'**aggregate**, jamais celui de la BC, même quand ils diffèrent — preuve la plus nette : `Catalog.Listing` (BC) a pour aggregate `Product`, et ses 3 commands (`DelistProduct`/`PublishProduct`/`RepriceProduct`) référencent tous `Product`, jamais `Listing`. `Compliance.Erasure` a pour aggregate `Subject`, mais 4 de ses 6 commands ne le référençaient pas : `RequestErasure`/`CancelErasureRequest` référençaient "Erasure" (le nom de la BC), `PlaceHold`/`LiftHold` ne référençaient ni la BC ni l'aggregate. Renommés, gabarit verbe+aggregate+qualificatif (`DefinePayerPostalAddress`) et alignement strict sur la méthode d'aggregate appelée (`cancelErasure()`, pas `cancelErasureRequest()`) :
+   - `PlaceHold` → `PlaceSubjectHold`
+   - `LiftHold` → `LiftSubjectHold`
+   - `RequestErasure` → `RequestSubjectErasure`
+   - `CancelErasureRequest` → `CancelSubjectErasure`
+
+   Policies renommées en cascade (`<Action>On<Event>` reflète le Command dispatché) : `PlaceHoldOnOrderPlaced`→`PlaceSubjectHoldOnOrderPlaced`, `LiftHoldOnOrder{Aborted,Cancelled,Delivered}`→`LiftSubjectHoldOnOrder{Aborted,Cancelled,Delivered}`. `RegisterSubject`/`EraseSubject` respectaient déjà la convention, inchangés.
+
 ### Note méthodologique
 Une itération de cette conception a justifié un choix (`Order::HOLD_SOURCE_TYPE`) en citant qu'une convention de `.claude/rules/domain.md` "couvrait déjà ce cas" — erreur signalée en session : les rules sont extraites du code, pas une source de vérité théorique indépendante. Toute conclusion de ce document s'appuie sur la théorie DDD/CQRS/ES et la structure réelle du code vérifiée en session, jamais sur le texte d'une règle comme justification en soi.
 

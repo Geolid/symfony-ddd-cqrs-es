@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasure\Application\Command\CancelErasureRequest;
+namespace Compliance\Erasure\Application\Command\LiftSubjectHold;
 
 use Compliance\Erasure\Domain\Exception\SubjectAlreadyExistsException;
 use Compliance\Erasure\Domain\Exception\SubjectNotFoundException;
 use Compliance\Erasure\Domain\Repository\SubjectRepositoryInterface;
+use Compliance\Erasure\Domain\ValueObject\HoldReference;
 use Compliance\Erasure\Domain\ValueObject\SubjectId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class CancelErasureRequestHandler
+final readonly class LiftSubjectHoldHandler
 {
     public function __construct(
         private SubjectRepositoryInterface $repository,
@@ -24,10 +25,10 @@ final readonly class CancelErasureRequestHandler
      * @throws SubjectNotFoundException
      * @throws SubjectAlreadyExistsException
      */
-    public function __invoke(CancelErasureRequest $command): void
+    public function __invoke(LiftSubjectHold $command): void
     {
         $subject = $this->repository->load(SubjectId::fromString($command->subjectId));
-        $subject->cancelErasure($this->clock->now());
+        $subject->liftHold(HoldReference::for($command->sourceType, $command->sourceId), $this->clock->now());
         $this->repository->save($subject);
     }
 }

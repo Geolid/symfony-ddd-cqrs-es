@@ -78,7 +78,7 @@ final class DbalSubjectProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = SubjectBuilder::new()->requested()->create();
         $this->store($other);
-        $subject = SubjectBuilder::new()->requested()->released()->create();
+        $subject = SubjectBuilder::new()->requested()->erased()->create();
 
         // When
         $this->store($subject);

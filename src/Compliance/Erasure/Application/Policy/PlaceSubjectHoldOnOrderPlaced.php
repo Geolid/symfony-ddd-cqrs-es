@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Compliance\Erasure\Application\Policy;
 
-use Compliance\Erasure\Application\Command\PlaceHold\PlaceHold;
+use Compliance\Erasure\Application\Command\PlaceSubjectHold\PlaceSubjectHold;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-#[Policy('compliance.erasure.place_hold_on_order_placed')]
-final readonly class PlaceHoldOnOrderPlaced
+#[Policy('compliance.erasure.place_subject_hold_on_order_placed')]
+final readonly class PlaceSubjectHoldOnOrderPlaced
 {
     private const string SOURCE_TYPE = 'sales.order.order';
 
@@ -27,7 +27,7 @@ final readonly class PlaceHoldOnOrderPlaced
     #[Subscribe(OrderPlacedIntegrationEvent::class)]
     public function __invoke(OrderPlacedIntegrationEvent $event): void
     {
-        $this->commandBus->dispatch(new PlaceHold(
+        $this->commandBus->dispatch(new PlaceSubjectHold(
             subjectId: $event->buyerId,
             sourceType: self::SOURCE_TYPE,
             sourceId: $event->orderId,

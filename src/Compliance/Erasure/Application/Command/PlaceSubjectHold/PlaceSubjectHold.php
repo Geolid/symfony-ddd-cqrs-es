@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasure\Application\Command\PlaceHold;
+namespace Compliance\Erasure\Application\Command\PlaceSubjectHold;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class PlaceHold implements CommandInterface
+final readonly class PlaceSubjectHold implements CommandInterface
 {
     public function __construct(
         public string $subjectId,

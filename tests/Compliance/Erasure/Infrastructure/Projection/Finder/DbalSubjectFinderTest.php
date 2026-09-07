@@ -53,8 +53,8 @@ final class DbalSubjectFinderTest extends AbstractIterableFinderTestCase
         $now = Clock::get()->now();
         $fresh = SubjectBuilder::new()->requested($now->modify('-1 day'))->create();
         $due = SubjectBuilder::new()->requested($now->modify('-31 days'))->create();
-        $released = SubjectBuilder::new()->requested($now->modify('-31 days'))->released()->create();
-        $this->store($fresh, $due, $released);
+        $erased = SubjectBuilder::new()->requested($now->modify('-31 days'))->erased()->create();
+        $this->store($fresh, $due, $erased);
 
         // When
         $results = iterator_to_array($this->finder()->erasingBefore($now->modify('-30 days')));

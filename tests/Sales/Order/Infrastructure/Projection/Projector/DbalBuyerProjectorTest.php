@@ -140,7 +140,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $otherSubject = SubjectBuilder::new()->withId($other->id->toString())->requested()->create();
         $this->store($other, $otherSubject);
         $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->released()->create();
+        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->requested()->erased()->create();
 
         // When
         $this->store($buyer, $subject);
