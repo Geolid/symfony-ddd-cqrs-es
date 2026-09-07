@@ -11,7 +11,6 @@ use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotF
 use Fulfilment\Shipping\Application\Finder\Shipment\PostalAddressResult;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -42,12 +41,10 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
             throw ManifestDeniedException::forCancelledShipment($shipmentId);
         }
 
-        if (ShipmentDirection::OUTBOUND === $shipment->direction) {
-            $paymentCapture = $this->paymentCaptureFinder->ofOrderOrNull($shipment->sourceId);
+        $paymentCapture = $this->paymentCaptureFinder->ofOrderOrNull($shipment->orderId);
 
-            if (null === $paymentCapture || !$paymentCapture->captured) {
-                throw ManifestDeniedException::forUncapturedPayment($shipmentId);
-            }
+        if (null === $paymentCapture || !$paymentCapture->captured) {
+            throw ManifestDeniedException::forUncapturedPayment($shipmentId);
         }
 
         $trackingNumber = $this->carrier->manifest($shipmentId, $this->toPostalAddress($shipment->origin), $this->toPostalAddress($shipment->destination));

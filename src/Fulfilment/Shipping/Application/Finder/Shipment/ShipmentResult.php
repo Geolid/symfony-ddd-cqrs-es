@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Finder\Shipment;
 
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 
 final readonly class ShipmentResult
 {
     public function __construct(
         public string $id,
-        public string $sourceId,
-        public ShipmentDirection $direction,
+        public string $orderId,
         public ShipmentStatus $status,
         public PostalAddressResult $origin,
         public PostalAddressResult $destination,

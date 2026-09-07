@@ -30,7 +30,7 @@ final readonly class ShipmentPreparedPublisher
     {
         $this->publisher->publish(Shipment::class, $event->id, new ShipmentPreparedIntegrationEvent(
             shipmentId: $event->id,
-            sourceId: $this->repository->load(ShipmentId::fromString($event->id))->sourceId,
+            orderId: $this->repository->load(ShipmentId::fromString($event->id))->orderId,
             preparedAt: $event->preparedAt,
         ));
     }

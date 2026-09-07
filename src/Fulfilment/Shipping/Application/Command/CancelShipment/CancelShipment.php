@@ -8,7 +8,7 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class CancelShipment implements CommandInterface
 {
-    public function __construct(public string $sourceId)
+    public function __construct(public string $orderId)
     {
     }
 }

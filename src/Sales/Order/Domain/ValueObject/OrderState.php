@@ -11,8 +11,5 @@ enum OrderState: string
     case PREPARED = 'prepared';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
-    case RETURN_REQUESTED = 'return_requested';
-    case RETURNED = 'returned';
-    case DISPUTED = 'disputed';
     case CANCELLED = 'cancelled';
 }

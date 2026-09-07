@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Support\Builder;
 
 use Fulfilment\Shipping\Domain\Shipment;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Ramsey\Uuid\Uuid;
@@ -18,8 +17,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: ShipmentId,
- *     sourceId: string,
- *     direction: ShipmentDirection,
+ *     orderId: string,
  *     buyerId: string,
  *     origin: PostalAddress,
  *     destination: PostalAddress,
@@ -36,14 +34,9 @@ use Symfony\Component\Clock\Clock;
  */
 final class ShipmentBuilder extends AbstractAggregateBuilder
 {
-    public function withSourceId(string $sourceId): self
+    public function withOrderId(string $orderId): self
     {
-        return $this->withAttributes(sourceId: $sourceId);
-    }
-
-    public function withDirection(ShipmentDirection $direction): self
-    {
-        return $this->withAttributes(direction: $direction);
+        return $this->withAttributes(orderId: $orderId);
     }
 
     public function withBuyerId(string $buyerId): self
@@ -122,8 +115,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => ShipmentId::generate(...),
-            'sourceId' => static fn (): string => Uuid::uuid7()->toString(),
-            'direction' => static fn (): ShipmentDirection => ShipmentDirection::OUTBOUND,
+            'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
@@ -147,8 +139,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
     {
         return Shipment::request(
             $this['id'],
-            $this['sourceId'],
-            $this['direction'],
+            $this['orderId'],
             $this['buyerId'],
             $this['origin'],
             $this['destination'],

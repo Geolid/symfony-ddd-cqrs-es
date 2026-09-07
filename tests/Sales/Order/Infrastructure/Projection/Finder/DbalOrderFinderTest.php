@@ -44,9 +44,6 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
         self::assertSame($builder['dispatchedAt']->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
         self::assertSame($builder['deliveredAt']->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
-        self::assertNull($result->returnRequestedAt);
-        self::assertNull($result->returnedAt);
-        self::assertNull($result->disputedAt);
         self::assertNull($result->cancelledAt);
     }
 

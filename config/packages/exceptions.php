@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use AfterSales\Return\Application\Command\RequestWithdrawal\Exception\ActiveWithdrawalAlreadyExistsException;
-use AfterSales\Return\Application\Command\RequestWithdrawal\Exception\WithdrawalRequestInProgressException;
-use AfterSales\Return\Domain\Exception\CannotRequestWithdrawalForAnotherBuyerException;
-use AfterSales\Return\Domain\Exception\WithdrawalNotReceivedException;
-use AfterSales\Return\Domain\Exception\WithdrawalWindowExpiredException;
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
@@ -47,13 +42,6 @@ use Webmozart\Assert\InvalidArgumentException;
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
-            // AfterSales
-            CannotRequestWithdrawalForAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
-            WithdrawalWindowExpiredException::class => ['log_level' => 'info', 'status_code' => 409],
-            WithdrawalNotReceivedException::class => ['log_level' => 'info', 'status_code' => 409],
-            ActiveWithdrawalAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
-            WithdrawalRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
-
             // Catalog
             ProductLabelAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
 

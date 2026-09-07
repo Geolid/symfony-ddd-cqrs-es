@@ -23,9 +23,6 @@
         <!-- DELIVERY MECHANISMS -->
 
         <!-- SUBDOMAINS -->
-        <testsuite name="after_sales">
-            <directory>tests/AfterSales</directory>
-        </testsuite>
         <testsuite name="catalog">
             <directory>tests/Catalog</directory>
         </testsuite>

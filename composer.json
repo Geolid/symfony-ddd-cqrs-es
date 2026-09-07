@@ -86,7 +86,6 @@
   "autoload": {
     "psr-4": {
       "Bootstrap\\": "bootstrap/",
-      "AfterSales\\": "src/AfterSales/",
       "Catalog\\": "src/Catalog/",
       "Compliance\\": "src/Compliance/",
       "Finance\\": "src/Finance/",
@@ -99,7 +98,6 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "AfterSales\\Tests\\": "tests/AfterSales/",
       "Catalog\\Tests\\": "tests/Catalog/",
       "Compliance\\Tests\\": "tests/Compliance/",
       "Finance\\Tests\\": "tests/Finance/",

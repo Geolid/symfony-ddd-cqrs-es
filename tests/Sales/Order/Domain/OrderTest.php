@@ -12,11 +12,8 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
-use Sales\Order\Domain\Event\OrderDisputed;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
-use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -44,9 +41,6 @@ final class OrderTest extends AggregateRootTestCase
     private \DateTimeImmutable $abortedAt;
     private \DateTimeImmutable $dispatchedAt;
     private \DateTimeImmutable $deliveredAt;
-    private \DateTimeImmutable $returnRequestedAt;
-    private \DateTimeImmutable $returnedAt;
-    private \DateTimeImmutable $disputedAt;
 
     protected function setUp(): void
     {
@@ -64,9 +58,6 @@ final class OrderTest extends AggregateRootTestCase
         $this->abortedAt = OrderBuilder::sample('abortedAt');
         $this->dispatchedAt = OrderBuilder::sample('dispatchedAt');
         $this->deliveredAt = OrderBuilder::sample('deliveredAt');
-        $this->returnRequestedAt = OrderBuilder::sample('returnRequestedAt');
-        $this->returnedAt = OrderBuilder::sample('returnedAt');
-        $this->disputedAt = OrderBuilder::sample('disputedAt');
     }
 
     #[Test]
@@ -239,60 +230,6 @@ final class OrderTest extends AggregateRootTestCase
             ->then();
     }
 
-    #[Test]
-    public function itRequestsReturnWhenDelivered(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
-            ->when(fn (Order $order) => $order->requestReturn($this->returnRequestedAt))
-            ->then(new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt));
-    }
-
-    #[Test]
-    public function itDoesNotRequestReturnWhenNotDelivered(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched())
-            ->when(static fn (Order $order) => $order->requestReturn(OrderBuilder::sample('returnRequestedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itReturnsWhenReturnRequested(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered(), $this->returnRequested())
-            ->when(fn (Order $order) => $order->return($this->returnedAt))
-            ->then(new OrderReturned($this->id->toString(), $this->returnedAt));
-    }
-
-    #[Test]
-    public function itDoesNotReturnWhenNotReturnRequested(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
-            ->when(static fn (Order $order) => $order->return(OrderBuilder::sample('returnedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itDisputesWhenReturnRequested(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered(), $this->returnRequested())
-            ->when(fn (Order $order) => $order->dispute($this->disputedAt))
-            ->then(new OrderDisputed($this->id->toString(), $this->disputedAt));
-    }
-
-    #[Test]
-    public function itDoesNotDisputeWhenNotReturnRequested(): void
-    {
-        $this
-            ->given($this->placed(), $this->confirmed(), $this->prepared(), $this->dispatched(), $this->delivered())
-            ->when(static fn (Order $order) => $order->dispute(OrderBuilder::sample('disputedAt')))
-            ->then();
-    }
-
     protected function aggregateClass(): string
     {
         return Order::class;
@@ -329,16 +266,6 @@ final class OrderTest extends AggregateRootTestCase
     private function dispatched(): OrderDispatched
     {
         return new OrderDispatched($this->id->toString(), $this->dispatchedAt);
-    }
-
-    private function delivered(): OrderDelivered
-    {
-        return new OrderDelivered($this->id->toString(), $this->deliveredAt);
-    }
-
-    private function returnRequested(): OrderReturnRequested
-    {
-        return new OrderReturnRequested($this->id->toString(), $this->returnRequestedAt);
     }
 
     private function totalAmount(): Money

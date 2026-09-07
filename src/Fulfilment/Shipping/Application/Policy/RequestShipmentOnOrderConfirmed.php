@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fulfilment\Shipping\Application\Policy;
 
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
-use Fulfilment\Shipping\Application\ShipmentDirection;
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -32,8 +31,7 @@ final readonly class RequestShipmentOnOrderConfirmed
     {
         $this->commandBus->dispatch(new RequestShipment(
             id: ShipmentId::generate()->toString(),
-            sourceId: $event->orderId,
-            direction: ShipmentDirection::OUTBOUND,
+            orderId: $event->orderId,
             buyerId: $event->buyerId,
             origin: $this->warehouseAddressProvider->get()->toArray(),
             destination: $event->shippingAddress,

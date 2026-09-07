@@ -30,7 +30,7 @@ final readonly class ShipmentManifestedPublisher
     {
         $this->publisher->publish(Shipment::class, $event->id, new ShipmentManifestedIntegrationEvent(
             shipmentId: $event->id,
-            sourceId: $this->repository->load(ShipmentId::fromString($event->id))->sourceId,
+            orderId: $this->repository->load(ShipmentId::fromString($event->id))->orderId,
             trackingNumber: $event->trackingNumber->value,
         ));
     }

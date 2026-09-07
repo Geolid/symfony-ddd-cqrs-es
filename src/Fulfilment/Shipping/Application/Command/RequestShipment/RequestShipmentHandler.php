@@ -7,7 +7,6 @@ namespace Fulfilment\Shipping\Application\Command\RequestShipment;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\Shipment;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentDirection;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
@@ -33,8 +32,7 @@ final readonly class RequestShipmentHandler
 
         $shipment = Shipment::request(
             id: $id,
-            sourceId: $command->sourceId,
-            direction: ShipmentDirection::from($command->direction->value),
+            orderId: $command->orderId,
             buyerId: $command->buyerId,
             origin: $this->toPostalAddress($command->origin),
             destination: $this->toPostalAddress($command->destination),

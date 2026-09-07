@@ -15,11 +15,8 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
-use Sales\Order\Domain\Event\OrderDisputed;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
-use Sales\Order\Domain\Event\OrderReturned;
-use Sales\Order\Domain\Event\OrderReturnRequested;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
 use Sales\Order\Domain\Exception\OrderNotCancellableException;
 use Sales\Order\Domain\Exception\OrderWithoutLineException;
@@ -42,11 +39,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED],
         OrderState::PREPARED->value => [OrderState::DISPATCHED, OrderState::CANCELLED],
         OrderState::DISPATCHED->value => [OrderState::DELIVERED],
-        OrderState::DELIVERED->value => [OrderState::RETURN_REQUESTED],
-        OrderState::RETURN_REQUESTED->value => [OrderState::RETURNED, OrderState::DISPUTED],
+        OrderState::DELIVERED->value => [],
         OrderState::CANCELLED->value => [],
-        OrderState::RETURNED->value => [],
-        OrderState::DISPUTED->value => [],
     ];
 
     #[Id]
@@ -182,42 +176,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function requestReturn(\DateTimeImmutable $requestedAt): void
-    {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::RETURN_REQUESTED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        $this->recordThat(new OrderReturnRequested(
-            id: $this->id->toString(),
-            requestedAt: $requestedAt,
-        ));
-    }
-
-    public function return(\DateTimeImmutable $returnedAt): void
-    {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::RETURNED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        $this->recordThat(new OrderReturned(
-            id: $this->id->toString(),
-            returnedAt: $returnedAt,
-        ));
-    }
-
-    public function dispute(\DateTimeImmutable $disputedAt): void
-    {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DISPUTED)->isSatisfiedBy($this->state)) {
-            return;
-        }
-
-        $this->recordThat(new OrderDisputed(
-            id: $this->id->toString(),
-            disputedAt: $disputedAt,
-        ));
-    }
-
     #[Apply]
     private function applyPlaced(OrderPlaced $event): void
     {
@@ -263,23 +221,5 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyDelivered(OrderDelivered $event): void
     {
         $this->state = OrderState::DELIVERED;
-    }
-
-    #[Apply]
-    private function applyReturnRequested(OrderReturnRequested $event): void
-    {
-        $this->state = OrderState::RETURN_REQUESTED;
-    }
-
-    #[Apply]
-    private function applyReturned(OrderReturned $event): void
-    {
-        $this->state = OrderState::RETURNED;
-    }
-
-    #[Apply]
-    private function applyDisputed(OrderDisputed $event): void
-    {
-        $this->state = OrderState::DISPUTED;
     }
 }

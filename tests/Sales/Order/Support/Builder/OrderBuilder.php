@@ -31,9 +31,6 @@ use Symfony\Component\Clock\Clock;
  *     abortedAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
  *     deliveredAt: \DateTimeImmutable,
- *     returnRequestedAt: \DateTimeImmutable,
- *     returnedAt: \DateTimeImmutable,
- *     disputedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Order, Attributes>
@@ -135,33 +132,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function returnRequested(?\DateTimeImmutable $returnRequestedAt = null): self
-    {
-        $builder = null !== $returnRequestedAt ? $this->withAttributes(returnRequestedAt: $returnRequestedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->requestReturn($builder['returnRequestedAt']),
-        );
-    }
-
-    public function returned(?\DateTimeImmutable $returnedAt = null): self
-    {
-        $builder = null !== $returnedAt ? $this->withAttributes(returnedAt: $returnedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->return($builder['returnedAt']),
-        );
-    }
-
-    public function disputed(?\DateTimeImmutable $disputedAt = null): self
-    {
-        $builder = null !== $disputedAt ? $this->withAttributes(disputedAt: $disputedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->dispute($builder['disputedAt']),
-        );
-    }
-
     protected static function defaults(): array
     {
         $now = Clock::get()->now();
@@ -188,9 +158,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'abortedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
             'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
-            'returnRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
-            'returnedAt' => static fn (): \DateTimeImmutable => $now->modify('+6 day'),
-            'disputedAt' => static fn (): \DateTimeImmutable => $now->modify('+6 day'),
         ];
     }
 

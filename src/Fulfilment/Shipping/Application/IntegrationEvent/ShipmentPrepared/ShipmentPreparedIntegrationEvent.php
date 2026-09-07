@@ -12,7 +12,7 @@ final readonly class ShipmentPreparedIntegrationEvent implements IntegrationEven
 {
     public function __construct(
         public string $shipmentId,
-        public string $sourceId,
+        public string $orderId,
         public \DateTimeImmutable $preparedAt,
     ) {
     }
