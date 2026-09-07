@@ -20,9 +20,6 @@ final readonly class PaymentResult
         public ?\DateTimeImmutable $capturedAt,
         public ?\DateTimeImmutable $failedAt,
         public ?\DateTimeImmutable $cancelledAt,
-        public ?\DateTimeImmutable $refundRequestedAt,
-        public ?\DateTimeImmutable $refundFailedAt,
-        public ?\DateTimeImmutable $refundedAt,
     ) {
     }
 }

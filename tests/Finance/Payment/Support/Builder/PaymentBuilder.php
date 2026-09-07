@@ -24,10 +24,6 @@ use Symfony\Component\Clock\Clock;
  *     failedAt: \DateTimeImmutable,
  *     capturedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
- *     refundId: string,
- *     refundRequestedAt: \DateTimeImmutable,
- *     refundFailedAt: \DateTimeImmutable,
- *     confirmedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Payment, Attributes>
@@ -95,36 +91,6 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function refundRequested(?string $refundId = null, ?\DateTimeImmutable $refundRequestedAt = null): self
-    {
-        $builder = $this->withAttributes(...array_filter([
-            'refundId' => $refundId,
-            'refundRequestedAt' => $refundRequestedAt,
-        ]));
-
-        return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->requestRefund($builder['refundId'], $builder['refundRequestedAt']),
-        );
-    }
-
-    public function refundFailed(?\DateTimeImmutable $refundFailedAt = null): self
-    {
-        $builder = null !== $refundFailedAt ? $this->withAttributes(refundFailedAt: $refundFailedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->failRefund($builder['refundId'], $builder['refundFailedAt']),
-        );
-    }
-
-    public function refundConfirmed(?\DateTimeImmutable $confirmedAt = null): self
-    {
-        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->confirmRefund($builder['refundId'], $builder['confirmedAt']),
-        );
-    }
-
     protected static function defaults(): array
     {
         $now = Clock::get()->now();
@@ -139,10 +105,6 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'capturedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
-            'refundId' => static fn (): string => Uuid::uuid7()->toString(),
-            'refundRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
-            'refundFailedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
-            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
         ];
     }
 

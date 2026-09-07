@@ -64,14 +64,6 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function refund(string $reference): PaymentGatewayStatus
-    {
-        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/refund', self::CHARGES_PATH, $reference), []));
-    }
-
-    /**
-     * @throws PaymentGatewayException
-     */
     public function checkStatus(string $reference): PaymentGatewayStatus
     {
         return $this->parseStatus($this->globexClient->get(\sprintf('%s/%s', self::CHARGES_PATH, $reference)));

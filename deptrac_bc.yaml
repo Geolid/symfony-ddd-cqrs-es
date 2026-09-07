@@ -24,10 +24,6 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Finance/Payer/.*' }
 
-    - name: Finance.Refund
-      collectors:
-        - { type: directory, value: 'src/Finance/Refund/.*' }
-
     - name: Iam.Identity
       collectors:
         - { type: directory, value: 'src/Iam/Identity/.*' }
@@ -67,9 +63,8 @@ deptrac:
     Sales.Buyer:      [ Iam.Identity, Shared, Vendors ]
     Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Finance.Payer, Compliance.Erasure, Shared, Vendors ]
     Fulfilment.Shipping: [ Sales.Order, Finance.Payment, Shared, Vendors ]
-    Finance.Payment: [ Sales.Order, Fulfilment.Shipping, Finance.Refund, Shared, Vendors ]
+    Finance.Payment: [ Sales.Order, Fulfilment.Shipping, Shared, Vendors ]
     Finance.Payer: [ Iam.Identity, Shared, Vendors ]
-    Finance.Refund: [ Finance.Payment, Shared, Vendors ]
     Iam.Identity:        [ Compliance.Erasure, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]
