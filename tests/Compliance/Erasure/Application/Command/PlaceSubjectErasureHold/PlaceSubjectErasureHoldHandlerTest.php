@@ -11,6 +11,7 @@ use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Webmozart\Assert\Assert;
 
 final class PlaceSubjectErasureHoldHandlerTest extends AbstractIntegrationTestCase
 {
@@ -45,9 +46,11 @@ final class PlaceSubjectErasureHoldHandlerTest extends AbstractIntegrationTestCa
         $builder = SubjectBuilder::new()->erasureHoldPlaced();
         $subject = $builder->create();
         $this->store($subject);
+        Assert::notEmpty($builder['activeHolds']);
+        $reference = array_first($builder['activeHolds'])->reference;
 
         // When
-        $this->dispatch(new PlaceSubjectErasureHold($subject->id->toString(), $builder['reference']->sourceType, $builder['reference']->sourceId));
+        $this->dispatch(new PlaceSubjectErasureHold($subject->id->toString(), $reference->sourceType, $reference->sourceId));
 
         // Then
         $result = $this->finder->ofId($subject->id->toString());

@@ -17,6 +17,7 @@ use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Clock\Clock;
 
 final class SubjectTest extends AggregateRootTestCase
 {
@@ -33,12 +34,14 @@ final class SubjectTest extends AggregateRootTestCase
     {
         parent::setUp();
 
+        $now = Clock::get()->now();
+
         $this->id = SubjectId::fromString(Uuid::uuid7()->toString());
-        $this->reference = SubjectBuilder::sample('reference');
+        $this->reference = ErasureHoldReference::for('compliance.tests.source', Uuid::uuid7()->toString());
         $this->registeredAt = SubjectBuilder::sample('registeredAt');
         $this->requestedAt = SubjectBuilder::sample('requestedAt');
-        $this->placedAt = SubjectBuilder::sample('erasureHoldPlacedAt');
-        $this->liftedAt = SubjectBuilder::sample('erasureHoldLiftedAt');
+        $this->placedAt = $now->modify('+1 day');
+        $this->liftedAt = $now->modify('+3 days');
         $this->cancelledAt = SubjectBuilder::sample('cancelledAt');
         $this->erasedAt = SubjectBuilder::sample('erasedAt');
     }
@@ -66,7 +69,7 @@ final class SubjectTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->placed())
-            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, SubjectBuilder::sample('erasureHoldPlacedAt')))
+            ->when(fn (Subject $subject) => $subject->placeErasureHold($this->reference, $this->placedAt->modify('+1 hour')))
             ->then();
     }
 
