@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Policy;
+namespace Iam\Tests\Authentication\Application\Command\DropApiKeyCredentialCipherKey;
 
-use Iam\Authentication\Application\Policy\DropApiKeyCredentialCipherKeyOnIdentityErased;
-use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Authentication\Application\Command\DropApiKeyCredentialCipherKey\DropApiKeyCredentialCipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -14,9 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
-final class DropApiKeyCredentialCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCase
+final class DropApiKeyCredentialCipherKeyHandlerTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
@@ -31,22 +28,20 @@ final class DropApiKeyCredentialCipherKeyOnIdentityErasedTest extends AbstractIn
     public function itDrops(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        Assert::stringNotEmpty($identityId);
-        $now = Clock::get()->now();
+        $id = Uuid::uuid7()->toString();
         $this->cipherKeyStore->store(new CipherKey(
             id: Uuid::uuid7()->toString(),
-            subjectId: $identityId,
+            subjectId: $id,
             key: 'fake-key',
             method: 'aes256',
-            createdAt: $now,
+            createdAt: Clock::get()->now(),
         ));
 
         // When
-        $this->trigger(DropApiKeyCredentialCipherKeyOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, $now));
+        $this->dispatch(new DropApiKeyCredentialCipherKey($id));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);
-        $this->cipherKeyStore->currentKeyFor($identityId);
+        $this->cipherKeyStore->currentKeyFor($id);
     }
 }

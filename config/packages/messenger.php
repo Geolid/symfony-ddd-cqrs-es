@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Iam\Authentication\Application\Command\DropApiKeyCredentialCipherKey\DropApiKeyCredentialCipherKey;
 use Sales\Order\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
-use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -23,9 +23,9 @@ return static function (ContainerConfigurator $container): void {
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
             ],
             'routing' => [
-                CancelOrphanedOrder::class => 'async',
                 ApproveOrderErasure::class => 'async',
                 ApproveShipmentErasure::class => 'async',
+                DropApiKeyCredentialCipherKey::class => 'async',
             ],
         ],
     ]);
