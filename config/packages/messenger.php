@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
-use Iam\Authentication\Application\Command\DropApiKeyCredentialCipherKey\DropApiKeyCredentialCipherKey;
 use Sales\Order\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
@@ -25,7 +24,6 @@ return static function (ContainerConfigurator $container): void {
             'routing' => [
                 ApproveOrderErasure::class => 'async',
                 ApproveShipmentErasure::class => 'async',
-                DropApiKeyCredentialCipherKey::class => 'async',
             ],
         ],
     ]);
