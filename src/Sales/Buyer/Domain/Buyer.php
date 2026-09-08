@@ -12,10 +12,14 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Domain\Event\BuyerErasureCancelled;
+use Sales\Buyer\Domain\Event\BuyerErasureRequested;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
+use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\PostalAddress;
 
 #[Aggregate('sales.buyer.buyer')]
@@ -23,13 +27,20 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
 
+    /** @var array<string, list<ErasureState>> */
+    private const array ERASURE_TRANSITIONS = [
+        ErasureState::RETAINED->value => [ErasureState::PENDING],
+        ErasureState::PENDING->value => [ErasureState::RETAINED, ErasureState::ERASED],
+        ErasureState::ERASED->value => [],
+    ];
+
     #[Id]
     public private(set) BuyerId $id;
     public private(set) string $identityId;
     public private(set) Email $email;
     public private(set) ?PostalAddress $shippingAddress = null;
     public private(set) ?PostalAddress $billingAddress = null;
-    private bool $erased;
+    private ErasureState $erasureState;
 
     public static function register(BuyerId $id, string $identityId, Email $email, \DateTimeImmutable $registeredAt): self
     {
@@ -72,9 +83,33 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function requestErasure(\DateTimeImmutable $requestedAt): void
+    {
+        if (!$this->canTransitionErasureTo(ErasureState::PENDING)) {
+            return;
+        }
+
+        $this->recordThat(new BuyerErasureRequested(
+            id: $this->id->toString(),
+            requestedAt: $requestedAt,
+        ));
+    }
+
+    public function cancelErasure(\DateTimeImmutable $cancelledAt): void
+    {
+        if (!$this->canTransitionErasureTo(ErasureState::RETAINED)) {
+            return;
+        }
+
+        $this->recordThat(new BuyerErasureCancelled(
+            id: $this->id->toString(),
+            cancelledAt: $cancelledAt,
+        ));
+    }
+
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if ($this->erased) {
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
             return;
         }
 
@@ -84,13 +119,18 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    private function canTransitionErasureTo(ErasureState $target): bool
+    {
+        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
+    }
+
     #[Apply]
     private function applyRegistered(BuyerRegistered $event): void
     {
         $this->id = BuyerId::fromString($event->id);
         $this->identityId = $event->identityId;
         $this->email = $event->email;
-        $this->erased = false;
+        $this->erasureState = ErasureState::RETAINED;
     }
 
     #[Apply]
@@ -106,8 +146,20 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
+    private function applyErasureRequested(BuyerErasureRequested $event): void
+    {
+        $this->erasureState = ErasureState::PENDING;
+    }
+
+    #[Apply]
+    private function applyErasureCancelled(BuyerErasureCancelled $event): void
+    {
+        $this->erasureState = ErasureState::RETAINED;
+    }
+
+    #[Apply]
     private function applyErased(BuyerErased $event): void
     {
-        $this->erased = true;
+        $this->erasureState = ErasureState::ERASED;
     }
 }

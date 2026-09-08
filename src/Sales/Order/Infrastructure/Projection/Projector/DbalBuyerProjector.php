@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Order\Infrastructure\Projection\Projector;
 
-use Compliance\Erasure\Application\IntegrationEvent\SubjectErasureCancelled\SubjectErasureCancelledIntegrationEvent;
-use Compliance\Erasure\Application\IntegrationEvent\SubjectErasureRequested\SubjectErasureRequestedIntegrationEvent;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
@@ -13,6 +11,8 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressDefined\BuyerBillingAddressDefinedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerErased\BuyerErasedIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerErasureCancelled\BuyerErasureCancelledIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerErasureRequested\BuyerErasureRequestedIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerRegistered\BuyerRegisteredIntegrationEvent;
 use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressDefined\BuyerShippingAddressDefinedIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
@@ -31,7 +31,6 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'buyer_id' => $event->buyerId,
-                'identity_id' => $event->identityId,
                 'erasure_pending' => false,
             ],
             ['erasure_pending' => Types::BOOLEAN],
@@ -66,24 +65,24 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $this->connection->delete(self::TABLE, ['buyer_id' => $event->buyerId]);
     }
 
-    #[Subscribe(SubjectErasureRequestedIntegrationEvent::class)]
-    public function onSubjectErasureRequestedIntegrationEvent(SubjectErasureRequestedIntegrationEvent $event): void
+    #[Subscribe(BuyerErasureRequestedIntegrationEvent::class)]
+    public function onBuyerErasureRequestedIntegrationEvent(BuyerErasureRequestedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
             ['erasure_pending' => true],
-            ['identity_id' => $event->identityId],
+            ['buyer_id' => $event->buyerId],
             ['erasure_pending' => Types::BOOLEAN],
         );
     }
 
-    #[Subscribe(SubjectErasureCancelledIntegrationEvent::class)]
-    public function onSubjectErasureCancelledIntegrationEvent(SubjectErasureCancelledIntegrationEvent $event): void
+    #[Subscribe(BuyerErasureCancelledIntegrationEvent::class)]
+    public function onBuyerErasureCancelledIntegrationEvent(BuyerErasureCancelledIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
             ['erasure_pending' => false],
-            ['identity_id' => $event->identityId],
+            ['buyer_id' => $event->buyerId],
             ['erasure_pending' => Types::BOOLEAN],
         );
     }
@@ -95,7 +94,6 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('buyer_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('erasure_pending', Types::BOOLEAN, ['default' => false]);

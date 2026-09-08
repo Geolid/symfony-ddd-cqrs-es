@@ -12,6 +12,8 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
+use Sales\Order\Domain\Event\OrderErased;
+use Sales\Order\Domain\Event\OrderErasureApproved;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
@@ -41,6 +43,7 @@ final class OrderTest extends AggregateRootTestCase
     private \DateTimeImmutable $abortedAt;
     private \DateTimeImmutable $dispatchedAt;
     private \DateTimeImmutable $deliveredAt;
+    private \DateTimeImmutable $erasureApprovedAt;
 
     protected function setUp(): void
     {
@@ -58,6 +61,7 @@ final class OrderTest extends AggregateRootTestCase
         $this->abortedAt = OrderBuilder::sample('abortedAt');
         $this->dispatchedAt = OrderBuilder::sample('dispatchedAt');
         $this->deliveredAt = OrderBuilder::sample('deliveredAt');
+        $this->erasureApprovedAt = OrderBuilder::sample('erasureApprovedAt');
     }
 
     #[Test]
@@ -150,6 +154,18 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itCancelsAndErasesWhenErasureApproved(): void
+    {
+        $this
+            ->given($this->placed(), $this->erasureApproved())
+            ->when(fn (Order $order) => $order->cancel($this->buyerId, $this->cancelledAt))
+            ->then(
+                new OrderCancelled($this->id->toString(), $this->cancelledAt),
+                new OrderErased($this->id->toString(), $this->cancelledAt),
+            );
+    }
+
+    #[Test]
     public function itCannotCancelWhenPrepared(): void
     {
         $this
@@ -183,6 +199,18 @@ final class OrderTest extends AggregateRootTestCase
             ->given($this->placed(), $this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->abort($this->abortedAt))
             ->then(new OrderAborted($this->id->toString(), $this->abortedAt));
+    }
+
+    #[Test]
+    public function itAbortsAndErasesWhenErasureApproved(): void
+    {
+        $this
+            ->given($this->placed(), $this->erasureApproved())
+            ->when(fn (Order $order) => $order->abort($this->abortedAt))
+            ->then(
+                new OrderAborted($this->id->toString(), $this->abortedAt),
+                new OrderErased($this->id->toString(), $this->abortedAt),
+            );
     }
 
     #[Test]
@@ -230,6 +258,66 @@ final class OrderTest extends AggregateRootTestCase
             ->then();
     }
 
+    #[Test]
+    public function itDeliversAndErasesWhenErasureApproved(): void
+    {
+        $this
+            ->given($this->placed(), $this->erasureApproved(), $this->confirmed(), $this->prepared(), $this->dispatched())
+            ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
+            ->then(
+                new OrderDelivered($this->id->toString(), $this->deliveredAt),
+                new OrderErased($this->id->toString(), $this->deliveredAt),
+            );
+    }
+
+    #[Test]
+    public function itApprovesErasure(): void
+    {
+        $this
+            ->given($this->placed())
+            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->then(new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt));
+    }
+
+    #[Test]
+    public function itApprovesAndErasesErasureWhenAlreadyDelivered(): void
+    {
+        $this
+            ->given(
+                $this->placed(),
+                $this->confirmed(),
+                $this->prepared(),
+                $this->dispatched(),
+                new OrderDelivered($this->id->toString(), $this->deliveredAt),
+            )
+            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->then(
+                new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt),
+                new OrderErased($this->id->toString(), $this->erasureApprovedAt),
+            );
+    }
+
+    #[Test]
+    public function itApprovesAndErasesErasureWhenAlreadyCancelled(): void
+    {
+        $this
+            ->given($this->placed(), $this->cancelled())
+            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->then(
+                new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt),
+                new OrderErased($this->id->toString(), $this->erasureApprovedAt),
+            );
+    }
+
+    #[Test]
+    public function itDoesNotApproveErasureWhenAlreadyApproved(): void
+    {
+        $this
+            ->given($this->placed(), $this->erasureApproved())
+            ->when(static fn (Order $order) => $order->approveErasure(OrderBuilder::sample('erasureApprovedAt')))
+            ->then();
+    }
+
     protected function aggregateClass(): string
     {
         return Order::class;
@@ -266,6 +354,11 @@ final class OrderTest extends AggregateRootTestCase
     private function dispatched(): OrderDispatched
     {
         return new OrderDispatched($this->id->toString(), $this->dispatchedAt);
+    }
+
+    private function erasureApproved(): OrderErasureApproved
+    {
+        return new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt);
     }
 
     private function totalAmount(): Money

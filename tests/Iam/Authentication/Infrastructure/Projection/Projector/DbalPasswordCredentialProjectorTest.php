@@ -188,7 +188,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
             ->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)

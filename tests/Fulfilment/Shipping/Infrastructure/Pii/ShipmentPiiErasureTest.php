@@ -19,8 +19,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsFrozenAddressesOnErasure(): void
     {
         // Given
-        $builder = ShipmentBuilder::new();
-        $shipment = $builder->create();
+        $shipment = ShipmentBuilder::new()->create();
         $this->store($shipment);
         $serialized = $this->serializedEventOf(
             ShipmentRequested::class,
@@ -28,7 +27,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->service(CipherKeyStore::class)->removeWithSubjectId($builder['buyerId']);
+        $this->service(CipherKeyStore::class)->removeWithSubjectId($shipment->id->toString());
 
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);

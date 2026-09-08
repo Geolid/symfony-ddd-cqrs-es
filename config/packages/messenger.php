@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Sales\Order\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
@@ -22,6 +24,8 @@ return static function (ContainerConfigurator $container): void {
             ],
             'routing' => [
                 CancelOrphanedOrder::class => 'async',
+                ApproveOrderErasure::class => 'async',
+                ApproveShipmentErasure::class => 'async',
             ],
         ],
     ]);

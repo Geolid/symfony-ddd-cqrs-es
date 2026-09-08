@@ -18,8 +18,8 @@ final readonly class OrderPlacedIntegrationEvent implements IntegrationEventInte
      * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $billingAddress
      */
     public function __construct(
-        public string $orderId,
         #[DataSubjectId]
+        public string $orderId,
         public string $buyerId,
         public array $lines,
         public int $totalAmountInCents,

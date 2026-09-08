@@ -15,8 +15,11 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
+use Sales\Order\Domain\Event\OrderErased;
+use Sales\Order\Domain\Event\OrderErasureApproved;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
+use Shared\Application\ErasureStatus;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -36,6 +39,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => OrderStatus::PLACED->value,
                 'placed_at' => $event->placedAt,
+                'erasure_status' => ErasureStatus::RETAINED->value,
             ],
             ['placed_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -125,6 +129,26 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(OrderErasureApproved::class)]
+    public function onOrderErasureApproved(OrderErasureApproved $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::APPROVED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(OrderErased::class)]
+    public function onOrderErased(OrderErased $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::ERASED->value],
+            ['id' => $event->id],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -141,6 +165,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

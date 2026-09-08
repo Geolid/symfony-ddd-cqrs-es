@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityErased;
+use Iam\Identity\Domain\Event\IdentityErasureCancelled;
+use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -23,6 +25,8 @@ final class IdentityTest extends AggregateRootTestCase
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $suspendedAt;
+    private \DateTimeImmutable $requestedAt;
+    private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $erasedAt;
 
     protected function setUp(): void
@@ -33,6 +37,8 @@ final class IdentityTest extends AggregateRootTestCase
         $this->reason = IdentityBuilder::sample('reason');
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
+        $this->requestedAt = IdentityBuilder::sample('requestedAt');
+        $this->cancelledAt = IdentityBuilder::sample('cancelledAt');
         $this->erasedAt = IdentityBuilder::sample('erasedAt');
     }
 
@@ -72,6 +78,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
+                $this->requested(),
                 $this->erased(),
             )
             ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
@@ -109,6 +116,7 @@ final class IdentityTest extends AggregateRootTestCase
             ->given(
                 $this->registered(),
                 $this->suspended(),
+                $this->requested(),
                 $this->erased(),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate(IdentityBuilder::sample('reason'), IdentityBuilder::sample('reactivatedAt')))
@@ -116,12 +124,57 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErases(): void
+    public function itRequestsErasure(): void
     {
         $this
             ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->requestErasure($this->requestedAt))
+            ->then($this->requested());
+    }
+
+    #[Test]
+    public function itDoesNotRequestErasureWhenAlreadyRequested(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
+            ->when(static fn (Identity $identity) => $identity->requestErasure(IdentityBuilder::sample('requestedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itCancelsErasure(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
+            ->when(fn (Identity $identity) => $identity->cancelErasure($this->cancelledAt))
+            ->then(new IdentityErasureCancelled($this->id->toString(), $this->cancelledAt));
+    }
+
+    #[Test]
+    public function itDoesNotCancelErasureWhenRetained(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(static fn (Identity $identity) => $identity->cancelErasure(IdentityBuilder::sample('cancelledAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itErases(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
             ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
-            ->then($this->erased());
+            ->then(new IdentityErased($this->id->toString(), $this->erasedAt));
+    }
+
+    #[Test]
+    public function itDoesNotEraseWhenRetained(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(static fn (Identity $identity) => $identity->erase(IdentityBuilder::sample('erasedAt')))
+            ->then();
     }
 
     #[Test]
@@ -130,9 +183,10 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
+                $this->requested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
+            ->when(static fn (Identity $identity) => $identity->erase(IdentityBuilder::sample('erasedAt')))
             ->then();
     }
 
@@ -149,6 +203,11 @@ final class IdentityTest extends AggregateRootTestCase
     private function suspended(): IdentitySuspended
     {
         return new IdentitySuspended($this->id->toString(), $this->reason, $this->suspendedAt);
+    }
+
+    private function requested(): IdentityErasureRequested
+    {
+        return new IdentityErasureRequested($this->id->toString(), $this->requestedAt);
     }
 
     private function erased(): IdentityErased

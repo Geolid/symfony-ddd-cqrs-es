@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Buyer\Application\Finder\Buyer\Exception\BuyerResultNotFoundException;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
@@ -37,6 +38,11 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($buyer->id->toString(), $result->id);
         self::assertSame($builder['email']->value, $result->email);
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->registeredAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
     #[Test]

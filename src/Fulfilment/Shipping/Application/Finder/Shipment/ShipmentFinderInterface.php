@@ -25,6 +25,8 @@ interface ShipmentFinderInterface extends IterableFinderInterface
 
     public function ofOrderOrNull(string $orderId): ?ShipmentResult;
 
+    public function byBuyer(string $buyerId): static;
+
     public function byStatus(ShipmentStatus ...$statuses): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;

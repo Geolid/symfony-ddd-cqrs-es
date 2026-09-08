@@ -24,6 +24,8 @@ use Symfony\Component\Clock\Clock;
  *     shippingAddressDefinedAt: \DateTimeImmutable,
  *     billingAddress: PostalAddress,
  *     billingAddressDefinedAt: \DateTimeImmutable,
+ *     requestedAt: \DateTimeImmutable,
+ *     cancelledAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
  * }
  *
@@ -75,6 +77,24 @@ final class BuyerBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function erasureRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Buyer $buyer, self $builder) => $buyer->requestErasure($builder['requestedAt']),
+        );
+    }
+
+    public function erasureCancelled(?\DateTimeImmutable $cancelledAt = null): self
+    {
+        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Buyer $buyer, self $builder) => $buyer->cancelErasure($builder['cancelledAt']),
+        );
+    }
+
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
         $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
@@ -105,6 +125,8 @@ final class BuyerBuilder extends AbstractAggregateBuilder
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'billingAddressDefinedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+2 days'),
             'erasedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
         ];
     }

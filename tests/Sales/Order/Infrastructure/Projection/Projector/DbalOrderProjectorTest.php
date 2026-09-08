@@ -10,10 +10,11 @@ use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\OrderStatus;
 use Sales\Order\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{buyer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{buyer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -38,6 +39,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($row['dispatched_at']);
         self::assertNull($row['delivered_at']);
         self::assertNull($row['cancelled_at']);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 
     #[Test]
@@ -173,6 +175,48 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($otherRow['delivered_at']);
     }
 
+    #[Test]
+    public function itProjectsOnOrderErasureApproved(): void
+    {
+        // Given
+        $other = OrderBuilder::new()->create();
+        $this->store($other);
+        $order = OrderBuilder::new()->erasureApproved()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $row = $this->fetchRow($order->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::APPROVED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
+    #[Test]
+    public function itProjectsOnOrderErased(): void
+    {
+        // Given
+        $other = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $this->store($other);
+        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->erasureApproved()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $row = $this->fetchRow($order->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::ERASED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
     /**
      * @return Row|false
      */
@@ -183,7 +227,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT buyer_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

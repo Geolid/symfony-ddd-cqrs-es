@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
+use Shared\Application\CipherKey\CipherKeyDropperInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
@@ -16,6 +17,7 @@ final readonly class EraseIdentityHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
+        private CipherKeyDropperInterface $cipherKeyDropper,
         private ClockInterface $clock,
     ) {
     }
@@ -30,5 +32,7 @@ final readonly class EraseIdentityHandler
 
         $identity->erase($this->clock->now());
         $this->repository->save($identity);
+
+        $this->cipherKeyDropper->drop($identity->id->toString());
     }
 }

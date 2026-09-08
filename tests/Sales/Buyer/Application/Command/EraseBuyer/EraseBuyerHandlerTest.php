@@ -38,7 +38,7 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
         $this->store($buyer);
         $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value, $buyer->id->toString());
 
@@ -55,10 +55,9 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itDropsCipherKey(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
         $this->store($buyer);
         $buyerId = $buyer->id->toString();
-        \assert('' !== $buyerId);
         $this->cipherKeyStore->store(new CipherKey(
             id: Uuid::uuid7()->toString(),
             subjectId: $buyerId,
@@ -79,7 +78,7 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
         $this->store($buyer);
 
         // When

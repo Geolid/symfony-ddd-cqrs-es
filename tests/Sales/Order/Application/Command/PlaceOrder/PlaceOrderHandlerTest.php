@@ -6,7 +6,6 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
-use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -67,7 +66,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
         $this->store($buyer);
 
         // Then
@@ -81,10 +80,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerPendingErasure(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
-        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->create();
-        $this->store($buyer, $subject);
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($buyer);
 
         // Then
         $this->expectException(BuyerPendingErasureException::class);

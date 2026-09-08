@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityErased;
+use Iam\Identity\Domain\Event\IdentityErasureCancelled;
+use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -18,15 +20,25 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\ValueObject\ErasureState;
 
 #[Aggregate('iam.identity.identity')]
 final class Identity implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
 
+    /** @var array<string, list<ErasureState>> */
+    private const array ERASURE_TRANSITIONS = [
+        ErasureState::RETAINED->value => [ErasureState::PENDING],
+        ErasureState::PENDING->value => [ErasureState::RETAINED, ErasureState::ERASED],
+        ErasureState::ERASED->value => [],
+    ];
+
     #[Id]
     public private(set) IdentityId $id;
-    private IdentityState $state;
+    private IdentityState $operationalState;
+    private ErasureState $erasureState;
 
     public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
     {
@@ -44,11 +56,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function suspend(Reason $reason, \DateTimeImmutable $suspendedAt): void
     {
-        if ($this->state->isErased()) {
+        if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->state->isSuspended()) {
+        if ($this->operationalState->isSuspended()) {
             return;
         }
 
@@ -64,11 +76,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function reactivate(Reason $reason, \DateTimeImmutable $reactivatedAt): void
     {
-        if ($this->state->isErased()) {
+        if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->state->isActive()) {
+        if ($this->operationalState->isActive()) {
             return;
         }
 
@@ -79,9 +91,33 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function requestErasure(\DateTimeImmutable $requestedAt): void
+    {
+        if (!$this->canTransitionErasureTo(ErasureState::PENDING)) {
+            return;
+        }
+
+        $this->recordThat(new IdentityErasureRequested(
+            id: $this->id->toString(),
+            requestedAt: $requestedAt,
+        ));
+    }
+
+    public function cancelErasure(\DateTimeImmutable $cancelledAt): void
+    {
+        if (!$this->canTransitionErasureTo(ErasureState::RETAINED)) {
+            return;
+        }
+
+        $this->recordThat(new IdentityErasureCancelled(
+            id: $this->id->toString(),
+            cancelledAt: $cancelledAt,
+        ));
+    }
+
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if ($this->state->isErased()) {
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
             return;
         }
 
@@ -91,28 +127,46 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    private function canTransitionErasureTo(ErasureState $target): bool
+    {
+        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
+    }
+
     #[Apply]
     private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
-        $this->state = IdentityState::ACTIVE;
+        $this->operationalState = IdentityState::ACTIVE;
+        $this->erasureState = ErasureState::RETAINED;
+    }
+
+    #[Apply]
+    private function applyErasureRequested(IdentityErasureRequested $event): void
+    {
+        $this->erasureState = ErasureState::PENDING;
+    }
+
+    #[Apply]
+    private function applyErasureCancelled(IdentityErasureCancelled $event): void
+    {
+        $this->erasureState = ErasureState::RETAINED;
     }
 
     #[Apply]
     private function applyErased(IdentityErased $event): void
     {
-        $this->state = IdentityState::ERASED;
+        $this->erasureState = ErasureState::ERASED;
     }
 
     #[Apply]
     private function applySuspended(IdentitySuspended $event): void
     {
-        $this->state = IdentityState::SUSPENDED;
+        $this->operationalState = IdentityState::SUSPENDED;
     }
 
     #[Apply]
     private function applyReactivated(IdentityReactivated $event): void
     {
-        $this->state = IdentityState::ACTIVE;
+        $this->operationalState = IdentityState::ACTIVE;
     }
 }

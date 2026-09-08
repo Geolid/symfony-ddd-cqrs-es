@@ -19,6 +19,8 @@ use Symfony\Component\Clock\Clock;
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
+ *     requestedAt: \DateTimeImmutable,
+ *     cancelledAt: \DateTimeImmutable,
  *     erasedAt: \DateTimeImmutable,
  * }
  *
@@ -60,6 +62,24 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function erasureRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->requestErasure($builder['requestedAt']),
+        );
+    }
+
+    public function erasureCancelled(?\DateTimeImmutable $cancelledAt = null): self
+    {
+        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->cancelErasure($builder['cancelledAt']),
+        );
+    }
+
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
         $builder = null !== $erasedAt ? $this->withAttributes(erasedAt: $erasedAt) : $this;
@@ -79,7 +99,9 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
-            'erasedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
+            'erasedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
         ];
     }
 

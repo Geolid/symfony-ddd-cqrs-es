@@ -81,7 +81,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
         $this->store($identity);
 
         // Then

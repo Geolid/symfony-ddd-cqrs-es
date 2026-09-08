@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Order\Application\Finder\Order;
 
 use Sales\Order\Application\OrderStatus;
+use Shared\Application\ErasureStatus;
 
 final readonly class OrderResult
 {
@@ -19,6 +20,7 @@ final readonly class OrderResult
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
+        public ErasureStatus $erasureStatus,
     ) {
     }
 }

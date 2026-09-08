@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Projector;
 
-use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
@@ -16,7 +14,6 @@ use Support\TestCase\AbstractIntegrationTestCase;
 /**
  * @phpstan-type Row array{
  *     buyer_id: string,
- *     identity_id: string,
  *     shipping_address: string|null,
  *     billing_address: string|null,
  *     erasure_pending: bool,
@@ -109,7 +106,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = BuyerBuilder::new()->create();
         $this->store($other);
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($buyer);
@@ -123,17 +120,15 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnSubjectErasureRequestedIntegrationEvent(): void
+    public function itProjectsOnBuyerErasureRequestedIntegrationEvent(): void
     {
         // Given
         $other = BuyerBuilder::new()->create();
         $this->store($other);
-        $identityId = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
-        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
 
         // When
-        $this->store($buyer, $subject);
+        $this->store($buyer);
 
         // Then
         $row = $this->fetchRow($buyer->id->toString());
@@ -146,19 +141,15 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnSubjectErasureCancelledIntegrationEvent(): void
+    public function itProjectsOnBuyerErasureCancelledIntegrationEvent(): void
     {
         // Given
-        $otherIdentityId = Uuid::uuid7()->toString();
-        $other = BuyerBuilder::new()->withIdentityId($otherIdentityId)->create();
-        $otherSubject = SubjectBuilder::new()->withIdentityId($otherIdentityId)->erasureRequested()->create();
-        $this->store($other, $otherSubject);
-        $identityId = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
-        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->erasureCancelled()->create();
+        $other = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($other);
+        $buyer = BuyerBuilder::new()->erasureRequested()->erasureCancelled()->create();
 
         // When
-        $this->store($buyer, $subject);
+        $this->store($buyer);
 
         // Then
         $row = $this->fetchRow($buyer->id->toString());
@@ -191,7 +182,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, identity_id, shipping_address, billing_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
+                'SELECT buyer_id, shipping_address, billing_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['buyerId' => $buyerId],

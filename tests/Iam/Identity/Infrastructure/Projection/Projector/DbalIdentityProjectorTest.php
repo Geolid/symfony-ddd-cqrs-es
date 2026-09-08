@@ -10,10 +10,11 @@ use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null}
+ * @phpstan-type Row array{id: string, status: string, reason: string|null, registered_at: string, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
@@ -37,6 +38,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($builder['registeredAt']->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 
     #[Test]
@@ -98,13 +100,55 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itProjectsOnIdentityErasureRequested(): void
+    {
+        // Given
+        $other = IdentityBuilder::new()->create();
+        $this->store($other);
+        $identity = IdentityBuilder::new()->erasureRequested()->create();
+
+        // When
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::PENDING->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
+    #[Test]
+    public function itProjectsOnIdentityErasureCancelled(): void
+    {
+        // Given
+        $other = IdentityBuilder::new()->erasureRequested()->create();
+        $this->store($other);
+        $identity = IdentityBuilder::new()->erasureRequested()->erasureCancelled()->create();
+
+        // When
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::PENDING->value, $otherRow['erasure_status']);
+    }
+
+    #[Test]
     public function itRemovesOnIdentityErased(): void
     {
         // Given
         $other = IdentityBuilder::new()->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($identity);
@@ -123,7 +167,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT id, status, reason, registered_at, suspended_at, reactivated_at FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
+            \sprintf('SELECT id, status, reason, registered_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );
     }

@@ -46,6 +46,16 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         )->one();
     }
 
+    public function byBuyer(string $buyerId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($buyerId): void {
+                $qb->andWhere('buyer_id = :buyerId')
+                    ->setParameter('buyerId', $buyerId);
+            },
+        );
+    }
+
     public function byStatus(ShipmentStatus ...$statuses): static
     {
         return $this->filter(
@@ -74,7 +84,7 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at')
+        $qb->select('id', 'order_id', 'buyer_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'erasure_status')
             ->from(DbalShipmentProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

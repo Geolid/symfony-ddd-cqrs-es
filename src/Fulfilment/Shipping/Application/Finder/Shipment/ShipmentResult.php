@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Fulfilment\Shipping\Application\Finder\Shipment;
 
 use Fulfilment\Shipping\Application\ShipmentStatus;
+use Shared\Application\ErasureStatus;
 
 final readonly class ShipmentResult
 {
     public function __construct(
         public string $id,
         public string $orderId,
+        public string $buyerId,
         public ShipmentStatus $status,
         public PostalAddressResult $origin,
         public PostalAddressResult $destination,
@@ -20,6 +22,7 @@ final readonly class ShipmentResult
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
+        public ErasureStatus $erasureStatus,
     ) {
     }
 }

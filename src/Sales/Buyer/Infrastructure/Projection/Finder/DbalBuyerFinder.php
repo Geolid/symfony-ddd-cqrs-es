@@ -27,7 +27,7 @@ final class DbalBuyerFinder extends AbstractDbalFinder implements BuyerFinderInt
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'email', 'registered_at')
+        $qb->select('id', 'email', 'registered_at', 'erasure_status')
             ->from(DbalBuyerProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

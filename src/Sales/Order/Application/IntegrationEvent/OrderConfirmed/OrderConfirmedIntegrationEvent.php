@@ -17,8 +17,8 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
      * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $shippingAddress
      */
     public function __construct(
-        public string $orderId,
         #[DataSubjectId]
+        public string $orderId,
         public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',

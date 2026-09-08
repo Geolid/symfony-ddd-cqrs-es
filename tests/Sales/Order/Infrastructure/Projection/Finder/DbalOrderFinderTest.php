@@ -10,6 +10,7 @@ use Sales\Order\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
 use Sales\Order\Application\OrderStatus;
 use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderFinderTest extends AbstractIntegrationTestCase
@@ -45,6 +46,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         self::assertSame($builder['dispatchedAt']->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
         self::assertSame($builder['deliveredAt']->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
+        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
     #[Test]

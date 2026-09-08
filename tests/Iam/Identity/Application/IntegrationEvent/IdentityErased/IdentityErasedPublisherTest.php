@@ -15,7 +15,7 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->erased();
+        $builder = IdentityBuilder::new()->erasureRequested()->erased();
         $identity = $builder->create();
 
         // When

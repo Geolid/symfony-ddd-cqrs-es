@@ -12,4 +12,14 @@ enum OrderState: string
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
+
+    public function isDelivered(): bool
+    {
+        return self::DELIVERED === $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
+    }
 }

@@ -21,8 +21,8 @@ final readonly class OrderPlaced
      * @param list<OrderLine> $lines
      */
     public function __construct(
-        public string $id,
         #[DataSubjectId]
+        public string $id,
         public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([

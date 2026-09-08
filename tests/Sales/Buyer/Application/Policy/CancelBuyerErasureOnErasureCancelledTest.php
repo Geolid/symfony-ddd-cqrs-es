@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Tests\Buyer\Application\Policy;
+
+use Compliance\Erasing\Application\IntegrationEvent\ErasureCancelled\ErasureCancelledIntegrationEvent;
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Buyer\Application\Policy\CancelBuyerErasureOnErasureCancelled;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\ErasureStatus;
+use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
+
+final class CancelBuyerErasureOnErasureCancelledTest extends AbstractIntegrationTestCase
+{
+    #[Test]
+    public function itCancels(): void
+    {
+        // Given
+        $builder = BuyerBuilder::new()->erasureRequested();
+        $buyer = $builder->create();
+        $this->store($buyer);
+
+        // When
+        $this->trigger(CancelBuyerErasureOnErasureCancelled::class, new ErasureCancelledIntegrationEvent($builder['identityId'], Clock::get()->now()));
+
+        // Then
+        $result = $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
+        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
+    }
+
+    #[Test]
+    public function itIgnoresWhenNoneExist(): void
+    {
+        // When
+        $this->trigger(CancelBuyerErasureOnErasureCancelled::class, new ErasureCancelledIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
+
+        // Then
+        self::expectNotToPerformAssertions();
+    }
+}

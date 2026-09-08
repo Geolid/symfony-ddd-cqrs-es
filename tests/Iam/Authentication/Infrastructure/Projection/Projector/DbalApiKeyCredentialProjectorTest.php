@@ -137,7 +137,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $other = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erased()->create();
+        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
         $credential = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher($this->hasher)

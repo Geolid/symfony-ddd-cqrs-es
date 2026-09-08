@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
-use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
@@ -69,10 +68,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithPendingErasure(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withIdentityId($identityId)->create();
-        $subject = SubjectBuilder::new()->withIdentityId($identityId)->erasureRequested()->create();
-        $this->store($buyer, $subject);
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($buyer);
 
         // When
         $result = $this->finder->ofIdOrNull($buyer->id->toString());

@@ -9,6 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Domain\Event\BuyerErasureCancelled;
+use Sales\Buyer\Domain\Event\BuyerErasureRequested;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
@@ -21,6 +23,9 @@ final class BuyerTest extends AggregateRootTestCase
     private string $identityId;
     private Email $email;
     private \DateTimeImmutable $registeredAt;
+    private \DateTimeImmutable $requestedAt;
+    private \DateTimeImmutable $cancelledAt;
+    private \DateTimeImmutable $erasedAt;
 
     protected function setUp(): void
     {
@@ -30,6 +35,9 @@ final class BuyerTest extends AggregateRootTestCase
         $this->id = BuyerId::forIdentity($this->identityId);
         $this->email = BuyerBuilder::sample('email');
         $this->registeredAt = BuyerBuilder::sample('registeredAt');
+        $this->requestedAt = BuyerBuilder::sample('requestedAt');
+        $this->cancelledAt = BuyerBuilder::sample('cancelledAt');
+        $this->erasedAt = BuyerBuilder::sample('erasedAt');
     }
 
     #[Test]
@@ -106,23 +114,64 @@ final class BuyerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErases(): void
+    public function itRequestsErasure(): void
     {
-        $erasedAt = BuyerBuilder::sample('erasedAt');
-
         $this
             ->given($this->registered())
-            ->when(static fn (Buyer $buyer) => $buyer->erase($erasedAt))
-            ->then(new BuyerErased($this->id->toString(), $erasedAt));
+            ->when(fn (Buyer $buyer) => $buyer->requestErasure($this->requestedAt))
+            ->then(new BuyerErasureRequested($this->id->toString(), $this->requestedAt));
+    }
+
+    #[Test]
+    public function itDoesNotRequestErasureWhenAlreadyRequested(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
+            ->when(static fn (Buyer $buyer) => $buyer->requestErasure(BuyerBuilder::sample('requestedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itCancelsErasure(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
+            ->when(fn (Buyer $buyer) => $buyer->cancelErasure($this->cancelledAt))
+            ->then(new BuyerErasureCancelled($this->id->toString(), $this->cancelledAt));
+    }
+
+    #[Test]
+    public function itDoesNotCancelErasureWhenRetained(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(static fn (Buyer $buyer) => $buyer->cancelErasure(BuyerBuilder::sample('cancelledAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itErases(): void
+    {
+        $this
+            ->given($this->registered(), $this->requested())
+            ->when(fn (Buyer $buyer) => $buyer->erase($this->erasedAt))
+            ->then(new BuyerErased($this->id->toString(), $this->erasedAt));
+    }
+
+    #[Test]
+    public function itDoesNotEraseWhenRetained(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(static fn (Buyer $buyer) => $buyer->erase(BuyerBuilder::sample('erasedAt')))
+            ->then();
     }
 
     #[Test]
     public function itDoesNotEraseWhenAlreadyErased(): void
     {
-        $erasedAt = BuyerBuilder::sample('erasedAt');
-
         $this
-            ->given($this->registered(), new BuyerErased($this->id->toString(), $erasedAt))
+            ->given($this->registered(), $this->requested(), $this->erased())
             ->when(static fn (Buyer $buyer) => $buyer->erase(BuyerBuilder::sample('erasedAt')))
             ->then();
     }
@@ -135,5 +184,15 @@ final class BuyerTest extends AggregateRootTestCase
     private function registered(): BuyerRegistered
     {
         return new BuyerRegistered($this->id->toString(), $this->identityId, $this->email, $this->registeredAt);
+    }
+
+    private function requested(): BuyerErasureRequested
+    {
+        return new BuyerErasureRequested($this->id->toString(), $this->requestedAt);
+    }
+
+    private function erased(): BuyerErased
+    {
+        return new BuyerErased($this->id->toString(), $this->erasedAt);
     }
 }
