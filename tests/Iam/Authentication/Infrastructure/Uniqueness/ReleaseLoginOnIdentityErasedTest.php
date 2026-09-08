@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Policy;
+namespace Iam\Tests\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Application\Policy\ReleaseLoginOnIdentityErased;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
+use Iam\Authentication\Infrastructure\Uniqueness\ReleaseLoginOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;

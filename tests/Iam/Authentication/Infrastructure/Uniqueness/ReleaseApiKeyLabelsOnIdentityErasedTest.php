@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Policy;
+namespace Iam\Tests\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Application\Policy\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Infrastructure\Uniqueness\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;

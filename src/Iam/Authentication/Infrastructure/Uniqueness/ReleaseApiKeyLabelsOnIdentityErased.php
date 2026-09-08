@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Policy;
+namespace Iam\Authentication\Infrastructure\Uniqueness;
 
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Shared\Application\Policy;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Infrastructure\Processor;
 
-#[Policy('iam.authentication.release_api_key_labels_on_identity_erased')]
+#[Processor('iam.authentication.release_api_key_labels_on_identity_erased')]
 final readonly class ReleaseApiKeyLabelsOnIdentityErased
 {
     public function __construct(private UniqueValueRegistryInterface $uniqueValues)
