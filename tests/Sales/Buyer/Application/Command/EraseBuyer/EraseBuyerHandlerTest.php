@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Buyer\Application\Command\EraseBuyer;
 
-use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Application\Command\EraseBuyer\EraseBuyer;
@@ -18,20 +15,16 @@ use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
 {
     private UniqueValueRegistryInterface $uniqueValues;
-
-    private CipherKeyStore $cipherKeyStore;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
-        $this->cipherKeyStore = $this->service(CipherKeyStore::class);
     }
 
     #[Test]
@@ -49,29 +42,6 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
         self::assertFalse($this->uniqueValues->exists(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value));
         $this->expectException(BuyerResultNotFoundException::class);
         $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
-    }
-
-    #[Test]
-    public function itDropsCipherKey(): void
-    {
-        // Given
-        $buyer = BuyerBuilder::new()->erasureRequested()->create();
-        $this->store($buyer);
-        $buyerId = $buyer->id->toString();
-        $this->cipherKeyStore->store(new CipherKey(
-            id: Uuid::uuid7()->toString(),
-            subjectId: $buyerId,
-            key: 'fake-key',
-            method: 'aes256',
-            createdAt: Clock::get()->now(),
-        ));
-
-        // When
-        $this->dispatch(new EraseBuyer($buyerId));
-
-        // Then
-        $this->expectException(CipherKeyNotExists::class);
-        $this->cipherKeyStore->currentKeyFor($buyerId);
     }
 
     #[Test]

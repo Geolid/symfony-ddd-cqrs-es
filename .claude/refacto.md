@@ -346,6 +346,28 @@ Question directe de l'utilisateur : la possibilité d'amendement reste-t-elle "j
 
 Le fix `OrderLine`/`$lines` reste correct et nécessaire (il évite de fermer la porte au niveau de la donnée), mais il n'est pas suffisant — ces chantiers restent entiers, non commencés, à traiter le jour où l'amendement post-paiement devient un besoin réel plutôt qu'une possibilité conceptuelle à préserver.
 
+## Décline pré-auth : le retry ne colle pas avec `Order::abort()` immédiat — question posée avec l'arrivée de `Cart`
+
+Question posée par l'utilisateur en session : le decline (`PaymentGatewayStatus::DECLINED`, cf. `GOAL.md` Cycle 3) recouvre deux points distincts — réconciliation d'un paiement `REQUESTED` (`RequestedPaymentReconciler`, échec à l'auth) et échec de `capture()` après préparation (`CapturePaymentOnShipmentPrepared`, échec à la capture). Dans les deux cas, la seule policy consommatrice de `PaymentFailedIntegrationEvent` (`AbortOrderOnPaymentFailed`) annule immédiatement l'`Order` — aucune étape de nouvelle tentative sur la même commande, aucune Command `RetryPayment`.
+
+Comparé à un tunnel de paiement usuel (Stripe Checkout, Amazon...) : un decline **pré-auth** (avant que l'`Order` soit même confirmé) garde d'ordinaire le panier vivant et propose de rejouer le paiement (autre carte) sur la même commande. Le decline **post-préparation** (à la capture, après engagement d'expédition) est un cas plus tardif et rare où annuler reste défendable.
+
+Le repo place déjà `Order::place()` **avant** tout paiement (Cycle 1, `GOAL.md` ligne 97-98 : `Order::place()` puis seulement ensuite `Payment::request()`) — donc un decline pré-auth annule aujourd'hui un `Order` qui vient tout juste d'être créé, avant même sa confirmation. Avec `Sales.Cart` désormais retenu comme aggregate (section précédente), portant tout l'état mutable pré-achat, la question se repose différemment : **`Order::place()` doit-il continuer à intervenir avant la tentative de paiement, ou seulement après une autorisation réussie ?**
+
+Si `Order` n'était créé qu'au moment où `Payment::authorize()` réussit (le `Cart` restant ouvert, `checkout()` non consommé pendant toute la tentative de paiement), un decline pré-auth n'aurait plus aucun `Order` à annuler : rejouer le paiement redeviendrait un aller-retour sur le même `Cart`, sans jamais toucher `Sales.Order`. `Order::abort()` ne resterait alors utile que pour le seul cas post-préparation (capture échouée après engagement d'expédition), qui reste un vrai abandon légitime — pas de retry attendu à ce stade.
+
+**Pas tranché** : où placer exactement la frontière `Cart`→`Order` (dispatch de `RequestPayment` depuis le `Cart`, ou seulement à réception d'`AuthorizePayment`) change la forme du driving port paiement et du contrat `PlaceOrder`/`RequestPayment`. Aucune modification exécutée — analyse seule, à trancher par l'utilisateur.
+
+## Code mort confirmé : `CancelOrdersOnBuyerErased`/`CancelOrphanedOrder*` — ancien système d'erasure, jamais retiré
+
+Signalé par l'utilisateur, vérifié dans le code : `CancelOrdersOnBuyerErased` (`Sales.Order`) souscrit à `BuyerErasedIntegrationEvent` et annule tout de suite chaque `Order` encore annulable du buyer (fan-out `CancelOrphanedOrdersOfBuyer` → `CancelOrphanedOrder` par item, silencieux via `catch (OrderNotCancellableException)`). **`ApproveOrdersErasureOnBuyerErased` souscrit au même event**, en parallèle — c'est le mécanisme décrit dans `GOAL.md` (§ Cycle GDPR, ligne 254) : `Order` passe `APPROVED`, termine sa vie normalement (`DELIVERED`/`CANCELLED` naturel), puis `ERASED` — jamais annulé de force.
+
+Les deux tournent aujourd'hui en même temps sur le même trigger, avec des effets contradictoires : la version "ancien système" annule immédiatement ce qui est encore annulable, avant même que la commande ait pu suivre son cycle normal. `GOAL.md` ne documente que la seconde (le modèle retenu) — la première (`CancelOrdersOnBuyerErased`, `CancelOrphanedOrdersOfBuyer`, `CancelOrphanedOrder` + leurs tests) est un reliquat de l'ancien design d'erasure (annulation active à la demande d'effacement), jamais retiré au moment de la refonte vers le modèle "fan-out sans cascade, item termine sa vie".
+
+**Non lié** à la question du décline pré-auth ci-dessus, contrairement à l'hypothèse initiale de l'utilisateur (déplacer `Order::place()` après authorize n'aurait pas fait disparaître ce mécanisme) — un `Order` déjà confirmé/livré peut toujours voir son buyer effacé bien après tout paiement. Le nom "orphaned" prêtait à confusion avec un état "non payé" ; en réalité il désignait "orphelin de son buyer", pas "orphelin de paiement".
+
+**À faire** : retirer `CancelOrdersOnBuyerErased`, `CancelOrphanedOrdersOfBuyer`(Handler), `CancelOrphanedOrder`(Handler) + tests associés — le modèle `ApproveOrdersErasureOnBuyerErased`/`ErasureState` couvre déjà le besoin proprement. Aucune modification exécutée ici — à porter dans `TODO.md` avant action.
+
 ## Autres paires examinées (pour mémoire, non tranchées ici)
 
 - **`Finance.Payer` / `Sales.Buyer`** : même identité (`PayerId === BuyerId === IdentityId`), mais rétention légale distincte (Payer conservé plus longtemps que Buyer) qui justifierait la frontière — **non implémenté** : les deux s'effacent aujourd'hui sur le même `IdentityErasedIntegrationEvent`, via un mécanisme `Compliance.Erasure` (`Subject`/`Hold`) qui ne porte qu'une seule temporalité globale, pas deux calendriers de rétention distincts. Écarté du jugement de découpage actuel car le code du cycle d'effacement est en cours de refonte sur cette branche.

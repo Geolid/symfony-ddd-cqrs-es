@@ -15,8 +15,8 @@ use Shared\Domain\Pii\ErasedValueObjectSentinel;
 final readonly class PasswordCredentialDefined
 {
     public function __construct(
-        public string $id,
         #[DataSubjectId]
+        public string $id,
         public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('erased-%s'), Login::class, 'fromString'))]
         public Login $login,
