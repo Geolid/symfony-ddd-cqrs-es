@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Policy;
+namespace Sales\Tests\Order\Infrastructure\CipherKey;
 
-use Iam\Identity\Application\Policy\DropCipherKeyOnIdentityErased;
-use Iam\Identity\Domain\Event\IdentityErased;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Order\Domain\Event\OrderErased;
+use Sales\Order\Infrastructure\CipherKey\DropCipherKeyOnOrderErased;
+use Sales\Tests\Order\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DropCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCase
+final class DropCipherKeyOnOrderErasedTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
@@ -30,23 +30,23 @@ final class DropCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCas
     public function itDrops(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-        $identityId = $identity->id->toString();
+        $order = OrderBuilder::new()->create();
+        $this->store($order);
+        $orderId = $order->id->toString();
         $now = Clock::get()->now();
         $this->cipherKeyStore->store(new CipherKey(
             id: Uuid::uuid7()->toString(),
-            subjectId: $identityId,
+            subjectId: $orderId,
             key: 'fake-key',
             method: 'aes256',
             createdAt: $now,
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnIdentityErased::class, new IdentityErased($identityId, $now));
+        $this->trigger(DropCipherKeyOnOrderErased::class, new OrderErased($orderId, $now));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);
-        $this->cipherKeyStore->currentKeyFor($identityId);
+        $this->cipherKeyStore->currentKeyFor($orderId);
     }
 }

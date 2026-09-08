@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Buyer\Application\Policy;
+namespace Iam\Tests\Authentication\Infrastructure\CipherKey;
 
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Iam\Authentication\Infrastructure\CipherKey\DropPasswordCredentialCipherKeyOnIdentityErased;
+use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Buyer\Application\Policy\DropCipherKeyOnBuyerErased;
-use Sales\Buyer\Domain\Event\BuyerErased;
-use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DropCipherKeyOnBuyerErasedTest extends AbstractIntegrationTestCase
+final class DropPasswordCredentialCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
@@ -30,23 +31,22 @@ final class DropCipherKeyOnBuyerErasedTest extends AbstractIntegrationTestCase
     public function itDrops(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
-        $this->store($buyer);
-        $buyerId = $buyer->id->toString();
+        $identityId = PasswordCredentialBuilder::sample('identityId');
+        $passwordCredentialId = PasswordCredentialId::forIdentity($identityId)->toString();
         $now = Clock::get()->now();
         $this->cipherKeyStore->store(new CipherKey(
             id: Uuid::uuid7()->toString(),
-            subjectId: $buyerId,
+            subjectId: $passwordCredentialId,
             key: 'fake-key',
             method: 'aes256',
             createdAt: $now,
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnBuyerErased::class, new BuyerErased($buyerId, $now));
+        $this->trigger(DropPasswordCredentialCipherKeyOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, $now));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);
-        $this->cipherKeyStore->currentKeyFor($buyerId);
+        $this->cipherKeyStore->currentKeyFor($passwordCredentialId);
     }
 }

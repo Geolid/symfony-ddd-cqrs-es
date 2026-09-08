@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Policy;
+namespace Iam\Tests\Authentication\Infrastructure\CipherKey;
 
-use Iam\Authentication\Application\Policy\DropApiKeyCredentialCipherKeysOnIdentityErased;
+use Iam\Authentication\Infrastructure\CipherKey\DropApiKeyCredentialCipherKeysOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;

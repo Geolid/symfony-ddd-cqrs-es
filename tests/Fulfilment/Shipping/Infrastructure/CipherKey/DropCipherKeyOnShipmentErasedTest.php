@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Tests\Shipping\Application\Policy;
+namespace Fulfilment\Tests\Shipping\Infrastructure\CipherKey;
 
-use Fulfilment\Shipping\Application\Policy\DropCipherKeyOnShipmentErased;
 use Fulfilment\Shipping\Domain\Event\ShipmentErased;
+use Fulfilment\Shipping\Infrastructure\CipherKey\DropCipherKeyOnShipmentErased;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;

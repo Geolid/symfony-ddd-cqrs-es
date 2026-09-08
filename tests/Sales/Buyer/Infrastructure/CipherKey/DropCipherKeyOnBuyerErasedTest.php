@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Sales\Tests\Order\Application\Policy;
+namespace Sales\Tests\Buyer\Infrastructure\CipherKey;
 
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\Policy\DropCipherKeyOnOrderErased;
-use Sales\Order\Domain\Event\OrderErased;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Buyer\Domain\Event\BuyerErased;
+use Sales\Buyer\Infrastructure\CipherKey\DropCipherKeyOnBuyerErased;
+use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DropCipherKeyOnOrderErasedTest extends AbstractIntegrationTestCase
+final class DropCipherKeyOnBuyerErasedTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
@@ -30,23 +30,23 @@ final class DropCipherKeyOnOrderErasedTest extends AbstractIntegrationTestCase
     public function itDrops(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $this->store($order);
-        $orderId = $order->id->toString();
+        $buyer = BuyerBuilder::new()->create();
+        $this->store($buyer);
+        $buyerId = $buyer->id->toString();
         $now = Clock::get()->now();
         $this->cipherKeyStore->store(new CipherKey(
             id: Uuid::uuid7()->toString(),
-            subjectId: $orderId,
+            subjectId: $buyerId,
             key: 'fake-key',
             method: 'aes256',
             createdAt: $now,
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnOrderErased::class, new OrderErased($orderId, $now));
+        $this->trigger(DropCipherKeyOnBuyerErased::class, new BuyerErased($buyerId, $now));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);
-        $this->cipherKeyStore->currentKeyFor($orderId);
+        $this->cipherKeyStore->currentKeyFor($buyerId);
     }
 }
