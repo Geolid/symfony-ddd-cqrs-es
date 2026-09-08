@@ -37,7 +37,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) IdentityId $id;
-    private IdentityState $operationalState;
+    private IdentityState $accessState;
     private ErasureState $erasureState;
 
     public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
@@ -60,7 +60,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->operationalState->isSuspended()) {
+        if ($this->accessState->isSuspended()) {
             return;
         }
 
@@ -80,7 +80,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->operationalState->isActive()) {
+        if ($this->accessState->isActive()) {
             return;
         }
 
@@ -136,7 +136,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = IdentityId::fromString($event->id);
-        $this->operationalState = IdentityState::ACTIVE;
+        $this->accessState = IdentityState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
     }
 
@@ -161,12 +161,12 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applySuspended(IdentitySuspended $event): void
     {
-        $this->operationalState = IdentityState::SUSPENDED;
+        $this->accessState = IdentityState::SUSPENDED;
     }
 
     #[Apply]
     private function applyReactivated(IdentityReactivated $event): void
     {
-        $this->operationalState = IdentityState::ACTIVE;
+        $this->accessState = IdentityState::ACTIVE;
     }
 }
