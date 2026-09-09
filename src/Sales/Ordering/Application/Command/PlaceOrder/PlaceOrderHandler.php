@@ -1,0 +1,110 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Ordering\Application\Command\PlaceOrder;
+
+use Psr\Clock\ClockInterface;
+use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
+use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerErasureRequestedException;
+use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
+use Sales\Ordering\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
+use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Ordering\Application\Finder\Buyer\PostalAddressResult;
+use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
+use Sales\Ordering\Application\Finder\ListedProduct\ListedProductResult;
+use Sales\Ordering\Domain\Exception\OrderAlreadyExistsException;
+use Sales\Ordering\Domain\Exception\OrderWithoutLineException;
+use Sales\Ordering\Domain\Order;
+use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Ordering\Domain\ValueObject\OrderLine;
+use Sales\Ordering\Domain\ValueObject\Product;
+use Shared\Application\Command\CommandHandler;
+use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\PostalAddress;
+
+#[CommandHandler]
+final readonly class PlaceOrderHandler
+{
+    public function __construct(
+        private OrderRepositoryInterface $repository,
+        private BuyerFinderInterface $buyerFinder,
+        private ListedProductFinderInterface $listedProductFinder,
+        private ClockInterface $clock,
+    ) {
+    }
+
+    /**
+     * @throws BuyerAddressesNotCompletedException
+     * @throws BuyerNotRegisteredException
+     * @throws BuyerErasureRequestedException
+     * @throws OutdatedOrderException
+     * @throws OrderWithoutLineException
+     * @throws OrderAlreadyExistsException
+     */
+    public function __invoke(PlaceOrder $command): void
+    {
+        $buyer = $this->buyerFinder->ofIdOrNull($command->buyerId)
+            ?? throw BuyerNotRegisteredException::forId($command->buyerId);
+
+        if ($buyer->erasureRequested) {
+            throw BuyerErasureRequestedException::forId($command->buyerId);
+        }
+
+        if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {
+            throw BuyerAddressesNotCompletedException::forId($command->buyerId);
+        }
+
+        $productIds = array_column($command->lines, 'productId');
+
+        /** @var array<string, ListedProductResult> $currentProducts */
+        $currentProducts = iterator_to_array($this->listedProductFinder->byIds(...$productIds)->indexBy(
+            static fn (ListedProductResult $result): string => $result->productId,
+        ));
+
+        $order = Order::place(
+            id: OrderId::fromString($command->id),
+            buyerId: $buyer->buyerId,
+            shippingAddress: $this->toPostalAddress($buyer->shippingAddress),
+            billingAddress: $this->toPostalAddress($buyer->billingAddress),
+            lines: array_map(
+                fn (array $line): OrderLine => $this->resolveLine($line, $currentProducts),
+                $command->lines,
+            ),
+            placedAt: $this->clock->now(),
+        );
+
+        $this->repository->save($order);
+    }
+
+    private function toPostalAddress(PostalAddressResult $address): PostalAddress
+    {
+        return PostalAddress::of(
+            $address->recipientName,
+            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
+        );
+    }
+
+    /**
+     * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $line
+     * @param array<string, ListedProductResult>                                            $currentProducts
+     *
+     * @throws OutdatedOrderException
+     */
+    private function resolveLine(array $line, array $currentProducts): OrderLine
+    {
+        $currentResult = $currentProducts[$line['productId']] ?? null;
+        $current = null !== $currentResult
+            ? Product::of($currentResult->productId, Label::fromString($currentResult->label), Money::fromCents($currentResult->unitPriceInCents))
+            : null;
+
+        if (null === $current || !Money::fromCents($line['unitPriceInCents'])->equals($current->price)) {
+            throw OutdatedOrderException::forId($line['productId']);
+        }
+
+        return OrderLine::of($current, $line['quantity']);
+    }
+}

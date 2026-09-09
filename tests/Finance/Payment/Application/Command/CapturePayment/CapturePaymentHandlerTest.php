@@ -9,7 +9,7 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CapturePaymentHandlerTest extends AbstractIntegrationTestCase

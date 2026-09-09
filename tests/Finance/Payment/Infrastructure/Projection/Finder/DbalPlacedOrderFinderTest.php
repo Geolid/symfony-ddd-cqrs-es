@@ -8,8 +8,8 @@ use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNo
 use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Ordering\Domain\ValueObject\OrderLine;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalPlacedOrderFinderTest extends AbstractIntegrationTestCase

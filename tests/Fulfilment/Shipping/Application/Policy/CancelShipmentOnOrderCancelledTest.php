@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipping\Application\Policy\CancelShipmentOnOrderCancelled;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
+use Sales\Ordering\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
