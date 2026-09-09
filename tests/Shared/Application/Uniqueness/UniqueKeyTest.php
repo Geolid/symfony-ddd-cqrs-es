@@ -20,7 +20,7 @@ final class UniqueKeyTest extends TestCase
     public function itCreates(array $scope, string $expected): void
     {
         // When
-        $key = UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, ...$scope);
+        $key = UniqueKey::for(DummyUniqueKey::NAME, ...$scope);
 
         // Then
         self::assertSame($expected, $key->toString());
@@ -31,17 +31,17 @@ final class UniqueKeyTest extends TestCase
      */
     public static function provideScopes(): iterable
     {
-        yield 'no scope' => [[], 'dummy.discriminator'];
-        yield 'single scope segment' => [['scope-a'], "dummy.discriminator\x1Fscope-a"];
-        yield 'multiple scope segments' => [['scope-a', 'scope-b'], "dummy.discriminator\x1Fscope-a\x1Fscope-b"];
+        yield 'no scope' => [[], 'dummy.name'];
+        yield 'single scope segment' => [['scope-a'], "dummy.name\x1Fscope-a"];
+        yield 'multiple scope segments' => [['scope-a', 'scope-b'], "dummy.name\x1Fscope-a\x1Fscope-b"];
     }
 
     #[Test]
     public function itEquals(): void
     {
         // Given
-        $a = UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, 'scope-a');
-        $b = UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, 'scope-a');
+        $a = UniqueKey::for(DummyUniqueKey::NAME, 'scope-a');
+        $b = UniqueKey::for(DummyUniqueKey::NAME, 'scope-a');
 
         // When
         $equals = $a->equals($b);
@@ -54,9 +54,9 @@ final class UniqueKeyTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, 'scope-a');
-        $differentScope = UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, 'scope-b');
-        $differentDiscriminator = UniqueKey::for(DummyUniqueKey::OTHER_DISCRIMINATOR, 'scope-a');
+        $a = UniqueKey::for(DummyUniqueKey::NAME, 'scope-a');
+        $differentScope = UniqueKey::for(DummyUniqueKey::NAME, 'scope-b');
+        $differentDiscriminator = UniqueKey::for(DummyUniqueKey::CODE, 'scope-a');
 
         // When
         $differsOnScope = $a->equals($differentScope);
