@@ -31,8 +31,8 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     {
         parent::setUp();
 
-        $this->baseConstraint = new ValidUniqueValue(DummyUniqueKey::A);
-        $this->exclusionConstraint = new ValidUniqueValue(DummyUniqueKey::A, excludeOwnerIdPropertyPath: 'id');
+        $this->baseConstraint = new ValidUniqueValue(DummyUniqueKey::DISCRIMINATOR);
+        $this->exclusionConstraint = new ValidUniqueValue(DummyUniqueKey::DISCRIMINATOR, excludeOwnerIdPropertyPath: 'id');
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::DISCRIMINATOR), 'reserved-value', self::OWNER_ID);
 
         // When
         $this->validator->validate('reserved-value', $this->baseConstraint);
@@ -63,10 +63,10 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     {
         // Given
         $scope = 'scope-a';
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A, $scope), 'reserved-value', self::OWNER_ID);
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::DISCRIMINATOR, $scope), 'reserved-value', self::OWNER_ID);
 
         // When
-        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::A, [$scope]));
+        $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::DISCRIMINATOR, [$scope]));
 
         // Then
         $this->assertViolationRaised();
@@ -76,7 +76,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itAcceptsWhenOwnerMatches(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', self::OWNER_ID);
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::DISCRIMINATOR), 'reserved-value', self::OWNER_ID);
         $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
@@ -90,7 +90,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itRefusesWhenOwnerDiffers(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::A), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $this->registry->reserve(UniqueKey::for(DummyUniqueKey::DISCRIMINATOR), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
         $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
@@ -177,7 +177,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     {
         $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
             ->setParameter('{{ value }}', 'reserved-value')
-            ->setParameter('{{ key }}', 'A')
+            ->setParameter('{{ key }}', 'DISCRIMINATOR')
             ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
             ->assertRaised();
     }

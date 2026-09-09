@@ -6,6 +6,6 @@ namespace Shared\Tests\Support\Double;
 
 enum DummyUniqueKey: string
 {
-    case A = 'dummy.a';
-    case B = 'dummy.b';
+    case DISCRIMINATOR = 'dummy.discriminator';
+    case OTHER_DISCRIMINATOR = 'dummy.other_discriminator';
 }
