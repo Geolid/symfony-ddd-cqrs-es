@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Tests\Ordering\Infrastructure\EventStore;
+
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Domain\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
+
+final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
+{
+    private OrderRepositoryInterface $repository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->repository = $this->service(OrderRepositoryInterface::class);
+    }
+
+    #[Test]
+    public function itSavesAndLoads(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+
+        // When
+        $this->repository->save($order);
+        $loaded = $this->repository->load($order->id);
+
+        // Then
+        self::assertSame($order->id->toString(), $loaded->id->toString());
+    }
+
+    #[Test]
+    public function itThrowsWhenNotFound(): void
+    {
+        // Then
+        $this->expectException(OrderNotFoundException::class);
+
+        // When
+        $this->repository->load(OrderId::fromString(Uuid::uuid7()->toString()));
+    }
+
+    #[Test]
+    public function itHas(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $this->repository->save($order);
+
+        // When
+        $exists = $this->repository->has($order->id);
+
+        // Then
+        self::assertTrue($exists);
+    }
+
+    #[Test]
+    public function itHasNot(): void
+    {
+        // When
+        $notExists = $this->repository->has(OrderId::fromString(Uuid::uuid7()->toString()));
+
+        // Then
+        self::assertFalse($notExists);
+    }
+}

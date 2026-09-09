@@ -6,7 +6,7 @@ namespace Fulfilment\Shipping\Application\Policy;
 
 use Fulfilment\Shipping\Application\Command\CancelShipment\CancelShipment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
+use Sales\Ordering\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;

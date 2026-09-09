@@ -16,7 +16,7 @@ use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 

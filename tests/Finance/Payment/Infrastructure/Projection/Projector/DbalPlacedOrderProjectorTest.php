@@ -7,8 +7,8 @@ namespace Finance\Tests\Payment\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPlacedOrderProjector;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Order\Domain\ValueObject\OrderLine;
-use Sales\Tests\Order\Support\Builder\OrderBuilder;
+use Sales\Ordering\Domain\ValueObject\OrderLine;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 

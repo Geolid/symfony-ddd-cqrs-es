@@ -10,7 +10,7 @@ use Finance\Payment\Application\Policy\CancelPaymentOnOrderAborted;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Order\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
+use Sales\Ordering\Application\IntegrationEvent\OrderAborted\OrderAbortedIntegrationEvent;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 

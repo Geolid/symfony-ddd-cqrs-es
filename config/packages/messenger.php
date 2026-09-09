@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
-use Sales\Order\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
+use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
