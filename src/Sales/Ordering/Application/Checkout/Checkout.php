@@ -13,13 +13,13 @@ use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Ordering\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductResult;
-use Sales\Ordering\Domain\Shared\Entity\Line;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyConvertedException;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyExistsException;
 use Sales\Ordering\Domain\Cart\Exception\CartEmptyException;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Cart\ValueObject\CartId;
+use Sales\Ordering\Domain\Shared\Entity\Line;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 
