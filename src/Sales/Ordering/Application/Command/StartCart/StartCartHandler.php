@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\StartCart;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Application\Command\StartCart\Exception\CartAlreadyActiveException;
 use Sales\Ordering\Application\Uniqueness\CartUniqueKey;
+use Sales\Ordering\Application\Uniqueness\Exception\CartAlreadyActiveException;
 use Sales\Ordering\Domain\Cart\Cart;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyExistsException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;

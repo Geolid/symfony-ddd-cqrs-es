@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Command\ManifestShipment;
 
-use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyTakenException;
+use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyTakenException;
 use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;

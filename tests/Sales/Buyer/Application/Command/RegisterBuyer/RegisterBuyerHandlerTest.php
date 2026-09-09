@@ -6,10 +6,10 @@ namespace Sales\Tests\Buyer\Application\Command\RegisterBuyer;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Application\Command\RegisterBuyer\RegisterBuyer;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
+use Sales\Buyer\Application\Uniqueness\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
 
-use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\Uniqueness\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;

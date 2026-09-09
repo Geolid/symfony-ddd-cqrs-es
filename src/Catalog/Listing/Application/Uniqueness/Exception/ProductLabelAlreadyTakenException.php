@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Listing\Application\Command\PublishProduct\Exception;
+namespace Catalog\Listing\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

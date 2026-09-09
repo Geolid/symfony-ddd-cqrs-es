@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payment\Application\Command\RequestPayment\Exception;
+namespace Finance\Payment\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Buyer\Application\Command\RegisterBuyer;
 
 use Psr\Clock\ClockInterface;
-use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
+use Sales\Buyer\Application\Uniqueness\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;

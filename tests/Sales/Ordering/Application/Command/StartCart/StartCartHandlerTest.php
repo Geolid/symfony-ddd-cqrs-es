@@ -6,8 +6,8 @@ namespace Sales\Tests\Ordering\Application\Command\StartCart;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Application\Command\StartCart\Exception\CartAlreadyActiveException;
 use Sales\Ordering\Application\Command\StartCart\StartCart;
+use Sales\Ordering\Application\Uniqueness\Exception\CartAlreadyActiveException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Cart\ValueObject\CartId;
 use Support\TestCase\AbstractIntegrationTestCase;

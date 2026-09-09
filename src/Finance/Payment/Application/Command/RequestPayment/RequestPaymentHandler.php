@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Command\RequestPayment;
 
-use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
-use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
+use Finance\Payment\Application\Uniqueness\Exception\PaymentAlreadyRequestedException;
+use Finance\Payment\Application\Uniqueness\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Payment;
