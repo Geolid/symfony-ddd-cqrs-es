@@ -8,14 +8,12 @@ use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
-use Fulfilment\Shipping\Application\Finder\Shipment\PostalAddressResult;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 final readonly class ShipmentManifester implements ShipmentManifesterInterface
 {
@@ -47,7 +45,11 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
             throw ManifestDeniedException::forUncapturedPayment($shipmentId);
         }
 
-        $trackingNumber = $this->carrier->manifest($shipmentId, $this->toPostalAddress($shipment->origin), $this->toPostalAddress($shipment->destination));
+        $trackingNumber = $this->carrier->manifest(
+            $shipmentId,
+            PostalAddressMapper::fromArray(['recipientName' => $shipment->origin->recipientName, 'address' => (array) $shipment->origin->address]),
+            PostalAddressMapper::fromArray(['recipientName' => $shipment->destination->recipientName, 'address' => (array) $shipment->destination->address]),
+        );
 
         $this->commandBus->dispatch(new ManifestShipment(
             id: $shipmentId,
@@ -55,13 +57,5 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
         ));
 
         return $trackingNumber;
-    }
-
-    private function toPostalAddress(PostalAddressResult $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address->recipientName,
-            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
-        );
     }
 }

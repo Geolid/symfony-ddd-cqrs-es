@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Infrastructure\Uniqueness\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;

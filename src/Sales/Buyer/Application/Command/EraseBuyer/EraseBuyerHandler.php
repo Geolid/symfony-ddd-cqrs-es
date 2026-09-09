@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Buyer\Application\Command\EraseBuyer;
 
 use Psr\Clock\ClockInterface;
+use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
 use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
-use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;

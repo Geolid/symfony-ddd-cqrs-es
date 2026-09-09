@@ -7,6 +7,7 @@ namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
+use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
@@ -16,7 +17,6 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterfa
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;

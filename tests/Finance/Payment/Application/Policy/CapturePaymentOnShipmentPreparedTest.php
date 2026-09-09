@@ -45,10 +45,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itCaptures(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $paymentBuilder = PaymentBuilder::new()->authorized();
         $payment = $paymentBuilder->create();
-        $this->store($order, $payment);
+        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')
             ->with($paymentBuilder['reference']->value)
             ->willReturn(PaymentGatewayStatus::CAPTURED);
@@ -83,10 +83,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itIgnoresWhenGatewayReturnsUnexpectedStatus(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $paymentBuilder = PaymentBuilder::new()->authorized();
         $payment = $paymentBuilder->create();
-        $this->store($order, $payment);
+        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::AUTHORIZED);
 
         // When
@@ -105,10 +105,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itFailsPaymentWhenGatewayDeclines(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $paymentBuilder = PaymentBuilder::new()->authorized();
         $payment = $paymentBuilder->create();
-        $this->store($order, $payment);
+        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::DECLINED);
 
         // When
@@ -128,10 +128,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itIgnoresFatalGatewayFailure(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $paymentBuilder = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized();
+        $paymentBuilder = PaymentBuilder::new()->authorized();
         $payment = $paymentBuilder->create();
-        $this->store($order, $payment);
+        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $this->store($payment, $order);
         $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');
 

@@ -11,7 +11,8 @@ use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 final readonly class PaymentAuthorizedIntegrationEvent implements IntegrationEventInterface
 {
     public function __construct(
-        public string $orderId,
+        public string $paymentId,
+        public string $cartId,
         public \DateTimeImmutable $authorizedAt,
     ) {
     }

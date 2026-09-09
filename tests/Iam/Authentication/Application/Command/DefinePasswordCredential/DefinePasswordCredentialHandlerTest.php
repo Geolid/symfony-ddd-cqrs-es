@@ -9,9 +9,9 @@ use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewa
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
+use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;

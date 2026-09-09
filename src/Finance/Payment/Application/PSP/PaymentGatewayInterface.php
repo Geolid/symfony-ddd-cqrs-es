@@ -13,7 +13,7 @@ interface PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $orderId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession;
+    public function requestPayment(string $cartId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession;
 
     /**
      * @throws PaymentGatewayException

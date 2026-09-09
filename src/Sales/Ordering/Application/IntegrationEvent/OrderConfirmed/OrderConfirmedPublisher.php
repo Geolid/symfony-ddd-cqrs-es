@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderConfirmed;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Ordering\Domain\Event\OrderConfirmed;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order;
-use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 #[Publisher('sales.ordering.publish_order_confirmed')]
 final readonly class OrderConfirmedPublisher
@@ -33,7 +34,8 @@ final readonly class OrderConfirmedPublisher
         $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
             orderId: $event->id,
             buyerId: $order->buyerId,
-            shippingAddress: $order->shippingAddress->toArray(),
+            paymentId: $order->paymentId,
+            shippingAddress: PostalAddressMapper::toArray($order->shippingAddress),
             confirmedAt: $event->confirmedAt,
         ));
     }

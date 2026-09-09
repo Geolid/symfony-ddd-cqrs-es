@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
-use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
@@ -24,13 +24,15 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
-use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerErasureRequestedException;
-use Sales\Ordering\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
-use Sales\Ordering\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
-use Sales\Ordering\Domain\Exception\OrderBelongsToAnotherBuyerException;
-use Sales\Ordering\Domain\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Exception\OrderWithoutLineException;
+use Sales\Ordering\Application\Checkout\Exception\BuyerAddressesNotCompletedException as CheckoutBuyerAddressesNotCompletedException;
+use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException as CheckoutBuyerErasureRequestedException;
+use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException as CheckoutBuyerNotRegisteredException;
+use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerAddressesNotCompletedException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerNotRegisteredException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherBuyerException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
@@ -66,10 +68,12 @@ return static function (ContainerConfigurator $container): void {
 
             // Sales
             BuyerEmailAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
+            CheckoutBuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutBuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutBuyerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CartOutdatedException::class => ['log_level' => 'info', 'status_code' => 422],
             BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
-            BuyerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
-            OutdatedOrderException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
@@ -77,7 +81,7 @@ return static function (ContainerConfigurator $container): void {
             // Finance
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
             PaymentReferenceAlreadyTakenException::class => ['log_level' => 'info', 'status_code' => 409],
-            PlacedOrderAlreadyCancelledException::class => ['log_level' => 'info', 'status_code' => 409],
+            PaymentAlreadyRequestedException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
             PaymentGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
 

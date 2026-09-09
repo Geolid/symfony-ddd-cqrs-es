@@ -36,6 +36,24 @@ final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinde
         )->one() ?? throw PaymentResultNotFoundException::forReference($reference);
     }
 
+    public function ofCartId(string $cartId): PaymentResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cartId): void {
+                $qb->andWhere('cart_id = :cartId')->setParameter('cartId', $cartId);
+            },
+        )->one() ?? throw PaymentResultNotFoundException::forCartId($cartId);
+    }
+
+    public function ofOrderId(string $orderId): PaymentResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($orderId): void {
+                $qb->andWhere('order_id = :orderId')->setParameter('orderId', $orderId);
+            },
+        )->one() ?? throw PaymentResultNotFoundException::forOrderId($orderId);
+    }
+
     public function byStatus(PaymentStatus $status): static
     {
         return $this->filter(
@@ -59,7 +77,7 @@ final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinde
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'cancelled_at')
+        $qb->select('id', 'cart_id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'abandoned_at', 'voided_at')
             ->from(DbalPaymentProjector::TABLE)
             ->orderBy('requested_at', 'ASC')
             ->addOrderBy('id', 'ASC');

@@ -13,6 +13,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -24,7 +25,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Given
         $orderId = Uuid::uuid7()->toString();
         $buyerId = Uuid::uuid7()->toString();
-        $destinationData = ShipmentBuilder::sample('destination')->toArray();
+        $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
         $warehouseAddressProvider = $this->service(WarehouseAddressProvider::class);
 
         $dispatched = null;
@@ -39,6 +40,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         $this->trigger(RequestShipmentOnOrderConfirmed::class, new OrderConfirmedIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
+            paymentId: Uuid::uuid7()->toString(),
             shippingAddress: $destinationData,
             confirmedAt: Clock::get()->now(),
         ));
@@ -46,7 +48,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Then
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
-        $originAddress = $warehouseAddressProvider->get()->toArray();
+        $originAddress = PostalAddressMapper::toArray($warehouseAddressProvider->get());
         self::assertSame($orderId, $dispatched->orderId);
         self::assertSame($buyerId, $dispatched->buyerId);
         self::assertSame($originAddress, $dispatched->origin);

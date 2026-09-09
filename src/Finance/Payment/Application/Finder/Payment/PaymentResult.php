@@ -10,7 +10,8 @@ final readonly class PaymentResult
 {
     public function __construct(
         public string $id,
-        public string $orderId,
+        public string $cartId,
+        public ?string $orderId,
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,
@@ -19,7 +20,8 @@ final readonly class PaymentResult
         public ?\DateTimeImmutable $authorizedAt,
         public ?\DateTimeImmutable $capturedAt,
         public ?\DateTimeImmutable $failedAt,
-        public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $abandonedAt,
+        public ?\DateTimeImmutable $voidedAt,
     ) {
     }
 }

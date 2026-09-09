@@ -20,7 +20,7 @@ final class PrepareOrderOnShipmentPreparedTest extends AbstractIntegrationTestCa
     public function itPrepares(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When

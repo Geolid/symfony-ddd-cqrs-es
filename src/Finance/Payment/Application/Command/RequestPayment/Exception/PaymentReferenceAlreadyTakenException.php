@@ -11,7 +11,7 @@ final class PaymentReferenceAlreadyTakenException extends \RuntimeException impl
     public static function forReference(string $reference, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('The payment reference "%s" is already assigned to another order payment.', $reference),
+            message: \sprintf('The payment reference "%s" is already assigned to another payment.', $reference),
             previous: $previous,
         );
     }

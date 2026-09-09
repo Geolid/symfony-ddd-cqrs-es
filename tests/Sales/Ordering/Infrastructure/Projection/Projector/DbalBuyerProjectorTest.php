@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -56,7 +57,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
         self::assertSame(
-            SnakeCaseKeys::from($builder['shippingAddress']->toArray()),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
             $this->decoded($row['shipping_address']),
         );
 
@@ -64,7 +65,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['shipping_address']);
         self::assertSame(
-            SnakeCaseKeys::from($otherBuilder['shippingAddress']->toArray()),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($otherBuilder['shippingAddress'])),
             $this->decoded($otherRow['shipping_address']),
         );
     }
@@ -87,7 +88,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
         self::assertSame(
-            SnakeCaseKeys::from($builder['billingAddress']->toArray()),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
             $this->decoded($row['billing_address']),
         );
 
@@ -95,7 +96,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['billing_address']);
         self::assertSame(
-            SnakeCaseKeys::from($otherBuilder['billingAddress']->toArray()),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($otherBuilder['billingAddress'])),
             $this->decoded($otherRow['billing_address']),
         );
     }

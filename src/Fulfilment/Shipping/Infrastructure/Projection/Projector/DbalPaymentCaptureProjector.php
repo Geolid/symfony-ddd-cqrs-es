@@ -9,7 +9,6 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Finance\Payment\Application\IntegrationEvent\PaymentCaptured\PaymentCapturedIntegrationEvent;
-use Finance\Payment\Application\IntegrationEvent\PaymentRequested\PaymentRequestedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
@@ -19,26 +18,15 @@ final readonly class DbalPaymentCaptureProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'fulfilment_shipping_payment_capture';
 
-    #[Subscribe(PaymentRequestedIntegrationEvent::class)]
-    public function onPaymentRequested(PaymentRequestedIntegrationEvent $event): void
+    #[Subscribe(PaymentCapturedIntegrationEvent::class)]
+    public function onPaymentCaptured(PaymentCapturedIntegrationEvent $event): void
     {
         $this->connection->insert(
             self::TABLE,
             [
                 'order_id' => $event->orderId,
-                'captured' => false,
+                'captured' => true,
             ],
-            ['captured' => Types::BOOLEAN],
-        );
-    }
-
-    #[Subscribe(PaymentCapturedIntegrationEvent::class)]
-    public function onPaymentCaptured(PaymentCapturedIntegrationEvent $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            ['captured' => true],
-            ['order_id' => $event->orderId],
             ['captured' => Types::BOOLEAN],
         );
     }

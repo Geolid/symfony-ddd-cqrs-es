@@ -10,15 +10,14 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Event\OrderAborted;
-use Sales\Ordering\Domain\Event\OrderCancelled;
-use Sales\Ordering\Domain\Event\OrderConfirmed;
-use Sales\Ordering\Domain\Event\OrderDelivered;
-use Sales\Ordering\Domain\Event\OrderDispatched;
-use Sales\Ordering\Domain\Event\OrderErased;
-use Sales\Ordering\Domain\Event\OrderErasureApproved;
-use Sales\Ordering\Domain\Event\OrderPlaced;
-use Sales\Ordering\Domain\Event\OrderPrepared;
+use Sales\Ordering\Domain\Order\Event\OrderCancelled;
+use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
+use Sales\Ordering\Domain\Order\Event\OrderDelivered;
+use Sales\Ordering\Domain\Order\Event\OrderDispatched;
+use Sales\Ordering\Domain\Order\Event\OrderErased;
+use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
+use Sales\Ordering\Domain\Order\Event\OrderFailed;
+use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Shared\Application\ErasureStatus;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
@@ -28,20 +27,21 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'sales_ordering';
 
-    #[Subscribe(OrderPlaced::class)]
-    public function onOrderPlaced(OrderPlaced $event): void
+    #[Subscribe(OrderConfirmed::class)]
+    public function onOrderConfirmed(OrderConfirmed $event): void
     {
         $this->connection->insert(
             self::TABLE,
             [
                 'id' => $event->id,
                 'buyer_id' => $event->buyerId,
+                'payment_id' => $event->paymentId,
                 'total_amount_in_cents' => $event->totalAmount->cents,
-                'status' => OrderStatus::PLACED->value,
-                'placed_at' => $event->placedAt,
+                'status' => OrderStatus::CONFIRMED->value,
+                'confirmed_at' => $event->confirmedAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
-            ['placed_at' => Types::DATETIME_IMMUTABLE],
+            ['confirmed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -59,31 +59,17 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(OrderConfirmed::class)]
-    public function onOrderConfirmed(OrderConfirmed $event): void
+    #[Subscribe(OrderFailed::class)]
+    public function onOrderFailed(OrderFailed $event): void
     {
         $this->connection->update(
             self::TABLE,
             [
-                'status' => OrderStatus::CONFIRMED->value,
-                'confirmed_at' => $event->confirmedAt,
+                'status' => OrderStatus::FAILED->value,
+                'failed_at' => $event->failedAt,
             ],
             ['id' => $event->id],
-            ['confirmed_at' => Types::DATETIME_IMMUTABLE],
-        );
-    }
-
-    #[Subscribe(OrderAborted::class)]
-    public function onOrderAborted(OrderAborted $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            [
-                'status' => OrderStatus::CANCELLED->value,
-                'cancelled_at' => $event->abortedAt,
-            ],
-            ['id' => $event->id],
-            ['cancelled_at' => Types::DATETIME_IMMUTABLE],
+            ['failed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -157,14 +143,15 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
+        $table->addColumn('payment_id', Types::STRING, ['length' => 36]);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
-        $table->addColumn('placed_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('prepared_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

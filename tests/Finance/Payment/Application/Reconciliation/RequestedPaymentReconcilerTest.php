@@ -10,6 +10,7 @@ use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Application\Reconciliation\RequestedPaymentReconciler;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -49,14 +50,15 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReconcilesWhenFailed(): void
+    #[DataProvider('provideNonAuthorizedStatuses')]
+    public function itAbandonsWhenNotAuthorized(PaymentGatewayStatus $gatewayStatus): void
     {
         // Given
         $paymentBuilder = PaymentBuilder::new();
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
         $carrier = $this->createStub(PaymentGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::DECLINED);
+        $carrier->method('checkStatus')->willReturn($gatewayStatus);
         $reconciler = new RequestedPaymentReconciler($carrier, $this->commandBus);
 
         // When
@@ -65,26 +67,15 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
         // Then
         self::assertTrue($reconciled);
         $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
-        self::assertSame(PaymentStatus::FAILED, $result->status);
+        self::assertSame(PaymentStatus::ABANDONED, $result->status);
     }
 
-    #[Test]
-    public function itIgnoresWhenStillPending(): void
+    /**
+     * @return iterable<string, array{PaymentGatewayStatus}>
+     */
+    public static function provideNonAuthorizedStatuses(): iterable
     {
-        // Given
-        $paymentBuilder = PaymentBuilder::new();
-        $orderPayment = $paymentBuilder->create();
-        $this->store($orderPayment);
-        $carrier = $this->createStub(PaymentGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::REQUESTED);
-        $reconciler = new RequestedPaymentReconciler($carrier, $this->commandBus);
-
-        // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
-
-        // Then
-        self::assertFalse($reconciled);
-        $result = $this->orderPaymentFinder->ofReference($paymentBuilder['reference']->value);
-        self::assertSame(PaymentStatus::REQUESTED, $result->status);
+        yield 'still requested' => [PaymentGatewayStatus::REQUESTED];
+        yield 'declined' => [PaymentGatewayStatus::DECLINED];
     }
 }

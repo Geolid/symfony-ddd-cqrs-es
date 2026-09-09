@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -42,20 +43,8 @@ final class AcmeCarrierGatewayTest extends TestCase
         self::assertSame(
             [
                 'merchantReference' => $shipmentId,
-                'origin' => [
-                    'recipient' => 'Returns Department',
-                    'street' => "1 rue de l'Entrepot",
-                    'postalCode' => '75012',
-                    'city' => 'Paris',
-                    'countryCode' => 'FR',
-                ],
-                'destination' => [
-                    'recipient' => 'Ada Lovelace',
-                    'street' => '12 rue des Lilas',
-                    'postalCode' => '75001',
-                    'city' => 'Paris',
-                    'countryCode' => 'FR',
-                ],
+                'origin' => PostalAddressMapper::toArray($this->originAddress()),
+                'destination' => PostalAddressMapper::toArray($this->destinationAddress()),
             ],
             $requestBody,
         );

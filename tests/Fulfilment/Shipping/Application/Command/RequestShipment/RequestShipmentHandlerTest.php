@@ -12,6 +12,7 @@ use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -32,8 +33,8 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
         $orderId = ShipmentBuilder::sample('orderId');
         $buyerId = ShipmentBuilder::sample('buyerId');
-        $originData = ShipmentBuilder::sample('origin')->toArray();
-        $destinationData = ShipmentBuilder::sample('destination')->toArray();
+        $originData = PostalAddressMapper::toArray(ShipmentBuilder::sample('origin'));
+        $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
 
         // When
         $this->dispatch(new RequestShipment($id, $orderId, $buyerId, $originData, $destinationData));
@@ -44,7 +45,7 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($orderId, $result->orderId);
         self::assertSame(ShipmentStatus::REQUESTED, $result->status);
         $shipment = $this->repository->load(ShipmentId::fromString($id));
-        $shipmentDestination = $shipment->destination->toArray();
+        $shipmentDestination = PostalAddressMapper::toArray($shipment->destination);
         self::assertSame($destinationData, $shipmentDestination);
     }
 }

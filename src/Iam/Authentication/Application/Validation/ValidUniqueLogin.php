@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Validation;
 
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialUniqueKey;
+use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
 use Shared\Application\Validation\ValidUniqueValue;
 use Symfony\Component\Validator\Constraints\Compound;
 

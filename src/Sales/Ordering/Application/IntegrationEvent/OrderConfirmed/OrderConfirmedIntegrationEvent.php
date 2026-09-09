@@ -20,6 +20,7 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
         #[DataSubjectId]
         public string $orderId,
         public string $buyerId,
+        public string $paymentId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',
             'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],

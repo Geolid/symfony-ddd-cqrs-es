@@ -7,6 +7,7 @@ namespace Sales\Tests\Buyer\Application\IntegrationEvent\BuyerShippingAddressDef
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressDefined\BuyerShippingAddressDefinedIntegrationEvent;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class BuyerShippingAddressDefinedPublisherTest extends AbstractIntegrationTestCase
@@ -25,7 +26,7 @@ final class BuyerShippingAddressDefinedPublisherTest extends AbstractIntegration
         $event = $this->publishedEventOf(BuyerShippingAddressDefinedIntegrationEvent::class);
         self::assertSame($buyer->id->toString(), $event->buyerId);
         self::assertSame($builder['identityId'], $event->identityId);
-        self::assertSame($builder['shippingAddress']->toArray(), $event->postalAddress);
+        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->postalAddress);
         self::assertSame($builder['shippingAddressDefinedAt']->format(\DateTimeInterface::ATOM), $event->definedAt->format(\DateTimeInterface::ATOM));
     }
 }

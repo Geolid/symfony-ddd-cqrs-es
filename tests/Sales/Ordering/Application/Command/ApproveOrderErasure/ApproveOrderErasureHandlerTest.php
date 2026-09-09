@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -43,7 +43,7 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApprovesAndErasesWhenAlreadyDelivered(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When

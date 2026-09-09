@@ -8,22 +8,13 @@ enum PaymentState: string
 {
     case REQUESTED = 'requested';
     case AUTHORIZED = 'authorized';
-    case FAILED = 'failed';
     case CAPTURED = 'captured';
-    case CANCELLED = 'cancelled';
+    case FAILED = 'failed';
+    case ABANDONED = 'abandoned';
+    case VOIDED = 'voided';
 
-    public function isRequested(): bool
+    public function isAbandoned(): bool
     {
-        return self::REQUESTED === $this;
-    }
-
-    public function isAuthorized(): bool
-    {
-        return self::AUTHORIZED === $this;
-    }
-
-    public function isCancelled(): bool
-    {
-        return self::CANCELLED === $this;
+        return self::ABANDONED === $this;
     }
 }

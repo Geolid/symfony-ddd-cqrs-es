@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Domain\Order;
-use Sales\Ordering\Domain\ValueObject\OrderId;
-use Sales\Ordering\Domain\ValueObject\OrderLine;
-use Sales\Ordering\Domain\ValueObject\Product;
+use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Shared\Entity\Line;
+use Sales\Ordering\Domain\Shared\ValueObject\LineId;
+use Sales\Ordering\Domain\Shared\ValueObject\Product;
+use Sales\Ordering\Domain\Shared\ValueObject\Quantity;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
@@ -21,14 +23,14 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: OrderId,
  *     buyerId: string,
+ *     paymentId: string,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
- *     lines: list<OrderLine>,
- *     placedAt: \DateTimeImmutable,
+ *     lines: list<Line>,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
- *     abortedAt: \DateTimeImmutable,
+ *     failedAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
  *     deliveredAt: \DateTimeImmutable,
  *     erasureApprovedAt: \DateTimeImmutable,
@@ -48,6 +50,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(buyerId: $buyerId);
     }
 
+    public function withPaymentId(string $paymentId): self
+    {
+        return $this->withAttributes(paymentId: $paymentId);
+    }
+
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
         return $this->withAttributes(shippingAddress: $shippingAddress);
@@ -59,7 +66,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<OrderLine> $lines
+     * @param list<Line> $lines
      */
     public function withLines(array $lines): self
     {
@@ -68,24 +75,14 @@ final class OrderBuilder extends AbstractAggregateBuilder
 
     public function withTotalAmountInCents(int $totalAmountInCents): self
     {
-        return $this->withLines([OrderLine::of(
-            Product::of(Uuid::uuid7()->toString(), Label::fromString('Assorted goods'), Money::fromCents($totalAmountInCents)),
-            1,
-        )]);
+        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Assorted goods'), Money::fromCents($totalAmountInCents));
+
+        return $this->withLines([new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(1))]);
     }
 
-    public function withPlacedAt(\DateTimeImmutable $placedAt): self
+    public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
     {
-        return $this->withAttributes(placedAt: $placedAt);
-    }
-
-    public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
-    {
-        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->confirm($builder['confirmedAt']),
-        );
+        return $this->withAttributes(confirmedAt: $confirmedAt);
     }
 
     public function prepared(?\DateTimeImmutable $preparedAt = null): self
@@ -106,12 +103,12 @@ final class OrderBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function aborted(?\DateTimeImmutable $abortedAt = null): self
+    public function failed(?\DateTimeImmutable $failedAt = null): self
     {
-        $builder = null !== $abortedAt ? $this->withAttributes(abortedAt: $abortedAt) : $this;
+        $builder = null !== $failedAt ? $this->withAttributes(failedAt: $failedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Order $order, self $builder) => $order->abort($builder['abortedAt']),
+            static fn (Order $order, self $builder) => $order->fail($builder['failedAt']),
         );
     }
 
@@ -149,6 +146,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
         return [
             'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
             'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -157,30 +155,31 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => static fn (): array => [OrderLine::of(
-                Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
-                SeededFaker::get()->numberBetween(1, 5),
-            )],
-            'placedAt' => static fn (): \DateTimeImmutable => $now,
-            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
-            'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'lines' => static function (): array {
+                $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
+
+                return [new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(SeededFaker::get()->numberBetween(1, 5)))];
+            },
+            'confirmedAt' => static fn (): \DateTimeImmutable => $now,
+            'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
-            'abortedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
-            'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
-            'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
-            'erasureApprovedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
+            'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'erasureApprovedAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
         ];
     }
 
     protected function build(): Order
     {
-        return Order::place(
+        return Order::confirm(
             id: $this['id'],
             buyerId: $this['buyerId'],
+            paymentId: $this['paymentId'],
             shippingAddress: $this['shippingAddress'],
             billingAddress: $this['billingAddress'],
             lines: $this['lines'],
-            placedAt: $this['placedAt'],
+            confirmedAt: $this['confirmedAt'],
         );
     }
 }

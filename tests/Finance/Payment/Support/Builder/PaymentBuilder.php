@@ -15,6 +15,8 @@ use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Attributes = array{
+ *     id: PaymentId,
+ *     cartId: string,
  *     orderId: string,
  *     amount: Money,
  *     reference: PaymentReference,
@@ -23,16 +25,22 @@ use Symfony\Component\Clock\Clock;
  *     authorizedAt: \DateTimeImmutable,
  *     failedAt: \DateTimeImmutable,
  *     capturedAt: \DateTimeImmutable,
- *     cancelledAt: \DateTimeImmutable,
+ *     abandonedAt: \DateTimeImmutable,
+ *     voidedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Payment, Attributes>
  */
 final class PaymentBuilder extends AbstractAggregateBuilder
 {
-    public function withOrderId(string $orderId): self
+    public function withId(string $id): self
     {
-        return $this->withAttributes(orderId: $orderId);
+        return $this->withAttributes(id: PaymentId::fromString($id));
+    }
+
+    public function withCartId(string $cartId): self
+    {
+        return $this->withAttributes(cartId: $cartId);
     }
 
     public function withAmountInCents(int $amountInCents): self
@@ -64,30 +72,45 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function failed(?\DateTimeImmutable $failedAt = null): self
+    public function failed(?string $orderId = null, ?\DateTimeImmutable $failedAt = null): self
     {
-        $builder = null !== $failedAt ? $this->withAttributes(failedAt: $failedAt) : $this;
+        $builder = $this->withAttributes(...array_filter(
+            ['orderId' => $orderId, 'failedAt' => $failedAt],
+            static fn (mixed $value): bool => null !== $value,
+        ));
 
         return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->fail($builder['failedAt']),
+            static fn (Payment $orderPayment, self $builder) => $orderPayment->fail($builder['orderId'], $builder['failedAt']),
         );
     }
 
-    public function captured(?\DateTimeImmutable $capturedAt = null): self
+    public function captured(?string $orderId = null, ?\DateTimeImmutable $capturedAt = null): self
     {
-        $builder = null !== $capturedAt ? $this->withAttributes(capturedAt: $capturedAt) : $this;
+        $builder = $this->withAttributes(...array_filter(
+            ['orderId' => $orderId, 'capturedAt' => $capturedAt],
+            static fn (mixed $value): bool => null !== $value,
+        ));
 
         return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->capture($builder['capturedAt']),
+            static fn (Payment $orderPayment, self $builder) => $orderPayment->capture($builder['orderId'], $builder['capturedAt']),
         );
     }
 
-    public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
+    public function abandoned(?\DateTimeImmutable $abandonedAt = null): self
     {
-        $builder = null !== $cancelledAt ? $this->withAttributes(cancelledAt: $cancelledAt) : $this;
+        $builder = null !== $abandonedAt ? $this->withAttributes(abandonedAt: $abandonedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Payment $orderPayment, self $builder) => $orderPayment->cancel($builder['cancelledAt']),
+            static fn (Payment $orderPayment, self $builder) => $orderPayment->abandon($builder['abandonedAt']),
+        );
+    }
+
+    public function voided(?\DateTimeImmutable $voidedAt = null): self
+    {
+        $builder = null !== $voidedAt ? $this->withAttributes(voidedAt: $voidedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Payment $orderPayment, self $builder) => $orderPayment->void($builder['voidedAt']),
         );
     }
 
@@ -96,6 +119,8 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
+            'id' => static fn (): PaymentId => PaymentId::fromString(Uuid::uuid7()->toString()),
+            'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
@@ -104,17 +129,16 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             'authorizedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'capturedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
-            'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'abandonedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'voidedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 
     protected function build(): Payment
     {
-        $orderId = $this['orderId'];
-
         return Payment::request(
-            id: PaymentId::forOrder($orderId),
-            orderId: $orderId,
+            id: $this['id'],
+            cartId: $this['cartId'],
             amount: $this['amount'],
             reference: $this['reference'],
             checkoutUrl: $this['checkoutUrl'],

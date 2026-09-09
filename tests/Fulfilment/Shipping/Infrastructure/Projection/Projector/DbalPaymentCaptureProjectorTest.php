@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalPaymentCaptureProjector;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -16,39 +17,18 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class DbalPaymentCaptureProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsOnPaymentRequested(): void
-    {
-        // Given
-        $builder = PaymentBuilder::new();
-        $payment = $builder->create();
-
-        // When
-        $this->store($payment);
-
-        // Then
-        $row = $this->fetchRow($builder['orderId']);
-        self::assertNotFalse($row);
-        self::assertFalse((bool) $row['captured']);
-    }
-
-    #[Test]
     public function itProjectsOnPaymentCaptured(): void
     {
         // Given
-        $otherBuilder = PaymentBuilder::new();
-        $other = $otherBuilder->create();
-        $builder = PaymentBuilder::new()->authorized()->captured();
-        $payment = $builder->create();
+        $orderId = Uuid::uuid7()->toString();
+        $other = PaymentBuilder::new()->create();
+        $payment = PaymentBuilder::new()->authorized()->captured($orderId)->create();
         $this->store($other, $payment);
 
         // Then
-        $row = $this->fetchRow($builder['orderId']);
+        $row = $this->fetchRow($orderId);
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['captured']);
-
-        $otherRow = $this->fetchRow($otherBuilder['orderId']);
-        self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['captured']);
     }
 
     /**

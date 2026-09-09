@@ -10,9 +10,9 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\CancelOrder\CancelOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Exception\OrderBelongsToAnotherBuyerException;
-use Sales\Ordering\Domain\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherBuyerException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -65,7 +65,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $buyerId = Uuid::uuid7()->toString();
         $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
-        $payment = PaymentBuilder::new()->withOrderId($order->id->toString())->create();
+        $payment = PaymentBuilder::new()->create();
         $this->store($order, $payment);
 
         // When
@@ -109,7 +109,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->prepared()->dispatched()->create();
+        $order = OrderBuilder::new()->withBuyerId($buyerId)->prepared()->dispatched()->create();
         $this->store($order);
 
         // Then

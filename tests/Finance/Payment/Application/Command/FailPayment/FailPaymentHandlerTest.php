@@ -8,42 +8,40 @@ use Finance\Payment\Application\Command\FailPayment\FailPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itFailsWhenRequested(): void
+    public function itFailsWhenAuthorized(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $paymentFactory = PaymentBuilder::new()->withOrderId($order->id->toString());
+        $orderId = Uuid::uuid7()->toString();
+        $paymentFactory = PaymentBuilder::new()->authorized();
         $orderPayment = $paymentFactory->create();
-        $this->store($order, $orderPayment);
+        $this->store($orderPayment);
 
         // When
-        $this->dispatch(new FailPayment($orderPayment->id->toString()));
+        $this->dispatch(new FailPayment($orderPayment->id->toString(), $orderId));
 
         // Then
         $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
+        self::assertSame($orderId, $result->orderId);
     }
 
     #[Test]
-    public function itIgnoresWhenAuthorized(): void
+    public function itIgnoresWhenRequested(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
-        $orderPayment = PaymentBuilder::new()->withOrderId($order->id->toString())->authorized()->create();
-        $this->store($order, $orderPayment);
+        $orderPayment = PaymentBuilder::new()->create();
+        $this->store($orderPayment);
 
         // When
-        $this->dispatch(new FailPayment($orderPayment->id->toString()));
+        $this->dispatch(new FailPayment($orderPayment->id->toString(), Uuid::uuid7()->toString()));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -53,12 +51,12 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = PaymentId::forOrder(Uuid::uuid7()->toString())->toString();
+        $id = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);
 
         // When
-        $this->dispatch(new FailPayment($id));
+        $this->dispatch(new FailPayment($id, Uuid::uuid7()->toString()));
     }
 }

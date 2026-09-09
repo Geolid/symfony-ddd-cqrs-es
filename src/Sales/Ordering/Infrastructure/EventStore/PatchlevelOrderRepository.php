@@ -7,11 +7,11 @@ namespace Sales\Ordering\Infrastructure\EventStore;
 use Patchlevel\EventSourcing\Repository\AggregateAlreadyExists;
 use Patchlevel\EventSourcing\Repository\AggregateNotFound;
 use Patchlevel\EventSourcing\Repository\Repository;
-use Sales\Ordering\Domain\Exception\OrderAlreadyExistsException;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order;
-use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class PatchlevelOrderRepository implements OrderRepositoryInterface

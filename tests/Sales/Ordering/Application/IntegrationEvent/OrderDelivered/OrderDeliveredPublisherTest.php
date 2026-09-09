@@ -7,6 +7,7 @@ namespace Sales\Tests\Ordering\Application\IntegrationEvent\OrderDelivered;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\IntegrationEvent\OrderDelivered\OrderDeliveredIntegrationEvent;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderDeliveredPublisherTest extends AbstractIntegrationTestCase
@@ -15,7 +16,7 @@ final class OrderDeliveredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered();
+        $builder = OrderBuilder::new()->prepared()->dispatched()->delivered();
         $order = $builder->create();
 
         // When
@@ -23,7 +24,7 @@ final class OrderDeliveredPublisherTest extends AbstractIntegrationTestCase
 
         // Then
         $event = $this->publishedEventOf(OrderDeliveredIntegrationEvent::class);
-        $shippingAddress = $order->shippingAddress->toArray();
+        $shippingAddress = PostalAddressMapper::toArray($order->shippingAddress);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($builder['buyerId'], $event->buyerId);
         self::assertSame($shippingAddress, $event->shippingAddress);

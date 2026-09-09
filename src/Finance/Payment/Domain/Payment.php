@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Domain;
 
+use Finance\Payment\Domain\Event\PaymentAbandoned;
 use Finance\Payment\Domain\Event\PaymentAuthorized;
-use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
@@ -29,23 +29,24 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     /** @var array<string, list<PaymentState>> */
     private const array OPERATIONAL_TRANSITIONS = [
-        PaymentState::REQUESTED->value => [PaymentState::AUTHORIZED, PaymentState::FAILED, PaymentState::CANCELLED],
-        PaymentState::AUTHORIZED->value => [PaymentState::CAPTURED, PaymentState::FAILED, PaymentState::CANCELLED],
+        PaymentState::REQUESTED->value => [PaymentState::AUTHORIZED, PaymentState::ABANDONED],
+        PaymentState::AUTHORIZED->value => [PaymentState::CAPTURED, PaymentState::FAILED, PaymentState::VOIDED],
         PaymentState::CAPTURED->value => [],
         PaymentState::FAILED->value => [],
-        PaymentState::CANCELLED->value => [],
+        PaymentState::ABANDONED->value => [],
+        PaymentState::VOIDED->value => [],
     ];
 
     #[Id]
     public private(set) PaymentId $id;
     public private(set) string $checkoutUrl;
     public private(set) PaymentReference $reference;
-    private string $orderId;
+    private string $cartId;
     private PaymentState $operationalState;
 
     public static function request(
         PaymentId $id,
-        string $orderId,
+        string $cartId,
         Money $amount,
         PaymentReference $reference,
         string $checkoutUrl,
@@ -54,7 +55,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new PaymentRequested(
             id: $id->toString(),
-            orderId: $orderId,
+            cartId: $cartId,
             amount: $amount,
             reference: $reference,
             checkoutUrl: $checkoutUrl,
@@ -66,10 +67,9 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function authorize(\DateTimeImmutable $authorizedAt): void
     {
-        if ($this->operationalState->isCancelled()) {
+        if ($this->operationalState->isAbandoned()) {
             $this->recordThat(new PaymentVoided(
                 id: $this->id->toString(),
-                orderId: $this->orderId,
                 reference: $this->reference,
                 voidedAt: $authorizedAt,
             ));
@@ -81,12 +81,12 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PaymentAuthorized(
             id: $this->id->toString(),
-            orderId: $this->orderId,
+            cartId: $this->cartId,
             authorizedAt: $authorizedAt,
         ));
     }
 
-    public function fail(\DateTimeImmutable $failedAt): void
+    public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
             return;
@@ -94,12 +94,12 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PaymentFailed(
             id: $this->id->toString(),
-            orderId: $this->orderId,
+            orderId: $orderId,
             failedAt: $failedAt,
         ));
     }
 
-    public function capture(\DateTimeImmutable $capturedAt): void
+    public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
             return;
@@ -107,29 +107,35 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PaymentCaptured(
             id: $this->id->toString(),
-            orderId: $this->orderId,
+            orderId: $orderId,
             capturedAt: $capturedAt,
         ));
     }
 
-    public function cancel(\DateTimeImmutable $cancelledAt): void
+    public function abandon(\DateTimeImmutable $abandonedAt): void
     {
-        if ($this->operationalState->isRequested()) {
-            $this->recordThat(new PaymentCancelled(
-                id: $this->id->toString(),
-                orderId: $this->orderId,
-                cancelledAt: $cancelledAt,
-            ));
+        if (!$this->canTransitionOperationalTo(PaymentState::ABANDONED)) {
+            return;
         }
 
-        if ($this->operationalState->isAuthorized()) {
-            $this->recordThat(new PaymentVoided(
-                id: $this->id->toString(),
-                orderId: $this->orderId,
-                reference: $this->reference,
-                voidedAt: $cancelledAt,
-            ));
+        $this->recordThat(new PaymentAbandoned(
+            id: $this->id->toString(),
+            cartId: $this->cartId,
+            abandonedAt: $abandonedAt,
+        ));
+    }
+
+    public function void(\DateTimeImmutable $voidedAt): void
+    {
+        if (!$this->canTransitionOperationalTo(PaymentState::VOIDED)) {
+            return;
         }
+
+        $this->recordThat(new PaymentVoided(
+            id: $this->id->toString(),
+            reference: $this->reference,
+            voidedAt: $voidedAt,
+        ));
     }
 
     private function canTransitionOperationalTo(PaymentState $target): bool
@@ -141,7 +147,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRequested(PaymentRequested $event): void
     {
         $this->id = PaymentId::fromString($event->id);
-        $this->orderId = $event->orderId;
+        $this->cartId = $event->cartId;
         $this->reference = $event->reference;
         $this->checkoutUrl = $event->checkoutUrl;
         $this->operationalState = PaymentState::REQUESTED;
@@ -166,14 +172,14 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCancelled(PaymentCancelled $event): void
+    private function applyAbandoned(PaymentAbandoned $event): void
     {
-        $this->operationalState = PaymentState::CANCELLED;
+        $this->operationalState = PaymentState::ABANDONED;
     }
 
     #[Apply]
     private function applyVoided(PaymentVoided $event): void
     {
-        $this->operationalState = PaymentState::CANCELLED;
+        $this->operationalState = PaymentState::VOIDED;
     }
 }

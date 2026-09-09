@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\ApiKey;
 use Iam\Authentication\Application\ApiKey\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

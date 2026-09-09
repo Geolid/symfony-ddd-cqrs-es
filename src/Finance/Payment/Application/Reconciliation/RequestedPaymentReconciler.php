@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Reconciliation;
 
+use Finance\Payment\Application\Command\AbandonPayment\AbandonPayment;
 use Finance\Payment\Application\Command\AuthorizePayment\AuthorizePayment;
-use Finance\Payment\Application\Command\FailPayment\FailPayment;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
@@ -33,8 +33,7 @@ final readonly class RequestedPaymentReconciler implements PaymentStatusReconcil
     {
         return match ($this->paymentGateway->checkStatus($reference)) {
             PaymentGatewayStatus::AUTHORIZED => $this->authorize($id),
-            PaymentGatewayStatus::DECLINED => $this->fail($id),
-            default => false,
+            default => $this->abandon($id),
         };
     }
 
@@ -53,9 +52,9 @@ final readonly class RequestedPaymentReconciler implements PaymentStatusReconcil
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    private function fail(string $id): bool
+    private function abandon(string $id): bool
     {
-        $this->commandBus->dispatch(new FailPayment($id));
+        $this->commandBus->dispatch(new AbandonPayment($id));
 
         return true;
     }

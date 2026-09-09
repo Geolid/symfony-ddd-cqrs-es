@@ -9,14 +9,15 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Domain\Event\PaymentAbandoned;
 use Finance\Payment\Domain\Event\PaymentAuthorized;
-use Finance\Payment\Domain\Event\PaymentCancelled;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -32,7 +33,8 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'order_id' => $event->orderId,
+                'cart_id' => $event->cartId,
+                'order_id' => null,
                 'amount_in_cents' => $event->amount->cents,
                 'reference' => $event->reference->value,
                 'checkout_url' => $event->checkoutUrl,
@@ -63,6 +65,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
+                'order_id' => $event->orderId,
                 'status' => PaymentStatus::FAILED->value,
                 'failed_at' => $event->failedAt,
             ],
@@ -77,6 +80,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
+                'order_id' => $event->orderId,
                 'status' => PaymentStatus::CAPTURED->value,
                 'captured_at' => $event->capturedAt,
             ],
@@ -85,17 +89,27 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(PaymentCancelled::class)]
-    public function onPaymentCancelled(PaymentCancelled $event): void
+    #[Subscribe(PaymentAbandoned::class)]
+    public function onPaymentAbandoned(PaymentAbandoned $event): void
     {
         $this->connection->update(
             self::TABLE,
             [
-                'status' => PaymentStatus::CANCELLED->value,
-                'cancelled_at' => $event->cancelledAt,
+                'status' => PaymentStatus::ABANDONED->value,
+                'abandoned_at' => $event->abandonedAt,
             ],
             ['id' => $event->id],
-            ['cancelled_at' => Types::DATETIME_IMMUTABLE],
+            ['abandoned_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
+    #[Subscribe(OrderConfirmedIntegrationEvent::class)]
+    public function onOrderConfirmed(OrderConfirmedIntegrationEvent $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['order_id' => $event->orderId],
+            ['id' => $event->paymentId],
         );
     }
 
@@ -105,11 +119,11 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => PaymentStatus::CANCELLED->value,
-                'cancelled_at' => $event->voidedAt,
+                'status' => PaymentStatus::VOIDED->value,
+                'voided_at' => $event->voidedAt,
             ],
             ['id' => $event->id],
-            ['cancelled_at' => Types::DATETIME_IMMUTABLE],
+            ['voided_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -120,7 +134,8 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('order_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('order_id', Types::STRING, ['length' => 36, 'notnull' => false, 'default' => null]);
         $table->addColumn('amount_in_cents', Types::INTEGER);
         $table->addColumn('reference', Types::STRING, ['length' => PaymentReference::MAX_LENGTH]);
         $table->addColumn('checkout_url', Types::STRING, ['length' => 2048]);
@@ -129,13 +144,15 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $table->addColumn('authorized_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('captured_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('failed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
-        $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('abandoned_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('voided_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['order_id'], 'sales_order_payment_order_id_idx');
-        $table->addIndex(['reference'], 'sales_order_payment_reference_idx');
+        $table->addIndex(['cart_id'], 'finance_payment_cart_id_idx');
+        $table->addIndex(['order_id'], 'finance_payment_order_id_idx');
+        $table->addIndex(['reference'], 'finance_payment_reference_idx');
     }
 }

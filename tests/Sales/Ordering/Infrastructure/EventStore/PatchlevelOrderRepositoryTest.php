@@ -6,9 +6,9 @@ namespace Sales\Tests\Ordering\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

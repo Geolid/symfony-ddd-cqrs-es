@@ -44,7 +44,7 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentNotFoundException::class);
 
         // When
-        $this->repository->load(PaymentId::forOrder(Uuid::uuid7()->toString()));
+        $this->repository->load(PaymentId::fromString(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -65,7 +65,7 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(PaymentId::forOrder(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has(PaymentId::fromString(Uuid::uuid7()->toString()));
 
         // Then
         self::assertFalse($notExists);

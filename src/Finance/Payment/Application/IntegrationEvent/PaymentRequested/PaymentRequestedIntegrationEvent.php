@@ -12,7 +12,7 @@ final readonly class PaymentRequestedIntegrationEvent implements IntegrationEven
 {
     public function __construct(
         public string $paymentId,
-        public string $orderId,
+        public string $cartId,
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,

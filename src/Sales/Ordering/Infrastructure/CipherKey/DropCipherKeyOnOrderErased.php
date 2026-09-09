@@ -6,7 +6,7 @@ namespace Sales\Ordering\Infrastructure\CipherKey;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
-use Sales\Ordering\Domain\Event\OrderErased;
+use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Shared\Infrastructure\Processor;
 
 #[Processor('sales.ordering.drop_cipher_key_on_order_erased')]

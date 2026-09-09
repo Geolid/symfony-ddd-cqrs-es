@@ -8,7 +8,7 @@ use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlrea
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
-use Compliance\Erasing\Domain\ValueObject\ErasureUniqueKey;
+use Compliance\Erasing\Application\Uniqueness\ErasureUniqueKey;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

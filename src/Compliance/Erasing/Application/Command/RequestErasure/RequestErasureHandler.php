@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Compliance\Erasing\Application\Command\RequestErasure;
 
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyRequestedException;
+use Compliance\Erasing\Application\Uniqueness\ErasureUniqueKey;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
-use Compliance\Erasing\Domain\ValueObject\ErasureUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
