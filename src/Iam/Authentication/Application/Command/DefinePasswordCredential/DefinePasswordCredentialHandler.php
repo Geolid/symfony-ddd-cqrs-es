@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 
-use Iam\Authentication\Application\CompromisedPassword\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
 use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
