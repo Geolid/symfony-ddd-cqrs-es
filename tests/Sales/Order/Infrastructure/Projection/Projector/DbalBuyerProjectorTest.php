@@ -16,7 +16,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
  *     buyer_id: string,
  *     shipping_address: string|null,
  *     billing_address: string|null,
- *     erasure_pending: bool,
+ *     erasure_requested: bool,
  * }
  */
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
@@ -35,7 +35,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertNull($row['shipping_address']);
         self::assertNull($row['billing_address']);
-        self::assertFalse((bool) $row['erasure_pending']);
+        self::assertFalse((bool) $row['erasure_requested']);
     }
 
     #[Test]
@@ -133,11 +133,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
-        self::assertTrue((bool) $row['erasure_pending']);
+        self::assertTrue((bool) $row['erasure_requested']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['erasure_pending']);
+        self::assertFalse((bool) $otherRow['erasure_requested']);
     }
 
     #[Test]
@@ -154,11 +154,11 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
-        self::assertFalse((bool) $row['erasure_pending']);
+        self::assertFalse((bool) $row['erasure_requested']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertTrue((bool) $otherRow['erasure_pending']);
+        self::assertTrue((bool) $otherRow['erasure_requested']);
     }
 
     /**
@@ -182,7 +182,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, shipping_address, billing_address, erasure_pending FROM %s WHERE buyer_id = :buyerId',
+                'SELECT buyer_id, shipping_address, billing_address, erasure_requested FROM %s WHERE buyer_id = :buyerId',
                 DbalBuyerProjector::TABLE,
             ),
             ['buyerId' => $buyerId],

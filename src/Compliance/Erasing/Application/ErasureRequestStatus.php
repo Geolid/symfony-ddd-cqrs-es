@@ -6,7 +6,7 @@ namespace Compliance\Erasing\Application;
 
 enum ErasureRequestStatus: string
 {
-    case RETAINED = 'retained';
     case REQUESTED = 'requested';
+    case CANCELLED = 'cancelled';
     case APPROVED = 'approved';
 }

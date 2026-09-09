@@ -6,7 +6,7 @@ namespace Sales\Order\Application\Command\PlaceOrder\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class BuyerPendingErasureException extends \RuntimeException implements ApplicationExceptionInterface
+final class BuyerErasureRequestedException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forId(string $buyerId): self
     {

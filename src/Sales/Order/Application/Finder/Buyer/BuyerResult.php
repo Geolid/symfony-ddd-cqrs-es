@@ -10,7 +10,7 @@ final readonly class BuyerResult
         public string $buyerId,
         public ?PostalAddressResult $shippingAddress,
         public ?PostalAddressResult $billingAddress,
-        public bool $erasurePending,
+        public bool $erasureRequested,
     ) {
     }
 }

@@ -31,9 +31,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'buyer_id' => $event->buyerId,
-                'erasure_pending' => false,
+                'erasure_requested' => false,
             ],
-            ['erasure_pending' => Types::BOOLEAN],
+            ['erasure_requested' => Types::BOOLEAN],
         );
     }
 
@@ -70,9 +70,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['erasure_pending' => true],
+            ['erasure_requested' => true],
             ['buyer_id' => $event->buyerId],
-            ['erasure_pending' => Types::BOOLEAN],
+            ['erasure_requested' => Types::BOOLEAN],
         );
     }
 
@@ -81,9 +81,9 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['erasure_pending' => false],
+            ['erasure_requested' => false],
             ['buyer_id' => $event->buyerId],
-            ['erasure_pending' => Types::BOOLEAN],
+            ['erasure_requested' => Types::BOOLEAN],
         );
     }
 
@@ -96,7 +96,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
         $table->addColumn('buyer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);
-        $table->addColumn('erasure_pending', Types::BOOLEAN, ['default' => false]);
+        $table->addColumn('erasure_requested', Types::BOOLEAN, ['default' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('buyer_id'))

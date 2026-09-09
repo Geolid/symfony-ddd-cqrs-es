@@ -24,6 +24,11 @@ use Symfony\Component\Clock\Clock;
  */
 final class ErasureBuilder extends AbstractAggregateBuilder
 {
+    public function withId(string $id): self
+    {
+        return $this->withAttributes(id: ErasureId::fromString($id));
+    }
+
     public function withIdentityId(string $identityId): self
     {
         return $this->withAttributes(identityId: $identityId);
@@ -43,15 +48,6 @@ final class ErasureBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function reRequested(?\DateTimeImmutable $requestedAt = null): self
-    {
-        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Erasure $erasure, self $builder) => $erasure->reRequest($builder['requestedAt']),
-        );
-    }
-
     public function approved(?\DateTimeImmutable $approvedAt = null): self
     {
         $builder = null !== $approvedAt ? $this->withAttributes(approvedAt: $approvedAt) : $this;
@@ -66,13 +62,10 @@ final class ErasureBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => static fn (?self $builder): ErasureId => ErasureId::forIdentity(
-                null !== $builder ? $builder['identityId'] : self::sample('identityId'),
-            ),
+            'id' => static fn (): ErasureId => ErasureId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'requestedAt' => static fn (): \DateTimeImmutable => $now,
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
-            'reRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 hours'),
             'approvedAt' => static fn (): \DateTimeImmutable => $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1)),
         ];
     }

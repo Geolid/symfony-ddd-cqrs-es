@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerErasureRequestedException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerPendingErasureException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
 use Sales\Order\Application\Command\PlaceOrder\PlaceOrder;
 use Sales\Order\Application\Finder\Order\OrderFinderInterface;
@@ -77,14 +77,14 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenBuyerPendingErasure(): void
+    public function itFailsWhenBuyerErasureRequested(): void
     {
         // Given
         $buyer = BuyerBuilder::new()->erasureRequested()->create();
         $this->store($buyer);
 
         // Then
-        $this->expectException(BuyerPendingErasureException::class);
+        $this->expectException(BuyerErasureRequestedException::class);
 
         // When
         $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));

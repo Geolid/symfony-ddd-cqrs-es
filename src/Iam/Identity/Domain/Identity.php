@@ -30,8 +30,8 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     /** @var array<string, list<ErasureState>> */
     private const array ERASURE_TRANSITIONS = [
-        ErasureState::RETAINED->value => [ErasureState::PENDING],
-        ErasureState::PENDING->value => [ErasureState::RETAINED, ErasureState::ERASED],
+        ErasureState::RETAINED->value => [ErasureState::REQUESTED],
+        ErasureState::REQUESTED->value => [ErasureState::RETAINED, ErasureState::ERASED],
         ErasureState::ERASED->value => [],
     ];
 
@@ -93,7 +93,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     public function requestErasure(\DateTimeImmutable $requestedAt): void
     {
-        if (!$this->canTransitionErasureTo(ErasureState::PENDING)) {
+        if (!$this->canTransitionErasureTo(ErasureState::REQUESTED)) {
             return;
         }
 
@@ -143,7 +143,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyErasureRequested(IdentityErasureRequested $event): void
     {
-        $this->erasureState = ErasureState::PENDING;
+        $this->erasureState = ErasureState::REQUESTED;
     }
 
     #[Apply]

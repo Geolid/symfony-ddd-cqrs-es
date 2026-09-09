@@ -19,12 +19,15 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itGetsById(): void
     {
         // Given
         $other = ErasureBuilder::new()->create();
-        $erasure = ErasureBuilder::new()->create();
+        $builder = ErasureBuilder::new()->cancelled();
+        $erasure = $builder->create();
         $this->store($other, $erasure);
 
         // When
@@ -32,7 +35,16 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($erasure->id->toString(), $result->id);
-        self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
+        self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
+        self::assertSame(
+            $builder['requestedAt']->format(self::DATE_FORMAT),
+            $result->requestedAt?->format(self::DATE_FORMAT),
+        );
+        self::assertSame(
+            $builder['cancelledAt']->format(self::DATE_FORMAT),
+            $result->cancelledAt?->format(self::DATE_FORMAT),
+        );
+        self::assertNull($result->approvedAt);
     }
 
     #[Test]

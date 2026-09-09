@@ -26,8 +26,9 @@ final readonly class ApproveErasureHandler
      */
     public function __invoke(ApproveErasure $command): void
     {
-        $erasure = $this->repository->load(ErasureId::forIdentity($command->identityId));
+        $erasure = $this->repository->load(ErasureId::fromString($command->id));
         $erasure->approve($this->clock->now());
+
         $this->repository->save($erasure);
     }
 }

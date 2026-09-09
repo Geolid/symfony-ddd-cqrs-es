@@ -12,16 +12,19 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{status: string, requested_at: string|null}
+ * @phpstan-type Row array{status: string, requested_at: string|null, cancelled_at: string|null, approved_at: string|null}
  */
 final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itProjectsOnErasureRequested(): void
     {
         // Given
         $other = ErasureBuilder::new()->create();
-        $erasure = ErasureBuilder::new()->create();
+        $builder = ErasureBuilder::new();
+        $erasure = $builder->create();
 
         // When
         $this->store($other, $erasure);
@@ -30,6 +33,7 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($erasure->id->toString());
         self::assertNotFalse($row);
         self::assertSame(ErasureRequestStatus::REQUESTED->value, $row['status']);
+        self::assertSame($builder['requestedAt']->format(self::DATE_FORMAT), $row['requested_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -41,7 +45,8 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = ErasureBuilder::new()->create();
-        $erasure = ErasureBuilder::new()->cancelled()->create();
+        $builder = ErasureBuilder::new()->cancelled();
+        $erasure = $builder->create();
 
         // When
         $this->store($other, $erasure);
@@ -49,8 +54,8 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($erasure->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(ErasureRequestStatus::RETAINED->value, $row['status']);
-        self::assertNull($row['requested_at']);
+        self::assertSame(ErasureRequestStatus::CANCELLED->value, $row['status']);
+        self::assertSame($builder['cancelledAt']->format(self::DATE_FORMAT), $row['cancelled_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -62,7 +67,8 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = ErasureBuilder::new()->create();
-        $erasure = ErasureBuilder::new()->approved()->create();
+        $builder = ErasureBuilder::new()->approved();
+        $erasure = $builder->create();
 
         // When
         $this->store($other, $erasure);
@@ -71,6 +77,7 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($erasure->id->toString());
         self::assertNotFalse($row);
         self::assertSame(ErasureRequestStatus::APPROVED->value, $row['status']);
+        self::assertSame($builder['approvedAt']->format(self::DATE_FORMAT), $row['approved_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -86,7 +93,7 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT status, requested_at FROM %s WHERE id = :id', DbalErasureProjector::TABLE),
+            \sprintf('SELECT status, requested_at, cancelled_at, approved_at FROM %s WHERE id = :id', DbalErasureProjector::TABLE),
             ['id' => $id],
         );
     }
