@@ -10,6 +10,7 @@ use Sales\Ordering\Application\Command\ChangeCartLineQuantity\ChangeCartLineQuan
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Shared\ValueObject\LineId;
+use Sales\Ordering\Domain\Shared\ValueObject\Quantity;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +29,7 @@ final class ChangeCartLineQuantityHandlerTest extends AbstractIntegrationTestCas
     public function itChanges(): void
     {
         // Given
-        $builder = CartBuilder::new()->lineAdded();
+        $builder = CartBuilder::new()->lineAdded(quantity: Quantity::of(1));
         $cart = $builder->create();
         $this->store($cart);
         $lineId = LineId::forProduct($cart->id->toString(), $builder['product']->id);

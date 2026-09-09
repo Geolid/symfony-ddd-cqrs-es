@@ -15,6 +15,7 @@ use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException;
 use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
 use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
+use Sales\Ordering\Domain\Cart\Event\CartCheckedOut;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Shared\ValueObject\Product;
@@ -61,6 +62,8 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         self::assertSame($cartBuilder['quantity']->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
         self::assertNotNull($buyer->billingAddress);
         self::assertSame($buyer->billingAddress->toArray(), $result->billingAddress->toArray());
+        $event = $this->publishedEventOf(CartCheckedOut::class);
+        self::assertSame($cart->id->toString(), $event->id);
     }
 
     #[Test]

@@ -136,6 +136,28 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itProjectsOnOrderConfirmed(): void
+    {
+        // Given
+        $other = PaymentBuilder::new()->create();
+        $this->store($other);
+        $payment = PaymentBuilder::new()->create();
+        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+
+        // When
+        $this->store($payment, $order);
+
+        // Then
+        $row = $this->fetchRow($payment->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame($order->id->toString(), $row['order_id']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['order_id']);
+    }
+
+    #[Test]
     public function itProjectsOnPaymentVoided(): void
     {
         // Given

@@ -93,4 +93,42 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             lines: [],
         ));
     }
+
+    #[Test]
+    public function itFailsWhenShippingAddressMissing(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()->billingAddressDefined()->create();
+        $this->store($buyer);
+
+        // Then
+        $this->expectException(BuyerAddressesNotCompletedException::class);
+
+        // When
+        $this->dispatch(new ConfirmOrder(
+            id: Uuid::uuid7()->toString(),
+            buyerId: $buyer->id->toString(),
+            paymentId: Uuid::uuid7()->toString(),
+            lines: [],
+        ));
+    }
+
+    #[Test]
+    public function itFailsWhenBillingAddressMissing(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()->shippingAddressDefined()->create();
+        $this->store($buyer);
+
+        // Then
+        $this->expectException(BuyerAddressesNotCompletedException::class);
+
+        // When
+        $this->dispatch(new ConfirmOrder(
+            id: Uuid::uuid7()->toString(),
+            buyerId: $buyer->id->toString(),
+            paymentId: Uuid::uuid7()->toString(),
+            lines: [],
+        ));
+    }
 }

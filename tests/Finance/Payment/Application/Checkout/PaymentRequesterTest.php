@@ -7,6 +7,7 @@ namespace Finance\Tests\Payment\Application\Checkout;
 use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentSession;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
+use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
@@ -25,6 +26,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     private PaymentGatewayInterface&MockObject $paymentGateway;
 
     private PaymentRequester $service;
+    private PaymentFinderInterface $finder;
     private PostalAddress $billingAddress;
     private UniqueValueRegistryInterface $uniqueValues;
 
@@ -34,9 +36,10 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
         $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
         $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->finder = $this->service(PaymentFinderInterface::class);
         $this->service = new PaymentRequester(
             $this->uniqueValues,
-            $this->service(PaymentFinderInterface::class),
+            $this->finder,
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
         );
@@ -59,6 +62,9 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($checkoutUrl, $result);
+        $payment = $this->finder->ofCartId($cartId);
+        self::assertSame($reference, $payment->reference);
+        self::assertSame(PaymentStatus::REQUESTED, $payment->status);
     }
 
     #[Test]

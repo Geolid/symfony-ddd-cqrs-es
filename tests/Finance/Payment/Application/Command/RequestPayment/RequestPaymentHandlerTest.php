@@ -93,4 +93,29 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
             checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));
     }
+
+    #[Test]
+    public function itReleasesReferenceWhenAlreadyRequestedForCart(): void
+    {
+        // Given
+        $cartId = PaymentBuilder::sample('cartId');
+        $this->uniqueValues->reserve(UniqueKey::for(PaymentUniqueKey::CART), $cartId, Uuid::uuid7()->toString());
+        $reference = PaymentBuilder::sample('reference')->value;
+        $referenceKey = UniqueKey::for(PaymentUniqueKey::REFERENCE);
+
+        // When
+        try {
+            $this->dispatch(new RequestPayment(
+                id: Uuid::uuid7()->toString(),
+                cartId: $cartId,
+                amountInCents: 4_200,
+                reference: $reference,
+                checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
+            ));
+        } catch (PaymentAlreadyRequestedException) {
+        }
+
+        // Then
+        self::assertFalse($this->uniqueValues->exists($referenceKey, $reference));
+    }
 }
