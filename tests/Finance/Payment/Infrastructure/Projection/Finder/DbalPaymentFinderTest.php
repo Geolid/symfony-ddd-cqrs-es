@@ -6,25 +6,21 @@ namespace Finance\Tests\Payment\Infrastructure\Projection\Finder;
 
 use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
+use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Domain\Payment;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<PaymentResult>
+ */
+final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
 {
-    private PaymentFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(PaymentFinderInterface::class);
-    }
-
     #[Test]
     public function itGetsById(): void
     {
@@ -34,7 +30,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $orderPayment);
 
         // When
-        $result = $this->finder->ofId($orderPayment->id->toString());
+        $result = $this->finder()->ofId($orderPayment->id->toString());
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
@@ -48,7 +44,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -67,7 +63,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($order, $orderPayment);
 
         // When
-        $result = $this->finder->ofReference($paymentFactory['reference']->value);
+        $result = $this->finder()->ofReference($paymentFactory['reference']->value);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
@@ -92,7 +88,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofReference(PaymentBuilder::sample('reference')->value);
+        $this->finder()->ofReference(PaymentBuilder::sample('reference')->value);
     }
 
     #[Test]
@@ -105,7 +101,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $orderPayment);
 
         // When
-        $result = $this->finder->ofCartId($paymentBuilder['cartId']);
+        $result = $this->finder()->ofCartId($paymentBuilder['cartId']);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
@@ -118,7 +114,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofCartId(Uuid::uuid7()->toString());
+        $this->finder()->ofCartId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -131,7 +127,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $orderPayment);
 
         // When
-        $result = $this->finder->ofOrderId($order->id->toString());
+        $result = $this->finder()->ofOrderId($order->id->toString());
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
@@ -144,7 +140,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofOrderId(Uuid::uuid7()->toString());
+        $this->finder()->ofOrderId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -156,7 +152,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($authorized, $requested);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus(PaymentStatus::REQUESTED));
+        $results = iterator_to_array($this->finder()->byStatus(PaymentStatus::REQUESTED));
 
         // Then
         self::assertCount(1, $results);
@@ -173,10 +169,31 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->store($freshRequested, $staleRequested);
 
         // When
-        $results = iterator_to_array($this->finder->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->stalledBefore($now));
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($staleRequested->id->toString(), $results[0]->id);
+    }
+
+    protected function finder(): PaymentFinderInterface
+    {
+        return $this->service(PaymentFinderInterface::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function seed(int $count): array
+    {
+        $payments = PaymentBuilder::new()->many($count)->create();
+        $this->store(...$payments);
+
+        return array_map(static fn (Payment $payment): string => $payment->id->toString(), $payments);
+    }
+
+    protected function idOf(object $result): string
+    {
+        return $result->id;
     }
 }

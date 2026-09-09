@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
+use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResult;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
-final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<ApiKeyCredentialResult>
+ */
+final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCase
 {
-    private ApiKeyCredentialFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(ApiKeyCredentialFinderInterface::class);
-    }
-
     #[Test]
     public function itGetsByKeyId(): void
     {
@@ -34,7 +30,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofKeyId($builder['keyId']->value);
+        $result = $this->finder()->ofKeyId($builder['keyId']->value);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
@@ -59,7 +55,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofKeyId(ApiKeyCredentialBuilder::sample('keyId')->value);
+        $this->finder()->ofKeyId(ApiKeyCredentialBuilder::sample('keyId')->value);
     }
 
     #[Test]
@@ -74,10 +70,31 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $credential);
 
         // When
-        $results = iterator_to_array($this->finder->byIdentity($identityId), false);
+        $results = iterator_to_array($this->finder()->byIdentity($identityId), false);
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($credential->id->toString(), $results[0]->id);
+    }
+
+    protected function finder(): ApiKeyCredentialFinderInterface
+    {
+        return $this->service(ApiKeyCredentialFinderInterface::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function seed(int $count): array
+    {
+        $credentials = ApiKeyCredentialBuilder::new()->withHasher(new FakeApiKeyHasher())->many($count)->create();
+        $this->store(...$credentials);
+
+        return array_map(static fn (ApiKeyCredential $credential): string => $credential->id->toString(), $credentials);
+    }
+
+    protected function idOf(object $result): string
+    {
+        return $result->id;
     }
 }
