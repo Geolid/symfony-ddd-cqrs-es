@@ -8,12 +8,13 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final class PostalAddressMapperTest extends TestCase
 {
     #[Test]
-    public function itConvertsToArray(): void
+    public function itMapsToArray(): void
     {
         // Given
         $postalAddress = PostalAddress::of('John Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR'));
@@ -32,7 +33,7 @@ final class PostalAddressMapperTest extends TestCase
     }
 
     #[Test]
-    public function itConvertsFromArray(): void
+    public function itMapsFromArray(): void
     {
         // Given
         $data = [
@@ -44,6 +45,10 @@ final class PostalAddressMapperTest extends TestCase
         $postalAddress = PostalAddressMapper::fromArray($data);
 
         // Then
-        self::assertTrue($postalAddress->equals(PostalAddress::of('John Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR'))));
+        self::assertSame('John Doe', $postalAddress->recipientName);
+        self::assertSame('10 Rue de la Paix', $postalAddress->address->street);
+        self::assertSame('75002', $postalAddress->address->postalCode);
+        self::assertSame('Paris', $postalAddress->address->city);
+        self::assertSame(CountryCode::FR, $postalAddress->address->countryCode);
     }
 }
