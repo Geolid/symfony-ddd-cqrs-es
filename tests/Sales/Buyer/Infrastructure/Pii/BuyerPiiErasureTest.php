@@ -74,7 +74,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressDefined::class, $rehydrated);
-        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), PostalAddressMapper::toArray($rehydrated->postalAddress));
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->postalAddress));
     }
 
     #[Test]
@@ -96,7 +96,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerBillingAddressDefined::class, $rehydrated);
-        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), PostalAddressMapper::toArray($rehydrated->postalAddress));
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->postalAddress));
     }
 
     #[Test]
@@ -118,7 +118,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), $rehydrated->postalAddress);
+        self::assertSame($this->erasedPostalAddress(), $rehydrated->postalAddress);
     }
 
     #[Test]
@@ -140,11 +140,14 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerBillingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), $rehydrated->postalAddress);
+        self::assertSame($this->erasedPostalAddress(), $rehydrated->postalAddress);
     }
 
-    private function erasedPostalAddress(): PostalAddress
+    /**
+     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
+     */
+    private function erasedPostalAddress(): array
     {
-        return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
+        return PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
     }
 }
