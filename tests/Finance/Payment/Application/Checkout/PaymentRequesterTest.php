@@ -9,7 +9,7 @@ use Finance\Payment\Application\Checkout\PaymentSession;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
+use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;

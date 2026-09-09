@@ -13,6 +13,7 @@ use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -73,7 +74,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressDefined::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
+        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), PostalAddressMapper::toArray($rehydrated->postalAddress));
     }
 
     #[Test]
@@ -95,7 +96,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerBillingAddressDefined::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
+        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), PostalAddressMapper::toArray($rehydrated->postalAddress));
     }
 
     #[Test]
@@ -117,7 +118,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerShippingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress);
+        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), $rehydrated->postalAddress);
     }
 
     #[Test]
@@ -139,7 +140,7 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(BuyerBillingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress);
+        self::assertSame(PostalAddressMapper::toArray($this->erasedPostalAddress()), $rehydrated->postalAddress);
     }
 
     private function erasedPostalAddress(): PostalAddress

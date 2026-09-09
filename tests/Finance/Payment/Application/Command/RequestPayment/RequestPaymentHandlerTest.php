@@ -9,7 +9,7 @@ use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenc
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
+use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

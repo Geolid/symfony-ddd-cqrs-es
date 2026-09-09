@@ -23,7 +23,7 @@ final readonly class GlobexClient
     }
 
     /**
-     * @param array<string, scalar|array<scalar>> $body
+     * @param array<string, scalar|array<string, scalar|array<string, scalar>>> $body
      *
      * @return mixed[]
      *

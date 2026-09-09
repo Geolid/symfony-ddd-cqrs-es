@@ -8,10 +8,10 @@ use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentT
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
+use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;

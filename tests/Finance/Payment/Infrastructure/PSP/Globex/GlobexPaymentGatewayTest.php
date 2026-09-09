@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -47,13 +48,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'merchantReference' => $orderId,
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
-                'billingAddress' => [
-                    'recipientName' => 'Ada Lovelace',
-                    'street' => '12 rue des Lilas',
-                    'postalCode' => '75001',
-                    'city' => 'Paris',
-                    'countryCode' => 'FR',
-                ],
+                'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
             ],
             $this->requestBody($response),
         );

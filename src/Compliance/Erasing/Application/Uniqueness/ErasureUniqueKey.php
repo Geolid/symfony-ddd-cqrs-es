@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasing\Domain\ValueObject;
+namespace Compliance\Erasing\Application\Uniqueness;
 
 enum ErasureUniqueKey: string
 {

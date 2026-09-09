@@ -20,6 +20,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\ErasureStatus;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
@@ -39,8 +40,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 'order_id' => $event->orderId,
                 'buyer_id' => $event->buyerId,
                 'status' => ShipmentStatus::REQUESTED->value,
-                'origin' => SnakeCaseKeys::from($event->origin->toArray()),
-                'destination' => SnakeCaseKeys::from($event->destination->toArray()),
+                'origin' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->origin)),
+                'destination' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->destination)),
                 'created_at' => $event->createdAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],

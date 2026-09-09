@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\ConvertCart;
 
 use Psr\Clock\ClockInterface;
+use Sales\Ordering\Application\Uniqueness\CartUniqueKey;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyExistsException;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Cart\ValueObject\CartId;
-use Sales\Ordering\Domain\Cart\ValueObject\CartUniqueKey;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniqueValueRegistryInterface;

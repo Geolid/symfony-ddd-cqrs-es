@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Fulfilment\Shipping\Application\Command\ManifestShipment;
 
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyTakenException;
+use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
-use Fulfilment\Shipping\Domain\ValueObject\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;

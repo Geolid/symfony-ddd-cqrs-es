@@ -33,12 +33,4 @@ final readonly class PostalAddress
         return $this->recipientName === $other->recipientName
             && $this->address->equals($other->address);
     }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    public function toArray(): array
-    {
-        return ['recipientName' => $this->recipientName, 'address' => $this->address->toArray()];
-    }
 }

@@ -6,12 +6,12 @@ namespace Finance\Payment\Application\Command\RequestPayment;
 
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
+use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
-use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;

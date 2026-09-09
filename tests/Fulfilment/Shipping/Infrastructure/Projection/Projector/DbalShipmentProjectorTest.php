@@ -11,6 +11,7 @@ use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjecto
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -34,8 +35,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($builder['orderId'], $row['order_id']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertSame(SnakeCaseKeys::from($builder['origin']->toArray()), $this->decoded($row['origin']));
-        self::assertSame(SnakeCaseKeys::from($builder['destination']->toArray()), $this->decoded($row['destination']));
+        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['origin'])), $this->decoded($row['origin']));
+        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['destination'])), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }

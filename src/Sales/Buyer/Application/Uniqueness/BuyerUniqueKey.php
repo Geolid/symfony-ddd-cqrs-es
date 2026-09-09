@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Domain\ValueObject;
+namespace Sales\Buyer\Application\Uniqueness;
 
 enum BuyerUniqueKey: string
 {

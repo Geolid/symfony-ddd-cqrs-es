@@ -8,6 +8,7 @@ use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierFatalFailureException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
@@ -26,8 +27,8 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     {
         $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
             'merchantReference' => $shipmentId,
-            'origin' => $this->postalAddressPayload($origin),
-            'destination' => $this->postalAddressPayload($destination),
+            'origin' => PostalAddressMapper::toArray($origin),
+            'destination' => PostalAddressMapper::toArray($destination),
         ], $shipmentId);
 
         $trackingNumber = $response['trackingNumber'] ?? null;
@@ -57,19 +58,5 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
         } catch (\ValueError) {
             throw CarrierFatalFailureException::forReason(\sprintf('A status response carries a recognized "status", got "%s".', $status));
         }
-    }
-
-    /**
-     * @return array{recipient: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function postalAddressPayload(PostalAddress $postalAddress): array
-    {
-        return [
-            'recipient' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postalCode' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'countryCode' => $postalAddress->address->countryCode->value,
-        ];
     }
 }

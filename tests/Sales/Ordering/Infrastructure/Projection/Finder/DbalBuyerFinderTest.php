@@ -10,6 +10,7 @@ use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Ordering\Application\Finder\Buyer\BuyerResult;
 use Sales\Ordering\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
@@ -40,9 +41,9 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNotNull($result->shippingAddress);
-        self::assertSame($builder['shippingAddress']->toArray(), $this->toArray($result->shippingAddress));
+        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $this->toArray($result->shippingAddress));
         self::assertNotNull($result->billingAddress);
-        self::assertSame($builder['billingAddress']->toArray(), $this->toArray($result->billingAddress));
+        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $this->toArray($result->billingAddress));
         self::assertFalse($result->erasureRequested);
     }
 

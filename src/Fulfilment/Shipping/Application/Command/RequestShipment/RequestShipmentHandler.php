@@ -10,8 +10,7 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 #[CommandHandler]
 final readonly class RequestShipmentHandler
@@ -29,8 +28,8 @@ final readonly class RequestShipmentHandler
             id: $id,
             orderId: $command->orderId,
             buyerId: $command->buyerId,
-            origin: $this->toPostalAddress($command->origin),
-            destination: $this->toPostalAddress($command->destination),
+            origin: PostalAddressMapper::fromArray($command->origin),
+            destination: PostalAddressMapper::fromArray($command->destination),
             createdAt: $this->clock->now(),
         );
 
@@ -39,13 +38,5 @@ final readonly class RequestShipmentHandler
         } catch (ShipmentAlreadyExistsException) {
             return;
         }
-    }
-
-    /**
-     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $address
-     */
-    private function toPostalAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of($address['recipientName'], Address::of(...$address['address']));
     }
 }

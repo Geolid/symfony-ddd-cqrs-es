@@ -7,7 +7,7 @@ namespace Catalog\Tests\Listing\Application\Command\PublishProduct;
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyTakenException;
 use Catalog\Listing\Application\Command\PublishProduct\PublishProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Listing\Domain\ValueObject\ProductUniqueKey;
+use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

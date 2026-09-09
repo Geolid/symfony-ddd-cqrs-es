@@ -11,6 +11,7 @@ use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DefineBuyerShippingAddressHandlerTest extends AbstractIntegrationTestCase
@@ -21,14 +22,15 @@ final class DefineBuyerShippingAddressHandlerTest extends AbstractIntegrationTes
         // Given
         $buyer = BuyerBuilder::new()->create();
         $this->store($buyer);
-        $shippingAddress = BuyerBuilder::sample('shippingAddress')->toArray();
+        $shippingAddress = PostalAddressMapper::toArray(BuyerBuilder::sample('shippingAddress'));
 
         // When
         $this->dispatch(new DefineBuyerShippingAddress($buyer->id->toString(), $shippingAddress));
 
         // Then
         $reloaded = $this->service(BuyerRepositoryInterface::class)->load(BuyerId::fromString($buyer->id->toString()));
-        self::assertSame($shippingAddress, $reloaded->shippingAddress?->toArray());
+        self::assertNotNull($reloaded->shippingAddress);
+        self::assertSame($shippingAddress, PostalAddressMapper::toArray($reloaded->shippingAddress));
     }
 
     #[Test]
@@ -38,6 +40,6 @@ final class DefineBuyerShippingAddressHandlerTest extends AbstractIntegrationTes
         $this->expectException(BuyerNotFoundException::class);
 
         // When
-        $this->dispatch(new DefineBuyerShippingAddress(Uuid::uuid7()->toString(), BuyerBuilder::sample('shippingAddress')->toArray()));
+        $this->dispatch(new DefineBuyerShippingAddress(Uuid::uuid7()->toString(), PostalAddressMapper::toArray(BuyerBuilder::sample('shippingAddress'))));
     }
 }

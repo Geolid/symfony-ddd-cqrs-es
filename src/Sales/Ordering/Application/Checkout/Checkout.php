@@ -10,7 +10,6 @@ use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException
 use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException;
 use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
 use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
-use Sales\Ordering\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductResult;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyConvertedException;
@@ -20,8 +19,7 @@ use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Cart\ValueObject\CartId;
 use Sales\Ordering\Domain\Shared\Entity\Line;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 final readonly class Checkout implements CheckoutInterface
 {
@@ -66,7 +64,10 @@ final readonly class Checkout implements CheckoutInterface
         return new CheckoutResult(
             cartId: $cartId,
             totalAmountInCents: $cart->totalAmountInCents(),
-            billingAddress: $this->toPostalAddress($buyer->billingAddress),
+            billingAddress: PostalAddressMapper::fromArray([
+                'recipientName' => $buyer->billingAddress->recipientName,
+                'address' => (array) $buyer->billingAddress->address,
+            ]),
         );
     }
 
@@ -87,13 +88,5 @@ final readonly class Checkout implements CheckoutInterface
                 throw CartOutdatedException::forProduct($line->product->id);
             }
         }
-    }
-
-    private function toPostalAddress(PostalAddressResult $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address->recipientName,
-            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
-        );
     }
 }

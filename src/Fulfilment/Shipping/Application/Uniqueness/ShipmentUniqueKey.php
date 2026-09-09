@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Fulfilment\Shipping\Domain\ValueObject;
+namespace Fulfilment\Shipping\Application\Uniqueness;
 
 enum ShipmentUniqueKey: string
 {

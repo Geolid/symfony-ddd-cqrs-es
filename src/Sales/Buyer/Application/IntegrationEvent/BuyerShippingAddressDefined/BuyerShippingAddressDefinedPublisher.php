@@ -9,6 +9,7 @@ use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 #[Publisher('sales.buyer.publish_buyer_shipping_address_defined')]
 final readonly class BuyerShippingAddressDefinedPublisher
@@ -23,7 +24,7 @@ final readonly class BuyerShippingAddressDefinedPublisher
         $this->publisher->publish(Buyer::class, $event->id, new BuyerShippingAddressDefinedIntegrationEvent(
             buyerId: $event->id,
             identityId: $event->identityId,
-            postalAddress: $event->postalAddress->toArray(),
+            postalAddress: PostalAddressMapper::toArray($event->postalAddress),
             definedAt: $event->definedAt,
         ));
     }
