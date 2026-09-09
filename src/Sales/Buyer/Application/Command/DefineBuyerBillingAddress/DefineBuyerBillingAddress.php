@@ -8,13 +8,12 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class DefineBuyerBillingAddress implements CommandInterface
 {
+    /**
+     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $billingAddress
+     */
     public function __construct(
         public string $buyerId,
-        public string $recipientName,
-        public string $street,
-        public string $postalCode,
-        public string $city,
-        public string $countryCode,
+        public array $billingAddress,
     ) {
     }
 }
