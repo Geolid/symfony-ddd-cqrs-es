@@ -30,16 +30,11 @@ final readonly class DefineBuyerShippingAddressHandler
     {
         $buyer = $this->repository->load(BuyerId::fromString($command->buyerId));
 
-        $buyer->defineShippingAddress($this->toPostalAddress($command->shippingAddress), $this->clock->now());
+        $buyer->defineShippingAddress(
+            PostalAddress::of($command->shippingAddress['recipientName'], Address::of(...$command->shippingAddress['address'])),
+            $this->clock->now(),
+        );
 
         $this->repository->save($buyer);
-    }
-
-    /**
-     * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $address
-     */
-    private function toPostalAddress(array $address): PostalAddress
-    {
-        return PostalAddress::of($address['recipientName'], Address::of(...$address['address']));
     }
 }
