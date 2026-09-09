@@ -32,6 +32,7 @@ final readonly class RequestPaymentHandler
     /**
      * @throws PaymentReferenceAlreadyTakenException
      * @throws PaymentAlreadyRequestedException
+     * @throws PaymentAlreadyExistsException
      */
     public function __invoke(RequestPayment $command): void
     {
@@ -60,10 +61,6 @@ final readonly class RequestPaymentHandler
             requestedAt: $this->clock->now(),
         );
 
-        try {
-            $this->repository->save($orderPayment);
-        } catch (PaymentAlreadyExistsException) {
-            return;
-        }
+        $this->repository->save($orderPayment);
     }
 }
