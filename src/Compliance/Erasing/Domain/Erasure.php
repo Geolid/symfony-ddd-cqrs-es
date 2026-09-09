@@ -25,15 +25,15 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
 
     /** @var array<string, list<ErasureRequestState>> */
     private const array STATE_TRANSITIONS = [
-        ErasureRequestState::RETAINED->value => [ErasureRequestState::REQUESTED],
-        ErasureRequestState::REQUESTED->value => [ErasureRequestState::RETAINED, ErasureRequestState::APPROVED],
+        ErasureRequestState::REQUESTED->value => [ErasureRequestState::CANCELLED, ErasureRequestState::APPROVED],
+        ErasureRequestState::CANCELLED->value => [],
         ErasureRequestState::APPROVED->value => [],
     ];
 
     #[Id]
     public private(set) ErasureId $id;
     public private(set) string $identityId;
-    private ErasureRequestState $state;
+    public private(set) ErasureRequestState $state;
     private \DateTimeImmutable $requestedAt;
 
     public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt): self
@@ -48,22 +48,9 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         return $self;
     }
 
-    public function reRequest(\DateTimeImmutable $requestedAt): void
-    {
-        if (!$this->canTransitionStateTo(ErasureRequestState::REQUESTED)) {
-            return;
-        }
-
-        $this->recordThat(new ErasureRequested(
-            id: $this->id->toString(),
-            identityId: $this->identityId,
-            requestedAt: $requestedAt,
-        ));
-    }
-
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if (!$this->canTransitionStateTo(ErasureRequestState::RETAINED)) {
+        if (!$this->canTransitionStateTo(ErasureRequestState::CANCELLED)) {
             return;
         }
 
@@ -108,7 +95,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyCancelled(ErasureCancelled $event): void
     {
-        $this->state = ErasureRequestState::RETAINED;
+        $this->state = ErasureRequestState::CANCELLED;
     }
 
     #[Apply]

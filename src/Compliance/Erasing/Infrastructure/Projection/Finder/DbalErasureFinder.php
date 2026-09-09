@@ -41,7 +41,7 @@ final class DbalErasureFinder extends AbstractDbalFinder implements ErasureFinde
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'status', 'requested_at')
+        $qb->select('id', 'status', 'requested_at', 'cancelled_at', 'approved_at')
             ->from(DbalErasureProjector::TABLE)
             ->orderBy('requested_at', 'ASC')
             ->addOrderBy('id', 'ASC');

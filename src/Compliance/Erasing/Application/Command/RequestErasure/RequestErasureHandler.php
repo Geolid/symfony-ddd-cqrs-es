@@ -4,38 +4,43 @@ declare(strict_types=1);
 
 namespace Compliance\Erasing\Application\Command\RequestErasure;
 
+use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyRequestedException;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
-use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
+use Compliance\Erasing\Domain\ValueObject\ErasureUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
+use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 
 #[CommandHandler]
 final readonly class RequestErasureHandler
 {
     public function __construct(
         private ErasureRepositoryInterface $repository,
+        private UniqueValueRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws ErasureNotFoundException
+     * @throws ErasureAlreadyRequestedException
      * @throws ErasureAlreadyExistsException
      */
     public function __invoke(RequestErasure $command): void
     {
-        $id = ErasureId::forIdentity($command->identityId);
-        $now = $this->clock->now();
+        $id = ErasureId::fromString($command->id);
 
-        if ($this->repository->has($id)) {
-            $erasure = $this->repository->load($id);
-            $erasure->reRequest($now);
-        } else {
-            $erasure = Erasure::request($id, $command->identityId, $now);
+        try {
+            $this->uniqueValues->reserve(UniqueKey::for(ErasureUniqueKey::IDENTITY), $command->identityId, $id->toString());
+        } catch (UniqueValueAlreadyTakenException $e) {
+            throw ErasureAlreadyRequestedException::forIdentity($command->identityId, $e);
         }
+
+        $erasure = Erasure::request($id, $command->identityId, $this->clock->now());
 
         $this->repository->save($erasure);
     }

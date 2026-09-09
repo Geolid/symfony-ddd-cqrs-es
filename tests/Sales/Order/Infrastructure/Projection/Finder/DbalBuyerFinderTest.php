@@ -43,7 +43,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertSame($builder['shippingAddress']->toArray(), $this->toArray($result->shippingAddress));
         self::assertNotNull($result->billingAddress);
         self::assertSame($builder['billingAddress']->toArray(), $this->toArray($result->billingAddress));
-        self::assertFalse($result->erasurePending);
+        self::assertFalse($result->erasureRequested);
     }
 
     #[Test]
@@ -61,11 +61,11 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
-        self::assertFalse($result->erasurePending);
+        self::assertFalse($result->erasureRequested);
     }
 
     #[Test]
-    public function itFindsWithPendingErasure(): void
+    public function itFindsWithErasureRequested(): void
     {
         // Given
         $buyer = BuyerBuilder::new()->erasureRequested()->create();
@@ -76,7 +76,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertInstanceOf(BuyerResult::class, $result);
-        self::assertTrue($result->erasurePending);
+        self::assertTrue($result->erasureRequested);
     }
 
     #[Test]

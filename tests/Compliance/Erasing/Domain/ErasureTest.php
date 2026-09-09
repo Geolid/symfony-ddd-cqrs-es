@@ -12,6 +12,7 @@ use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 
 final class ErasureTest extends AggregateRootTestCase
 {
@@ -25,8 +26,8 @@ final class ErasureTest extends AggregateRootTestCase
     {
         parent::setUp();
 
+        $this->id = ErasureId::fromString(Uuid::uuid7()->toString());
         $this->identityId = ErasureBuilder::sample('identityId');
-        $this->id = ErasureId::forIdentity($this->identityId);
         $this->requestedAt = ErasureBuilder::sample('requestedAt');
         $this->cancelledAt = ErasureBuilder::sample('cancelledAt');
         $this->approvedAt = ErasureBuilder::sample('approvedAt');
@@ -51,31 +52,11 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotCancelWhenRetained(): void
+    public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
         $this
             ->given($this->requested(), $this->cancelled())
             ->when(static fn (Erasure $erasure) => $erasure->cancel(ErasureBuilder::sample('cancelledAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itReRequests(): void
-    {
-        $reRequestedAt = $this->requestedAt->modify('+2 hours');
-
-        $this
-            ->given($this->requested(), $this->cancelled())
-            ->when(static fn (Erasure $erasure) => $erasure->reRequest($reRequestedAt))
-            ->then(new ErasureRequested($this->id->toString(), $this->identityId, $reRequestedAt));
-    }
-
-    #[Test]
-    public function itDoesNotReRequestWhenAlreadyRequested(): void
-    {
-        $this
-            ->given($this->requested())
-            ->when(fn (Erasure $erasure) => $erasure->reRequest($this->requestedAt->modify('+2 hours')))
             ->then();
     }
 
@@ -89,7 +70,7 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotApproveWhenRetained(): void
+    public function itDoesNotApproveWhenCancelled(): void
     {
         $this
             ->given($this->requested(), $this->cancelled())

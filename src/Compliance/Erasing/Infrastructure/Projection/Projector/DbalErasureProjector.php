@@ -24,18 +24,14 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
     #[Subscribe(ErasureRequested::class)]
     public function onErasureRequested(ErasureRequested $event): void
     {
-        $this->connection->executeStatement(
-            \sprintf(
-                'INSERT INTO %1$s (id, status, requested_at) VALUES (:id, :status, :requestedAt)
-                 ON DUPLICATE KEY UPDATE status = :status, requested_at = :requestedAt',
-                self::TABLE,
-            ),
+        $this->connection->insert(
+            self::TABLE,
             [
                 'id' => $event->id,
                 'status' => ErasureRequestStatus::REQUESTED->value,
-                'requestedAt' => $event->requestedAt,
+                'requested_at' => $event->requestedAt,
             ],
-            ['requestedAt' => Types::DATETIME_IMMUTABLE],
+            ['requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -45,10 +41,11 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => ErasureRequestStatus::RETAINED->value,
-                'requested_at' => null,
+                'status' => ErasureRequestStatus::CANCELLED->value,
+                'cancelled_at' => $event->cancelledAt,
             ],
             ['id' => $event->id],
+            ['cancelled_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -57,8 +54,12 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => ErasureRequestStatus::APPROVED->value],
+            [
+                'status' => ErasureRequestStatus::APPROVED->value,
+                'approved_at' => $event->approvedAt,
+            ],
             ['id' => $event->id],
+            ['approved_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -71,6 +72,8 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('approved_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

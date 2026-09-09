@@ -6,8 +6,8 @@ namespace Sales\Order\Application\Command\PlaceOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerAddressesNotCompletedException;
+use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerErasureRequestedException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerNotRegisteredException;
-use Sales\Order\Application\Command\PlaceOrder\Exception\BuyerPendingErasureException;
 use Sales\Order\Application\Command\PlaceOrder\Exception\OutdatedOrderException;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
@@ -40,7 +40,7 @@ final readonly class PlaceOrderHandler
     /**
      * @throws BuyerAddressesNotCompletedException
      * @throws BuyerNotRegisteredException
-     * @throws BuyerPendingErasureException
+     * @throws BuyerErasureRequestedException
      * @throws OutdatedOrderException
      * @throws OrderWithoutLineException
      * @throws OrderAlreadyExistsException
@@ -50,8 +50,8 @@ final readonly class PlaceOrderHandler
         $buyer = $this->buyerFinder->ofIdOrNull($command->buyerId)
             ?? throw BuyerNotRegisteredException::forId($command->buyerId);
 
-        if ($buyer->erasurePending) {
-            throw BuyerPendingErasureException::forId($command->buyerId);
+        if ($buyer->erasureRequested) {
+            throw BuyerErasureRequestedException::forId($command->buyerId);
         }
 
         if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {

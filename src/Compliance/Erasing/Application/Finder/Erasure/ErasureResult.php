@@ -12,6 +12,8 @@ final readonly class ErasureResult
         public string $id,
         public ErasureRequestStatus $status,
         public ?\DateTimeImmutable $requestedAt,
+        public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $approvedAt,
     ) {
     }
 }
