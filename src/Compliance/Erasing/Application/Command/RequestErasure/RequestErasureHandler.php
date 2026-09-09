@@ -28,7 +28,6 @@ final readonly class RequestErasureHandler
 
     /**
      * @throws ErasureAlreadyRequestedException
-     * @throws ErasureAlreadyExistsException
      */
     public function __invoke(RequestErasure $command): void
     {
@@ -42,6 +41,10 @@ final readonly class RequestErasureHandler
 
         $erasure = Erasure::request($id, $command->identityId, $this->clock->now());
 
-        $this->repository->save($erasure);
+        try {
+            $this->repository->save($erasure);
+        } catch (ErasureAlreadyExistsException) {
+            return;
+        }
     }
 }
