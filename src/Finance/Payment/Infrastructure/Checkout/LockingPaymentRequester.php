@@ -7,6 +7,7 @@ namespace Finance\Payment\Infrastructure\Checkout;
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
+use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Locking\Exception\LockNotAcquiredException;
 use Shared\Infrastructure\Locking\LockingTrait;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
@@ -32,16 +33,16 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
     /**
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $orderId, string $returnUrl): string
+    public function requestFor(string $cartId, int $amountInCents, PostalAddress $billingAddress, string $returnUrl): string
     {
         try {
             return $this->withLock(
-                \sprintf('finance.payment.payment_request.%s', $orderId),
+                \sprintf('finance.payment.payment_request.%s', $cartId),
                 self::LOCK_TTL_SECONDS,
-                fn (): string => $this->inner->requestFor($orderId, $returnUrl),
+                fn (): string => $this->inner->requestFor($cartId, $amountInCents, $billingAddress, $returnUrl),
             );
         } catch (LockNotAcquiredException $e) {
-            throw PaymentRequestInProgressException::forOrder($orderId, $e);
+            throw PaymentRequestInProgressException::forCart($cartId, $e);
         }
     }
 

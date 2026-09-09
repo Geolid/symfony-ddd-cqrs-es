@@ -23,6 +23,16 @@ interface PaymentFinderInterface extends IterableFinderInterface
      */
     public function ofReference(string $reference): PaymentResult;
 
+    /**
+     * @throws PaymentResultNotFoundException
+     */
+    public function ofCartId(string $cartId): PaymentResult;
+
+    /**
+     * @throws PaymentResultNotFoundException
+     */
+    public function ofOrderId(string $orderId): PaymentResult;
+
     public function byStatus(PaymentStatus $status): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;

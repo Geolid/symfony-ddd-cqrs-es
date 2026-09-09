@@ -45,12 +45,12 @@ final class EventTest
                 ),
                 Selector::AllOf(
                     Selector::Not(Selector::isEnum()),
-                    Selector::withFilepath('#/ValueObject/#', true),
+                    Selector::withFilepath('#/(ValueObject|Entity)/#', true),
                 ),
                 Selector::classname(ErasedValueObjectSentinel::class),
                 ...$this->esMetadataSelectors(),
             )
-            ->because('A recorded fact must decode forever despite other types changing, and its personal data must stay erasable without rewriting history.');
+            ->because('A recorded fact stays internal to its own aggregate stream — any Domain-owned shape (Value Object, Entity, enum) decodes forever via the hydrator regardless of other types changing, and an upcaster handles any real shape change the same way either way; only an Integration Event crossing the boundary must stay primitive.');
     }
 
     #[TestRule]

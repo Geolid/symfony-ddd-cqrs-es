@@ -15,7 +15,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = OrderBuilder::new()->confirmed();
+        $builder = OrderBuilder::new();
         $order = $builder->create();
 
         // When

@@ -39,6 +39,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         $this->trigger(RequestShipmentOnOrderConfirmed::class, new OrderConfirmedIntegrationEvent(
             orderId: $orderId,
             buyerId: $buyerId,
+            paymentId: Uuid::uuid7()->toString(),
             shippingAddress: $destinationData,
             confirmedAt: Clock::get()->now(),
         ));

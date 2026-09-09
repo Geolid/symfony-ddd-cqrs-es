@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +28,7 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
     public function itDispatchesWhenPrepared(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->prepared()->create();
+        $order = OrderBuilder::new()->prepared()->create();
         $this->store($order);
 
         // When

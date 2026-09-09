@@ -4,62 +4,53 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Checkout;
 
-use Finance\Payment\Application\Checkout\Exception\PlacedOrderAlreadyCancelledException;
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
-use Finance\Payment\Application\Finder\PlacedOrder\Exception\PlacedOrderResultNotFoundException;
-use Finance\Payment\Application\Finder\PlacedOrder\PlacedOrderFinderInterface;
+use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
-use Finance\Payment\Domain\ValueObject\PaymentId;
+use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
-use Shared\Domain\ValueObject\Address;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class PaymentRequester implements PaymentRequesterInterface
 {
     public function __construct(
-        private PaymentRepositoryInterface $paymentRepository,
-        private PlacedOrderFinderInterface $orderFinder,
+        private UniqueValueRegistryInterface $uniqueValues,
+        private PaymentFinderInterface $paymentFinder,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
     ) {
     }
 
     /**
-     * @throws PlacedOrderResultNotFoundException
-     * @throws PlacedOrderAlreadyCancelledException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $orderId, string $returnUrl): string
+    public function requestFor(string $cartId, int $amountInCents, PostalAddress $billingAddress, string $returnUrl): string
     {
-        $order = $this->orderFinder->ofId($orderId);
+        $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
 
-        if ($order->cancelled) {
-            throw PlacedOrderAlreadyCancelledException::forOrder($orderId);
+        if ($this->uniqueValues->exists($cartKey, $cartId)) {
+            return $this->paymentFinder->ofCartId($cartId)->checkoutUrl;
         }
 
-        $paymentId = PaymentId::forOrder($orderId);
+        $session = $this->paymentGateway->requestPayment($cartId, $amountInCents, $returnUrl, $billingAddress);
 
-        if ($this->paymentRepository->has($paymentId)) {
-            return $this->paymentRepository->load($paymentId)->checkoutUrl;
+        try {
+            $this->commandBus->dispatch(new RequestPayment(
+                id: Uuid::uuid7()->toString(),
+                cartId: $cartId,
+                amountInCents: $amountInCents,
+                reference: $session->reference,
+                checkoutUrl: $session->checkoutUrl,
+            ));
+        } catch (PaymentAlreadyRequestedException) {
+            return $this->paymentFinder->ofCartId($cartId)->checkoutUrl;
         }
-
-        $billingAddress = PostalAddress::of(
-            $order->billingAddress->recipientName,
-            Address::of($order->billingAddress->address->street, $order->billingAddress->address->postalCode, $order->billingAddress->address->city, $order->billingAddress->address->countryCode),
-        );
-
-        $session = $this->paymentGateway->requestPayment($orderId, $order->amountInCents, $returnUrl, $billingAddress);
-
-        $this->commandBus->dispatch(new RequestPayment(
-            id: $paymentId->toString(),
-            orderId: $orderId,
-            amountInCents: $order->amountInCents,
-            reference: $session->reference,
-            checkoutUrl: $session->checkoutUrl,
-        ));
 
         return $session->checkoutUrl;
     }

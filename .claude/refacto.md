@@ -26,7 +26,7 @@ Corrigé après une première erreur (idem) : la multiplicité réelle d'un remb
 
 ### Rappel : `Sales.Cart` reste à construire (conception déjà actée plus bas)
 
-`Cart`/`CartLine` (Entity, mutable, `checkout()` gardien de fraîcheur) — voir section `Sales.Ordering`/`OrderLine`/`Cart` plus bas pour le détail complet. Seule vraie question encore ouverte : `Cart` mérite-t-il sa propre BC (`Sales.Cart`, sœur de `Sales.Buyer`/`Sales.Ordering`) ou reste-t-il un aggregate à l'intérieur de `Sales.Ordering` ? Pas encore appliqué le test à 4 critères dessus explicitement.
+`Cart`/`CartLine` (Entity, mutable, `checkout()` gardien de fraîcheur) — voir section `Sales.Ordering`/`OrderLine`/`Cart` plus bas pour le détail complet. **Tranché (2026-09-09)**, test à 4 critères appliqué explicitement dans la section "Flux tranché : `Cart` → `Payment` → `Order` → `Shipping`" plus bas : `Cart` reste un aggregate à l'intérieur de `Sales.Ordering`, pas une BC séparée.
 
 ### `OrderLine` reste un Entity — pas remis en cause par le retrait du retour
 
@@ -302,7 +302,9 @@ Déclenché par une question de l'utilisateur : `OrderLine` (`Domain/ValueObject
 
 Vérifié dans le code : `Order::place()` prend `list<OrderLine>` une fois, calcule `totalAmountInCents` par un simple fold, et **ne garde même pas `$lines` comme propriété de l'aggregate** — seul le total dérivé survit dans l'état. Aucune méthode `addLine()`/`removeLine()` n'existe. Première réponse (erronée) : `OrderLine` reste VO parce que rien ne le mute aujourd'hui. **Corrigé après contestation de l'utilisateur** : le test Entity-vs-VO d'Evans n'est jamais "est-ce mutable aujourd'hui" — c'est "le domaine a-t-il besoin de référencer CETTE occurrence précise, distincte d'une autre identique en valeur, à travers le temps ?". Deux lignes de même produit/quantité dans une commande, si un retour partiel par ligne existe un jour, doivent rester individuellement adressables — impossible sans identité propre. Classer Entity/VO sur "y a-t-il un appelant aujourd'hui" est la même erreur que celle déjà commise sur `Subject`/`register()` : juger la conception sur le code actuel plutôt que sur le concept.
 
-Retenu : `OrderLine` mérite une identité locale (position/séquence dans la commande, pas nécessairement un UUID globalement significatif) — mais les **commandes** `AddOrderLine`/`RemoveOrderLine` restent volontairement non construites tant qu'aucun besoin réel ne les réclame (vrai YAGNI, sur la capacité, pas sur la donnée). `Order` doit conserver `list<OrderLine> $lines` comme véritable état — vérifié : `OrderPlaced` porte déjà `list<OrderLine> $lines` en permanence dans le store, donc ajouter la propriété et la peupler dans `applyPlaced()` ne demande aucun changement d'event, aucun upcaster.
+Retenu : `OrderLine` mérite une identité locale — mais les **commandes** `AddOrderLine`/`RemoveOrderLine` restent volontairement non construites tant qu'aucun besoin réel ne les réclame (vrai YAGNI, sur la capacité, pas sur la donnée). `Order` doit conserver `list<OrderLine> $lines` comme véritable état — vérifié : `OrderPlaced` porte déjà `list<OrderLine> $lines` en permanence dans le store, donc ajouter la propriété et la peupler dans `applyPlaced()` ne demande aucun changement d'event, aucun upcaster.
+
+**Tranché (2026-09-09)** : la forme de l'identité n'est plus une question séparée à trancher pour `OrderLine` — elle s'hérite directement de `CartLine`, qui doit de toute façon exister réellement (mutation en scope pour `Cart`, pas conceptuelle). `CartLineId` se dérive déterministiquement de `(cartId, productId)` — même patron `for<Concept>()` déjà utilisé ailleurs pour une dérivation composite. Justifié par le vrai besoin de `CartLine` : `removeLine(lineId)`/`changeQuantity(lineId, ...)` doivent cibler une ligne précise ; `addLine()` calcule cet id et trouve la ligne existante si elle existe (incrémente la quantité, comportement standard e-commerce — un produit déjà présent ne crée jamais une deuxième ligne), sinon en crée une nouvelle. `Order::place()` copie chaque `CartLine` en `OrderLine` avec le **même id** — un héritage direct, pas une nouvelle décision d'identité côté `Order`.
 
 ### Le calcul du total : pas un Domain Service, la résolution du prix reste à la frontière Application
 
@@ -346,6 +348,8 @@ Question directe de l'utilisateur : la possibilité d'amendement reste-t-elle "j
 
 Le fix `OrderLine`/`$lines` reste correct et nécessaire (il évite de fermer la porte au niveau de la donnée), mais il n'est pas suffisant — ces chantiers restent entiers, non commencés, à traiter le jour où l'amendement post-paiement devient un besoin réel plutôt qu'une possibilité conceptuelle à préserver.
 
+**Tranché (2026-09-09)** : hors périmètre de ce showcase, chantier `Order` à part entière si jamais construit un jour — même traitement que remboursement/retour/stock/facture (voir "Périmètre du showcase" en tête de document). Rien à faire ici au-delà de ce qui précède (`OrderLine` Entity, `$lines` conservé) : ça suffit à ne pas fermer la porte, sans construire la capacité elle-même.
+
 ## Décline pré-auth : le retry ne colle pas avec `Order::abort()` immédiat — question posée avec l'arrivée de `Cart`
 
 Question posée par l'utilisateur en session : le decline (`PaymentGatewayStatus::DECLINED`, cf. `GOAL.md` Cycle 3) recouvre deux points distincts — réconciliation d'un paiement `REQUESTED` (`RequestedPaymentReconciler`, échec à l'auth) et échec de `capture()` après préparation (`CapturePaymentOnShipmentPrepared`, échec à la capture). Dans les deux cas, la seule policy consommatrice de `PaymentFailedIntegrationEvent` (`AbortOrderOnPaymentFailed`) annule immédiatement l'`Order` — aucune étape de nouvelle tentative sur la même commande, aucune Command `RetryPayment`.
@@ -356,9 +360,100 @@ Le repo place déjà `Order::place()` **avant** tout paiement (Cycle 1, `GOAL.md
 
 Si `Order` n'était créé qu'au moment où `Payment::authorize()` réussit (le `Cart` restant ouvert, `checkout()` non consommé pendant toute la tentative de paiement), un decline pré-auth n'aurait plus aucun `Order` à annuler : rejouer le paiement redeviendrait un aller-retour sur le même `Cart`, sans jamais toucher `Sales.Ordering`. `Order::abort()` ne resterait alors utile que pour le seul cas post-préparation (capture échouée après engagement d'expédition), qui reste un vrai abandon légitime — pas de retry attendu à ce stade.
 
-**Pas tranché** : où placer exactement la frontière `Cart`→`Order` (dispatch de `RequestPayment` depuis le `Cart`, ou seulement à réception d'`AuthorizePayment`) change la forme du driving port paiement et du contrat `PlaceOrder`/`RequestPayment`. Aucune modification exécutée — analyse seule, à trancher par l'utilisateur.
+**Tranché (2026-09-09)** — voir la section suivante pour le flux complet : `Order::place()` n'intervient plus qu'après authorization réussie, jamais avant.
 
-## Code mort confirmé : `CancelOrdersOnBuyerErased`/`CancelOrphanedOrder*` — ancien système d'erasure, jamais retiré
+## Flux tranché : `Cart` → `Payment` → `Order` → `Shipping`
+
+Analyse théorique, sans lecture de code (sauf mention explicite "vérifié" ci-dessous) — résout la question laissée ouverte dans la section précédente. Périmètre inchangé (voir "Périmètre du showcase" en tête de document) : remboursement, retour, stock, facture restent purement conceptuels, jamais modélisés ici — mais rien ci-dessous ne doit fermer la porte à leur extension future.
+
+### `Cart` reste un aggregate dans `Sales.Ordering`, pas une BC séparée
+
+Testé aux 4 critères de découpage BC (section plus haut) : (1) vocabulaire largement partagé avec `Order` (lignes, prix, acheteur), aucun mot propre au panier — faible ; (2) direction acyclique `Cart→Order` — neutre, ne force rien ; (3) cadence propre réelle (`Cart` réagit en continu au catalogue, `Order` ne réagit plus jamais à rien une fois figé) — seul critère qui pencherait pour un split ; (4) invariants distincts — argument pour 2 aggregates, pas pour 2 BC. Un seul critère sur quatre penche pour la séparation, et `Cart`/`Order` sont deux étapes du **même** processus métier ("passer commande"), contrairement à `Sales.Buyer` qui est une capacité réellement indépendante. **Retenu** : `Cart` = second aggregate de `Sales.Ordering`.
+
+### États de `Cart`
+
+`ACTIVE` (mutable) ↔ `CHECKOUT` (immuable, paiement en attente) → `CONVERTED` (terminal, devient `Order`).
+
+- `checkout()` → event `CartCheckedOut` : `ACTIVE → CHECKOUT`. Garde de fraîcheur composable (Specification) — aujourd'hui prix seul, un futur check stock se compose sans reshaper `Cart`.
+- `abandonCheckout()` → event `CartCheckoutAbandoned` : `CHECKOUT → ACTIVE`. Déclenché par l'abandon du `Payment` associé (voir plus bas) — réouvre le **même** panier, rien n'est perdu.
+- `convert()` → event `CartConverted` : `CHECKOUT → CONVERTED`, terminal. Déclenché aux côtés d'`Order::place()` sur autorisation réussie.
+
+Nommage corrigé en cours de conception, à ne pas rouvrir :
+- "lock" rejeté — vocabulaire technique de concurrence (mutex), pas de l'Ubiquitous Language ; l'état résultant `CHECKOUT` (nom métier) le remplace.
+- "OPEN" rejeté — binaire technique générique (ouvert/fermé, comme un fichier), pas ce qu'un acheteur dirait d'un panier ; `ACTIVE` nomme ce qui est vrai (le panier est en cours d'usage), pas une action qu'on lui a fait subir.
+- "CHECKING_OUT" (gérondif 2 mots) rejeté — aucun précédent multi-mots dans les enums d'état de ce repo (`REQUESTED`, `AUTHORIZED`, `RETAINED`...) ; "checkout" est déjà un nom en anglais/vocabulaire e-commerce ("at checkout"), pas besoin de le conjuguer.
+- `CartCheckedOut` (event) reste correct malgré la divergence apparente avec l'état `CHECKOUT` : même mot, deux rôles grammaticaux naturels — nom pour la condition qui dure (état), participe passé du verbe à particule "check out" pour le fait accompli (event). Pas une incohérence à corriger.
+
+### Unicité : 1 `Cart` `ACTIVE` par buyer, plusieurs dans le temps
+
+Réutilise le mécanisme d'unicité déjà réel dans ce repo — vérifié dans `src/Compliance/Erasing/Application/Command/RequestErasure/RequestErasureHandler.php` : `UniqueValueRegistryInterface::reserve(UniqueKey::for(<Enum>::<CASE>), <valeur scope>, <id réservé>)`, catch `UniqueValueAlreadyTakenException` → exception métier dédiée. `Erasure` en a besoin exactement pour la même raison que `Cart` : son id n'est pas dérivé de `identityId` (fourni de l'extérieur), donc un `has(id)` ne protégerait rien — seule la réservation de la valeur `identityId` elle-même empêche un second dossier actif. Même situation pour `Cart` : son id n'est pas dérivé de `buyerId`.
+
+```php
+$this->uniqueValues->reserve(UniqueKey::for(CartUniqueKey::BUYER), $command->buyerId, $id->toString());
+```
+
+Release au bon moment, par analogie avec `Erasure::cancel()`/`Erasure::approve()` mais raisonnement propre à `Cart` (voir plus bas, section `Payment`, le même mécanisme s'y applique et le raisonnement de release y est détaillé) : `Erasure::approve()` ne release jamais parce que `identityId` est mort pour de bon (aucun retour possible) ; `Cart` n'a pas cet équivalent — son unique fin réelle est `CONVERTED`, et à ce moment `buyerId` reste un acteur vivant qui doit pouvoir rouvrir un panier immédiatement. Le release à `CONVERTED` est donc nécessaire, contrairement à `Erasure::approve()`.
+
+### Orchestration : le DM seul traverse plusieurs BC, jamais un DrivingPort d'un BC vers un autre
+
+Correction faite en session : un DrivingPort de `Sales.Ordering` ne dispatch jamais directement dans le command bus de `Finance.Payment` — seules les Integration Events traversent les BC. Seul le DM (au-dessus de tous les BC) a le droit d'orchestrer plusieurs BC en synchrone dans une même requête.
+
+Au clic "valider" (même précédent déjà noté dans `TODO.md` pour le tunnel invité — le clic combine déjà `PlaceOrder` + `PaymentRequester::requestFor()` au niveau DM) :
+1. DM appelle `Sales.Ordering::Checkout::checkout(cartId)` → `Cart` : `ACTIVE → CHECKOUT` (garde de fraîcheur, rien d'autre).
+2. Si succès, DM appelle `Finance.Payment::PaymentRequester::requestFor(cartId, montant...)` → `Payment` naît `REQUESTED`, redirection vers la session PSP.
+3. Si (2) échoue synchroniquement, le DM doit explicitement redéclencher l'abandon côté `Cart` (troisième appel) — sinon `Cart` reste `CHECKOUT` sans aucun `Payment` pour l'ancrer à une réconciliation future. À traiter explicitement, jamais laissé implicite.
+
+Retour PSP : le **webhook** (autoritaire, serveur-à-serveur) est la seule source de vérité — le DM webhook ne fait que traduire le fait externe (`AuthorizePayment`), jamais de décision métier (jamais `PlaceOrder` directement depuis un DM). La **page de retour navigateur** n'est jamais autoritaire (l'utilisateur peut fermer l'onglet, arriver avant le webhook) — pur polling d'état, aucun déclenchement.
+
+### `Payment` — sémantique d'une vraie session PSP hébergée
+
+Dans un vrai système à page hébergée (Stripe Checkout, Mollie...), toute carte refusée est retentée **à l'intérieur** de la session PSP, jamais remontée au marchand — un seul webhook final arrive : session complétée, ou expirée/jamais complétée. Conséquence directe sur la state machine :
+
+- `REQUESTED → AUTHORIZED` (session complétée) | `ABANDONED` (session expirée/jamais complétée — détecté par réconciliation/TTL, jamais une décision active de quiconque, un fait passif d'absence de retour, pas un "cancel").
+- `AUTHORIZED → CAPTURED` (capture réussie, au `ShipmentPrepared`) | `FAILED` (déclin réel du PSP à la capture — refus actif, distinct de l'abandon) | `VOIDED` (`Order::cancel()` libère une autorisation pas encore capturée — appel PSP réel).
+
+Plus de `PaymentCancelled`/`PaymentFailed` depuis `REQUESTED` — les deux remplacés par le seul fait réel `PaymentAbandoned`.
+
+`Payment` référence uniquement `cartId`, jamais `orderId` en champ stocké (rien en interne ne le relit jamais ; `Order` n'existe même pas encore à la création de `Payment`).
+
+**Protection contre le double-submit/retry sur `RequestPayment` : registre d'unicité, pas un id dérivé.** Un lock applicatif (type `LockingPaymentRequester` déjà existant) ne suffit pas — il garantit l'exclusion mutuelle, jamais l'idempotence ; un retry séquentiel après relâchement du lock créerait quand même un second `Payment`. Un id déterministe (`cartId`+compteur) fonctionnerait mais coupled `Cart` à un détail de construction d'id qui appartient entièrement à `Finance.Payment`, et n'exprime jamais directement l'invariant réel ("au plus un `Payment` actif pour ce panier"). **Retenu** : même mécanisme que `Cart` ci-dessus, vérifié sur le même précédent réel (`RequestErasureHandler.php`) — `RequestPaymentHandler` réserve `UniqueKey::for(PaymentUniqueKey::CART)` scopé sur `cartId`, `PaymentId` généré librement (pas dérivé). Release sur `Payment::abandon()` (nouvelle tentative légitime, même raisonnement que `Erasure::cancel()`) ; releaser ou non sur `authorize()` est sans conséquence pratique — `Cart` passe `CONVERTED` au même moment, ce `cartId` ne sera plus jamais réservé de toute façon.
+
+Le paiement fractionné (plusieurs `Payment` pour un même achat, évoqué comme extension future incertaine) ne collisionne pas avec ce registre : il porterait sur une `Order` déjà placée (financement post-achat), jamais sur un `Cart` déjà `CONVERTED` — scope différent (`orderId`, pas `cartId`), aucune fermeture de porte à anticiper ici.
+
+**Conséquence non résolue, à chiffrer avant implémentation** — vérifié dans le code réel (`CapturePaymentOnShipmentPrepared.php:40`) : `PaymentId` s'y dérive aujourd'hui de `orderId` (`PaymentId::forOrder($event->orderId)`), preuve qu'`Order` doit exister avant `Payment` dans le flux actuel. Avec un `PaymentId` désormais libre (ni dérivé de `cartId` ni de `orderId`), cette dérivation disparaît partout où elle est utilisée aujourd'hui (cette Policy, et vraisemblablement les Policies `CancelPaymentOnOrderCancelled`/`CancelPaymentOnOrderAborted`) — remplacée par un Finder local à `Finance.Payment` (`orderId → paymentId`). `cartId` est le seul champ de jonction nécessaire, déjà présent des deux côtés — rien à inventer : (1) `Finance.Payment` a déjà, localement, `cartId → paymentId` (alimenté par son propre `PaymentRequested`) ; (2) l'Integration Event `OrderPlaced` fait connaître `orderId → cartId` (même `cartId`) ; croiser les deux donne `orderId → paymentId`. Chantier réel (une nouvelle projection + son câblage), mais pas un mécanisme nouveau à concevoir.
+
+### `Order` — né confirmé, simplification de `PlaceOrder`
+
+Sur `PaymentAuthorized`, une Policy même-BC (`PlaceOrderOnPaymentAuthorized`, `Sales.Ordering`) lit directement `Cart` (encore `CHECKOUT`, même stream, lecture same-BC légitime) pour construire `Order::place(...)` avec les données **dupliquées** (jamais une référence — réplication ES déterministe + contrat figé), et déclenche `Cart::convert()` en parallèle.
+
+**Simplification directe de `PlaceOrder`** : la fraîcheur est désormais garantie une seule fois, en amont, à `Cart.checkout()` — `Cart` est immuable durant tout `CHECKOUT`. Donc rien ne peut avoir changé au moment où `PlaceOrder` se déclenche. `PlaceOrder` n'a plus besoin de porter prix/lignes soumis ni de comparaison contre le catalogue courant — il devient essentiellement `PlaceOrder(cartId)`. Tout le mécanisme `OutdatedOrderException` construit pour la refonte du 2026-08-13 devient inutile à ce niveau : la garde a déjà fait son travail une étape plus tôt, une seule fois, à la source.
+
+`OrderPlaced` porte `cartId` (traçabilité, richesse de l'event pour un Read Model aval) mais **jamais** comme propriété stockée sur l'aggregate `Order` lui-même (aucun guard interne ne le relit) — distinction event (sert les consommateurs aval) vs état d'aggregate (sert uniquement ses propres guards).
+
+`Order::abort()`/`OrderState::ABORTED` retirés entièrement — le seul chemin qui y menait (échec paiement avant tout commitment) ne touche plus jamais `Order`, puisqu'`Order` n'existe simplement plus dans ce scénario.
+
+### `OrderCancelled` / `OrderFailed` — deux events distincts, jamais un seul avec un `reason`
+
+Un avis externe (Gemini, sans accès au code) a proposé un event unique `OrderCancelled` + `CancellationReason` enum, sur le critère "la transition FSM est-elle identique dans les deux cas ?". Vérifié faux une fois confronté aux vrais invariants de cet aggregate : l'annulation buyer n'est possible qu'**avant** `PREPARED` ; le déclin capture ne peut arriver qu'**à partir de** `PREPARED`. Deux états d'origine mutuellement exclusifs, jamais la même transition — le critère de Gemini, appliqué correctement, dit l'inverse de sa conclusion. Cohérent avec la granularité déjà établie ailleurs dans ce repo (`Payment::cancel()` → `PaymentCancelled`/`PaymentVoided` selon l'état d'origine, jamais un event générique + discriminant).
+
+- `cancel()` → `OrderCancelled` : buyer, avant `PREPARED`.
+- `fail()` → `OrderFailed` : système, déclin capture à partir de `PREPARED`.
+
+Noms candidats rejetés en cours de route, à ne pas rouvrir sans nouvel argument :
+- `abort()`/`OrderAborted` — vocabulaire informatique/systèmes (abort un process, une transaction), pas la langue du métier retail, malgré un bon fit narratif (processus en cours interrompu).
+- `revoke()`/`lapse()` (suggestions Gemini) — registre légal/administratif (révoquer un droit, une police expirée), pas naturel pour une commande.
+- `decline()`/`OrderDeclined` — emprunte le vocabulaire de refus d'une requête propre à `Payment` ("votre carte a été déclinée") ; appliqué à `Order`, sous-entend à tort qu'on a refusé la commande elle-même. Même famille de fuite de vocabulaire cross-BC que `PaymentNotCapturedException`/`PlacedPayment` (voir plus haut dans ce document).
+- `void()`/`OrderVoided` — correct en droit des contrats (`Order` = contrat figé), mais crée un echo confus avec `PaymentVoided`, qui se produit dans l'AUTRE scénario (annulation buyer, pas déclin capture).
+
+`OrderState::FAILED → []` reste un vrai état terminal pour ce showcase, sans transition de reprise — un vrai système demanderait une intervention service client (nouvelle carte, remboursement manuel) et une transition supplémentaire, délibérément non modélisée. Même discipline YAGNI déjà appliquée à `OrderLine`/`AddOrderLine`/`RemoveOrderLine` (section plus haut) : économie sur la **capacité**, pas sur la **structure** — ajouter une transition de reprise plus tard reste un ajout pur, pas une reprise de l'existant.
+
+### Ce qui ne change pas en aval
+
+`Order::cancel()` (buyer, avant `PREPARED`) déclenche toujours `Payment::void()` (`AUTHORIZED → VOIDED`) via `VoidPaymentOnOrderCancelled` — libère une vraie autorisation PSP. Inchangé par ce redesign, en aval de l'existence d'`Order`.
+
+`Finance.Refund` reste correctement supprimé : un déclin à la capture ne capture jamais d'argent, donc rien à rembourser, seulement à annuler (`OrderFailed`/`PaymentFailed`). Ce flux ne réintroduit aucun déclencheur de remboursement.
+
+## Code mort confirmé, retiré (2026-09-09) : `CancelOrdersOnBuyerErased`/`CancelOrphanedOrder*` — ancien système d'erasure
 
 Signalé par l'utilisateur, vérifié dans le code : `CancelOrdersOnBuyerErased` (`Sales.Ordering`) souscrit à `BuyerErasedIntegrationEvent` et annule tout de suite chaque `Order` encore annulable du buyer (fan-out `CancelOrphanedOrdersOfBuyer` → `CancelOrphanedOrder` par item, silencieux via `catch (OrderNotCancellableException)`). **`ApproveOrdersErasureOnBuyerErased` souscrit au même event**, en parallèle — c'est le mécanisme décrit dans `GOAL.md` (§ Cycle GDPR, ligne 254) : `Order` passe `APPROVED`, termine sa vie normalement (`DELIVERED`/`CANCELLED` naturel), puis `ERASED` — jamais annulé de force.
 
@@ -366,9 +461,49 @@ Les deux tournent aujourd'hui en même temps sur le même trigger, avec des effe
 
 **Non lié** à la question du décline pré-auth ci-dessus, contrairement à l'hypothèse initiale de l'utilisateur (déplacer `Order::place()` après authorize n'aurait pas fait disparaître ce mécanisme) — un `Order` déjà confirmé/livré peut toujours voir son buyer effacé bien après tout paiement. Le nom "orphaned" prêtait à confusion avec un état "non payé" ; en réalité il désignait "orphelin de son buyer", pas "orphelin de paiement".
 
-**À faire** : retirer `CancelOrdersOnBuyerErased`, `CancelOrphanedOrdersOfBuyer`(Handler), `CancelOrphanedOrder`(Handler) + tests associés — le modèle `ApproveOrdersErasureOnBuyerErased`/`ErasureState` couvre déjà le besoin proprement. Aucune modification exécutée ici — à porter dans `TODO.md` avant action.
+**Fait** : `CancelOrdersOnBuyerErased`, `CancelOrphanedOrdersOfBuyer`(Handler), `CancelOrphanedOrder`(Handler) + tests associés retirés — vérifié par grep, plus aucune référence dans `src/`/`tests/`. Le modèle `ApproveOrdersErasureOnBuyerErased`/`ErasureState` couvre le besoin proprement.
+
+## `PostalAddress::toArray()` — méthode vestige, jamais lue par le Domain
+
+Question de l'utilisateur : `toArray()` sur `PostalAddress` (VO `Shared.Domain`) n'est-il pas une violation ? Vérifié dans le code : 5 call sites, tous des Publishers d'Integration Event (`Sales.Ordering`, `Sales.Buyer`, `Fulfilment.Shipping`) — aucun ne vit dans `Domain/`.
+
+Origine pragmatique, désormais caduque : `toArray()` avait un vrai commanditaire Domain tant que les Domain Events eux-mêmes portaient des primitives (avant la convention actuelle : *"`recordThat()` carrie une VO directement une fois la transition acquise sur ce concept"*). La refonte a fait porter `PostalAddress` directement par `OrderPlaced` — le seul commanditaire Domain de `toArray()` a disparu, mais la méthode a survécu, réaffectée aux seuls Publishers. Le fait que rien dans `Domain/` ne la lit jamais est la preuve directe qu'elle ne sert plus qu'un besoin extrinsèque au Domain : la forme voulue par l'Integration Event appartient à la frontière Application, pas à la VO elle-même (même famille de principe que Vernon sur la séparation modèle Domain / DTO — un VO ne doit exposer que ce que le Domain consomme lui-même : garde, calcul, ou transformation vers une autre instance du VO).
+
+### Périmètre réel : 15 call sites, pas 5 — deux foyers de duplication indépendants trouvés en creusant
+
+Sens aller (VO → primitif), au-delà des 5 Publishers d'IE + `RequestShipmentOnOrderConfirmed.php:36` (`warehouseAddressProvider->get()->toArray()`, aussi un `PostalAddress::toArray()`, 6 au total) : `Finance/Payment/Infrastructure/PSP/Globex/GlobexPaymentGateway.php:95` et `Fulfilment/Shipping/Infrastructure/Carrier/Acme/AcmeCarrierGateway.php:65` ont chacun leur propre `private function postalAddressPayload()`, ni l'un ni l'autre n'appelant `PostalAddress::toArray()` — bon réflexe en soi (une forme différente se mappe à la main), sauf que leurs deux formes divergent entre elles sans raison réelle (`recipientName` chez Globex, `recipient` chez Acme) : deux vendors fictifs de ce showcase, aucune contrainte d'API externe réelle à respecter. Pragmatisme assumé, tranché avec l'utilisateur : les deux convergent sur la forme unique du Mapper plutôt que de maintenir une divergence artificielle.
+
+Sens retour (primitif → VO) : **4** copies au corps strictement identique de `private function toPostalAddress(PostalAddressResult $address): PostalAddress` — `PlaceOrderHandler.php:85`, `Checkout.php:92`, `ShipmentManifester.php:60`, et `ConfirmOrderHandler.php:68` (cette 4ème trouvée après coup, ratée au premier passage — grep incomplet, jamais refait avant d'affirmer le compte). `RequestShipmentHandler.php:47` fait la même reconstruction depuis un `array` nested plutôt qu'un `PostalAddressResult` — pas une incohérence : vérifié, cet `array` vient d'un champ de la Command `RequestShipment` (`$command->origin`/`$command->destination`), où `application.md` interdit une VO/Result sur un champ de Command (contrainte de stabilité de message, même famille que la règle IE) ; `PostalAddressResult`, lui, est une sortie de Finder consommée en synchrone dans le même process, sans cette contrainte — une classe typée y est strictement meilleure qu'un array. Les deux formes (array pour une Command, classe pour un Result) sont chacune correctes à leur frontière respective.
+
+`WarehouseAddressProvider.php:17-22` reconstruit aussi depuis un `array`, mais **plat** (`{recipientName, street, postalCode, city, countryCode}`, sans clé `address` imbriquée) — seul endroit du repo avec cette forme, sans raison métier de diverger (config statique interne, pas un contrat externe). **Tranché avec l'utilisateur** : alignée sur la forme imbriquée partout ailleurs, plus simple qu'une deuxième forme à maintenir pour un seul consommateur.
+
+### Un seul Mapper, pas deux — correction
+
+Après vérification complète des call sites : `Address::toArray()`/`Address::of()` (bare, hors `PostalAddress`) ne sont **jamais** appelés seuls dans ce repo — toujours en sous-étape de la construction/décomposition d'un `PostalAddress`. Pas de justification pour un `AddressMapper` séparé (proposé puis retiré) : un seul `PostalAddressMapper`, qui inline directement `Address::of(...)`/le sous-tableau `address`, suffit.
+
+### Nom retenu : `Mapper`, pas `Assembler` — et surtout pas Symfony ObjectMapper
+
+"Assembler" écarté après coup : le mot porte une connotation directionnelle (construire un tout à partir de parties), correcte pour le sens retour (`fromArray()`) mais fausse pour le sens aller (`toArray()` décompose, il n'assemble rien). Retenu : **Mapper**, au sens du pattern *Data Mapper* de Fowler — un objet qui déplace des données entre deux représentations indépendantes l'une de l'autre, dans les deux sens, sans que l'une connaisse la structure de l'autre. Aucun `*Mapper`/`*Translator` préexistant dans ce repo (vérifié), pas de collision de convention.
+
+Symfony `ObjectMapper` écarté : vérifié, absent de `vendor/` (n'apparaît dans `composer.lock` que comme contrainte de conflit d'un autre paquet, jamais comme dépendance réelle) — l'ajouter serait une vraie décision de dépendance nouvelle, pas activer un outil déjà là. Et même installé, mauvais outil : `ObjectMapperInterface::map()` mappe objet → objet, jamais objet → `array` (notre besoin réel, le champ d'IE devant rester primitif) — imposerait une classe DTO intermédiaire rien que pour satisfaire son API, plus de machinerie pas moins. Rédhibitoire : sa configuration passe par `#[Map(target: ...)]` posé sur la classe source — sur `PostalAddress` (Domain), ça coupleraient le VO à un attribut Symfony, exactement la fuite Onion qu'on corrige.
+
+`fromResult()` écarté aussi : `PostalAddressResult` est dupliqué par BC (`Sales\Ordering\Application\Finder\Buyer\PostalAddressResult` et `Fulfilment\Shipping\Application\Finder\Shipment\PostalAddressResult`, deux classes distinctes) — un `fromResult()` sur un Mapper `Shared` typé contre l'une des deux créerait une dépendance `Shared → BC`, à l'envers. Chaque call site convertit son propre `PostalAddressResult` local en array (`(array) $result->address` — vérifié : `AddressResult` des deux BC n'a que 4 propriétés publiques `string`, le cast produit exactement le shape attendu, aucun décalage de clé) avant d'appeler `fromArray()`. Le spread `Address::of(...$data['address'])` échoue fort (à l'exécution, `ArgumentCountError`/`Error: Unknown named parameter`) sur toute forme incorrecte — pas silencieux, juste détecté à l'exécution plutôt qu'en statique ; accepté, le moindre test suffit à le voir.
+
+**Tranché, pas encore exécuté** : créer `Shared\Application\Mapper\PostalAddressMapper` — `toArray(PostalAddress): array`, `fromArray(array): PostalAddress`, statiques, zéro I/O. Retirer `toArray()` de `PostalAddress`/`Address` (Domain). Remplacer les 15 call sites, dont la forme plate de `WarehouseAddressProvider` alignée sur la forme imbriquée.
+
+**Attention fraîcheur avant exécution** : cette liste de call sites sera bougée par les chantiers `Cart`/`Order` déjà tranchés plus haut (`PlaceOrder` simplifié en `PlaceOrder(cartId)`, `Order::abort()` retiré, flux `Cart → Payment → Order → Shipping`...) — plusieurs des 15 fichiers cités ici changeront de forme ou de contenu avant que ce chantier soit exécuté. Revérifier chaque call site par grep au moment de s'y atteler, ne pas exécuter cette liste les yeux fermés depuis ce texte.
+
+### Distinction avec `Domain/ValueObject/<X>UniqueKey` — même test, faux parallèle, **corrigé (2026-09-09)**
+
+Question de l'utilisateur, même angle : le mécanisme d'unicité (vérification/réservation) a été déplacé entièrement en `Shared\Application\Uniqueness`/`Infrastructure\Uniqueness` parce que le Domain ne l'utilise jamais — n'est-ce pas contradictoire de garder `<X>UniqueKey` (`BuyerUniqueKey`, `CartUniqueKey`...) dans `Domain/ValueObject/`, alors que rien dans le Domain ne le lit non plus (vérifié : `BuyerUniqueKey::EMAIL` n'est référencé que par des Handlers/Validation compounds `Application/`, jamais par l'aggregate `Buyer`) ?
+
+**Première réponse (erronée)** : comparé à `AggregateAlreadyExistsException` (Domain-owned, détection réelle en Infrastructure) pour conclure que `<X>UniqueKey` suit le même partage déclaration/vérification. **Corrigé après contestation de l'utilisateur** ("je l'aurais mis dans `Application/Uniqueness` de chaque BC, vu que c'est le Handler qui orchestre et regarde ça") : l'analogie ne tient pas. `AggregateAlreadyExistsException` protège l'unicité de l'**identité** de l'aggregate — une garantie mécanique inhérente au pattern ES lui-même (le store rejette un second stream au même id, gratuitement, pour n'importe quel aggregate), pas un choix de modélisation. `<X>UniqueKey` protège l'unicité d'un **champ métier choisi** (email, produit, panier actif par buyer) — une décision contingente, pas une propriété structurelle. Pas la même catégorie.
+
+Sur le fond (Vernon, *Implementing DDD*) : une invariante inter-instances dépasse par construction la frontière de cohérence d'un seul aggregate — c'est exactement ce que cette frontière délimite. Ce n'est pas seulement le **mécanisme** de vérification qui est Application, c'est la politique entière (quel champ, quel scope) qui relève d'un Application Service ; le Domain n'a structurellement rien à en dire. `<X>UniqueKey` ne participe à aucune transition, aucun event, aucune exception Domain, aucun `@throws` Handler — son seul rôle est d'être un paramètre pour un mécanisme entièrement Application. La parité de préfixe avec `#[Aggregate]`/`#[Event]` est un confort de nommage, jamais validé programmatiquement contre ces attributs — pas une preuve d'appartenance Domain.
+
+**Tranché, pas encore exécuté** : déplacer chaque `<X>UniqueKey` de `Domain/ValueObject/` vers `Application/Uniqueness/` du BC concerné, à côté du Validation compound qui le consomme.
 
 ## Autres paires examinées (pour mémoire, non tranchées ici)
 
-- **`Finance.Payer` / `Sales.Buyer`** : même identité (`PayerId === BuyerId === IdentityId`), mais rétention légale distincte (Payer conservé plus longtemps que Buyer) qui justifierait la frontière — **non implémenté** : les deux s'effacent aujourd'hui sur le même `IdentityErasedIntegrationEvent`, via un mécanisme `Compliance.Erasure` (`Subject`/`Hold`) qui ne porte qu'une seule temporalité globale, pas deux calendriers de rétention distincts. Écarté du jugement de découpage actuel car le code du cycle d'effacement est en cours de refonte sur cette branche.
-- **`Fulfilment.Shipping` (`ShipmentDirection`)** : constat initial correct pour le code tel qu'il est aujourd'hui (la state machine ne teste jamais `direction`) — mais voir la section "Correction" plus haut : dès que `PREPARED` est sauté pour le retour, `direction` cesse d'être une simple métadonnée et le split en deux aggregates devient justifié.
+- **`Finance.Payer` / `Sales.Buyer`** — **tranché (2026-09-09)** : le périmètre du showcase ne garde que `Buyer`, `Payer` n'est pas construit. Une rétention légale distincte (facture, ~10 ans) reste purement conceptuelle sur un futur `Finance.Invoicing`/`Invoice` (voir l'item déjà cadré dans `TODO.md`), jamais un motif de découper `Payer` maintenant.
+- **`Fulfilment.Shipping` (`ShipmentDirection`)** — **caduque (2026-09-09)** : toute cette analyse (constat initial, correction, split `OutboundShipment`/`ReturnShipment`) supposait un leg retour qui n'existe plus — `AfterSales.Return`/`Withdrawal` et le leg retour de `Shipment` sont hors périmètre depuis "Périmètre du showcase" en tête de document. `Shipment` reste un seul aggregate, sans `ShipmentDirection`, comme déjà tranché dans cette même section "Périmètre du showcase". Gardé ici uniquement pour mémoire de l'erreur (analyser une frontière sans revérifier que sa prémisse — le leg retour — est encore dans le périmètre).

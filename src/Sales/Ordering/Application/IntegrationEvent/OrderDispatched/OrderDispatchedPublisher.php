@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderDispatched;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Ordering\Domain\Event\OrderDispatched;
-use Sales\Ordering\Domain\Order;
+use Sales\Ordering\Domain\Order\Event\OrderDispatched;
+use Sales\Ordering\Domain\Order\Order;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 

@@ -9,7 +9,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Domain\Event\OrderErased;
+use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Infrastructure\CipherKey\DropCipherKeyOnOrderErased;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;

@@ -7,4 +7,5 @@ namespace Finance\Payment\Domain\ValueObject;
 enum PaymentUniqueKey: string
 {
     case REFERENCE = 'finance.payment.payment.reference';
+    case CART = 'finance.payment.payment.cart';
 }

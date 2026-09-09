@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderDelivered;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Sales\Ordering\Domain\Event\OrderDelivered;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order;
-use Sales\Ordering\Domain\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\Event\OrderDelivered;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 

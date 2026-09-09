@@ -12,7 +12,6 @@ final readonly class PaymentVoided
 {
     public function __construct(
         public string $id,
-        public string $orderId,
         public PaymentReference $reference,
         public \DateTimeImmutable $voidedAt,
     ) {

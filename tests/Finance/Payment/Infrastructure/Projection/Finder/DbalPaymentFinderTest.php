@@ -7,7 +7,6 @@ namespace Finance\Tests\Payment\Infrastructure\Projection\Finder;
 use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -49,7 +48,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(PaymentId::forOrder(Uuid::uuid7()->toString())->toString());
+        $this->finder->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -61,10 +60,9 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         $authorizedAt = $requestedAt->modify('+1 hour');
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
         $paymentFactory = PaymentBuilder::new()
-            ->withOrderId($order->id->toString())
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
-            ->captured($capturedAt);
+            ->captured($order->id->toString(), $capturedAt);
         $orderPayment = $paymentFactory->create();
         $this->store($order, $orderPayment);
 
@@ -73,6 +71,7 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame($paymentFactory['cartId'], $result->cartId);
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
         self::assertSame($paymentFactory['reference']->value, $result->reference);
@@ -82,7 +81,8 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
         self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->failedAt);
-        self::assertNull($result->cancelledAt);
+        self::assertNull($result->abandonedAt);
+        self::assertNull($result->voidedAt);
     }
 
     #[Test]
@@ -93,6 +93,58 @@ final class DbalPaymentFinderTest extends AbstractIntegrationTestCase
 
         // When
         $this->finder->ofReference(PaymentBuilder::sample('reference')->value);
+    }
+
+    #[Test]
+    public function itGetsByCartId(): void
+    {
+        // Given
+        $other = PaymentBuilder::new()->create();
+        $paymentBuilder = PaymentBuilder::new();
+        $orderPayment = $paymentBuilder->create();
+        $this->store($other, $orderPayment);
+
+        // When
+        $result = $this->finder->ofCartId($paymentBuilder['cartId']);
+
+        // Then
+        self::assertSame($orderPayment->id->toString(), $result->id);
+    }
+
+    #[Test]
+    public function itThrowsWhenCartIdNotFound(): void
+    {
+        // Then
+        $this->expectException(PaymentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofCartId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
+    public function itGetsByOrderId(): void
+    {
+        // Given
+        $other = PaymentBuilder::new()->create();
+        $order = OrderBuilder::new()->create();
+        $orderPayment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
+        $this->store($other, $orderPayment);
+
+        // When
+        $result = $this->finder->ofOrderId($order->id->toString());
+
+        // Then
+        self::assertSame($orderPayment->id->toString(), $result->id);
+    }
+
+    #[Test]
+    public function itThrowsWhenOrderIdNotFound(): void
+    {
+        // Then
+        $this->expectException(PaymentResultNotFoundException::class);
+
+        // When
+        $this->finder->ofOrderId(Uuid::uuid7()->toString());
     }
 
     #[Test]

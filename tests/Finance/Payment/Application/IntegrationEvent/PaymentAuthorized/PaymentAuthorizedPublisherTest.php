@@ -23,7 +23,8 @@ final class PaymentAuthorizedPublisherTest extends AbstractIntegrationTestCase
 
         // Then
         $event = $this->publishedEventOf(PaymentAuthorizedIntegrationEvent::class);
-        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($payment->id->toString(), $event->paymentId);
+        self::assertSame($builder['cartId'], $event->cartId);
         self::assertSame($builder['authorizedAt']->format(\DateTimeInterface::ATOM), $event->authorizedAt->format(\DateTimeInterface::ATOM));
     }
 }

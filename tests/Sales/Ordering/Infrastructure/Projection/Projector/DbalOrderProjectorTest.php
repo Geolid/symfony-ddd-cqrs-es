@@ -14,12 +14,12 @@ use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{buyer_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, erasure_status: string}
+ * @phpstan-type Row array{buyer_id: string, payment_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsOnOrderPlaced(): void
+    public function itProjectsOnOrderConfirmed(): void
     {
         // Given
         $buyerId = Uuid::uuid7()->toString();
@@ -32,13 +32,15 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($buyerId, $row['buyer_id']);
+        self::assertSame($order->paymentId, $row['payment_id']);
         self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
-        self::assertSame(OrderStatus::PLACED->value, $row['status']);
-        self::assertNull($row['confirmed_at']);
+        self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
+        self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);
         self::assertNull($row['dispatched_at']);
         self::assertNull($row['delivered_at']);
         self::assertNull($row['cancelled_at']);
+        self::assertNull($row['failed_at']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 
@@ -61,16 +63,16 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+        self::assertSame(OrderStatus::CONFIRMED->value, $otherRow['status']);
     }
 
     #[Test]
-    public function itProjectsOnOrderAborted(): void
+    public function itProjectsOnOrderFailed(): void
     {
         // Given
         $other = OrderBuilder::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->aborted()->create();
+        $order = OrderBuilder::new()->failed()->create();
 
         // When
         $this->store($order);
@@ -78,43 +80,21 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(OrderStatus::CANCELLED->value, $row['status']);
-        self::assertNotNull($row['cancelled_at']);
+        self::assertSame(OrderStatus::FAILED->value, $row['status']);
+        self::assertNotNull($row['failed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
-    }
-
-    #[Test]
-    public function itProjectsOnOrderConfirmed(): void
-    {
-        // Given
-        $other = OrderBuilder::new()->create();
-        $this->store($other);
-        $order = OrderBuilder::new()->confirmed()->create();
-
-        // When
-        $this->store($order);
-
-        // Then
-        $row = $this->fetchRow($order->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
-        self::assertNotNull($row['confirmed_at']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(OrderStatus::PLACED->value, $otherRow['status']);
+        self::assertSame(OrderStatus::CONFIRMED->value, $otherRow['status']);
     }
 
     #[Test]
     public function itProjectsOnOrderPrepared(): void
     {
         // Given
-        $other = OrderBuilder::new()->confirmed()->create();
+        $other = OrderBuilder::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->confirmed()->prepared()->create();
+        $order = OrderBuilder::new()->prepared()->create();
 
         // When
         $this->store($order);
@@ -134,9 +114,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDispatched(): void
     {
         // Given
-        $other = OrderBuilder::new()->confirmed()->prepared()->create();
+        $other = OrderBuilder::new()->prepared()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->create();
+        $order = OrderBuilder::new()->prepared()->dispatched()->create();
 
         // When
         $this->store($order);
@@ -156,9 +136,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $other = OrderBuilder::new()->confirmed()->prepared()->dispatched()->create();
+        $other = OrderBuilder::new()->prepared()->dispatched()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
 
         // When
         $this->store($order);
@@ -200,9 +180,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderErased(): void
     {
         // Given
-        $other = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->create();
+        $other = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered()->erasureApproved()->create();
+        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->erasureApproved()->create();
 
         // When
         $this->store($order);
@@ -227,7 +207,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, erasure_status FROM %s WHERE id = :id',
+                'SELECT buyer_id, payment_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

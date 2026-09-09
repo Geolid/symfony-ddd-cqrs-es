@@ -12,14 +12,15 @@ final readonly class OrderResult
     public function __construct(
         public string $id,
         public string $buyerId,
+        public string $paymentId,
         public int $totalAmountInCents,
         public OrderStatus $status,
-        public \DateTimeImmutable $placedAt,
-        public ?\DateTimeImmutable $confirmedAt,
+        public \DateTimeImmutable $confirmedAt,
         public ?\DateTimeImmutable $preparedAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,
+        public ?\DateTimeImmutable $failedAt,
         public ErasureStatus $erasureStatus,
     ) {
     }

@@ -10,7 +10,8 @@ enum PaymentStatus: string
     case AUTHORIZED = 'authorized';
     case CAPTURED = 'captured';
     case FAILED = 'failed';
-    case CANCELLED = 'cancelled';
+    case ABANDONED = 'abandoned';
+    case VOIDED = 'voided';
 
     public function isCaptured(): bool
     {

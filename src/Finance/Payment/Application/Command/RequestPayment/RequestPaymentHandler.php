@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Command\RequestPayment;
 
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Payment;
@@ -30,20 +31,31 @@ final readonly class RequestPaymentHandler
 
     /**
      * @throws PaymentReferenceAlreadyTakenException
+     * @throws PaymentAlreadyRequestedException
      */
     public function __invoke(RequestPayment $command): void
     {
         $id = PaymentId::fromString($command->id);
+        $referenceKey = UniqueKey::for(PaymentUniqueKey::REFERENCE);
+        $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(PaymentUniqueKey::REFERENCE), $command->reference, $command->id);
+            $this->uniqueValues->reserve($referenceKey, $command->reference, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
             throw PaymentReferenceAlreadyTakenException::forReference($command->reference, $e);
         }
 
+        try {
+            $this->uniqueValues->reserve($cartKey, $command->cartId, $command->id);
+        } catch (UniqueValueAlreadyTakenException $e) {
+            $this->uniqueValues->release($referenceKey, $command->id);
+
+            throw PaymentAlreadyRequestedException::forCart($command->cartId, $e);
+        }
+
         $orderPayment = Payment::request(
             id: $id,
-            orderId: $command->orderId,
+            cartId: $command->cartId,
             amount: Money::fromCents($command->amountInCents),
             reference: PaymentReference::fromString($command->reference),
             checkoutUrl: $command->checkoutUrl,

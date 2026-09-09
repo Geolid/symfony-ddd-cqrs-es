@@ -11,7 +11,7 @@ final readonly class PaymentAuthorized
 {
     public function __construct(
         public string $id,
-        public string $orderId,
+        public string $cartId,
         public \DateTimeImmutable $authorizedAt,
     ) {
     }

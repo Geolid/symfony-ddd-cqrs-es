@@ -28,7 +28,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $builder = OrderBuilder::new()->confirmed()->prepared()->dispatched()->delivered();
+        $builder = OrderBuilder::new()->prepared()->dispatched()->delivered();
         $order = $builder->create();
         $this->store($order);
 
@@ -38,19 +38,20 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($order->id->toString(), $result->id);
         self::assertSame($builder['buyerId'], $result->buyerId);
+        self::assertSame($builder['paymentId'], $result->paymentId);
         self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
-        self::assertSame($builder['placedAt']->format('Y-m-d H:i:s'), $result->placedAt->format('Y-m-d H:i:s'));
-        self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
         self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
         self::assertSame($builder['dispatchedAt']->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
         self::assertSame($builder['deliveredAt']->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
+        self::assertNull($result->failedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
     #[Test]
-    public function itThrowsOnUnknown(): void
+    public function itThrowsWhenIdNotFound(): void
     {
         // Then
         $this->expectException(OrderResultNotFoundException::class);

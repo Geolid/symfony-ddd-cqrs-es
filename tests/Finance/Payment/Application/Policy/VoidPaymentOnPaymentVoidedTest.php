@@ -35,6 +35,6 @@ final class VoidPaymentOnPaymentVoidedTest extends AbstractIntegrationTestCase
         $this->paymentGateway->expects(self::once())->method('void')->with($reference->value)->willReturn(PaymentGatewayStatus::VOIDED);
 
         // When
-        $this->trigger(VoidPaymentOnPaymentVoided::class, new PaymentVoided(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $reference, Clock::get()->now()));
+        $this->trigger(VoidPaymentOnPaymentVoided::class, new PaymentVoided(Uuid::uuid7()->toString(), $reference, Clock::get()->now()));
     }
 }

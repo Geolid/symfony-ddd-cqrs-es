@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\PrepareOrder\PrepareOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +28,7 @@ final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPreparesWhenConfirmed(): void
     {
         // Given
-        $order = OrderBuilder::new()->confirmed()->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
 
         // When
