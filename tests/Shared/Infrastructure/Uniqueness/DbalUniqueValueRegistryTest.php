@@ -27,7 +27,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itReserves(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
+        $key = UniqueKey::for(DummyUniqueKey::NAME);
 
         // When
         $this->registry->reserve($key, 'value', 'owner-1');
@@ -40,7 +40,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyReservedBySameOwner(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
+        $key = UniqueKey::for(DummyUniqueKey::NAME);
         $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
@@ -54,7 +54,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itThrowsWhenAlreadyReservedByAnotherOwner(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
+        $key = UniqueKey::for(DummyUniqueKey::NAME);
         $this->registry->reserve($key, 'value', 'owner-1');
 
         // Then
@@ -68,8 +68,8 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itReservesWithScope(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A, 'scope-1');
-        $otherScopeKey = UniqueKey::for(DummyUniqueKey::A, 'scope-2');
+        $key = UniqueKey::for(DummyUniqueKey::NAME, 'scope-1');
+        $otherScopeKey = UniqueKey::for(DummyUniqueKey::NAME, 'scope-2');
 
         // When
         $this->registry->reserve($key, 'value', 'owner-1');
@@ -84,7 +84,7 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itExcludesOnlyOwnReservation(string $excludeOwnerId, bool $expected): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
+        $key = UniqueKey::for(DummyUniqueKey::NAME);
         $this->registry->reserve($key, 'value', 'owner-1');
 
         // When
@@ -107,8 +107,8 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itReleases(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A);
-        $otherKey = UniqueKey::for(DummyUniqueKey::B);
+        $key = UniqueKey::for(DummyUniqueKey::NAME);
+        $otherKey = UniqueKey::for(DummyUniqueKey::CODE);
         $this->registry->reserve($key, 'value-1', 'owner-1');
         $this->registry->reserve($key, 'value-2', 'owner-2');
         $this->registry->reserve($otherKey, 'value-3', 'owner-1');
@@ -126,9 +126,9 @@ final class DbalUniqueValueRegistryTest extends AbstractIntegrationTestCase
     public function itReleasesAll(): void
     {
         // Given
-        $key = UniqueKey::for(DummyUniqueKey::A, 'scope-1');
-        $otherScopeKey = UniqueKey::for(DummyUniqueKey::A, 'scope-2');
-        $otherKey = UniqueKey::for(DummyUniqueKey::B, 'scope-1');
+        $key = UniqueKey::for(DummyUniqueKey::NAME, 'scope-1');
+        $otherScopeKey = UniqueKey::for(DummyUniqueKey::NAME, 'scope-2');
+        $otherKey = UniqueKey::for(DummyUniqueKey::CODE, 'scope-1');
         $this->registry->reserve($key, 'value-1', 'owner-1');
         $this->registry->reserve($key, 'value-2', 'owner-2');
         $this->registry->reserve($otherScopeKey, 'value-1', 'owner-1');

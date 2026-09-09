@@ -6,6 +6,6 @@ namespace Shared\Tests\Support\Double;
 
 enum DummyUniqueKey: string
 {
-    case A = 'dummy.a';
-    case B = 'dummy.b';
+    case NAME = 'dummy.name';
+    case CODE = 'dummy.code';
 }
