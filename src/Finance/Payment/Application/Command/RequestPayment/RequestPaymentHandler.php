@@ -48,8 +48,6 @@ final readonly class RequestPaymentHandler
         try {
             $this->uniqueValues->reserve($cartKey, $command->cartId, $command->id);
         } catch (UniqueValueAlreadyTakenException $e) {
-            $this->uniqueValues->release($referenceKey, $command->id);
-
             throw PaymentAlreadyRequestedException::forCart($command->cartId, $e);
         }
 
