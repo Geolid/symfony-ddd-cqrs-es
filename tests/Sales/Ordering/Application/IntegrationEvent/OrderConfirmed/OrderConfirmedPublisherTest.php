@@ -7,6 +7,7 @@ namespace Sales\Tests\Ordering\Application\IntegrationEvent\OrderConfirmed;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
@@ -23,7 +24,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
 
         // Then
         $event = $this->publishedEventOf(OrderConfirmedIntegrationEvent::class);
-        $shippingAddress = $order->shippingAddress->toArray();
+        $shippingAddress = PostalAddressMapper::toArray($order->shippingAddress);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($builder['buyerId'], $event->buyerId);
         self::assertSame($shippingAddress, $event->shippingAddress);

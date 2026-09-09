@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Command\AbandonPayment;
 
+use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
-use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;

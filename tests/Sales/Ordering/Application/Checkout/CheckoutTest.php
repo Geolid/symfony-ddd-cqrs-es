@@ -21,6 +21,7 @@ use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Shared\ValueObject\Product;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -61,7 +62,7 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         self::assertSame($cart->id->toString(), $result->cartId);
         self::assertSame($cartBuilder['quantity']->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
         self::assertNotNull($buyer->billingAddress);
-        self::assertSame($buyer->billingAddress->toArray(), $result->billingAddress->toArray());
+        self::assertSame(PostalAddressMapper::toArray($buyer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
         $event = $this->publishedEventOf(CartCheckedOut::class);
         self::assertSame($cart->id->toString(), $event->id);
     }

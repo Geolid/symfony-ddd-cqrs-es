@@ -51,17 +51,4 @@ final readonly class Address
             && $this->city === $other->city
             && $this->countryCode === $other->countryCode;
     }
-
-    /**
-     * @return array{street: string, postalCode: string, city: string, countryCode: string}
-     */
-    public function toArray(): array
-    {
-        return [
-            'street' => $this->street,
-            'postalCode' => $this->postalCode,
-            'city' => $this->city,
-            'countryCode' => $this->countryCode->value,
-        ];
-    }
 }

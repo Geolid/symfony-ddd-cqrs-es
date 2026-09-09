@@ -12,6 +12,7 @@ use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 #[Publisher('sales.ordering.publish_order_delivered')]
 final readonly class OrderDeliveredPublisher
@@ -33,7 +34,7 @@ final readonly class OrderDeliveredPublisher
         $this->publisher->publish(Order::class, $event->id, new OrderDeliveredIntegrationEvent(
             orderId: $event->id,
             buyerId: $order->buyerId,
-            shippingAddress: $order->shippingAddress->toArray(),
+            shippingAddress: PostalAddressMapper::toArray($order->shippingAddress),
             deliveredAt: $event->deliveredAt,
         ));
     }

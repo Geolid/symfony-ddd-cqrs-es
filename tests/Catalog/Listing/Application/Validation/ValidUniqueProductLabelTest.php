@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Listing\Application\Validation;
 
+use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
 use Catalog\Listing\Application\Validation\ValidUniqueProductLabel;
-use Catalog\Listing\Domain\ValueObject\ProductUniqueKey;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;

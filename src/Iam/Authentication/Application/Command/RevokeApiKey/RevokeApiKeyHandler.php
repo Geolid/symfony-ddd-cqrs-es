@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\RevokeApiKey;
 
+use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
-use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;

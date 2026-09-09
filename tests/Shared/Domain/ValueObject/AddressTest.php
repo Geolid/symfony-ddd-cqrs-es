@@ -24,11 +24,6 @@ final class AddressTest extends TestCase
         self::assertSame($postalCode, $address->postalCode);
         self::assertSame($city, $address->city);
         self::assertSame(CountryCode::from($countryCode), $address->countryCode);
-        $primitiveAddress = $address->toArray();
-        self::assertSame(
-            ['street' => $street, 'postalCode' => $postalCode, 'city' => $city, 'countryCode' => $countryCode],
-            $primitiveAddress,
-        );
     }
 
     /**

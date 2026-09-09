@@ -8,7 +8,6 @@ use Psr\Clock\ClockInterface;
 use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerAddressesNotCompletedException;
 use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerNotRegisteredException;
 use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
-use Sales\Ordering\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
@@ -19,10 +18,9 @@ use Sales\Ordering\Domain\Shared\ValueObject\LineId;
 use Sales\Ordering\Domain\Shared\ValueObject\Product;
 use Sales\Ordering\Domain\Shared\ValueObject\Quantity;
 use Shared\Application\Command\CommandHandler;
-use Shared\Domain\ValueObject\Address;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\PostalAddress;
 
 #[CommandHandler]
 final readonly class ConfirmOrderHandler
@@ -52,8 +50,14 @@ final readonly class ConfirmOrderHandler
             id: OrderId::fromString($command->id),
             buyerId: $buyer->buyerId,
             paymentId: $command->paymentId,
-            shippingAddress: $this->toPostalAddress($buyer->shippingAddress),
-            billingAddress: $this->toPostalAddress($buyer->billingAddress),
+            shippingAddress: PostalAddressMapper::fromArray([
+                'recipientName' => $buyer->shippingAddress->recipientName,
+                'address' => (array) $buyer->shippingAddress->address,
+            ]),
+            billingAddress: PostalAddressMapper::fromArray([
+                'recipientName' => $buyer->billingAddress->recipientName,
+                'address' => (array) $buyer->billingAddress->address,
+            ]),
             lines: array_map($this->resolveLine(...), $command->lines),
             confirmedAt: $this->clock->now(),
         );
@@ -63,14 +67,6 @@ final readonly class ConfirmOrderHandler
         } catch (OrderAlreadyExistsException) {
             return;
         }
-    }
-
-    private function toPostalAddress(PostalAddressResult $address): PostalAddress
-    {
-        return PostalAddress::of(
-            $address->recipientName,
-            Address::of($address->address->street, $address->address->postalCode, $address->address->city, $address->address->countryCode),
-        );
     }
 
     /**

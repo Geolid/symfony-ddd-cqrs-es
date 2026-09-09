@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Tests\Buyer\Application\Validation;
 
 use PHPUnit\Framework\Attributes\Test;
+use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
 use Sales\Buyer\Application\Validation\ValidUniqueBuyerEmail;
-use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;

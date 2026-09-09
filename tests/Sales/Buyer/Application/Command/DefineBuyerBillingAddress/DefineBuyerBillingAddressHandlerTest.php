@@ -11,6 +11,7 @@ use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DefineBuyerBillingAddressHandlerTest extends AbstractIntegrationTestCase
@@ -21,14 +22,15 @@ final class DefineBuyerBillingAddressHandlerTest extends AbstractIntegrationTest
         // Given
         $buyer = BuyerBuilder::new()->create();
         $this->store($buyer);
-        $billingAddress = BuyerBuilder::sample('billingAddress')->toArray();
+        $billingAddress = PostalAddressMapper::toArray(BuyerBuilder::sample('billingAddress'));
 
         // When
         $this->dispatch(new DefineBuyerBillingAddress($buyer->id->toString(), $billingAddress));
 
         // Then
         $reloaded = $this->service(BuyerRepositoryInterface::class)->load(BuyerId::fromString($buyer->id->toString()));
-        self::assertSame($billingAddress, $reloaded->billingAddress?->toArray());
+        self::assertNotNull($reloaded->billingAddress);
+        self::assertSame($billingAddress, PostalAddressMapper::toArray($reloaded->billingAddress));
     }
 
     #[Test]
@@ -38,6 +40,6 @@ final class DefineBuyerBillingAddressHandlerTest extends AbstractIntegrationTest
         $this->expectException(BuyerNotFoundException::class);
 
         // When
-        $this->dispatch(new DefineBuyerBillingAddress(Uuid::uuid7()->toString(), BuyerBuilder::sample('billingAddress')->toArray()));
+        $this->dispatch(new DefineBuyerBillingAddress(Uuid::uuid7()->toString(), PostalAddressMapper::toArray(BuyerBuilder::sample('billingAddress'))));
     }
 }

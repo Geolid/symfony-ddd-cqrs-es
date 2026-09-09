@@ -8,7 +8,7 @@ use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyR
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Domain\ValueObject\PaymentUniqueKey;
+use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;

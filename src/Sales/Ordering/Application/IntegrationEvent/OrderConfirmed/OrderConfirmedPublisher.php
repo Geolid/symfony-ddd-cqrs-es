@@ -12,6 +12,7 @@ use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
+use Shared\Application\Mapper\PostalAddressMapper;
 
 #[Publisher('sales.ordering.publish_order_confirmed')]
 final readonly class OrderConfirmedPublisher
@@ -34,7 +35,7 @@ final readonly class OrderConfirmedPublisher
             orderId: $event->id,
             buyerId: $order->buyerId,
             paymentId: $order->paymentId,
-            shippingAddress: $order->shippingAddress->toArray(),
+            shippingAddress: PostalAddressMapper::toArray($order->shippingAddress),
             confirmedAt: $event->confirmedAt,
         ));
     }

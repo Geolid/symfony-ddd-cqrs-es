@@ -11,6 +11,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Application\Policy;
 
 #[Policy('fulfilment.shipping.request_shipment_on_order_confirmed')]
@@ -33,7 +34,7 @@ final readonly class RequestShipmentOnOrderConfirmed
             id: ShipmentId::forOrder($event->orderId)->toString(),
             orderId: $event->orderId,
             buyerId: $event->buyerId,
-            origin: $this->warehouseAddressProvider->get()->toArray(),
+            origin: PostalAddressMapper::toArray($this->warehouseAddressProvider->get()),
             destination: $event->shippingAddress,
         ));
     }

@@ -6,11 +6,11 @@ namespace Sales\Buyer\Application\Command\RegisterBuyer;
 
 use Psr\Clock\ClockInterface;
 use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
+use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
-use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
 use Sales\Buyer\Domain\ValueObject\Email;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;

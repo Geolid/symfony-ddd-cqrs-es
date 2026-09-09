@@ -9,6 +9,7 @@ use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -32,8 +33,8 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->service(EventSerializer::class)->deserialize($serialized);
         self::assertInstanceOf(ShipmentRequested::class, $rehydrated);
-        $erasedAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
-        self::assertSame($erasedAddress->toArray(), $rehydrated->origin->toArray());
-        self::assertSame($erasedAddress->toArray(), $rehydrated->destination->toArray());
+        $erasedAddress = PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
+        self::assertSame($erasedAddress, PostalAddressMapper::toArray($rehydrated->origin));
+        self::assertSame($erasedAddress, PostalAddressMapper::toArray($rehydrated->destination));
     }
 }

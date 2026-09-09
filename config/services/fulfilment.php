@@ -17,10 +17,12 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_it
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('fulfilment.warehouse_address', [
         'recipientName' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_RECIPIENT_NAME)%',
-        'street' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_STREET)%',
-        'postalCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_POSTAL_CODE)%',
-        'city' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_CITY)%',
-        'countryCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_COUNTRY_CODE)%',
+        'address' => [
+            'street' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_STREET)%',
+            'postalCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_POSTAL_CODE)%',
+            'city' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_CITY)%',
+            'countryCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_COUNTRY_CODE)%',
+        ],
     ]);
     $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_hours', 48);
 

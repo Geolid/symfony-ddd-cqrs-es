@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -45,9 +46,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
         self::assertInstanceOf(OrderConfirmed::class, $rehydrated);
-        $erasedPostalAddress = PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
-        self::assertSame($erasedPostalAddress->toArray(), $rehydrated->shippingAddress->toArray());
-        self::assertSame($erasedPostalAddress->toArray(), $rehydrated->billingAddress->toArray());
+        $erasedPostalAddress = PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
+        self::assertSame($erasedPostalAddress, PostalAddressMapper::toArray($rehydrated->shippingAddress));
+        self::assertSame($erasedPostalAddress, PostalAddressMapper::toArray($rehydrated->billingAddress));
     }
 
     #[Test]

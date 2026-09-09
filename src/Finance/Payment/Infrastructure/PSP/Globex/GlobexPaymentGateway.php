@@ -9,6 +9,7 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
@@ -28,7 +29,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
             'merchantReference' => $cartId,
             'amountInCents' => $amountInCents,
             'returnUrl' => $returnUrl,
-            'billingAddress' => $this->postalAddressPayload($billingAddress),
+            'billingAddress' => PostalAddressMapper::toArray($billingAddress),
         ], $cartId);
 
         $chargeReference = $response['chargeReference'] ?? null;
@@ -87,19 +88,5 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
         } catch (\ValueError) {
             throw PaymentFatalFailureException::forReason(\sprintf('A response carries a recognized "status", got "%s".', $status));
         }
-    }
-
-    /**
-     * @return array{recipientName: string, street: string, postalCode: string, city: string, countryCode: string}
-     */
-    private function postalAddressPayload(PostalAddress $postalAddress): array
-    {
-        return [
-            'recipientName' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postalCode' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'countryCode' => $postalAddress->address->countryCode->value,
-        ];
     }
 }
