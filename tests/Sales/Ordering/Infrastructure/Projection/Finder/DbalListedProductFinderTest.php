@@ -4,23 +4,19 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Ordering\Infrastructure\Projection\Finder;
 
+use Catalog\Listing\Domain\Product;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Sales\Ordering\Application\Finder\ListedProduct\ListedProductResult;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
-final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<ListedProductResult>
+ */
+final class DbalListedProductFinderTest extends AbstractIterableFinderTestCase
 {
-    private ListedProductFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(ListedProductFinderInterface::class);
-    }
-
     #[Test]
     public function itFiltersByIds(): void
     {
@@ -32,12 +28,33 @@ final class DbalListedProductFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $cups);
 
         // When
-        $results = iterator_to_array($this->finder->byIds($cups->id->toString(), Uuid::uuid7()->toString()));
+        $results = iterator_to_array($this->finder()->byIds($cups->id->toString(), Uuid::uuid7()->toString()));
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($cups->id->toString(), $results[0]->productId);
         self::assertSame($label->value, $results[0]->label);
         self::assertSame($unitPrice->cents, $results[0]->unitPriceInCents);
+    }
+
+    protected function finder(): ListedProductFinderInterface
+    {
+        return $this->service(ListedProductFinderInterface::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function seed(int $count): array
+    {
+        $products = ProductBuilder::new()->many($count)->create();
+        $this->store(...$products);
+
+        return array_map(static fn (Product $product): string => $product->id->toString(), $products);
+    }
+
+    protected function idOf(object $result): string
+    {
+        return $result->productId;
     }
 }

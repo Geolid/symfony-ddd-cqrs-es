@@ -13,20 +13,14 @@ use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<ShipmentResult>
+ */
+final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 {
-    private ShipmentFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(ShipmentFinderInterface::class);
-    }
-
     #[Test]
     public function itGetsById(): void
     {
@@ -37,7 +31,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $shipment);
 
         // When
-        $result = $this->finder->ofId($shipment->id->toString());
+        $result = $this->finder()->ofId($shipment->id->toString());
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
@@ -56,7 +50,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -69,7 +63,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder->ofTrackingNumber($builder['trackingNumber']->value);
+        $result = $this->finder()->ofTrackingNumber($builder['trackingNumber']->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
@@ -87,7 +81,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder->ofTrackingNumber(ShipmentBuilder::sample('trackingNumber')->value);
+        $this->finder()->ofTrackingNumber(ShipmentBuilder::sample('trackingNumber')->value);
     }
 
     #[Test]
@@ -100,8 +94,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $shipment);
 
         // When
-        $found = $this->finder->ofOrderOrNull($builder['orderId']);
-        $notFound = $this->finder->ofOrderOrNull(ShipmentBuilder::sample('orderId'));
+        $found = $this->finder()->ofOrderOrNull($builder['orderId']);
+        $notFound = $this->finder()->ofOrderOrNull(ShipmentBuilder::sample('orderId'));
 
         // Then
         self::assertNotNull($found);
@@ -119,7 +113,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $shipment);
 
         // When
-        $results = iterator_to_array($this->finder->byBuyer($buyerId));
+        $results = iterator_to_array($this->finder()->byBuyer($buyerId));
 
         // Then
         self::assertCount(1, $results);
@@ -136,7 +130,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $manifested, $dispatched);
 
         // When
-        $results = iterator_to_array($this->finder->byStatus(ShipmentStatus::MANIFESTED, ShipmentStatus::DISPATCHED));
+        $results = iterator_to_array($this->finder()->byStatus(ShipmentStatus::MANIFESTED, ShipmentStatus::DISPATCHED));
 
         // Then
         self::assertCount(2, $results);
@@ -162,7 +156,7 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched);
 
         // When
-        $results = iterator_to_array($this->finder->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->stalledBefore($now));
 
         // Then
         self::assertCount(2, $results);
@@ -172,55 +166,24 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         );
     }
 
-    #[Test]
-    public function itLists(): void
+    protected function finder(): ShipmentFinderInterface
     {
-        // Given
-        $shipments = ShipmentBuilder::new()->many(5)->create();
+        return $this->service(ShipmentFinderInterface::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function seed(int $count): array
+    {
+        $shipments = ShipmentBuilder::new()->many($count)->create();
         $this->store(...$shipments);
 
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertSame($this->ids(...$shipments), $this->resultIds($results));
+        return array_map(static fn (Shipment $shipment): string => $shipment->id->toString(), $shipments);
     }
 
-    #[Test]
-    public function itListsWhenEmpty(): void
+    protected function idOf(object $result): string
     {
-        // When
-        $results = iterator_to_array($this->finder);
-
-        // Then
-        self::assertEmpty($results);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function ids(Shipment ...$shipments): array
-    {
-        $ids = [];
-        foreach ($shipments as $shipment) {
-            $ids[] = $shipment->id->toString();
-        }
-
-        return $ids;
-    }
-
-    /**
-     * @param iterable<ShipmentResult> $results
-     *
-     * @return list<string>
-     */
-    private function resultIds(iterable $results): array
-    {
-        $ids = [];
-        foreach ($results as $result) {
-            $ids[] = $result->id;
-        }
-
-        return $ids;
+        return $result->id;
     }
 }

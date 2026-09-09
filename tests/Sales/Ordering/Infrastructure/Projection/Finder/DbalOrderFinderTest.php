@@ -8,22 +8,18 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
+use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\Order;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
-final class DbalOrderFinderTest extends AbstractIntegrationTestCase
+/**
+ * @extends AbstractIterableFinderTestCase<OrderResult>
+ */
+final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 {
-    private OrderFinderInterface $finder;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->finder = $this->service(OrderFinderInterface::class);
-    }
-
     #[Test]
     public function itGets(): void
     {
@@ -33,7 +29,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // When
-        $result = $this->finder->ofId($order->id->toString());
+        $result = $this->finder()->ofId($order->id->toString());
 
         // Then
         self::assertSame($order->id->toString(), $result->id);
@@ -57,7 +53,7 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(Uuid::uuid7()->toString());
     }
 
     #[Test]
@@ -70,10 +66,31 @@ final class DbalOrderFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $order);
 
         // When
-        $results = iterator_to_array($this->finder->byBuyer($buyerId), false);
+        $results = iterator_to_array($this->finder()->byBuyer($buyerId), false);
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($order->id->toString(), $results[0]->id);
+    }
+
+    protected function finder(): OrderFinderInterface
+    {
+        return $this->service(OrderFinderInterface::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function seed(int $count): array
+    {
+        $orders = OrderBuilder::new()->many($count)->create();
+        $this->store(...$orders);
+
+        return array_map(static fn (Order $order): string => $order->id->toString(), $orders);
+    }
+
+    protected function idOf(object $result): string
+    {
+        return $result->id;
     }
 }
