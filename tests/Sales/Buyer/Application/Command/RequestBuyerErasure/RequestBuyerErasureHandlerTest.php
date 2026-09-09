@@ -27,7 +27,7 @@ final class RequestBuyerErasureHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
-        self::assertSame(ErasureStatus::PENDING, $result->erasureStatus);
+        self::assertSame(ErasureStatus::REQUESTED, $result->erasureStatus);
     }
 
     #[Test]

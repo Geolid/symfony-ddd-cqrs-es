@@ -7,7 +7,7 @@ namespace Shared\Application;
 enum ErasureStatus: string
 {
     case RETAINED = 'retained';
-    case PENDING = 'pending';
+    case REQUESTED = 'requested';
     case APPROVED = 'approved';
     case ERASED = 'erased';
 }

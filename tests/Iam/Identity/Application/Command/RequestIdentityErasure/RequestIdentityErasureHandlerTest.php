@@ -27,7 +27,7 @@ final class RequestIdentityErasureHandlerTest extends AbstractIntegrationTestCas
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
-        self::assertSame(ErasureStatus::PENDING, $result->erasureStatus);
+        self::assertSame(ErasureStatus::REQUESTED, $result->erasureStatus);
     }
 
     #[Test]

@@ -29,7 +29,7 @@ final class RequestBuyerErasureOnErasureRequestedTest extends AbstractIntegratio
 
         // Then
         $result = $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
-        self::assertSame(ErasureStatus::PENDING, $result->erasureStatus);
+        self::assertSame(ErasureStatus::REQUESTED, $result->erasureStatus);
     }
 
     #[Test]

@@ -42,7 +42,7 @@ final readonly class DbalBuyerProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['erasure_status' => ErasureStatus::PENDING->value],
+            ['erasure_status' => ErasureStatus::REQUESTED->value],
             ['id' => $event->id],
         );
     }

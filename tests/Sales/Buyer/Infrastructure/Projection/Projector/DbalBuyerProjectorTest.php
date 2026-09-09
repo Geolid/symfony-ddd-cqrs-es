@@ -48,7 +48,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($buyer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(ErasureStatus::PENDING->value, $row['erasure_status']);
+        self::assertSame(ErasureStatus::REQUESTED->value, $row['erasure_status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -73,7 +73,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(ErasureStatus::PENDING->value, $otherRow['erasure_status']);
+        self::assertSame(ErasureStatus::REQUESTED->value, $otherRow['erasure_status']);
     }
 
     #[Test]
