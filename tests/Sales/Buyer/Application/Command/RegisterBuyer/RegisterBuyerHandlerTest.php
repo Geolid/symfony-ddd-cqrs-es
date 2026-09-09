@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Application\Command\RegisterBuyer\RegisterBuyer;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\BuyerUniqueKey;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -21,13 +22,14 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
         $email = BuyerBuilder::sample('email')->value;
 
         // When
-        $this->dispatch(new RegisterBuyer($id, $email));
+        $this->dispatch(new RegisterBuyer($identityId, $email));
 
         // Then
+        $id = BuyerId::forIdentity($identityId)->toString();
         $result = $this->service(BuyerFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
         self::assertSame($email, $result->email);
@@ -37,7 +39,7 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenEmailAlreadyTaken(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
         $existingId = Uuid::uuid7()->toString();
         $email = BuyerBuilder::sample('email')->value;
         $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email, $existingId);
@@ -46,6 +48,6 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(BuyerEmailAlreadyTakenException::class);
 
         // When
-        $this->dispatch(new RegisterBuyer($id, $email));
+        $this->dispatch(new RegisterBuyer($identityId, $email));
     }
 }

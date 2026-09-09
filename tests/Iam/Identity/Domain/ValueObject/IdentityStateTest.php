@@ -25,12 +25,4 @@ final class IdentityStateTest extends TestCase
             self::assertSame(IdentityState::SUSPENDED === $state, $state->isSuspended(), $state->value);
         }
     }
-
-    #[Test]
-    public function itIsErased(): void
-    {
-        foreach (IdentityState::cases() as $state) {
-            self::assertSame(IdentityState::ERASED === $state, $state->isErased(), $state->value);
-        }
-    }
 }

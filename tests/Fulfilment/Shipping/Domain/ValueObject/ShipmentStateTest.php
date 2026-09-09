@@ -17,4 +17,20 @@ final class ShipmentStateTest extends TestCase
             self::assertSame(ShipmentState::MANIFESTED === $state, $state->isManifested(), $state->value);
         }
     }
+
+    #[Test]
+    public function itIsDelivered(): void
+    {
+        foreach (ShipmentState::cases() as $state) {
+            self::assertSame(ShipmentState::DELIVERED === $state, $state->isDelivered(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsCancelled(): void
+    {
+        foreach (ShipmentState::cases() as $state) {
+            self::assertSame(ShipmentState::CANCELLED === $state, $state->isCancelled(), $state->value);
+        }
+    }
 }

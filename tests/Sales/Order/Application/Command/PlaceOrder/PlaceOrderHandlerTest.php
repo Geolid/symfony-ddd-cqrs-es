@@ -6,8 +6,6 @@ namespace Sales\Tests\Order\Application\Command\PlaceOrder;
 
 use Catalog\Listing\Domain\ValueObject\ProductId;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
-use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
-use Finance\Tests\Payer\Support\Builder\PayerBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -30,13 +28,9 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPlaces(): void
     {
         // Given
-        $buyerBuilder = BuyerBuilder::new()->postalAddressDefined();
+        $buyerBuilder = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined();
         $buyer = $buyerBuilder->create();
-        $payerBuilder = PayerBuilder::new()
-            ->withId($buyer->id->toString())
-            ->postalAddressDefined();
-        $payer = $payerBuilder->create();
-        $this->store($buyer, $payer);
+        $this->store($buyer);
         $id = Uuid::uuid7()->toString();
         $lines = $this->lines();
 
@@ -51,8 +45,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::PLACED, $result->status);
 
         $order = $this->orderOf($id);
-        self::assertSame($buyerBuilder['postalAddress']->toArray(), $order->shippingAddress->toArray());
-        self::assertSame($payerBuilder['postalAddress']->toArray(), $order->billingAddress->toArray());
+        self::assertSame($buyerBuilder['shippingAddress']->toArray(), $order->shippingAddress->toArray());
+        self::assertSame($buyerBuilder['billingAddress']->toArray(), $order->billingAddress->toArray());
     }
 
     #[Test]
@@ -72,7 +66,7 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerErased(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
         $this->store($buyer);
 
         // Then
@@ -86,10 +80,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBuyerPendingErasure(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $buyer = BuyerBuilder::new()->withId($identityId)->create();
-        $subject = SubjectBuilder::new()->withId($identityId)->erasureRequested()->create();
-        $this->store($buyer, $subject);
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($buyer);
 
         // Then
         $this->expectException(BuyerPendingErasureException::class);
@@ -105,17 +97,14 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $buyerBuilder = BuyerBuilder::new();
         if ($withShippingAddress) {
-            $buyerBuilder = $buyerBuilder->postalAddressDefined();
+            $buyerBuilder = $buyerBuilder->shippingAddressDefined();
+        }
+        if ($withBillingAddress) {
+            $buyerBuilder = $buyerBuilder->billingAddressDefined();
         }
         $buyer = $buyerBuilder->create();
 
-        $payerBuilder = PayerBuilder::new()->withId($buyer->id->toString());
-        if ($withBillingAddress) {
-            $payerBuilder = $payerBuilder->postalAddressDefined();
-        }
-        $payer = $payerBuilder->create();
-
-        $this->store($buyer, $payer);
+        $this->store($buyer);
 
         // Then
         $this->expectException(BuyerAddressesNotCompletedException::class);
@@ -135,28 +124,11 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenPayerNotRegistered(): void
-    {
-        // Given
-        $buyer = BuyerBuilder::new()
-            ->postalAddressDefined()
-            ->create();
-        $this->store($buyer);
-
-        // Then
-        $this->expectException(BuyerAddressesNotCompletedException::class);
-
-        // When
-        $this->dispatch(new PlaceOrder(Uuid::uuid7()->toString(), $buyer->id->toString(), $this->lines()));
-    }
-
-    #[Test]
     public function itFailsWhenProductNotAvailable(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->postalAddressDefined()->create();
-        $payer = PayerBuilder::new()->withId($buyer->id->toString())->postalAddressDefined()->create();
-        $this->store($buyer, $payer);
+        $buyer = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $this->store($buyer);
 
         // Then
         $this->expectException(OutdatedOrderException::class);
@@ -173,9 +145,8 @@ final class PlaceOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductChanged(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->postalAddressDefined()->create();
-        $payer = PayerBuilder::new()->withId($buyer->id->toString())->postalAddressDefined()->create();
-        $this->store($buyer, $payer);
+        $buyer = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $this->store($buyer);
         $label = ProductBuilder::sample('label');
         $unitPrice = ProductBuilder::sample('unitPrice');
         $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();

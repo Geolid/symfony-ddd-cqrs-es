@@ -8,10 +8,11 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Buyer\Infrastructure\Projection\Projector\DbalBuyerProjector;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{email: string, registered_at: string}
+ * @phpstan-type Row array{email: string, registered_at: string, erasure_status: string}
  */
 final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,6 +31,49 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($builder['email']->value, $row['email']);
         self::assertSame($builder['registeredAt']->format('Y-m-d H:i:s'), $row['registered_at']);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
+    }
+
+    #[Test]
+    public function itProjectsOnBuyerErasureRequested(): void
+    {
+        // Given
+        $other = BuyerBuilder::new()->create();
+        $this->store($other);
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+
+        // When
+        $this->store($buyer);
+
+        // Then
+        $row = $this->fetchRow($buyer->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::PENDING->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
+    #[Test]
+    public function itProjectsOnBuyerErasureCancelled(): void
+    {
+        // Given
+        $other = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($other);
+        $buyer = BuyerBuilder::new()->erasureRequested()->erasureCancelled()->create();
+
+        // When
+        $this->store($buyer);
+
+        // Then
+        $row = $this->fetchRow($buyer->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::PENDING->value, $otherRow['erasure_status']);
     }
 
     #[Test]
@@ -39,7 +83,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
         $otherBuilder = BuyerBuilder::new();
         $other = $otherBuilder->create();
         $this->store($other);
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($buyer);
@@ -61,7 +105,7 @@ final class DbalBuyerProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT email, registered_at FROM %s WHERE id = :id', DbalBuyerProjector::TABLE),
+            \sprintf('SELECT email, registered_at, erasure_status FROM %s WHERE id = :id', DbalBuyerProjector::TABLE),
             ['id' => $id],
         );
     }

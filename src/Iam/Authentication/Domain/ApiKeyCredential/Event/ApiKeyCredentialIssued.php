@@ -16,8 +16,8 @@ use Shared\Domain\ValueObject\Label;
 final readonly class ApiKeyCredentialIssued
 {
     public function __construct(
-        public string $id,
         #[DataSubjectId]
+        public string $id,
         public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('erased-%s'), Label::class, 'fromString'))]
         public Label $label,

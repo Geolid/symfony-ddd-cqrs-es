@@ -15,6 +15,8 @@ use Sales\Order\Domain\Event\OrderCancelled;
 use Sales\Order\Domain\Event\OrderConfirmed;
 use Sales\Order\Domain\Event\OrderDelivered;
 use Sales\Order\Domain\Event\OrderDispatched;
+use Sales\Order\Domain\Event\OrderErased;
+use Sales\Order\Domain\Event\OrderErasureApproved;
 use Sales\Order\Domain\Event\OrderPlaced;
 use Sales\Order\Domain\Event\OrderPrepared;
 use Sales\Order\Domain\Exception\OrderBelongsToAnotherBuyerException;
@@ -25,6 +27,7 @@ use Sales\Order\Domain\ValueObject\OrderLine;
 use Sales\Order\Domain\ValueObject\OrderState;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
+use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -34,7 +37,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     /** @var array<string, list<OrderState>> */
-    private const array TRANSITIONS = [
+    private const array OPERATIONAL_TRANSITIONS = [
         OrderState::PLACED->value => [OrderState::CONFIRMED, OrderState::CANCELLED],
         OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED],
         OrderState::PREPARED->value => [OrderState::DISPATCHED, OrderState::CANCELLED],
@@ -43,13 +46,21 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         OrderState::CANCELLED->value => [],
     ];
 
+    /** @var array<string, list<ErasureState>> */
+    private const array ERASURE_TRANSITIONS = [
+        ErasureState::RETAINED->value => [ErasureState::APPROVED],
+        ErasureState::APPROVED->value => [ErasureState::ERASED],
+        ErasureState::ERASED->value => [],
+    ];
+
     #[Id]
     public private(set) OrderId $id;
     public private(set) string $buyerId;
     public private(set) PostalAddress $shippingAddress;
     public private(set) PostalAddress $billingAddress;
     public private(set) int $totalAmountInCents;
-    private OrderState $state;
+    private OrderState $operationalState;
+    private ErasureState $erasureState;
 
     /**
      * @param list<OrderLine> $lines
@@ -90,7 +101,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function confirm(\DateTimeImmutable $confirmedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::CONFIRMED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(OrderState::CONFIRMED)) {
             return;
         }
 
@@ -102,7 +113,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function prepare(\DateTimeImmutable $preparedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::PREPARED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(OrderState::PREPARED)) {
             return;
         }
 
@@ -122,11 +133,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherBuyerException::forId($this->id);
         }
 
-        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
+        if ($this->hasReachedOperational(OrderState::CANCELLED)) {
             return;
         }
 
-        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::PREPARED)->isSatisfiedBy($this->state)) {
+        if ($this->hasReachedOperational(OrderState::PREPARED)) {
             throw OrderNotCancellableException::forId($this->id);
         }
 
@@ -134,15 +145,17 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             cancelledAt: $cancelledAt,
         ));
+
+        $this->tryErase($cancelledAt);
     }
 
     public function abort(\DateTimeImmutable $abortedAt): void
     {
-        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::CANCELLED)->isSatisfiedBy($this->state)) {
+        if ($this->hasReachedOperational(OrderState::CANCELLED)) {
             return;
         }
 
-        if (new HasReachedSpecification(self::TRANSITIONS, OrderState::DISPATCHED)->isSatisfiedBy($this->state)) {
+        if ($this->hasReachedOperational(OrderState::DISPATCHED)) {
             return;
         }
 
@@ -150,11 +163,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             abortedAt: $abortedAt,
         ));
+
+        $this->tryErase($abortedAt);
     }
 
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DISPATCHED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
             return;
         }
 
@@ -166,7 +181,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, OrderState::DELIVERED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
             return;
         }
 
@@ -174,6 +189,54 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id->toString(),
             deliveredAt: $deliveredAt,
         ));
+
+        $this->tryErase($deliveredAt);
+    }
+
+    public function approveErasure(\DateTimeImmutable $approvedAt): void
+    {
+        if (!$this->canTransitionErasureTo(ErasureState::APPROVED)) {
+            return;
+        }
+
+        $this->recordThat(new OrderErasureApproved(
+            id: $this->id->toString(),
+            approvedAt: $approvedAt,
+        ));
+
+        $this->tryErase($approvedAt);
+    }
+
+    private function tryErase(\DateTimeImmutable $at): void
+    {
+        if (!$this->canErase()) {
+            return;
+        }
+
+        $this->recordThat(new OrderErased(
+            id: $this->id->toString(),
+            erasedAt: $at,
+        ));
+    }
+
+    private function canErase(): bool
+    {
+        return $this->erasureState->isApproved() && ($this->operationalState->isDelivered() || $this->operationalState->isCancelled());
+    }
+
+    private function canTransitionOperationalTo(OrderState $target): bool
+    {
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+    }
+
+    private function hasReachedOperational(OrderState $target): bool
+    {
+        return new HasReachedSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+    }
+
+    private function canTransitionErasureTo(ErasureState $target): bool
+    {
+        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
     }
 
     #[Apply]
@@ -184,42 +247,55 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->shippingAddress = $event->shippingAddress;
         $this->billingAddress = $event->billingAddress;
         $this->totalAmountInCents = $event->totalAmount->cents;
-        $this->state = OrderState::PLACED;
+        $this->operationalState = OrderState::PLACED;
+        $this->erasureState = ErasureState::RETAINED;
     }
 
     #[Apply]
     private function applyConfirmed(OrderConfirmed $event): void
     {
-        $this->state = OrderState::CONFIRMED;
+        $this->operationalState = OrderState::CONFIRMED;
     }
 
     #[Apply]
     private function applyPrepared(OrderPrepared $event): void
     {
-        $this->state = OrderState::PREPARED;
+        $this->operationalState = OrderState::PREPARED;
     }
 
     #[Apply]
     private function applyCancelled(OrderCancelled $event): void
     {
-        $this->state = OrderState::CANCELLED;
+        $this->operationalState = OrderState::CANCELLED;
     }
 
     #[Apply]
     private function applyAborted(OrderAborted $event): void
     {
-        $this->state = OrderState::CANCELLED;
+        $this->operationalState = OrderState::CANCELLED;
     }
 
     #[Apply]
     private function applyDispatched(OrderDispatched $event): void
     {
-        $this->state = OrderState::DISPATCHED;
+        $this->operationalState = OrderState::DISPATCHED;
     }
 
     #[Apply]
     private function applyDelivered(OrderDelivered $event): void
     {
-        $this->state = OrderState::DELIVERED;
+        $this->operationalState = OrderState::DELIVERED;
+    }
+
+    #[Apply]
+    private function applyErasureApproved(OrderErasureApproved $event): void
+    {
+        $this->erasureState = ErasureState::APPROVED;
+    }
+
+    #[Apply]
+    private function applyErased(OrderErased $event): void
+    {
+        $this->erasureState = ErasureState::ERASED;
     }
 }

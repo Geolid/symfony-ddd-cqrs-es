@@ -12,6 +12,7 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -44,6 +45,8 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
         self::assertSame($builder['destination']->recipientName, $result->destination->recipientName);
+        self::assertSame($builder['buyerId'], $result->buyerId);
+        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
     #[Test]
@@ -104,6 +107,23 @@ final class DbalShipmentFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($found);
         self::assertSame($shipment->id->toString(), $found->id);
         self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFiltersByBuyer(): void
+    {
+        // Given
+        $buyerId = Uuid::uuid7()->toString();
+        $other = ShipmentBuilder::new()->create();
+        $shipment = ShipmentBuilder::new()->withBuyerId($buyerId)->create();
+        $this->store($other, $shipment);
+
+        // When
+        $results = iterator_to_array($this->finder->byBuyer($buyerId));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($shipment->id->toString(), $results[0]->id);
     }
 
     #[Test]

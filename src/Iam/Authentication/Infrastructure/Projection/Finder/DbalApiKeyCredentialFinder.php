@@ -25,6 +25,16 @@ final class DbalApiKeyCredentialFinder extends AbstractDbalFinder implements Api
         )->one() ?? throw ApiKeyCredentialResultNotFoundException::forKeyId($keyId);
     }
 
+    public function byIdentity(string $identityId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($identityId): void {
+                $qb->andWhere('identity_id = :identityId')
+                    ->setParameter('identityId', $identityId);
+            },
+        );
+    }
+
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'identity_id', 'label', 'key_id', 'secret_hash', 'issued_at', 'revoked', 'revoked_at', 'identity_authenticatable')

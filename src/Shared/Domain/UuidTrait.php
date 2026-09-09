@@ -8,12 +8,14 @@ use Webmozart\Assert\Assert;
 
 trait UuidTrait
 {
+    /** @var non-empty-string */
     private readonly string $value;
 
     protected function __construct(string $value)
     {
         Assert::uuid($value, 'An identifier must be a valid UUID, %s given.');
 
+        /** @var non-empty-string $value */
         $this->value = $value;
     }
 
@@ -27,6 +29,9 @@ trait UuidTrait
         return $this->value === $other->value;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function toString(): string
     {
         return $this->value;

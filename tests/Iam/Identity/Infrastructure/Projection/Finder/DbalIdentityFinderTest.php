@@ -12,6 +12,7 @@ use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\ErasureStatus;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\PaginationTrait;
@@ -47,6 +48,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
+        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
     #[Test]

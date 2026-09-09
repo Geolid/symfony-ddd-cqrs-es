@@ -28,7 +28,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     use AggregateRootAttributeBehaviour;
 
     /** @var array<string, list<PaymentState>> */
-    private const array TRANSITIONS = [
+    private const array OPERATIONAL_TRANSITIONS = [
         PaymentState::REQUESTED->value => [PaymentState::AUTHORIZED, PaymentState::FAILED, PaymentState::CANCELLED],
         PaymentState::AUTHORIZED->value => [PaymentState::CAPTURED, PaymentState::FAILED, PaymentState::CANCELLED],
         PaymentState::CAPTURED->value => [],
@@ -41,7 +41,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $checkoutUrl;
     public private(set) PaymentReference $reference;
     private string $orderId;
-    private PaymentState $state;
+    private PaymentState $operationalState;
 
     public static function request(
         PaymentId $id,
@@ -66,7 +66,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function authorize(\DateTimeImmutable $authorizedAt): void
     {
-        if ($this->state->isCancelled()) {
+        if ($this->operationalState->isCancelled()) {
             $this->recordThat(new PaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
@@ -75,7 +75,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             ));
         }
 
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, PaymentState::AUTHORIZED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(PaymentState::AUTHORIZED)) {
             return;
         }
 
@@ -88,7 +88,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function fail(\DateTimeImmutable $failedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, PaymentState::FAILED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
             return;
         }
 
@@ -101,7 +101,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function capture(\DateTimeImmutable $capturedAt): void
     {
-        if (!new CanTransitionToSpecification(self::TRANSITIONS, PaymentState::CAPTURED)->isSatisfiedBy($this->state)) {
+        if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
             return;
         }
 
@@ -114,7 +114,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if ($this->state->isRequested()) {
+        if ($this->operationalState->isRequested()) {
             $this->recordThat(new PaymentCancelled(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
@@ -122,7 +122,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             ));
         }
 
-        if ($this->state->isAuthorized()) {
+        if ($this->operationalState->isAuthorized()) {
             $this->recordThat(new PaymentVoided(
                 id: $this->id->toString(),
                 orderId: $this->orderId,
@@ -132,6 +132,11 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
     }
 
+    private function canTransitionOperationalTo(PaymentState $target): bool
+    {
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+    }
+
     #[Apply]
     private function applyRequested(PaymentRequested $event): void
     {
@@ -139,36 +144,36 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $this->orderId = $event->orderId;
         $this->reference = $event->reference;
         $this->checkoutUrl = $event->checkoutUrl;
-        $this->state = PaymentState::REQUESTED;
+        $this->operationalState = PaymentState::REQUESTED;
     }
 
     #[Apply]
     private function applyAuthorized(PaymentAuthorized $event): void
     {
-        $this->state = PaymentState::AUTHORIZED;
+        $this->operationalState = PaymentState::AUTHORIZED;
     }
 
     #[Apply]
     private function applyFailed(PaymentFailed $event): void
     {
-        $this->state = PaymentState::FAILED;
+        $this->operationalState = PaymentState::FAILED;
     }
 
     #[Apply]
     private function applyCaptured(PaymentCaptured $event): void
     {
-        $this->state = PaymentState::CAPTURED;
+        $this->operationalState = PaymentState::CAPTURED;
     }
 
     #[Apply]
     private function applyCancelled(PaymentCancelled $event): void
     {
-        $this->state = PaymentState::CANCELLED;
+        $this->operationalState = PaymentState::CANCELLED;
     }
 
     #[Apply]
     private function applyVoided(PaymentVoided $event): void
     {
-        $this->state = PaymentState::CANCELLED;
+        $this->operationalState = PaymentState::CANCELLED;
     }
 }

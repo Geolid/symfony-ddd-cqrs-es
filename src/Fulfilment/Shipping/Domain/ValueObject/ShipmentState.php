@@ -17,4 +17,14 @@ enum ShipmentState: string
     {
         return self::MANIFESTED === $this;
     }
+
+    public function isDelivered(): bool
+    {
+        return self::DELIVERED === $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
+    }
 }

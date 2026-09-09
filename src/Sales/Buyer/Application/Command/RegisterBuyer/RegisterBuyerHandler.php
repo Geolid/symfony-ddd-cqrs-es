@@ -34,15 +34,17 @@ final readonly class RegisterBuyerHandler
     public function __invoke(RegisterBuyer $command): void
     {
         $email = Email::fromString($command->email);
+        $id = BuyerId::forIdentity($command->identityId);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email->value, $command->id);
+            $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email->value, $id->toString());
         } catch (UniqueValueAlreadyTakenException $e) {
             throw BuyerEmailAlreadyTakenException::forEmail($email->value, $e);
         }
 
         $buyer = Buyer::register(
-            id: BuyerId::fromString($command->id),
+            id: $id,
+            identityId: $command->identityId,
             email: $email,
             registeredAt: $this->clock->now(),
         );

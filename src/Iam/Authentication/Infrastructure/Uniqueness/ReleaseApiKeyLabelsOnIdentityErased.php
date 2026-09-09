@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Authentication\Infrastructure\Uniqueness;
+
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialUniqueKey;
+use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\Uniqueness\UniqueKey;
+use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Infrastructure\Processor;
+
+#[Processor('iam.authentication.release_api_key_labels_on_identity_erased')]
+final readonly class ReleaseApiKeyLabelsOnIdentityErased
+{
+    public function __construct(private UniqueValueRegistryInterface $uniqueValues)
+    {
+    }
+
+    #[Subscribe(IdentityErasedIntegrationEvent::class)]
+    public function __invoke(IdentityErasedIntegrationEvent $event): void
+    {
+        $this->uniqueValues->releaseAll(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $event->identityId));
+    }
+}

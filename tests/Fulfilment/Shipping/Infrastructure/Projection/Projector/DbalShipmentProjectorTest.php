@@ -10,11 +10,12 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\ErasureStatus;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{order_id: string, status: string, origin: string, destination: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string}
+ * @phpstan-type Row array{order_id: string, status: string, origin: string, destination: string, tracking_number: ?string, manifested_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, erasure_status: string}
  */
 final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -36,6 +37,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(SnakeCaseKeys::from($builder['origin']->toArray()), $this->decoded($row['origin']));
         self::assertSame(SnakeCaseKeys::from($builder['destination']->toArray()), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
+        self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 
     #[Test]
@@ -158,6 +160,50 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         self::assertNull($otherRow['cancelled_at']);
     }
 
+    #[Test]
+    public function itProjectsOnShipmentErasureApproved(): void
+    {
+        // Given
+        $other = $this->otherShipment();
+        $this->store($other);
+
+        $shipment = ShipmentBuilder::new()->erasureApproved()->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::APPROVED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
+    #[Test]
+    public function itProjectsOnShipmentErased(): void
+    {
+        // Given
+        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $this->store($other);
+
+        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->erasureApproved()->create();
+
+        // When
+        $this->store($shipment);
+
+        // Then
+        $row = $this->fetchRow($shipment->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(ErasureStatus::ERASED->value, $row['erasure_status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+    }
+
     private function otherShipment(): Shipment
     {
         return ShipmentBuilder::new()->create();
@@ -184,7 +230,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT order_id, status, origin, destination, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at FROM %s WHERE id = :id',
+                'SELECT order_id, status, origin, destination, tracking_number, manifested_at, dispatched_at, delivered_at, cancelled_at, erasure_status FROM %s WHERE id = :id',
                 DbalShipmentProjector::TABLE,
             ),
             ['id' => $id],

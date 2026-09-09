@@ -16,9 +16,9 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class ShipmentRequested
 {
     public function __construct(
+        #[DataSubjectId]
         public string $id,
         public string $orderId,
-        #[DataSubjectId]
         public string $buyerId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([

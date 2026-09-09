@@ -31,6 +31,7 @@ use Symfony\Component\Clock\Clock;
  *     abortedAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
  *     deliveredAt: \DateTimeImmutable,
+ *     erasureApprovedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Order, Attributes>
@@ -132,6 +133,15 @@ final class OrderBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function erasureApproved(?\DateTimeImmutable $erasureApprovedAt = null): self
+    {
+        $builder = null !== $erasureApprovedAt ? $this->withAttributes(erasureApprovedAt: $erasureApprovedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Order $order, self $builder) => $order->approveErasure($builder['erasureApprovedAt']),
+        );
+    }
+
     protected static function defaults(): array
     {
         $now = Clock::get()->now();
@@ -158,6 +168,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'abortedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'dispatchedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
             'deliveredAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
+            'erasureApprovedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 day'),
         ];
     }
 

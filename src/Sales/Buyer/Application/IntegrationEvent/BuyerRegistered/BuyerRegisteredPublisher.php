@@ -22,6 +22,7 @@ final readonly class BuyerRegisteredPublisher
     {
         $this->publisher->publish(Buyer::class, $event->id, new BuyerRegisteredIntegrationEvent(
             buyerId: $event->id,
+            identityId: $event->identityId,
             email: $event->email->value,
             registeredAt: $event->registeredAt,
         ));

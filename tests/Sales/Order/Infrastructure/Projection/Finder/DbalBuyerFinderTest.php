@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Order\Infrastructure\Projection\Finder;
 
-use Compliance\Tests\Erasure\Support\Builder\SubjectBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\Finder\Buyer\BuyerFinderInterface;
 use Sales\Order\Application\Finder\Buyer\BuyerResult;
+use Sales\Order\Application\Finder\Buyer\PostalAddressResult;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -29,7 +29,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         // Given
         $otherBuyer = BuyerBuilder::new()->create();
         $this->store($otherBuyer);
-        $builder = BuyerBuilder::new()->postalAddressDefined();
+        $builder = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined();
         $buyer = $builder->create();
         $this->store($buyer);
 
@@ -40,16 +40,9 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNotNull($result->shippingAddress);
-        $shippingResult = [
-            'recipientName' => $result->shippingAddress->recipientName,
-            'address' => [
-                'street' => $result->shippingAddress->address->street,
-                'postalCode' => $result->shippingAddress->address->postalCode,
-                'city' => $result->shippingAddress->address->city,
-                'countryCode' => $result->shippingAddress->address->countryCode,
-            ],
-        ];
-        self::assertSame($builder['postalAddress']->toArray(), $shippingResult);
+        self::assertSame($builder['shippingAddress']->toArray(), $this->toArray($result->shippingAddress));
+        self::assertNotNull($result->billingAddress);
+        self::assertSame($builder['billingAddress']->toArray(), $this->toArray($result->billingAddress));
         self::assertFalse($result->erasurePending);
     }
 
@@ -67,6 +60,7 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(BuyerResult::class, $result);
         self::assertSame($buyer->id->toString(), $result->buyerId);
         self::assertNull($result->shippingAddress);
+        self::assertNull($result->billingAddress);
         self::assertFalse($result->erasurePending);
     }
 
@@ -74,9 +68,8 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithPendingErasure(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
-        $subject = SubjectBuilder::new()->withId($buyer->id->toString())->erasureRequested()->create();
-        $this->store($buyer, $subject);
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+        $this->store($buyer);
 
         // When
         $result = $this->finder->ofIdOrNull($buyer->id->toString());
@@ -94,5 +87,21 @@ final class DbalBuyerFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertNull($result);
+    }
+
+    /**
+     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
+     */
+    private function toArray(PostalAddressResult $postalAddressResult): array
+    {
+        return [
+            'recipientName' => $postalAddressResult->recipientName,
+            'address' => [
+                'street' => $postalAddressResult->address->street,
+                'postalCode' => $postalAddressResult->address->postalCode,
+                'city' => $postalAddressResult->address->city,
+                'countryCode' => $postalAddressResult->address->countryCode,
+            ],
+        ];
     }
 }

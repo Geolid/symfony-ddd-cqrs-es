@@ -31,7 +31,7 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->create();
         $this->store($buyer);
         $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value, $buyer->id->toString());
 
@@ -48,7 +48,7 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->erased()->create();
+        $buyer = BuyerBuilder::new()->erasureRequested()->erased()->create();
         $this->store($buyer);
 
         // When

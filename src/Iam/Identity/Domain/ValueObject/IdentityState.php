@@ -8,7 +8,6 @@ enum IdentityState: string
 {
     case ACTIVE = 'active';
     case SUSPENDED = 'suspended';
-    case ERASED = 'erased';
 
     public function isActive(): bool
     {
@@ -18,10 +17,5 @@ enum IdentityState: string
     public function isSuspended(): bool
     {
         return self::SUSPENDED === $this;
-    }
-
-    public function isErased(): bool
-    {
-        return self::ERASED === $this;
     }
 }

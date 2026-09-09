@@ -20,10 +20,6 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Finance/Payment/.*' }
 
-    - name: Finance.Payer
-      collectors:
-        - { type: directory, value: 'src/Finance/Payer/.*' }
-
     - name: Iam.Identity
       collectors:
         - { type: directory, value: 'src/Iam/Identity/.*' }
@@ -36,9 +32,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Catalog/Listing/.*' }
 
-    - name: Compliance.Erasure
+    - name: Compliance.Erasing
       collectors:
-        - { type: directory, value: 'src/Compliance/Erasure/.*' }
+        - { type: directory, value: 'src/Compliance/Erasing/.*' }
 
     # Global
     - name: Shared
@@ -60,13 +56,12 @@ deptrac:
 
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
-    Sales.Buyer:      [ Iam.Identity, Shared, Vendors ]
-    Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Finance.Payer, Compliance.Erasure, Shared, Vendors ]
-    Fulfilment.Shipping: [ Sales.Order, Finance.Payment, Shared, Vendors ]
+    Sales.Buyer:      [ Iam.Identity, Compliance.Erasing, Shared, Vendors ]
+    Sales.Order:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Shared, Vendors ]
+    Fulfilment.Shipping: [ Sales.Order, Sales.Buyer, Finance.Payment, Shared, Vendors ]
     Finance.Payment: [ Sales.Order, Fulfilment.Shipping, Shared, Vendors ]
-    Finance.Payer: [ Iam.Identity, Shared, Vendors ]
-    Iam.Identity:        [ Compliance.Erasure, Shared, Vendors ]
+    Iam.Identity:        [ Compliance.Erasing, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]
-    Compliance.Erasure:  [ Sales.Order, Iam.Identity, Shared, Vendors ]
+    Compliance.Erasing:  [ Shared, Vendors ]
     Shared:              [ Vendors ]

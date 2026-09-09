@@ -7,9 +7,11 @@ namespace Sales\Tests\Buyer\Infrastructure\Pii;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Buyer\Application\IntegrationEvent\BuyerPostalAddressDefined\BuyerPostalAddressDefinedIntegrationEvent;
-use Sales\Buyer\Domain\Event\BuyerPostalAddressDefined;
+use Sales\Buyer\Application\IntegrationEvent\BuyerBillingAddressDefined\BuyerBillingAddressDefinedIntegrationEvent;
+use Sales\Buyer\Application\IntegrationEvent\BuyerShippingAddressDefined\BuyerShippingAddressDefinedIntegrationEvent;
+use Sales\Buyer\Domain\Event\BuyerBillingAddressDefined;
 use Sales\Buyer\Domain\Event\BuyerRegistered;
+use Sales\Buyer\Domain\Event\BuyerShippingAddressDefined;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\ValueObject\Address;
@@ -53,16 +55,16 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsPostalAddressOnErasure(): void
+    public function itCryptoShredsShippingAddressOnErasure(): void
     {
         // Given
         $buyer = BuyerBuilder::new()
-            ->postalAddressDefined()
+            ->shippingAddressDefined()
             ->create();
         $this->store($buyer);
         $serialized = $this->serializedEventOf(
-            BuyerPostalAddressDefined::class,
-            static fn (BuyerPostalAddressDefined $event): bool => $event->id === $buyer->id->toString(),
+            BuyerShippingAddressDefined::class,
+            static fn (BuyerShippingAddressDefined $event): bool => $event->id === $buyer->id->toString(),
         );
 
         // When
@@ -70,21 +72,21 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(BuyerPostalAddressDefined::class, $rehydrated);
+        self::assertInstanceOf(BuyerShippingAddressDefined::class, $rehydrated);
         self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
     }
 
     #[Test]
-    public function itCryptoShredsBuyerPostalAddressDefinedIntegrationEventOnErasure(): void
+    public function itCryptoShredsBillingAddressOnErasure(): void
     {
         // Given
         $buyer = BuyerBuilder::new()
-            ->postalAddressDefined()
+            ->billingAddressDefined()
             ->create();
         $this->store($buyer);
         $serialized = $this->serializedEventOf(
-            BuyerPostalAddressDefinedIntegrationEvent::class,
-            static fn (BuyerPostalAddressDefinedIntegrationEvent $event): bool => $event->buyerId === $buyer->id->toString(),
+            BuyerBillingAddressDefined::class,
+            static fn (BuyerBillingAddressDefined $event): bool => $event->id === $buyer->id->toString(),
         );
 
         // When
@@ -92,7 +94,51 @@ final class BuyerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(BuyerPostalAddressDefinedIntegrationEvent::class, $rehydrated);
+        self::assertInstanceOf(BuyerBillingAddressDefined::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress->toArray());
+    }
+
+    #[Test]
+    public function itCryptoShredsBuyerShippingAddressDefinedIntegrationEventOnErasure(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()
+            ->shippingAddressDefined()
+            ->create();
+        $this->store($buyer);
+        $serialized = $this->serializedEventOf(
+            BuyerShippingAddressDefinedIntegrationEvent::class,
+            static fn (BuyerShippingAddressDefinedIntegrationEvent $event): bool => $event->buyerId === $buyer->id->toString(),
+        );
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($buyer->id->toString());
+
+        // Then
+        $rehydrated = $this->serializer->deserialize($serialized);
+        self::assertInstanceOf(BuyerShippingAddressDefinedIntegrationEvent::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress);
+    }
+
+    #[Test]
+    public function itCryptoShredsBuyerBillingAddressDefinedIntegrationEventOnErasure(): void
+    {
+        // Given
+        $buyer = BuyerBuilder::new()
+            ->billingAddressDefined()
+            ->create();
+        $this->store($buyer);
+        $serialized = $this->serializedEventOf(
+            BuyerBillingAddressDefinedIntegrationEvent::class,
+            static fn (BuyerBillingAddressDefinedIntegrationEvent $event): bool => $event->buyerId === $buyer->id->toString(),
+        );
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($buyer->id->toString());
+
+        // Then
+        $rehydrated = $this->serializer->deserialize($serialized);
+        self::assertInstanceOf(BuyerBillingAddressDefinedIntegrationEvent::class, $rehydrated);
         self::assertSame($this->erasedPostalAddress()->toArray(), $rehydrated->postalAddress);
     }
 

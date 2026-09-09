@@ -24,6 +24,7 @@ final class BuyerRegisteredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(BuyerRegisteredIntegrationEvent::class);
         self::assertSame($buyer->id->toString(), $event->buyerId);
+        self::assertSame($builder['identityId'], $event->identityId);
         self::assertSame($builder['email']->value, $event->email);
         self::assertSame($builder['registeredAt']->format(\DateTimeInterface::ATOM), $event->registeredAt->format(\DateTimeInterface::ATOM));
     }

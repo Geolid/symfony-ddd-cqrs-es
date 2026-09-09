@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shared\Domain\ValueObject;
+
+enum ErasureState: string
+{
+    case RETAINED = 'retained';
+    case PENDING = 'pending';
+    case APPROVED = 'approved';
+    case ERASED = 'erased';
+
+    public function isRetained(): bool
+    {
+        return self::RETAINED === $this;
+    }
+
+    public function isApproved(): bool
+    {
+        return self::APPROVED === $this;
+    }
+
+    public function isErased(): bool
+    {
+        return self::ERASED === $this;
+    }
+}

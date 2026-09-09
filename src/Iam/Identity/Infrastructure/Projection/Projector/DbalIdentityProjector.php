@@ -9,12 +9,15 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Domain\Event\IdentityErased;
+use Iam\Identity\Domain\Event\IdentityErasureCancelled;
+use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\ValueObject\IdentityState;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\ErasureStatus;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
@@ -32,6 +35,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 'id' => $event->id,
                 'status' => IdentityState::ACTIVE->value,
                 'registered_at' => $event->registeredAt,
+                'erasure_status' => ErasureStatus::RETAINED->value,
             ],
             ['registered_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -69,6 +73,26 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(IdentityErasureRequested::class)]
+    public function onIdentityErasureRequested(IdentityErasureRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::PENDING->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(IdentityErasureCancelled::class)]
+    public function onIdentityErasureCancelled(IdentityErasureCancelled $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::RETAINED->value],
+            ['id' => $event->id],
+        );
+    }
+
     #[Subscribe(IdentityErased::class)]
     public function onIdentityErased(IdentityErased $event): void
     {
@@ -87,6 +111,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
+        $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

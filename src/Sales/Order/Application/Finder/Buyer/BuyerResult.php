@@ -9,6 +9,7 @@ final readonly class BuyerResult
     public function __construct(
         public string $buyerId,
         public ?PostalAddressResult $shippingAddress,
+        public ?PostalAddressResult $billingAddress,
         public bool $erasurePending,
     ) {
     }

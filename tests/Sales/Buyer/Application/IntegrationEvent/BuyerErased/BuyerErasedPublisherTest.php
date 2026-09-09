@@ -15,7 +15,7 @@ final class BuyerErasedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = BuyerBuilder::new()->erased();
+        $builder = BuyerBuilder::new()->erasureRequested()->erased();
         $buyer = $builder->create();
 
         // When

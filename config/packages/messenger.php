@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use Sales\Order\Application\Command\CancelOrphanedOrder\CancelOrphanedOrder;
+use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Sales\Order\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -21,7 +22,8 @@ return static function (ContainerConfigurator $container): void {
                 'async' => '%env(resolve:MESSENGER_TRANSPORT_DSN)%',
             ],
             'routing' => [
-                CancelOrphanedOrder::class => 'async',
+                ApproveOrderErasure::class => 'async',
+                ApproveShipmentErasure::class => 'async',
             ],
         ],
     ]);

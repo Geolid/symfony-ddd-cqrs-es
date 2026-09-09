@@ -16,6 +16,7 @@ final readonly class BuyerRegisteredIntegrationEvent implements IntegrationEvent
     public function __construct(
         #[DataSubjectId]
         public string $buyerId,
+        public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('%s@erased.invalid'))]
         public string $email,
         public \DateTimeImmutable $registeredAt,

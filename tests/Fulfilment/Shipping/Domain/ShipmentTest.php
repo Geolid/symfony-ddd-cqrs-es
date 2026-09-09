@@ -8,6 +8,8 @@ use Fulfilment\Shipping\Domain\Event\ShipmentCancellationRejected;
 use Fulfilment\Shipping\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipping\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipping\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipping\Domain\Event\ShipmentErased;
+use Fulfilment\Shipping\Domain\Event\ShipmentErasureApproved;
 use Fulfilment\Shipping\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
@@ -36,6 +38,7 @@ final class ShipmentTest extends AggregateRootTestCase
     private \DateTimeImmutable $manifestedAt;
     private \DateTimeImmutable $dispatchedAt;
     private \DateTimeImmutable $deliveredAt;
+    private \DateTimeImmutable $erasureApprovedAt;
 
     protected function setUp(): void
     {
@@ -52,6 +55,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this->manifestedAt = ShipmentBuilder::sample('manifestedAt');
         $this->dispatchedAt = ShipmentBuilder::sample('dispatchedAt');
         $this->deliveredAt = ShipmentBuilder::sample('deliveredAt');
+        $this->erasureApprovedAt = ShipmentBuilder::sample('erasureApprovedAt');
     }
 
     #[Test]
@@ -181,6 +185,18 @@ final class ShipmentTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itDeliversAndErasesWhenErasureApproved(): void
+    {
+        $this
+            ->given($this->requested(), $this->erasureApproved(), $this->dispatched())
+            ->when(fn (Shipment $shipment) => $shipment->deliver($this->deliveredAt))
+            ->then(
+                new ShipmentDelivered($this->id->toString(), $this->deliveredAt),
+                new ShipmentErased($this->id->toString(), $this->deliveredAt),
+            );
+    }
+
+    #[Test]
     public function itCancelsWhenRequested(): void
     {
         $cancelledAt = ShipmentBuilder::sample('cancelledAt');
@@ -246,6 +262,69 @@ final class ShipmentTest extends AggregateRootTestCase
             ->then(new ShipmentCancellationRejected($this->id->toString(), ShipmentState::DELIVERED, $cancelledAt));
     }
 
+    #[Test]
+    public function itCancelsAndErasesWhenErasureApproved(): void
+    {
+        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+
+        $this
+            ->given($this->requested(), $this->erasureApproved())
+            ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
+            ->then(
+                new ShipmentCancelled($this->id->toString(), $cancelledAt),
+                new ShipmentErased($this->id->toString(), $cancelledAt),
+            );
+    }
+
+    #[Test]
+    public function itApprovesErasure(): void
+    {
+        $this
+            ->given($this->requested())
+            ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
+            ->then(new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt));
+    }
+
+    #[Test]
+    public function itApprovesAndErasesErasureWhenAlreadyDelivered(): void
+    {
+        $this
+            ->given(
+                $this->requested(),
+                $this->dispatched(),
+                new ShipmentDelivered($this->id->toString(), $this->deliveredAt),
+            )
+            ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
+            ->then(
+                new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt),
+                new ShipmentErased($this->id->toString(), $this->erasureApprovedAt),
+            );
+    }
+
+    #[Test]
+    public function itApprovesAndErasesErasureWhenAlreadyCancelled(): void
+    {
+        $this
+            ->given(
+                $this->requested(),
+                new ShipmentCancelled($this->id->toString(), ShipmentBuilder::sample('cancelledAt')),
+            )
+            ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
+            ->then(
+                new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt),
+                new ShipmentErased($this->id->toString(), $this->erasureApprovedAt),
+            );
+    }
+
+    #[Test]
+    public function itDoesNotApproveErasureWhenAlreadyApproved(): void
+    {
+        $this
+            ->given($this->requested(), $this->erasureApproved())
+            ->when(static fn (Shipment $shipment) => $shipment->approveErasure(ShipmentBuilder::sample('erasureApprovedAt')))
+            ->then();
+    }
+
     protected function aggregateClass(): string
     {
         return Shipment::class;
@@ -281,5 +360,10 @@ final class ShipmentTest extends AggregateRootTestCase
     private function delivered(): ShipmentDelivered
     {
         return new ShipmentDelivered($this->id->toString(), $this->deliveredAt);
+    }
+
+    private function erasureApproved(): ShipmentErasureApproved
+    {
+        return new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt);
     }
 }

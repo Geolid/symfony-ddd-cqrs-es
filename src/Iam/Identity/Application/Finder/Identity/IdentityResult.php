@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Finder\Identity;
 
 use Iam\Identity\Application\IdentityStatus;
+use Shared\Application\ErasureStatus;
 
 final readonly class IdentityResult
 {
@@ -15,6 +16,7 @@ final readonly class IdentityResult
         public \DateTimeImmutable $registeredAt,
         public ?\DateTimeImmutable $suspendedAt,
         public ?\DateTimeImmutable $reactivatedAt,
+        public ErasureStatus $erasureStatus,
     ) {
     }
 }

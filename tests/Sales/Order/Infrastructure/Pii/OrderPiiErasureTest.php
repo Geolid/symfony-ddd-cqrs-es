@@ -7,7 +7,6 @@ namespace Sales\Tests\Order\Infrastructure\Pii;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Order\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Sales\Order\Application\IntegrationEvent\OrderPlaced\OrderPlacedIntegrationEvent;
 use Sales\Order\Domain\Event\OrderPlaced;
@@ -31,13 +30,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsAddressesOnBuyerErasure(): void
+    public function itCryptoShredsAddressesOnOrderErasure(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()
-            ->withBuyerId($buyerId)
-            ->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderPlaced::class,
@@ -45,7 +41,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->cipherKeyStore->removeWithSubjectId($buyerId);
+        $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -56,11 +52,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsOrderPlacedBillingAddressOnBuyerErasure(): void
+    public function itCryptoShredsOrderPlacedBillingAddressOnOrderErasure(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
+        $order = OrderBuilder::new()->create();
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderPlacedIntegrationEvent::class,
@@ -68,7 +63,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->cipherKeyStore->removeWithSubjectId($buyerId);
+        $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
@@ -77,11 +72,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsOrderConfirmedShippingAddressOnBuyerErasure(): void
+    public function itCryptoShredsOrderConfirmedShippingAddressOnOrderErasure(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->confirmed()->create();
+        $order = OrderBuilder::new()->confirmed()->create();
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderConfirmedIntegrationEvent::class,
@@ -89,7 +83,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         );
 
         // When
-        $this->cipherKeyStore->removeWithSubjectId($buyerId);
+        $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);

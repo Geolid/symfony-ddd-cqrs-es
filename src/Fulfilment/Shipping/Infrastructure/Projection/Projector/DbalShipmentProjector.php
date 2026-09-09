@@ -12,11 +12,14 @@ use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Event\ShipmentCancelled;
 use Fulfilment\Shipping\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipping\Domain\Event\ShipmentDispatched;
+use Fulfilment\Shipping\Domain\Event\ShipmentErased;
+use Fulfilment\Shipping\Domain\Event\ShipmentErasureApproved;
 use Fulfilment\Shipping\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\ErasureStatus;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
@@ -34,10 +37,12 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'order_id' => $event->orderId,
+                'buyer_id' => $event->buyerId,
                 'status' => ShipmentStatus::REQUESTED->value,
                 'origin' => SnakeCaseKeys::from($event->origin->toArray()),
                 'destination' => SnakeCaseKeys::from($event->destination->toArray()),
                 'created_at' => $event->createdAt,
+                'erasure_status' => ErasureStatus::RETAINED->value,
             ],
             ['origin' => Types::JSON, 'destination' => Types::JSON, 'created_at' => Types::DATETIME_IMMUTABLE],
         );
@@ -110,6 +115,26 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(ShipmentErasureApproved::class)]
+    public function onShipmentErasureApproved(ShipmentErasureApproved $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::APPROVED->value],
+            ['id' => $event->id],
+        );
+    }
+
+    #[Subscribe(ShipmentErased::class)]
+    public function onShipmentErased(ShipmentErased $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['erasure_status' => ErasureStatus::ERASED->value],
+            ['id' => $event->id],
+        );
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -118,6 +143,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('buyer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('origin', Types::JSON);
         $table->addColumn('destination', Types::JSON);
@@ -127,12 +153,14 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
         $table->addIndex(['order_id'], 'fulfilment_shipping_order_id_idx');
+        $table->addIndex(['buyer_id'], 'fulfilment_shipping_buyer_id_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
     }
 }
