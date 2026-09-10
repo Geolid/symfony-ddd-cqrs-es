@@ -39,7 +39,9 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
             throw ManifestDeniedException::forCancelledShipment($shipmentId);
         }
 
-        if (true !== $this->orderPaymentFinder->ofOrderOrNull($shipment->orderId)?->paid) {
+        $orderPayment = $this->orderPaymentFinder->ofOrderOrNull($shipment->orderId);
+
+        if (true !== $orderPayment?->paid) {
             throw ManifestDeniedException::forUnpaidOrder($shipmentId);
         }
 
