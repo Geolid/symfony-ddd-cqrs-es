@@ -30,7 +30,8 @@ final class RegisterShopperHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $id = ShopperId::forIdentity($identityId)->toString();
-        $result = $this->service(ShopperFinderInterface::class)->ofId($id);
+        $result = $this->service(ShopperFinderInterface::class)->ofIdOrNull($id);
+        self::assertNotNull($result);
         self::assertSame($id, $result->id);
         self::assertSame($email, $result->email);
     }

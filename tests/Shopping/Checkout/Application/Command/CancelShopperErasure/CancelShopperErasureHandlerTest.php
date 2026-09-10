@@ -26,7 +26,8 @@ final class CancelShopperErasureHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new CancelShopperErasure($shopper->id->toString()));
 
         // Then
-        $result = $this->service(ShopperFinderInterface::class)->ofId($shopper->id->toString());
+        $result = $this->service(ShopperFinderInterface::class)->ofIdOrNull($shopper->id->toString());
+        self::assertNotNull($result);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 

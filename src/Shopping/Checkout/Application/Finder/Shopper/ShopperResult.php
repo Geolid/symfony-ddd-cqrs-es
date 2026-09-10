@@ -12,6 +12,8 @@ final readonly class ShopperResult
         public string $id,
         public string $email,
         public \DateTimeImmutable $registeredAt,
+        public ?PostalAddressResult $shippingAddress,
+        public ?PostalAddressResult $billingAddress,
         public ErasureStatus $erasureStatus,
     ) {
     }

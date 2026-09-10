@@ -8,15 +8,15 @@ use Psr\Clock\ClockInterface;
 use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
 use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Ordering\Domain\Shared\Entity\Line;
-use Sales\Ordering\Domain\Shared\ValueObject\LineId;
-use Sales\Ordering\Domain\Shared\ValueObject\Product;
-use Sales\Ordering\Domain\Shared\ValueObject\Quantity;
+use Sales\Ordering\Domain\Order\ValueObject\Product;
+use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Label;
@@ -48,6 +48,7 @@ final readonly class ConfirmOrderHandler
 
         $order = Order::confirm(
             id: OrderId::fromString($command->id),
+            cartId: $command->cartId,
             shopperId: $shopper->shopperId,
             paymentId: $command->paymentId,
             shippingAddress: PostalAddressMapper::fromArray([

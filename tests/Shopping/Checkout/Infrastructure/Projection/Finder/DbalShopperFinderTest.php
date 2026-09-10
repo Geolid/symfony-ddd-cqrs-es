@@ -7,7 +7,8 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
-use Shopping\Checkout\Application\Finder\Shopper\Exception\ShopperResultNotFoundException;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shopping\Checkout\Application\Finder\Shopper\PostalAddressResult;
 use Shopping\Checkout\Application\Finder\Shopper\ShopperFinderInterface;
 use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -24,34 +25,78 @@ final class DbalShopperFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsById(): void
+    public function itFinds(): void
     {
         // Given
         $other = ShopperBuilder::new()->create();
-        $builder = ShopperBuilder::new();
+        $builder = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined();
         $shopper = $builder->create();
         $this->store($other, $shopper);
 
         // When
-        $result = $this->finder->ofId($shopper->id->toString());
+        $found = $this->finder->ofIdOrNull($shopper->id->toString());
+        $notFound = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
 
         // Then
-        self::assertSame($shopper->id->toString(), $result->id);
-        self::assertSame($builder['email']->value, $result->email);
+        self::assertNotNull($found);
+        self::assertSame($shopper->id->toString(), $found->id);
+        self::assertSame($builder['email']->value, $found->email);
         self::assertSame(
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
-            $result->registeredAt->format(\DateTimeInterface::ATOM),
+            $found->registeredAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
+        self::assertNotNull($found->shippingAddress);
+        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $this->toArray($found->shippingAddress));
+        self::assertNotNull($found->billingAddress);
+        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $this->toArray($found->billingAddress));
+        self::assertSame(ErasureStatus::RETAINED, $found->erasureStatus);
+        self::assertNull($notFound);
     }
 
     #[Test]
-    public function itThrowsWhenIdNotFound(): void
+    public function itFindsWithNoAddress(): void
     {
-        // Then
-        $this->expectException(ShopperResultNotFoundException::class);
+        // Given
+        $shopper = ShopperBuilder::new()->create();
+        $this->store($shopper);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $result = $this->finder->ofIdOrNull($shopper->id->toString());
+
+        // Then
+        self::assertNotNull($result);
+        self::assertNull($result->shippingAddress);
+        self::assertNull($result->billingAddress);
+    }
+
+    #[Test]
+    public function itFindsWithErasureRequested(): void
+    {
+        // Given
+        $shopper = ShopperBuilder::new()->erasureRequested()->create();
+        $this->store($shopper);
+
+        // When
+        $result = $this->finder->ofIdOrNull($shopper->id->toString());
+
+        // Then
+        self::assertNotNull($result);
+        self::assertSame(ErasureStatus::REQUESTED, $result->erasureStatus);
+    }
+
+    /**
+     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
+     */
+    private function toArray(PostalAddressResult $postalAddressResult): array
+    {
+        return [
+            'recipientName' => $postalAddressResult->recipientName,
+            'address' => [
+                'street' => $postalAddressResult->address->street,
+                'postalCode' => $postalAddressResult->address->postalCode,
+                'city' => $postalAddressResult->address->city,
+                'countryCode' => $postalAddressResult->address->countryCode,
+            ],
+        ];
     }
 }

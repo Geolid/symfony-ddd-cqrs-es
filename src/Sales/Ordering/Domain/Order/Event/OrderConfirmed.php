@@ -7,7 +7,7 @@ namespace Sales\Ordering\Domain\Order\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Sales\Ordering\Domain\Shared\Entity\Line;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
@@ -23,6 +23,7 @@ final readonly class OrderConfirmed
     public function __construct(
         #[DataSubjectId]
         public string $id,
+        public string $cartId,
         public string $shopperId,
         public string $paymentId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(

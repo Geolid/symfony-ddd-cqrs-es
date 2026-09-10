@@ -28,7 +28,8 @@ final class RequestShopperErasureOnErasureRequestedTest extends AbstractIntegrat
         $this->trigger(RequestShopperErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($builder['identityId'], Clock::get()->now()));
 
         // Then
-        $result = $this->service(ShopperFinderInterface::class)->ofId($shopper->id->toString());
+        $result = $this->service(ShopperFinderInterface::class)->ofIdOrNull($shopper->id->toString());
+        self::assertNotNull($result);
         self::assertSame(ErasureStatus::REQUESTED, $result->erasureStatus);
     }
 
