@@ -27,7 +27,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'buyer_id', 'status', 'line_items')
+        $qb->select('id', 'buyer_id', 'status')
             ->from(DbalCartProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

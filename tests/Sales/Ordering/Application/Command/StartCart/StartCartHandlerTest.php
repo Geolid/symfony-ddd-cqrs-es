@@ -6,23 +6,14 @@ namespace Sales\Tests\Ordering\Application\Command\StartCart;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Application\CartStatus;
 use Sales\Ordering\Application\Command\StartCart\StartCart;
+use Sales\Ordering\Application\Finder\Cart\CartFinderInterface;
 use Sales\Ordering\Application\Uniqueness\Exception\CartAlreadyActiveException;
-use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
-use Sales\Ordering\Domain\Cart\ValueObject\CartId;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class StartCartHandlerTest extends AbstractIntegrationTestCase
 {
-    private CartRepositoryInterface $repository;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->repository = $this->service(CartRepositoryInterface::class);
-    }
-
     #[Test]
     public function itStarts(): void
     {
@@ -34,9 +25,10 @@ final class StartCartHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new StartCart($id, $buyerId));
 
         // Then
-        $cart = $this->repository->load(CartId::fromString($id));
-        self::assertSame($id, $cart->id->toString());
-        self::assertSame($buyerId, $cart->buyerId);
+        $result = $this->service(CartFinderInterface::class)->ofId($id);
+        self::assertSame($id, $result->id);
+        self::assertSame($buyerId, $result->buyerId);
+        self::assertSame(CartStatus::ACTIVE, $result->status);
     }
 
     #[Test]

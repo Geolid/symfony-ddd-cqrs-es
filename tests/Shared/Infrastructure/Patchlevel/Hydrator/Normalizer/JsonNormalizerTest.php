@@ -7,6 +7,7 @@ namespace Shared\Tests\Infrastructure\Patchlevel\Hydrator\Normalizer;
 use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\Normalizer\ArrayNormalizer;
 use Patchlevel\Hydrator\Normalizer\InvalidArgument;
+use Patchlevel\Hydrator\Normalizer\NormalizerWithContext;
 use Patchlevel\Hydrator\Normalizer\ObjectNormalizer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -105,6 +106,45 @@ final class JsonNormalizerTest extends TestCase
             self::assertInstanceOf(\JsonException::class, $exception->getPrevious());
         }
     }
+
+    #[Test]
+    public function itNormalizesThroughTheContextAwareCallWhenTheInnerNormalizerSupportsIt(): void
+    {
+        // Given
+        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
+
+        // When
+        $normalized = $normalizer->normalize('x');
+
+        // Then
+        self::assertSame('2', $normalized);
+    }
+
+    #[Test]
+    public function itDenormalizesThroughTheContextAwareCallWhenTheInnerNormalizerSupportsIt(): void
+    {
+        // Given
+        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
+
+        // When
+        $value = $normalizer->denormalize('"x"');
+
+        // Then
+        self::assertSame(2, $value);
+    }
+
+    #[Test]
+    public function itNeverDelegatesToTheInnerNormalizerOnNull(): void
+    {
+        // Given
+        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
+
+        // When
+        $value = $normalizer->denormalize(null);
+
+        // Then
+        self::assertNull($value);
+    }
 }
 
 final class FakeReflectionHydrator implements Hydrator
@@ -124,5 +164,24 @@ final class FakeReflectionHydrator implements Hydrator
     public function extract(object $object): array
     {
         return get_object_vars($object);
+    }
+}
+
+final class SpyContextAwareNormalizer implements NormalizerWithContext
+{
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function normalize(mixed $value, array $context = []): mixed
+    {
+        return \func_num_args();
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function denormalize(mixed $value, array $context = []): mixed
+    {
+        return null === $value ? 'spy-was-called-with-null' : \func_num_args();
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Ordering\Application\Finder\Cart;
+namespace Sales\Ordering\Application\Finder\CartLine;
 
 final readonly class CartLineResult
 {

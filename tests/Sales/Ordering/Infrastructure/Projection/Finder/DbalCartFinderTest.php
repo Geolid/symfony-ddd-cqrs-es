@@ -18,10 +18,9 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $other = CartBuilder::new()->create();
-        $builder = CartBuilder::new()->lineAdded();
+        $builder = CartBuilder::new();
         $cart = $builder->create();
-        $this->store($other, $cart);
+        $this->store($cart);
 
         // When
         $result = $this->finder()->ofId($cart->id->toString());
@@ -30,11 +29,6 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($builder['buyerId'], $result->buyerId);
         self::assertSame(CartStatus::ACTIVE, $result->status);
-        self::assertCount(1, $result->lineItems);
-        self::assertSame($builder['product']->id, $result->lineItems[0]->productId);
-        self::assertSame($builder['product']->label->value, $result->lineItems[0]->label);
-        self::assertSame($builder['product']->price->cents, $result->lineItems[0]->unitPriceInCents);
-        self::assertSame($builder['quantity']->value, $result->lineItems[0]->quantity);
     }
 
     #[Test]
