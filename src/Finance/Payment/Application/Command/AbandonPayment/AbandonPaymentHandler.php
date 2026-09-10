@@ -12,14 +12,14 @@ use Finance\Payment\Domain\ValueObject\PaymentId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
 final readonly class AbandonPaymentHandler
 {
     public function __construct(
         private PaymentRepositoryInterface $repository,
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }

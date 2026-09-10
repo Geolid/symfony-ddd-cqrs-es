@@ -7,7 +7,7 @@ namespace Shared\Application\Uniqueness\Exception;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Uniqueness\UniqueKey;
 
-final class UniqueValueAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class UniquenessViolatedException extends \RuntimeException implements ApplicationExceptionInterface
 {
     private function __construct(string $message)
     {

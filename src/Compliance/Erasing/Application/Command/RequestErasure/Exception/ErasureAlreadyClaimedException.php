@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasing\Application\Uniqueness\Exception;
+namespace Compliance\Erasing\Application\Command\RequestErasure\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class ErasureAlreadyRequestedException extends \RuntimeException implements ApplicationExceptionInterface
+final class ErasureAlreadyClaimedException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forIdentity(string $identityId, \Throwable $previous): self
     {

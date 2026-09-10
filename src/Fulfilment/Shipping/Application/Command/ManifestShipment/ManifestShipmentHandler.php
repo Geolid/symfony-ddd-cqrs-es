@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Command\ManifestShipment;
 
-use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyTakenException;
+use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
@@ -15,16 +15,16 @@ use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
 final readonly class ManifestShipmentHandler
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
@@ -33,7 +33,7 @@ final readonly class ManifestShipmentHandler
      * @throws ShipmentNotFoundException
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
-     * @throws ShipmentTrackingNumberAlreadyTakenException
+     * @throws ShipmentTrackingNumberAlreadyInUseException
      * @throws ShipmentAlreadyExistsException
      */
     public function __invoke(ManifestShipment $command): void
@@ -43,9 +43,9 @@ final readonly class ManifestShipmentHandler
         $shipment->manifest(TrackingNumber::fromString($command->trackingNumber), $this->clock->now());
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
-        } catch (UniqueValueAlreadyTakenException $e) {
-            throw ShipmentTrackingNumberAlreadyTakenException::forTrackingNumber($command->trackingNumber, $e);
+            $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
+        } catch (UniquenessViolatedException $e) {
+            throw ShipmentTrackingNumberAlreadyInUseException::forTrackingNumber($command->trackingNumber, $e);
         }
 
         $this->repository->save($shipment);

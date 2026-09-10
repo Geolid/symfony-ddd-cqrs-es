@@ -13,18 +13,18 @@ use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
 use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -33,13 +33,13 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
         // Given
         $buyer = BuyerBuilder::new()->erasureRequested()->create();
         $this->store($buyer);
-        $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value, $buyer->id->toString());
+        $this->uniqueValues->claim(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value, $buyer->id->toString());
 
         // When
         $this->dispatch(new EraseBuyer($buyer->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value));
+        self::assertFalse($this->uniqueValues->isClaimed(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value));
         $this->expectException(BuyerResultNotFoundException::class);
         $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
     }

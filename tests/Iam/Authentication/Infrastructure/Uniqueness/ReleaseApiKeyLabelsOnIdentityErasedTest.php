@@ -11,19 +11,19 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -36,9 +36,9 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $otherLabel = ApiKeyCredentialBuilder::sample('label')->value;
 
-        $this->reserveLabel($identityId, $label);
-        $this->reserveLabel($identityId, $otherLabel);
-        $this->reserveLabel($otherIdentityId, $label);
+        $this->claimLabel($identityId, $label);
+        $this->claimLabel($identityId, $otherLabel);
+        $this->claimLabel($otherIdentityId, $label);
 
         // When
         $this->trigger(ReleaseApiKeyLabelsOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
@@ -47,13 +47,13 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $key = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId);
         $otherKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId);
 
-        self::assertFalse($this->uniqueValues->exists($key, $label));
-        self::assertFalse($this->uniqueValues->exists($key, $otherLabel));
-        self::assertTrue($this->uniqueValues->exists($otherKey, $label));
+        self::assertFalse($this->uniqueValues->isClaimed($key, $label));
+        self::assertFalse($this->uniqueValues->isClaimed($key, $otherLabel));
+        self::assertTrue($this->uniqueValues->isClaimed($otherKey, $label));
     }
 
-    private function reserveLabel(string $identityId, string $label): void
+    private function claimLabel(string $identityId, string $label): void
     {
-        $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, Uuid::uuid7()->toString());
+        $this->uniqueValues->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, Uuid::uuid7()->toString());
     }
 }

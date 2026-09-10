@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
 
 use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
-use Iam\Authentication\Application\Uniqueness\Exception\ApiKeyCredentialLabelAlreadyTakenException;
+use Iam\Authentication\Application\Uniqueness\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
@@ -14,9 +14,9 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shared\Domain\ValueObject\Label;
 
 #[CommandHandler]
@@ -24,14 +24,14 @@ final readonly class IssueApiKeyCredentialHandler
 {
     public function __construct(
         private ApiKeyCredentialRepositoryInterface $repository,
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private ApiKeyHasherInterface $hasher,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws ApiKeyCredentialLabelAlreadyTakenException
+     * @throws ApiKeyCredentialLabelAlreadyInUseException
      * @throws ApiKeyCredentialAlreadyExistsException
      */
     public function __invoke(IssueApiKeyCredential $command): void
@@ -40,9 +40,9 @@ final readonly class IssueApiKeyCredentialHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
-        } catch (UniqueValueAlreadyTakenException $e) {
-            throw ApiKeyCredentialLabelAlreadyTakenException::forLabel($label->value, $e);
+            $this->uniqueValues->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
+        } catch (UniquenessViolatedException $e) {
+            throw ApiKeyCredentialLabelAlreadyInUseException::forLabel($label->value, $e);
         }
 
         $credential = ApiKeyCredential::issue(

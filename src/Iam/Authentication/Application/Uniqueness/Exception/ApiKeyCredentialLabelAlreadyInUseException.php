@@ -6,7 +6,7 @@ namespace Iam\Authentication\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class ApiKeyCredentialLabelAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class ApiKeyCredentialLabelAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forLabel(string $label, \Throwable $previous): self
     {

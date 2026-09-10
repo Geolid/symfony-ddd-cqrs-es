@@ -13,18 +13,18 @@ use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -35,13 +35,13 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $product = $builder->create();
         $this->store($product);
         $labelKey = UniqueKey::for(ProductUniqueKey::LABEL);
-        $this->uniqueValues->reserve($labelKey, $builder['label']->value, $product->id->toString());
+        $this->uniqueValues->claim($labelKey, $builder['label']->value, $product->id->toString());
 
         // When
         $this->dispatch(new DelistProduct($product->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists($labelKey, $builder['label']->value));
+        self::assertFalse($this->uniqueValues->isClaimed($labelKey, $builder['label']->value));
         $this->expectException(ProductResultNotFoundException::class);
 
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());

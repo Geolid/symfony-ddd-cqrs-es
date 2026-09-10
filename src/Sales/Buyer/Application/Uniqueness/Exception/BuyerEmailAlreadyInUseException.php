@@ -6,7 +6,7 @@ namespace Sales\Buyer\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class BuyerEmailAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class BuyerEmailAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forEmail(string $email, \Throwable $previous): self
     {

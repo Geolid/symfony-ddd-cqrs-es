@@ -12,19 +12,19 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -35,16 +35,16 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $builder = PasswordCredentialBuilder::new()->withIdentityId($identityId);
         $login = PasswordCredentialBuilder::sample('login')->value;
         $loginKey = UniqueKey::for(PasswordCredentialUniqueKey::LOGIN);
-        $this->uniqueValues->reserve($loginKey, $login, $builder['id']->toString());
+        $this->uniqueValues->claim($loginKey, $login, $builder['id']->toString());
 
         $otherLogin = PasswordCredentialBuilder::sample('login')->value;
-        $this->uniqueValues->reserve($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
+        $this->uniqueValues->claim($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
 
         // When
         $this->trigger(ReleaseLoginOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists($loginKey, $login));
-        self::assertTrue($this->uniqueValues->exists($loginKey, $otherLogin));
+        self::assertFalse($this->uniqueValues->isClaimed($loginKey, $login));
+        self::assertTrue($this->uniqueValues->isClaimed($loginKey, $otherLogin));
     }
 }

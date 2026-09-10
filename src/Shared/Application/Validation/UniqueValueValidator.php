@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shared\Application\Validation;
 
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -14,7 +14,7 @@ use Webmozart\Assert\Assert;
 
 final class UniqueValueValidator extends ConstraintValidator
 {
-    public function __construct(private readonly UniqueValueRegistryInterface $registry)
+    public function __construct(private readonly UniquenessRegistryInterface $registry)
     {
     }
 
@@ -41,7 +41,7 @@ final class UniqueValueValidator extends ConstraintValidator
             Assert::string($excludeOwnerId);
         }
 
-        if ($this->registry->exists($key, (string) $value, $excludeOwnerId)) {
+        if ($this->registry->isClaimed($key, (string) $value, $excludeOwnerId)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', (string) $value)
                 ->setParameter('{{ key }}', $key->discriminator->name)

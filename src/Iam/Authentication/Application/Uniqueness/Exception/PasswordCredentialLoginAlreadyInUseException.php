@@ -6,7 +6,7 @@ namespace Iam\Authentication\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class PasswordCredentialLoginAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class PasswordCredentialLoginAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forLogin(string $login, \Throwable $previous): self
     {

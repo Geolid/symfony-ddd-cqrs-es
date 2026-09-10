@@ -11,14 +11,14 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Schema\DoctrineSchemaConfigurator;
-use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInterface, DoctrineSchemaConfigurator
+final readonly class DbalUniquenessRegistry implements UniquenessRegistryInterface, DoctrineSchemaConfigurator
 {
-    private const string TABLE = 'unique_constraints';
+    private const string TABLE = 'uniqueness_registry';
 
     public function __construct(
         #[Autowire(service: 'doctrine.dbal.event_store_connection')]
@@ -26,7 +26,7 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
     ) {
     }
 
-    public function reserve(UniqueKey $key, string $value, string $ownerId): void
+    public function claim(UniqueKey $key, string $value, string $ownerId): void
     {
         $keyType = $key->toString();
 
@@ -37,13 +37,13 @@ final readonly class DbalUniqueValueRegistry implements UniqueValueRegistryInter
                 'owner_id' => $ownerId,
             ]);
         } catch (UniqueConstraintViolationException) {
-            if ($this->exists($key, $value, $ownerId)) {
-                throw UniqueValueAlreadyTakenException::forValue($key, $value);
+            if ($this->isClaimed($key, $value, $ownerId)) {
+                throw UniquenessViolatedException::forValue($key, $value);
             }
         }
     }
 
-    public function exists(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
+    public function isClaimed(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
     {
         $qb = $this->connection->createQueryBuilder()
             ->select('1')

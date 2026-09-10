@@ -6,7 +6,7 @@ namespace Fulfilment\Shipping\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class ShipmentTrackingNumberAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class ShipmentTrackingNumberAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forTrackingNumber(string $trackingNumber, \Throwable $previous): self
     {

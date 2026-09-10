@@ -6,7 +6,7 @@ namespace Catalog\Listing\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class ProductLabelAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class ProductLabelAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forLabel(string $label, \Throwable $previous): self
     {

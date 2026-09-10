@@ -6,7 +6,7 @@ namespace Finance\Payment\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class PaymentReferenceAlreadyTakenException extends \RuntimeException implements ApplicationExceptionInterface
+final class PaymentReferenceAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forReference(string $reference, \Throwable $previous): self
     {
