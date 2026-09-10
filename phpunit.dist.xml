@@ -41,6 +41,9 @@
         <testsuite name="sales">
             <directory>tests/Sales</directory>
         </testsuite>
+        <testsuite name="shopping">
+            <directory>tests/Shopping</directory>
+        </testsuite>
 
         <!-- SHARED -->
         <testsuite name="shared">

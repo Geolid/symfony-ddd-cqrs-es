@@ -19,7 +19,7 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
     public function __construct(
         #[DataSubjectId]
         public string $orderId,
-        public string $buyerId,
+        public string $shopperId,
         public string $paymentId,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',

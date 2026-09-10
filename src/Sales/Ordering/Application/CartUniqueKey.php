@@ -6,5 +6,5 @@ namespace Sales\Ordering\Application;
 
 enum CartUniqueKey: string
 {
-    case BUYER = 'sales.ordering.cart.buyer';
+    case SHOPPER = 'sales.ordering.cart.shopper';
 }

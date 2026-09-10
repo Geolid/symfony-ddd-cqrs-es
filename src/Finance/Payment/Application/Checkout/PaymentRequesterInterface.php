@@ -12,7 +12,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 interface PaymentRequesterInterface
 {
     /**
-     * @return string the checkout URL the buyer should be redirected to
+     * @return string the checkout URL the shopper should be redirected to
      *
      * @throws PaymentRequestInProgressException
      */

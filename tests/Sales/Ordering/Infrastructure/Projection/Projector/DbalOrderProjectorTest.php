@@ -14,7 +14,7 @@ use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{buyer_id: string, payment_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
+ * @phpstan-type Row array{shopper_id: string, payment_id: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -22,8 +22,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderConfirmed(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
+        $shopperId = Uuid::uuid7()->toString();
+        $order = OrderBuilder::new()->withShopperId($shopperId)->create();
 
         // When
         $this->store($order);
@@ -31,7 +31,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($buyerId, $row['buyer_id']);
+        self::assertSame($shopperId, $row['shopper_id']);
         self::assertSame($order->paymentId, $row['payment_id']);
         self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
@@ -207,7 +207,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT buyer_id, payment_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
+                'SELECT shopper_id, payment_id, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

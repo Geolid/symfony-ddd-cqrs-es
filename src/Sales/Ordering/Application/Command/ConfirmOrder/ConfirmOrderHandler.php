@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\ConfirmOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerNotRegisteredException;
-use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
+use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
@@ -27,36 +27,36 @@ final readonly class ConfirmOrderHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
-        private BuyerFinderInterface $buyerFinder,
+        private ShopperFinderInterface $shopperFinder,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws BuyerNotRegisteredException
-     * @throws BuyerAddressesNotCompletedException
+     * @throws ShopperNotRegisteredException
+     * @throws ShopperAddressesNotCompletedException
      * @throws OrderWithoutLineException
      */
     public function __invoke(ConfirmOrder $command): void
     {
-        $buyer = $this->buyerFinder->ofIdOrNull($command->buyerId)
-            ?? throw BuyerNotRegisteredException::forId($command->buyerId);
+        $shopper = $this->shopperFinder->ofIdOrNull($command->shopperId)
+            ?? throw ShopperNotRegisteredException::forId($command->shopperId);
 
-        if (null === $buyer->shippingAddress || null === $buyer->billingAddress) {
-            throw BuyerAddressesNotCompletedException::forId($command->buyerId);
+        if (null === $shopper->shippingAddress || null === $shopper->billingAddress) {
+            throw ShopperAddressesNotCompletedException::forId($command->shopperId);
         }
 
         $order = Order::confirm(
             id: OrderId::fromString($command->id),
-            buyerId: $buyer->buyerId,
+            shopperId: $shopper->shopperId,
             paymentId: $command->paymentId,
             shippingAddress: PostalAddressMapper::fromArray([
-                'recipientName' => $buyer->shippingAddress->recipientName,
-                'address' => (array) $buyer->shippingAddress->address,
+                'recipientName' => $shopper->shippingAddress->recipientName,
+                'address' => (array) $shopper->shippingAddress->address,
             ]),
             billingAddress: PostalAddressMapper::fromArray([
-                'recipientName' => $buyer->billingAddress->recipientName,
-                'address' => (array) $buyer->billingAddress->address,
+                'recipientName' => $shopper->billingAddress->recipientName,
+                'address' => (array) $shopper->billingAddress->address,
             ]),
             lines: array_map($this->resolveLine(...), $command->lines),
             confirmedAt: $this->clock->now(),

@@ -4,9 +4,9 @@ deptrac:
 
   layers:
     # Bounded Contexts
-    - name: Sales.Buyer
+    - name: Shopping.Checkout
       collectors:
-        - { type: directory, value: 'src/Sales/Buyer/.*' }
+        - { type: directory, value: 'src/Shopping/Checkout/.*' }
 
     - name: Sales.Ordering
       collectors:
@@ -56,9 +56,9 @@ deptrac:
 
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
-    Sales.Buyer:      [ Iam.Identity, Compliance.Erasing, Shared, Vendors ]
-    Sales.Ordering:         [ Sales.Buyer, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Shared, Vendors ]
-    Fulfilment.Shipping: [ Sales.Ordering, Sales.Buyer, Finance.Payment, Shared, Vendors ]
+    Shopping.Checkout: [ Compliance.Erasing, Shared, Vendors ]
+    Sales.Ordering:         [ Shopping.Checkout, Catalog.Listing, Fulfilment.Shipping, Finance.Payment, Shared, Vendors ]
+    Fulfilment.Shipping: [ Sales.Ordering, Shopping.Checkout, Finance.Payment, Shared, Vendors ]
     Finance.Payment: [ Sales.Ordering, Fulfilment.Shipping, Shared, Vendors ]
     Iam.Identity:        [ Compliance.Erasing, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]

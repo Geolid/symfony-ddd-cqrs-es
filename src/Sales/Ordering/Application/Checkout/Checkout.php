@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Checkout;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Application\Checkout\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException;
 use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
-use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Ordering\Application\Checkout\Exception\ShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperErasureRequestedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductResult;
+use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyConvertedException;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyExistsException;
 use Sales\Ordering\Domain\Cart\Exception\CartEmptyException;
@@ -25,16 +25,16 @@ final readonly class Checkout implements CheckoutInterface
 {
     public function __construct(
         private CartRepositoryInterface $repository,
-        private BuyerFinderInterface $buyerFinder,
+        private ShopperFinderInterface $shopperFinder,
         private ListedProductFinderInterface $listedProductFinder,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws BuyerNotRegisteredException
-     * @throws BuyerErasureRequestedException
-     * @throws BuyerAddressesNotCompletedException
+     * @throws ShopperNotRegisteredException
+     * @throws ShopperErasureRequestedException
+     * @throws ShopperAddressesNotCompletedException
      * @throws CartOutdatedException
      * @throws CartNotFoundException
      * @throws CartAlreadyConvertedException
@@ -45,15 +45,15 @@ final readonly class Checkout implements CheckoutInterface
     {
         $cart = $this->repository->load(CartId::fromString($cartId));
 
-        $buyer = $this->buyerFinder->ofIdOrNull($cart->buyerId)
-            ?? throw BuyerNotRegisteredException::forId($cart->buyerId);
+        $shopper = $this->shopperFinder->ofIdOrNull($cart->shopperId)
+            ?? throw ShopperNotRegisteredException::forId($cart->shopperId);
 
-        if ($buyer->erasureRequested) {
-            throw BuyerErasureRequestedException::forId($cart->buyerId);
+        if ($shopper->erasureRequested) {
+            throw ShopperErasureRequestedException::forId($cart->shopperId);
         }
 
-        if (null === $buyer->billingAddress) {
-            throw BuyerAddressesNotCompletedException::forId($cart->buyerId);
+        if (null === $shopper->billingAddress) {
+            throw ShopperAddressesNotCompletedException::forId($cart->shopperId);
         }
 
         $this->guardFreshness($cart->lines());
@@ -65,8 +65,8 @@ final readonly class Checkout implements CheckoutInterface
             cartId: $cartId,
             totalAmountInCents: $cart->totalAmountInCents(),
             billingAddress: PostalAddressMapper::fromArray([
-                'recipientName' => $buyer->billingAddress->recipientName,
-                'address' => (array) $buyer->billingAddress->address,
+                'recipientName' => $shopper->billingAddress->recipientName,
+                'address' => (array) $shopper->billingAddress->address,
             ]),
         );
     }

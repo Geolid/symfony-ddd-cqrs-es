@@ -7,12 +7,12 @@ namespace Sales\Tests\Ordering\Application\Command\ConfirmOrder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerNotRegisteredException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Domain\ValueObject\Money;
+use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
 use Support\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -31,8 +31,8 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itConfirms(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $this->store($buyer);
+        $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $this->store($shopper);
         $id = Uuid::uuid7()->toString();
         $paymentId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
@@ -41,7 +41,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: $id,
-            buyerId: $buyer->id->toString(),
+            shopperId: $shopper->id->toString(),
             paymentId: $paymentId,
             lines: [[
                 'lineId' => Uuid::uuid7()->toString(),
@@ -54,41 +54,41 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($id);
-        self::assertSame($buyer->id->toString(), $result->buyerId);
+        self::assertSame($shopper->id->toString(), $result->shopperId);
         self::assertSame($paymentId, $result->paymentId);
         self::assertSame(Money::fromCents($unitPriceInCents * $quantity)->cents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
     #[Test]
-    public function itFailsWhenBuyerNotRegistered(): void
+    public function itFailsWhenShopperNotRegistered(): void
     {
         // Then
-        $this->expectException(BuyerNotRegisteredException::class);
+        $this->expectException(ShopperNotRegisteredException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
-            buyerId: Uuid::uuid7()->toString(),
+            shopperId: Uuid::uuid7()->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
         ));
     }
 
     #[Test]
-    public function itFailsWhenBuyerAddressesNotCompleted(): void
+    public function itFailsWhenShopperAddressesNotCompleted(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
-        $this->store($buyer);
+        $shopper = ShopperBuilder::new()->create();
+        $this->store($shopper);
 
         // Then
-        $this->expectException(BuyerAddressesNotCompletedException::class);
+        $this->expectException(ShopperAddressesNotCompletedException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
-            buyerId: $buyer->id->toString(),
+            shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
         ));
@@ -98,16 +98,16 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenShippingAddressMissing(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->billingAddressDefined()->create();
-        $this->store($buyer);
+        $shopper = ShopperBuilder::new()->billingAddressDefined()->create();
+        $this->store($shopper);
 
         // Then
-        $this->expectException(BuyerAddressesNotCompletedException::class);
+        $this->expectException(ShopperAddressesNotCompletedException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
-            buyerId: $buyer->id->toString(),
+            shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
         ));
@@ -117,16 +117,16 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenBillingAddressMissing(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->shippingAddressDefined()->create();
-        $this->store($buyer);
+        $shopper = ShopperBuilder::new()->shippingAddressDefined()->create();
+        $this->store($shopper);
 
         // Then
-        $this->expectException(BuyerAddressesNotCompletedException::class);
+        $this->expectException(ShopperAddressesNotCompletedException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
-            buyerId: $buyer->id->toString(),
+            shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
         ));

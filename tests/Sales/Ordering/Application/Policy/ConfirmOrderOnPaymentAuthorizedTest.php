@@ -12,8 +12,8 @@ use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\ConfirmOrderOnPaymentAuthorized;
 use Sales\Ordering\Domain\Cart\Event\CartConverted;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;
+use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -23,10 +23,10 @@ final class ConfirmOrderOnPaymentAuthorizedTest extends AbstractIntegrationTestC
     public function itConfirms(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $cartBuilder = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded()->checkedOut();
+        $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->checkedOut();
         $cart = $cartBuilder->create();
-        $this->store($buyer, $cart);
+        $this->store($shopper, $cart);
         $paymentId = Uuid::uuid7()->toString();
 
         // When
@@ -35,7 +35,7 @@ final class ConfirmOrderOnPaymentAuthorizedTest extends AbstractIntegrationTestC
         // Then
         $orderId = OrderId::forCart($cart->id->toString())->toString();
         $result = $this->service(OrderFinderInterface::class)->ofId($orderId);
-        self::assertSame($cartBuilder['buyerId'], $result->buyerId);
+        self::assertSame($cartBuilder['shopperId'], $result->shopperId);
         self::assertSame($paymentId, $result->paymentId);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
         $event = $this->publishedEventOf(CartConverted::class);

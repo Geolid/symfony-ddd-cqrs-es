@@ -20,7 +20,7 @@ use Webmozart\Assert\Assert;
 /**
  * @phpstan-type Attributes = array{
  *     id: CartId,
- *     buyerId: string,
+ *     shopperId: string,
  *     startedAt: \DateTimeImmutable,
  *     product: Product,
  *     quantity: Quantity,
@@ -41,9 +41,9 @@ final class CartBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: CartId::fromString($id));
     }
 
-    public function withBuyerId(string $buyerId): self
+    public function withShopperId(string $shopperId): self
     {
-        return $this->withAttributes(buyerId: $buyerId);
+        return $this->withAttributes(shopperId: $shopperId);
     }
 
     public function withStartedAt(\DateTimeImmutable $startedAt): self
@@ -117,7 +117,7 @@ final class CartBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): CartId => CartId::fromString(Uuid::uuid7()->toString()),
-            'buyerId' => static fn (): string => Uuid::uuid7()->toString(),
+            'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
             'startedAt' => static fn (): \DateTimeImmutable => $now,
             'product' => static function (): Product {
                 Assert::string($label = SeededFaker::get()->words(3, true));
@@ -138,7 +138,7 @@ final class CartBuilder extends AbstractAggregateBuilder
     {
         return Cart::start(
             id: $this['id'],
-            buyerId: $this['buyerId'],
+            shopperId: $this['shopperId'],
             startedAt: $this['startedAt'],
         );
     }

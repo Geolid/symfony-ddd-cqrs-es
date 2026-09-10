@@ -11,7 +11,7 @@ final readonly class CartStarted
 {
     public function __construct(
         public string $id,
-        public string $buyerId,
+        public string $shopperId,
         public \DateTimeImmutable $startedAt,
     ) {
     }

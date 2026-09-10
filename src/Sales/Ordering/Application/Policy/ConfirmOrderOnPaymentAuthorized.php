@@ -36,7 +36,7 @@ final readonly class ConfirmOrderOnPaymentAuthorized
 
         $this->commandBus->dispatch(new ConfirmOrder(
             id: OrderId::forCart($event->cartId)->toString(),
-            buyerId: $cart->buyerId,
+            shopperId: $cart->shopperId,
             paymentId: $event->paymentId,
             lines: array_map(static fn (Line $line): array => [
                 'lineId' => $line->id->toString(),

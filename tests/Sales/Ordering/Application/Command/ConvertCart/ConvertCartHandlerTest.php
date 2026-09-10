@@ -33,8 +33,8 @@ final class ConvertCartHandlerTest extends AbstractIntegrationTestCase
         $cartBuilder = CartBuilder::new()->lineAdded()->checkedOut();
         $cart = $cartBuilder->create();
         $this->store($cart);
-        $buyerKey = UniqueKey::for(CartUniqueKey::BUYER);
-        $this->uniqueValues->claim($buyerKey, $cartBuilder['buyerId'], $cart->id->toString());
+        $shopperKey = UniqueKey::for(CartUniqueKey::SHOPPER);
+        $this->uniqueValues->claim($shopperKey, $cartBuilder['shopperId'], $cart->id->toString());
 
         // When
         $this->dispatch(new ConvertCart($cart->id->toString()));
@@ -42,7 +42,7 @@ final class ConvertCartHandlerTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CartConverted::class);
         self::assertSame($cart->id->toString(), $event->id);
-        self::assertFalse($this->uniqueValues->isClaimed($buyerKey, $cartBuilder['buyerId']));
+        self::assertFalse($this->uniqueValues->isClaimed($shopperKey, $cartBuilder['shopperId']));
     }
 
     #[Test]

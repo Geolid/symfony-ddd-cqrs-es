@@ -25,19 +25,19 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
         )->one() ?? throw OrderResultNotFoundException::forId($id);
     }
 
-    public function byBuyer(string $buyerId): static
+    public function byShopper(string $shopperId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($buyerId): void {
-                $qb->andWhere('buyer_id = :buyerId')
-                    ->setParameter('buyerId', $buyerId);
+            static function (QueryBuilder $qb) use ($shopperId): void {
+                $qb->andWhere('shopper_id = :shopperId')
+                    ->setParameter('shopperId', $shopperId);
             },
         );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'buyer_id', 'payment_id', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
+        $qb->select('id', 'shopper_id', 'payment_id', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
             ->from(DbalOrderProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

@@ -33,7 +33,7 @@ final readonly class RequestShipmentOnOrderConfirmed
         $this->commandBus->dispatch(new RequestShipment(
             id: ShipmentId::forOrder($event->orderId)->toString(),
             orderId: $event->orderId,
-            buyerId: $event->buyerId,
+            shopperId: $event->shopperId,
             origin: PostalAddressMapper::toArray($this->warehouseAddressProvider->get()),
             destination: $event->shippingAddress,
         ));
