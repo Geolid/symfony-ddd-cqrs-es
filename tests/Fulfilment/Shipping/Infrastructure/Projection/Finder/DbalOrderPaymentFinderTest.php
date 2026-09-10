@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Finder;
 
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
-use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
+use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class DbalPaymentCaptureFinderTest extends AbstractIntegrationTestCase
+final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
 {
-    private PaymentCaptureFinderInterface $finder;
+    private OrderPaymentFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->finder = $this->service(PaymentCaptureFinderInterface::class);
+        $this->finder = $this->service(OrderPaymentFinderInterface::class);
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class DbalPaymentCaptureFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($found);
         self::assertSame($builder['orderId'], $found->orderId);
-        self::assertTrue($found->captured);
+        self::assertTrue($found->paid);
         self::assertNull($notFound);
     }
 }

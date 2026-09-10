@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipping\Application\Manifest;
 
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
-use Fulfilment\Shipping\Application\Finder\PaymentCapture\PaymentCaptureFinderInterface;
+use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
@@ -36,14 +36,14 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         $this->finder = $this->service(ShipmentFinderInterface::class);
         $this->service = new ShipmentManifester(
             $this->finder,
-            $this->service(PaymentCaptureFinderInterface::class),
+            $this->service(OrderPaymentFinderInterface::class),
             $this->carrier,
             $this->service(CommandBusInterface::class),
         );
     }
 
     #[Test]
-    public function itManifestsWhenPaymentCaptured(): void
+    public function itManifestsWhenOrderPaid(): void
     {
         // Given
         $order = OrderBuilder::new()->create();
@@ -95,7 +95,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenUncapturedPayment(): void
+    public function itFailsWhenOrderUnpaid(): void
     {
         // Given
         $order = OrderBuilder::new()->create();
