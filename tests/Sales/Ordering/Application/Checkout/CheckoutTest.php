@@ -47,7 +47,8 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new();
         $catalogProduct = $productBuilder->create();
-        $buyer = BuyerBuilder::new()->billingAddressDefined()->create();
+        $buyerBuilder = BuyerBuilder::new()->billingAddressDefined();
+        $buyer = $buyerBuilder->create();
         $cartBuilder = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded(
             product: Product::of($catalogProduct->id->toString(), $productBuilder['label'], $productBuilder['unitPrice']),
             quantity: CartBuilder::sample('quantity'),
@@ -61,8 +62,7 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($cart->id->toString(), $result->cartId);
         self::assertSame($cartBuilder['quantity']->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame(PostalAddressMapper::toArray($buyer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
+        self::assertSame(PostalAddressMapper::toArray($buyerBuilder['billingAddress']), PostalAddressMapper::toArray($result->billingAddress));
         $event = $this->publishedEventOf(CartCheckedOut::class);
         self::assertSame($cart->id->toString(), $event->id);
     }
