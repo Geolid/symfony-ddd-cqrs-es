@@ -24,6 +24,7 @@ use Webmozart\Assert\Assert;
  *     startedAt: \DateTimeImmutable,
  *     product: Product,
  *     quantity: Quantity,
+ *     lineId: LineId,
  *     addedAt: \DateTimeImmutable,
  *     removedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
@@ -68,7 +69,7 @@ final class CartBuilder extends AbstractAggregateBuilder
         $builder = null !== $removedAt ? $this->withAttributes(removedAt: $removedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->removeLine($builder->lineId(), $builder['removedAt']),
+            static fn (Cart $cart, self $builder) => $cart->removeLine($builder['lineId'], $builder['removedAt']),
         );
     }
 
@@ -80,7 +81,7 @@ final class CartBuilder extends AbstractAggregateBuilder
         ));
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->changeQuantity($builder->lineId(), $builder['quantity'], $builder['changedAt']),
+            static fn (Cart $cart, self $builder) => $cart->changeQuantity($builder['lineId'], $builder['quantity'], $builder['changedAt']),
         );
     }
 
@@ -111,11 +112,6 @@ final class CartBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function lineId(): LineId
-    {
-        return LineId::forProduct($this['id']->toString(), $this['product']->id);
-    }
-
     protected static function defaults(): array
     {
         $now = Clock::get()->now();
@@ -130,6 +126,10 @@ final class CartBuilder extends AbstractAggregateBuilder
                 return Product::of(Uuid::uuid7()->toString(), Label::fromString($label), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
             },
             'quantity' => static fn (): Quantity => Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+            'lineId' => static fn (?self $builder): LineId => LineId::forProduct(
+                (null !== $builder ? $builder['id'] : CartId::fromString(Uuid::uuid7()->toString()))->toString(),
+                (null !== $builder ? $builder['product'] : self::sample('product'))->id,
+            ),
             'addedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
             'removedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),

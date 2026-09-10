@@ -27,7 +27,7 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         $this->store($cart);
 
         // Then
-        $row = $this->fetchRow($builder->lineId()->toString());
+        $row = $this->fetchRow($builder['lineId']->toString());
         self::assertNotFalse($row);
         self::assertSame($cart->id->toString(), $row['cart_id']);
         self::assertSame($builder['product']->id, $row['product_id']);
@@ -52,11 +52,11 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         $this->store($cart);
 
         // Then
-        $row = $this->fetchRow($builder->lineId()->toString());
+        $row = $this->fetchRow($builder['lineId']->toString());
         self::assertNotFalse($row);
         self::assertSame(5, (int) $row['quantity']);
 
-        $otherRow = $this->fetchRow($otherBuilder->lineId()->toString());
+        $otherRow = $this->fetchRow($otherBuilder['lineId']->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherBuilder['quantity']->value, (int) $otherRow['quantity']);
     }
@@ -71,7 +71,7 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         $builder = CartBuilder::new()->lineAdded();
         $cart = $builder->create();
         $this->store($cart);
-        $lineId = $builder->lineId();
+        $lineId = $builder['lineId'];
 
         // When
         $cart->removeLine($lineId, $builder['removedAt']);
@@ -80,7 +80,7 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         // Then
         self::assertFalse($this->fetchRow($lineId->toString()));
 
-        $otherRow = $this->fetchRow($otherBuilder->lineId()->toString());
+        $otherRow = $this->fetchRow($otherBuilder['lineId']->toString());
         self::assertNotFalse($otherRow);
     }
 
@@ -94,7 +94,7 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         $builder = CartBuilder::new()->lineAdded();
         $cart = $builder->create();
         $this->store($cart);
-        $lineId = $builder->lineId();
+        $lineId = $builder['lineId'];
 
         // When
         $cart->changeQuantity($lineId, Quantity::of(9), $builder['changedAt']);
@@ -105,7 +105,7 @@ final class DbalCartLineProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame(9, (int) $row['quantity']);
 
-        $otherRow = $this->fetchRow($otherBuilder->lineId()->toString());
+        $otherRow = $this->fetchRow($otherBuilder['lineId']->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherBuilder['quantity']->value, (int) $otherRow['quantity']);
     }

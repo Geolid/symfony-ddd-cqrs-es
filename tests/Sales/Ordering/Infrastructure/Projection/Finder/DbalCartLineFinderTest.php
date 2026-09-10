@@ -30,7 +30,7 @@ final class DbalCartLineFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($builder->lineId()->toString(), $results[0]->lineId);
+        self::assertSame($builder['lineId']->toString(), $results[0]->lineId);
         self::assertSame($builder['product']->id, $results[0]->productId);
         self::assertSame($builder['product']->label->value, $results[0]->label);
         self::assertSame($builder['product']->price->cents, $results[0]->unitPriceInCents);
@@ -50,7 +50,7 @@ final class DbalCartLineFinderTest extends AbstractIterableFinderTestCase
         $builders = array_map(static fn (): CartBuilder => CartBuilder::new()->lineAdded(), range(1, $count));
         $this->store(...array_map(static fn (CartBuilder $builder): Cart => $builder->create(), $builders));
 
-        return array_map(static fn (CartBuilder $builder): string => $builder->lineId()->toString(), $builders);
+        return array_map(static fn (CartBuilder $builder): string => $builder['lineId']->toString(), $builders);
     }
 
     protected function idOf(object $result): string

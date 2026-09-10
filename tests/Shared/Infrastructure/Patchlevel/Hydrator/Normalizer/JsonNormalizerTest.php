@@ -17,6 +17,7 @@ use Shared\Tests\Support\Double\DummyNestedObject;
 final class JsonNormalizerTest extends TestCase
 {
     private JsonNormalizer $normalizer;
+    private JsonNormalizer $contextAwareNormalizer;
 
     protected function setUp(): void
     {
@@ -24,6 +25,7 @@ final class JsonNormalizerTest extends TestCase
         $inner->setHydrator(new FakeReflectionHydrator());
 
         $this->normalizer = new JsonNormalizer($inner);
+        $this->contextAwareNormalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
     }
 
     #[Test]
@@ -110,11 +112,8 @@ final class JsonNormalizerTest extends TestCase
     #[Test]
     public function itNormalizesThroughTheContextAwareCallWhenTheInnerNormalizerSupportsIt(): void
     {
-        // Given
-        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
-
         // When
-        $normalized = $normalizer->normalize('x');
+        $normalized = $this->contextAwareNormalizer->normalize('x');
 
         // Then
         self::assertSame('2', $normalized);
@@ -123,11 +122,8 @@ final class JsonNormalizerTest extends TestCase
     #[Test]
     public function itDenormalizesThroughTheContextAwareCallWhenTheInnerNormalizerSupportsIt(): void
     {
-        // Given
-        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
-
         // When
-        $value = $normalizer->denormalize('"x"');
+        $value = $this->contextAwareNormalizer->denormalize('"x"');
 
         // Then
         self::assertSame(2, $value);
@@ -136,11 +132,8 @@ final class JsonNormalizerTest extends TestCase
     #[Test]
     public function itNeverDelegatesToTheInnerNormalizerOnNull(): void
     {
-        // Given
-        $normalizer = new JsonNormalizer(new SpyContextAwareNormalizer());
-
         // When
-        $value = $normalizer->denormalize(null);
+        $value = $this->contextAwareNormalizer->denormalize(null);
 
         // Then
         self::assertNull($value);
