@@ -6,7 +6,7 @@ namespace Tools\PHPUnit\EventSourcing;
 
 use Patchlevel\EventSourcing\Store\InMemoryStore;
 use Patchlevel\EventSourcingBundle\Subscription\StaticInMemorySubscriptionStoreFactory;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\Test\PreparationStarted;
 use PHPUnit\Event\Test\PreparationStartedSubscriber;
@@ -31,7 +31,7 @@ final class ResetStateOnPreparationStarted implements PreparationStartedSubscrib
             $container = KernelTestCaseHelper::getContainer($test->className());
 
             $container->get(InMemoryStore::class)->clear();
-            $container->get(CipherKeyStore::class)->clear();
+            $container->get(InMemoryCipherKeyStore::class)->clear();
 
             foreach (StaticInMemorySubscriptionStoreFactory::create()->find() as $subscription) {
                 $subscription->changePosition(0);
