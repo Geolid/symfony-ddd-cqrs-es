@@ -42,7 +42,7 @@ return static function (ContainerConfigurator $container): void {
         $queryBusAlias->public();
         $services->alias(LockFactory::class, 'lock.factory')->public();
 
-        $services->set(InMemoryCipherKeyStore::class);
+        $services->set(InMemoryCipherKeyStore::class)->public();
         $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
     }
 
