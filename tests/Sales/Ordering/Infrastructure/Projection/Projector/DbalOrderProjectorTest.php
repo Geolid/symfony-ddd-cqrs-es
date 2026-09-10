@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Shared\Entity\Line;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
@@ -23,7 +24,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $buyerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withBuyerId($buyerId)->create();
+        $builder = OrderBuilder::new()->withBuyerId($buyerId);
+        $order = $builder->create();
 
         // When
         $this->store($order);
@@ -33,7 +35,10 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($buyerId, $row['buyer_id']);
         self::assertSame($order->paymentId, $row['payment_id']);
-        self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
+        self::assertSame(
+            array_sum(array_map(static fn (Line $line): int => $line->total()->cents, $builder['lines'])),
+            (int) $row['total_amount_in_cents'],
+        );
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);

@@ -39,7 +39,6 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) PaymentId $id;
-    public private(set) string $checkoutUrl;
     public private(set) PaymentReference $reference;
     private string $cartId;
     private PaymentState $operationalState;
@@ -149,7 +148,6 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $this->id = PaymentId::fromString($event->id);
         $this->cartId = $event->cartId;
         $this->reference = $event->reference;
-        $this->checkoutUrl = $event->checkoutUrl;
         $this->operationalState = PaymentState::REQUESTED;
     }
 

@@ -54,7 +54,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) ShipmentId $id;
     public private(set) string $orderId;
-    public private(set) string $buyerId;
     public private(set) PostalAddress $origin;
     public private(set) PostalAddress $destination;
     private ?TrackingNumber $trackingNumber = null;
@@ -237,7 +236,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = ShipmentId::fromString($event->id);
         $this->orderId = $event->orderId;
-        $this->buyerId = $event->buyerId;
         $this->origin = $event->origin;
         $this->destination = $event->destination;
         $this->trackingNumber = null;

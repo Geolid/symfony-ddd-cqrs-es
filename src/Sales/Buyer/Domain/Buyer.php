@@ -37,7 +37,6 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) BuyerId $id;
     public private(set) string $identityId;
-    public private(set) Email $email;
     public private(set) ?PostalAddress $shippingAddress = null;
     public private(set) ?PostalAddress $billingAddress = null;
     private ErasureState $erasureState;
@@ -129,7 +128,6 @@ final class Buyer implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = BuyerId::fromString($event->id);
         $this->identityId = $event->identityId;
-        $this->email = $event->email;
         $this->erasureState = ErasureState::RETAINED;
     }
 

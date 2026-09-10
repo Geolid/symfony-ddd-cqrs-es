@@ -11,6 +11,7 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Shared\Entity\Line;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
@@ -35,7 +36,10 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($order->id->toString(), $result->id);
         self::assertSame($builder['buyerId'], $result->buyerId);
         self::assertSame($builder['paymentId'], $result->paymentId);
-        self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
+        self::assertSame(
+            array_sum(array_map(static fn (Line $line): int => $line->total()->cents, $builder['lines'])),
+            $result->totalAmountInCents,
+        );
         self::assertSame(OrderStatus::DELIVERED, $result->status);
         self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
         self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));

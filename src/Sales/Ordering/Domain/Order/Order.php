@@ -57,8 +57,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $buyerId;
     public private(set) string $paymentId;
     public private(set) PostalAddress $shippingAddress;
-    public private(set) PostalAddress $billingAddress;
-    public private(set) int $totalAmountInCents;
     private OrderState $operationalState;
     private ErasureState $erasureState;
 
@@ -232,8 +230,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->buyerId = $event->buyerId;
         $this->paymentId = $event->paymentId;
         $this->shippingAddress = $event->shippingAddress;
-        $this->billingAddress = $event->billingAddress;
-        $this->totalAmountInCents = $event->totalAmount->cents;
         $this->operationalState = OrderState::CONFIRMED;
         $this->erasureState = ErasureState::RETAINED;
     }

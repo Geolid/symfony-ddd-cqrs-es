@@ -31,15 +31,16 @@ final class EraseBuyerHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->erasureRequested()->create();
+        $builder = BuyerBuilder::new()->erasureRequested();
+        $buyer = $builder->create();
         $this->store($buyer);
-        $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value, $buyer->id->toString());
+        $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $builder['email']->value, $buyer->id->toString());
 
         // When
         $this->dispatch(new EraseBuyer($buyer->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(BuyerUniqueKey::EMAIL), $buyer->email->value));
+        self::assertFalse($this->uniqueValues->exists(UniqueKey::for(BuyerUniqueKey::EMAIL), $builder['email']->value));
         $this->expectException(BuyerResultNotFoundException::class);
         $this->service(BuyerFinderInterface::class)->ofId($buyer->id->toString());
     }
