@@ -18,9 +18,10 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
+        $other = CartBuilder::new()->create();
         $builder = CartBuilder::new();
         $cart = $builder->create();
-        $this->store($cart);
+        $this->store($other, $cart);
 
         // When
         $result = $this->finder()->ofId($cart->id->toString());

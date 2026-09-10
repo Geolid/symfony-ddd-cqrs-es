@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Sales\Ordering\Application\Finder\CartLine;
 
+use Shared\Application\Finder\IterableFinderInterface;
+
 /**
- * @extends \IteratorAggregate<int, CartLineResult>
+ * @extends IterableFinderInterface<CartLineResult>
  */
-interface CartLineFinderInterface extends \IteratorAggregate
+interface CartLineFinderInterface extends IterableFinderInterface
 {
     public function byCart(string $cartId): static;
 }

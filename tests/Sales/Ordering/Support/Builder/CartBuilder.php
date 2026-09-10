@@ -111,6 +111,11 @@ final class CartBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function lineId(): LineId
+    {
+        return LineId::forProduct($this['id']->toString(), $this['product']->id);
+    }
+
     protected static function defaults(): array
     {
         $now = Clock::get()->now();
@@ -141,10 +146,5 @@ final class CartBuilder extends AbstractAggregateBuilder
             buyerId: $this['buyerId'],
             startedAt: $this['startedAt'],
         );
-    }
-
-    private function lineId(): LineId
-    {
-        return LineId::forProduct($this['id']->toString(), $this['product']->id);
     }
 }

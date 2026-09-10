@@ -28,7 +28,8 @@ final class DbalCartLineFinder extends AbstractDbalFinder implements CartLineFin
     {
         $qb->select('line_id', 'product_id', 'label', 'unit_price_in_cents', 'quantity')
             ->from(DbalCartLineProjector::TABLE)
-            ->orderBy('line_id', 'ASC');
+            ->orderBy('added_at', 'ASC')
+            ->addOrderBy('line_id', 'ASC');
     }
 
     protected function resultClass(): string

@@ -42,7 +42,9 @@ final readonly class DbalCartLineProjector extends AbstractDbalProjector
                 'label' => $event->product->label->value,
                 'unit_price_in_cents' => $event->product->price->cents,
                 'quantity' => $event->quantity->value,
+                'added_at' => $event->addedAt,
             ],
+            ['added_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -74,6 +76,7 @@ final readonly class DbalCartLineProjector extends AbstractDbalProjector
         $table->addColumn('label', Types::STRING, ['length' => Label::MAX_LENGTH]);
         $table->addColumn('unit_price_in_cents', Types::INTEGER);
         $table->addColumn('quantity', Types::INTEGER);
+        $table->addColumn('added_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('line_id'))
