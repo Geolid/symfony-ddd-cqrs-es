@@ -43,7 +43,7 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(LockFactory::class, 'lock.factory')->public();
 
         $services->set(InMemoryCipherKeyStore::class);
-        $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
+        $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class)->public();
     }
 
     if ('prod' === $container->env()) {
