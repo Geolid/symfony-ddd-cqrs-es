@@ -13,21 +13,21 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 
-#[Projector('fulfilment.shipping.project_placed_payments')]
-final readonly class DbalPaymentCaptureProjector extends AbstractDbalProjector
+#[Projector('fulfilment.shipping.project_order_payments')]
+final readonly class DbalOrderPaymentProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'fulfilment_shipping_payment_capture';
+    public const string TABLE = 'fulfilment_shipping_order_payment';
 
     #[Subscribe(PaymentCapturedIntegrationEvent::class)]
-    public function onPaymentCaptured(PaymentCapturedIntegrationEvent $event): void
+    public function onPaymentCapturedIntegrationEvent(PaymentCapturedIntegrationEvent $event): void
     {
         $this->connection->insert(
             self::TABLE,
             [
                 'order_id' => $event->orderId,
-                'captured' => true,
+                'paid' => true,
             ],
-            ['captured' => Types::BOOLEAN],
+            ['paid' => Types::BOOLEAN],
         );
     }
 
@@ -38,7 +38,7 @@ final readonly class DbalPaymentCaptureProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('captured', Types::BOOLEAN);
+        $table->addColumn('paid', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('order_id'))

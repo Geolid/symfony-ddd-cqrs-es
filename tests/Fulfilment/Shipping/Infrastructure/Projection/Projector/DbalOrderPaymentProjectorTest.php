@@ -6,15 +6,15 @@ namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
-use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalPaymentCaptureProjector;
+use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{order_id: string, captured: bool|string}
+ * @phpstan-type Row array{order_id: string, paid: bool|string}
  */
-final class DbalPaymentCaptureProjectorTest extends AbstractIntegrationTestCase
+final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itProjectsOnPaymentCaptured(): void
@@ -28,7 +28,7 @@ final class DbalPaymentCaptureProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($orderId);
         self::assertNotFalse($row);
-        self::assertTrue((bool) $row['captured']);
+        self::assertTrue((bool) $row['paid']);
     }
 
     /**
@@ -40,7 +40,7 @@ final class DbalPaymentCaptureProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT order_id, captured FROM %s WHERE order_id = :orderId', DbalPaymentCaptureProjector::TABLE),
+            \sprintf('SELECT order_id, paid FROM %s WHERE order_id = :orderId', DbalOrderPaymentProjector::TABLE),
             ['orderId' => $orderId],
         );
     }
