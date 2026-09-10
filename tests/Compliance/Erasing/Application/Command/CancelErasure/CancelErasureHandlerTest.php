@@ -6,8 +6,8 @@ namespace Compliance\Tests\Erasing\Application\Command\CancelErasure;
 
 use Compliance\Erasing\Application\Command\CancelErasure\CancelErasure;
 use Compliance\Erasing\Application\ErasureRequestStatus;
+use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
-use Compliance\Erasing\Application\Uniqueness\ErasureUniqueKey;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
 use PHPUnit\Framework\Attributes\Test;

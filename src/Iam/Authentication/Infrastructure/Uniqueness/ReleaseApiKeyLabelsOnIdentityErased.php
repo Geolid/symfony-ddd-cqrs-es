@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Uniqueness\UniqueKey;

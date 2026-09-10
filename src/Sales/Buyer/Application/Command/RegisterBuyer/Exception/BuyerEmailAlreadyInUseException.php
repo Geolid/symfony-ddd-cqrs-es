@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Buyer\Application\Uniqueness\Exception;
+namespace Sales\Buyer\Application\Command\RegisterBuyer\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

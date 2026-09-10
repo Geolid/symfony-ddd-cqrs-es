@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Listing\Application\Command\PublishProduct;
 
+use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
 use Catalog\Listing\Application\Command\PublishProduct\PublishProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Listing\Application\Uniqueness\Exception\ProductLabelAlreadyInUseException;
-use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
+use Catalog\Listing\Application\ProductUniqueKey;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;

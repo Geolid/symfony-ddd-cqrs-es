@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Listing\Application\Uniqueness\Exception;
+namespace Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final class ProductLabelAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
+final class ApiKeyCredentialLabelAlreadyInUseException extends \RuntimeException implements ApplicationExceptionInterface
 {
     public static function forLabel(string $label, \Throwable $previous): self
     {

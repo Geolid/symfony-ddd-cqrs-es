@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sales\Buyer\Application\Command\EraseBuyer;
 
 use Psr\Clock\ClockInterface;
-use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
+use Sales\Buyer\Application\BuyerUniqueKey;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
 use Sales\Buyer\Domain\Exception\BuyerNotFoundException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;

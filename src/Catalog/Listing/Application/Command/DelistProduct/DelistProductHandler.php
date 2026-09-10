@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Command\DelistProduct;
 
-use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
+use Catalog\Listing\Application\ProductUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
 use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;

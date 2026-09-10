@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payment\Application\Uniqueness;
+namespace Finance\Payment\Application;
 
 enum PaymentUniqueKey: string
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Erasing\Application\Command\RequestErasure;
 
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
-use Compliance\Erasing\Application\Uniqueness\ErasureUniqueKey;
+use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;

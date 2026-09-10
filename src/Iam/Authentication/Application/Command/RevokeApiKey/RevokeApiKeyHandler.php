@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\RevokeApiKey;
 
-use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;

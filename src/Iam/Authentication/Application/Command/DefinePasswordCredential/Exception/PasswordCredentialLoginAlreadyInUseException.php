@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Uniqueness\Exception;
+namespace Iam\Authentication\Application\Command\DefinePasswordCredential\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

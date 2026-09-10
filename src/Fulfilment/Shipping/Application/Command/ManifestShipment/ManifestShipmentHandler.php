@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Command\ManifestShipment;
 
-use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyInUseException;
-use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
+use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
+use Fulfilment\Shipping\Application\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;

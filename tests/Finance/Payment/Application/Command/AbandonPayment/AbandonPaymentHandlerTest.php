@@ -7,7 +7,7 @@ namespace Finance\Tests\Payment\Application\Command\AbandonPayment;
 use Finance\Payment\Application\Command\AbandonPayment\AbandonPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;

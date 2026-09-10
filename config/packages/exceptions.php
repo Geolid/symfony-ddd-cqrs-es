@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-use Catalog\Listing\Application\Uniqueness\Exception\ProductLabelAlreadyInUseException;
+use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
 use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
-use Finance\Payment\Application\Uniqueness\Exception\PaymentReferenceAlreadyInUseException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
+use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
-use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\ApiKey\Exception\ApiKeyCredentialRevokedException;
+use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
+use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Credential\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Uniqueness\Exception\ApiKeyCredentialLabelAlreadyInUseException;
-use Iam\Authentication\Application\Uniqueness\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Sales\Buyer\Application\Uniqueness\Exception\BuyerEmailAlreadyInUseException;
+use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyInUseException;
 use Sales\Ordering\Application\Checkout\Exception\BuyerAddressesNotCompletedException as CheckoutBuyerAddressesNotCompletedException;
 use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException as CheckoutBuyerErasureRequestedException;
 use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException as CheckoutBuyerNotRegisteredException;

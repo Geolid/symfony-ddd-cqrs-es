@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Validation;
 
-use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
+use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Application\Validation\ValidUniqueLogin;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Uniqueness;
+namespace Iam\Authentication\Application;
 
 enum ApiKeyCredentialUniqueKey: string
 {

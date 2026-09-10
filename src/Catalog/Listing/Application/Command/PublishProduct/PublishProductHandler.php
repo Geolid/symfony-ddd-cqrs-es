@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Command\PublishProduct;
 
-use Catalog\Listing\Application\Uniqueness\Exception\ProductLabelAlreadyInUseException;
-use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
+use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
+use Catalog\Listing\Application\ProductUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Listing\Domain\Product;
 use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;

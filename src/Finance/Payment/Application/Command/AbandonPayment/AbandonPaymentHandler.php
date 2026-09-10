@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Command\AbandonPayment;
 
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;

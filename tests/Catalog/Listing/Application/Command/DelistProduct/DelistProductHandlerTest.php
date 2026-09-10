@@ -7,7 +7,7 @@ namespace Catalog\Tests\Listing\Application\Command\DelistProduct;
 use Catalog\Listing\Application\Command\DelistProduct\DelistProduct;
 use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
+use Catalog\Listing\Application\ProductUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;

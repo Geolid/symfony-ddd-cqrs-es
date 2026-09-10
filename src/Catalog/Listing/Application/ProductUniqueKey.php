@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Catalog\Listing\Application\Uniqueness;
+namespace Catalog\Listing\Application;
 
 enum ProductUniqueKey: string
 {

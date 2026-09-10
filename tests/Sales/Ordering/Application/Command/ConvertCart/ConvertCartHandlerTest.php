@@ -6,8 +6,8 @@ namespace Sales\Tests\Ordering\Application\Command\ConvertCart;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Application\CartUniqueKey;
 use Sales\Ordering\Application\Command\ConvertCart\ConvertCart;
-use Sales\Ordering\Application\Uniqueness\CartUniqueKey;
 use Sales\Ordering\Domain\Cart\Event\CartConverted;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
+use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
