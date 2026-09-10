@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Command\RequestPayment;
 
-use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
-use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\Uniqueness\Exception\PaymentAlreadyRequestedException;
+use Finance\Payment\Application\Uniqueness\Exception\PaymentReferenceAlreadyTakenException;
 use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Checkout;
 
-use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\Uniqueness\Exception\PaymentAlreadyRequestedException;
 use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;

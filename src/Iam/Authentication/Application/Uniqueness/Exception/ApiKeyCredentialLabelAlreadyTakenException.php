@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\ApiKey\Exception;
+namespace Iam\Authentication\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

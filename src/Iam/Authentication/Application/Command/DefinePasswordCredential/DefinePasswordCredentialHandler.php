@@ -6,7 +6,7 @@ namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
+use Iam\Authentication\Application\Uniqueness\Exception\PasswordCredentialLoginAlreadyTakenException;
 use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;

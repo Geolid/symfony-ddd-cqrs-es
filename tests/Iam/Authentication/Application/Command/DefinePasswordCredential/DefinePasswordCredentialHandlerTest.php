@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswo
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Password\Exception\PasswordCredentialLoginAlreadyTakenException;
+use Iam\Authentication\Application\Uniqueness\Exception\PasswordCredentialLoginAlreadyTakenException;
 use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;

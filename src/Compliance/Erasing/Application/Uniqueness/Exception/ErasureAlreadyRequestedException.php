@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Compliance\Erasing\Application\Command\RequestErasure\Exception;
+namespace Compliance\Erasing\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

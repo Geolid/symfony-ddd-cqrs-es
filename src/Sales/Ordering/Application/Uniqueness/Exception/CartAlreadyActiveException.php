@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sales\Ordering\Application\Command\StartCart\Exception;
+namespace Sales\Ordering\Application\Uniqueness\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
