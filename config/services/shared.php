@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
 use Itspire\MonologLoki\Handler\LokiHandler;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
+use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use Patchlevel\Hydrator\StackHydrator;
 use Psr\Log\LogLevel;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
@@ -39,6 +41,9 @@ return static function (ContainerConfigurator $container): void {
         $commandBusAlias->public();
         $queryBusAlias->public();
         $services->alias(LockFactory::class, 'lock.factory')->public();
+
+        $services->set(InMemoryCipherKeyStore::class);
+        $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
     }
 
     if ('prod' === $container->env()) {
