@@ -42,9 +42,6 @@ return static function (ContainerConfigurator $container): void {
         $queryBusAlias->public();
         $services->alias(LockFactory::class, 'lock.factory')->public();
 
-        // Speed/isolation, same rationale as the event store's own in_memory swap
-        // (config/packages/patchlevel_event_sourcing.php) — the bundle exposes no
-        // declarative type/service option for the hydrator's cipher key store.
         $services->set(InMemoryCipherKeyStore::class);
         $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
     }
