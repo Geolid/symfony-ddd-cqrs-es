@@ -6,14 +6,14 @@ namespace Sales\Tests\Buyer\Application\Command\RegisterBuyer;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Buyer\Application\BuyerUniqueKey;
+use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyInUseException;
 use Sales\Buyer\Application\Command\RegisterBuyer\RegisterBuyer;
 use Sales\Buyer\Application\Finder\Buyer\BuyerFinderInterface;
-use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
-use Sales\Buyer\Application\Uniqueness\Exception\BuyerEmailAlreadyTakenException;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
@@ -36,16 +36,16 @@ final class RegisterBuyerHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenEmailAlreadyTaken(): void
+    public function itFailsWhenEmailAlreadyInUse(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
         $existingId = Uuid::uuid7()->toString();
         $email = BuyerBuilder::sample('email')->value;
-        $this->service(UniqueValueRegistryInterface::class)->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email, $existingId);
+        $this->service(UniquenessRegistryInterface::class)->claim(UniqueKey::for(BuyerUniqueKey::EMAIL), $email, $existingId);
 
         // Then
-        $this->expectException(BuyerEmailAlreadyTakenException::class);
+        $this->expectException(BuyerEmailAlreadyInUseException::class);
 
         // When
         $this->dispatch(new RegisterBuyer($identityId, $email));

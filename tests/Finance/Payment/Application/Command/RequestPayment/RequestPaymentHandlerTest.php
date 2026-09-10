@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Command\RequestPayment;
 
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Application\Uniqueness\Exception\PaymentAlreadyRequestedException;
-use Finance\Payment\Application\Uniqueness\Exception\PaymentReferenceAlreadyTakenException;
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     private PaymentFinderInterface $finder;
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(PaymentFinderInterface::class);
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -53,15 +53,15 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenReferenceAlreadyTaken(): void
+    public function itFailsWhenReferenceAlreadyInUse(): void
     {
         // Given
         $cartId = PaymentBuilder::sample('cartId');
         $reference = PaymentBuilder::sample('reference')->value;
-        $this->uniqueValues->reserve(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
+        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
         // Then
-        $this->expectException(PaymentReferenceAlreadyTakenException::class);
+        $this->expectException(PaymentReferenceAlreadyInUseException::class);
 
         // When
         $this->dispatch(new RequestPayment(
@@ -74,15 +74,15 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyRequestedForCart(): void
+    public function itFailsWhenAlreadyClaimedForCart(): void
     {
         // Given
         $cartId = PaymentBuilder::sample('cartId');
-        $this->uniqueValues->reserve(UniqueKey::for(PaymentUniqueKey::CART), $cartId, Uuid::uuid7()->toString());
+        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::CART), $cartId, Uuid::uuid7()->toString());
         $reference = PaymentBuilder::sample('reference')->value;
 
         // Then
-        $this->expectException(PaymentAlreadyRequestedException::class);
+        $this->expectException(PaymentAlreadyClaimedException::class);
 
         // When
         $this->dispatch(new RequestPayment(

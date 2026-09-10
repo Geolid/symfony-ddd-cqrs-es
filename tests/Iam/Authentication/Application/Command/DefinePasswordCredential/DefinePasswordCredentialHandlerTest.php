@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
+use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Uniqueness\Exception\PasswordCredentialLoginAlreadyTakenException;
-use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
+use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
@@ -17,7 +17,7 @@ use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -71,18 +71,18 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itFailsWhenLoginAlreadyTaken(): void
+    public function itFailsWhenLoginAlreadyInUse(): void
     {
         // Given
         $login = PasswordCredentialBuilder::sample('login')->value;
-        $this->service(UniqueValueRegistryInterface::class)->reserve(
+        $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
             $login,
             PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString(),
         );
 
         // Then
-        $this->expectException(PasswordCredentialLoginAlreadyTakenException::class);
+        $this->expectException(PasswordCredentialLoginAlreadyInUseException::class);
 
         // When
         $this->dispatch(new DefinePasswordCredential(

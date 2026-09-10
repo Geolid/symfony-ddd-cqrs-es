@@ -7,26 +7,26 @@ namespace Finance\Tests\Payment\Application\Command\AbandonPayment;
 use Finance\Payment\Application\Command\AbandonPayment\AbandonPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     private PaymentFinderInterface $finder;
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(PaymentFinderInterface::class);
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
         $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
-        $this->uniqueValues->reserve($cartKey, $paymentBuilder['cartId'], $orderPayment->id->toString());
+        $this->uniqueValues->claim($cartKey, $paymentBuilder['cartId'], $orderPayment->id->toString());
 
         // When
         $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
@@ -45,7 +45,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofReference($paymentBuilder['reference']->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
-        self::assertFalse($this->uniqueValues->exists($cartKey, $paymentBuilder['cartId']));
+        self::assertFalse($this->uniqueValues->isClaimed($cartKey, $paymentBuilder['cartId']));
     }
 
     #[Test]

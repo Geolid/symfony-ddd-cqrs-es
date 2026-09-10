@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Buyer\Application\Validation;
 
 use PHPUnit\Framework\Attributes\Test;
-use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
+use Sales\Buyer\Application\BuyerUniqueKey;
 use Sales\Buyer\Application\Validation\ValidUniqueBuyerEmail;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
-use Shared\Tests\Support\Double\FakeUniqueValueRegistry;
+use Shared\Tests\Support\Double\FakeUniquenessRegistry;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 use Symfony\Component\Validator\Validation;
@@ -21,12 +21,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidUniqueBuyerEmailTest extends CompoundConstraintTestCase
 {
-    private FakeUniqueValueRegistry $registry;
+    private FakeUniquenessRegistry $registry;
 
     protected function setUp(): void
     {
         // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
-        $this->registry = new FakeUniqueValueRegistry();
+        $this->registry = new FakeUniquenessRegistry();
 
         parent::setUp();
     }
@@ -45,7 +45,7 @@ final class ValidUniqueBuyerEmailTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');
+        $this->registry->claim(UniqueKey::for(BuyerUniqueKey::EMAIL), 'buyer@example.com', 'owner-id');
 
         // When
         $this->validateValue('buyer@example.com');

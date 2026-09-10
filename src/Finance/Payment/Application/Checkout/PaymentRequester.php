@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Checkout;
 
+use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Application\Uniqueness\Exception\PaymentAlreadyRequestedException;
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class PaymentRequester implements PaymentRequesterInterface
 {
     public function __construct(
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private PaymentFinderInterface $paymentFinder,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
@@ -34,7 +34,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
     {
         $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
 
-        if ($this->uniqueValues->exists($cartKey, $cartId)) {
+        if ($this->uniqueValues->isClaimed($cartKey, $cartId)) {
             return $this->paymentFinder->ofCartId($cartId)->checkoutUrl;
         }
 
@@ -48,7 +48,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
                 reference: $session->reference,
                 checkoutUrl: $session->checkoutUrl,
             ));
-        } catch (PaymentAlreadyRequestedException) {
+        } catch (PaymentAlreadyClaimedException) {
             return $this->paymentFinder->ofCartId($cartId)->checkoutUrl;
         }
 

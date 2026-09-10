@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Buyer\Application\Validation;
 
-use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
+use Sales\Buyer\Application\BuyerUniqueKey;
 use Shared\Application\Validation\ValidUniqueValue;
 use Symfony\Component\Validator\Constraints\Compound;
 

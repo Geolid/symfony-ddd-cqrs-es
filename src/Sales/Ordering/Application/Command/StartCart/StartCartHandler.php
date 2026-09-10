@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\StartCart;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Application\Uniqueness\CartUniqueKey;
-use Sales\Ordering\Application\Uniqueness\Exception\CartAlreadyActiveException;
+use Sales\Ordering\Application\CartUniqueKey;
+use Sales\Ordering\Application\Command\StartCart\Exception\CartAlreadyActiveException;
 use Sales\Ordering\Domain\Cart\Cart;
 use Sales\Ordering\Domain\Cart\Exception\CartAlreadyExistsException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Cart\ValueObject\CartId;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
 final readonly class StartCartHandler
 {
     public function __construct(
         private CartRepositoryInterface $repository,
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
@@ -35,8 +35,8 @@ final readonly class StartCartHandler
         $id = CartId::fromString($command->id);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(CartUniqueKey::BUYER), $command->buyerId, $command->id);
-        } catch (UniqueValueAlreadyTakenException $e) {
+            $this->uniqueValues->claim(UniqueKey::for(CartUniqueKey::BUYER), $command->buyerId, $command->id);
+        } catch (UniquenessViolatedException $e) {
             throw CartAlreadyActiveException::forBuyer($command->buyerId, $e);
         }
 

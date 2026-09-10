@@ -8,15 +8,15 @@ use Finance\Payment\Application\Checkout\PaymentRequester;
 use Finance\Payment\Application\Checkout\PaymentSession;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Application\Uniqueness\PaymentUniqueKey;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -28,14 +28,14 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     private PaymentRequester $service;
     private PaymentFinderInterface $finder;
     private PostalAddress $billingAddress;
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
         $this->finder = $this->service(PaymentFinderInterface::class);
         $this->service = new PaymentRequester(
             $this->uniqueValues,
@@ -68,13 +68,13 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReturnsExistingWhenAlreadyRequested(): void
+    public function itReturnsExistingWhenAlreadyClaimed(): void
     {
         // Given
         $paymentBuilder = PaymentBuilder::new();
         $payment = $paymentBuilder->create();
         $this->store($payment);
-        $this->uniqueValues->reserve(
+        $this->uniqueValues->claim(
             UniqueKey::for(PaymentUniqueKey::CART),
             $paymentBuilder['cartId'],
             $payment->id->toString(),

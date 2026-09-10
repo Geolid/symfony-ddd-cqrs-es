@@ -6,24 +6,24 @@ namespace Sales\Tests\Ordering\Application\Command\ConvertCart;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Application\CartUniqueKey;
 use Sales\Ordering\Application\Command\ConvertCart\ConvertCart;
-use Sales\Ordering\Application\Uniqueness\CartUniqueKey;
 use Sales\Ordering\Domain\Cart\Event\CartConverted;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ConvertCartHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class ConvertCartHandlerTest extends AbstractIntegrationTestCase
         $cart = $cartBuilder->create();
         $this->store($cart);
         $buyerKey = UniqueKey::for(CartUniqueKey::BUYER);
-        $this->uniqueValues->reserve($buyerKey, $cartBuilder['buyerId'], $cart->id->toString());
+        $this->uniqueValues->claim($buyerKey, $cartBuilder['buyerId'], $cart->id->toString());
 
         // When
         $this->dispatch(new ConvertCart($cart->id->toString()));
@@ -42,7 +42,7 @@ final class ConvertCartHandlerTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CartConverted::class);
         self::assertSame($cart->id->toString(), $event->id);
-        self::assertFalse($this->uniqueValues->exists($buyerKey, $cartBuilder['buyerId']));
+        self::assertFalse($this->uniqueValues->isClaimed($buyerKey, $cartBuilder['buyerId']));
     }
 
     #[Test]

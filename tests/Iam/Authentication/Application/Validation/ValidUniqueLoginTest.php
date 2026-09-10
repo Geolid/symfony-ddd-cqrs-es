@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Validation;
 
-use Iam\Authentication\Application\Uniqueness\PasswordCredentialUniqueKey;
+use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Application\Validation\ValidUniqueLogin;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
-use Shared\Tests\Support\Double\FakeUniqueValueRegistry;
+use Shared\Tests\Support\Double\FakeUniquenessRegistry;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 use Symfony\Component\Validator\Validation;
@@ -21,12 +21,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 {
-    private FakeUniqueValueRegistry $registry;
+    private FakeUniquenessRegistry $registry;
 
     protected function setUp(): void
     {
         // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
-        $this->registry = new FakeUniqueValueRegistry();
+        $this->registry = new FakeUniquenessRegistry();
 
         parent::setUp();
     }
@@ -45,7 +45,7 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->reserve(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'john.doe', 'owner-id');
+        $this->registry->claim(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'john.doe', 'owner-id');
 
         // When
         $this->validateValue('john.doe');

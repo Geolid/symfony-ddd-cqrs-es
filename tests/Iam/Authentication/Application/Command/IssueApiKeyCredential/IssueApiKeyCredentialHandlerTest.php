@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
 
+use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
-use Iam\Authentication\Application\Uniqueness\Exception\ApiKeyCredentialLabelAlreadyTakenException;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -50,20 +50,20 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenLabelAlreadyTaken(): void
+    public function itFailsWhenLabelAlreadyInUse(): void
     {
         // Given
         $identityId = ApiKeyCredentialBuilder::sample('identityId');
 
         $label = ApiKeyCredentialBuilder::sample('label')->value;
-        $this->service(UniqueValueRegistryInterface::class)->reserve(
+        $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
             $label,
             Uuid::uuid7()->toString(),
         );
 
         // Then
-        $this->expectException(ApiKeyCredentialLabelAlreadyTakenException::class);
+        $this->expectException(ApiKeyCredentialLabelAlreadyInUseException::class);
 
         // When
         $this->dispatch(new IssueApiKeyCredential(

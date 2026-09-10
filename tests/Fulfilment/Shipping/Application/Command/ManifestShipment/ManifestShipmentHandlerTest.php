@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Command\ManifestShipment;
 
+use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Shipping\Application\Uniqueness\Exception\ShipmentTrackingNumberAlreadyTakenException;
-use Fulfilment\Shipping\Application\Uniqueness\ShipmentUniqueKey;
+use Fulfilment\Shipping\Application\ShipmentUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     private ShipmentFinderInterface $finder;
 
@@ -28,7 +28,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
         $this->finder = $this->service(ShipmentFinderInterface::class);
     }
 
@@ -55,7 +55,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
+        $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
@@ -107,16 +107,16 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenTrackingNumberAlreadyTaken(): void
+    public function itFailsWhenTrackingNumberAlreadyInUse(): void
     {
         // Given
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
-        $this->uniqueValues->reserve(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
+        $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
 
         // Then
-        $this->expectException(ShipmentTrackingNumberAlreadyTakenException::class);
+        $this->expectException(ShipmentTrackingNumberAlreadyInUseException::class);
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));

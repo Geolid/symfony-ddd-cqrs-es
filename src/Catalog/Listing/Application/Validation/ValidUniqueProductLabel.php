@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Validation;
 
-use Catalog\Listing\Application\Uniqueness\ProductUniqueKey;
+use Catalog\Listing\Application\ProductUniqueKey;
 use Shared\Application\Validation\ValidUniqueValue;
 use Symfony\Component\Validator\Constraints\Compound;
 

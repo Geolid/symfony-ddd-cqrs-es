@@ -5,30 +5,30 @@ declare(strict_types=1);
 namespace Sales\Buyer\Application\Command\RegisterBuyer;
 
 use Psr\Clock\ClockInterface;
-use Sales\Buyer\Application\Uniqueness\BuyerUniqueKey;
-use Sales\Buyer\Application\Uniqueness\Exception\BuyerEmailAlreadyTakenException;
+use Sales\Buyer\Application\BuyerUniqueKey;
+use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyInUseException;
 use Sales\Buyer\Domain\Buyer;
 use Sales\Buyer\Domain\Exception\BuyerAlreadyExistsException;
 use Sales\Buyer\Domain\Repository\BuyerRepositoryInterface;
 use Sales\Buyer\Domain\ValueObject\BuyerId;
 use Sales\Buyer\Domain\ValueObject\Email;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\Uniqueness\Exception\UniqueValueAlreadyTakenException;
+use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
 final readonly class RegisterBuyerHandler
 {
     public function __construct(
         private BuyerRepositoryInterface $repository,
-        private UniqueValueRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueValues,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws BuyerEmailAlreadyTakenException
+     * @throws BuyerEmailAlreadyInUseException
      * @throws BuyerAlreadyExistsException
      */
     public function __invoke(RegisterBuyer $command): void
@@ -37,9 +37,9 @@ final readonly class RegisterBuyerHandler
         $id = BuyerId::forIdentity($command->identityId);
 
         try {
-            $this->uniqueValues->reserve(UniqueKey::for(BuyerUniqueKey::EMAIL), $email->value, $id->toString());
-        } catch (UniqueValueAlreadyTakenException $e) {
-            throw BuyerEmailAlreadyTakenException::forEmail($email->value, $e);
+            $this->uniqueValues->claim(UniqueKey::for(BuyerUniqueKey::EMAIL), $email->value, $id->toString());
+        } catch (UniquenessViolatedException $e) {
+            throw BuyerEmailAlreadyInUseException::forEmail($email->value, $e);
         }
 
         $buyer = Buyer::register(

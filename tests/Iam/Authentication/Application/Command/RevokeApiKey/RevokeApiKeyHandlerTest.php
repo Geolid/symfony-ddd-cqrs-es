@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\RevokeApiKey;
 
+use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Application\Command\RevokeApiKey\RevokeApiKey;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Application\Uniqueness\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
@@ -14,20 +14,20 @@ use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
     private ApiKeyHasherInterface $hasher;
-    private UniqueValueRegistryInterface $registry;
+    private UniquenessRegistryInterface $registry;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->hasher = $this->service(ApiKeyHasherInterface::class);
-        $this->registry = $this->service(UniqueValueRegistryInterface::class);
+        $this->registry = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -38,11 +38,11 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $credential = $builder->create();
 
         $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $builder['identityId']);
-        $this->registry->reserve($labelKey, $builder['label']->value, $credential->id->toString());
+        $this->registry->claim($labelKey, $builder['label']->value, $credential->id->toString());
 
         $otherBuilder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->withIdentityId($builder['identityId']);
         $otherCredential = $otherBuilder->create();
-        $this->registry->reserve($labelKey, $otherBuilder['label']->value, $otherCredential->id->toString());
+        $this->registry->claim($labelKey, $otherBuilder['label']->value, $otherCredential->id->toString());
 
         $this->store($credential, $otherCredential);
 
@@ -53,8 +53,8 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($builder['keyId']->value);
         self::assertTrue($result->revoked);
 
-        self::assertFalse($this->registry->exists($labelKey, $builder['label']->value));
-        self::assertTrue($this->registry->exists($labelKey, $otherBuilder['label']->value));
+        self::assertFalse($this->registry->isClaimed($labelKey, $builder['label']->value));
+        self::assertTrue($this->registry->isClaimed($labelKey, $otherBuilder['label']->value));
     }
 
     #[Test]

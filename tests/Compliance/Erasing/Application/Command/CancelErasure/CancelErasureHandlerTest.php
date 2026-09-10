@@ -6,27 +6,27 @@ namespace Compliance\Tests\Erasing\Application\Command\CancelErasure;
 
 use Compliance\Erasing\Application\Command\CancelErasure\CancelErasure;
 use Compliance\Erasing\Application\ErasureRequestStatus;
+use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
-use Compliance\Erasing\Application\Uniqueness\ErasureUniqueKey;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniqueValueRegistryInterface;
+use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
 {
     private ErasureFinderInterface $finder;
-    private UniqueValueRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueValues;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(ErasureFinderInterface::class);
-        $this->uniqueValues = $this->service(UniqueValueRegistryInterface::class);
+        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $erasure = $builder->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
-        $this->uniqueValues->reserve($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueValues->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
         $this->dispatch(new CancelErasure($erasure->id->toString()));
@@ -45,7 +45,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
-        self::assertFalse($this->uniqueValues->exists($identityKey, $builder['identityId']));
+        self::assertFalse($this->uniqueValues->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]
@@ -56,7 +56,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $erasure = $builder->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
-        $this->uniqueValues->reserve($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueValues->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
         $this->dispatch(new CancelErasure($erasure->id->toString()));
@@ -64,7 +64,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::APPROVED, $result->status);
-        self::assertTrue($this->uniqueValues->exists($identityKey, $builder['identityId']));
+        self::assertTrue($this->uniqueValues->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]
