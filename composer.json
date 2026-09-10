@@ -93,6 +93,7 @@
       "Iam\\": "src/Iam/",
       "Sales\\": "src/Sales/",
       "Shared\\": "src/Shared/",
+      "Shopping\\": "src/Shopping/",
       "Ui\\": "ui/src/"
     }
   },
@@ -104,6 +105,7 @@
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
       "Iam\\Tests\\": "tests/Iam/",
       "Sales\\Tests\\": "tests/Sales/",
+      "Shopping\\Tests\\": "tests/Shopping/",
       "Shared\\Tests\\": "tests/Shared/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",

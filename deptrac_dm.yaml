@@ -35,9 +35,9 @@ deptrac:
 
   # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: through its own exposed surface only).
   ruleset:
-    Web:     [ Sales.Buyer, Sales.Ordering, Catalog.Listing, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors, Ui ]
+    Web:     [ Shopping.Checkout, Sales.Ordering, Catalog.Listing, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors, Ui ]
     Api:     [ Catalog.Listing, Iam.Identity, Iam.Authentication, Shared, Vendors ]
-    Cli:     [ Sales.Buyer, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
+    Cli:     [ Shopping.Checkout, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Webhook: [ Fulfilment.Shipping, Sales.Ordering, Finance.Payment, Shared, Vendors ]
     EsAdmin: [ Shared, Vendors ]
     # A Twig Component is presentation-only — framework/vendor glue, never a BC.

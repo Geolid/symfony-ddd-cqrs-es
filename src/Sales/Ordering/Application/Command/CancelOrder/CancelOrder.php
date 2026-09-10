@@ -10,7 +10,7 @@ final readonly class CancelOrder implements CommandInterface
 {
     public function __construct(
         public string $id,
-        public string $buyerId,
+        public string $shopperId,
     ) {
     }
 }

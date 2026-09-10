@@ -35,12 +35,12 @@ final readonly class StartCartHandler
         $id = CartId::fromString($command->id);
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(CartUniqueKey::BUYER), $command->buyerId, $command->id);
+            $this->uniqueValues->claim(UniqueKey::for(CartUniqueKey::SHOPPER), $command->shopperId, $command->id);
         } catch (UniquenessViolatedException $e) {
-            throw CartAlreadyActiveException::forBuyer($command->buyerId, $e);
+            throw CartAlreadyActiveException::forShopper($command->shopperId, $e);
         }
 
-        $cart = Cart::start($id, $command->buyerId, $this->clock->now());
+        $cart = Cart::start($id, $command->shopperId, $this->clock->now());
 
         try {
             $this->repository->save($cart);

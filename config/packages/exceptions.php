@@ -23,14 +23,13 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Sales\Buyer\Application\Command\RegisterBuyer\Exception\BuyerEmailAlreadyInUseException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerAddressesNotCompletedException as CheckoutBuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException as CheckoutBuyerErasureRequestedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException as CheckoutBuyerNotRegisteredException;
 use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\BuyerNotRegisteredException;
-use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherBuyerException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperAddressesNotCompletedException as CheckoutShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperErasureRequestedException as CheckoutShopperErasureRequestedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperNotRegisteredException as CheckoutShopperNotRegisteredException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -38,6 +37,7 @@ use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
+use Shopping\Checkout\Application\Command\RegisterShopper\Exception\ShopperEmailAlreadyInUseException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
 
@@ -66,15 +66,17 @@ return static function (ContainerConfigurator $container): void {
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
+            // Shopping
+            ShopperEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+
             // Sales
-            BuyerEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            CheckoutBuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            CheckoutBuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
-            CheckoutBuyerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutShopperErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
             CartOutdatedException::class => ['log_level' => 'info', 'status_code' => 422],
-            BuyerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            BuyerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderBelongsToAnotherBuyerException::class => ['log_level' => 'info', 'status_code' => 403],
+            ShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            ShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            OrderBelongsToAnotherShopperException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 

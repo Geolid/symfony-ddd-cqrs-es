@@ -23,7 +23,7 @@ final readonly class OrderConfirmed
     public function __construct(
         #[DataSubjectId]
         public string $id,
-        public string $buyerId,
+        public string $shopperId,
         public string $paymentId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([

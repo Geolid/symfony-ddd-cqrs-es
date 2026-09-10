@@ -9,20 +9,20 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Checkout\Checkout;
-use Sales\Ordering\Application\Checkout\Exception\BuyerAddressesNotCompletedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerErasureRequestedException;
-use Sales\Ordering\Application\Checkout\Exception\BuyerNotRegisteredException;
 use Sales\Ordering\Application\Checkout\Exception\CartOutdatedException;
-use Sales\Ordering\Application\Finder\Buyer\BuyerFinderInterface;
+use Sales\Ordering\Application\Checkout\Exception\ShopperAddressesNotCompletedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperErasureRequestedException;
+use Sales\Ordering\Application\Checkout\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Application\Finder\ListedProduct\ListedProductFinderInterface;
+use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
 use Sales\Ordering\Domain\Cart\Event\CartCheckedOut;
 use Sales\Ordering\Domain\Cart\Exception\CartNotFoundException;
 use Sales\Ordering\Domain\Cart\Repository\CartRepositoryInterface;
 use Sales\Ordering\Domain\Shared\ValueObject\Product;
-use Sales\Tests\Buyer\Support\Builder\BuyerBuilder;
 use Sales\Tests\Ordering\Support\Builder\CartBuilder;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
+use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CheckoutTest extends AbstractIntegrationTestCase
@@ -35,7 +35,7 @@ final class CheckoutTest extends AbstractIntegrationTestCase
 
         $this->service = new Checkout(
             $this->service(CartRepositoryInterface::class),
-            $this->service(BuyerFinderInterface::class),
+            $this->service(ShopperFinderInterface::class),
             $this->service(ListedProductFinderInterface::class),
             $this->service(ClockInterface::class),
         );
@@ -47,13 +47,13 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new();
         $catalogProduct = $productBuilder->create();
-        $buyer = BuyerBuilder::new()->billingAddressDefined()->create();
-        $cartBuilder = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded(
+        $shopper = ShopperBuilder::new()->billingAddressDefined()->create();
+        $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded(
             product: Product::of($catalogProduct->id->toString(), $productBuilder['label'], $productBuilder['unitPrice']),
             quantity: CartBuilder::sample('quantity'),
         );
         $cart = $cartBuilder->create();
-        $this->store($cart, $catalogProduct, $buyer);
+        $this->store($cart, $catalogProduct, $shopper);
 
         // When
         $result = $this->service->checkout($cart->id->toString());
@@ -61,8 +61,8 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($cart->id->toString(), $result->cartId);
         self::assertSame($cartBuilder['quantity']->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
-        self::assertNotNull($buyer->billingAddress);
-        self::assertSame(PostalAddressMapper::toArray($buyer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
+        self::assertNotNull($shopper->billingAddress);
+        self::assertSame(PostalAddressMapper::toArray($shopper->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
         $event = $this->publishedEventOf(CartCheckedOut::class);
         self::assertSame($cart->id->toString(), $event->id);
     }
@@ -78,44 +78,44 @@ final class CheckoutTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenBuyerNotRegistered(): void
+    public function itFailsWhenShopperNotRegistered(): void
     {
         // Given
         $cart = CartBuilder::new()->lineAdded()->create();
         $this->store($cart);
 
         // Then
-        $this->expectException(BuyerNotRegisteredException::class);
+        $this->expectException(ShopperNotRegisteredException::class);
 
         // When
         $this->service->checkout($cart->id->toString());
     }
 
     #[Test]
-    public function itFailsWhenBuyerErasureRequested(): void
+    public function itFailsWhenShopperErasureRequested(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->billingAddressDefined()->erasureRequested()->create();
-        $cart = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded()->create();
-        $this->store($cart, $buyer);
+        $shopper = ShopperBuilder::new()->billingAddressDefined()->erasureRequested()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $this->store($cart, $shopper);
 
         // Then
-        $this->expectException(BuyerErasureRequestedException::class);
+        $this->expectException(ShopperErasureRequestedException::class);
 
         // When
         $this->service->checkout($cart->id->toString());
     }
 
     #[Test]
-    public function itFailsWhenBuyerAddressesNotCompleted(): void
+    public function itFailsWhenShopperAddressesNotCompleted(): void
     {
         // Given
-        $buyer = BuyerBuilder::new()->create();
-        $cart = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded()->create();
-        $this->store($cart, $buyer);
+        $shopper = ShopperBuilder::new()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $this->store($cart, $shopper);
 
         // Then
-        $this->expectException(BuyerAddressesNotCompletedException::class);
+        $this->expectException(ShopperAddressesNotCompletedException::class);
 
         // When
         $this->service->checkout($cart->id->toString());
@@ -127,10 +127,10 @@ final class CheckoutTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new();
         $catalogProduct = $productBuilder->create();
-        $buyer = BuyerBuilder::new()->billingAddressDefined()->create();
+        $shopper = ShopperBuilder::new()->billingAddressDefined()->create();
         $staleProduct = Product::of($catalogProduct->id->toString(), $productBuilder['label'], Money::fromCents($productBuilder['unitPrice']->cents + 100));
-        $cart = CartBuilder::new()->withBuyerId($buyer->id->toString())->lineAdded(product: $staleProduct)->create();
-        $this->store($cart, $catalogProduct, $buyer);
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded(product: $staleProduct)->create();
+        $this->store($cart, $catalogProduct, $shopper);
 
         // Then
         $this->expectException(CartOutdatedException::class);

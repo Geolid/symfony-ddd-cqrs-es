@@ -29,7 +29,7 @@ use Shared\Domain\ValueObject\Money;
 final class CartTest extends AggregateRootTestCase
 {
     private CartId $id;
-    private string $buyerId;
+    private string $shopperId;
     private \DateTimeImmutable $startedAt;
     private Product $product;
     private Quantity $quantity;
@@ -45,7 +45,7 @@ final class CartTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = CartId::fromString(Uuid::uuid7()->toString());
-        $this->buyerId = CartBuilder::sample('buyerId');
+        $this->shopperId = CartBuilder::sample('shopperId');
         $this->startedAt = CartBuilder::sample('startedAt');
         $this->product = CartBuilder::sample('product');
         $this->quantity = CartBuilder::sample('quantity');
@@ -62,7 +62,7 @@ final class CartTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Cart => Cart::start($this->id, $this->buyerId, $this->startedAt))
+            ->when(fn (): Cart => Cart::start($this->id, $this->shopperId, $this->startedAt))
             ->then($this->started());
     }
 
@@ -249,7 +249,7 @@ final class CartTest extends AggregateRootTestCase
 
     private function started(): CartStarted
     {
-        return new CartStarted($this->id->toString(), $this->buyerId, $this->startedAt);
+        return new CartStarted($this->id->toString(), $this->shopperId, $this->startedAt);
     }
 
     private function lineAdded(): CartLineAdded
@@ -269,7 +269,7 @@ final class CartTest extends AggregateRootTestCase
 
     private function checkedOut(): CartCheckedOut
     {
-        return new CartCheckedOut($this->id->toString(), $this->buyerId, $this->totalAmount()->cents, $this->checkedOutAt);
+        return new CartCheckedOut($this->id->toString(), $this->shopperId, $this->totalAmount()->cents, $this->checkedOutAt);
     }
 
     private function checkoutAbandoned(): CartCheckoutAbandoned

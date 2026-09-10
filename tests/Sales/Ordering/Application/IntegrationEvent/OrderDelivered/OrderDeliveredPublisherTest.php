@@ -26,7 +26,7 @@ final class OrderDeliveredPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(OrderDeliveredIntegrationEvent::class);
         $shippingAddress = PostalAddressMapper::toArray($order->shippingAddress);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($builder['buyerId'], $event->buyerId);
+        self::assertSame($builder['shopperId'], $event->shopperId);
         self::assertSame($shippingAddress, $event->shippingAddress);
         self::assertSame($builder['deliveredAt']->format(\DateTimeInterface::ATOM), $event->deliveredAt->format(\DateTimeInterface::ATOM));
     }

@@ -44,17 +44,17 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) CartId $id;
-    public private(set) string $buyerId;
+    public private(set) string $shopperId;
     private CartState $operationalState;
     /** @var array<string, Line> */
     private array $lines = [];
 
-    public static function start(CartId $id, string $buyerId, \DateTimeImmutable $startedAt): self
+    public static function start(CartId $id, string $shopperId, \DateTimeImmutable $startedAt): self
     {
         $self = new self();
         $self->recordThat(new CartStarted(
             id: $id->toString(),
-            buyerId: $buyerId,
+            shopperId: $shopperId,
             startedAt: $startedAt,
         ));
 
@@ -141,7 +141,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new CartCheckedOut(
             id: $this->id->toString(),
-            buyerId: $this->buyerId,
+            shopperId: $this->shopperId,
             totalAmountInCents: $this->totalAmountInCents(),
             checkedOutAt: $now,
         ));
@@ -214,7 +214,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     private function applyStarted(CartStarted $event): void
     {
         $this->id = CartId::fromString($event->id);
-        $this->buyerId = $event->buyerId;
+        $this->shopperId = $event->shopperId;
         $this->operationalState = CartState::ACTIVE;
     }
 

@@ -27,7 +27,7 @@ final readonly class RequestShipmentHandler
         $shipment = Shipment::request(
             id: $id,
             orderId: $command->orderId,
-            buyerId: $command->buyerId,
+            shopperId: $command->shopperId,
             origin: PostalAddressMapper::fromArray($command->origin),
             destination: PostalAddressMapper::fromArray($command->destination),
             createdAt: $this->clock->now(),

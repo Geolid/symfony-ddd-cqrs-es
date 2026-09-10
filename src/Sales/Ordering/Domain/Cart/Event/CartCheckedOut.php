@@ -11,7 +11,7 @@ final readonly class CartCheckedOut
 {
     public function __construct(
         public string $id,
-        public string $buyerId,
+        public string $shopperId,
         public int $totalAmountInCents,
         public \DateTimeImmutable $checkedOutAt,
     ) {

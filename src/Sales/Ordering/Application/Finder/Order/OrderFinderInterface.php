@@ -17,5 +17,5 @@ interface OrderFinderInterface extends IterableFinderInterface
      */
     public function ofId(string $id): OrderResult;
 
-    public function byBuyer(string $buyerId): static;
+    public function byShopper(string $shopperId): static;
 }

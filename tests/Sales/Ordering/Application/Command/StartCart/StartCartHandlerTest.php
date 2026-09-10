@@ -28,28 +28,28 @@ final class StartCartHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $buyerId = Uuid::uuid7()->toString();
+        $shopperId = Uuid::uuid7()->toString();
 
         // When
-        $this->dispatch(new StartCart($id, $buyerId));
+        $this->dispatch(new StartCart($id, $shopperId));
 
         // Then
         $cart = $this->repository->load(CartId::fromString($id));
         self::assertSame($id, $cart->id->toString());
-        self::assertSame($buyerId, $cart->buyerId);
+        self::assertSame($shopperId, $cart->shopperId);
     }
 
     #[Test]
-    public function itFailsWhenBuyerAlreadyActive(): void
+    public function itFailsWhenShopperAlreadyActive(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
-        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $buyerId));
+        $shopperId = Uuid::uuid7()->toString();
+        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $shopperId));
 
         // Then
         $this->expectException(CartAlreadyActiveException::class);
 
         // When
-        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $buyerId));
+        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $shopperId));
     }
 }

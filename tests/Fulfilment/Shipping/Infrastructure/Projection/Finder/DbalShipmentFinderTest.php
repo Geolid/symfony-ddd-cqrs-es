@@ -39,7 +39,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
         self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
         self::assertSame($builder['destination']->recipientName, $result->destination->recipientName);
-        self::assertSame($builder['buyerId'], $result->buyerId);
+        self::assertSame($builder['shopperId'], $result->shopperId);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
@@ -104,16 +104,16 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByBuyer(): void
+    public function itFiltersByShopper(): void
     {
         // Given
-        $buyerId = Uuid::uuid7()->toString();
+        $shopperId = Uuid::uuid7()->toString();
         $other = ShipmentBuilder::new()->create();
-        $shipment = ShipmentBuilder::new()->withBuyerId($buyerId)->create();
+        $shipment = ShipmentBuilder::new()->withShopperId($shopperId)->create();
         $this->store($other, $shipment);
 
         // When
-        $results = iterator_to_array($this->finder()->byBuyer($buyerId));
+        $results = iterator_to_array($this->finder()->byShopper($shopperId));
 
         // Then
         self::assertCount(1, $results);

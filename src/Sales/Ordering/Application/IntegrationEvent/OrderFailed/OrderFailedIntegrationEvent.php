@@ -12,7 +12,7 @@ final readonly class OrderFailedIntegrationEvent implements IntegrationEventInte
 {
     public function __construct(
         public string $orderId,
-        public string $buyerId,
+        public string $shopperId,
         public \DateTimeImmutable $failedAt,
     ) {
     }

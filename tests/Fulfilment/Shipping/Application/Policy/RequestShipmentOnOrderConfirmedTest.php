@@ -24,7 +24,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $buyerId = Uuid::uuid7()->toString();
+        $shopperId = Uuid::uuid7()->toString();
         $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
         $warehouseAddressProvider = $this->service(WarehouseAddressProvider::class);
 
@@ -39,7 +39,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // When
         $this->trigger(RequestShipmentOnOrderConfirmed::class, new OrderConfirmedIntegrationEvent(
             orderId: $orderId,
-            buyerId: $buyerId,
+            shopperId: $shopperId,
             paymentId: Uuid::uuid7()->toString(),
             shippingAddress: $destinationData,
             confirmedAt: Clock::get()->now(),
@@ -50,7 +50,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         self::assertTrue(Uuid::isValid($dispatched->id));
         $originAddress = PostalAddressMapper::toArray($warehouseAddressProvider->get());
         self::assertSame($orderId, $dispatched->orderId);
-        self::assertSame($buyerId, $dispatched->buyerId);
+        self::assertSame($shopperId, $dispatched->shopperId);
         self::assertSame($originAddress, $dispatched->origin);
         self::assertSame($destinationData, $dispatched->destination);
     }
