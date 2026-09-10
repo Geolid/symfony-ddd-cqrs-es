@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Policy;
 use Shared\Infrastructure\Processor;
@@ -54,9 +52,5 @@ return static function (ContainerConfigurator $container): void {
                 ],
             ],
         ]);
-
-        $container->services()
-            ->set(InMemoryCipherKeyStore::class)
-            ->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
     }
 };
