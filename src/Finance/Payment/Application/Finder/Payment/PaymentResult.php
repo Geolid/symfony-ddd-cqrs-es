@@ -10,7 +10,7 @@ final readonly class PaymentResult
 {
     public function __construct(
         public string $id,
-        public string $cartId,
+        public string $checkoutSessionId,
         public ?string $orderId,
         public int $amountInCents,
         public string $reference,

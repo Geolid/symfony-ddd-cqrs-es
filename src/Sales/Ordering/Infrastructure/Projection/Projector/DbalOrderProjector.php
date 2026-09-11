@@ -19,8 +19,10 @@ use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Shared\Application\ErasureStatus;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 
 #[Projector('sales.ordering.project_orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector
@@ -36,12 +38,14 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'id' => $event->id,
                 'shopper_id' => $event->shopperId,
                 'payment_id' => $event->paymentId,
+                'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
+                'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
                 'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => OrderStatus::CONFIRMED->value,
                 'confirmed_at' => $event->confirmedAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
-            ['confirmed_at' => Types::DATETIME_IMMUTABLE],
+            ['confirmed_at' => Types::DATETIME_IMMUTABLE, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
         );
     }
 
@@ -144,6 +148,8 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('shopper_id', Types::STRING, ['length' => 64]);
         $table->addColumn('payment_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('shipping_address', Types::JSON);
+        $table->addColumn('billing_address', Types::JSON);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE);

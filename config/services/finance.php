@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Finance\Payment\Application\Checkout\PaymentRequester;
-use Finance\Payment\Application\Checkout\PaymentRequesterInterface;
 use Finance\Payment\Application\Query\ListPaymentsPastReconciliationThreshold\ListPaymentsPastReconciliationThresholdHandler;
 use Finance\Payment\Application\Reconciliation\PaymentReconciler;
 use Finance\Payment\Application\Reconciliation\PaymentStatusReconcilerInterface;
+use Finance\Payment\Application\Requesting\PaymentRequester;
+use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;

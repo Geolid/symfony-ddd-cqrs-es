@@ -12,7 +12,7 @@ final readonly class PaymentAuthorizedIntegrationEvent implements IntegrationEve
 {
     public function __construct(
         public string $paymentId,
-        public string $cartId,
+        public string $checkoutSessionId,
         public \DateTimeImmutable $authorizedAt,
     ) {
     }

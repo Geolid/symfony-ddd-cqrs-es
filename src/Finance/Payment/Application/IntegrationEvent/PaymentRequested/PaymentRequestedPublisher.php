@@ -22,7 +22,7 @@ final readonly class PaymentRequestedPublisher
     {
         $this->publisher->publish(Payment::class, $event->id, new PaymentRequestedIntegrationEvent(
             paymentId: $event->id,
-            cartId: $event->cartId,
+            checkoutSessionId: $event->checkoutSessionId,
             amountInCents: $event->amount->cents,
             reference: $event->reference->value,
             checkoutUrl: $event->checkoutUrl,

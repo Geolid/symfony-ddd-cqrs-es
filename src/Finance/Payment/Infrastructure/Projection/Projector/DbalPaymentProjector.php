@@ -33,7 +33,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id,
-                'cart_id' => $event->cartId,
+                'checkout_session_id' => $event->checkoutSessionId,
                 'order_id' => null,
                 'amount_in_cents' => $event->amount->cents,
                 'reference' => $event->reference->value,
@@ -134,7 +134,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('checkout_session_id', Types::STRING, ['length' => 36]);
         $table->addColumn('order_id', Types::STRING, ['length' => 36, 'notnull' => false, 'default' => null]);
         $table->addColumn('amount_in_cents', Types::INTEGER);
         $table->addColumn('reference', Types::STRING, ['length' => PaymentReference::MAX_LENGTH]);
@@ -151,7 +151,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['cart_id'], 'finance_payment_cart_id_idx');
+        $table->addIndex(['checkout_session_id'], 'finance_payment_checkout_session_id_idx');
         $table->addIndex(['order_id'], 'finance_payment_order_id_idx');
         $table->addIndex(['reference'], 'finance_payment_reference_idx');
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\PSP;
 
-use Finance\Payment\Application\Checkout\PaymentSession;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
+use Finance\Payment\Application\Requesting\PaymentSession;
 use Shared\Domain\ValueObject\PostalAddress;
 
 interface PaymentGatewayInterface
@@ -13,7 +13,7 @@ interface PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $cartId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession;
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession;
 
     /**
      * @throws PaymentGatewayException

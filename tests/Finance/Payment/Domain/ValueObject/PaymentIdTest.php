@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class PaymentIdTest extends TestCase
 {
     private const string KNOWN_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
+    private const string CHECKOUT_SESSION_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
     #[Test]
     public function itCreatesFromString(): void
@@ -21,6 +22,16 @@ final class PaymentIdTest extends TestCase
 
         // Then
         self::assertSame(self::KNOWN_ID, $id->toString());
+    }
+
+    #[Test]
+    public function itDerivesKnownId(): void
+    {
+        // When
+        $id = PaymentId::forCheckoutSession(self::CHECKOUT_SESSION_ID);
+
+        // Then
+        self::assertSame('dcef8193-7de7-5470-bbee-f91f3f3b8245', $id->toString());
     }
 
     #[Test]

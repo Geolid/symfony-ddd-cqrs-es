@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
-use Finance\Payment\Application\Checkout\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
@@ -23,8 +23,6 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
@@ -33,10 +31,10 @@ use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
-use Shopping\Checkout\Application\Cart\Exception\CartOutdatedException;
-use Shopping\Checkout\Application\Cart\Exception\ShopperAddressesNotCompletedException as CheckoutShopperAddressesNotCompletedException;
-use Shopping\Checkout\Application\Cart\Exception\ShopperErasureRequestedException as CheckoutShopperErasureRequestedException;
-use Shopping\Checkout\Application\Cart\Exception\ShopperNotRegisteredException as CheckoutShopperNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CartPricesStaleException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException as CheckoutShopperAddressesNotCompletedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException as CheckoutShopperErasureRequestedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException as CheckoutShopperNotRegisteredException;
 use Shopping\Checkout\Application\Command\RegisterShopper\Exception\ShopperEmailAlreadyInUseException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
@@ -73,9 +71,7 @@ return static function (ContainerConfigurator $container): void {
             CheckoutShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutShopperErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
-            CartOutdatedException::class => ['log_level' => 'info', 'status_code' => 422],
-            ShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            ShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CartPricesStaleException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherShopperException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],

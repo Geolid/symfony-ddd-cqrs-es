@@ -11,8 +11,8 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\ConfirmOrderOnPaymentAuthorized;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
-use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -22,20 +22,27 @@ final class ConfirmOrderOnPaymentAuthorizedTest extends AbstractIntegrationTestC
     public function itConfirms(): void
     {
         // Given
-        $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->checkedOut();
-        $cart = $cartBuilder->create();
-        $this->store($shopper, $cart);
+        $checkoutSessionBuilder = CheckoutSessionBuilder::new();
+        $checkoutSession = $checkoutSessionBuilder->create();
+        $this->store($checkoutSession);
         $paymentId = Uuid::uuid7()->toString();
 
         // When
-        $this->trigger(ConfirmOrderOnPaymentAuthorized::class, new PaymentAuthorizedIntegrationEvent($paymentId, $cart->id->toString(), Clock::get()->now()));
+        $this->trigger(ConfirmOrderOnPaymentAuthorized::class, new PaymentAuthorizedIntegrationEvent($paymentId, $checkoutSession->id->toString(), Clock::get()->now()));
 
         // Then
-        $orderId = OrderId::forCart($cart->id->toString())->toString();
+        $orderId = OrderId::forCart($checkoutSessionBuilder['cartId'])->toString();
         $result = $this->service(OrderFinderInterface::class)->ofId($orderId);
-        self::assertSame($cartBuilder['shopperId'], $result->shopperId);
+        self::assertSame($checkoutSessionBuilder['shopperId'], $result->shopperId);
         self::assertSame($paymentId, $result->paymentId);
+        self::assertSame(
+            PostalAddressMapper::toArray($checkoutSessionBuilder['shippingAddress']),
+            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+        );
+        self::assertSame(
+            PostalAddressMapper::toArray($checkoutSessionBuilder['billingAddress']),
+            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+        );
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 }

@@ -11,18 +11,13 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
-use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Domain\Cart\Entity\Line;
-use Shopping\Checkout\Domain\Cart\Event\CartCheckedOut;
-use Shopping\Checkout\Domain\Cart\Event\CartCheckoutAbandoned;
-use Shopping\Checkout\Domain\Cart\Event\CartConverted;
 use Shopping\Checkout\Domain\Cart\Event\CartLineAdded;
 use Shopping\Checkout\Domain\Cart\Event\CartLineQuantityChanged;
 use Shopping\Checkout\Domain\Cart\Event\CartLineRemoved;
+use Shopping\Checkout\Domain\Cart\Event\CartPurchased;
 use Shopping\Checkout\Domain\Cart\Event\CartStarted;
-use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyConvertedException;
-use Shopping\Checkout\Domain\Cart\Exception\CartCheckoutInProgressException;
-use Shopping\Checkout\Domain\Cart\Exception\CartEmptyException;
+use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyPurchasedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartLineNotFoundException;
 use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
 use Shopping\Checkout\Domain\Cart\ValueObject\CartState;
@@ -37,14 +32,12 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
     /** @var array<string, list<CartState>> */
     private const array OPERATIONAL_TRANSITIONS = [
-        CartState::ACTIVE->value => [CartState::CHECKOUT],
-        CartState::CHECKOUT->value => [CartState::ACTIVE, CartState::CONVERTED],
-        CartState::CONVERTED->value => [],
+        CartState::ACTIVE->value => [CartState::PURCHASED],
+        CartState::PURCHASED->value => [],
     ];
 
     #[Id]
     public private(set) CartId $id;
-    public private(set) string $shopperId;
     private CartState $operationalState;
     /** @var array<string, Line> */
     private array $lines = [];
@@ -62,8 +55,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      */
     public function addLine(Product $product, Quantity $quantity, \DateTimeImmutable $now): void
     {
@@ -81,8 +73,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      * @throws CartLineNotFoundException
      */
     public function removeLine(LineId $lineId, \DateTimeImmutable $now): void
@@ -101,8 +92,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      * @throws CartLineNotFoundException
      */
     public function changeQuantity(LineId $lineId, Quantity $quantity, \DateTimeImmutable $now): void
@@ -121,87 +111,25 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws CartAlreadyConvertedException
-     * @throws CartEmptyException
-     */
-    public function checkout(\DateTimeImmutable $now): void
+    public function purchase(\DateTimeImmutable $now): void
     {
-        if ($this->operationalState->isConverted()) {
-            throw CartAlreadyConvertedException::forId($this->id);
-        }
-
-        if (!$this->canTransitionOperationalTo(CartState::CHECKOUT)) {
+        if (!$this->canTransitionOperationalTo(CartState::PURCHASED)) {
             return;
         }
 
-        if ([] === $this->lines) {
-            throw CartEmptyException::forId($this->id);
-        }
-
-        $this->recordThat(new CartCheckedOut(
+        $this->recordThat(new CartPurchased(
             id: $this->id->toString(),
-            shopperId: $this->shopperId,
-            totalAmountInCents: $this->totalAmountInCents(),
-            checkedOutAt: $now,
-        ));
-    }
-
-    public function abandonCheckout(\DateTimeImmutable $now): void
-    {
-        if (!$this->canTransitionOperationalTo(CartState::ACTIVE)) {
-            return;
-        }
-
-        $this->recordThat(new CartCheckoutAbandoned(
-            id: $this->id->toString(),
-            abandonedAt: $now,
-        ));
-    }
-
-    public function convert(\DateTimeImmutable $now): void
-    {
-        if (!$this->canTransitionOperationalTo(CartState::CONVERTED)) {
-            return;
-        }
-
-        $this->recordThat(new CartConverted(
-            id: $this->id->toString(),
-            convertedAt: $now,
+            purchasedAt: $now,
         ));
     }
 
     /**
-     * @return list<Line>
-     */
-    public function lines(): array
-    {
-        return array_values($this->lines);
-    }
-
-    public function totalAmountInCents(): int
-    {
-        $total = array_reduce(
-            $this->lines,
-            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
-            Money::fromCents(0),
-        );
-
-        return $total->cents;
-    }
-
-    /**
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      */
     private function guardActive(): void
     {
-        if ($this->operationalState->isCheckout()) {
-            throw CartCheckoutInProgressException::forId($this->id);
-        }
-
-        if ($this->operationalState->isConverted()) {
-            throw CartAlreadyConvertedException::forId($this->id);
+        if ($this->operationalState->isPurchased()) {
+            throw CartAlreadyPurchasedException::forId($this->id);
         }
     }
 
@@ -214,7 +142,6 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     private function applyStarted(CartStarted $event): void
     {
         $this->id = CartId::fromString($event->id);
-        $this->shopperId = $event->shopperId;
         $this->operationalState = CartState::ACTIVE;
     }
 
@@ -245,20 +172,8 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyCheckedOut(CartCheckedOut $event): void
+    private function applyPurchased(CartPurchased $event): void
     {
-        $this->operationalState = CartState::CHECKOUT;
-    }
-
-    #[Apply]
-    private function applyCheckoutAbandoned(CartCheckoutAbandoned $event): void
-    {
-        $this->operationalState = CartState::ACTIVE;
-    }
-
-    #[Apply]
-    private function applyConverted(CartConverted $event): void
-    {
-        $this->operationalState = CartState::CONVERTED;
+        $this->operationalState = CartState::PURCHASED;
     }
 }

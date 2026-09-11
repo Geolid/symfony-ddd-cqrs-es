@@ -7,8 +7,8 @@ namespace Shopping\Tests\Checkout\Application\Command\ChangeCartLineQuantity;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\Command\ChangeCartLineQuantity\ChangeCartLineQuantity;
+use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Domain\Cart\Exception\CartNotFoundException;
-use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
 use Shopping\Checkout\Domain\Cart\ValueObject\LineId;
 use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
@@ -16,13 +16,13 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ChangeCartLineQuantityHandlerTest extends AbstractIntegrationTestCase
 {
-    private CartRepositoryInterface $repository;
+    private CartFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->repository = $this->service(CartRepositoryInterface::class);
+        $this->finder = $this->service(CartFinderInterface::class);
     }
 
     #[Test]
@@ -38,10 +38,9 @@ final class ChangeCartLineQuantityHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ChangeCartLineQuantity($cart->id->toString(), $lineId->toString(), 5));
 
         // Then
-        $reloaded = $this->repository->load($cart->id);
-        $lines = $reloaded->lines();
-        self::assertCount(1, $lines);
-        self::assertSame(5, $lines[0]->quantity->value);
+        $result = $this->finder->ofId($cart->id->toString());
+        self::assertCount(1, $result->lines);
+        self::assertSame(5, $result->lines[0]['quantity']);
     }
 
     #[Test]

@@ -24,12 +24,11 @@ use Webmozart\Assert\Assert;
  *     startedAt: \DateTimeImmutable,
  *     product: Product,
  *     quantity: Quantity,
+ *     lines: list<array{product: Product, quantity: Quantity}>,
  *     addedAt: \DateTimeImmutable,
  *     removedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
- *     checkedOutAt: \DateTimeImmutable,
- *     abandonedAt: \DateTimeImmutable,
- *     convertedAt: \DateTimeImmutable,
+ *     purchasedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<Cart, Attributes>
@@ -53,61 +52,55 @@ final class CartBuilder extends AbstractAggregateBuilder
 
     public function lineAdded(?Product $product = null, ?Quantity $quantity = null, ?\DateTimeImmutable $addedAt = null): self
     {
-        $builder = $this->withAttributes(...array_filter(
-            ['product' => $product, 'quantity' => $quantity, 'addedAt' => $addedAt],
-            static fn (mixed $value): bool => null !== $value,
-        ));
+        $builder = null !== $addedAt ? $this->withAttributes(addedAt: $addedAt) : $this;
+
+        $product ??= $builder['product'];
+        $quantity ??= $builder['quantity'];
+        $builder = $builder->withAttributes(product: $product, quantity: $quantity, lines: [...$builder['lines'], ['product' => $product, 'quantity' => $quantity]]);
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->addLine($builder['product'], $builder['quantity'], $builder['addedAt']),
+            static fn (Cart $cart, self $modifierBuilder) => $cart->addLine($product, $quantity, $modifierBuilder['addedAt']),
         );
     }
 
     public function lineRemoved(?\DateTimeImmutable $removedAt = null): self
     {
         $builder = null !== $removedAt ? $this->withAttributes(removedAt: $removedAt) : $this;
+        $index = array_key_last($builder['lines']);
+        Assert::notNull($index);
+        $productId = $builder['lines'][$index]['product']->id;
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->removeLine($builder->lineId(), $builder['removedAt']),
+            static fn (Cart $cart, self $modifierBuilder) => $cart->removeLine(
+                LineId::forProduct($modifierBuilder['id']->toString(), $productId),
+                $modifierBuilder['removedAt'],
+            ),
         );
     }
 
     public function lineQuantityChanged(?Quantity $quantity = null, ?\DateTimeImmutable $changedAt = null): self
     {
-        $builder = $this->withAttributes(...array_filter(
-            ['quantity' => $quantity, 'changedAt' => $changedAt],
-            static fn (mixed $value): bool => null !== $value,
-        ));
+        $builder = null !== $changedAt ? $this->withAttributes(changedAt: $changedAt) : $this;
+        $index = array_key_last($builder['lines']);
+        Assert::notNull($index);
+        $productId = $builder['lines'][$index]['product']->id;
+        $quantity ??= $builder['quantity'];
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->changeQuantity($builder->lineId(), $builder['quantity'], $builder['changedAt']),
+            static fn (Cart $cart, self $modifierBuilder) => $cart->changeQuantity(
+                LineId::forProduct($modifierBuilder['id']->toString(), $productId),
+                $quantity,
+                $modifierBuilder['changedAt'],
+            ),
         );
     }
 
-    public function checkedOut(?\DateTimeImmutable $checkedOutAt = null): self
+    public function purchased(?\DateTimeImmutable $purchasedAt = null): self
     {
-        $builder = null !== $checkedOutAt ? $this->withAttributes(checkedOutAt: $checkedOutAt) : $this;
+        $builder = null !== $purchasedAt ? $this->withAttributes(purchasedAt: $purchasedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->checkout($builder['checkedOutAt']),
-        );
-    }
-
-    public function checkoutAbandoned(?\DateTimeImmutable $abandonedAt = null): self
-    {
-        $builder = null !== $abandonedAt ? $this->withAttributes(abandonedAt: $abandonedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->abandonCheckout($builder['abandonedAt']),
-        );
-    }
-
-    public function converted(?\DateTimeImmutable $convertedAt = null): self
-    {
-        $builder = null !== $convertedAt ? $this->withAttributes(convertedAt: $convertedAt) : $this;
-
-        return $builder->withModifier(
-            static fn (Cart $cart, self $builder) => $cart->convert($builder['convertedAt']),
+            static fn (Cart $cart, self $builder) => $cart->purchase($builder['purchasedAt']),
         );
     }
 
@@ -125,12 +118,11 @@ final class CartBuilder extends AbstractAggregateBuilder
                 return Product::of(Uuid::uuid7()->toString(), Label::fromString($label), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
             },
             'quantity' => static fn (): Quantity => Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+            'lines' => static fn (): array => [],
             'addedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
             'removedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),
-            'checkedOutAt' => static fn (): \DateTimeImmutable => $now->modify('+3 minute'),
-            'abandonedAt' => static fn (): \DateTimeImmutable => $now->modify('+4 minute'),
-            'convertedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 minute'),
+            'purchasedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 minute'),
         ];
     }
 
@@ -141,10 +133,5 @@ final class CartBuilder extends AbstractAggregateBuilder
             shopperId: $this['shopperId'],
             startedAt: $this['startedAt'],
         );
-    }
-
-    private function lineId(): LineId
-    {
-        return LineId::forProduct($this['id']->toString(), $this['product']->id);
     }
 }

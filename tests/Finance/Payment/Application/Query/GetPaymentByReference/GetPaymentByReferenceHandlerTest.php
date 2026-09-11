@@ -26,7 +26,7 @@ final class GetPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($paymentFactory['cartId'], $result->cartId);
+        self::assertSame($paymentFactory['checkoutSessionId'], $result->checkoutSessionId);
         self::assertNull($result->orderId);
         self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
         self::assertSame($paymentFactory['reference']->value, $result->reference);

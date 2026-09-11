@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\ConfirmOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
-use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
 use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
@@ -27,38 +24,22 @@ final readonly class ConfirmOrderHandler
 {
     public function __construct(
         private OrderRepositoryInterface $repository,
-        private ShopperFinderInterface $shopperFinder,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws ShopperNotRegisteredException
-     * @throws ShopperAddressesNotCompletedException
      * @throws OrderWithoutLineException
      */
     public function __invoke(ConfirmOrder $command): void
     {
-        $shopper = $this->shopperFinder->ofIdOrNull($command->shopperId)
-            ?? throw ShopperNotRegisteredException::forId($command->shopperId);
-
-        if (null === $shopper->shippingAddress || null === $shopper->billingAddress) {
-            throw ShopperAddressesNotCompletedException::forId($command->shopperId);
-        }
-
         $order = Order::confirm(
             id: OrderId::fromString($command->id),
             cartId: $command->cartId,
-            shopperId: $shopper->shopperId,
+            shopperId: $command->shopperId,
             paymentId: $command->paymentId,
-            shippingAddress: PostalAddressMapper::fromArray([
-                'recipientName' => $shopper->shippingAddress->recipientName,
-                'address' => (array) $shopper->shippingAddress->address,
-            ]),
-            billingAddress: PostalAddressMapper::fromArray([
-                'recipientName' => $shopper->billingAddress->recipientName,
-                'address' => (array) $shopper->billingAddress->address,
-            ]),
+            shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
+            billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
             lines: array_map($this->resolveLine(...), $command->lines),
             confirmedAt: $this->clock->now(),
         );

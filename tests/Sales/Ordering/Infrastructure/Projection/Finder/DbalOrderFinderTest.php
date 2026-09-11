@@ -13,6 +13,7 @@ use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
 /**
@@ -35,6 +36,14 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($order->id->toString(), $result->id);
         self::assertSame($builder['shopperId'], $result->shopperId);
         self::assertSame($builder['paymentId'], $result->paymentId);
+        self::assertSame(
+            PostalAddressMapper::toArray($builder['shippingAddress']),
+            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+        );
+        self::assertSame(
+            PostalAddressMapper::toArray($builder['billingAddress']),
+            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+        );
         self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
         self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));

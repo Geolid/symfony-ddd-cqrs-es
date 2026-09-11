@@ -35,6 +35,6 @@ final readonly class AbandonPaymentHandler
         $orderPayment->abandon($this->clock->now());
         $this->repository->save($orderPayment);
 
-        $this->uniqueValues->release(UniqueKey::for(PaymentUniqueKey::CART), $command->id);
+        $this->uniqueValues->release(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $command->id);
     }
 }

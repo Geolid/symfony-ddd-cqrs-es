@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Infrastructure\PSP\Globex;
 
-use Finance\Payment\Application\Checkout\PaymentSession;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Application\Requesting\PaymentSession;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -23,14 +23,15 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $cartId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress): PaymentSession
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
     {
         $response = $this->globexClient->post(self::CHARGES_PATH, [
-            'merchantReference' => $cartId,
+            'merchantReference' => $checkoutSessionId,
             'amountInCents' => $amountInCents,
             'returnUrl' => $returnUrl,
             'billingAddress' => PostalAddressMapper::toArray($billingAddress),
-        ], $cartId);
+            'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
+        ], $paymentId);
 
         $chargeReference = $response['chargeReference'] ?? null;
         $checkoutUrl = $response['checkoutUrl'] ?? null;

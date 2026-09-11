@@ -41,12 +41,12 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     public private(set) PaymentId $id;
     public private(set) string $checkoutUrl;
     public private(set) PaymentReference $reference;
-    private string $cartId;
+    private string $checkoutSessionId;
     private PaymentState $operationalState;
 
     public static function request(
         PaymentId $id,
-        string $cartId,
+        string $checkoutSessionId,
         Money $amount,
         PaymentReference $reference,
         string $checkoutUrl,
@@ -55,7 +55,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new PaymentRequested(
             id: $id->toString(),
-            cartId: $cartId,
+            checkoutSessionId: $checkoutSessionId,
             amount: $amount,
             reference: $reference,
             checkoutUrl: $checkoutUrl,
@@ -81,7 +81,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PaymentAuthorized(
             id: $this->id->toString(),
-            cartId: $this->cartId,
+            checkoutSessionId: $this->checkoutSessionId,
             authorizedAt: $authorizedAt,
         ));
     }
@@ -120,7 +120,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new PaymentAbandoned(
             id: $this->id->toString(),
-            cartId: $this->cartId,
+            checkoutSessionId: $this->checkoutSessionId,
             abandonedAt: $abandonedAt,
         ));
     }
@@ -147,7 +147,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     private function applyRequested(PaymentRequested $event): void
     {
         $this->id = PaymentId::fromString($event->id);
-        $this->cartId = $event->cartId;
+        $this->checkoutSessionId = $event->checkoutSessionId;
         $this->reference = $event->reference;
         $this->checkoutUrl = $event->checkoutUrl;
         $this->operationalState = PaymentState::REQUESTED;

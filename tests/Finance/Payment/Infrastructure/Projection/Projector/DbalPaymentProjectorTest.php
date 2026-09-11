@@ -13,7 +13,7 @@ use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{cart_id: string, order_id: ?string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, abandoned_at: ?string, voided_at: ?string}
+ * @phpstan-type Row array{checkout_session_id: string, order_id: ?string, amount_in_cents: int|string, reference: string, checkout_url: string, status: string, authorized_at: ?string, captured_at: ?string, failed_at: ?string, abandoned_at: ?string, voided_at: ?string}
  */
 final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,7 +30,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($paymentBuilder['cartId'], $row['cart_id']);
+        self::assertSame($paymentBuilder['checkoutSessionId'], $row['checkout_session_id']);
         self::assertNull($row['order_id']);
         self::assertSame($paymentBuilder['amount']->cents, (int) $row['amount_in_cents']);
         self::assertSame($paymentBuilder['reference']->value, $row['reference']);
@@ -189,7 +189,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT cart_id, order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, abandoned_at, voided_at FROM %s WHERE id = :id',
+                'SELECT checkout_session_id, order_id, amount_in_cents, reference, checkout_url, status, authorized_at, captured_at, failed_at, abandoned_at, voided_at FROM %s WHERE id = :id',
                 DbalPaymentProjector::TABLE,
             ),
             ['id' => $id],

@@ -16,6 +16,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
+use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -26,14 +27,16 @@ final class GlobexPaymentGatewayTest extends TestCase
     public function itRequestsPayment(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
+        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $expiresAt = $this->expiresAt();
         $response = self::jsonResponse([
             'chargeReference' => 'GLBX-9F3K2M1P',
             'checkoutUrl' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
-        $session = $this->gateway($response)->requestPayment($orderId, 4_200, 'https://web.test/sales/orders', $this->billingAddress());
+        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $expiresAt);
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
@@ -42,13 +45,14 @@ final class GlobexPaymentGatewayTest extends TestCase
         $requestUrl = $response->getRequestUrl();
         self::assertSame('https://payments.globex.test/charges', $requestUrl);
         $headers = $response->getRequestOptions()['headers'];
-        self::assertContains('Idempotency-Key: '.$orderId, $headers);
+        self::assertContains('Idempotency-Key: '.$paymentId, $headers);
         self::assertSame(
             [
-                'merchantReference' => $orderId,
+                'merchantReference' => $checkoutSessionId,
                 'amountInCents' => 4_200,
                 'returnUrl' => 'https://web.test/sales/orders',
                 'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
+                'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
             ],
             $this->requestBody($response),
         );
@@ -62,7 +66,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
     }
 
     /**
@@ -81,7 +85,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
     }
 
     #[Test]
@@ -92,7 +96,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
     }
 
     /**
@@ -217,6 +221,11 @@ final class GlobexPaymentGatewayTest extends TestCase
             'Ada Lovelace',
             Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
+    }
+
+    private function expiresAt(): \DateTimeImmutable
+    {
+        return Clock::get()->now()->modify('+30 minutes');
     }
 
     /**

@@ -16,7 +16,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: PaymentId,
- *     cartId: string,
+ *     checkoutSessionId: string,
  *     orderId: string,
  *     amount: Money,
  *     reference: PaymentReference,
@@ -38,9 +38,9 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: PaymentId::fromString($id));
     }
 
-    public function withCartId(string $cartId): self
+    public function withCheckoutSessionId(string $checkoutSessionId): self
     {
-        return $this->withAttributes(cartId: $cartId);
+        return $this->withAttributes(checkoutSessionId: $checkoutSessionId);
     }
 
     public function withAmountInCents(int $amountInCents): self
@@ -120,7 +120,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): PaymentId => PaymentId::fromString(Uuid::uuid7()->toString()),
-            'cartId' => static fn (): string => Uuid::uuid7()->toString(),
+            'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
             'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
@@ -138,7 +138,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
     {
         return Payment::request(
             id: $this['id'],
-            cartId: $this['cartId'],
+            checkoutSessionId: $this['checkoutSessionId'],
             amount: $this['amount'],
             reference: $this['reference'],
             checkoutUrl: $this['checkoutUrl'],

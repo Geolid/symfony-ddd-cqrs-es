@@ -38,7 +38,7 @@ final readonly class RequestPaymentHandler
     {
         $id = PaymentId::fromString($command->id);
         $referenceKey = UniqueKey::for(PaymentUniqueKey::REFERENCE);
-        $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
+        $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
         try {
             $this->uniqueValues->claim($referenceKey, $command->reference, $command->id);
@@ -47,14 +47,14 @@ final readonly class RequestPaymentHandler
         }
 
         try {
-            $this->uniqueValues->claim($cartKey, $command->cartId, $command->id);
+            $this->uniqueValues->claim($checkoutSessionKey, $command->checkoutSessionId, $command->id);
         } catch (UniquenessViolatedException $e) {
-            throw PaymentAlreadyClaimedException::forCart($command->cartId, $e);
+            throw PaymentAlreadyClaimedException::forCheckoutSession($command->checkoutSessionId, $e);
         }
 
         $orderPayment = Payment::request(
             id: $id,
-            cartId: $command->cartId,
+            checkoutSessionId: $command->checkoutSessionId,
             amount: Money::fromCents($command->amountInCents),
             reference: PaymentReference::fromString($command->reference),
             checkoutUrl: $command->checkoutUrl,

@@ -7,5 +7,5 @@ namespace Finance\Payment\Application;
 enum PaymentUniqueKey: string
 {
     case REFERENCE = 'finance.payment.payment.reference';
-    case CART = 'finance.payment.payment.cart';
+    case CHECKOUT_SESSION = 'finance.payment.payment.checkout_session';
 }

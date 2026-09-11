@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shopping\Checkout\Application\Finder\CheckoutSession;
+
+use Shopping\Checkout\Application\CheckoutSessionStatus;
+
+final readonly class CheckoutSessionResult
+{
+    public function __construct(
+        public string $id,
+        public string $cartId,
+        public string $shopperId,
+        public CheckoutSessionStatus $status,
+        public \DateTimeImmutable $openedAt,
+    ) {
+    }
+}
