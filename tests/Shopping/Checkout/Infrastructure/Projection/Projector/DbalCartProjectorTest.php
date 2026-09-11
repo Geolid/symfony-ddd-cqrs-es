@@ -131,8 +131,11 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
         $other = CartBuilder::new()->lineAdded()->create();
         $this->store($other);
 
+        $unchangedProduct = CartBuilder::sample('product');
+        $unchangedQuantity = CartBuilder::sample('quantity');
         $product = CartBuilder::sample('product');
         $builder = CartBuilder::new()
+            ->lineAdded($unchangedProduct, $unchangedQuantity)
             ->lineAdded($product)
             ->lineQuantityChanged($newQuantity = CartBuilder::sample('quantity'));
         $cart = $builder->create();
@@ -144,7 +147,16 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($cart->id->toString());
         self::assertNotFalse($row);
         $lines = $this->decodedLines($row);
-        self::assertCount(1, $lines);
+        self::assertCount(2, $lines);
+
+        $unchangedLineId = LineId::forProduct($cart->id->toString(), $unchangedProduct->id)->toString();
+        self::assertSame([
+            'lineId' => $unchangedLineId,
+            'productId' => $unchangedProduct->id,
+            'label' => $unchangedProduct->label->value,
+            'unitPriceInCents' => $unchangedProduct->price->cents,
+            'quantity' => $unchangedQuantity->value,
+        ], $lines[$unchangedLineId]);
 
         $lineId = LineId::forProduct($cart->id->toString(), $product->id)->toString();
         self::assertSame([
@@ -154,7 +166,9 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
             'unitPriceInCents' => $product->price->cents,
             'quantity' => $newQuantity->value,
         ], $lines[$lineId]);
-        self::assertSame($product->price->cents * $newQuantity->value, $row['total_amount_in_cents']);
+
+        $expectedTotal = $unchangedProduct->price->cents * $unchangedQuantity->value + $product->price->cents * $newQuantity->value;
+        self::assertSame($expectedTotal, $row['total_amount_in_cents']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
