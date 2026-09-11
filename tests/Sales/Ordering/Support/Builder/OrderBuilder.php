@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Ordering\Domain\Shared\Entity\Line;
-use Sales\Ordering\Domain\Shared\ValueObject\LineId;
-use Sales\Ordering\Domain\Shared\ValueObject\Product;
-use Sales\Ordering\Domain\Shared\ValueObject\Quantity;
+use Sales\Ordering\Domain\Order\ValueObject\Product;
+use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
@@ -22,6 +22,7 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: OrderId,
+ *     cartId: string,
  *     shopperId: string,
  *     paymentId: string,
  *     shippingAddress: PostalAddress,
@@ -43,6 +44,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
     public function withId(string $id): self
     {
         return $this->withAttributes(id: OrderId::fromString($id));
+    }
+
+    public function withCartId(string $cartId): self
+    {
+        return $this->withAttributes(cartId: $cartId);
     }
 
     public function withShopperId(string $shopperId): self
@@ -145,6 +151,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
+            'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
@@ -174,6 +181,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
     {
         return Order::confirm(
             id: $this['id'],
+            cartId: $this['cartId'],
             shopperId: $this['shopperId'],
             paymentId: $this['paymentId'],
             shippingAddress: $this['shippingAddress'],

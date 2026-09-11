@@ -28,7 +28,8 @@ final class CancelShopperErasureOnErasureCancelledTest extends AbstractIntegrati
         $this->trigger(CancelShopperErasureOnErasureCancelled::class, new ErasureCancelledIntegrationEvent($builder['identityId'], Clock::get()->now()));
 
         // Then
-        $result = $this->service(ShopperFinderInterface::class)->ofId($shopper->id->toString());
+        $result = $this->service(ShopperFinderInterface::class)->ofIdOrNull($shopper->id->toString());
+        self::assertNotNull($result);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 

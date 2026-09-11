@@ -41,6 +41,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: $id,
+            cartId: Uuid::uuid7()->toString(),
             shopperId: $shopper->id->toString(),
             paymentId: $paymentId,
             lines: [[
@@ -69,6 +70,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
+            cartId: Uuid::uuid7()->toString(),
             shopperId: Uuid::uuid7()->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
@@ -88,6 +90,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
+            cartId: Uuid::uuid7()->toString(),
             shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
@@ -107,6 +110,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
+            cartId: Uuid::uuid7()->toString(),
             shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
@@ -126,6 +130,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
+            cartId: Uuid::uuid7()->toString(),
             shopperId: $shopper->id->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],

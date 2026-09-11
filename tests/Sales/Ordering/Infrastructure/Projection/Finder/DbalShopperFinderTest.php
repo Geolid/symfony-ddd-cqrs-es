@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Shopper\PostalAddressResult;
 use Sales\Ordering\Application\Finder\Shopper\ShopperFinderInterface;
-use Sales\Ordering\Application\Finder\Shopper\ShopperResult;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -25,26 +24,27 @@ final class DbalShopperFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsById(): void
+    public function itFinds(): void
     {
         // Given
-        $otherShopper = ShopperBuilder::new()->create();
-        $this->store($otherShopper);
+        $other = ShopperBuilder::new()->create();
         $builder = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined();
         $shopper = $builder->create();
-        $this->store($shopper);
+        $this->store($other, $shopper);
 
         // When
-        $result = $this->finder->ofIdOrNull($shopper->id->toString());
+        $found = $this->finder->ofIdOrNull($shopper->id->toString());
+        $notFound = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
 
         // Then
-        self::assertInstanceOf(ShopperResult::class, $result);
-        self::assertSame($shopper->id->toString(), $result->shopperId);
-        self::assertNotNull($result->shippingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $this->toArray($result->shippingAddress));
-        self::assertNotNull($result->billingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $this->toArray($result->billingAddress));
-        self::assertFalse($result->erasureRequested);
+        self::assertNotNull($found);
+        self::assertSame($shopper->id->toString(), $found->shopperId);
+        self::assertNotNull($found->shippingAddress);
+        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $this->toArray($found->shippingAddress));
+        self::assertNotNull($found->billingAddress);
+        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $this->toArray($found->billingAddress));
+        self::assertFalse($found->erasureRequested);
+        self::assertNull($notFound);
     }
 
     #[Test]
@@ -58,7 +58,7 @@ final class DbalShopperFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofIdOrNull($shopper->id->toString());
 
         // Then
-        self::assertInstanceOf(ShopperResult::class, $result);
+        self::assertNotNull($result);
         self::assertSame($shopper->id->toString(), $result->shopperId);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
@@ -76,18 +76,8 @@ final class DbalShopperFinderTest extends AbstractIntegrationTestCase
         $result = $this->finder->ofIdOrNull($shopper->id->toString());
 
         // Then
-        self::assertInstanceOf(ShopperResult::class, $result);
+        self::assertNotNull($result);
         self::assertTrue($result->erasureRequested);
-    }
-
-    #[Test]
-    public function itFindsNoneForUnknownShopper(): void
-    {
-        // When
-        $result = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
-
-        // Then
-        self::assertNull($result);
     }
 
     /**

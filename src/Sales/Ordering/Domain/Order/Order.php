@@ -10,6 +10,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Ordering\Domain\Order\Event\OrderDelivered;
@@ -23,7 +24,6 @@ use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
-use Sales\Ordering\Domain\Shared\Entity\Line;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -54,6 +54,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) OrderId $id;
+    public private(set) string $cartId;
     public private(set) string $shopperId;
     public private(set) string $paymentId;
     public private(set) PostalAddress $shippingAddress;
@@ -69,6 +70,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public static function confirm(
         OrderId $id,
+        string $cartId,
         string $shopperId,
         string $paymentId,
         PostalAddress $shippingAddress,
@@ -89,6 +91,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self = new self();
         $self->recordThat(new OrderConfirmed(
             id: $id->toString(),
+            cartId: $cartId,
             shopperId: $shopperId,
             paymentId: $paymentId,
             shippingAddress: $shippingAddress,
@@ -229,6 +232,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyConfirmed(OrderConfirmed $event): void
     {
         $this->id = OrderId::fromString($event->id);
+        $this->cartId = $event->cartId;
         $this->shopperId = $event->shopperId;
         $this->paymentId = $event->paymentId;
         $this->shippingAddress = $event->shippingAddress;

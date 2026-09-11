@@ -33,6 +33,7 @@ final readonly class OrderConfirmedPublisher
 
         $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
             orderId: $event->id,
+            cartId: $order->cartId,
             shopperId: $order->shopperId,
             paymentId: $order->paymentId,
             shippingAddress: PostalAddressMapper::toArray($order->shippingAddress),

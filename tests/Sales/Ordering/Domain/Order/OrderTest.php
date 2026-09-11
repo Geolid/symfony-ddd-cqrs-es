@@ -7,6 +7,7 @@ namespace Sales\Tests\Ordering\Domain\Order;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Ordering\Domain\Order\Event\OrderDelivered;
@@ -20,7 +21,6 @@ use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Ordering\Domain\Shared\Entity\Line;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -28,6 +28,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final class OrderTest extends AggregateRootTestCase
 {
     private OrderId $id;
+    private readonly string $cartId;
     private string $shopperId;
     private string $paymentId;
     private PostalAddress $shippingAddress;
@@ -49,6 +50,7 @@ final class OrderTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = OrderId::fromString(Uuid::uuid7()->toString());
+        $this->cartId = OrderBuilder::sample('cartId');
         $this->shopperId = OrderBuilder::sample('shopperId');
         $this->paymentId = OrderBuilder::sample('paymentId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
@@ -68,9 +70,10 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id->toString(),
+                $this->cartId,
                 $this->shopperId,
                 $this->paymentId,
                 $this->shippingAddress,
@@ -86,7 +89,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, [], $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, [], $this->confirmedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -299,6 +302,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         return new OrderConfirmed(
             $this->id->toString(),
+            $this->cartId,
             $this->shopperId,
             $this->paymentId,
             $this->shippingAddress,

@@ -9,7 +9,6 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shopping\Checkout\Application\Command\EraseShopper\EraseShopper;
-use Shopping\Checkout\Application\Finder\Shopper\Exception\ShopperResultNotFoundException;
 use Shopping\Checkout\Application\Finder\Shopper\ShopperFinderInterface;
 use Shopping\Checkout\Application\ShopperUniqueKey;
 use Shopping\Checkout\Domain\Exception\ShopperNotFoundException;
@@ -40,8 +39,7 @@ final class EraseShopperHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->uniqueValues->isClaimed(UniqueKey::for(ShopperUniqueKey::EMAIL), $shopper->email->value));
-        $this->expectException(ShopperResultNotFoundException::class);
-        $this->service(ShopperFinderInterface::class)->ofId($shopper->id->toString());
+        self::assertNull($this->service(ShopperFinderInterface::class)->ofIdOrNull($shopper->id->toString()));
     }
 
     #[Test]
