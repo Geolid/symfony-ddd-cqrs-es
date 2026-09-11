@@ -30,7 +30,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
         \assert(\is_string($row['id']) && \is_string($row['shopper_id']) && \is_string($row['lines_json']) && is_numeric($row['total_amount_in_cents']));
 
         /** @var list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines */
-        $lines = json_decode($row['lines_json'], true, 512, \JSON_THROW_ON_ERROR);
+        $lines = json_decode($row['lines_json'], true, flags: \JSON_THROW_ON_ERROR);
 
         return new CartResult($row['id'], $row['shopper_id'], $lines, (int) $row['total_amount_in_cents']);
     }

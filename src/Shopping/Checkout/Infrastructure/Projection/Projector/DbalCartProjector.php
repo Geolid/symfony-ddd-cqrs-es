@@ -111,7 +111,7 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         \assert(\is_string($lines));
 
         /** @var list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $decoded */
-        $decoded = json_decode($lines, true, 512, \JSON_THROW_ON_ERROR);
+        $decoded = json_decode($lines, true, flags: \JSON_THROW_ON_ERROR);
 
         $indexed = [];
         foreach ($decoded as $line) {
