@@ -7,12 +7,13 @@ namespace Sales\Tests\Ordering\Application\Command\ConfirmOrder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperAddressesNotCompletedException;
-use Sales\Ordering\Application\Command\ConfirmOrder\Exception\ShopperNotRegisteredException;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
+use Shared\Domain\ValueObject\PostalAddress;
 use Support\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -31,18 +32,19 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itConfirms(): void
     {
         // Given
-        $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $this->store($shopper);
         $id = Uuid::uuid7()->toString();
+        $shopperId = Uuid::uuid7()->toString();
         $paymentId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
         $quantity = SeededFaker::get()->numberBetween(1, 5);
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
+        $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
 
         // When
         $this->dispatch(new ConfirmOrder(
             id: $id,
             cartId: Uuid::uuid7()->toString(),
-            shopperId: $shopper->id->toString(),
+            shopperId: $shopperId,
             paymentId: $paymentId,
             lines: [[
                 'lineId' => Uuid::uuid7()->toString(),
@@ -51,21 +53,31 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
                 'unitPriceInCents' => $unitPriceInCents,
                 'quantity' => $quantity,
             ]],
+            shippingAddress: $shippingAddress,
+            billingAddress: $billingAddress,
         ));
 
         // Then
         $result = $this->finder->ofId($id);
-        self::assertSame($shopper->id->toString(), $result->shopperId);
+        self::assertSame($shopperId, $result->shopperId);
         self::assertSame($paymentId, $result->paymentId);
+        self::assertSame(
+            $shippingAddress,
+            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+        );
+        self::assertSame(
+            $billingAddress,
+            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+        );
         self::assertSame(Money::fromCents($unitPriceInCents * $quantity)->cents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
     #[Test]
-    public function itFailsWhenShopperNotRegistered(): void
+    public function itFailsWhenWithoutLine(): void
     {
         // Then
-        $this->expectException(ShopperNotRegisteredException::class);
+        $this->expectException(OrderWithoutLineException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
@@ -74,66 +86,8 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             shopperId: Uuid::uuid7()->toString(),
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
-        ));
-    }
-
-    #[Test]
-    public function itFailsWhenShopperAddressesNotCompleted(): void
-    {
-        // Given
-        $shopper = ShopperBuilder::new()->create();
-        $this->store($shopper);
-
-        // Then
-        $this->expectException(ShopperAddressesNotCompletedException::class);
-
-        // When
-        $this->dispatch(new ConfirmOrder(
-            id: Uuid::uuid7()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            shopperId: $shopper->id->toString(),
-            paymentId: Uuid::uuid7()->toString(),
-            lines: [],
-        ));
-    }
-
-    #[Test]
-    public function itFailsWhenShippingAddressMissing(): void
-    {
-        // Given
-        $shopper = ShopperBuilder::new()->billingAddressDefined()->create();
-        $this->store($shopper);
-
-        // Then
-        $this->expectException(ShopperAddressesNotCompletedException::class);
-
-        // When
-        $this->dispatch(new ConfirmOrder(
-            id: Uuid::uuid7()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            shopperId: $shopper->id->toString(),
-            paymentId: Uuid::uuid7()->toString(),
-            lines: [],
-        ));
-    }
-
-    #[Test]
-    public function itFailsWhenBillingAddressMissing(): void
-    {
-        // Given
-        $shopper = ShopperBuilder::new()->shippingAddressDefined()->create();
-        $this->store($shopper);
-
-        // Then
-        $this->expectException(ShopperAddressesNotCompletedException::class);
-
-        // When
-        $this->dispatch(new ConfirmOrder(
-            id: Uuid::uuid7()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            shopperId: $shopper->id->toString(),
-            paymentId: Uuid::uuid7()->toString(),
-            lines: [],
+            shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
+            billingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR'))),
         ));
     }
 }

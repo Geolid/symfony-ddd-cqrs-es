@@ -7,21 +7,21 @@ namespace Shopping\Tests\Checkout\Application\Command\RemoveCartLine;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\Command\RemoveCartLine\RemoveCartLine;
+use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Domain\Cart\Exception\CartNotFoundException;
-use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
 use Shopping\Checkout\Domain\Cart\ValueObject\LineId;
 use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RemoveCartLineHandlerTest extends AbstractIntegrationTestCase
 {
-    private CartRepositoryInterface $repository;
+    private CartFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->repository = $this->service(CartRepositoryInterface::class);
+        $this->finder = $this->service(CartFinderInterface::class);
     }
 
     #[Test]
@@ -37,8 +37,8 @@ final class RemoveCartLineHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RemoveCartLine($cart->id->toString(), $lineId->toString()));
 
         // Then
-        $reloaded = $this->repository->load($cart->id);
-        self::assertSame([], $reloaded->lines());
+        $result = $this->finder->ofId($cart->id->toString());
+        self::assertSame([], $result->lines);
     }
 
     #[Test]

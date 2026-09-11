@@ -7,18 +7,13 @@ namespace Shopping\Tests\Checkout\Domain\Cart;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Domain\Cart\Cart;
-use Shopping\Checkout\Domain\Cart\Event\CartCheckedOut;
-use Shopping\Checkout\Domain\Cart\Event\CartCheckoutAbandoned;
-use Shopping\Checkout\Domain\Cart\Event\CartConverted;
 use Shopping\Checkout\Domain\Cart\Event\CartLineAdded;
 use Shopping\Checkout\Domain\Cart\Event\CartLineQuantityChanged;
 use Shopping\Checkout\Domain\Cart\Event\CartLineRemoved;
+use Shopping\Checkout\Domain\Cart\Event\CartPurchased;
 use Shopping\Checkout\Domain\Cart\Event\CartStarted;
-use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyConvertedException;
-use Shopping\Checkout\Domain\Cart\Exception\CartCheckoutInProgressException;
-use Shopping\Checkout\Domain\Cart\Exception\CartEmptyException;
+use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyPurchasedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartLineNotFoundException;
 use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
 use Shopping\Checkout\Domain\Cart\ValueObject\LineId;
@@ -36,9 +31,7 @@ final class CartTest extends AggregateRootTestCase
     private \DateTimeImmutable $addedAt;
     private \DateTimeImmutable $removedAt;
     private \DateTimeImmutable $changedAt;
-    private \DateTimeImmutable $checkedOutAt;
-    private \DateTimeImmutable $abandonedAt;
-    private \DateTimeImmutable $convertedAt;
+    private \DateTimeImmutable $purchasedAt;
 
     protected function setUp(): void
     {
@@ -52,9 +45,7 @@ final class CartTest extends AggregateRootTestCase
         $this->addedAt = CartBuilder::sample('addedAt');
         $this->removedAt = CartBuilder::sample('removedAt');
         $this->changedAt = CartBuilder::sample('changedAt');
-        $this->checkedOutAt = CartBuilder::sample('checkedOutAt');
-        $this->abandonedAt = CartBuilder::sample('abandonedAt');
-        $this->convertedAt = CartBuilder::sample('convertedAt');
+        $this->purchasedAt = CartBuilder::sample('purchasedAt');
     }
 
     #[Test]
@@ -76,21 +67,12 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotAddLineWhenCheckoutInProgress(): void
+    public function itCannotAddLineWhenPurchased(): void
     {
         $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
+            ->given($this->started(), $this->lineAdded(), $this->purchased())
             ->when(fn (Cart $cart) => $cart->addLine($this->product, $this->quantity, $this->addedAt))
-            ->expectsException(CartCheckoutInProgressException::class);
-    }
-
-    #[Test]
-    public function itCannotAddLineWhenConverted(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut(), $this->converted())
-            ->when(fn (Cart $cart) => $cart->addLine($this->product, $this->quantity, $this->addedAt))
-            ->expectsException(CartAlreadyConvertedException::class);
+            ->expectsException(CartAlreadyPurchasedException::class);
     }
 
     #[Test]
@@ -112,12 +94,12 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotRemoveLineWhenCheckoutInProgress(): void
+    public function itCannotRemoveLineWhenPurchased(): void
     {
         $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
+            ->given($this->started(), $this->lineAdded(), $this->purchased())
             ->when(fn (Cart $cart) => $cart->removeLine($this->lineId(), $this->removedAt))
-            ->expectsException(CartCheckoutInProgressException::class);
+            ->expectsException(CartAlreadyPurchasedException::class);
     }
 
     #[Test]
@@ -139,101 +121,29 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotChangeLineQuantityWhenCheckoutInProgress(): void
+    public function itCannotChangeLineQuantityWhenPurchased(): void
     {
         $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
+            ->given($this->started(), $this->lineAdded(), $this->purchased())
             ->when(fn (Cart $cart) => $cart->changeQuantity($this->lineId(), $this->quantity, $this->changedAt))
-            ->expectsException(CartCheckoutInProgressException::class);
+            ->expectsException(CartAlreadyPurchasedException::class);
     }
 
     #[Test]
-    public function itChecksOut(): void
+    public function itPurchases(): void
     {
         $this
             ->given($this->started(), $this->lineAdded())
-            ->when(fn (Cart $cart) => $cart->checkout($this->checkedOutAt))
-            ->then($this->checkedOut());
+            ->when(fn (Cart $cart) => $cart->purchase($this->purchasedAt))
+            ->then($this->purchased());
     }
 
     #[Test]
-    public function itDoesNotCheckOutWhenAlreadyInCheckout(): void
+    public function itDoesNotPurchaseWhenAlreadyPurchased(): void
     {
         $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
-            ->when(static fn (Cart $cart) => $cart->checkout(CartBuilder::sample('checkedOutAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itCannotCheckOutWhenEmpty(): void
-    {
-        $this
-            ->given($this->started())
-            ->when(fn (Cart $cart) => $cart->checkout($this->checkedOutAt))
-            ->expectsException(CartEmptyException::class);
-    }
-
-    #[Test]
-    public function itCannotCheckOutWhenConverted(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut(), $this->converted())
-            ->when(fn (Cart $cart) => $cart->checkout($this->checkedOutAt))
-            ->expectsException(CartAlreadyConvertedException::class);
-    }
-
-    #[Test]
-    public function itAbandonsCheckout(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
-            ->when(fn (Cart $cart) => $cart->abandonCheckout($this->abandonedAt))
-            ->then($this->checkoutAbandoned());
-    }
-
-    #[Test]
-    public function itDoesNotAbandonCheckoutWhenActive(): void
-    {
-        $this
-            ->given($this->started())
-            ->when(static fn (Cart $cart) => $cart->abandonCheckout(CartBuilder::sample('abandonedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itDoesNotAbandonCheckoutWhenConverted(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut(), $this->converted())
-            ->when(static fn (Cart $cart) => $cart->abandonCheckout(CartBuilder::sample('abandonedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itConverts(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut())
-            ->when(fn (Cart $cart) => $cart->convert($this->convertedAt))
-            ->then($this->converted());
-    }
-
-    #[Test]
-    public function itDoesNotConvertWhenNotInCheckout(): void
-    {
-        $this
-            ->given($this->started())
-            ->when(static fn (Cart $cart) => $cart->convert(CartBuilder::sample('convertedAt')))
-            ->then();
-    }
-
-    #[Test]
-    public function itDoesNotConvertWhenAlreadyConverted(): void
-    {
-        $this
-            ->given($this->started(), $this->lineAdded(), $this->checkedOut(), $this->converted())
-            ->when(static fn (Cart $cart) => $cart->convert(CartBuilder::sample('convertedAt')))
+            ->given($this->started(), $this->lineAdded(), $this->purchased())
+            ->when(static fn (Cart $cart) => $cart->purchase(CartBuilder::sample('purchasedAt')))
             ->then();
     }
 
@@ -267,23 +177,8 @@ final class CartTest extends AggregateRootTestCase
         return new CartLineQuantityChanged($this->id->toString(), $this->lineId()->toString(), $this->quantity, $this->changedAt);
     }
 
-    private function checkedOut(): CartCheckedOut
+    private function purchased(): CartPurchased
     {
-        return new CartCheckedOut($this->id->toString(), $this->shopperId, $this->totalAmount()->cents, $this->checkedOutAt);
-    }
-
-    private function checkoutAbandoned(): CartCheckoutAbandoned
-    {
-        return new CartCheckoutAbandoned($this->id->toString(), $this->abandonedAt);
-    }
-
-    private function converted(): CartConverted
-    {
-        return new CartConverted($this->id->toString(), $this->convertedAt);
-    }
-
-    private function totalAmount(): Money
-    {
-        return $this->product->price->times($this->quantity->value);
+        return new CartPurchased($this->id->toString(), $this->purchasedAt);
     }
 }

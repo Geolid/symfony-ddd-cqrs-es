@@ -36,8 +36,8 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         $paymentBuilder = PaymentBuilder::new();
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $cartKey = UniqueKey::for(PaymentUniqueKey::CART);
-        $this->uniqueValues->claim($cartKey, $paymentBuilder['cartId'], $orderPayment->id->toString());
+        $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
+        $this->uniqueValues->claim($checkoutSessionKey, $paymentBuilder['checkoutSessionId'], $orderPayment->id->toString());
 
         // When
         $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
@@ -45,7 +45,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofReference($paymentBuilder['reference']->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
-        self::assertFalse($this->uniqueValues->isClaimed($cartKey, $paymentBuilder['cartId']));
+        self::assertFalse($this->uniqueValues->isClaimed($checkoutSessionKey, $paymentBuilder['checkoutSessionId']));
     }
 
     #[Test]

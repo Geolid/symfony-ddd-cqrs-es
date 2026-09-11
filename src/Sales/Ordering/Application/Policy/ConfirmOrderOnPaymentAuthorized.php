@@ -7,8 +7,8 @@ namespace Sales\Ordering\Application\Policy;
 use Finance\Payment\Application\IntegrationEvent\PaymentAuthorized\PaymentAuthorizedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
-use Sales\Ordering\Application\Finder\Cart\CartFinderInterface;
-use Sales\Ordering\Application\Finder\CartLine\CartLineFinderInterface;
+use Sales\Ordering\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
+use Sales\Ordering\Application\Finder\CheckoutSessionLine\CheckoutSessionLineFinderInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -18,8 +18,8 @@ use Shared\Application\Policy;
 final readonly class ConfirmOrderOnPaymentAuthorized
 {
     public function __construct(
-        private CartFinderInterface $cartFinder,
-        private CartLineFinderInterface $cartLineFinder,
+        private CheckoutSessionFinderInterface $checkoutSessionFinder,
+        private CheckoutSessionLineFinderInterface $checkoutSessionLineFinder,
         private CommandBusInterface $commandBus,
     ) {
     }
@@ -31,10 +31,10 @@ final readonly class ConfirmOrderOnPaymentAuthorized
     #[Subscribe(PaymentAuthorizedIntegrationEvent::class)]
     public function __invoke(PaymentAuthorizedIntegrationEvent $event): void
     {
-        $cart = $this->cartFinder->ofId($event->cartId);
+        $checkoutSession = $this->checkoutSessionFinder->ofId($event->checkoutSessionId);
 
         $lines = [];
-        foreach ($this->cartLineFinder->byCart($event->cartId) as $line) {
+        foreach ($this->checkoutSessionLineFinder->byCheckoutSession($event->checkoutSessionId) as $line) {
             $lines[] = [
                 'lineId' => $line->lineId,
                 'productId' => $line->productId,
@@ -45,11 +45,19 @@ final readonly class ConfirmOrderOnPaymentAuthorized
         }
 
         $this->commandBus->dispatch(new ConfirmOrder(
-            id: OrderId::forCart($event->cartId)->toString(),
-            cartId: $event->cartId,
-            shopperId: $cart->shopperId,
+            id: OrderId::forCart($checkoutSession->cartId)->toString(),
+            cartId: $checkoutSession->cartId,
+            shopperId: $checkoutSession->shopperId,
             paymentId: $event->paymentId,
             lines: $lines,
+            shippingAddress: [
+                'recipientName' => $checkoutSession->shippingAddress->recipientName,
+                'address' => (array) $checkoutSession->shippingAddress->address,
+            ],
+            billingAddress: [
+                'recipientName' => $checkoutSession->billingAddress->recipientName,
+                'address' => (array) $checkoutSession->billingAddress->address,
+            ],
         ));
     }
 }

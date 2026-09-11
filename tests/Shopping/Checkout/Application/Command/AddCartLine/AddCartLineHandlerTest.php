@@ -9,20 +9,20 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\Command\AddCartLine\AddCartLine;
 use Shopping\Checkout\Application\Command\AddCartLine\Exception\ProductNotListedException;
+use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Domain\Cart\Exception\CartNotFoundException;
-use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
 use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class AddCartLineHandlerTest extends AbstractIntegrationTestCase
 {
-    private CartRepositoryInterface $repository;
+    private CartFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->repository = $this->service(CartRepositoryInterface::class);
+        $this->finder = $this->service(CartFinderInterface::class);
     }
 
     #[Test]
@@ -37,11 +37,10 @@ final class AddCartLineHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new AddCartLine($cart->id->toString(), $product->id->toString(), 2));
 
         // Then
-        $reloaded = $this->repository->load($cart->id);
-        $lines = $reloaded->lines();
-        self::assertCount(1, $lines);
-        self::assertSame($product->id->toString(), $lines[0]->product->id);
-        self::assertSame(2, $lines[0]->quantity->value);
+        $result = $this->finder->ofId($cart->id->toString());
+        self::assertCount(1, $result->lines);
+        self::assertSame($product->id->toString(), $result->lines[0]['productId']);
+        self::assertSame(2, $result->lines[0]['quantity']);
     }
 
     #[Test]

@@ -22,7 +22,7 @@ use Shared\Domain\ValueObject\Money;
 final class PaymentTest extends AggregateRootTestCase
 {
     private PaymentId $id;
-    private string $cartId;
+    private string $checkoutSessionId;
     private string $orderId;
     private Money $amount;
     private PaymentReference $reference;
@@ -36,7 +36,7 @@ final class PaymentTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = PaymentId::fromString(Uuid::uuid7()->toString());
-        $this->cartId = PaymentBuilder::sample('cartId');
+        $this->checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
         $this->orderId = PaymentBuilder::sample('orderId');
         $this->amount = PaymentBuilder::sample('amount');
         $this->reference = PaymentBuilder::sample('reference');
@@ -53,7 +53,7 @@ final class PaymentTest extends AggregateRootTestCase
             ->given()
             ->when(fn (): Payment => Payment::request(
                 $this->id,
-                $this->cartId,
+                $this->checkoutSessionId,
                 $this->amount,
                 $this->reference,
                 $this->checkoutUrl,
@@ -68,7 +68,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $orderPayment) => $orderPayment->authorize($this->authorizedAt))
-            ->then(new PaymentAuthorized($this->id->toString(), $this->cartId, $this->authorizedAt));
+            ->then(new PaymentAuthorized($this->id->toString(), $this->checkoutSessionId, $this->authorizedAt));
     }
 
     #[Test]
@@ -89,7 +89,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->requested(),
-                new PaymentAbandoned($this->id->toString(), $this->cartId, $abandonedAt),
+                new PaymentAbandoned($this->id->toString(), $this->checkoutSessionId, $abandonedAt),
             )
             ->when(static fn (Payment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
             ->then(new PaymentVoided($this->id->toString(), $this->reference, $lateAuthorizedAt));
@@ -159,7 +159,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(static fn (Payment $orderPayment) => $orderPayment->abandon($abandonedAt))
-            ->then(new PaymentAbandoned($this->id->toString(), $this->cartId, $abandonedAt));
+            ->then(new PaymentAbandoned($this->id->toString(), $this->checkoutSessionId, $abandonedAt));
     }
 
     #[Test]
@@ -222,7 +222,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         return new PaymentRequested(
             $this->id->toString(),
-            $this->cartId,
+            $this->checkoutSessionId,
             $this->amount,
             $this->reference,
             $this->checkoutUrl,
@@ -232,7 +232,7 @@ final class PaymentTest extends AggregateRootTestCase
 
     private function authorized(): PaymentAuthorized
     {
-        return new PaymentAuthorized($this->id->toString(), $this->cartId, $this->authorizedAt);
+        return new PaymentAuthorized($this->id->toString(), $this->checkoutSessionId, $this->authorizedAt);
     }
 
     private function captured(): PaymentCaptured

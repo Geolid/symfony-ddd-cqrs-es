@@ -8,19 +8,18 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\Command\StartCart\Exception\CartAlreadyActiveException;
 use Shopping\Checkout\Application\Command\StartCart\StartCart;
-use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
-use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
+use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class StartCartHandlerTest extends AbstractIntegrationTestCase
 {
-    private CartRepositoryInterface $repository;
+    private CartFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->repository = $this->service(CartRepositoryInterface::class);
+        $this->finder = $this->service(CartFinderInterface::class);
     }
 
     #[Test]
@@ -34,9 +33,9 @@ final class StartCartHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new StartCart($id, $shopperId));
 
         // Then
-        $cart = $this->repository->load(CartId::fromString($id));
-        self::assertSame($id, $cart->id->toString());
-        self::assertSame($shopperId, $cart->shopperId);
+        $result = $this->finder->ofId($id);
+        self::assertSame($id, $result->id);
+        self::assertSame($shopperId, $result->shopperId);
     }
 
     #[Test]

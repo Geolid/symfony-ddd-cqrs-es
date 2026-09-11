@@ -26,7 +26,7 @@ interface PaymentFinderInterface extends IterableFinderInterface
     /**
      * @throws PaymentResultNotFoundException
      */
-    public function ofCartId(string $cartId): PaymentResult;
+    public function ofCheckoutSession(string $checkoutSessionId): PaymentResult;
 
     /**
      * @throws PaymentResultNotFoundException

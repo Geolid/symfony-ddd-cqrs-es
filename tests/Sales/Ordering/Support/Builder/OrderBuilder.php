@@ -79,13 +79,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(lines: $lines);
     }
 
-    public function withTotalAmountInCents(int $totalAmountInCents): self
-    {
-        $product = Product::of(Uuid::uuid7()->toString(), Label::fromString('Assorted goods'), Money::fromCents($totalAmountInCents));
-
-        return $this->withLines([new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(1))]);
-    }
-
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
     {
         return $this->withAttributes(confirmedAt: $confirmedAt);
@@ -162,11 +155,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => static function (): array {
+            'lines' => static fn (): array => array_map(static function (): Line {
                 $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
 
-                return [new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(SeededFaker::get()->numberBetween(1, 5)))];
-            },
+                return new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(SeededFaker::get()->numberBetween(1, 5)));
+            }, range(1, SeededFaker::get()->numberBetween(1, 3))),
             'confirmedAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),

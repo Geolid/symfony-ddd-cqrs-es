@@ -11,7 +11,7 @@ final readonly class PaymentAbandoned
 {
     public function __construct(
         public string $id,
-        public string $cartId,
+        public string $checkoutSessionId,
         public \DateTimeImmutable $abandonedAt,
     ) {
     }

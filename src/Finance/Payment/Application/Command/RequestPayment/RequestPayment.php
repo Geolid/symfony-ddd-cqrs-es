@@ -10,7 +10,7 @@ final readonly class RequestPayment implements CommandInterface
 {
     public function __construct(
         public string $id,
-        public string $cartId,
+        public string $checkoutSessionId,
         public int $amountInCents,
         public string $reference,
         public string $checkoutUrl,

@@ -6,9 +6,8 @@ namespace Shopping\Checkout\Application\Command\ChangeCartLineQuantity;
 
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyConvertedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyExistsException;
-use Shopping\Checkout\Domain\Cart\Exception\CartCheckoutInProgressException;
+use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyPurchasedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartLineNotFoundException;
 use Shopping\Checkout\Domain\Cart\Exception\CartNotFoundException;
 use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
@@ -27,8 +26,7 @@ final readonly class ChangeCartLineQuantityHandler
 
     /**
      * @throws CartNotFoundException
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      * @throws CartLineNotFoundException
      * @throws CartAlreadyExistsException
      */

@@ -22,7 +22,7 @@ final readonly class PaymentAuthorizedPublisher
     {
         $this->publisher->publish(Payment::class, $event->id, new PaymentAuthorizedIntegrationEvent(
             paymentId: $event->id,
-            cartId: $event->cartId,
+            checkoutSessionId: $event->checkoutSessionId,
             authorizedAt: $event->authorizedAt,
         ));
     }

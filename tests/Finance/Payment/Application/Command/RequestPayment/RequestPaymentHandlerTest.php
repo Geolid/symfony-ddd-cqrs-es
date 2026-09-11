@@ -40,7 +40,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RequestPayment(
             id: $payment->id->toString(),
-            cartId: $paymentFactory['cartId'],
+            checkoutSessionId: $paymentFactory['checkoutSessionId'],
             amountInCents: $paymentFactory['amount']->cents,
             reference: $paymentFactory['reference']->value,
             checkoutUrl: $paymentFactory['checkoutUrl'],
@@ -56,7 +56,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenReferenceAlreadyInUse(): void
     {
         // Given
-        $cartId = PaymentBuilder::sample('cartId');
+        $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
         $reference = PaymentBuilder::sample('reference')->value;
         $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
@@ -66,7 +66,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RequestPayment(
             id: Uuid::uuid7()->toString(),
-            cartId: $cartId,
+            checkoutSessionId: $checkoutSessionId,
             amountInCents: 4_200,
             reference: $reference,
             checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
@@ -74,11 +74,11 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyClaimedForCart(): void
+    public function itFailsWhenAlreadyClaimedForCheckoutSession(): void
     {
         // Given
-        $cartId = PaymentBuilder::sample('cartId');
-        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::CART), $cartId, Uuid::uuid7()->toString());
+        $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
+        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $checkoutSessionId, Uuid::uuid7()->toString());
         $reference = PaymentBuilder::sample('reference')->value;
 
         // Then
@@ -87,7 +87,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RequestPayment(
             id: Uuid::uuid7()->toString(),
-            cartId: $cartId,
+            checkoutSessionId: $checkoutSessionId,
             amountInCents: 4_200,
             reference: $reference,
             checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),

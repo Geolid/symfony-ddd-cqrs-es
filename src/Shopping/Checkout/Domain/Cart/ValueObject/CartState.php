@@ -7,21 +7,15 @@ namespace Shopping\Checkout\Domain\Cart\ValueObject;
 enum CartState: string
 {
     case ACTIVE = 'active';
-    case CHECKOUT = 'checkout';
-    case CONVERTED = 'converted';
+    case PURCHASED = 'purchased';
 
     public function isActive(): bool
     {
         return self::ACTIVE === $this;
     }
 
-    public function isCheckout(): bool
+    public function isPurchased(): bool
     {
-        return self::CHECKOUT === $this;
-    }
-
-    public function isConverted(): bool
-    {
-        return self::CONVERTED === $this;
+        return self::PURCHASED === $this;
     }
 }

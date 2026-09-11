@@ -18,9 +18,9 @@ final class PaymentResultNotFoundException extends ResultNotFoundException
         return new self(\sprintf('Payment referenced "%s" not found.', $reference));
     }
 
-    public static function forCartId(string $cartId): self
+    public static function forCheckoutSessionId(string $checkoutSessionId): self
     {
-        return new self(\sprintf('Payment for cart "%s" not found.', $cartId));
+        return new self(\sprintf('Payment for checkout session "%s" not found.', $checkoutSessionId));
     }
 
     public static function forOrderId(string $orderId): self

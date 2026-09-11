@@ -19,18 +19,10 @@ final class CartStateTest extends TestCase
     }
 
     #[Test]
-    public function itIsCheckout(): void
+    public function itIsPurchased(): void
     {
         foreach (CartState::cases() as $state) {
-            self::assertSame(CartState::CHECKOUT === $state, $state->isCheckout(), $state->value);
-        }
-    }
-
-    #[Test]
-    public function itIsConverted(): void
-    {
-        foreach (CartState::cases() as $state) {
-            self::assertSame(CartState::CONVERTED === $state, $state->isConverted(), $state->value);
+            self::assertSame(CartState::PURCHASED === $state, $state->isPurchased(), $state->value);
         }
     }
 }

@@ -67,7 +67,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($paymentFactory['cartId'], $result->cartId);
+        self::assertSame($paymentFactory['checkoutSessionId'], $result->checkoutSessionId);
         self::assertSame($order->id->toString(), $result->orderId);
         self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
         self::assertSame($paymentFactory['reference']->value, $result->reference);
@@ -92,7 +92,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itGetsByCartId(): void
+    public function itGetsByCheckoutSession(): void
     {
         // Given
         $other = PaymentBuilder::new()->create();
@@ -101,20 +101,20 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $this->store($other, $orderPayment);
 
         // When
-        $result = $this->finder()->ofCartId($paymentBuilder['cartId']);
+        $result = $this->finder()->ofCheckoutSession($paymentBuilder['checkoutSessionId']);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
     }
 
     #[Test]
-    public function itThrowsWhenCartIdNotFound(): void
+    public function itThrowsWhenCheckoutSessionNotFound(): void
     {
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofCartId(Uuid::uuid7()->toString());
+        $this->finder()->ofCheckoutSession(Uuid::uuid7()->toString());
     }
 
     #[Test]

@@ -13,7 +13,7 @@ final readonly class PaymentRequested
 {
     public function __construct(
         public string $id,
-        public string $cartId,
+        public string $checkoutSessionId,
         public Money $amount,
         public PaymentReference $reference,
         public string $checkoutUrl,

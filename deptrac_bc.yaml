@@ -56,10 +56,10 @@ deptrac:
 
   # Deptrac draws which BC pairs may see each other; PHPat seals how (EventTest, BoundedContextTest.communicatesOnlyViaIntegrationEvents).
   ruleset:
-    Shopping.Checkout: [ Catalog.Listing, Compliance.Erasing, Finance.Payment, Sales.Ordering, Shared, Vendors ]
+    Shopping.Checkout: [ Catalog.Listing, Compliance.Erasing, Sales.Ordering, Shared, Vendors ]
     Sales.Ordering:         [ Shopping.Checkout, Fulfilment.Shipping, Finance.Payment, Shared, Vendors ]
     Fulfilment.Shipping: [ Sales.Ordering, Shopping.Checkout, Finance.Payment, Shared, Vendors ]
-    Finance.Payment: [ Sales.Ordering, Fulfilment.Shipping, Shared, Vendors ]
+    Finance.Payment: [ Sales.Ordering, Fulfilment.Shipping, Shopping.Checkout, Shared, Vendors ]
     Iam.Identity:        [ Compliance.Erasing, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]

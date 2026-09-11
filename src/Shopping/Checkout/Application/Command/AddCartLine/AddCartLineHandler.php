@@ -11,9 +11,8 @@ use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Application\Command\AddCartLine\Exception\ProductNotListedException;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
-use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyConvertedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyExistsException;
-use Shopping\Checkout\Domain\Cart\Exception\CartCheckoutInProgressException;
+use Shopping\Checkout\Domain\Cart\Exception\CartAlreadyPurchasedException;
 use Shopping\Checkout\Domain\Cart\Exception\CartNotFoundException;
 use Shopping\Checkout\Domain\Cart\Repository\CartRepositoryInterface;
 use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
@@ -32,8 +31,7 @@ final readonly class AddCartLineHandler
 
     /**
      * @throws CartNotFoundException
-     * @throws CartCheckoutInProgressException
-     * @throws CartAlreadyConvertedException
+     * @throws CartAlreadyPurchasedException
      * @throws CartAlreadyExistsException
      * @throws ProductNotListedException
      */
