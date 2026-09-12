@@ -57,7 +57,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) OrderId $id;
-    public private(set) string $cartId;
     public private(set) string $shopperId;
     public private(set) PostalAddress $shippingAddress;
     private OrderState $operationalState;
@@ -236,7 +235,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyConfirmed(OrderConfirmed $event): void
     {
         $this->id = $event->id;
-        $this->cartId = $event->cartId;
         $this->shopperId = $event->shopperId;
         $this->shippingAddress = $event->shippingAddress;
         $this->operationalState = OrderState::CONFIRMED;

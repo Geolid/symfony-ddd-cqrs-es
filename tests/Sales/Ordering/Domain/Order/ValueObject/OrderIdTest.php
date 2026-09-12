@@ -12,6 +12,8 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 
 final class OrderIdTest extends TestCase
 {
+    private const string CHECKOUT_SESSION_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
+
     #[Test]
     public function itGenerates(): void
     {
@@ -20,6 +22,16 @@ final class OrderIdTest extends TestCase
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
+    }
+
+    #[Test]
+    public function itDerivesKnownId(): void
+    {
+        // When
+        $id = OrderId::forCheckoutSession(self::CHECKOUT_SESSION_ID);
+
+        // Then
+        self::assertSame('526bdab0-b284-5479-ae49-8286c465a37f', $id->toString());
     }
 
     #[Test]

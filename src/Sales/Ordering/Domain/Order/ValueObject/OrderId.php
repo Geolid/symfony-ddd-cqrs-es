@@ -12,10 +12,10 @@ final readonly class OrderId implements AggregateRootId
 {
     use UuidTrait;
 
-    private const string CART_NAMESPACE = '2f6b8d4a-9c3e-4f1a-8b6d-5e7c9a0d1f3b';
+    private const string CHECKOUT_SESSION_NAMESPACE = '2f6b8d4a-9c3e-4f1a-8b6d-5e7c9a0d1f3b';
 
-    public static function forCart(string $cartId): self
+    public static function forCheckoutSession(string $checkoutSessionId): self
     {
-        return new self(Uuid::uuid5(self::CART_NAMESPACE, $cartId)->toString());
+        return new self(Uuid::uuid5(self::CHECKOUT_SESSION_NAMESPACE, $checkoutSessionId)->toString());
     }
 }

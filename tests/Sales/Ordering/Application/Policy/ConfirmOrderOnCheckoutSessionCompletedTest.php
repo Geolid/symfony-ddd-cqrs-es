@@ -50,7 +50,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         ));
 
         // Then
-        $orderId = OrderId::forCart($cartId)->toString();
+        $orderId = OrderId::forCheckoutSession($checkoutSessionId)->toString();
         $result = $this->service(OrderFinderInterface::class)->ofId($orderId);
         self::assertSame($shopperId, $result->shopperId);
         self::assertSame($checkoutSessionId, $result->checkoutSessionId);
