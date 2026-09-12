@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\Command\ConfirmOrder;
 
 use Psr\Clock\ClockInterface;
-use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
 use Sales\Ordering\Domain\Order\ValueObject\Quantity;
@@ -37,9 +35,9 @@ final readonly class ConfirmOrderHandler
             id: OrderId::fromString($command->id),
             cartId: $command->cartId,
             shopperId: $command->shopperId,
-            paymentId: $command->paymentId,
+            checkoutSessionId: $command->checkoutSessionId,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
-            lines: array_map(fn (array $line): Line => $this->resolveLine($command->cartId, $line), $command->lines),
+            lines: array_map($this->resolveLine(...), $command->lines),
             confirmedAt: $this->clock->now(),
         );
 
@@ -52,13 +50,14 @@ final readonly class ConfirmOrderHandler
 
     /**
      * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $line
+     *
+     * @return array{product: Product, quantity: Quantity}
      */
-    private function resolveLine(string $cartId, array $line): Line
+    private function resolveLine(array $line): array
     {
-        return new Line(
-            LineId::forProduct($cartId, $line['productId']),
-            Product::of($line['productId'], Label::fromString($line['label']), Money::fromCents($line['unitPriceInCents'])),
-            Quantity::of($line['quantity']),
-        );
+        return [
+            'product' => Product::of($line['productId'], Label::fromString($line['label']), Money::fromCents($line['unitPriceInCents'])),
+            'quantity' => Quantity::of($line['quantity']),
+        ];
     }
 }

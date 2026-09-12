@@ -11,6 +11,7 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
 use Patchlevel\EventSourcing\Message\Message;
@@ -45,9 +46,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itCaptures(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')
             ->with($paymentBuilder['reference']->value)
@@ -83,9 +85,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itIgnoresWhenGatewayReturnsUnexpectedStatus(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::AUTHORIZED);
 
@@ -105,9 +108,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itFailsPaymentWhenGatewayDeclines(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::DECLINED);
 
@@ -128,9 +132,10 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itIgnoresFatalGatewayFailure(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');

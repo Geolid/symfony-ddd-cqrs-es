@@ -37,7 +37,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
             [
                 'id' => $event->id->toString(),
                 'shopper_id' => $event->shopperId,
-                'payment_id' => $event->paymentId,
+                'checkout_session_id' => $event->checkoutSessionId,
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
                 'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => OrderStatus::CONFIRMED->value,
@@ -146,7 +146,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('shopper_id', Types::STRING, ['length' => 64]);
-        $table->addColumn('payment_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('checkout_session_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);

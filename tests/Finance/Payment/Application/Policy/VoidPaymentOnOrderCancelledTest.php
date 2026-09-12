@@ -7,6 +7,7 @@ namespace Finance\Tests\Payment\Application\Policy;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\VoidPaymentOnOrderCancelled;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -21,9 +22,10 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
     public function itVoids(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withPaymentId($payment->id->toString())->create();
+        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
 
         // When

@@ -26,7 +26,7 @@ final readonly class OrderConfirmed
         public OrderId $id,
         public string $cartId,
         public string $shopperId,
-        public string $paymentId,
+        public string $checkoutSessionId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([
                 'erased',

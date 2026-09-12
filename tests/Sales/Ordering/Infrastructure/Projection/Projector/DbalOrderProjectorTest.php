@@ -8,7 +8,6 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
@@ -18,7 +17,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{shopper_id: string, payment_id: string, shipping_address: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
+ * @phpstan-type Row array{shopper_id: string, checkout_session_id: string, shipping_address: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -37,14 +36,14 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($shopperId, $row['shopper_id']);
-        self::assertSame($builder['paymentId'], $row['payment_id']);
+        self::assertSame($builder['checkoutSessionId'], $row['checkout_session_id']);
         self::assertSame(
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
             json_decode($row['shipping_address'], true),
         );
         $totalAmountInCents = array_reduce(
             $builder['lines'],
-            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            static fn (Money $carry, array $line): Money => $carry->plus($line['product']->price->times($line['quantity']->value)),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);
@@ -221,7 +220,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT shopper_id, payment_id, shipping_address, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
+                'SELECT shopper_id, checkout_session_id, shipping_address, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

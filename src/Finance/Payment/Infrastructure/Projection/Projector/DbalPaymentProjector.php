@@ -15,6 +15,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
@@ -109,7 +110,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['order_id' => $event->orderId],
-            ['id' => $event->paymentId],
+            ['id' => PaymentId::forCheckoutSession($event->checkoutSessionId)->toString()],
         );
     }
 

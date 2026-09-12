@@ -9,16 +9,16 @@ use Webmozart\Assert\Assert;
 
 final readonly class LineId
 {
-    private const string PRODUCT_NAMESPACE = 'b3f1c2a4-6d5e-4f8a-9b0c-1d2e3f4a5b6c';
+    private const string ORDER_NAMESPACE = 'b3f1c2a4-6d5e-4f8a-9b0c-1d2e3f4a5b6c';
 
     private function __construct(public string $value)
     {
-        Assert::uuid($value, 'A cart line id must be a valid UUID, %s given.');
+        Assert::uuid($value, 'An order line id must be a valid UUID, %s given.');
     }
 
-    public static function forProduct(string $cartId, string $productId): self
+    public static function forOrder(string $orderId, int $position): self
     {
-        return new self(Uuid::uuid5(self::PRODUCT_NAMESPACE, $cartId.$productId)->toString());
+        return new self(Uuid::uuid5(self::ORDER_NAMESPACE, $orderId.$position)->toString());
     }
 
     public static function fromString(string $value): self

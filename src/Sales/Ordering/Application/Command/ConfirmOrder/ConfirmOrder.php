@@ -16,7 +16,7 @@ final readonly class ConfirmOrder implements CommandInterface
         public string $id,
         public string $cartId,
         public string $shopperId,
-        public string $paymentId,
+        public string $checkoutSessionId,
         public array $lines,
         public array $shippingAddress,
     ) {

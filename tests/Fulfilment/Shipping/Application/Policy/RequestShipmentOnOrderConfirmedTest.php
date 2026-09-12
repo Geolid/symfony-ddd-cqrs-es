@@ -41,7 +41,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
             orderId: $orderId,
             cartId: Uuid::uuid7()->toString(),
             shopperId: $shopperId,
-            paymentId: Uuid::uuid7()->toString(),
+            checkoutSessionId: Uuid::uuid7()->toString(),
             shippingAddress: $destinationData,
             confirmedAt: Clock::get()->now(),
         ));

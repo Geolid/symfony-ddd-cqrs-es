@@ -10,7 +10,6 @@ use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundExcepti
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
@@ -37,14 +36,14 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($order->id->toString(), $result->id);
         self::assertSame($builder['shopperId'], $result->shopperId);
-        self::assertSame($builder['paymentId'], $result->paymentId);
+        self::assertSame($builder['checkoutSessionId'], $result->checkoutSessionId);
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
         );
         $totalAmountInCents = array_reduce(
             $builder['lines'],
-            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            static fn (Money $carry, array $line): Money => $carry->plus($line['product']->price->times($line['quantity']->value)),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $result->totalAmountInCents);

@@ -27,10 +27,10 @@ final readonly class ConfirmOrderOnCheckoutSessionCompleted
     public function __invoke(CheckoutSessionCompletedIntegrationEvent $event): void
     {
         $this->commandBus->dispatch(new ConfirmOrder(
-            id: OrderId::forCart($event->cartId)->toString(),
+            id: OrderId::forCheckoutSession($event->checkoutSessionId)->toString(),
             cartId: $event->cartId,
             shopperId: $event->shopperId,
-            paymentId: $event->paymentId,
+            checkoutSessionId: $event->checkoutSessionId,
             lines: $event->items,
             shippingAddress: $event->shippingAddress,
         ));

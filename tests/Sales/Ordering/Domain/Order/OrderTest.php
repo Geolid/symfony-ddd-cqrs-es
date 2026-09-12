@@ -20,7 +20,10 @@ use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\Product;
+use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -30,10 +33,10 @@ final class OrderTest extends AggregateRootTestCase
     private OrderId $id;
     private readonly string $cartId;
     private string $shopperId;
-    private string $paymentId;
+    private readonly string $checkoutSessionId;
     private PostalAddress $shippingAddress;
 
-    /** @var list<Line> */
+    /** @var list<array{product: Product, quantity: Quantity}> */
     private array $lines;
 
     private \DateTimeImmutable $confirmedAt;
@@ -51,7 +54,7 @@ final class OrderTest extends AggregateRootTestCase
         $this->id = OrderId::fromString(Uuid::uuid7()->toString());
         $this->cartId = OrderBuilder::sample('cartId');
         $this->shopperId = OrderBuilder::sample('shopperId');
-        $this->paymentId = OrderBuilder::sample('paymentId');
+        $this->checkoutSessionId = OrderBuilder::sample('checkoutSessionId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
         $this->lines = OrderBuilder::sample('lines');
         $this->confirmedAt = OrderBuilder::sample('confirmedAt');
@@ -68,14 +71,14 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->lines, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->checkoutSessionId, $this->shippingAddress, $this->lines, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id,
                 $this->cartId,
                 $this->shopperId,
-                $this->paymentId,
+                $this->checkoutSessionId,
                 $this->shippingAddress,
-                $this->lines,
+                $this->orderLines(),
                 $this->totalAmount(),
                 $this->confirmedAt,
             ));
@@ -86,7 +89,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, [], $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->checkoutSessionId, $this->shippingAddress, [], $this->confirmedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -301,9 +304,9 @@ final class OrderTest extends AggregateRootTestCase
             $this->id,
             $this->cartId,
             $this->shopperId,
-            $this->paymentId,
+            $this->checkoutSessionId,
             $this->shippingAddress,
-            $this->lines,
+            $this->orderLines(),
             $this->totalAmount(),
             $this->confirmedAt,
         );
@@ -329,10 +332,22 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderErasureApproved($this->id, $this->erasureApprovedAt);
     }
 
+    /**
+     * @return list<Line>
+     */
+    private function orderLines(): array
+    {
+        return array_map(
+            fn (array $line, int $position): Line => new Line(LineId::forOrder($this->id->toString(), $position), $line['product'], $line['quantity']),
+            $this->lines,
+            array_keys($this->lines),
+        );
+    }
+
     private function totalAmount(): Money
     {
         return array_reduce(
-            $this->lines,
+            $this->orderLines(),
             static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
             Money::fromCents(0),
         );
