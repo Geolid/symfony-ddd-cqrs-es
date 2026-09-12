@@ -37,7 +37,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($shopperId, $row['shopper_id']);
-        self::assertSame($order->paymentId, $row['payment_id']);
+        self::assertSame($builder['paymentId'], $row['payment_id']);
         self::assertSame(
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
             json_decode($row['shipping_address'], true),
