@@ -10,7 +10,6 @@ use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterf
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifest\Exception\ManifestDeniedException;
-use Fulfilment\Shipping\Application\ShipmentStatus;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -35,7 +34,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
     {
         $shipment = $this->shipmentFinder->ofId($shipmentId);
 
-        if (ShipmentStatus::CANCELLED === $shipment->status) {
+        if ($shipment->status->isCancelled()) {
             throw ManifestDeniedException::forCancelledShipment($shipmentId);
         }
 

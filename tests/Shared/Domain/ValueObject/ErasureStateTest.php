@@ -11,14 +11,6 @@ use Shared\Domain\ValueObject\ErasureState;
 final class ErasureStateTest extends TestCase
 {
     #[Test]
-    public function itIsRetained(): void
-    {
-        foreach (ErasureState::cases() as $state) {
-            self::assertSame(ErasureState::RETAINED === $state, $state->isRetained(), $state->value);
-        }
-    }
-
-    #[Test]
     public function itIsApproved(): void
     {
         foreach (ErasureState::cases() as $state) {

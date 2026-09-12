@@ -7,7 +7,6 @@ namespace Shopping\Checkout\Application\CheckoutSessionOpening;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
-use Shared\Application\ErasureStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException;
@@ -51,7 +50,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         $shopper = $this->shopperFinder->ofIdOrNull($cart->shopperId)
             ?? throw ShopperNotRegisteredException::forId($cart->shopperId);
 
-        if (ErasureStatus::REQUESTED === $shopper->erasureStatus) {
+        if ($shopper->erasureStatus->isRequested()) {
             throw ShopperErasureRequestedException::forId($cart->shopperId);
         }
 

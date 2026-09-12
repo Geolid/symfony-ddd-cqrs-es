@@ -12,4 +12,9 @@ enum ShipmentStatus: string
     case MANIFESTED = 'manifested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
+
+    public function isCancelled(): bool
+    {
+        return self::CANCELLED === $this;
+    }
 }

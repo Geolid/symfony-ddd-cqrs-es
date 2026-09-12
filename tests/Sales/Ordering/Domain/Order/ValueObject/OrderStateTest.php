@@ -25,4 +25,12 @@ final class OrderStateTest extends TestCase
             self::assertSame(OrderState::CANCELLED === $state, $state->isCancelled(), $state->value);
         }
     }
+
+    #[Test]
+    public function itIsFailed(): void
+    {
+        foreach (OrderState::cases() as $state) {
+            self::assertSame(OrderState::FAILED === $state, $state->isFailed(), $state->value);
+        }
+    }
 }

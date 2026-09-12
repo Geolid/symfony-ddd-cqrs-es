@@ -10,4 +10,9 @@ enum ErasureStatus: string
     case REQUESTED = 'requested';
     case APPROVED = 'approved';
     case ERASED = 'erased';
+
+    public function isRequested(): bool
+    {
+        return self::REQUESTED === $this;
+    }
 }
