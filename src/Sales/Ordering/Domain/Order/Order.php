@@ -22,8 +22,11 @@ use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
+use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
+use Sales\Ordering\Domain\Order\ValueObject\Product;
+use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -61,7 +64,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private ErasureState $erasureState;
 
     /**
-     * @param list<Line> $lines
+     * @param list<array{product: Product, quantity: Quantity}> $lines
      *
      * @throws OrderWithoutLineException
      */
@@ -69,7 +72,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         OrderId $id,
         string $cartId,
         string $shopperId,
-        string $paymentId,
+        string $checkoutSessionId,
         PostalAddress $shippingAddress,
         array $lines,
         \DateTimeImmutable $confirmedAt,
@@ -78,8 +81,14 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderWithoutLineException::forId($id);
         }
 
-        $total = array_reduce(
+        $orderLines = array_map(
+            static fn (array $line, int $position): Line => new Line(LineId::forOrder($id->toString(), $position), $line['product'], $line['quantity']),
             $lines,
+            array_keys($lines),
+        );
+
+        $total = array_reduce(
+            $orderLines,
             static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
             Money::fromCents(0),
         );
@@ -89,9 +98,9 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             id: $id,
             cartId: $cartId,
             shopperId: $shopperId,
-            paymentId: $paymentId,
+            checkoutSessionId: $checkoutSessionId,
             shippingAddress: $shippingAddress,
-            lines: $lines,
+            lines: $orderLines,
             totalAmount: $total,
             confirmedAt: $confirmedAt,
         ));

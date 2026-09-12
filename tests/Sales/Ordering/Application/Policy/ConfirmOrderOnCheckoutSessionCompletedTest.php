@@ -26,7 +26,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         // Given
         $cartId = Uuid::uuid7()->toString();
         $shopperId = Uuid::uuid7()->toString();
-        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
         $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
         $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
         $items = [[
@@ -38,14 +38,14 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
 
         // When
         $this->trigger(ConfirmOrderOnCheckoutSessionCompleted::class, new CheckoutSessionCompletedIntegrationEvent(
-            checkoutSessionId: Uuid::uuid7()->toString(),
+            checkoutSessionId: $checkoutSessionId,
             cartId: $cartId,
             shopperId: $shopperId,
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
             totalAmountInCents: SeededFaker::get()->numberBetween(500, 5_000),
-            paymentId: $paymentId,
+            paymentId: Uuid::uuid7()->toString(),
             completedAt: Clock::get()->now(),
         ));
 
@@ -53,7 +53,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $orderId = OrderId::forCart($cartId)->toString();
         $result = $this->service(OrderFinderInterface::class)->ofId($orderId);
         self::assertSame($shopperId, $result->shopperId);
-        self::assertSame($paymentId, $result->paymentId);
+        self::assertSame($checkoutSessionId, $result->checkoutSessionId);
         self::assertSame(
             $shippingAddress,
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],

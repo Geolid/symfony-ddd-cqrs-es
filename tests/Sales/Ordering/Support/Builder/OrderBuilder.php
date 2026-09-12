@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Order;
-use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
 use Sales\Ordering\Domain\Order\ValueObject\Quantity;
@@ -24,9 +22,9 @@ use Symfony\Component\Clock\Clock;
  *     id: OrderId,
  *     cartId: string,
  *     shopperId: string,
- *     paymentId: string,
+ *     checkoutSessionId: string,
  *     shippingAddress: PostalAddress,
- *     lines: list<Line>,
+ *     lines: list<array{product: Product, quantity: Quantity}>,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
@@ -55,9 +53,9 @@ final class OrderBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(shopperId: $shopperId);
     }
 
-    public function withPaymentId(string $paymentId): self
+    public function withCheckoutSessionId(string $checkoutSessionId): self
     {
-        return $this->withAttributes(paymentId: $paymentId);
+        return $this->withAttributes(checkoutSessionId: $checkoutSessionId);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -66,7 +64,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<Line> $lines
+     * @param list<array{product: Product, quantity: Quantity}> $lines
      */
     public function withLines(array $lines): self
     {
@@ -140,15 +138,15 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
-            'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
+            'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => static fn (): array => array_map(static function (): Line {
+            'lines' => static fn (): array => array_map(static function (): array {
                 $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
 
-                return new Line(LineId::forProduct(Uuid::uuid7()->toString(), $product->id), $product, Quantity::of(SeededFaker::get()->numberBetween(1, 5)));
+                return ['product' => $product, 'quantity' => Quantity::of(SeededFaker::get()->numberBetween(1, 5))];
             }, range(1, SeededFaker::get()->numberBetween(1, 3))),
             'confirmedAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -166,7 +164,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
             id: $this['id'],
             cartId: $this['cartId'],
             shopperId: $this['shopperId'],
-            paymentId: $this['paymentId'],
+            checkoutSessionId: $this['checkoutSessionId'],
             shippingAddress: $this['shippingAddress'],
             lines: $this['lines'],
             confirmedAt: $this['confirmedAt'],

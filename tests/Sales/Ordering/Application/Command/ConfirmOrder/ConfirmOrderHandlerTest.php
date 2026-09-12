@@ -34,7 +34,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $shopperId = Uuid::uuid7()->toString();
-        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
         $quantity = SeededFaker::get()->numberBetween(1, 5);
         $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
@@ -44,7 +44,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             id: $id,
             cartId: Uuid::uuid7()->toString(),
             shopperId: $shopperId,
-            paymentId: $paymentId,
+            checkoutSessionId: $checkoutSessionId,
             lines: [[
                 'productId' => Uuid::uuid7()->toString(),
                 'label' => SeededFaker::get()->sentence(3),
@@ -57,7 +57,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($id);
         self::assertSame($shopperId, $result->shopperId);
-        self::assertSame($paymentId, $result->paymentId);
+        self::assertSame($checkoutSessionId, $result->checkoutSessionId);
         self::assertSame(
             $shippingAddress,
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
@@ -77,7 +77,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             id: Uuid::uuid7()->toString(),
             cartId: Uuid::uuid7()->toString(),
             shopperId: Uuid::uuid7()->toString(),
-            paymentId: Uuid::uuid7()->toString(),
+            checkoutSessionId: Uuid::uuid7()->toString(),
             lines: [],
             shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
         ));

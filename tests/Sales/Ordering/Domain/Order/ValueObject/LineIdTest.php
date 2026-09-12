@@ -11,17 +11,16 @@ use Sales\Ordering\Domain\Order\ValueObject\LineId;
 
 final class LineIdTest extends TestCase
 {
-    private const string CART_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
-    private const string PRODUCT_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b8';
+    private const string ORDER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
     #[Test]
     public function itDerivesKnownId(): void
     {
         // When
-        $id = LineId::forProduct(self::CART_ID, self::PRODUCT_ID);
+        $id = LineId::forOrder(self::ORDER_ID, 0);
 
         // Then
-        self::assertSame('0618bff4-5647-5b06-8c79-f08c60e2821b', $id->toString());
+        self::assertSame('ccd61927-4a66-548f-8ea7-5a6cebb4bfdf', $id->toString());
     }
 
     #[Test]
@@ -48,8 +47,8 @@ final class LineIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $a = LineId::forProduct(self::CART_ID, self::PRODUCT_ID);
-        $b = LineId::forProduct(self::CART_ID, self::PRODUCT_ID);
+        $a = LineId::forOrder(self::ORDER_ID, 0);
+        $b = LineId::forOrder(self::ORDER_ID, 0);
 
         // When
         $equals = $a->equals($b);
@@ -62,8 +61,8 @@ final class LineIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = LineId::forProduct(self::CART_ID, self::PRODUCT_ID);
-        $b = LineId::forProduct(self::CART_ID, '0199a1b2-3c4d-7e5f-8061-72839405a6b9');
+        $a = LineId::forOrder(self::ORDER_ID, 0);
+        $b = LineId::forOrder(self::ORDER_ID, 1);
 
         // When
         $equals = $a->equals($b);

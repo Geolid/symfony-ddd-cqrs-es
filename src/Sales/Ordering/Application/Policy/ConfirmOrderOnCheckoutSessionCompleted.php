@@ -30,7 +30,7 @@ final readonly class ConfirmOrderOnCheckoutSessionCompleted
             id: OrderId::forCart($event->cartId)->toString(),
             cartId: $event->cartId,
             shopperId: $event->shopperId,
-            paymentId: $event->paymentId,
+            checkoutSessionId: $event->checkoutSessionId,
             lines: $event->items,
             shippingAddress: $event->shippingAddress,
         ));

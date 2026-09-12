@@ -25,7 +25,7 @@ final readonly class OrderConfirmedPublisher
             orderId: $event->id->toString(),
             cartId: $event->cartId,
             shopperId: $event->shopperId,
-            paymentId: $event->paymentId,
+            checkoutSessionId: $event->checkoutSessionId,
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             confirmedAt: $event->confirmedAt,
         ));
