@@ -10,6 +10,7 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
+use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessionResultNotFoundException;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 
 /**
@@ -17,6 +18,18 @@ use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionPro
  */
 final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements CheckoutSessionFinderInterface
 {
+    /**
+     * @throws CheckoutSessionResultNotFoundException
+     */
+    public function ofId(string $id): CheckoutSessionResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw CheckoutSessionResultNotFoundException::forId($id);
+    }
+
     public function ofCartOrNull(string $cartId): ?CheckoutSessionResult
     {
         return $this->filter(
@@ -49,7 +62,7 @@ final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements Chec
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'cart_id', 'shopper_id', 'status', 'opened_at')
+        $qb->select('id', 'cart_id', 'shopper_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
             ->from(DbalCheckoutSessionProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

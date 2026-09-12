@@ -72,7 +72,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         string $shopperId,
         string $paymentId,
         PostalAddress $shippingAddress,
-        PostalAddress $billingAddress,
         array $lines,
         \DateTimeImmutable $confirmedAt,
     ): self {
@@ -93,7 +92,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             shopperId: $shopperId,
             paymentId: $paymentId,
             shippingAddress: $shippingAddress,
-            billingAddress: $billingAddress,
             lines: $lines,
             totalAmount: $total,
             confirmedAt: $confirmedAt,

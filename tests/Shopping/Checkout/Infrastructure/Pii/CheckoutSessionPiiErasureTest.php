@@ -10,7 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionOpened\CheckoutSessionOpenedIntegrationEvent;
+use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
+use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -70,14 +71,14 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsCheckoutSessionOpenedIntegrationEventShippingAddressOnErasure(): void
+    public function itCryptoShredsShippingAddressOnCheckoutSessionCompletedErasure(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
         $this->store($checkoutSession);
         $serialized = $this->serializedEventOf(
-            CheckoutSessionOpenedIntegrationEvent::class,
-            static fn (CheckoutSessionOpenedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
+            CheckoutSessionCompleted::class,
+            static fn (CheckoutSessionCompleted $event): bool => $event->id === $checkoutSession->id->toString(),
         );
 
         // When
@@ -85,19 +86,59 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CheckoutSessionOpenedIntegrationEvent::class, $rehydrated);
+        self::assertInstanceOf(CheckoutSessionCompleted::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->shippingAddress));
+    }
+
+    #[Test]
+    public function itCryptoShredsBillingAddressOnCheckoutSessionCompletedErasure(): void
+    {
+        // Given
+        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
+        $this->store($checkoutSession);
+        $serialized = $this->serializedEventOf(
+            CheckoutSessionCompleted::class,
+            static fn (CheckoutSessionCompleted $event): bool => $event->id === $checkoutSession->id->toString(),
+        );
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
+
+        // Then
+        $rehydrated = $this->serializer->deserialize($serialized);
+        self::assertInstanceOf(CheckoutSessionCompleted::class, $rehydrated);
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->billingAddress));
+    }
+
+    #[Test]
+    public function itCryptoShredsCheckoutSessionCompletedIntegrationEventShippingAddressOnErasure(): void
+    {
+        // Given
+        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
+        $this->store($checkoutSession);
+        $serialized = $this->serializedEventOf(
+            CheckoutSessionCompletedIntegrationEvent::class,
+            static fn (CheckoutSessionCompletedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
+        );
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
+
+        // Then
+        $rehydrated = $this->serializer->deserialize($serialized);
+        self::assertInstanceOf(CheckoutSessionCompletedIntegrationEvent::class, $rehydrated);
         self::assertSame($this->erasedPostalAddress(), $rehydrated->shippingAddress);
     }
 
     #[Test]
-    public function itCryptoShredsCheckoutSessionOpenedIntegrationEventBillingAddressOnErasure(): void
+    public function itCryptoShredsCheckoutSessionCompletedIntegrationEventBillingAddressOnErasure(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
         $this->store($checkoutSession);
         $serialized = $this->serializedEventOf(
-            CheckoutSessionOpenedIntegrationEvent::class,
-            static fn (CheckoutSessionOpenedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
+            CheckoutSessionCompletedIntegrationEvent::class,
+            static fn (CheckoutSessionCompletedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
         );
 
         // When
@@ -105,7 +146,7 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CheckoutSessionOpenedIntegrationEvent::class, $rehydrated);
+        self::assertInstanceOf(CheckoutSessionCompletedIntegrationEvent::class, $rehydrated);
         self::assertSame($this->erasedPostalAddress(), $rehydrated->billingAddress);
     }
 

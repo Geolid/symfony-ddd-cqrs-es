@@ -9,5 +9,5 @@ enum CheckoutSessionStatus: string
     case OPEN = 'open';
     case EXPIRED = 'expired';
     case STALE = 'stale';
-    case CONSUMED = 'consumed';
+    case COMPLETED = 'completed';
 }

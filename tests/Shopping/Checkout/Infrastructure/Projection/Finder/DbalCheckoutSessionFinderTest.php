@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Symfony\Component\Clock\Clock;
 
@@ -36,6 +39,20 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($checkoutSession->id->toString(), $result->id);
         self::assertSame($builder['cartId'], $result->cartId);
         self::assertSame($builder['shopperId'], $result->shopperId);
+        self::assertSame(
+            PostalAddressMapper::toArray($builder['shippingAddress']),
+            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+        );
+        self::assertSame(
+            PostalAddressMapper::toArray($builder['billingAddress']),
+            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+        );
+        $totalAmountInCents = array_reduce(
+            $builder['items'],
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            Money::fromCents(0),
+        )->cents;
+        self::assertSame($totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
         self::assertSame($builder['openedAt']->format('Y-m-d H:i:s'), $result->openedAt->format('Y-m-d H:i:s'));
 

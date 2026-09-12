@@ -23,11 +23,11 @@ final class ListCheckoutSessionsPastReconciliationThresholdHandlerTest extends A
         $fresh = CheckoutSessionBuilder::new()
             ->withOpenedAt($now->modify('-5 minutes'))
             ->create();
-        $consumed = CheckoutSessionBuilder::new()
+        $completed = CheckoutSessionBuilder::new()
             ->withOpenedAt($now->modify('-45 minutes'))
-            ->consumed()
+            ->completed()
             ->create();
-        $this->store($fresh, $consumed, $stuck);
+        $this->store($fresh, $completed, $stuck);
 
         // When
         $results = iterator_to_array($this->ask(new ListCheckoutSessionsPastReconciliationThreshold()), false);

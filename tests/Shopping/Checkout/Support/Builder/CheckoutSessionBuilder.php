@@ -6,27 +6,30 @@ namespace Shopping\Tests\Checkout\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
  *     id: CheckoutSessionId,
  *     cartId: string,
  *     shopperId: string,
- *     lines: list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}>,
+ *     items: list<CheckoutItem>,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
- *     totalAmountInCents: int,
+ *     paymentId: string,
  *     openedAt: \DateTimeImmutable,
  *     expiredAt: \DateTimeImmutable,
  *     staledAt: \DateTimeImmutable,
- *     consumedAt: \DateTimeImmutable,
+ *     completedAt: \DateTimeImmutable,
  * }
  *
  * @extends AbstractAggregateBuilder<CheckoutSession, Attributes>
@@ -49,11 +52,11 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
+     * @param list<CheckoutItem> $items
      */
-    public function withLines(array $lines): self
+    public function withItems(array $items): self
     {
-        return $this->withAttributes(lines: $lines);
+        return $this->withAttributes(items: $items);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -66,9 +69,9 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(billingAddress: $billingAddress);
     }
 
-    public function withTotalAmountInCents(int $totalAmountInCents): self
+    public function withPaymentId(string $paymentId): self
     {
-        return $this->withAttributes(totalAmountInCents: $totalAmountInCents);
+        return $this->withAttributes(paymentId: $paymentId);
     }
 
     public function withOpenedAt(\DateTimeImmutable $openedAt): self
@@ -94,12 +97,20 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function consumed(?\DateTimeImmutable $consumedAt = null): self
+    public function completed(?\DateTimeImmutable $completedAt = null): self
     {
-        $builder = null !== $consumedAt ? $this->withAttributes(consumedAt: $consumedAt) : $this;
+        $builder = null !== $completedAt ? $this->withAttributes(completedAt: $completedAt) : $this;
 
         return $builder->withModifier(
-            static fn (CheckoutSession $checkoutSession, self $builder) => $checkoutSession->consume($builder['consumedAt']),
+            static fn (CheckoutSession $checkoutSession, self $builder) => $checkoutSession->complete(
+                $builder['cartId'],
+                $builder['shopperId'],
+                $builder['items'],
+                $builder['shippingAddress'],
+                $builder['billingAddress'],
+                $builder['paymentId'],
+                $builder['completedAt'],
+            ),
         );
     }
 
@@ -111,16 +122,15 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             'id' => static fn (): CheckoutSessionId => CheckoutSessionId::fromString(Uuid::uuid7()->toString()),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
-            'lines' => static fn (): array => array_map(static function (): array {
-                Assert::string($label = SeededFaker::get()->words(3, true));
-
-                return [
-                    'productId' => Uuid::uuid7()->toString(),
-                    'label' => $label,
-                    'unitPriceInCents' => SeededFaker::get()->numberBetween(500, 5_000),
-                    'quantity' => SeededFaker::get()->numberBetween(1, 5),
-                ];
-            }, range(1, SeededFaker::get()->numberBetween(1, 3))),
+            'items' => static fn (): array => array_map(
+                static fn (): CheckoutItem => CheckoutItem::of(
+                    Uuid::uuid7()->toString(),
+                    Label::fromString(SeededFaker::get()->sentence(3)),
+                    Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+                ),
+                range(1, SeededFaker::get()->numberBetween(1, 3)),
+            ),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -129,11 +139,11 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'totalAmountInCents' => static fn (): int => SeededFaker::get()->numberBetween(500, 5_000),
+            'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'openedAt' => static fn (): \DateTimeImmutable => $now,
             'expiredAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
             'staledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
-            'consumedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 minutes'),
+            'completedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 minutes'),
         ];
     }
 
@@ -143,10 +153,9 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             id: $this['id'],
             cartId: $this['cartId'],
             shopperId: $this['shopperId'],
-            lines: $this['lines'],
+            items: $this['items'],
             shippingAddress: $this['shippingAddress'],
             billingAddress: $this['billingAddress'],
-            totalAmountInCents: $this['totalAmountInCents'],
             openedAt: $this['openedAt'],
         );
     }

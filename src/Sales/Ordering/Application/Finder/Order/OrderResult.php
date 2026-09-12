@@ -14,7 +14,6 @@ final readonly class OrderResult
         public string $shopperId,
         public string $paymentId,
         public PostalAddressResult $shippingAddress,
-        public PostalAddressResult $billingAddress,
         public int $totalAmountInCents,
         public OrderStatus $status,
         public \DateTimeImmutable $confirmedAt,

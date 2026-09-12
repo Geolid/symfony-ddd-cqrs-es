@@ -10,20 +10,22 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 
 #[Event('shopping.checkout.checkout_session.opened')]
 final readonly class CheckoutSessionOpened
 {
     /**
-     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
+     * @param list<CheckoutItem> $items
      */
     public function __construct(
         #[DataSubjectId]
         public string $id,
         public string $cartId,
         public string $shopperId,
-        public array $lines,
+        public array $items,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([
                 'erased',
@@ -42,7 +44,7 @@ final readonly class CheckoutSessionOpened
             'of',
         ))]
         public PostalAddress $billingAddress,
-        public int $totalAmountInCents,
+        public Money $totalAmount,
         public \DateTimeImmutable $openedAt,
     ) {
     }

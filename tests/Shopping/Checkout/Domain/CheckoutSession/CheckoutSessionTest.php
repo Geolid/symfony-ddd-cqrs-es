@@ -7,13 +7,15 @@ namespace Shopping\Tests\Checkout\Domain\CheckoutSession;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionConsumed;
+use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 
@@ -22,15 +24,15 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     private CheckoutSessionId $id;
     private string $cartId;
     private string $shopperId;
-    /** @var list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> */
-    private array $lines;
+    /** @var list<CheckoutItem> */
+    private array $items;
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;
-    private int $totalAmountInCents;
+    private string $paymentId;
     private \DateTimeImmutable $openedAt;
     private \DateTimeImmutable $expiredAt;
     private \DateTimeImmutable $staledAt;
-    private \DateTimeImmutable $consumedAt;
+    private \DateTimeImmutable $completedAt;
 
     protected function setUp(): void
     {
@@ -39,14 +41,14 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->id = CheckoutSessionId::fromString(Uuid::uuid7()->toString());
         $this->cartId = CheckoutSessionBuilder::sample('cartId');
         $this->shopperId = CheckoutSessionBuilder::sample('shopperId');
-        $this->lines = CheckoutSessionBuilder::sample('lines');
+        $this->items = CheckoutSessionBuilder::sample('items');
         $this->shippingAddress = CheckoutSessionBuilder::sample('shippingAddress');
         $this->billingAddress = CheckoutSessionBuilder::sample('billingAddress');
-        $this->totalAmountInCents = CheckoutSessionBuilder::sample('totalAmountInCents');
+        $this->paymentId = CheckoutSessionBuilder::sample('paymentId');
         $this->openedAt = CheckoutSessionBuilder::sample('openedAt');
         $this->expiredAt = CheckoutSessionBuilder::sample('expiredAt');
         $this->staledAt = CheckoutSessionBuilder::sample('staledAt');
-        $this->consumedAt = CheckoutSessionBuilder::sample('consumedAt');
+        $this->completedAt = CheckoutSessionBuilder::sample('completedAt');
     }
 
     #[Test]
@@ -58,10 +60,9 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->id,
                 $this->cartId,
                 $this->shopperId,
-                $this->lines,
+                $this->items,
                 $this->shippingAddress,
                 $this->billingAddress,
-                $this->totalAmountInCents,
                 $this->openedAt,
             ))
             ->then($this->opened());
@@ -79,7 +80,6 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 [],
                 $this->shippingAddress,
                 $this->billingAddress,
-                $this->totalAmountInCents,
                 $this->openedAt,
             ))
             ->expectsException(CheckoutSessionEmptyException::class);
@@ -122,20 +122,36 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itConsumesWhenOpen(): void
+    public function itCompletesWhenOpen(): void
     {
         $this
             ->given($this->opened())
-            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->consume($this->consumedAt))
-            ->then(new CheckoutSessionConsumed($this->id->toString(), $this->consumedAt));
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
+                $this->cartId,
+                $this->shopperId,
+                $this->items,
+                $this->shippingAddress,
+                $this->billingAddress,
+                $this->paymentId,
+                $this->completedAt,
+            ))
+            ->then($this->completed());
     }
 
     #[Test]
-    public function itDoesNotConsumeWhenAlreadyConsumed(): void
+    public function itDoesNotCompleteWhenAlreadyCompleted(): void
     {
         $this
-            ->given($this->opened(), $this->consumed())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->consume(CheckoutSessionBuilder::sample('consumedAt')))
+            ->given($this->opened(), $this->completed())
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
+                $this->cartId,
+                $this->shopperId,
+                $this->items,
+                $this->shippingAddress,
+                $this->billingAddress,
+                $this->paymentId,
+                CheckoutSessionBuilder::sample('completedAt'),
+            ))
             ->then();
     }
 
@@ -149,20 +165,28 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotStaleWhenConsumed(): void
+    public function itDoesNotStaleWhenCompleted(): void
     {
         $this
-            ->given($this->opened(), $this->consumed())
+            ->given($this->opened(), $this->completed())
             ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->stale(CheckoutSessionBuilder::sample('staledAt')))
             ->then();
     }
 
     #[Test]
-    public function itDoesNotConsumeWhenExpired(): void
+    public function itDoesNotCompleteWhenExpired(): void
     {
         $this
             ->given($this->opened(), $this->expired())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->consume(CheckoutSessionBuilder::sample('consumedAt')))
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
+                $this->cartId,
+                $this->shopperId,
+                $this->items,
+                $this->shippingAddress,
+                $this->billingAddress,
+                $this->paymentId,
+                CheckoutSessionBuilder::sample('completedAt'),
+            ))
             ->then();
     }
 
@@ -177,10 +201,10 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             $this->id->toString(),
             $this->cartId,
             $this->shopperId,
-            $this->lines,
+            $this->items,
             $this->shippingAddress,
             $this->billingAddress,
-            $this->totalAmountInCents,
+            $this->totalAmount(),
             $this->openedAt,
         );
     }
@@ -195,8 +219,27 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         return new CheckoutSessionStaled($this->id->toString(), $this->staledAt);
     }
 
-    private function consumed(): CheckoutSessionConsumed
+    private function completed(): CheckoutSessionCompleted
     {
-        return new CheckoutSessionConsumed($this->id->toString(), $this->consumedAt);
+        return new CheckoutSessionCompleted(
+            $this->id->toString(),
+            $this->cartId,
+            $this->shopperId,
+            $this->items,
+            $this->shippingAddress,
+            $this->billingAddress,
+            $this->totalAmount(),
+            $this->paymentId,
+            $this->completedAt,
+        );
+    }
+
+    private function totalAmount(): Money
+    {
+        return array_reduce(
+            $this->items,
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            Money::fromCents(0),
+        );
     }
 }

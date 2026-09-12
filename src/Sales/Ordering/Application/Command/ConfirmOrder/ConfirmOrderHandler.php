@@ -39,7 +39,6 @@ final readonly class ConfirmOrderHandler
             shopperId: $command->shopperId,
             paymentId: $command->paymentId,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
-            billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
             lines: array_map(fn (array $line): Line => $this->resolveLine($command->cartId, $line), $command->lines),
             confirmedAt: $this->clock->now(),
         );

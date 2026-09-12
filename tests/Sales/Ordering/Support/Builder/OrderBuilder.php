@@ -26,7 +26,6 @@ use Symfony\Component\Clock\Clock;
  *     shopperId: string,
  *     paymentId: string,
  *     shippingAddress: PostalAddress,
- *     billingAddress: PostalAddress,
  *     lines: list<Line>,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
@@ -64,11 +63,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
     public function withShippingAddress(PostalAddress $shippingAddress): self
     {
         return $this->withAttributes(shippingAddress: $shippingAddress);
-    }
-
-    public function withBillingAddress(PostalAddress $billingAddress): self
-    {
-        return $this->withAttributes(billingAddress: $billingAddress);
     }
 
     /**
@@ -151,10 +145,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
-                SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
-            ),
             'lines' => static fn (): array => array_map(static function (): Line {
                 $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
 
@@ -178,7 +168,6 @@ final class OrderBuilder extends AbstractAggregateBuilder
             shopperId: $this['shopperId'],
             paymentId: $this['paymentId'],
             shippingAddress: $this['shippingAddress'],
-            billingAddress: $this['billingAddress'],
             lines: $this['lines'],
             confirmedAt: $this['confirmedAt'],
         );
