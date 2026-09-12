@@ -9,7 +9,7 @@ use Patchlevel\Hydrator\Metadata\MetadataEnricher;
 use Patchlevel\Hydrator\Normalizer\Normalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\BooleanNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\IntegerNormalizer;
-use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonObjectNormalizer;
+use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\UtcDateTimeImmutableNormalizer;
 
 final class TypeBasedNormalizerEnricher implements MetadataEnricher
@@ -50,6 +50,6 @@ final class TypeBasedNormalizerEnricher implements MetadataEnricher
             return null;
         }
 
-        return new JsonObjectNormalizer($name);
+        return new JsonNormalizer($name);
     }
 }

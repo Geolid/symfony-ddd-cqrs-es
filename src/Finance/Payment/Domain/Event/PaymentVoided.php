@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Domain\Event;
 
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Patchlevel\EventSourcing\Attribute\Event;
 
@@ -11,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 final readonly class PaymentVoided
 {
     public function __construct(
-        public string $id,
+        public PaymentId $id,
         public PaymentReference $reference,
         public \DateTimeImmutable $voidedAt,
     ) {

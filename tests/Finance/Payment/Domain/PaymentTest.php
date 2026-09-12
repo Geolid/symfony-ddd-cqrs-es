@@ -68,7 +68,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $orderPayment) => $orderPayment->authorize($this->authorizedAt))
-            ->then(new PaymentAuthorized($this->id->toString(), $this->checkoutSessionId, $this->authorizedAt));
+            ->then(new PaymentAuthorized($this->id, $this->checkoutSessionId, $this->authorizedAt));
     }
 
     #[Test]
@@ -89,10 +89,10 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->requested(),
-                new PaymentAbandoned($this->id->toString(), $this->checkoutSessionId, $abandonedAt),
+                new PaymentAbandoned($this->id, $this->checkoutSessionId, $abandonedAt),
             )
             ->when(static fn (Payment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
-            ->then(new PaymentVoided($this->id->toString(), $this->reference, $lateAuthorizedAt));
+            ->then(new PaymentVoided($this->id, $this->reference, $lateAuthorizedAt));
     }
 
     #[Test]
@@ -112,7 +112,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->authorized())
             ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, $failedAt))
-            ->then(new PaymentFailed($this->id->toString(), $this->orderId, $failedAt));
+            ->then(new PaymentFailed($this->id, $this->orderId, $failedAt));
     }
 
     #[Test]
@@ -130,7 +130,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->authorized())
             ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, $this->capturedAt))
-            ->then(new PaymentCaptured($this->id->toString(), $this->orderId, $this->capturedAt));
+            ->then(new PaymentCaptured($this->id, $this->orderId, $this->capturedAt));
     }
 
     #[Test]
@@ -159,7 +159,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(static fn (Payment $orderPayment) => $orderPayment->abandon($abandonedAt))
-            ->then(new PaymentAbandoned($this->id->toString(), $this->checkoutSessionId, $abandonedAt));
+            ->then(new PaymentAbandoned($this->id, $this->checkoutSessionId, $abandonedAt));
     }
 
     #[Test]
@@ -179,7 +179,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->authorized())
             ->when(static fn (Payment $orderPayment) => $orderPayment->void($voidedAt))
-            ->then(new PaymentVoided($this->id->toString(), $this->reference, $voidedAt));
+            ->then(new PaymentVoided($this->id, $this->reference, $voidedAt));
     }
 
     #[Test]
@@ -207,7 +207,7 @@ final class PaymentTest extends AggregateRootTestCase
             ->given(
                 $this->requested(),
                 $this->authorized(),
-                new PaymentFailed($this->id->toString(), $this->orderId, PaymentBuilder::sample('failedAt')),
+                new PaymentFailed($this->id, $this->orderId, PaymentBuilder::sample('failedAt')),
             )
             ->when(static fn (Payment $orderPayment) => $orderPayment->void(PaymentBuilder::sample('voidedAt')))
             ->then();
@@ -221,7 +221,7 @@ final class PaymentTest extends AggregateRootTestCase
     private function requested(): PaymentRequested
     {
         return new PaymentRequested(
-            $this->id->toString(),
+            $this->id,
             $this->checkoutSessionId,
             $this->amount,
             $this->reference,
@@ -232,11 +232,11 @@ final class PaymentTest extends AggregateRootTestCase
 
     private function authorized(): PaymentAuthorized
     {
-        return new PaymentAuthorized($this->id->toString(), $this->checkoutSessionId, $this->authorizedAt);
+        return new PaymentAuthorized($this->id, $this->checkoutSessionId, $this->authorizedAt);
     }
 
     private function captured(): PaymentCaptured
     {
-        return new PaymentCaptured($this->id->toString(), $this->orderId, $this->capturedAt);
+        return new PaymentCaptured($this->id, $this->orderId, $this->capturedAt);
     }
 }

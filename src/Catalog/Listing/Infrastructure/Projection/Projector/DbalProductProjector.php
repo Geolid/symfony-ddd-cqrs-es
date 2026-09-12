@@ -27,7 +27,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
         $this->connection->insert(
             self::TABLE,
             [
-                'id' => $event->id,
+                'id' => $event->id->toString(),
                 'label' => $event->label->value,
                 'unit_price_in_cents' => $event->unitPrice->cents,
                 'listed_at' => $event->listedAt,
@@ -45,7 +45,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
                 'unit_price_in_cents' => $event->unitPrice->cents,
                 'repriced_at' => $event->repricedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['repriced_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -53,7 +53,7 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
     #[Subscribe(ProductDelisted::class)]
     public function onProductDelisted(ProductDelisted $event): void
     {
-        $this->connection->delete(self::TABLE, ['id' => $event->id]);
+        $this->connection->delete(self::TABLE, ['id' => $event->id->toString()]);
     }
 
     /**

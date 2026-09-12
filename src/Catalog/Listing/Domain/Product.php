@@ -31,7 +31,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     {
         $self = new self();
         $self->recordThat(new ProductListed(
-            id: $id->toString(),
+            id: $id,
             label: $label,
             unitPrice: $unitPrice,
             listedAt: $listedAt,
@@ -50,7 +50,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ProductRepriced(
-            id: $this->id->toString(),
+            id: $this->id,
             unitPrice: $unitPrice,
             repricedAt: $repricedAt,
         ));
@@ -63,7 +63,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ProductDelisted(
-            id: $this->id->toString(),
+            id: $this->id,
             delistedAt: $delistedAt,
         ));
     }
@@ -71,7 +71,7 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyListed(ProductListed $event): void
     {
-        $this->id = ProductId::fromString($event->id);
+        $this->id = $event->id;
         $this->delisted = false;
     }
 

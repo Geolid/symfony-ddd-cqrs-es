@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Domain\Event;
 
+use Catalog\Listing\Domain\ValueObject\ProductId;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\ValueObject\Money;
 
@@ -11,7 +12,7 @@ use Shared\Domain\ValueObject\Money;
 final readonly class ProductRepriced
 {
     public function __construct(
-        public string $id,
+        public ProductId $id,
         public Money $unitPrice,
         public \DateTimeImmutable $repricedAt,
     ) {

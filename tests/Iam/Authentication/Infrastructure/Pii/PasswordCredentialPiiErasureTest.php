@@ -39,7 +39,7 @@ final class PasswordCredentialPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($credential);
         $serialized = $this->serializedEventOf(
             PasswordCredentialDefined::class,
-            static fn (PasswordCredentialDefined $event): bool => $event->id === $credential->id->toString(),
+            static fn (PasswordCredentialDefined $event): bool => $event->id->equals($credential->id),
         );
 
         // When

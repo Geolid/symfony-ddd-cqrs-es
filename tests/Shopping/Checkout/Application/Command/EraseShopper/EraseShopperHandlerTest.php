@@ -30,15 +30,16 @@ final class EraseShopperHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $shopper = ShopperBuilder::new()->erasureRequested()->create();
+        $builder = ShopperBuilder::new()->erasureRequested();
+        $shopper = $builder->create();
         $this->store($shopper);
-        $this->uniqueValues->claim(UniqueKey::for(ShopperUniqueKey::EMAIL), $shopper->email->value, $shopper->id->toString());
+        $this->uniqueValues->claim(UniqueKey::for(ShopperUniqueKey::EMAIL), $builder['email']->value, $shopper->id->toString());
 
         // When
         $this->dispatch(new EraseShopper($shopper->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueValues->isClaimed(UniqueKey::for(ShopperUniqueKey::EMAIL), $shopper->email->value));
+        self::assertFalse($this->uniqueValues->isClaimed(UniqueKey::for(ShopperUniqueKey::EMAIL), $builder['email']->value));
         self::assertNull($this->service(ShopperFinderInterface::class)->ofIdOrNull($shopper->id->toString()));
     }
 

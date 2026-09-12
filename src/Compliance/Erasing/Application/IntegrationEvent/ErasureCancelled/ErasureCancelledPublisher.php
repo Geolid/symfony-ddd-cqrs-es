@@ -20,7 +20,7 @@ final readonly class ErasureCancelledPublisher
     #[Subscribe(ErasureCancelled::class)]
     public function __invoke(ErasureCancelled $event): void
     {
-        $this->publisher->publish(Erasure::class, $event->id, new ErasureCancelledIntegrationEvent(
+        $this->publisher->publish(Erasure::class, $event->id->toString(), new ErasureCancelledIntegrationEvent(
             identityId: $event->identityId,
             cancelledAt: $event->cancelledAt,
         ));

@@ -20,8 +20,8 @@ final readonly class IdentitySuspendedPublisher
     #[Subscribe(IdentitySuspended::class)]
     public function __invoke(IdentitySuspended $event): void
     {
-        $this->publisher->publish(Identity::class, $event->id, new IdentitySuspendedIntegrationEvent(
-            identityId: $event->id,
+        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentitySuspendedIntegrationEvent(
+            identityId: $event->id->toString(),
             suspendedAt: $event->suspendedAt,
         ));
     }

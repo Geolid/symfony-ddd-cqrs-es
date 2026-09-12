@@ -39,7 +39,6 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) PaymentId $id;
-    public private(set) string $checkoutUrl;
     public private(set) PaymentReference $reference;
     private string $checkoutSessionId;
     private PaymentState $operationalState;
@@ -54,7 +53,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     ): self {
         $self = new self();
         $self->recordThat(new PaymentRequested(
-            id: $id->toString(),
+            id: $id,
             checkoutSessionId: $checkoutSessionId,
             amount: $amount,
             reference: $reference,
@@ -69,7 +68,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     {
         if ($this->operationalState->isAbandoned()) {
             $this->recordThat(new PaymentVoided(
-                id: $this->id->toString(),
+                id: $this->id,
                 reference: $this->reference,
                 voidedAt: $authorizedAt,
             ));
@@ -80,7 +79,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new PaymentAuthorized(
-            id: $this->id->toString(),
+            id: $this->id,
             checkoutSessionId: $this->checkoutSessionId,
             authorizedAt: $authorizedAt,
         ));
@@ -93,7 +92,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new PaymentFailed(
-            id: $this->id->toString(),
+            id: $this->id,
             orderId: $orderId,
             failedAt: $failedAt,
         ));
@@ -106,7 +105,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new PaymentCaptured(
-            id: $this->id->toString(),
+            id: $this->id,
             orderId: $orderId,
             capturedAt: $capturedAt,
         ));
@@ -119,7 +118,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new PaymentAbandoned(
-            id: $this->id->toString(),
+            id: $this->id,
             checkoutSessionId: $this->checkoutSessionId,
             abandonedAt: $abandonedAt,
         ));
@@ -132,7 +131,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new PaymentVoided(
-            id: $this->id->toString(),
+            id: $this->id,
             reference: $this->reference,
             voidedAt: $voidedAt,
         ));
@@ -146,10 +145,9 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyRequested(PaymentRequested $event): void
     {
-        $this->id = PaymentId::fromString($event->id);
+        $this->id = $event->id;
         $this->checkoutSessionId = $event->checkoutSessionId;
         $this->reference = $event->reference;
-        $this->checkoutUrl = $event->checkoutUrl;
         $this->operationalState = PaymentState::REQUESTED;
     }
 

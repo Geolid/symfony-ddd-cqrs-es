@@ -44,7 +44,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     {
         $self = new self();
         $self->recordThat(new IdentityRegistered(
-            id: $id->toString(),
+            id: $id,
             registeredAt: $registeredAt,
         ));
 
@@ -65,7 +65,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new IdentitySuspended(
-            id: $this->id->toString(),
+            id: $this->id,
             reason: $reason,
             suspendedAt: $suspendedAt,
         ));
@@ -85,7 +85,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new IdentityReactivated(
-            id: $this->id->toString(),
+            id: $this->id,
             reason: $reason,
             reactivatedAt: $reactivatedAt,
         ));
@@ -98,7 +98,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new IdentityErasureRequested(
-            id: $this->id->toString(),
+            id: $this->id,
             requestedAt: $requestedAt,
         ));
     }
@@ -110,7 +110,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new IdentityErasureCancelled(
-            id: $this->id->toString(),
+            id: $this->id,
             cancelledAt: $cancelledAt,
         ));
     }
@@ -122,7 +122,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new IdentityErased(
-            id: $this->id->toString(),
+            id: $this->id,
             erasedAt: $erasedAt,
         ));
     }
@@ -135,7 +135,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyRegistered(IdentityRegistered $event): void
     {
-        $this->id = IdentityId::fromString($event->id);
+        $this->id = $event->id;
         $this->accessState = IdentityState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
     }

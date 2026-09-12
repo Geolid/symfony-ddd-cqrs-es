@@ -20,8 +20,8 @@ final readonly class ProductDelistedPublisher
     #[Subscribe(ProductDelisted::class)]
     public function __invoke(ProductDelisted $event): void
     {
-        $this->publisher->publish(Product::class, $event->id, new ProductDelistedIntegrationEvent(
-            productId: $event->id,
+        $this->publisher->publish(Product::class, $event->id->toString(), new ProductDelistedIntegrationEvent(
+            productId: $event->id->toString(),
             delistedAt: $event->delistedAt,
         ));
     }

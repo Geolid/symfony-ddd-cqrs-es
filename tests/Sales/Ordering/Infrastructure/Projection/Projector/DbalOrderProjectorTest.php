@@ -8,10 +8,12 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Money;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -44,7 +46,12 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
             json_decode($row['billing_address'], true),
         );
-        self::assertSame($order->totalAmountInCents, (int) $row['total_amount_in_cents']);
+        $totalAmountInCents = array_reduce(
+            $builder['lines'],
+            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            Money::fromCents(0),
+        )->cents;
+        self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);

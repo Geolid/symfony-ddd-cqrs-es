@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Domain\Event;
 
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
@@ -17,7 +18,7 @@ final readonly class ShipmentRequested
 {
     public function __construct(
         #[DataSubjectId]
-        public string $id,
+        public ShipmentId $id,
         public string $orderId,
         public string $shopperId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(

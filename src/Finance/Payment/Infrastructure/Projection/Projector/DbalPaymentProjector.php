@@ -32,7 +32,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $this->connection->insert(
             self::TABLE,
             [
-                'id' => $event->id,
+                'id' => $event->id->toString(),
                 'checkout_session_id' => $event->checkoutSessionId,
                 'order_id' => null,
                 'amount_in_cents' => $event->amount->cents,
@@ -54,7 +54,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'status' => PaymentStatus::AUTHORIZED->value,
                 'authorized_at' => $event->authorizedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['authorized_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -69,7 +69,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'status' => PaymentStatus::FAILED->value,
                 'failed_at' => $event->failedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['failed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -84,7 +84,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'status' => PaymentStatus::CAPTURED->value,
                 'captured_at' => $event->capturedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['captured_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -98,7 +98,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'status' => PaymentStatus::ABANDONED->value,
                 'abandoned_at' => $event->abandonedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['abandoned_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -122,7 +122,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'status' => PaymentStatus::VOIDED->value,
                 'voided_at' => $event->voidedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['voided_at' => Types::DATETIME_IMMUTABLE],
         );
     }

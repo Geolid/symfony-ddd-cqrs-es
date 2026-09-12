@@ -32,7 +32,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->insert(
             self::TABLE,
             [
-                'id' => $event->id,
+                'id' => $event->id->toString(),
                 'status' => IdentityState::ACTIVE->value,
                 'registered_at' => $event->registeredAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
@@ -52,7 +52,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 'suspended_at' => $event->suspendedAt,
                 'reactivated_at' => null,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['suspended_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -68,7 +68,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 'reactivated_at' => $event->reactivatedAt,
                 'suspended_at' => null,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['reactivated_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -79,7 +79,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_status' => ErasureStatus::REQUESTED->value],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
         );
     }
 
@@ -89,14 +89,14 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_status' => ErasureStatus::RETAINED->value],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
         );
     }
 
     #[Subscribe(IdentityErased::class)]
     public function onIdentityErased(IdentityErased $event): void
     {
-        $this->connection->delete(self::TABLE, ['id' => $event->id]);
+        $this->connection->delete(self::TABLE, ['id' => $event->id->toString()]);
     }
 
     /**

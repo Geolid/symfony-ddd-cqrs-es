@@ -27,7 +27,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
         $this->connection->insert(
             self::TABLE,
             [
-                'id' => $event->id,
+                'id' => $event->id->toString(),
                 'status' => ErasureRequestStatus::REQUESTED->value,
                 'requested_at' => $event->requestedAt,
             ],
@@ -44,7 +44,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
                 'status' => ErasureRequestStatus::CANCELLED->value,
                 'cancelled_at' => $event->cancelledAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -58,7 +58,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
                 'status' => ErasureRequestStatus::APPROVED->value,
                 'approved_at' => $event->approvedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['approved_at' => Types::DATETIME_IMMUTABLE],
         );
     }

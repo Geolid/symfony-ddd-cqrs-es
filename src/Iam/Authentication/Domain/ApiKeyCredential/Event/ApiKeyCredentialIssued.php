@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Domain\ApiKeyCredential\Event;
 
+use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -17,7 +18,7 @@ final readonly class ApiKeyCredentialIssued
 {
     public function __construct(
         #[DataSubjectId]
-        public string $id,
+        public ApiKeyCredentialId $id,
         public string $identityId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('erased-%s'), Label::class, 'fromString'))]
         public Label $label,

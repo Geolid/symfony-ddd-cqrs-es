@@ -54,7 +54,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) ShipmentId $id;
     public private(set) string $orderId;
-    public private(set) string $shopperId;
     public private(set) PostalAddress $origin;
     public private(set) PostalAddress $destination;
     private ?TrackingNumber $trackingNumber = null;
@@ -71,7 +70,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     ): self {
         $self = new self();
         $self->recordThat(new ShipmentRequested(
-            id: $id->toString(),
+            id: $id,
             orderId: $orderId,
             shopperId: $shopperId,
             origin: $origin,
@@ -89,7 +88,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentPrepared(
-            id: $this->id->toString(),
+            id: $this->id,
             preparedAt: $preparedAt,
         ));
     }
@@ -115,7 +114,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentManifested(
-            id: $this->id->toString(),
+            id: $this->id,
             trackingNumber: $trackingNumber,
             manifestedAt: $manifestedAt,
         ));
@@ -135,7 +134,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentDispatched(
-            id: $this->id->toString(),
+            id: $this->id,
             dispatchedAt: $dispatchedAt,
         ));
     }
@@ -155,7 +154,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentDelivered(
-            id: $this->id->toString(),
+            id: $this->id,
             deliveredAt: $deliveredAt,
         ));
 
@@ -170,7 +169,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         if (!$this->canTransitionOperationalTo(ShipmentState::CANCELLED)) {
             $this->recordThat(new ShipmentCancellationRejected(
-                id: $this->id->toString(),
+                id: $this->id,
                 state: $this->operationalState,
                 rejectedAt: $cancelledAt,
             ));
@@ -179,7 +178,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentCancelled(
-            id: $this->id->toString(),
+            id: $this->id,
             cancelledAt: $cancelledAt,
         ));
 
@@ -193,7 +192,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentErasureApproved(
-            id: $this->id->toString(),
+            id: $this->id,
             approvedAt: $approvedAt,
         ));
 
@@ -207,7 +206,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ShipmentErased(
-            id: $this->id->toString(),
+            id: $this->id,
             erasedAt: $at,
         ));
     }
@@ -235,9 +234,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyRequested(ShipmentRequested $event): void
     {
-        $this->id = ShipmentId::fromString($event->id);
+        $this->id = $event->id;
         $this->orderId = $event->orderId;
-        $this->shopperId = $event->shopperId;
         $this->origin = $event->origin;
         $this->destination = $event->destination;
         $this->trackingNumber = null;

@@ -91,6 +91,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $otherBuilder = PasswordCredentialBuilder::new()
+            ->withPassword('Different-Otter-99!')
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
         $other = $otherBuilder->create();

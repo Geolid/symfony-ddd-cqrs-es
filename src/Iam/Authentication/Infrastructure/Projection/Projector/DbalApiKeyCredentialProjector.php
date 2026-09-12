@@ -27,7 +27,7 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
     public function onApiKeyCredentialIssued(ApiKeyCredentialIssued $event): void
     {
         $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
+            'id' => $event->id->toString(),
             'identity_id' => $event->identityId,
             'label' => $event->label->value,
             'key_id' => $event->keyId->value,
@@ -44,7 +44,7 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['revoked' => true, 'revoked_at' => $event->revokedAt],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['revoked' => Types::BOOLEAN, 'revoked_at' => Types::DATETIME_IMMUTABLE],
         );
     }

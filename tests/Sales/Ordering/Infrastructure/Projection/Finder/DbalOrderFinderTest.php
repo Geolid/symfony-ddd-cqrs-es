@@ -10,10 +10,12 @@ use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundExcepti
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\Entity\Line;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 
 /**
@@ -44,7 +46,12 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
             PostalAddressMapper::toArray($builder['billingAddress']),
             ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
         );
-        self::assertSame($order->totalAmountInCents, $result->totalAmountInCents);
+        $totalAmountInCents = array_reduce(
+            $builder['lines'],
+            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            Money::fromCents(0),
+        )->cents;
+        self::assertSame($totalAmountInCents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
         self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
         self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));

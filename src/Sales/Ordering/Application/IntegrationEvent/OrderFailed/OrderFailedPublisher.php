@@ -9,7 +9,6 @@ use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -28,10 +27,10 @@ final readonly class OrderFailedPublisher
     #[Subscribe(OrderFailed::class)]
     public function __invoke(OrderFailed $event): void
     {
-        $order = $this->repository->load(OrderId::fromString($event->id));
+        $order = $this->repository->load($event->id);
 
-        $this->publisher->publish(Order::class, $event->id, new OrderFailedIntegrationEvent(
-            orderId: $event->id,
+        $this->publisher->publish(Order::class, $event->id->toString(), new OrderFailedIntegrationEvent(
+            orderId: $event->id->toString(),
             shopperId: $order->shopperId,
             failedAt: $event->failedAt,
         ));

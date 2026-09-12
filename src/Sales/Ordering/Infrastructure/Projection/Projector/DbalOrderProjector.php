@@ -35,7 +35,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $this->connection->insert(
             self::TABLE,
             [
-                'id' => $event->id,
+                'id' => $event->id->toString(),
                 'shopper_id' => $event->shopperId,
                 'payment_id' => $event->paymentId,
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
@@ -58,7 +58,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::CANCELLED->value,
                 'cancelled_at' => $event->cancelledAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['cancelled_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -72,7 +72,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::FAILED->value,
                 'failed_at' => $event->failedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['failed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -86,7 +86,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::PREPARED->value,
                 'prepared_at' => $event->preparedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['prepared_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -100,7 +100,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::DISPATCHED->value,
                 'dispatched_at' => $event->dispatchedAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['dispatched_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -114,7 +114,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'status' => OrderStatus::DELIVERED->value,
                 'delivered_at' => $event->deliveredAt,
             ],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['delivered_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -125,7 +125,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_status' => ErasureStatus::APPROVED->value],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
         );
     }
 
@@ -135,7 +135,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['erasure_status' => ErasureStatus::ERASED->value],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
         );
     }
 

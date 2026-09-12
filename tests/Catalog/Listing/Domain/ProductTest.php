@@ -54,7 +54,7 @@ final class ProductTest extends AggregateRootTestCase
         $this
             ->given($this->listed())
             ->when(static fn (Product $product) => $product->reprice($repricedUnitPrice, $repricedAt))
-            ->then(new ProductRepriced($this->id->toString(), $repricedUnitPrice, $repricedAt));
+            ->then(new ProductRepriced($this->id, $repricedUnitPrice, $repricedAt));
     }
 
     #[Test]
@@ -97,11 +97,11 @@ final class ProductTest extends AggregateRootTestCase
 
     private function listed(): ProductListed
     {
-        return new ProductListed($this->id->toString(), $this->label, $this->unitPrice, $this->listedAt);
+        return new ProductListed($this->id, $this->label, $this->unitPrice, $this->listedAt);
     }
 
     private function delisted(): ProductDelisted
     {
-        return new ProductDelisted($this->id->toString(), $this->delistedAt);
+        return new ProductDelisted($this->id, $this->delistedAt);
     }
 }

@@ -9,7 +9,6 @@ use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -29,10 +28,10 @@ final readonly class OrderConfirmedPublisher
     #[Subscribe(OrderConfirmed::class)]
     public function __invoke(OrderConfirmed $event): void
     {
-        $order = $this->orderRepository->load(OrderId::fromString($event->id));
+        $order = $this->orderRepository->load($event->id);
 
-        $this->publisher->publish(Order::class, $event->id, new OrderConfirmedIntegrationEvent(
-            orderId: $event->id,
+        $this->publisher->publish(Order::class, $event->id->toString(), new OrderConfirmedIntegrationEvent(
+            orderId: $event->id->toString(),
             cartId: $order->cartId,
             shopperId: $order->shopperId,
             paymentId: $order->paymentId,
