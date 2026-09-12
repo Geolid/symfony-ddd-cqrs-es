@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
+use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessionResultNotFoundException;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
@@ -21,6 +23,31 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 {
+    #[Test]
+    public function itGets(): void
+    {
+        // Given
+        $other = CheckoutSessionBuilder::new()->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $this->store($other, $checkoutSession);
+
+        // When
+        $result = $this->finder()->ofId($checkoutSession->id->toString());
+
+        // Then
+        self::assertSame($checkoutSession->id->toString(), $result->id);
+    }
+
+    #[Test]
+    public function itThrowsWhenIdNotFound(): void
+    {
+        // Then
+        $this->expectException(CheckoutSessionResultNotFoundException::class);
+
+        // When
+        $this->finder()->ofId(Uuid::uuid7()->toString());
+    }
+
     #[Test]
     public function itFindsByCart(): void
     {
