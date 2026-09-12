@@ -11,7 +11,7 @@ use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{checkout_session_id: string, product_id: string, label: string, unit_price_in_cents: int|string, quantity: int|string}
+ * @phpstan-type Row array{label: string, unit_price_in_cents: int|string, quantity: int|string}
  */
 final class DbalCheckoutSessionLineProjectorTest extends AbstractIntegrationTestCase
 {
@@ -28,33 +28,30 @@ final class DbalCheckoutSessionLineProjectorTest extends AbstractIntegrationTest
         $this->store($other, $checkoutSession);
 
         // Then
-        $lineId = $builder['lines'][0]->id->toString();
-        $row = $this->fetchRow($lineId);
+        $row = $this->fetchRow($checkoutSession->id->toString(), $builder['lines'][0]['productId']);
         self::assertNotFalse($row);
-        self::assertSame($checkoutSession->id->toString(), $row['checkout_session_id']);
-        self::assertSame($builder['lines'][0]->product->id, $row['product_id']);
-        self::assertSame($builder['lines'][0]->product->label->value, $row['label']);
-        self::assertSame($builder['lines'][0]->product->price->cents, (int) $row['unit_price_in_cents']);
-        self::assertSame($builder['lines'][0]->quantity->value, (int) $row['quantity']);
+        self::assertSame($builder['lines'][0]['label'], $row['label']);
+        self::assertSame($builder['lines'][0]['unitPriceInCents'], (int) $row['unit_price_in_cents']);
+        self::assertSame($builder['lines'][0]['quantity'], (int) $row['quantity']);
 
-        $otherLineId = $otherBuilder['lines'][0]->id->toString();
-        self::assertNotFalse($this->fetchRow($otherLineId));
+        $otherRow = $this->fetchRow($other->id->toString(), $otherBuilder['lines'][0]['productId']);
+        self::assertNotFalse($otherRow);
     }
 
     /**
      * @return Row|false
      */
-    private function fetchRow(string $lineId): array|false
+    private function fetchRow(string $checkoutSessionId, string $productId): array|false
     {
         $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
 
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT checkout_session_id, product_id, label, unit_price_in_cents, quantity FROM %s WHERE line_id = :lineId',
+                'SELECT label, unit_price_in_cents, quantity FROM %s WHERE checkout_session_id = :checkoutSessionId AND product_id = :productId',
                 DbalCheckoutSessionLineProjector::TABLE,
             ),
-            ['lineId' => $lineId],
+            ['checkoutSessionId' => $checkoutSessionId, 'productId' => $productId],
         );
     }
 }

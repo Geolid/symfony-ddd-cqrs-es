@@ -10,20 +10,20 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CartPricesStaleException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
+use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\Shopper\ShopperFinderInterface;
-use Shopping\Checkout\Domain\Cart\ValueObject\Product;
+use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
 use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
 use Shopping\Tests\Checkout\Support\Builder\ShopperBuilder;
+use Support\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -37,6 +37,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 
         $this->service = new CheckoutSessionOpener(
             $this->service(CartFinderInterface::class),
+            $this->service(CartItemFinderInterface::class),
             $this->service(ShopperFinderInterface::class),
             $this->service(ListedProductFinderInterface::class),
             $this->service(CommandBusInterface::class),
@@ -50,19 +51,27 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new();
         $catalogProduct = $productBuilder->create();
+        $secondProductBuilder = ProductBuilder::new();
+        $secondCatalogProduct = $secondProductBuilder->create();
         $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded(
-            product: Product::of($catalogProduct->id->toString(), $productBuilder['label'], $productBuilder['unitPrice']),
-            quantity: CartBuilder::sample('quantity'),
+        $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded(
+            productId: $catalogProduct->id->toString(),
+            quantity: $quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+        )->productAdded(
+            productId: $secondCatalogProduct->id->toString(),
+            quantity: $secondQuantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
         );
         $cart = $cartBuilder->create();
-        $this->store($cart, $catalogProduct, $shopper);
+        $this->store($cart, $catalogProduct, $secondCatalogProduct, $shopper);
 
         // When
         $result = $this->service->openFor($cart->id->toString());
 
         // Then
-        self::assertSame($cartBuilder['quantity']->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
+        self::assertSame(
+            $quantity->value * $productBuilder['unitPrice']->cents + $secondQuantity->value * $secondProductBuilder['unitPrice']->cents,
+            $result->totalAmountInCents,
+        );
         self::assertNotNull($shopper->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($shopper->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($shopper->billingAddress);
@@ -89,7 +98,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenShopperNotRegistered(): void
     {
         // Given
-        $cart = CartBuilder::new()->lineAdded()->create();
+        $cart = CartBuilder::new()->productAdded()->create();
         $this->store($cart);
 
         // Then
@@ -104,7 +113,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->erasureRequested()->create();
-        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded()->create();
         $this->store($cart, $shopper);
 
         // Then
@@ -119,7 +128,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $shopper = ShopperBuilder::new()->create();
-        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded()->create();
         $this->store($cart, $shopper);
 
         // Then
@@ -134,7 +143,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $shopper = ShopperBuilder::new()->shippingAddressDefined()->create();
-        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded()->create();
         $this->store($cart, $shopper);
 
         // Then
@@ -149,29 +158,11 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $shopper = ShopperBuilder::new()->billingAddressDefined()->create();
-        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded()->create();
+        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded()->create();
         $this->store($cart, $shopper);
 
         // Then
         $this->expectException(ShopperAddressesNotCompletedException::class);
-
-        // When
-        $this->service->openFor($cart->id->toString());
-    }
-
-    #[Test]
-    public function itFailsWhenCartPricesStale(): void
-    {
-        // Given
-        $productBuilder = ProductBuilder::new();
-        $catalogProduct = $productBuilder->create();
-        $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $staleProduct = Product::of($catalogProduct->id->toString(), $productBuilder['label'], Money::fromCents($productBuilder['unitPrice']->cents + 100));
-        $cart = CartBuilder::new()->withShopperId($shopper->id->toString())->lineAdded(product: $staleProduct)->create();
-        $this->store($cart, $catalogProduct, $shopper);
-
-        // Then
-        $this->expectException(CartPricesStaleException::class);
 
         // When
         $this->service->openFor($cart->id->toString());

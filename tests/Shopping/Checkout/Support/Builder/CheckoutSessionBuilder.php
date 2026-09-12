@@ -6,13 +6,7 @@ namespace Shopping\Tests\Checkout\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\Cart\Entity\Line;
-use Shopping\Checkout\Domain\Cart\ValueObject\LineId;
-use Shopping\Checkout\Domain\Cart\ValueObject\Product;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
 use Support\Builder\AbstractAggregateBuilder;
@@ -25,7 +19,7 @@ use Webmozart\Assert\Assert;
  *     id: CheckoutSessionId,
  *     cartId: string,
  *     shopperId: string,
- *     lines: list<Line>,
+ *     lines: list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}>,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
  *     totalAmountInCents: int,
@@ -55,7 +49,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<Line> $lines
+     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
      */
     public function withLines(array $lines): self
     {
@@ -117,15 +111,15 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             'id' => static fn (): CheckoutSessionId => CheckoutSessionId::fromString(Uuid::uuid7()->toString()),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
-            'lines' => static fn (): array => array_map(static function (): Line {
+            'lines' => static fn (): array => array_map(static function (): array {
                 Assert::string($label = SeededFaker::get()->words(3, true));
-                $productId = Uuid::uuid7()->toString();
 
-                return new Line(
-                    LineId::forProduct(Uuid::uuid7()->toString(), $productId),
-                    Product::of($productId, Label::fromString($label), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
-                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
-                );
+                return [
+                    'productId' => Uuid::uuid7()->toString(),
+                    'label' => $label,
+                    'unitPriceInCents' => SeededFaker::get()->numberBetween(500, 5_000),
+                    'quantity' => SeededFaker::get()->numberBetween(1, 5),
+                ];
             }, range(1, SeededFaker::get()->numberBetween(1, 3))),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),

@@ -26,10 +26,10 @@ final class DbalCheckoutSessionLineFinder extends AbstractDbalFinder implements 
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('line_id', 'checkout_session_id', 'product_id', 'label', 'unit_price_in_cents', 'quantity')
+        $qb->select('checkout_session_id', 'product_id', 'label', 'unit_price_in_cents', 'quantity')
             ->from(DbalCheckoutSessionLineProjector::TABLE)
             ->orderBy('opened_at', 'ASC')
-            ->addOrderBy('line_id', 'ASC');
+            ->addOrderBy('product_id', 'ASC');
     }
 
     protected function resultClass(): string

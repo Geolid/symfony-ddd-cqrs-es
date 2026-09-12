@@ -36,7 +36,6 @@ final readonly class ConfirmOrderOnPaymentAuthorized
         $lines = [];
         foreach ($this->checkoutSessionLineFinder->byCheckoutSession($event->checkoutSessionId) as $line) {
             $lines[] = [
-                'lineId' => $line->lineId,
                 'productId' => $line->productId,
                 'label' => $line->label,
                 'unitPriceInCents' => $line->unitPriceInCents,

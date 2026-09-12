@@ -27,12 +27,7 @@ final class CheckoutSessionOpenedPublisherTest extends AbstractIntegrationTestCa
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
         self::assertSame($builder['cartId'], $event->cartId);
         self::assertSame($builder['shopperId'], $event->shopperId);
-        self::assertCount(1, $event->lines);
-        self::assertSame($builder['lines'][0]->id->toString(), $event->lines[0]['lineId']);
-        self::assertSame($builder['lines'][0]->product->id, $event->lines[0]['productId']);
-        self::assertSame($builder['lines'][0]->product->label->value, $event->lines[0]['label']);
-        self::assertSame($builder['lines'][0]->product->price->cents, $event->lines[0]['unitPriceInCents']);
-        self::assertSame($builder['lines'][0]->quantity->value, $event->lines[0]['quantity']);
+        self::assertSame($builder['lines'], $event->lines);
         self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);
         self::assertSame($builder['totalAmountInCents'], $event->totalAmountInCents);

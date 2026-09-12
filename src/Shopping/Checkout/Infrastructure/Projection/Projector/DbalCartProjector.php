@@ -11,9 +11,8 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shopping\Checkout\Domain\Cart\Event\CartLineAdded;
-use Shopping\Checkout\Domain\Cart\Event\CartLineQuantityChanged;
-use Shopping\Checkout\Domain\Cart\Event\CartLineRemoved;
+use Shopping\Checkout\Application\CartStatus;
+use Shopping\Checkout\Domain\Cart\Event\CartPurchased;
 use Shopping\Checkout\Domain\Cart\Event\CartStarted;
 
 #[Projector('shopping.checkout.project_carts')]
@@ -24,61 +23,21 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
     #[Subscribe(CartStarted::class)]
     public function onCartStarted(CartStarted $event): void
     {
-        $this->connection->insert(
+        $this->connection->insert(self::TABLE, [
+            'id' => $event->id->toString(),
+            'shopper_id' => $event->shopperId,
+            'status' => CartStatus::ACTIVE->value,
+        ]);
+    }
+
+    #[Subscribe(CartPurchased::class)]
+    public function onCartPurchased(CartPurchased $event): void
+    {
+        $this->connection->update(
             self::TABLE,
-            [
-                'id' => $event->id,
-                'shopper_id' => $event->shopperId,
-                'lines_json' => [],
-                'total_amount_in_cents' => 0,
-            ],
-            ['lines_json' => Types::JSON],
+            ['status' => CartStatus::PURCHASED->value],
+            ['id' => $event->id->toString()],
         );
-    }
-
-    #[Subscribe(CartLineAdded::class)]
-    public function onCartLineAdded(CartLineAdded $event): void
-    {
-        $lines = $this->currentLines($event->id);
-
-        $existing = $lines[$event->lineId] ?? null;
-        $quantity = null !== $existing ? $existing['quantity'] + $event->quantity->value : $event->quantity->value;
-
-        $lines[$event->lineId] = [
-            'lineId' => $event->lineId,
-            'productId' => $event->product->id,
-            'label' => $event->product->label->value,
-            'unitPriceInCents' => $event->product->price->cents,
-            'quantity' => $quantity,
-        ];
-
-        $this->writeLines($event->id, $lines);
-    }
-
-    #[Subscribe(CartLineRemoved::class)]
-    public function onCartLineRemoved(CartLineRemoved $event): void
-    {
-        $lines = $this->currentLines($event->id);
-        unset($lines[$event->lineId]);
-
-        $this->writeLines($event->id, $lines);
-    }
-
-    #[Subscribe(CartLineQuantityChanged::class)]
-    public function onCartLineQuantityChanged(CartLineQuantityChanged $event): void
-    {
-        $lines = $this->currentLines($event->id);
-        $existing = $lines[$event->lineId];
-
-        $lines[$event->lineId] = [
-            'lineId' => $existing['lineId'],
-            'productId' => $existing['productId'],
-            'label' => $existing['label'],
-            'unitPriceInCents' => $existing['unitPriceInCents'],
-            'quantity' => $event->quantity->value,
-        ];
-
-        $this->writeLines($event->id, $lines);
     }
 
     /**
@@ -89,56 +48,11 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('shopper_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('lines_json', Types::JSON);
-        $table->addColumn('total_amount_in_cents', Types::INTEGER);
+        $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
-        );
-    }
-
-    /**
-     * @return array<string, array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}>
-     */
-    private function currentLines(string $cartId): array
-    {
-        $lines = $this->connection->fetchOne(
-            \sprintf('SELECT lines_json FROM %s WHERE id = :id', self::TABLE),
-            ['id' => $cartId],
-        );
-
-        \assert(\is_string($lines));
-
-        /** @var list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $decoded */
-        $decoded = json_decode($lines, true, flags: \JSON_THROW_ON_ERROR);
-
-        $indexed = [];
-        foreach ($decoded as $line) {
-            $indexed[$line['lineId']] = $line;
-        }
-
-        return $indexed;
-    }
-
-    /**
-     * @param array<string, array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
-     */
-    private function writeLines(string $cartId, array $lines): void
-    {
-        $totalAmountInCents = array_sum(array_map(
-            static fn (array $line): int => $line['unitPriceInCents'] * $line['quantity'],
-            $lines,
-        ));
-
-        $this->connection->update(
-            self::TABLE,
-            [
-                'lines_json' => array_values($lines),
-                'total_amount_in_cents' => $totalAmountInCents,
-            ],
-            ['id' => $cartId],
-            ['lines_json' => Types::JSON],
         );
     }
 }

@@ -42,20 +42,6 @@ final class QuantityTest extends TestCase
     }
 
     #[Test]
-    public function itAdds(): void
-    {
-        // Given
-        $a = Quantity::of(2);
-        $b = Quantity::of(3);
-
-        // When
-        $sum = $a->plus($b);
-
-        // Then
-        self::assertSame(5, $sum->value);
-    }
-
-    #[Test]
     public function itEquals(): void
     {
         // Given

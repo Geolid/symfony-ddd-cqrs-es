@@ -6,9 +6,11 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shopping\Checkout\Application\CartStatus;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\CartResult;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
+use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCartItemProjector;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCartProjector;
 
 /**
@@ -19,7 +21,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
     public function ofId(string $id): CartResult
     {
         $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, shopper_id, lines_json, total_amount_in_cents FROM %s WHERE id = :id', DbalCartProjector::TABLE),
+            \sprintf('SELECT id, shopper_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
             ['id' => $id],
         );
 
@@ -27,17 +29,31 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
             throw CartResultNotFoundException::forId($id);
         }
 
-        \assert(\is_string($row['id']) && \is_string($row['shopper_id']) && \is_string($row['lines_json']) && is_numeric($row['total_amount_in_cents']));
+        \assert(\is_string($row['id']) && \is_string($row['shopper_id']));
 
-        /** @var list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines */
-        $lines = json_decode($row['lines_json'], true, flags: \JSON_THROW_ON_ERROR);
+        return new CartResult($row['id'], $row['shopper_id']);
+    }
 
-        return new CartResult($row['id'], $row['shopper_id'], $lines, (int) $row['total_amount_in_cents']);
+    public function byProductId(string $productId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($productId): void {
+                $activeParam = $qb->createNamedParameter(CartStatus::ACTIVE->value);
+                $productIdParam = $qb->createNamedParameter($productId);
+
+                $qb->andWhere(\sprintf(
+                    'id IN (SELECT cart_id FROM %s WHERE product_id = %s) AND status = %s',
+                    DbalCartItemProjector::TABLE,
+                    $productIdParam,
+                    $activeParam,
+                ));
+            },
+        );
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'shopper_id', 'total_amount_in_cents')
+        $qb->select('id', 'shopper_id')
             ->from(DbalCartProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

@@ -10,13 +10,14 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CartPricesStaleException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException;
 use Shopping\Checkout\Application\Command\OpenCheckoutSession\OpenCheckoutSession;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
+use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
+use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Application\Finder\Shopper\ShopperFinderInterface;
@@ -26,6 +27,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
 {
     public function __construct(
         private CartFinderInterface $cartFinder,
+        private CartItemFinderInterface $cartItemFinder,
         private ShopperFinderInterface $shopperFinder,
         private ListedProductFinderInterface $listedProductFinder,
         private CommandBusInterface $commandBus,
@@ -37,7 +39,6 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
      * @throws ShopperNotRegisteredException
      * @throws ShopperErasureRequestedException
      * @throws ShopperAddressesNotCompletedException
-     * @throws CartPricesStaleException
      * @throws CartResultNotFoundException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
@@ -45,6 +46,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     public function openFor(string $cartId): OpenedCheckoutSession
     {
         $cart = $this->cartFinder->ofId($cartId);
+        $items = iterator_to_array($this->cartItemFinder->byCart($cartId));
 
         $shopper = $this->shopperFinder->ofIdOrNull($cart->shopperId)
             ?? throw ShopperNotRegisteredException::forId($cart->shopperId);
@@ -57,7 +59,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             throw ShopperAddressesNotCompletedException::forId($cart->shopperId);
         }
 
-        $this->guardPricesNotStale($cart->lines);
+        [$lines, $totalAmountInCents] = $this->resolveLines($items);
 
         $shippingAddress = PostalAddressMapper::fromArray([
             'recipientName' => $shopper->shippingAddress->recipientName,
@@ -74,16 +76,16 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             id: $checkoutSessionId,
             cartId: $cartId,
             shopperId: $cart->shopperId,
-            lines: $cart->lines,
+            lines: $lines,
             shippingAddress: PostalAddressMapper::toArray($shippingAddress),
             billingAddress: PostalAddressMapper::toArray($billingAddress),
-            totalAmountInCents: $cart->totalAmountInCents,
+            totalAmountInCents: $totalAmountInCents,
             openedAt: $now,
         ));
 
         return new OpenedCheckoutSession(
             checkoutSessionId: $checkoutSessionId,
-            totalAmountInCents: $cart->totalAmountInCents,
+            totalAmountInCents: $totalAmountInCents,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
             expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSession::TTL_MINUTES)),
@@ -91,21 +93,33 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     }
 
     /**
-     * @param list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
+     * @param array<CartItemResult> $items
      *
-     * @throws CartPricesStaleException
+     * @return array{0: list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}>, 1: int}
      */
-    private function guardPricesNotStale(array $lines): void
+    private function resolveLines(array $items): array
     {
-        $currentProducts = iterator_to_array($this->listedProductFinder->byIds(
-            ...array_map(static fn (array $line): string => $line['productId'], $lines),
+        $listedProducts = iterator_to_array($this->listedProductFinder->byIds(
+            ...array_map(static fn (CartItemResult $item): string => $item->productId, $items),
         )->indexBy(static fn (ListedProductResult $result): string => $result->productId));
 
-        foreach ($lines as $line) {
-            $current = $currentProducts[$line['productId']] ?? null;
-            if (!$current instanceof ListedProductResult || $current->unitPriceInCents !== $line['unitPriceInCents']) {
-                throw CartPricesStaleException::forProduct($line['productId']);
+        $lines = [];
+        $totalAmountInCents = 0;
+        foreach ($items as $item) {
+            $listedProduct = $listedProducts[$item->productId] ?? null;
+            if (!$listedProduct instanceof ListedProductResult) {
+                continue;
             }
+
+            $lines[] = [
+                'productId' => $item->productId,
+                'label' => $listedProduct->label,
+                'unitPriceInCents' => $listedProduct->unitPriceInCents,
+                'quantity' => $item->quantity,
+            ];
+            $totalAmountInCents += $listedProduct->unitPriceInCents * $item->quantity;
         }
+
+        return [$lines, $totalAmountInCents];
     }
 }
