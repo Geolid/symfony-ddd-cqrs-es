@@ -48,7 +48,7 @@ final class ErasureTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Erasure $erasure) => $erasure->cancel($this->cancelledAt))
-            ->then(new ErasureCancelled($this->id->toString(), $this->identityId, $this->cancelledAt));
+            ->then(new ErasureCancelled($this->id, $this->identityId, $this->cancelledAt));
     }
 
     #[Test]
@@ -66,7 +66,7 @@ final class ErasureTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Erasure $erasure) => $erasure->approve($this->approvedAt))
-            ->then(new ErasureApproved($this->id->toString(), $this->identityId, $this->approvedAt));
+            ->then(new ErasureApproved($this->id, $this->identityId, $this->approvedAt));
     }
 
     #[Test]
@@ -94,11 +94,11 @@ final class ErasureTest extends AggregateRootTestCase
 
     private function requested(): ErasureRequested
     {
-        return new ErasureRequested($this->id->toString(), $this->identityId, $this->requestedAt);
+        return new ErasureRequested($this->id, $this->identityId, $this->requestedAt);
     }
 
     private function cancelled(): ErasureCancelled
     {
-        return new ErasureCancelled($this->id->toString(), $this->identityId, $this->cancelledAt);
+        return new ErasureCancelled($this->id, $this->identityId, $this->cancelledAt);
     }
 }

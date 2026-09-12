@@ -20,8 +20,8 @@ final readonly class IdentityErasedPublisher
     #[Subscribe(IdentityErased::class)]
     public function __invoke(IdentityErased $event): void
     {
-        $this->publisher->publish(Identity::class, $event->id, new IdentityErasedIntegrationEvent(
-            identityId: $event->id,
+        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityErasedIntegrationEvent(
+            identityId: $event->id->toString(),
             erasedAt: $event->erasedAt,
         ));
     }

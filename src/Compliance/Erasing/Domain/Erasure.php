@@ -40,7 +40,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     {
         $self = new self();
         $self->recordThat(new ErasureRequested(
-            id: $id->toString(),
+            id: $id,
             identityId: $identityId,
             requestedAt: $requestedAt,
         ));
@@ -55,7 +55,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ErasureCancelled(
-            id: $this->id->toString(),
+            id: $this->id,
             identityId: $this->identityId,
             cancelledAt: $cancelledAt,
         ));
@@ -72,7 +72,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new ErasureApproved(
-            id: $this->id->toString(),
+            id: $this->id,
             identityId: $this->identityId,
             approvedAt: $now,
         ));
@@ -86,7 +86,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyRequested(ErasureRequested $event): void
     {
-        $this->id = ErasureId::fromString($event->id);
+        $this->id = $event->id;
         $this->identityId = $event->identityId;
         $this->state = ErasureRequestState::REQUESTED;
         $this->requestedAt = $event->requestedAt;

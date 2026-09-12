@@ -20,7 +20,7 @@ final readonly class PaymentFailedPublisher
     #[Subscribe(PaymentFailed::class)]
     public function __invoke(PaymentFailed $event): void
     {
-        $this->publisher->publish(Payment::class, $event->id, new PaymentFailedIntegrationEvent(
+        $this->publisher->publish(Payment::class, $event->id->toString(), new PaymentFailedIntegrationEvent(
             orderId: $event->orderId,
             failedAt: $event->failedAt,
         ));

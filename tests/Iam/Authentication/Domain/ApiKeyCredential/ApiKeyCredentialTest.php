@@ -65,7 +65,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->issued())
             ->when(fn (ApiKeyCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
-            ->then(new ApiKeyCredentialRevoked($this->id->toString(), $revokedAt));
+            ->then(new ApiKeyCredentialRevoked($this->id, $revokedAt));
     }
 
     #[Test]
@@ -76,7 +76,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->issued(),
-                new ApiKeyCredentialRevoked($this->id->toString(), $revokedAt),
+                new ApiKeyCredentialRevoked($this->id, $revokedAt),
             )
             ->when(fn (ApiKeyCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
             ->then();
@@ -101,7 +101,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     private function issued(): ApiKeyCredentialIssued
     {
         return new ApiKeyCredentialIssued(
-            $this->id->toString(),
+            $this->id,
             $this->identityId,
             $this->label,
             $this->keyId,

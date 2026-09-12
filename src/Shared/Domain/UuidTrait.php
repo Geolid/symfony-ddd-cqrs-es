@@ -19,6 +19,11 @@ trait UuidTrait
         $this->value = $value;
     }
 
+    public function __toString(): string
+    {
+        return $this->value;
+    }
+
     public static function fromString(string $id): static
     {
         return new static($id);

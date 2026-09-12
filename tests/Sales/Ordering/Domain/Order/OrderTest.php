@@ -72,7 +72,7 @@ final class OrderTest extends AggregateRootTestCase
             ->given()
             ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->confirmedAt))
             ->then(new OrderConfirmed(
-                $this->id->toString(),
+                $this->id,
                 $this->cartId,
                 $this->shopperId,
                 $this->paymentId,
@@ -99,7 +99,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->prepare($this->preparedAt))
-            ->then(new OrderPrepared($this->id->toString(), $this->preparedAt));
+            ->then(new OrderPrepared($this->id, $this->preparedAt));
     }
 
     #[Test]
@@ -117,7 +117,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->cancel($this->shopperId, $this->cancelledAt))
-            ->then(new OrderCancelled($this->id->toString(), $this->cancelledAt));
+            ->then(new OrderCancelled($this->id, $this->cancelledAt));
     }
 
     #[Test]
@@ -136,8 +136,8 @@ final class OrderTest extends AggregateRootTestCase
             ->given($this->confirmed(), $this->erasureApproved())
             ->when(fn (Order $order) => $order->cancel($this->shopperId, $this->cancelledAt))
             ->then(
-                new OrderCancelled($this->id->toString(), $this->cancelledAt),
-                new OrderErased($this->id->toString(), $this->cancelledAt),
+                new OrderCancelled($this->id, $this->cancelledAt),
+                new OrderErased($this->id, $this->cancelledAt),
             );
     }
 
@@ -165,7 +165,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->fail($this->failedAt))
-            ->then(new OrderFailed($this->id->toString(), $this->failedAt));
+            ->then(new OrderFailed($this->id, $this->failedAt));
     }
 
     #[Test]
@@ -174,7 +174,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->fail($this->failedAt))
-            ->then(new OrderFailed($this->id->toString(), $this->failedAt));
+            ->then(new OrderFailed($this->id, $this->failedAt));
     }
 
     #[Test]
@@ -184,8 +184,8 @@ final class OrderTest extends AggregateRootTestCase
             ->given($this->confirmed(), $this->erasureApproved())
             ->when(fn (Order $order) => $order->fail($this->failedAt))
             ->then(
-                new OrderFailed($this->id->toString(), $this->failedAt),
-                new OrderErased($this->id->toString(), $this->failedAt),
+                new OrderFailed($this->id, $this->failedAt),
+                new OrderErased($this->id, $this->failedAt),
             );
     }
 
@@ -204,7 +204,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
-            ->then(new OrderDispatched($this->id->toString(), $this->dispatchedAt));
+            ->then(new OrderDispatched($this->id, $this->dispatchedAt));
     }
 
     #[Test]
@@ -222,7 +222,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared(), $this->dispatched())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
-            ->then(new OrderDelivered($this->id->toString(), $this->deliveredAt));
+            ->then(new OrderDelivered($this->id, $this->deliveredAt));
     }
 
     #[Test]
@@ -241,8 +241,8 @@ final class OrderTest extends AggregateRootTestCase
             ->given($this->confirmed(), $this->erasureApproved(), $this->prepared(), $this->dispatched())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
             ->then(
-                new OrderDelivered($this->id->toString(), $this->deliveredAt),
-                new OrderErased($this->id->toString(), $this->deliveredAt),
+                new OrderDelivered($this->id, $this->deliveredAt),
+                new OrderErased($this->id, $this->deliveredAt),
             );
     }
 
@@ -252,7 +252,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
-            ->then(new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt));
+            ->then(new OrderErasureApproved($this->id, $this->erasureApprovedAt));
     }
 
     #[Test]
@@ -263,12 +263,12 @@ final class OrderTest extends AggregateRootTestCase
                 $this->confirmed(),
                 $this->prepared(),
                 $this->dispatched(),
-                new OrderDelivered($this->id->toString(), $this->deliveredAt),
+                new OrderDelivered($this->id, $this->deliveredAt),
             )
             ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
             ->then(
-                new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt),
-                new OrderErased($this->id->toString(), $this->erasureApprovedAt),
+                new OrderErasureApproved($this->id, $this->erasureApprovedAt),
+                new OrderErased($this->id, $this->erasureApprovedAt),
             );
     }
 
@@ -279,8 +279,8 @@ final class OrderTest extends AggregateRootTestCase
             ->given($this->confirmed(), $this->cancelled())
             ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
             ->then(
-                new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt),
-                new OrderErased($this->id->toString(), $this->erasureApprovedAt),
+                new OrderErasureApproved($this->id, $this->erasureApprovedAt),
+                new OrderErased($this->id, $this->erasureApprovedAt),
             );
     }
 
@@ -301,7 +301,7 @@ final class OrderTest extends AggregateRootTestCase
     private function confirmed(): OrderConfirmed
     {
         return new OrderConfirmed(
-            $this->id->toString(),
+            $this->id,
             $this->cartId,
             $this->shopperId,
             $this->paymentId,
@@ -315,22 +315,22 @@ final class OrderTest extends AggregateRootTestCase
 
     private function prepared(): OrderPrepared
     {
-        return new OrderPrepared($this->id->toString(), $this->preparedAt);
+        return new OrderPrepared($this->id, $this->preparedAt);
     }
 
     private function cancelled(): OrderCancelled
     {
-        return new OrderCancelled($this->id->toString(), $this->cancelledAt);
+        return new OrderCancelled($this->id, $this->cancelledAt);
     }
 
     private function dispatched(): OrderDispatched
     {
-        return new OrderDispatched($this->id->toString(), $this->dispatchedAt);
+        return new OrderDispatched($this->id, $this->dispatchedAt);
     }
 
     private function erasureApproved(): OrderErasureApproved
     {
-        return new OrderErasureApproved($this->id->toString(), $this->erasureApprovedAt);
+        return new OrderErasureApproved($this->id, $this->erasureApprovedAt);
     }
 
     private function totalAmount(): Money

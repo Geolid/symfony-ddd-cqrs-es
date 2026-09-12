@@ -89,7 +89,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $changedAt,
             ))
             ->then(new PasswordCredentialChanged(
-                $this->id->toString(),
+                $this->id,
                 $this->hasher->hash($newPassword),
                 $changedAt,
             ));
@@ -136,7 +136,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $rehashedAt,
             ))
             ->then(new PasswordCredentialRehashed(
-                $this->id->toString(),
+                $this->id,
                 $this->hasher->hash($this->password->value),
                 $rehashedAt,
             ));
@@ -150,7 +150,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private function defined(): PasswordCredentialDefined
     {
         return new PasswordCredentialDefined(
-            $this->id->toString(),
+            $this->id,
             $this->identityId,
             $this->login,
             $this->hasher->hash($this->password->value),

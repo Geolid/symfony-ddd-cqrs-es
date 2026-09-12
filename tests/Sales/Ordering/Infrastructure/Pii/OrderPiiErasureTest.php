@@ -37,7 +37,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($order);
         $serialized = $this->serializedEventOf(
             OrderConfirmed::class,
-            static fn (OrderConfirmed $event): bool => $event->id === $order->id->toString(),
+            static fn (OrderConfirmed $event): bool => $event->id->equals($order->id),
         );
 
         // When

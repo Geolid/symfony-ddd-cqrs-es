@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Domain\Event;
 
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Patchlevel\EventSourcing\Attribute\Event;
 
@@ -11,7 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 final readonly class ShipmentCancellationRejected
 {
     public function __construct(
-        public string $id,
+        public ShipmentId $id,
         public ShipmentState $state,
         public \DateTimeImmutable $rejectedAt,
     ) {

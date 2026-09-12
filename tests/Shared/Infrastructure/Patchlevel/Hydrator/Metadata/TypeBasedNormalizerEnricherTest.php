@@ -6,13 +6,14 @@ namespace Shared\Tests\Infrastructure\Patchlevel\Hydrator\Metadata;
 
 use Patchlevel\Hydrator\Metadata\ClassMetadata;
 use Patchlevel\Hydrator\Metadata\PropertyMetadata;
+use Patchlevel\Hydrator\Normalizer\ObjectNormalizer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Infrastructure\Patchlevel\Hydrator\Metadata\TypeBasedNormalizerEnricher;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\BooleanNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\IntegerNormalizer;
-use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonObjectNormalizer;
+use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\UtcDateTimeImmutableNormalizer;
 use Shared\Tests\Support\Double\DummyHydratable;
 use Shared\Tests\Support\Double\DummyNestedObject;
@@ -42,7 +43,7 @@ final class TypeBasedNormalizerEnricherTest extends TestCase
         yield 'date time' => ['dateTime', UtcDateTimeImmutableNormalizer::class];
         yield 'boolean' => ['boolean', BooleanNormalizer::class];
         yield 'integer' => ['integer', IntegerNormalizer::class];
-        yield 'object' => ['object', JsonObjectNormalizer::class];
+        yield 'object' => ['object', JsonNormalizer::class];
         yield 'string' => ['string', null];
         yield 'backed enum' => ['enum', null];
         yield 'no named type' => ['union', null];
@@ -59,10 +60,11 @@ final class TypeBasedNormalizerEnricherTest extends TestCase
 
         // Then
         $normalizer = $classMetadata->properties()[0]->normalizer();
-        self::assertInstanceOf(JsonObjectNormalizer::class, $normalizer);
+        self::assertInstanceOf(JsonNormalizer::class, $normalizer);
 
-        $className = new \ReflectionObject($normalizer)->getProperty('className')->getValue($normalizer);
-        self::assertSame(DummyNestedObject::class, $className);
+        $objectNormalizer = new \ReflectionObject($normalizer)->getProperty('objectNormalizer')->getValue($normalizer);
+        self::assertInstanceOf(ObjectNormalizer::class, $objectNormalizer);
+        self::assertSame(DummyNestedObject::class, $objectNormalizer->className());
     }
 
     private function classMetadataFor(string $property): ClassMetadata

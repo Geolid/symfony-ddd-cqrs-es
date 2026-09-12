@@ -97,7 +97,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->suspended(),
             )
             ->when(static fn (Identity $identity) => $identity->reactivate($reason, $reactivatedAt))
-            ->then(new IdentityReactivated($this->id->toString(), $reason, $reactivatedAt));
+            ->then(new IdentityReactivated($this->id, $reason, $reactivatedAt));
     }
 
     #[Test]
@@ -147,7 +147,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given($this->registered(), $this->requested())
             ->when(fn (Identity $identity) => $identity->cancelErasure($this->cancelledAt))
-            ->then(new IdentityErasureCancelled($this->id->toString(), $this->cancelledAt));
+            ->then(new IdentityErasureCancelled($this->id, $this->cancelledAt));
     }
 
     #[Test]
@@ -165,7 +165,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given($this->registered(), $this->requested())
             ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
-            ->then(new IdentityErased($this->id->toString(), $this->erasedAt));
+            ->then(new IdentityErased($this->id, $this->erasedAt));
     }
 
     #[Test]
@@ -197,21 +197,21 @@ final class IdentityTest extends AggregateRootTestCase
 
     private function registered(): IdentityRegistered
     {
-        return new IdentityRegistered($this->id->toString(), $this->registeredAt);
+        return new IdentityRegistered($this->id, $this->registeredAt);
     }
 
     private function suspended(): IdentitySuspended
     {
-        return new IdentitySuspended($this->id->toString(), $this->reason, $this->suspendedAt);
+        return new IdentitySuspended($this->id, $this->reason, $this->suspendedAt);
     }
 
     private function requested(): IdentityErasureRequested
     {
-        return new IdentityErasureRequested($this->id->toString(), $this->requestedAt);
+        return new IdentityErasureRequested($this->id, $this->requestedAt);
     }
 
     private function erased(): IdentityErased
     {
-        return new IdentityErased($this->id->toString(), $this->erasedAt);
+        return new IdentityErased($this->id, $this->erasedAt);
     }
 }

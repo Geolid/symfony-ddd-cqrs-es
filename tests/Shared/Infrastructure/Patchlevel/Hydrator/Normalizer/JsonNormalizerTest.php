@@ -6,19 +6,20 @@ namespace Shared\Tests\Infrastructure\Patchlevel\Hydrator\Normalizer;
 
 use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\Normalizer\InvalidArgument;
+use Patchlevel\Hydrator\Normalizer\MissingHydrator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonObjectNormalizer;
+use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonNormalizer;
 use Shared\Tests\Support\Double\DummyNestedObject;
 
-final class JsonObjectNormalizerTest extends TestCase
+final class JsonNormalizerTest extends TestCase
 {
-    private JsonObjectNormalizer $normalizer;
+    private JsonNormalizer $normalizer;
 
     protected function setUp(): void
     {
-        $this->normalizer = new JsonObjectNormalizer(DummyNestedObject::class);
+        $this->normalizer = new JsonNormalizer(DummyNestedObject::class);
         $this->normalizer->setHydrator(new FakeReflectionHydrator());
     }
 
@@ -43,6 +44,16 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
+    public function itNormalizesList(): void
+    {
+        // When
+        $normalized = $this->normalizer->normalize([new DummyNestedObject('x'), new DummyNestedObject('y')]);
+
+        // Then
+        self::assertSame('[{"value":"x"},{"value":"y"}]', $normalized);
+    }
+
+    #[Test]
     public function itThrowsWhenNormalizingWrongType(): void
     {
         // Then
@@ -56,10 +67,10 @@ final class JsonObjectNormalizerTest extends TestCase
     public function itThrowsWhenNormalizingNoHydrator(): void
     {
         // Given
-        $normalizer = new JsonObjectNormalizer(DummyNestedObject::class);
+        $normalizer = new JsonNormalizer(DummyNestedObject::class);
 
         // Then
-        $this->expectException(InvalidArgument::class);
+        $this->expectException(MissingHydrator::class);
 
         // When
         $normalizer->normalize(new DummyNestedObject('x'));
@@ -98,6 +109,21 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
+    public function itDenormalizesList(): void
+    {
+        // When
+        $objects = $this->normalizer->denormalize('[{"value":"x"},{"value":"y"}]');
+
+        // Then
+        self::assertIsArray($objects);
+        self::assertCount(2, $objects);
+        self::assertInstanceOf(DummyNestedObject::class, $objects[0]);
+        self::assertSame('x', $objects[0]->value);
+        self::assertInstanceOf(DummyNestedObject::class, $objects[1]);
+        self::assertSame('y', $objects[1]->value);
+    }
+
+    #[Test]
     public function itDenormalizesNull(): void
     {
         // When
@@ -111,10 +137,10 @@ final class JsonObjectNormalizerTest extends TestCase
     public function itThrowsWhenDenormalizingNoHydrator(): void
     {
         // Given
-        $normalizer = new JsonObjectNormalizer(DummyNestedObject::class);
+        $normalizer = new JsonNormalizer(DummyNestedObject::class);
 
         // Then
-        $this->expectException(InvalidArgument::class);
+        $this->expectException(MissingHydrator::class);
 
         // When
         $normalizer->denormalize('{"value":"x"}');
@@ -144,7 +170,7 @@ final class JsonObjectNormalizerTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenDenormalizingNotAMap(): void
+    public function itThrowsWhenDenormalizingListOfScalars(): void
     {
         // Then
         $this->expectException(InvalidArgument::class);

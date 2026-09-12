@@ -43,7 +43,7 @@ final class DropCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCas
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnIdentityErased::class, new IdentityErased($identityId, $now));
+        $this->trigger(DropCipherKeyOnIdentityErased::class, new IdentityErased($identity->id, $now));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);

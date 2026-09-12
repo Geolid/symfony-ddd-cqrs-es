@@ -191,8 +191,8 @@ final class ShipmentTest extends AggregateRootTestCase
             ->given($this->requested(), $this->erasureApproved(), $this->dispatched())
             ->when(fn (Shipment $shipment) => $shipment->deliver($this->deliveredAt))
             ->then(
-                new ShipmentDelivered($this->id->toString(), $this->deliveredAt),
-                new ShipmentErased($this->id->toString(), $this->deliveredAt),
+                new ShipmentDelivered($this->id, $this->deliveredAt),
+                new ShipmentErased($this->id, $this->deliveredAt),
             );
     }
 
@@ -204,7 +204,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancelled($this->id->toString(), $cancelledAt));
+            ->then(new ShipmentCancelled($this->id, $cancelledAt));
     }
 
     #[Test]
@@ -215,7 +215,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->prepared())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancelled($this->id->toString(), $cancelledAt));
+            ->then(new ShipmentCancelled($this->id, $cancelledAt));
     }
 
     #[Test]
@@ -224,7 +224,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $cancelledAt = ShipmentBuilder::sample('cancelledAt');
 
         $this
-            ->given($this->requested(), new ShipmentCancelled($this->id->toString(), $cancelledAt))
+            ->given($this->requested(), new ShipmentCancelled($this->id, $cancelledAt))
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
             ->then();
     }
@@ -237,7 +237,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->manifested())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($this->id->toString(), ShipmentState::MANIFESTED, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($this->id, ShipmentState::MANIFESTED, $cancelledAt));
     }
 
     #[Test]
@@ -248,7 +248,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->dispatched())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($this->id->toString(), ShipmentState::DISPATCHED, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($this->id, ShipmentState::DISPATCHED, $cancelledAt));
     }
 
     #[Test]
@@ -259,7 +259,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested(), $this->dispatched(), $this->delivered())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
-            ->then(new ShipmentCancellationRejected($this->id->toString(), ShipmentState::DELIVERED, $cancelledAt));
+            ->then(new ShipmentCancellationRejected($this->id, ShipmentState::DELIVERED, $cancelledAt));
     }
 
     #[Test]
@@ -271,8 +271,8 @@ final class ShipmentTest extends AggregateRootTestCase
             ->given($this->requested(), $this->erasureApproved())
             ->when(static fn (Shipment $shipment) => $shipment->cancel($cancelledAt))
             ->then(
-                new ShipmentCancelled($this->id->toString(), $cancelledAt),
-                new ShipmentErased($this->id->toString(), $cancelledAt),
+                new ShipmentCancelled($this->id, $cancelledAt),
+                new ShipmentErased($this->id, $cancelledAt),
             );
     }
 
@@ -282,7 +282,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
-            ->then(new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt));
+            ->then(new ShipmentErasureApproved($this->id, $this->erasureApprovedAt));
     }
 
     #[Test]
@@ -292,12 +292,12 @@ final class ShipmentTest extends AggregateRootTestCase
             ->given(
                 $this->requested(),
                 $this->dispatched(),
-                new ShipmentDelivered($this->id->toString(), $this->deliveredAt),
+                new ShipmentDelivered($this->id, $this->deliveredAt),
             )
             ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
             ->then(
-                new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt),
-                new ShipmentErased($this->id->toString(), $this->erasureApprovedAt),
+                new ShipmentErasureApproved($this->id, $this->erasureApprovedAt),
+                new ShipmentErased($this->id, $this->erasureApprovedAt),
             );
     }
 
@@ -307,12 +307,12 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->requested(),
-                new ShipmentCancelled($this->id->toString(), ShipmentBuilder::sample('cancelledAt')),
+                new ShipmentCancelled($this->id, ShipmentBuilder::sample('cancelledAt')),
             )
             ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
             ->then(
-                new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt),
-                new ShipmentErased($this->id->toString(), $this->erasureApprovedAt),
+                new ShipmentErasureApproved($this->id, $this->erasureApprovedAt),
+                new ShipmentErased($this->id, $this->erasureApprovedAt),
             );
     }
 
@@ -333,7 +333,7 @@ final class ShipmentTest extends AggregateRootTestCase
     private function requested(): ShipmentRequested
     {
         return new ShipmentRequested(
-            $this->id->toString(),
+            $this->id,
             $this->orderId,
             $this->shopperId,
             $this->origin,
@@ -344,26 +344,26 @@ final class ShipmentTest extends AggregateRootTestCase
 
     private function prepared(): ShipmentPrepared
     {
-        return new ShipmentPrepared($this->id->toString(), $this->preparedAt);
+        return new ShipmentPrepared($this->id, $this->preparedAt);
     }
 
     private function manifested(): ShipmentManifested
     {
-        return new ShipmentManifested($this->id->toString(), $this->trackingNumber, $this->manifestedAt);
+        return new ShipmentManifested($this->id, $this->trackingNumber, $this->manifestedAt);
     }
 
     private function dispatched(): ShipmentDispatched
     {
-        return new ShipmentDispatched($this->id->toString(), $this->dispatchedAt);
+        return new ShipmentDispatched($this->id, $this->dispatchedAt);
     }
 
     private function delivered(): ShipmentDelivered
     {
-        return new ShipmentDelivered($this->id->toString(), $this->deliveredAt);
+        return new ShipmentDelivered($this->id, $this->deliveredAt);
     }
 
     private function erasureApproved(): ShipmentErasureApproved
     {
-        return new ShipmentErasureApproved($this->id->toString(), $this->erasureApprovedAt);
+        return new ShipmentErasureApproved($this->id, $this->erasureApprovedAt);
     }
 }

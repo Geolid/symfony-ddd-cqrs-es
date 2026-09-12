@@ -34,7 +34,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentitySuspended::class,
-            static fn (IdentitySuspended $event): bool => $event->id === $identity->id->toString(),
+            static fn (IdentitySuspended $event): bool => $event->id->equals($identity->id),
         );
 
         // When
@@ -54,7 +54,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentityReactivated::class,
-            static fn (IdentityReactivated $event): bool => $event->id === $identity->id->toString(),
+            static fn (IdentityReactivated $event): bool => $event->id->equals($identity->id),
         );
 
         // When

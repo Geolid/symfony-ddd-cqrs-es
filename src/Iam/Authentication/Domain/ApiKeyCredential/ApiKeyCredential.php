@@ -40,7 +40,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     ): self {
         $self = new self();
         $self->recordThat(new ApiKeyCredentialIssued(
-            id: $id->toString(),
+            id: $id,
             identityId: $identityId,
             label: $label,
             keyId: $keyId,
@@ -65,7 +65,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
         }
 
         $this->recordThat(new ApiKeyCredentialRevoked(
-            id: $this->id->toString(),
+            id: $this->id,
             revokedAt: $revokedAt,
         ));
     }
@@ -73,7 +73,7 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     #[Apply]
     private function applyIssued(ApiKeyCredentialIssued $event): void
     {
-        $this->id = ApiKeyCredentialId::fromString($event->id);
+        $this->id = $event->id;
         $this->identityId = $event->identityId;
         $this->revoked = false;
     }

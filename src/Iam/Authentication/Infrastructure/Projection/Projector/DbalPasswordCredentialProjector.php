@@ -28,7 +28,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     public function onPasswordCredentialDefined(PasswordCredentialDefined $event): void
     {
         $this->connection->insert(self::TABLE, [
-            'id' => $event->id,
+            'id' => $event->id->toString(),
             'identity_id' => $event->identityId,
             'login' => $event->login->value,
             'password_hash' => $event->passwordHash,
@@ -48,7 +48,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $this->connection->update(
             self::TABLE,
             ['password_hash' => $event->passwordHash, 'password_changed_at' => $event->changedAt],
-            ['id' => $event->id],
+            ['id' => $event->id->toString()],
             ['password_changed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
@@ -56,7 +56,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     #[Subscribe(PasswordCredentialRehashed::class)]
     public function onPasswordCredentialRehashed(PasswordCredentialRehashed $event): void
     {
-        $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash], ['id' => $event->id]);
+        $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash], ['id' => $event->id->toString()]);
     }
 
     #[Subscribe(IdentitySuspendedIntegrationEvent::class)]

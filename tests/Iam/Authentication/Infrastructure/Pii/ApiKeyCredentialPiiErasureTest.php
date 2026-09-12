@@ -35,7 +35,7 @@ final class ApiKeyCredentialPiiErasureTest extends AbstractIntegrationTestCase
         $this->store($credential);
         $serialized = $this->serializedEventOf(
             ApiKeyCredentialIssued::class,
-            static fn (ApiKeyCredentialIssued $event): bool => $event->id === $credential->id->toString(),
+            static fn (ApiKeyCredentialIssued $event): bool => $event->id->equals($credential->id),
         );
 
         // When

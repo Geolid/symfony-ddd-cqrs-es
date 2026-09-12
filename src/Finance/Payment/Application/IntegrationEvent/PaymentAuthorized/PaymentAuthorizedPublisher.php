@@ -20,8 +20,8 @@ final readonly class PaymentAuthorizedPublisher
     #[Subscribe(PaymentAuthorized::class)]
     public function __invoke(PaymentAuthorized $event): void
     {
-        $this->publisher->publish(Payment::class, $event->id, new PaymentAuthorizedIntegrationEvent(
-            paymentId: $event->id,
+        $this->publisher->publish(Payment::class, $event->id->toString(), new PaymentAuthorizedIntegrationEvent(
+            paymentId: $event->id->toString(),
             checkoutSessionId: $event->checkoutSessionId,
             authorizedAt: $event->authorizedAt,
         ));

@@ -19,6 +19,6 @@ final readonly class DropCipherKeyOnIdentityErased
     #[Subscribe(IdentityErased::class)]
     public function __invoke(IdentityErased $event): void
     {
-        $this->cipherKeyStore->removeWithSubjectId($event->id);
+        $this->cipherKeyStore->removeWithSubjectId($event->id->toString());
     }
 }

@@ -43,7 +43,7 @@ final class DropCipherKeyOnOrderErasedTest extends AbstractIntegrationTestCase
         ));
 
         // When
-        $this->trigger(DropCipherKeyOnOrderErased::class, new OrderErased($orderId, $now));
+        $this->trigger(DropCipherKeyOnOrderErased::class, new OrderErased($order->id, $now));
 
         // Then
         $this->expectException(CipherKeyNotExists::class);

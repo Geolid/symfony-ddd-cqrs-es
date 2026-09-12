@@ -8,6 +8,7 @@ use Finance\Payment\Application\Policy\VoidPaymentOnPaymentVoided;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Domain\Event\PaymentVoided;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -35,6 +36,6 @@ final class VoidPaymentOnPaymentVoidedTest extends AbstractIntegrationTestCase
         $this->paymentGateway->expects(self::once())->method('void')->with($reference->value)->willReturn(PaymentGatewayStatus::VOIDED);
 
         // When
-        $this->trigger(VoidPaymentOnPaymentVoided::class, new PaymentVoided(Uuid::uuid7()->toString(), $reference, Clock::get()->now()));
+        $this->trigger(VoidPaymentOnPaymentVoided::class, new PaymentVoided(PaymentId::fromString(Uuid::uuid7()->toString()), $reference, Clock::get()->now()));
     }
 }

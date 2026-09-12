@@ -9,7 +9,6 @@ use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
-use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -28,10 +27,10 @@ final readonly class OrderCancelledPublisher
     #[Subscribe(OrderCancelled::class)]
     public function __invoke(OrderCancelled $event): void
     {
-        $order = $this->repository->load(OrderId::fromString($event->id));
+        $order = $this->repository->load($event->id);
 
-        $this->publisher->publish(Order::class, $event->id, new OrderCancelledIntegrationEvent(
-            orderId: $event->id,
+        $this->publisher->publish(Order::class, $event->id->toString(), new OrderCancelledIntegrationEvent(
+            orderId: $event->id->toString(),
             shopperId: $order->shopperId,
             cancelledAt: $event->cancelledAt,
         ));

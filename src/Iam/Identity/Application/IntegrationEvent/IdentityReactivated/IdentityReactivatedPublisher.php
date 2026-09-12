@@ -20,8 +20,8 @@ final readonly class IdentityReactivatedPublisher
     #[Subscribe(IdentityReactivated::class)]
     public function __invoke(IdentityReactivated $event): void
     {
-        $this->publisher->publish(Identity::class, $event->id, new IdentityReactivatedIntegrationEvent(
-            identityId: $event->id,
+        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityReactivatedIntegrationEvent(
+            identityId: $event->id->toString(),
             reactivatedAt: $event->reactivatedAt,
         ));
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\Event;
 
+use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -16,7 +17,7 @@ final readonly class IdentityReactivated
 {
     public function __construct(
         #[DataSubjectId]
-        public string $id,
+        public IdentityId $id,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('erased'), Reason::class, 'fromString'))]
         public Reason $reason,
         public \DateTimeImmutable $reactivatedAt,

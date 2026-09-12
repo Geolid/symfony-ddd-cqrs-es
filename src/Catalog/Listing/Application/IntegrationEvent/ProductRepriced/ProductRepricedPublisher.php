@@ -20,8 +20,8 @@ final readonly class ProductRepricedPublisher
     #[Subscribe(ProductRepriced::class)]
     public function __invoke(ProductRepriced $event): void
     {
-        $this->publisher->publish(Product::class, $event->id, new ProductRepricedIntegrationEvent(
-            productId: $event->id,
+        $this->publisher->publish(Product::class, $event->id->toString(), new ProductRepricedIntegrationEvent(
+            productId: $event->id->toString(),
             unitPriceInCents: $event->unitPrice->cents,
             repricedAt: $event->repricedAt,
         ));

@@ -58,8 +58,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $shopperId;
     public private(set) string $paymentId;
     public private(set) PostalAddress $shippingAddress;
-    public private(set) PostalAddress $billingAddress;
-    public private(set) int $totalAmountInCents;
     private OrderState $operationalState;
     private ErasureState $erasureState;
 
@@ -90,7 +88,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $self = new self();
         $self->recordThat(new OrderConfirmed(
-            id: $id->toString(),
+            id: $id,
             cartId: $cartId,
             shopperId: $shopperId,
             paymentId: $paymentId,
@@ -111,7 +109,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderPrepared(
-            id: $this->id->toString(),
+            id: $this->id,
             preparedAt: $preparedAt,
         ));
     }
@@ -135,7 +133,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderCancelled(
-            id: $this->id->toString(),
+            id: $this->id,
             cancelledAt: $cancelledAt,
         ));
 
@@ -149,7 +147,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderFailed(
-            id: $this->id->toString(),
+            id: $this->id,
             failedAt: $failedAt,
         ));
 
@@ -163,7 +161,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderDispatched(
-            id: $this->id->toString(),
+            id: $this->id,
             dispatchedAt: $dispatchedAt,
         ));
     }
@@ -175,7 +173,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderDelivered(
-            id: $this->id->toString(),
+            id: $this->id,
             deliveredAt: $deliveredAt,
         ));
 
@@ -189,7 +187,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderErasureApproved(
-            id: $this->id->toString(),
+            id: $this->id,
             approvedAt: $approvedAt,
         ));
 
@@ -203,7 +201,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         $this->recordThat(new OrderErased(
-            id: $this->id->toString(),
+            id: $this->id,
             erasedAt: $at,
         ));
     }
@@ -231,13 +229,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyConfirmed(OrderConfirmed $event): void
     {
-        $this->id = OrderId::fromString($event->id);
+        $this->id = $event->id;
         $this->cartId = $event->cartId;
         $this->shopperId = $event->shopperId;
         $this->paymentId = $event->paymentId;
         $this->shippingAddress = $event->shippingAddress;
-        $this->billingAddress = $event->billingAddress;
-        $this->totalAmountInCents = $event->totalAmount->cents;
         $this->operationalState = OrderState::CONFIRMED;
         $this->erasureState = ErasureState::RETAINED;
     }
