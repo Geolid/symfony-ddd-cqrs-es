@@ -30,7 +30,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itCryptoShredsAddressesOnOrderErasure(): void
+    public function itCryptoShredsShippingAddressOnOrderErasure(): void
     {
         // Given
         $order = OrderBuilder::new()->create();
@@ -48,7 +48,6 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         self::assertInstanceOf(OrderConfirmed::class, $rehydrated);
         $erasedPostalAddress = PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
         self::assertSame($erasedPostalAddress, PostalAddressMapper::toArray($rehydrated->shippingAddress));
-        self::assertSame($erasedPostalAddress, PostalAddressMapper::toArray($rehydrated->billingAddress));
     }
 
     #[Test]

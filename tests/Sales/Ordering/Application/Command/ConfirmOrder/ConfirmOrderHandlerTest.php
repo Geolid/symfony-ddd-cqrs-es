@@ -38,7 +38,6 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
         $quantity = SeededFaker::get()->numberBetween(1, 5);
         $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
-        $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
 
         // When
         $this->dispatch(new ConfirmOrder(
@@ -53,7 +52,6 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
                 'quantity' => $quantity,
             ]],
             shippingAddress: $shippingAddress,
-            billingAddress: $billingAddress,
         ));
 
         // Then
@@ -63,10 +61,6 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(
             $shippingAddress,
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
-        );
-        self::assertSame(
-            $billingAddress,
-            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
         );
         self::assertSame(Money::fromCents($unitPriceInCents * $quantity)->cents, $result->totalAmountInCents);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
@@ -86,7 +80,6 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             paymentId: Uuid::uuid7()->toString(),
             lines: [],
             shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
-            billingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR'))),
         ));
     }
 }

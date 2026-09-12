@@ -9,10 +9,12 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionConsumed;
+use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
@@ -31,10 +33,13 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
                 'id' => $event->id,
                 'cart_id' => $event->cartId,
                 'shopper_id' => $event->shopperId,
+                'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
+                'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
+                'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => CheckoutSessionStatus::OPEN->value,
                 'opened_at' => $event->openedAt,
             ],
-            ['opened_at' => Types::DATETIME_IMMUTABLE],
+            ['opened_at' => Types::DATETIME_IMMUTABLE, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
         );
     }
 
@@ -58,12 +63,12 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         );
     }
 
-    #[Subscribe(CheckoutSessionConsumed::class)]
-    public function onCheckoutSessionConsumed(CheckoutSessionConsumed $event): void
+    #[Subscribe(CheckoutSessionCompleted::class)]
+    public function onCheckoutSessionCompleted(CheckoutSessionCompleted $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => CheckoutSessionStatus::CONSUMED->value],
+            ['status' => CheckoutSessionStatus::COMPLETED->value],
             ['id' => $event->id],
         );
     }
@@ -77,7 +82,10 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shopper_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('status', Types::STRING, ['length' => 8]);
+        $table->addColumn('shipping_address', Types::JSON);
+        $table->addColumn('billing_address', Types::JSON);
+        $table->addColumn('total_amount_in_cents', Types::INTEGER);
+        $table->addColumn('status', Types::STRING, ['length' => 9]);
         $table->addColumn('opened_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

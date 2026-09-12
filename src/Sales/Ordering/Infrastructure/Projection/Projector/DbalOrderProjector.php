@@ -39,13 +39,12 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 'shopper_id' => $event->shopperId,
                 'payment_id' => $event->paymentId,
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
-                'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
                 'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => OrderStatus::CONFIRMED->value,
                 'confirmed_at' => $event->confirmedAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
-            ['confirmed_at' => Types::DATETIME_IMMUTABLE, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
+            ['confirmed_at' => Types::DATETIME_IMMUTABLE, 'shipping_address' => Types::JSON],
         );
     }
 
@@ -149,7 +148,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('shopper_id', Types::STRING, ['length' => 64]);
         $table->addColumn('payment_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON);
-        $table->addColumn('billing_address', Types::JSON);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE);

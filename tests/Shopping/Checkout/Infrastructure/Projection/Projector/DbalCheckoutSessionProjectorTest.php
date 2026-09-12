@@ -6,13 +6,17 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Money;
+use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{cart_id: string, shopper_id: string, status: string}
+ * @phpstan-type Row array{cart_id: string, shopper_id: string, shipping_address: string, billing_address: string, total_amount_in_cents: int|string, status: string}
  */
 final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 {
@@ -32,6 +36,20 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($builder['cartId'], $row['cart_id']);
         self::assertSame($builder['shopperId'], $row['shopper_id']);
+        self::assertSame(
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
+            json_decode($row['shipping_address'], true),
+        );
+        self::assertSame(
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
+            json_decode($row['billing_address'], true),
+        );
+        $totalAmountInCents = array_reduce(
+            $builder['items'],
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            Money::fromCents(0),
+        )->cents;
+        self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);
         self::assertSame(CheckoutSessionStatus::OPEN->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -81,12 +99,12 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnCheckoutSessionConsumed(): void
+    public function itProjectsOnCheckoutSessionCompleted(): void
     {
         // Given
         $other = CheckoutSessionBuilder::new()->create();
         $this->store($other);
-        $checkoutSession = CheckoutSessionBuilder::new()->consumed()->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
 
         // When
         $this->store($checkoutSession);
@@ -94,7 +112,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($checkoutSession->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(CheckoutSessionStatus::CONSUMED->value, $row['status']);
+        self::assertSame(CheckoutSessionStatus::COMPLETED->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -110,7 +128,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT cart_id, shopper_id, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
+            \sprintf('SELECT cart_id, shopper_id, shipping_address, billing_address, total_amount_in_cents, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
             ['id' => $id],
         );
     }

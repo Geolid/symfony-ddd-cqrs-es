@@ -32,7 +32,6 @@ final class OrderTest extends AggregateRootTestCase
     private string $shopperId;
     private string $paymentId;
     private PostalAddress $shippingAddress;
-    private PostalAddress $billingAddress;
 
     /** @var list<Line> */
     private array $lines;
@@ -54,7 +53,6 @@ final class OrderTest extends AggregateRootTestCase
         $this->shopperId = OrderBuilder::sample('shopperId');
         $this->paymentId = OrderBuilder::sample('paymentId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
-        $this->billingAddress = OrderBuilder::sample('billingAddress');
         $this->lines = OrderBuilder::sample('lines');
         $this->confirmedAt = OrderBuilder::sample('confirmedAt');
         $this->preparedAt = OrderBuilder::sample('preparedAt');
@@ -70,14 +68,13 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, $this->lines, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->lines, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id,
                 $this->cartId,
                 $this->shopperId,
                 $this->paymentId,
                 $this->shippingAddress,
-                $this->billingAddress,
                 $this->lines,
                 $this->totalAmount(),
                 $this->confirmedAt,
@@ -89,7 +86,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, $this->billingAddress, [], $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->paymentId, $this->shippingAddress, [], $this->confirmedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -306,7 +303,6 @@ final class OrderTest extends AggregateRootTestCase
             $this->shopperId,
             $this->paymentId,
             $this->shippingAddress,
-            $this->billingAddress,
             $this->lines,
             $this->totalAmount(),
             $this->confirmedAt,

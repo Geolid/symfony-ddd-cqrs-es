@@ -11,12 +11,14 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionConsumed;
+use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionState;
 
@@ -29,10 +31,10 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
 
     /** @var array<string, list<CheckoutSessionState>> */
     private const array OPERATIONAL_TRANSITIONS = [
-        CheckoutSessionState::OPEN->value => [CheckoutSessionState::EXPIRED, CheckoutSessionState::STALE, CheckoutSessionState::CONSUMED],
+        CheckoutSessionState::OPEN->value => [CheckoutSessionState::EXPIRED, CheckoutSessionState::STALE, CheckoutSessionState::COMPLETED],
         CheckoutSessionState::EXPIRED->value => [],
         CheckoutSessionState::STALE->value => [],
-        CheckoutSessionState::CONSUMED->value => [],
+        CheckoutSessionState::COMPLETED->value => [],
     ];
 
     #[Id]
@@ -40,7 +42,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     private CheckoutSessionState $operationalState;
 
     /**
-     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
+     * @param list<CheckoutItem> $items
      *
      * @throws CheckoutSessionEmptyException
      */
@@ -48,13 +50,12 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         CheckoutSessionId $id,
         string $cartId,
         string $shopperId,
-        array $lines,
+        array $items,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
-        int $totalAmountInCents,
         \DateTimeImmutable $openedAt,
     ): self {
-        if ([] === $lines) {
+        if ([] === $items) {
             throw CheckoutSessionEmptyException::forId($id);
         }
 
@@ -63,10 +64,10 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             id: $id->toString(),
             cartId: $cartId,
             shopperId: $shopperId,
-            lines: $lines,
+            items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            totalAmountInCents: $totalAmountInCents,
+            totalAmount: self::sumItems($items),
             openedAt: $openedAt,
         ));
 
@@ -97,21 +98,50 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function consume(\DateTimeImmutable $consumedAt): void
-    {
-        if (!$this->canTransitionOperationalTo(CheckoutSessionState::CONSUMED)) {
+    /**
+     * @param list<CheckoutItem> $items
+     */
+    public function complete(
+        string $cartId,
+        string $shopperId,
+        array $items,
+        PostalAddress $shippingAddress,
+        PostalAddress $billingAddress,
+        string $paymentId,
+        \DateTimeImmutable $completedAt,
+    ): void {
+        if (!$this->canTransitionOperationalTo(CheckoutSessionState::COMPLETED)) {
             return;
         }
 
-        $this->recordThat(new CheckoutSessionConsumed(
+        $this->recordThat(new CheckoutSessionCompleted(
             id: $this->id->toString(),
-            consumedAt: $consumedAt,
+            cartId: $cartId,
+            shopperId: $shopperId,
+            items: $items,
+            shippingAddress: $shippingAddress,
+            billingAddress: $billingAddress,
+            totalAmount: self::sumItems($items),
+            paymentId: $paymentId,
+            completedAt: $completedAt,
         ));
     }
 
     private function canTransitionOperationalTo(CheckoutSessionState $target): bool
     {
         return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+    }
+
+    /**
+     * @param list<CheckoutItem> $items
+     */
+    private static function sumItems(array $items): Money
+    {
+        return array_reduce(
+            $items,
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            Money::fromCents(0),
+        );
     }
 
     #[Apply]
@@ -134,8 +164,8 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyConsumed(CheckoutSessionConsumed $event): void
+    private function applyCompleted(CheckoutSessionCompleted $event): void
     {
-        $this->operationalState = CheckoutSessionState::CONSUMED;
+        $this->operationalState = CheckoutSessionState::COMPLETED;
     }
 }

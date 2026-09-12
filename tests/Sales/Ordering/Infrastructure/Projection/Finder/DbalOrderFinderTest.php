@@ -42,10 +42,6 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
             PostalAddressMapper::toArray($builder['shippingAddress']),
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
         );
-        self::assertSame(
-            PostalAddressMapper::toArray($builder['billingAddress']),
-            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
-        );
         $totalAmountInCents = array_reduce(
             $builder['lines'],
             static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),

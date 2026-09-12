@@ -37,7 +37,7 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'shopper_id', 'payment_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
+        $qb->select('id', 'shopper_id', 'payment_id', 'shipping_address', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
             ->from(DbalOrderProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

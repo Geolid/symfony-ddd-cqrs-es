@@ -78,7 +78,6 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             lines: $lines,
             shippingAddress: PostalAddressMapper::toArray($shippingAddress),
             billingAddress: PostalAddressMapper::toArray($billingAddress),
-            totalAmountInCents: $totalAmountInCents,
             openedAt: $now,
         ));
 
