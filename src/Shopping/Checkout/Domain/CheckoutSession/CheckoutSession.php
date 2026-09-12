@@ -67,8 +67,8 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            openedAt: $openedAt,
             totalAmount: self::sumItems($items),
+            openedAt: $openedAt,
         ));
 
         return $self;
