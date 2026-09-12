@@ -29,6 +29,9 @@
         <testsuite name="compliance">
             <directory>tests/Compliance</directory>
         </testsuite>
+        <testsuite name="crm">
+            <directory>tests/Crm</directory>
+        </testsuite>
         <testsuite name="finance">
             <directory>tests/Finance</directory>
         </testsuite>

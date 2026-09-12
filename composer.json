@@ -88,6 +88,7 @@
       "Bootstrap\\": "bootstrap/",
       "Catalog\\": "src/Catalog/",
       "Compliance\\": "src/Compliance/",
+      "Crm\\": "src/Crm/",
       "Finance\\": "src/Finance/",
       "Fulfilment\\": "src/Fulfilment/",
       "Iam\\": "src/Iam/",
@@ -101,6 +102,7 @@
     "psr-4": {
       "Catalog\\Tests\\": "tests/Catalog/",
       "Compliance\\Tests\\": "tests/Compliance/",
+      "Crm\\Tests\\": "tests/Crm/",
       "Finance\\Tests\\": "tests/Finance/",
       "Fulfilment\\Tests\\": "tests/Fulfilment/",
       "Iam\\Tests\\": "tests/Iam/",

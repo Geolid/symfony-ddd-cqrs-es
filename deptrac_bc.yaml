@@ -32,6 +32,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'src/Catalog/Listing/.*' }
 
+    - name: Crm.Customer
+      collectors:
+        - { type: directory, value: 'src/Crm/Customer/.*' }
+
     - name: Compliance.Erasing
       collectors:
         - { type: directory, value: 'src/Compliance/Erasing/.*' }
@@ -63,5 +67,6 @@ deptrac:
     Iam.Identity:        [ Compliance.Erasing, Shared, Vendors ]
     Iam.Authentication:  [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:     [ Shared, Vendors ]
+    Crm.Customer:        [ Compliance.Erasing, Shared, Vendors ]
     Compliance.Erasing:  [ Shared, Vendors ]
     Shared:              [ Vendors ]
