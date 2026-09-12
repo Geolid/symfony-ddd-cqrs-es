@@ -12,9 +12,4 @@ enum OrderStatus: string
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
     case FAILED = 'failed';
-
-    public function isCancelled(): bool
-    {
-        return self::CANCELLED === $this;
-    }
 }

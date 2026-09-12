@@ -9,11 +9,6 @@ enum CartState: string
     case ACTIVE = 'active';
     case PURCHASED = 'purchased';
 
-    public function isActive(): bool
-    {
-        return self::ACTIVE === $this;
-    }
-
     public function isPurchased(): bool
     {
         return self::PURCHASED === $this;
