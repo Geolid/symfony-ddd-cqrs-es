@@ -154,9 +154,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyProductQuantityChanged(CartProductQuantityChanged $event): void
     {
-        // Aucun état à muter sur Cart lui-même : le produit est déjà présent
-        // (garde d'existence dans changeQuantity()) ; seule la quantité recordée
-        // sur l'event change, jamais stockée en propriété de l'agrégat.
+        // Quantity is never stored on Cart itself, only on the event — nothing to apply.
     }
 
     #[Apply]
