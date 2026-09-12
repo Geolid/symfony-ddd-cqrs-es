@@ -31,7 +31,6 @@ use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CartPricesStaleException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException as CheckoutShopperAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException as CheckoutShopperErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException as CheckoutShopperNotRegisteredException;
@@ -71,7 +70,6 @@ return static function (ContainerConfigurator $container): void {
             CheckoutShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutShopperErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
-            CartPricesStaleException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherShopperException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],

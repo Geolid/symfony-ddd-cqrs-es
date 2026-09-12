@@ -31,10 +31,10 @@ final class DbalCheckoutSessionLineFinderTest extends AbstractIterableFinderTest
         // Then
         self::assertCount(1, $results);
         self::assertSame($checkoutSession->id->toString(), $results[0]->checkoutSessionId);
-        self::assertSame($builder['lines'][0]->product->id, $results[0]->productId);
-        self::assertSame($builder['lines'][0]->product->label->value, $results[0]->label);
-        self::assertSame($builder['lines'][0]->product->price->cents, $results[0]->unitPriceInCents);
-        self::assertSame($builder['lines'][0]->quantity->value, $results[0]->quantity);
+        self::assertSame($builder['lines'][0]['productId'], $results[0]->productId);
+        self::assertSame($builder['lines'][0]['label'], $results[0]->label);
+        self::assertSame($builder['lines'][0]['unitPriceInCents'], $results[0]->unitPriceInCents);
+        self::assertSame($builder['lines'][0]['quantity'], $results[0]->quantity);
     }
 
     protected function finder(): CheckoutSessionLineFinderInterface
@@ -55,11 +55,11 @@ final class DbalCheckoutSessionLineFinderTest extends AbstractIterableFinderTest
         $checkoutSessions = array_map(static fn (CheckoutSessionBuilder $builder): CheckoutSession => $builder->create(), $builders);
         $this->store(...$checkoutSessions);
 
-        return array_map(static fn (CheckoutSessionBuilder $builder): string => $builder['lines'][0]->id->toString(), $builders);
+        return array_map(static fn (CheckoutSessionBuilder $builder): string => $builder['lines'][0]['productId'], $builders);
     }
 
     protected function idOf(object $result): string
     {
-        return $result->lineId;
+        return $result->productId;
     }
 }

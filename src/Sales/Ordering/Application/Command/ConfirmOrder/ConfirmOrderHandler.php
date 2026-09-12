@@ -40,7 +40,7 @@ final readonly class ConfirmOrderHandler
             paymentId: $command->paymentId,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
-            lines: array_map($this->resolveLine(...), $command->lines),
+            lines: array_map(fn (array $line): Line => $this->resolveLine($command->cartId, $line), $command->lines),
             confirmedAt: $this->clock->now(),
         );
 
@@ -52,12 +52,12 @@ final readonly class ConfirmOrderHandler
     }
 
     /**
-     * @param array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int} $line
+     * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $line
      */
-    private function resolveLine(array $line): Line
+    private function resolveLine(string $cartId, array $line): Line
     {
         return new Line(
-            LineId::fromString($line['lineId']),
+            LineId::forProduct($cartId, $line['productId']),
             Product::of($line['productId'], Label::fromString($line['label']), Money::fromCents($line['unitPriceInCents'])),
             Quantity::of($line['quantity']),
         );

@@ -14,7 +14,7 @@ use Shared\Domain\Pii\ErasedFieldSentinel;
 final readonly class CheckoutSessionOpenedIntegrationEvent implements IntegrationEventInterface
 {
     /**
-     * @param list<array{lineId: string, productId: string, label: string, unitPriceInCents: int, quantity: int}>                 $lines
+     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}>                                 $lines
      * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $shippingAddress
      * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $billingAddress
      */

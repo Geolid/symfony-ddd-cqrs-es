@@ -8,7 +8,6 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\Cart\Entity\Line;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionConsumed;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
@@ -23,7 +22,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     private CheckoutSessionId $id;
     private string $cartId;
     private string $shopperId;
-    /** @var list<Line> */
+    /** @var list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> */
     private array $lines;
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;

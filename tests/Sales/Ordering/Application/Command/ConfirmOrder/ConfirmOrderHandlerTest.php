@@ -47,7 +47,6 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             shopperId: $shopperId,
             paymentId: $paymentId,
             lines: [[
-                'lineId' => Uuid::uuid7()->toString(),
                 'productId' => Uuid::uuid7()->toString(),
                 'label' => SeededFaker::get()->sentence(3),
                 'unitPriceInCents' => $unitPriceInCents,

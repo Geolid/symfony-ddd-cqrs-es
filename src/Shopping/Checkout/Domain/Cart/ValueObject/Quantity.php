@@ -18,11 +18,6 @@ final readonly class Quantity
         return new self($value);
     }
 
-    public function plus(self $other): self
-    {
-        return new self($this->value + $other->value);
-    }
-
     public function equals(self $other): bool
     {
         return $this->value === $other->value;

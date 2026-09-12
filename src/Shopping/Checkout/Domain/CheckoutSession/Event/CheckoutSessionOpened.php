@@ -11,13 +11,12 @@ use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\Cart\Entity\Line;
 
 #[Event('shopping.checkout.checkout_session.opened')]
 final readonly class CheckoutSessionOpened
 {
     /**
-     * @param list<Line> $lines
+     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
      */
     public function __construct(
         #[DataSubjectId]

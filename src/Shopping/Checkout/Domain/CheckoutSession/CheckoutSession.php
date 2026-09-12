@@ -12,7 +12,6 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\Cart\Entity\Line;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionConsumed;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
@@ -41,7 +40,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     private CheckoutSessionState $operationalState;
 
     /**
-     * @param list<Line> $lines
+     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}> $lines
      *
      * @throws CheckoutSessionEmptyException
      */

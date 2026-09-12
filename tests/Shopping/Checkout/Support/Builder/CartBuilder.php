@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Domain\Cart\Cart;
 use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
-use Shopping\Checkout\Domain\Cart\ValueObject\LineId;
-use Shopping\Checkout\Domain\Cart\ValueObject\Product;
 use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
@@ -22,12 +18,9 @@ use Webmozart\Assert\Assert;
  *     id: CartId,
  *     shopperId: string,
  *     startedAt: \DateTimeImmutable,
- *     product: Product,
- *     quantity: Quantity,
- *     lines: list<array{product: Product, quantity: Quantity}>,
- *     addedAt: \DateTimeImmutable,
- *     removedAt: \DateTimeImmutable,
- *     changedAt: \DateTimeImmutable,
+ *     productAdditions: list<array{productId: string, quantity: Quantity, addedAt: \DateTimeImmutable}>,
+ *     productRemovals: list<array{productId: string, removedAt: \DateTimeImmutable}>,
+ *     productQuantityChanges: list<array{productId: string, quantity: Quantity, changedAt: \DateTimeImmutable}>,
  *     purchasedAt: \DateTimeImmutable,
  * }
  *
@@ -50,48 +43,52 @@ final class CartBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(startedAt: $startedAt);
     }
 
-    public function lineAdded(?Product $product = null, ?Quantity $quantity = null, ?\DateTimeImmutable $addedAt = null): self
+    public function productAdded(?string $productId = null, ?Quantity $quantity = null, ?\DateTimeImmutable $addedAt = null): self
     {
-        $builder = null !== $addedAt ? $this->withAttributes(addedAt: $addedAt) : $this;
+        $productId ??= Uuid::uuid7()->toString();
+        $quantity ??= Quantity::of(SeededFaker::get()->numberBetween(1, 5));
+        $addedAt ??= Clock::get()->now()->modify('+1 minute');
 
-        $product ??= $builder['product'];
-        $quantity ??= $builder['quantity'];
-        $builder = $builder->withAttributes(product: $product, quantity: $quantity, lines: [...$builder['lines'], ['product' => $product, 'quantity' => $quantity]]);
+        $builder = $this->withAttributes(productAdditions: [...$this['productAdditions'], [
+            'productId' => $productId,
+            'quantity' => $quantity,
+            'addedAt' => $addedAt,
+        ]]);
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $modifierBuilder) => $cart->addLine($product, $quantity, $modifierBuilder['addedAt']),
+            static fn (Cart $cart) => $cart->addProduct($productId, $quantity, $addedAt),
         );
     }
 
-    public function lineRemoved(?\DateTimeImmutable $removedAt = null): self
+    public function productRemoved(?string $productId = null, ?\DateTimeImmutable $removedAt = null): self
     {
-        $builder = null !== $removedAt ? $this->withAttributes(removedAt: $removedAt) : $this;
-        $index = array_key_last($builder['lines']);
-        Assert::notNull($index);
-        $productId = $builder['lines'][$index]['product']->id;
+        $productId ??= $this->lastAddedProductId();
+        $removedAt ??= Clock::get()->now()->modify('+2 minutes');
+
+        $builder = $this->withAttributes(productRemovals: [...$this['productRemovals'], [
+            'productId' => $productId,
+            'removedAt' => $removedAt,
+        ]]);
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $modifierBuilder) => $cart->removeLine(
-                LineId::forProduct($modifierBuilder['id']->toString(), $productId),
-                $modifierBuilder['removedAt'],
-            ),
+            static fn (Cart $cart) => $cart->removeProduct($productId, $removedAt),
         );
     }
 
-    public function lineQuantityChanged(?Quantity $quantity = null, ?\DateTimeImmutable $changedAt = null): self
+    public function productQuantityChanged(?string $productId = null, ?Quantity $quantity = null, ?\DateTimeImmutable $changedAt = null): self
     {
-        $builder = null !== $changedAt ? $this->withAttributes(changedAt: $changedAt) : $this;
-        $index = array_key_last($builder['lines']);
-        Assert::notNull($index);
-        $productId = $builder['lines'][$index]['product']->id;
-        $quantity ??= $builder['quantity'];
+        $productId ??= $this->lastAddedProductId();
+        $quantity ??= Quantity::of(SeededFaker::get()->numberBetween(1, 5));
+        $changedAt ??= Clock::get()->now()->modify('+2 minutes');
+
+        $builder = $this->withAttributes(productQuantityChanges: [...$this['productQuantityChanges'], [
+            'productId' => $productId,
+            'quantity' => $quantity,
+            'changedAt' => $changedAt,
+        ]]);
 
         return $builder->withModifier(
-            static fn (Cart $cart, self $modifierBuilder) => $cart->changeQuantity(
-                LineId::forProduct($modifierBuilder['id']->toString(), $productId),
-                $quantity,
-                $modifierBuilder['changedAt'],
-            ),
+            static fn (Cart $cart) => $cart->changeQuantity($productId, $quantity, $changedAt),
         );
     }
 
@@ -112,16 +109,9 @@ final class CartBuilder extends AbstractAggregateBuilder
             'id' => static fn (): CartId => CartId::fromString(Uuid::uuid7()->toString()),
             'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
             'startedAt' => static fn (): \DateTimeImmutable => $now,
-            'product' => static function (): Product {
-                Assert::string($label = SeededFaker::get()->words(3, true));
-
-                return Product::of(Uuid::uuid7()->toString(), Label::fromString($label), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
-            },
-            'quantity' => static fn (): Quantity => Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
-            'lines' => static fn (): array => [],
-            'addedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
-            'removedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),
-            'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 minute'),
+            'productAdditions' => static fn (): array => [],
+            'productRemovals' => static fn (): array => [],
+            'productQuantityChanges' => static fn (): array => [],
             'purchasedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 minute'),
         ];
     }
@@ -133,5 +123,13 @@ final class CartBuilder extends AbstractAggregateBuilder
             shopperId: $this['shopperId'],
             startedAt: $this['startedAt'],
         );
+    }
+
+    private function lastAddedProductId(): string
+    {
+        $lastIndex = array_key_last($this['productAdditions']);
+        Assert::notNull($lastIndex);
+
+        return $this['productAdditions'][$lastIndex]['productId'];
     }
 }

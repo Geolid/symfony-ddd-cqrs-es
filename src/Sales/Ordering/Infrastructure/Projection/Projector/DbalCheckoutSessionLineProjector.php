@@ -26,7 +26,6 @@ final readonly class DbalCheckoutSessionLineProjector extends AbstractDbalProjec
             $this->connection->insert(
                 self::TABLE,
                 [
-                    'line_id' => $line['lineId'],
                     'checkout_session_id' => $event->checkoutSessionId,
                     'product_id' => $line['productId'],
                     'label' => $line['label'],
@@ -45,7 +44,6 @@ final readonly class DbalCheckoutSessionLineProjector extends AbstractDbalProjec
     protected function configureSchema(Schema $schema): void
     {
         $table = $schema->createTable(self::TABLE);
-        $table->addColumn('line_id', Types::STRING, ['length' => 36]);
         $table->addColumn('checkout_session_id', Types::STRING, ['length' => 36]);
         $table->addColumn('product_id', Types::STRING, ['length' => 36]);
         $table->addColumn('label', Types::STRING, ['length' => Label::MAX_LENGTH]);
@@ -54,7 +52,7 @@ final readonly class DbalCheckoutSessionLineProjector extends AbstractDbalProjec
         $table->addColumn('opened_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
-                ->setColumnNames(UnqualifiedName::unquoted('line_id'))
+                ->setColumnNames(UnqualifiedName::unquoted('checkout_session_id'), UnqualifiedName::unquoted('product_id'))
                 ->create(),
         );
     }
