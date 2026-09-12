@@ -51,19 +51,27 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new();
         $catalogProduct = $productBuilder->create();
+        $secondProductBuilder = ProductBuilder::new();
+        $secondCatalogProduct = $secondProductBuilder->create();
         $shopper = ShopperBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
         $cartBuilder = CartBuilder::new()->withShopperId($shopper->id->toString())->productAdded(
             productId: $catalogProduct->id->toString(),
             quantity: $quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+        )->productAdded(
+            productId: $secondCatalogProduct->id->toString(),
+            quantity: $secondQuantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
         );
         $cart = $cartBuilder->create();
-        $this->store($cart, $catalogProduct, $shopper);
+        $this->store($cart, $catalogProduct, $secondCatalogProduct, $shopper);
 
         // When
         $result = $this->service->openFor($cart->id->toString());
 
         // Then
-        self::assertSame($quantity->value * $productBuilder['unitPrice']->cents, $result->totalAmountInCents);
+        self::assertSame(
+            $quantity->value * $productBuilder['unitPrice']->cents + $secondQuantity->value * $secondProductBuilder['unitPrice']->cents,
+            $result->totalAmountInCents,
+        );
         self::assertNotNull($shopper->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($shopper->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($shopper->billingAddress);

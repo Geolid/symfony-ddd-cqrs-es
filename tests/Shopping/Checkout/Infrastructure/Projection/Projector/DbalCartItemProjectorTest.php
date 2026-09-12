@@ -64,11 +64,10 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCartProductRemoved(): void
     {
         // Given
-        $otherProductId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded($otherProductId)->create();
+        $productId = Uuid::uuid7()->toString();
+        $other = CartBuilder::new()->productAdded($productId)->create();
         $this->store($other);
 
-        $productId = Uuid::uuid7()->toString();
         $cart = CartBuilder::new()->productAdded($productId)->productRemoved()->create();
 
         // When
@@ -77,7 +76,7 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
         // Then
         self::assertFalse($this->fetchRow($cart->id->toString(), $productId));
 
-        $otherRow = $this->fetchRow($other->id->toString(), $otherProductId);
+        $otherRow = $this->fetchRow($other->id->toString(), $productId);
         self::assertNotFalse($otherRow);
     }
 
@@ -85,11 +84,10 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCartProductQuantityChanged(): void
     {
         // Given
-        $otherProductId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded($otherProductId)->create();
+        $productId = Uuid::uuid7()->toString();
+        $other = CartBuilder::new()->productAdded($productId, $otherQuantity = Quantity::of(4))->create();
         $this->store($other);
 
-        $productId = Uuid::uuid7()->toString();
         $cart = CartBuilder::new()
             ->productAdded($productId, Quantity::of(2))
             ->productQuantityChanged(quantity: $newQuantity = Quantity::of(9))
@@ -103,8 +101,9 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($newQuantity->value, $row['quantity']);
 
-        $otherRow = $this->fetchRow($other->id->toString(), $otherProductId);
+        $otherRow = $this->fetchRow($other->id->toString(), $productId);
         self::assertNotFalse($otherRow);
+        self::assertSame($otherQuantity->value, $otherRow['quantity']);
     }
 
     /**

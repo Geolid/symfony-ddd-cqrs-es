@@ -36,7 +36,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) CartId $id;
     private CartState $operationalState;
-    /** @var array<string, true> */
+    /** @var array<string, string> */
     private array $productIds = [];
 
     public static function start(CartId $id, string $shopperId, \DateTimeImmutable $startedAt): self
@@ -142,7 +142,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyProductAdded(CartProductAdded $event): void
     {
-        $this->productIds[$event->productId] = true;
+        $this->productIds[$event->productId] = $event->productId;
     }
 
     #[Apply]
