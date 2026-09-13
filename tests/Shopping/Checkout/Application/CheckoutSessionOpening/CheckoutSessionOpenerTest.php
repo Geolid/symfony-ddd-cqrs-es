@@ -59,7 +59,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Given
         $productBuilder = ProductBuilder::new()->withUnitPriceInCents(5_002);
         $catalogProduct = $productBuilder->create();
-        $secondProductBuilder = ProductBuilder::new()->withUnitPriceInCents(5_007);
+        $secondProductBuilder = ProductBuilder::new()->withUnitPriceInCents(5_003);
         $secondCatalogProduct = $secondProductBuilder->create();
         $customer = CustomerBuilder::new()
             ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))

@@ -53,6 +53,16 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
+    public function itProtectsInvariantsWhenCurrencyIsInvalid(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Money::fromCents(1_500, 'XXX');
+    }
+
+    #[Test]
     public function itEquals(): void
     {
         // Given

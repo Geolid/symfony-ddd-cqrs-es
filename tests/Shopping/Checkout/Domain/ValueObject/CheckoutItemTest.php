@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Checkout\Domain\ValueObject;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
@@ -88,17 +89,30 @@ final class CheckoutItemTest extends TestCase
     }
 
     #[Test]
-    public function itComputesTotal(): void
+    #[DataProvider('provideTotals')]
+    public function itComputesTotal(int $unitPriceInCents, int $quantity, int $basisPoints, int $expectedExcludingTax, int $expectedTaxAmount, int $expectedIncludingTax): void
     {
         // Given
-        $item = CheckoutItem::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83, 'EUR'), Quantity::of(3), TaxRate::fromBasisPoints(2_000));
+        $item = CheckoutItem::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents($unitPriceInCents, 'EUR'), Quantity::of($quantity), TaxRate::fromBasisPoints($basisPoints));
 
         // When
         $total = $item->total();
 
         // Then
-        self::assertSame(249, $total->excludingTax->cents);
-        self::assertSame(50, $total->taxAmount->cents);
-        self::assertSame(299, $total->includingTax->cents);
+        self::assertSame($expectedExcludingTax, $total->excludingTax->cents);
+        self::assertSame($expectedTaxAmount, $total->taxAmount->cents);
+        self::assertSame($expectedIncludingTax, $total->includingTax->cents);
+    }
+
+    /**
+     * @return iterable<string, array{int, int, int, int, int, int}>
+     */
+    public static function provideTotals(): iterable
+    {
+        yield 'typical' => [83, 3, 2_000, 249, 50, 299];
+        yield 'rounds down' => [11, 1, 1_900, 11, 2, 13];
+        yield 'rounds up' => [10, 1, 1_900, 10, 2, 12];
+        yield 'discriminates a higher divisor' => [5_003, 1, 2_000, 5_003, 1_001, 6_004];
+        yield 'discriminates a lower divisor' => [5_002, 1, 2_000, 5_002, 1_000, 6_002];
     }
 }

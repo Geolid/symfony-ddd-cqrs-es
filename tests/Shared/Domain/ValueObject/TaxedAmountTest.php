@@ -75,12 +75,15 @@ final class TaxedAmountTest extends TestCase
     {
         // Given
         $a = TaxedAmount::of(Money::fromCents(1_000, 'EUR'), Money::fromCents(200, 'EUR'));
-        $b = TaxedAmount::of(Money::fromCents(999, 'EUR'), Money::fromCents(200, 'EUR'));
+        $differentExcludingTax = TaxedAmount::of(Money::fromCents(999, 'EUR'), Money::fromCents(200, 'EUR'));
+        $differentTaxAmount = TaxedAmount::of(Money::fromCents(1_000, 'EUR'), Money::fromCents(199, 'EUR'));
 
         // When
-        $equals = $a->equals($b);
+        $differsOnExcludingTax = $a->equals($differentExcludingTax);
+        $differsOnTaxAmount = $a->equals($differentTaxAmount);
 
         // Then
-        self::assertFalse($equals);
+        self::assertFalse($differsOnExcludingTax);
+        self::assertFalse($differsOnTaxAmount);
     }
 }

@@ -31,7 +31,6 @@ final readonly class TaxedAmount
     public function equals(self $other): bool
     {
         return $this->excludingTax->equals($other->excludingTax)
-            && $this->taxAmount->equals($other->taxAmount)
-            && $this->includingTax->equals($other->includingTax);
+            && $this->taxAmount->equals($other->taxAmount);
     }
 }
