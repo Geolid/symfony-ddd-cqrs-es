@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Infrastructure\ApiKey\NativeApiKeyHasher;
-use Iam\Authentication\Infrastructure\CompromisedPassword\SymfonyCompromisedPasswordGateway;
+use Iam\Authentication\Infrastructure\BreachDatabase\SymfonyCompromisedPasswordGateway;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrength;
 use Iam\Authentication\Infrastructure\Projection\Finder\DbalApiKeyCredentialFinder;

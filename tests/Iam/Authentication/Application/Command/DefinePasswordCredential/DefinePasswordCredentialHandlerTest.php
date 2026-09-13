@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 
+use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
 use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Application\Password\CompromisedPasswordGatewayInterface;
-use Iam\Authentication\Application\Password\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;

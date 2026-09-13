@@ -1,0 +1,113 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fulfilment\Tests\Shipping\Application\Manifesting;
+
+use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
+use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
+use Fulfilment\Shipping\Application\Manifesting\ShipmentManifester;
+use Fulfilment\Shipping\Application\ShipmentStatus;
+use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
+use Ramsey\Uuid\Uuid;
+use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Shared\Application\Command\CommandBusInterface;
+use Support\TestCase\AbstractIntegrationTestCase;
+
+final class ShipmentManifesterTest extends AbstractIntegrationTestCase
+{
+    private CarrierGatewayInterface&MockObject $carrier;
+
+    private ShipmentFinderInterface $finder;
+
+    private ShipmentManifester $service;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->carrier = $this->createMock(CarrierGatewayInterface::class);
+        $this->finder = $this->service(ShipmentFinderInterface::class);
+        $this->service = new ShipmentManifester(
+            $this->finder,
+            $this->service(OrderPaymentFinderInterface::class),
+            $this->carrier,
+            $this->service(CommandBusInterface::class),
+        );
+    }
+
+    #[Test]
+    public function itManifestsWhenOrderPaid(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $payment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
+        $shipmentBuilder = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared();
+        $shipment = $shipmentBuilder->create();
+        $this->store($order, $payment, $shipment);
+        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
+        $this->carrier->expects(self::once())->method('manifest')
+            ->with($shipment->id->toString(), $shipmentBuilder['origin'], $shipmentBuilder['destination'])
+            ->willReturn($trackingNumber);
+
+        // When
+        $result = $this->service->manifest($shipment->id->toString());
+
+        // Then
+        self::assertSame($trackingNumber, $result);
+        $manifested = $this->finder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $manifested->status);
+        self::assertSame($trackingNumber, $manifested->trackingNumber);
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $this->carrier->expects(self::never())->method('manifest');
+
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $this->service->manifest(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
+    public function itFailsWhenCancelled(): void
+    {
+        // Given
+        $shipment = ShipmentBuilder::new()->prepared()->cancelled()->create();
+        $this->store($shipment);
+        $this->carrier->expects(self::never())->method('manifest');
+
+        // Then
+        $this->expectException(ManifestDeniedException::class);
+
+        // When
+        $this->service->manifest($shipment->id->toString());
+    }
+
+    #[Test]
+    public function itFailsWhenOrderUnpaid(): void
+    {
+        // Given
+        $order = OrderBuilder::new()->create();
+        $payment = PaymentBuilder::new()->create();
+        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->create();
+        $this->store($order, $payment, $shipment);
+        $this->carrier->expects(self::never())->method('manifest');
+
+        // Then
+        $this->expectException(ManifestDeniedException::class);
+
+        // When
+        $this->service->manifest($shipment->id->toString());
+    }
+}
