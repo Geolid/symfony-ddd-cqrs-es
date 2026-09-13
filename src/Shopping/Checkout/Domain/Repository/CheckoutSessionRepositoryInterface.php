@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\Repository;
+namespace Shopping\Checkout\Domain\Repository;
 
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionAlreadyExistsException;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionNotFoundException;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 
 interface CheckoutSessionRepositoryInterface
 {

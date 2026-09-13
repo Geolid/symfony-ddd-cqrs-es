@@ -8,9 +8,9 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
 #[Publisher('shopping.checkout.publish_checkout_session_completed')]
 final readonly class CheckoutSessionCompletedPublisher

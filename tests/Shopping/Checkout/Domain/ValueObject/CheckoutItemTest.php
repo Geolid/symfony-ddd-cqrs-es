@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Checkout\Domain\CheckoutSession\ValueObject;
+namespace Shopping\Tests\Checkout\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\Quantity;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 final class CheckoutItemTest extends TestCase
 {

@@ -9,7 +9,7 @@ use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
+use Shopping\Checkout\Domain\CheckoutSession;
 
 #[QueryHandler]
 final readonly class ListCheckoutSessionsPastReconciliationThresholdHandler

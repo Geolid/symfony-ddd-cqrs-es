@@ -11,7 +11,7 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Command\CompleteCheckoutSession\CompleteCheckoutSession;
 use Shopping\Checkout\Application\Policy\CompleteCheckoutSessionOnPaymentAuthorized;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;

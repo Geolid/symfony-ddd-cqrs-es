@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\Exception;
+namespace Shopping\Checkout\Domain\Exception;
 
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 
 final class CheckoutSessionEmptyException extends \DomainException
 {

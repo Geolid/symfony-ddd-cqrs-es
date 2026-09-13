@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\Exception;
+namespace Shopping\Checkout\Domain\Exception;
 
 use Shared\Domain\Exception\AggregateNotFoundException;
 

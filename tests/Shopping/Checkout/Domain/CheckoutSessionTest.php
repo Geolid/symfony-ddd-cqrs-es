@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Checkout\Domain\CheckoutSession;
+namespace Shopping\Tests\Checkout\Domain;
 
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionEmptyException;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 
 final class CheckoutSessionTest extends AggregateRootTestCase

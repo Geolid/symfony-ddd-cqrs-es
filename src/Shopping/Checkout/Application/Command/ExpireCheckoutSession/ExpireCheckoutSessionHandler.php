@@ -6,10 +6,10 @@ namespace Shopping\Checkout\Application\Command\ExpireCheckoutSession;
 
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionAlreadyExistsException;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionNotFoundException;
-use Shopping\Checkout\Domain\CheckoutSession\Repository\CheckoutSessionRepositoryInterface;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
+use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 
 #[CommandHandler]
 final readonly class ExpireCheckoutSessionHandler

@@ -11,8 +11,8 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
