@@ -21,7 +21,7 @@ use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundExcept
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;

@@ -10,7 +10,7 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\ValueObject;
+namespace Shopping\Checkout\Domain\ValueObject;
 
 enum CheckoutSessionState: string
 {

@@ -7,8 +7,8 @@ namespace Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionStaled;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
+use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 
 #[Publisher('shopping.checkout.publish_checkout_session_staled')]
 final readonly class CheckoutSessionStaledPublisher

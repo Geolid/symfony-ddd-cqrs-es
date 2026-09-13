@@ -20,7 +20,7 @@ use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
-use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
+use Shopping\Checkout\Domain\CheckoutSession;
 
 final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInterface
 {

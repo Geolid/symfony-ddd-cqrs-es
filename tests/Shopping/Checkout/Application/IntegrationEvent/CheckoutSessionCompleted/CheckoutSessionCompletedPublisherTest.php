@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

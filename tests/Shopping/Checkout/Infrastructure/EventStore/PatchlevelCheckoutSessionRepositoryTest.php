@@ -6,9 +6,9 @@ namespace Shopping\Tests\Checkout\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionNotFoundException;
-use Shopping\Checkout\Domain\CheckoutSession\Repository\CheckoutSessionRepositoryInterface;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
+use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

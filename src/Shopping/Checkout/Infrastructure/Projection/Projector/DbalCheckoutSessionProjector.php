@@ -14,10 +14,10 @@ use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
+use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 
 #[Projector('shopping.checkout.project_checkout_sessions')]
 final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
