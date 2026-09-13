@@ -8,10 +8,10 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class CartAlreadyActiveException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forShopper(string $shopperId, \Throwable $previous): self
+    public static function forCustomer(string $customerId, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('Shopper "%s" already has an active cart.', $shopperId),
+            message: \sprintf('Customer "%s" already has an active cart.', $customerId),
             previous: $previous,
         );
     }

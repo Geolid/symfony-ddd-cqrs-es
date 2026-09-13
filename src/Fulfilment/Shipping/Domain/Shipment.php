@@ -63,7 +63,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public static function request(
         ShipmentId $id,
         string $orderId,
-        string $shopperId,
+        string $customerId,
         PostalAddress $origin,
         PostalAddress $destination,
         \DateTimeImmutable $createdAt,
@@ -72,7 +72,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new ShipmentRequested(
             id: $id,
             orderId: $orderId,
-            shopperId: $shopperId,
+            customerId: $customerId,
             origin: $origin,
             destination: $destination,
             createdAt: $createdAt,

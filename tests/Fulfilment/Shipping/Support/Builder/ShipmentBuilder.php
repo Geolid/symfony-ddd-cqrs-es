@@ -18,7 +18,7 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: ShipmentId,
  *     orderId: string,
- *     shopperId: string,
+ *     customerId: string,
  *     origin: PostalAddress,
  *     destination: PostalAddress,
  *     createdAt: \DateTimeImmutable,
@@ -40,9 +40,9 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(orderId: $orderId);
     }
 
-    public function withShopperId(string $shopperId): self
+    public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(shopperId: $shopperId);
+        return $this->withAttributes(customerId: $customerId);
     }
 
     public function withOrigin(PostalAddress $origin): self
@@ -126,7 +126,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return [
             'id' => static fn (): ShipmentId => ShipmentId::fromString(Uuid::uuid7()->toString()),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
-            'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
+            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
@@ -151,7 +151,7 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
         return Shipment::request(
             $this['id'],
             $this['orderId'],
-            $this['shopperId'],
+            $this['customerId'],
             $this['origin'],
             $this['destination'],
             $this['createdAt'],

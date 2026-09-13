@@ -38,7 +38,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
             [
                 'id' => $event->id->toString(),
                 'order_id' => $event->orderId,
-                'shopper_id' => $event->shopperId,
+                'customer_id' => $event->customerId,
                 'status' => ShipmentStatus::REQUESTED->value,
                 'origin' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->origin)),
                 'destination' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->destination)),
@@ -144,7 +144,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('order_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('shopper_id', Types::STRING, ['length' => 64]);
+        $table->addColumn('customer_id', Types::STRING, ['length' => 64]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('origin', Types::JSON);
         $table->addColumn('destination', Types::JSON);
@@ -161,7 +161,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 ->create(),
         );
         $table->addIndex(['order_id'], 'fulfilment_shipping_order_id_idx');
-        $table->addIndex(['shopper_id'], 'fulfilment_shipping_shopper_id_idx');
+        $table->addIndex(['customer_id'], 'fulfilment_shipping_customer_id_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
     }
 }

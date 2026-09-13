@@ -16,7 +16,7 @@ use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
-use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
@@ -32,7 +32,7 @@ final class OrderTest extends AggregateRootTestCase
 {
     private OrderId $id;
     private readonly string $cartId;
-    private string $shopperId;
+    private string $customerId;
     private readonly string $checkoutSessionId;
     private PostalAddress $shippingAddress;
 
@@ -53,7 +53,7 @@ final class OrderTest extends AggregateRootTestCase
 
         $this->id = OrderId::fromString(Uuid::uuid7()->toString());
         $this->cartId = OrderBuilder::sample('cartId');
-        $this->shopperId = OrderBuilder::sample('shopperId');
+        $this->customerId = OrderBuilder::sample('customerId');
         $this->checkoutSessionId = OrderBuilder::sample('checkoutSessionId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
         $this->lines = OrderBuilder::sample('lines');
@@ -71,11 +71,11 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->checkoutSessionId, $this->shippingAddress, $this->lines, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, $this->lines, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id,
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 $this->checkoutSessionId,
                 $this->shippingAddress,
                 $this->orderLines(),
@@ -89,7 +89,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->shopperId, $this->checkoutSessionId, $this->shippingAddress, [], $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, [], $this->confirmedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -116,7 +116,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed())
-            ->when(fn (Order $order) => $order->cancel($this->shopperId, $this->cancelledAt))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
             ->then(new OrderCancelled($this->id, $this->cancelledAt));
     }
 
@@ -125,7 +125,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->cancelled())
-            ->when(fn (Order $order) => $order->cancel($this->shopperId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
             ->then();
     }
 
@@ -134,7 +134,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->erasureApproved())
-            ->when(fn (Order $order) => $order->cancel($this->shopperId, $this->cancelledAt))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
             ->then(
                 new OrderCancelled($this->id, $this->cancelledAt),
                 new OrderErased($this->id, $this->cancelledAt),
@@ -146,17 +146,17 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared())
-            ->when(fn (Order $order) => $order->cancel($this->shopperId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
             ->expectsException(OrderNotCancellableException::class);
     }
 
     #[Test]
-    public function itCannotCancelWhenBelongingToAnotherShopper(): void
+    public function itCannotCancelWhenBelongingToAnotherCustomer(): void
     {
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->cancel(Uuid::uuid7()->toString(), $this->cancelledAt))
-            ->expectsException(OrderBelongsToAnotherShopperException::class);
+            ->expectsException(OrderBelongsToAnotherCustomerException::class);
     }
 
     #[Test]
@@ -303,7 +303,7 @@ final class OrderTest extends AggregateRootTestCase
         return new OrderConfirmed(
             $this->id,
             $this->cartId,
-            $this->shopperId,
+            $this->customerId,
             $this->checkoutSessionId,
             $this->shippingAddress,
             $this->orderLines(),

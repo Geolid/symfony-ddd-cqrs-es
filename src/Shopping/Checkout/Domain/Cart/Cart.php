@@ -39,12 +39,12 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     /** @var array<string, string> */
     private array $productIds = [];
 
-    public static function start(CartId $id, string $shopperId, \DateTimeImmutable $startedAt): self
+    public static function start(CartId $id, string $customerId, \DateTimeImmutable $startedAt): self
     {
         $self = new self();
         $self->recordThat(new CartStarted(
             id: $id,
-            shopperId: $shopperId,
+            customerId: $customerId,
             startedAt: $startedAt,
         ));
 

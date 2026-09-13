@@ -32,12 +32,12 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $orderId = ShipmentBuilder::sample('orderId');
-        $shopperId = ShipmentBuilder::sample('shopperId');
+        $customerId = ShipmentBuilder::sample('customerId');
         $originData = PostalAddressMapper::toArray(ShipmentBuilder::sample('origin'));
         $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
 
         // When
-        $this->dispatch(new RequestShipment($id, $orderId, $shopperId, $originData, $destinationData));
+        $this->dispatch(new RequestShipment($id, $orderId, $customerId, $originData, $destinationData));
 
         // Then
         $result = $this->service(ShipmentFinderInterface::class)->ofId($id);

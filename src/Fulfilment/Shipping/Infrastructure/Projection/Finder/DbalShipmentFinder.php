@@ -46,12 +46,12 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         )->one();
     }
 
-    public function byShopper(string $shopperId): static
+    public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($shopperId): void {
-                $qb->andWhere('shopper_id = :shopperId')
-                    ->setParameter('shopperId', $shopperId);
+            static function (QueryBuilder $qb) use ($customerId): void {
+                $qb->andWhere('customer_id = :customerId')
+                    ->setParameter('customerId', $customerId);
             },
         );
     }
@@ -84,7 +84,7 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'order_id', 'shopper_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'erasure_status')
+        $qb->select('id', 'order_id', 'customer_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'erasure_status')
             ->from(DbalShipmentProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

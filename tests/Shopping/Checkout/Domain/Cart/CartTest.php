@@ -23,7 +23,7 @@ use Support\SeededFaker;
 final class CartTest extends AggregateRootTestCase
 {
     private CartId $id;
-    private string $shopperId;
+    private string $customerId;
     private \DateTimeImmutable $startedAt;
     private string $productId;
     private Quantity $quantity;
@@ -37,7 +37,7 @@ final class CartTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = CartId::fromString(Uuid::uuid7()->toString());
-        $this->shopperId = CartBuilder::sample('shopperId');
+        $this->customerId = CartBuilder::sample('customerId');
         $this->startedAt = CartBuilder::sample('startedAt');
         $this->productId = Uuid::uuid7()->toString();
         $this->quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5));
@@ -52,7 +52,7 @@ final class CartTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Cart => Cart::start($this->id, $this->shopperId, $this->startedAt))
+            ->when(fn (): Cart => Cart::start($this->id, $this->customerId, $this->startedAt))
             ->then($this->started());
     }
 
@@ -162,7 +162,7 @@ final class CartTest extends AggregateRootTestCase
 
     private function started(): CartStarted
     {
-        return new CartStarted($this->id, $this->shopperId, $this->startedAt);
+        return new CartStarted($this->id, $this->customerId, $this->startedAt);
     }
 
     private function productAdded(): CartProductAdded

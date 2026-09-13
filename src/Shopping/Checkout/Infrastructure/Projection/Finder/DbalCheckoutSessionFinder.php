@@ -39,11 +39,11 @@ final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements Chec
         )->one();
     }
 
-    public function byShopper(string $shopperId): static
+    public function byCustomer(string $customerId): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($shopperId): void {
-                $qb->andWhere('shopper_id = :shopperId')->setParameter('shopperId', $shopperId);
+            static function (QueryBuilder $qb) use ($customerId): void {
+                $qb->andWhere('customer_id = :customerId')->setParameter('customerId', $customerId);
             },
         );
     }
@@ -62,7 +62,7 @@ final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements Chec
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'cart_id', 'shopper_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
+        $qb->select('id', 'cart_id', 'customer_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
             ->from(DbalCheckoutSessionProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

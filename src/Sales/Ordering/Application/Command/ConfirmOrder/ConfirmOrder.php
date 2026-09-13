@@ -15,7 +15,7 @@ final readonly class ConfirmOrder implements CommandInterface
     public function __construct(
         public string $id,
         public string $cartId,
-        public string $shopperId,
+        public string $customerId,
         public string $checkoutSessionId,
         public array $lines,
         public array $shippingAddress,

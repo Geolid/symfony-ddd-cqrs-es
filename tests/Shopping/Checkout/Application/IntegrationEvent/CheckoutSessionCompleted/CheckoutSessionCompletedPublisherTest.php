@@ -28,7 +28,7 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         $event = $this->publishedEventOf(CheckoutSessionCompletedIntegrationEvent::class);
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
         self::assertSame($builder['cartId'], $event->cartId);
-        self::assertSame($builder['shopperId'], $event->shopperId);
+        self::assertSame($builder['customerId'], $event->customerId);
         self::assertSame(array_map($this->toArray(...), $builder['items']), $event->items);
         self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);

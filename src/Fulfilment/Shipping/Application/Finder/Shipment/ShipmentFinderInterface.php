@@ -25,7 +25,7 @@ interface ShipmentFinderInterface extends IterableFinderInterface
 
     public function ofOrderOrNull(string $orderId): ?ShipmentResult;
 
-    public function byShopper(string $shopperId): static;
+    public function byCustomer(string $customerId): static;
 
     public function byStatus(ShipmentStatus ...$statuses): static;
 

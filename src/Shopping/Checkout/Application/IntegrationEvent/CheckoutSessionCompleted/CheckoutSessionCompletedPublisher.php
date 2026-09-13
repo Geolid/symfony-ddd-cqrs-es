@@ -25,7 +25,7 @@ final readonly class CheckoutSessionCompletedPublisher
         $this->publisher->publish(CheckoutSession::class, $event->id, new CheckoutSessionCompletedIntegrationEvent(
             checkoutSessionId: $event->id,
             cartId: $event->cartId,
-            shopperId: $event->shopperId,
+            customerId: $event->customerId,
             items: array_map($this->toArray(...), $event->items),
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             billingAddress: PostalAddressMapper::toArray($event->billingAddress),

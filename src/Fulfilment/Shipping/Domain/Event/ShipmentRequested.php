@@ -20,7 +20,7 @@ final readonly class ShipmentRequested
         #[DataSubjectId]
         public ShipmentId $id,
         public string $orderId,
-        public string $shopperId,
+        public string $customerId,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([
                 'erased',

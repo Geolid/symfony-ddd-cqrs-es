@@ -25,7 +25,7 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
     {
         $this->connection->insert(self::TABLE, [
             'id' => $event->id->toString(),
-            'shopper_id' => $event->shopperId,
+            'customer_id' => $event->customerId,
             'status' => CartStatus::ACTIVE->value,
         ]);
     }
@@ -47,7 +47,7 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('shopper_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

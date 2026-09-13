@@ -35,7 +35,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->id);
-        self::assertSame($builder['shopperId'], $result->shopperId);
+        self::assertSame($builder['customerId'], $result->customerId);
         self::assertSame($builder['checkoutSessionId'], $result->checkoutSessionId);
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
@@ -68,16 +68,16 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByShopper(): void
+    public function itFiltersByCustomer(): void
     {
         // Given
-        $shopperId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $other = OrderBuilder::new()->create();
-        $order = OrderBuilder::new()->withShopperId($shopperId)->create();
+        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
-        $results = iterator_to_array($this->finder()->byShopper($shopperId), false);
+        $results = iterator_to_array($this->finder()->byCustomer($customerId), false);
 
         // Then
         self::assertCount(1, $results);

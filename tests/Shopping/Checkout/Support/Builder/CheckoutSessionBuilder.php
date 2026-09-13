@@ -21,7 +21,7 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: CheckoutSessionId,
  *     cartId: string,
- *     shopperId: string,
+ *     customerId: string,
  *     items: list<CheckoutItem>,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
@@ -46,9 +46,9 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(cartId: $cartId);
     }
 
-    public function withShopperId(string $shopperId): self
+    public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(shopperId: $shopperId);
+        return $this->withAttributes(customerId: $customerId);
     }
 
     /**
@@ -104,7 +104,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return $builder->withModifier(
             static fn (CheckoutSession $checkoutSession, self $builder) => $checkoutSession->complete(
                 $builder['cartId'],
-                $builder['shopperId'],
+                $builder['customerId'],
                 $builder['items'],
                 $builder['shippingAddress'],
                 $builder['billingAddress'],
@@ -121,7 +121,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return [
             'id' => static fn (): CheckoutSessionId => CheckoutSessionId::fromString(Uuid::uuid7()->toString()),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
-            'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
+            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'items' => static fn (): array => array_map(
                 static fn (): CheckoutItem => CheckoutItem::of(
                     Uuid::uuid7()->toString(),
@@ -152,7 +152,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return CheckoutSession::open(
             id: $this['id'],
             cartId: $this['cartId'],
-            shopperId: $this['shopperId'],
+            customerId: $this['customerId'],
             items: $this['items'],
             shippingAddress: $this['shippingAddress'],
             billingAddress: $this['billingAddress'],

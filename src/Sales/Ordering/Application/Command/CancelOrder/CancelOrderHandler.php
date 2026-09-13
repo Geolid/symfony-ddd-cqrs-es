@@ -6,7 +6,7 @@ namespace Sales\Ordering\Application\Command\CancelOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
-use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
@@ -24,14 +24,14 @@ final readonly class CancelOrderHandler
 
     /**
      * @throws OrderNotFoundException
-     * @throws OrderBelongsToAnotherShopperException
+     * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
      * @throws OrderAlreadyExistsException
      */
     public function __invoke(CancelOrder $command): void
     {
         $order = $this->repository->load(OrderId::fromString($command->id));
-        $order->cancel($command->shopperId, $this->clock->now());
+        $order->cancel($command->customerId, $this->clock->now());
         $this->repository->save($order);
     }
 }

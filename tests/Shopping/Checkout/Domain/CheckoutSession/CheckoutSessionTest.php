@@ -23,7 +23,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
 {
     private CheckoutSessionId $id;
     private string $cartId;
-    private string $shopperId;
+    private string $customerId;
     /** @var list<CheckoutItem> */
     private array $items;
     private PostalAddress $shippingAddress;
@@ -40,7 +40,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
 
         $this->id = CheckoutSessionId::fromString(Uuid::uuid7()->toString());
         $this->cartId = CheckoutSessionBuilder::sample('cartId');
-        $this->shopperId = CheckoutSessionBuilder::sample('shopperId');
+        $this->customerId = CheckoutSessionBuilder::sample('customerId');
         $this->items = CheckoutSessionBuilder::sample('items');
         $this->shippingAddress = CheckoutSessionBuilder::sample('shippingAddress');
         $this->billingAddress = CheckoutSessionBuilder::sample('billingAddress');
@@ -59,7 +59,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             ->when(fn (): CheckoutSession => CheckoutSession::open(
                 $this->id,
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 $this->items,
                 $this->shippingAddress,
                 $this->billingAddress,
@@ -76,7 +76,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             ->when(fn (): CheckoutSession => CheckoutSession::open(
                 $this->id,
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 [],
                 $this->shippingAddress,
                 $this->billingAddress,
@@ -128,7 +128,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             ->given($this->opened())
             ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 $this->items,
                 $this->shippingAddress,
                 $this->billingAddress,
@@ -145,7 +145,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             ->given($this->opened(), $this->completed())
             ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 $this->items,
                 $this->shippingAddress,
                 $this->billingAddress,
@@ -180,7 +180,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             ->given($this->opened(), $this->expired())
             ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->complete(
                 $this->cartId,
-                $this->shopperId,
+                $this->customerId,
                 $this->items,
                 $this->shippingAddress,
                 $this->billingAddress,
@@ -200,7 +200,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         return new CheckoutSessionOpened(
             $this->id->toString(),
             $this->cartId,
-            $this->shopperId,
+            $this->customerId,
             $this->items,
             $this->shippingAddress,
             $this->billingAddress,
@@ -224,7 +224,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         return new CheckoutSessionCompleted(
             $this->id->toString(),
             $this->cartId,
-            $this->shopperId,
+            $this->customerId,
             $this->items,
             $this->shippingAddress,
             $this->billingAddress,

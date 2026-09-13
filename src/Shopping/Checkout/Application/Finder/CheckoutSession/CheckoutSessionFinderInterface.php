@@ -19,7 +19,7 @@ interface CheckoutSessionFinderInterface extends IterableFinderInterface
 
     public function ofCartOrNull(string $cartId): ?CheckoutSessionResult;
 
-    public function byShopper(string $shopperId): static;
+    public function byCustomer(string $customerId): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;
 }

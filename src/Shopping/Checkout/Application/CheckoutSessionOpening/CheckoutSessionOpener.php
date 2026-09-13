@@ -9,17 +9,17 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
 use Shopping\Checkout\Application\Command\OpenCheckoutSession\OpenCheckoutSession;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
+use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
-use Shopping\Checkout\Application\Finder\Shopper\ShopperFinderInterface;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
 
 final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInterface
@@ -27,7 +27,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     public function __construct(
         private CartFinderInterface $cartFinder,
         private CartItemFinderInterface $cartItemFinder,
-        private ShopperFinderInterface $shopperFinder,
+        private CustomerFinderInterface $customerFinder,
         private ListedProductFinderInterface $listedProductFinder,
         private CommandBusInterface $commandBus,
         private ClockInterface $clock,
@@ -35,9 +35,9 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     }
 
     /**
-     * @throws ShopperNotRegisteredException
-     * @throws ShopperErasureRequestedException
-     * @throws ShopperAddressesNotCompletedException
+     * @throws CustomerNotRegisteredException
+     * @throws CustomerErasureRequestedException
+     * @throws CustomerAddressesNotCompletedException
      * @throws CartResultNotFoundException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
@@ -47,26 +47,26 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         $cart = $this->cartFinder->ofId($cartId);
         $items = iterator_to_array($this->cartItemFinder->byCart($cartId));
 
-        $shopper = $this->shopperFinder->ofIdOrNull($cart->shopperId)
-            ?? throw ShopperNotRegisteredException::forId($cart->shopperId);
+        $customer = $this->customerFinder->ofIdOrNull($cart->customerId)
+            ?? throw CustomerNotRegisteredException::forId($cart->customerId);
 
-        if ($shopper->erasureStatus->isRequested()) {
-            throw ShopperErasureRequestedException::forId($cart->shopperId);
+        if ($customer->erasureStatus->isRequested()) {
+            throw CustomerErasureRequestedException::forId($cart->customerId);
         }
 
-        if (null === $shopper->shippingAddress || null === $shopper->billingAddress) {
-            throw ShopperAddressesNotCompletedException::forId($cart->shopperId);
+        if (null === $customer->shippingAddress || null === $customer->billingAddress) {
+            throw CustomerAddressesNotCompletedException::forId($cart->customerId);
         }
 
         [$lines, $totalAmountInCents] = $this->resolveLines($items);
 
         $shippingAddress = PostalAddressMapper::fromArray([
-            'recipientName' => $shopper->shippingAddress->recipientName,
-            'address' => (array) $shopper->shippingAddress->address,
+            'recipientName' => $customer->shippingAddress->recipientName,
+            'address' => (array) $customer->shippingAddress->address,
         ]);
         $billingAddress = PostalAddressMapper::fromArray([
-            'recipientName' => $shopper->billingAddress->recipientName,
-            'address' => (array) $shopper->billingAddress->address,
+            'recipientName' => $customer->billingAddress->recipientName,
+            'address' => (array) $customer->billingAddress->address,
         ]);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $now = $this->clock->now();
@@ -74,7 +74,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         $this->commandBus->dispatch(new OpenCheckoutSession(
             id: $checkoutSessionId,
             cartId: $cartId,
-            shopperId: $cart->shopperId,
+            customerId: $cart->customerId,
             lines: $lines,
             shippingAddress: PostalAddressMapper::toArray($shippingAddress),
             billingAddress: PostalAddressMapper::toArray($billingAddress),

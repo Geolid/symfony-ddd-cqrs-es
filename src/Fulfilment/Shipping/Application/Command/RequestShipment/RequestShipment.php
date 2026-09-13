@@ -15,7 +15,7 @@ final readonly class RequestShipment implements CommandInterface
     public function __construct(
         public string $id,
         public string $orderId,
-        public string $shopperId,
+        public string $customerId,
         public array $origin,
         public array $destination,
     ) {

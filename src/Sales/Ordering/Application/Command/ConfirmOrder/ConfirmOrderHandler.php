@@ -34,7 +34,7 @@ final readonly class ConfirmOrderHandler
         $order = Order::confirm(
             id: OrderId::fromString($command->id),
             cartId: $command->cartId,
-            shopperId: $command->shopperId,
+            customerId: $command->customerId,
             checkoutSessionId: $command->checkoutSessionId,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             lines: array_map($this->resolveLine(...), $command->lines),

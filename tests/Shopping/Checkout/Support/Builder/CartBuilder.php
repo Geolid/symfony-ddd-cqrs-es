@@ -16,7 +16,7 @@ use Webmozart\Assert\Assert;
 /**
  * @phpstan-type Attributes = array{
  *     id: CartId,
- *     shopperId: string,
+ *     customerId: string,
  *     startedAt: \DateTimeImmutable,
  *     productAdditions: list<array{productId: string, quantity: Quantity, addedAt: \DateTimeImmutable}>,
  *     productRemovals: list<array{productId: string, removedAt: \DateTimeImmutable}>,
@@ -33,9 +33,9 @@ final class CartBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: CartId::fromString($id));
     }
 
-    public function withShopperId(string $shopperId): self
+    public function withCustomerId(string $customerId): self
     {
-        return $this->withAttributes(shopperId: $shopperId);
+        return $this->withAttributes(customerId: $customerId);
     }
 
     public function withStartedAt(\DateTimeImmutable $startedAt): self
@@ -107,7 +107,7 @@ final class CartBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): CartId => CartId::fromString(Uuid::uuid7()->toString()),
-            'shopperId' => static fn (): string => Uuid::uuid7()->toString(),
+            'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'startedAt' => static fn (): \DateTimeImmutable => $now,
             'productAdditions' => static fn (): array => [],
             'productRemovals' => static fn (): array => [],
@@ -120,7 +120,7 @@ final class CartBuilder extends AbstractAggregateBuilder
     {
         return Cart::start(
             id: $this['id'],
-            shopperId: $this['shopperId'],
+            customerId: $this['customerId'],
             startedAt: $this['startedAt'],
         );
     }

@@ -16,7 +16,7 @@ final readonly class CompleteCheckoutSession implements CommandInterface
     public function __construct(
         public string $id,
         public string $cartId,
-        public string $shopperId,
+        public string $customerId,
         public array $items,
         public array $shippingAddress,
         public array $billingAddress,
