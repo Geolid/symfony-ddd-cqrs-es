@@ -21,7 +21,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
     public function ofId(string $id): CartResult
     {
         $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, shopper_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
+            \sprintf('SELECT id, customer_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
             ['id' => $id],
         );
 
@@ -29,9 +29,9 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
             throw CartResultNotFoundException::forId($id);
         }
 
-        \assert(\is_string($row['id']) && \is_string($row['shopper_id']));
+        \assert(\is_string($row['id']) && \is_string($row['customer_id']));
 
-        return new CartResult($row['id'], $row['shopper_id']);
+        return new CartResult($row['id'], $row['customer_id']);
     }
 
     public function byProductId(string $productId): static
@@ -53,7 +53,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'shopper_id')
+        $qb->select('id', 'customer_id')
             ->from(DbalCartProjector::TABLE)
             ->orderBy('id', 'ASC');
     }

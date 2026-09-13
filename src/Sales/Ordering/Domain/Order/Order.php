@@ -19,7 +19,7 @@ use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
-use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\LineId;
@@ -57,7 +57,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) OrderId $id;
-    public private(set) string $shopperId;
+    public private(set) string $customerId;
     public private(set) PostalAddress $shippingAddress;
     private OrderState $operationalState;
     private ErasureState $erasureState;
@@ -70,7 +70,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public static function confirm(
         OrderId $id,
         string $cartId,
-        string $shopperId,
+        string $customerId,
         string $checkoutSessionId,
         PostalAddress $shippingAddress,
         array $lines,
@@ -96,7 +96,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new OrderConfirmed(
             id: $id,
             cartId: $cartId,
-            shopperId: $shopperId,
+            customerId: $customerId,
             checkoutSessionId: $checkoutSessionId,
             shippingAddress: $shippingAddress,
             lines: $orderLines,
@@ -120,13 +120,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderBelongsToAnotherShopperException
+     * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
      */
-    public function cancel(string $shopperId, \DateTimeImmutable $cancelledAt): void
+    public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
     {
-        if ($this->shopperId !== $shopperId) {
-            throw OrderBelongsToAnotherShopperException::forId($this->id);
+        if ($this->customerId !== $customerId) {
+            throw OrderBelongsToAnotherCustomerException::forId($this->id);
         }
 
         if ($this->hasReachedOperational(OrderState::CANCELLED)) {
@@ -235,7 +235,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyConfirmed(OrderConfirmed $event): void
     {
         $this->id = $event->id;
-        $this->shopperId = $event->shopperId;
+        $this->customerId = $event->customerId;
         $this->shippingAddress = $event->shippingAddress;
         $this->operationalState = OrderState::CONFIRMED;
         $this->erasureState = ErasureState::RETAINED;

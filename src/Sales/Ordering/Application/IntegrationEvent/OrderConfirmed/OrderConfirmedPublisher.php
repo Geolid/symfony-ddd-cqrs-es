@@ -24,7 +24,7 @@ final readonly class OrderConfirmedPublisher
         $this->publisher->publish(Order::class, $event->id->toString(), new OrderConfirmedIntegrationEvent(
             orderId: $event->id->toString(),
             cartId: $event->cartId,
-            shopperId: $event->shopperId,
+            customerId: $event->customerId,
             checkoutSessionId: $event->checkoutSessionId,
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             confirmedAt: $event->confirmedAt,

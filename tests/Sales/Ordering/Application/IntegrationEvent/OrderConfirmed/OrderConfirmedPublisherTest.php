@@ -27,7 +27,7 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         $shippingAddress = PostalAddressMapper::toArray($order->shippingAddress);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($builder['cartId'], $event->cartId);
-        self::assertSame($builder['shopperId'], $event->shopperId);
+        self::assertSame($builder['customerId'], $event->customerId);
         self::assertSame($builder['checkoutSessionId'], $event->checkoutSessionId);
         self::assertSame($shippingAddress, $event->shippingAddress);
         self::assertSame($builder['confirmedAt']->format(\DateTimeInterface::ATOM), $event->confirmedAt->format(\DateTimeInterface::ATOM));

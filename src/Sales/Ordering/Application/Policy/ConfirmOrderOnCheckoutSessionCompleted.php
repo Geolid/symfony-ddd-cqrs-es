@@ -29,7 +29,7 @@ final readonly class ConfirmOrderOnCheckoutSessionCompleted
         $this->commandBus->dispatch(new ConfirmOrder(
             id: OrderId::forCheckoutSession($event->checkoutSessionId)->toString(),
             cartId: $event->cartId,
-            shopperId: $event->shopperId,
+            customerId: $event->customerId,
             checkoutSessionId: $event->checkoutSessionId,
             lines: $event->items,
             shippingAddress: $event->shippingAddress,

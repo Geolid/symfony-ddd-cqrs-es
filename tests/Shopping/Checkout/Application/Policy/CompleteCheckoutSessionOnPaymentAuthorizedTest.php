@@ -32,7 +32,7 @@ final class CompleteCheckoutSessionOnPaymentAuthorizedTest extends AbstractInteg
         $commandBus->expects(self::once())->method('dispatch')->with(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
             cartId: $builder['cartId'],
-            shopperId: $builder['shopperId'],
+            customerId: $builder['customerId'],
             items: $items,
             shippingAddress: PostalAddressMapper::toArray($builder['shippingAddress']),
             billingAddress: PostalAddressMapper::toArray($builder['billingAddress']),

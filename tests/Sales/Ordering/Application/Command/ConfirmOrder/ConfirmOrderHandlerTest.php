@@ -33,7 +33,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $shopperId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
         $quantity = SeededFaker::get()->numberBetween(1, 5);
@@ -43,7 +43,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ConfirmOrder(
             id: $id,
             cartId: Uuid::uuid7()->toString(),
-            shopperId: $shopperId,
+            customerId: $customerId,
             checkoutSessionId: $checkoutSessionId,
             lines: [[
                 'productId' => Uuid::uuid7()->toString(),
@@ -56,7 +56,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($id);
-        self::assertSame($shopperId, $result->shopperId);
+        self::assertSame($customerId, $result->customerId);
         self::assertSame($checkoutSessionId, $result->checkoutSessionId);
         self::assertSame(
             $shippingAddress,
@@ -76,7 +76,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ConfirmOrder(
             id: Uuid::uuid7()->toString(),
             cartId: Uuid::uuid7()->toString(),
-            shopperId: Uuid::uuid7()->toString(),
+            customerId: Uuid::uuid7()->toString(),
             checkoutSessionId: Uuid::uuid7()->toString(),
             lines: [],
             shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),

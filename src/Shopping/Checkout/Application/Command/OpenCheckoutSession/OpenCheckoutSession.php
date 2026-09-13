@@ -16,7 +16,7 @@ final readonly class OpenCheckoutSession implements CommandInterface
     public function __construct(
         public string $id,
         public string $cartId,
-        public string $shopperId,
+        public string $customerId,
         public array $lines,
         public array $shippingAddress,
         public array $billingAddress,

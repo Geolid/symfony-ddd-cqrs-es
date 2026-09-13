@@ -34,7 +34,7 @@ final readonly class CompleteCheckoutSessionHandler
         $checkoutSession = $this->repository->load(CheckoutSessionId::fromString($command->id));
         $checkoutSession->complete(
             cartId: $command->cartId,
-            shopperId: $command->shopperId,
+            customerId: $command->customerId,
             items: array_map($this->resolveItem(...), $command->items),
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),

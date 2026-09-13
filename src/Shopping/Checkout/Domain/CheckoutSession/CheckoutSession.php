@@ -49,7 +49,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     public static function open(
         CheckoutSessionId $id,
         string $cartId,
-        string $shopperId,
+        string $customerId,
         array $items,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
@@ -63,7 +63,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new CheckoutSessionOpened(
             id: $id->toString(),
             cartId: $cartId,
-            shopperId: $shopperId,
+            customerId: $customerId,
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
@@ -103,7 +103,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
      */
     public function complete(
         string $cartId,
-        string $shopperId,
+        string $customerId,
         array $items,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
@@ -117,7 +117,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new CheckoutSessionCompleted(
             id: $this->id->toString(),
             cartId: $cartId,
-            shopperId: $shopperId,
+            customerId: $customerId,
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,

@@ -32,7 +32,7 @@ final readonly class OpenCheckoutSessionHandler
         $checkoutSession = CheckoutSession::open(
             id: CheckoutSessionId::fromString($command->id),
             cartId: $command->cartId,
-            shopperId: $command->shopperId,
+            customerId: $command->customerId,
             items: array_map($this->resolveItem(...), $command->lines),
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),

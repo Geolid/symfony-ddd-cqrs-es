@@ -38,7 +38,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
         $this->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
             cartId: $checkoutSessionBuilder['cartId'],
-            shopperId: $checkoutSessionBuilder['shopperId'],
+            customerId: $checkoutSessionBuilder['customerId'],
             items: array_map($this->toArray(...), $checkoutSessionBuilder['items']),
             shippingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['shippingAddress']),
             billingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['billingAddress']),
@@ -62,7 +62,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
         $this->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
             cartId: CheckoutSessionBuilder::sample('cartId'),
-            shopperId: CheckoutSessionBuilder::sample('shopperId'),
+            customerId: CheckoutSessionBuilder::sample('customerId'),
             items: array_map($this->toArray(...), CheckoutSessionBuilder::sample('items')),
             shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
             billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),
@@ -83,7 +83,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
         $this->dispatch(new CompleteCheckoutSession(
             id: Uuid::uuid7()->toString(),
             cartId: CheckoutSessionBuilder::sample('cartId'),
-            shopperId: CheckoutSessionBuilder::sample('shopperId'),
+            customerId: CheckoutSessionBuilder::sample('customerId'),
             items: array_map($this->toArray(...), CheckoutSessionBuilder::sample('items')),
             shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
             billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),

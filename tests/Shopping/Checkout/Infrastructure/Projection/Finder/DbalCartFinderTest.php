@@ -31,7 +31,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($cart->id->toString(), $result->id);
-        self::assertSame($builder['shopperId'], $result->shopperId);
+        self::assertSame($builder['customerId'], $result->customerId);
     }
 
     #[Test]

@@ -45,7 +45,7 @@ final readonly class CompleteCheckoutSessionOnPaymentAuthorized
         $this->commandBus->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id,
             cartId: $checkoutSession->cartId,
-            shopperId: $checkoutSession->shopperId,
+            customerId: $checkoutSession->customerId,
             items: $items,
             shippingAddress: [
                 'recipientName' => $checkoutSession->shippingAddress->recipientName,

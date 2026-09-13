@@ -31,7 +31,7 @@ final readonly class OrderFailedPublisher
 
         $this->publisher->publish(Order::class, $event->id->toString(), new OrderFailedIntegrationEvent(
             orderId: $event->id->toString(),
-            shopperId: $order->shopperId,
+            customerId: $order->customerId,
             failedAt: $event->failedAt,
         ));
     }

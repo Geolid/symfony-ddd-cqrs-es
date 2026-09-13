@@ -6,5 +6,5 @@ namespace Shopping\Checkout\Application;
 
 enum CartUniqueKey: string
 {
-    case SHOPPER = 'shopping.checkout.cart.shopper';
+    case CUSTOMER = 'shopping.checkout.cart.customer';
 }

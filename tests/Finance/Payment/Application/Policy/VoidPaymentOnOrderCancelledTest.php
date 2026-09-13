@@ -29,7 +29,7 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
         $this->store($payment, $order);
 
         // When
-        $this->trigger(VoidPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($order->id->toString(), $order->shopperId, Clock::get()->now()));
+        $this->trigger(VoidPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($order->id->toString(), $order->customerId, Clock::get()->now()));
 
         // Then
         $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);

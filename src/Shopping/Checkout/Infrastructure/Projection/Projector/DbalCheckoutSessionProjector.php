@@ -32,7 +32,7 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
             [
                 'id' => $event->id,
                 'cart_id' => $event->cartId,
-                'shopper_id' => $event->shopperId,
+                'customer_id' => $event->customerId,
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
                 'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
                 'total_amount_in_cents' => $event->totalAmount->cents,
@@ -81,7 +81,7 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('shopper_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('shipping_address', Types::JSON);
         $table->addColumn('billing_address', Types::JSON);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);
@@ -93,6 +93,6 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
                 ->create(),
         );
         $table->addIndex(['cart_id'], 'shopping_checkout_checkout_session_cart_id_idx');
-        $table->addIndex(['shopper_id'], 'shopping_checkout_checkout_session_shopper_id_idx');
+        $table->addIndex(['customer_id'], 'shopping_checkout_checkout_session_customer_id_idx');
     }
 }

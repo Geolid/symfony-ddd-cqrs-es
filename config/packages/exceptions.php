@@ -23,7 +23,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherShopperException;
+use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -31,10 +31,9 @@ use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException as CheckoutShopperAddressesNotCompletedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException as CheckoutShopperErasureRequestedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException as CheckoutShopperNotRegisteredException;
-use Shopping\Checkout\Application\Command\RegisterShopper\Exception\ShopperEmailAlreadyInUseException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException as CheckoutCustomerErasureRequestedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException as CheckoutCustomerNotRegisteredException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
 
@@ -63,14 +62,11 @@ return static function (ContainerConfigurator $container): void {
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
-            // Shopping
-            ShopperEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-
             // Sales
-            CheckoutShopperNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
-            CheckoutShopperAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
-            CheckoutShopperErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
-            OrderBelongsToAnotherShopperException::class => ['log_level' => 'info', 'status_code' => 403],
+            CheckoutCustomerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutCustomerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutCustomerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
+            OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
             OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 

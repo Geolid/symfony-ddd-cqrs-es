@@ -22,7 +22,7 @@ final readonly class CheckoutSessionCompletedIntegrationEvent implements Integra
         #[DataSubjectId]
         public string $checkoutSessionId,
         public string $cartId,
-        public string $shopperId,
+        public string $customerId,
         public array $items,
         #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
             'recipientName' => 'erased',

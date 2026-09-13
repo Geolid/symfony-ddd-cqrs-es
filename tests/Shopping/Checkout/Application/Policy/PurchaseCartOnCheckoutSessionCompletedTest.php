@@ -30,7 +30,7 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $this->trigger(PurchaseCartOnCheckoutSessionCompleted::class, new CheckoutSessionCompleted(
             id: Uuid::uuid7()->toString(),
             cartId: $cartId,
-            shopperId: CheckoutSessionBuilder::sample('shopperId'),
+            customerId: CheckoutSessionBuilder::sample('customerId'),
             items: CheckoutSessionBuilder::sample('items'),
             shippingAddress: CheckoutSessionBuilder::sample('shippingAddress'),
             billingAddress: CheckoutSessionBuilder::sample('billingAddress'),

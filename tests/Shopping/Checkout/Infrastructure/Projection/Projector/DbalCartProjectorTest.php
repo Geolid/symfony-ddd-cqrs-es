@@ -12,7 +12,7 @@ use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{shopper_id: string, status: string}
+ * @phpstan-type Row array{customer_id: string, status: string}
  */
 final class DbalCartProjectorTest extends AbstractIntegrationTestCase
 {
@@ -30,7 +30,7 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($cart->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['shopperId'], $row['shopper_id']);
+        self::assertSame($builder['customerId'], $row['customer_id']);
         self::assertSame(CartStatus::ACTIVE->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -66,7 +66,7 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT shopper_id, status FROM %s WHERE id = :id', DbalCartProjector::TABLE),
+            \sprintf('SELECT customer_id, status FROM %s WHERE id = :id', DbalCartProjector::TABLE),
             ['id' => $id],
         );
     }

@@ -33,8 +33,8 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         $cartBuilder = CartBuilder::new()->productAdded();
         $cart = $cartBuilder->create();
         $this->store($cart);
-        $shopperKey = UniqueKey::for(CartUniqueKey::SHOPPER);
-        $this->uniqueValues->claim($shopperKey, $cartBuilder['shopperId'], $cart->id->toString());
+        $customerKey = UniqueKey::for(CartUniqueKey::CUSTOMER);
+        $this->uniqueValues->claim($customerKey, $cartBuilder['customerId'], $cart->id->toString());
 
         // When
         $this->dispatch(new PurchaseCart($cart->id->toString()));
@@ -42,7 +42,7 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CartPurchased::class);
         self::assertSame($cart->id->toString(), $event->id->toString());
-        self::assertFalse($this->uniqueValues->isClaimed($shopperKey, $cartBuilder['shopperId']));
+        self::assertFalse($this->uniqueValues->isClaimed($customerKey, $cartBuilder['customerId']));
     }
 
     #[Test]

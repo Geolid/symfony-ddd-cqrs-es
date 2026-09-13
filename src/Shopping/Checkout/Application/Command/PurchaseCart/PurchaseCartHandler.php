@@ -34,6 +34,6 @@ final readonly class PurchaseCartHandler
         $cart->purchase($this->clock->now());
         $this->repository->save($cart);
 
-        $this->uniqueValues->release(UniqueKey::for(CartUniqueKey::SHOPPER), $command->id);
+        $this->uniqueValues->release(UniqueKey::for(CartUniqueKey::CUSTOMER), $command->id);
     }
 }

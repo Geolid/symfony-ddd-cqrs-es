@@ -24,7 +24,7 @@ final readonly class CheckoutSessionOpened
         #[DataSubjectId]
         public string $id,
         public string $cartId,
-        public string $shopperId,
+        public string $customerId,
         public array $items,
         #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
             new ErasedFieldSentinel([

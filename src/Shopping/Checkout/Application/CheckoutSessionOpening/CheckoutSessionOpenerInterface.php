@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Application\CheckoutSessionOpening;
 
 use Shared\Application\DrivingPort;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperAddressesNotCompletedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperErasureRequestedException;
-use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ShopperNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
 
 #[DrivingPort]
 interface CheckoutSessionOpenerInterface
 {
     /**
-     * @throws ShopperNotRegisteredException
-     * @throws ShopperErasureRequestedException
-     * @throws ShopperAddressesNotCompletedException
+     * @throws CustomerNotRegisteredException
+     * @throws CustomerErasureRequestedException
+     * @throws CustomerAddressesNotCompletedException
      */
     public function openFor(string $cartId): OpenedCheckoutSession;
 }

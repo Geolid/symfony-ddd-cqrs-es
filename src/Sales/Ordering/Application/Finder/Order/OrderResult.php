@@ -11,7 +11,7 @@ final readonly class OrderResult
 {
     public function __construct(
         public string $id,
-        public string $shopperId,
+        public string $customerId,
         public string $checkoutSessionId,
         public PostalAddressResult $shippingAddress,
         public int $totalAmountInCents,
