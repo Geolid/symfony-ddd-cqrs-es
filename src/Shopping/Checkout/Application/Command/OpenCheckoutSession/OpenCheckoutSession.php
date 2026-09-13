@@ -18,6 +18,8 @@ final readonly class OpenCheckoutSession implements CommandInterface
         public string $cartId,
         public string $customerId,
         public array $lines,
+        public string $currency,
+        public int $taxRateBasisPoints,
         public array $shippingAddress,
         public array $billingAddress,
         public \DateTimeImmutable $openedAt,

@@ -38,7 +38,7 @@ final class DbalOrderFinder extends AbstractIterableDbalFinder implements OrderF
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id', 'checkout_session_id', 'shipping_address', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
+        $qb->select('id', 'customer_id', 'checkout_session_id', 'shipping_address', 'total_excluding_tax_in_cents', 'total_tax_amount_in_cents', 'total_including_tax_in_cents', 'currency', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
             ->from(DbalOrderProjector::TABLE);
     }
 

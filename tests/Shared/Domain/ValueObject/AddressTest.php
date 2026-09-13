@@ -88,7 +88,7 @@ final class AddressTest extends TestCase
         $differentStreet = Address::of('8 Avenue Foch', '75002', 'Paris', 'FR');
         $differentPostalCode = Address::of('10 Rue de la Paix', '75016', 'Paris', 'FR');
         $differentCity = Address::of('10 Rue de la Paix', '75002', 'Lyon', 'FR');
-        $differentCountryCode = Address::of('10 Rue de la Paix', '75002', 'Paris', 'BE');
+        $differentCountryCode = Address::of('10 Rue de la Paix', '75002', 'Paris', 'DE');
 
         // When
         $differsOnStreet = $a->equals($differentStreet);

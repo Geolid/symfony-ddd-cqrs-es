@@ -9,10 +9,12 @@ use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -131,11 +133,11 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'origin' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'destination' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'createdAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -158,5 +160,12 @@ final class ShipmentBuilder extends AbstractAggregateBuilder
             $this['destination'],
             $this['createdAt'],
         );
+    }
+
+    private static function randomCountryCode(): string
+    {
+        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
+
+        return $countryCode;
     }
 }

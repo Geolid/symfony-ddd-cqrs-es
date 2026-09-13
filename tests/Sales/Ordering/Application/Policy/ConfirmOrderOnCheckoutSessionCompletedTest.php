@@ -34,6 +34,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
             'productId' => Uuid::uuid7()->toString(),
             'label' => SeededFaker::get()->sentence(3),
             'unitPriceInCents' => SeededFaker::get()->numberBetween(500, 5_000),
+            'taxAmountInCents' => SeededFaker::get()->numberBetween(50, 500),
             'quantity' => SeededFaker::get()->numberBetween(1, 5),
         ]];
 
@@ -43,9 +44,9 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
             cartId: $cartId,
             customerId: $customerId,
             items: $items,
+            currency: 'EUR',
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            totalAmountInCents: SeededFaker::get()->numberBetween(500, 5_000),
             paymentId: Uuid::uuid7()->toString(),
             completedAt: Clock::get()->now(),
         ));

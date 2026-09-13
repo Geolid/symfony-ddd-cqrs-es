@@ -41,7 +41,11 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
                 ),
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
                 'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
-                'total_amount_in_cents' => $event->totalAmount->cents,
+                'total_excluding_tax_in_cents' => $event->total->excludingTax->cents,
+                'total_tax_amount_in_cents' => $event->total->taxAmount->cents,
+                'total_including_tax_in_cents' => $event->total->includingTax->cents,
+                'currency' => $event->total->excludingTax->currency->value,
+                'tax_rate_basis_points' => $event->items[0]->taxRate->basisPoints,
                 'status' => CheckoutSessionStatus::OPEN->value,
                 'opened_at' => $event->openedAt,
             ],
@@ -91,7 +95,11 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         $table->addColumn('items', Types::JSON);
         $table->addColumn('shipping_address', Types::JSON);
         $table->addColumn('billing_address', Types::JSON);
-        $table->addColumn('total_amount_in_cents', Types::INTEGER);
+        $table->addColumn('total_excluding_tax_in_cents', Types::INTEGER);
+        $table->addColumn('total_tax_amount_in_cents', Types::INTEGER);
+        $table->addColumn('total_including_tax_in_cents', Types::INTEGER);
+        $table->addColumn('currency', Types::STRING, ['length' => 3]);
+        $table->addColumn('tax_rate_basis_points', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 9]);
         $table->addColumn('opened_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(

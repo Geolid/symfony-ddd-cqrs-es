@@ -30,7 +30,7 @@ final readonly class RepriceProductHandler
     public function __invoke(RepriceProduct $command): void
     {
         $product = $this->repository->load(ProductId::fromString($command->id));
-        $product->reprice(Money::fromCents($command->unitPriceInCents), $this->clock->now());
+        $product->reprice(Money::fromCents($command->unitPriceInCents, $command->currency), $this->clock->now());
 
         $this->repository->save($product);
     }

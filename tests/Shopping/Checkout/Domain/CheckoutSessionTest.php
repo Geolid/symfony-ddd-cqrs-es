@@ -7,8 +7,9 @@ namespace Shopping\Tests\Checkout\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
@@ -26,6 +27,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     private string $customerId;
     /** @var list<CheckoutItem> */
     private array $items;
+    private Currency $currency;
     private PostalAddress $shippingAddress;
     private PostalAddress $billingAddress;
     private string $paymentId;
@@ -42,6 +44,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->cartId = CheckoutSessionBuilder::sample('cartId');
         $this->customerId = CheckoutSessionBuilder::sample('customerId');
         $this->items = CheckoutSessionBuilder::sample('items');
+        $this->currency = CheckoutSessionBuilder::sample('currency');
         $this->shippingAddress = CheckoutSessionBuilder::sample('shippingAddress');
         $this->billingAddress = CheckoutSessionBuilder::sample('billingAddress');
         $this->paymentId = CheckoutSessionBuilder::sample('paymentId');
@@ -61,6 +64,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->cartId,
                 $this->customerId,
                 $this->items,
+                $this->currency,
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
@@ -78,6 +82,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->cartId,
                 $this->customerId,
                 [],
+                $this->currency,
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
@@ -139,6 +144,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->cartId,
                 $this->customerId,
                 $this->items,
+                $this->currency,
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->paymentId,
@@ -156,6 +162,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->cartId,
                 $this->customerId,
                 $this->items,
+                $this->currency,
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->paymentId,
@@ -191,6 +198,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->cartId,
                 $this->customerId,
                 $this->items,
+                $this->currency,
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->paymentId,
@@ -213,7 +221,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             $this->items,
             $this->shippingAddress,
             $this->billingAddress,
-            $this->totalAmount(),
+            $this->total(),
             $this->openedAt,
         );
     }
@@ -237,18 +245,18 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             $this->items,
             $this->shippingAddress,
             $this->billingAddress,
-            $this->totalAmount(),
+            $this->total(),
             $this->paymentId,
             $this->completedAt,
         );
     }
 
-    private function totalAmount(): Money
+    private function total(): TaxedAmount
     {
         return array_reduce(
             $this->items,
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->total()),
+            TaxedAmount::zero($this->currency),
         );
     }
 }

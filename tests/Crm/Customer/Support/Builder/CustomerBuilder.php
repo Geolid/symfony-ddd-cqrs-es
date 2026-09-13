@@ -10,10 +10,12 @@ use Crm\Customer\Domain\Customer\ValueObject\Email;
 use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -122,12 +124,12 @@ final class CustomerBuilder extends AbstractAggregateBuilder
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'shippingAddressDefinedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'billingAddressDefinedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -145,5 +147,12 @@ final class CustomerBuilder extends AbstractAggregateBuilder
             email: $this['email'],
             registeredAt: $this['registeredAt'],
         );
+    }
+
+    private static function randomCountryCode(): string
+    {
+        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
+
+        return $countryCode;
     }
 }

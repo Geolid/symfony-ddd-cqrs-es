@@ -7,7 +7,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
@@ -92,12 +92,16 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
             PostalAddressMapper::toArray($builder['billingAddress']),
             PostalAddressResultMapper::toArray($result->billingAddress),
         );
-        $totalAmountInCents = array_reduce(
+        $total = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
-        self::assertSame($totalAmountInCents, $result->totalAmountInCents);
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->total()),
+            TaxedAmount::zero($builder['currency']),
+        );
+        self::assertSame($total->excludingTax->cents, $result->totalExcludingTaxInCents);
+        self::assertSame($total->taxAmount->cents, $result->totalTaxAmountInCents);
+        self::assertSame($total->includingTax->cents, $result->totalIncludingTaxInCents);
+        self::assertSame($builder['currency']->value, $result->currency);
+        self::assertSame($builder['taxRate']->basisPoints, $result->taxRateBasisPoints);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
         self::assertSame($builder['openedAt']->format('Y-m-d H:i:s'), $result->openedAt->format('Y-m-d H:i:s'));
 

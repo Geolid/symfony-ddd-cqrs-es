@@ -6,6 +6,8 @@ namespace Shopping\Tests\Checkout\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -14,9 +16,11 @@ use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\ValueObject\TaxRate;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -24,6 +28,8 @@ use Symfony\Component\Clock\Clock;
  *     cartId: string,
  *     customerId: string,
  *     items: list<CheckoutItem>,
+ *     currency: Currency,
+ *     taxRate: TaxRate,
  *     shippingAddress: PostalAddress,
  *     billingAddress: PostalAddress,
  *     paymentId: string,
@@ -58,6 +64,16 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
     public function withItems(array $items): self
     {
         return $this->withAttributes(items: $items);
+    }
+
+    public function withCurrency(string $currency): self
+    {
+        return $this->withAttributes(currency: Currency::from($currency));
+    }
+
+    public function withTaxRate(int $basisPoints): self
+    {
+        return $this->withAttributes(taxRate: TaxRate::fromBasisPoints($basisPoints));
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -105,6 +121,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
                 $builder['cartId'],
                 $builder['customerId'],
                 $builder['items'],
+                $builder['currency'],
                 $builder['shippingAddress'],
                 $builder['billingAddress'],
                 $builder['paymentId'],
@@ -121,22 +138,30 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             'id' => static fn (): CheckoutSessionId => CheckoutSessionId::fromString(Uuid::uuid7()->toString()),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
-            'items' => static fn (): array => array_map(
-                static fn (): CheckoutItem => CheckoutItem::of(
-                    Uuid::uuid7()->toString(),
-                    Label::fromString(SeededFaker::get()->sentence(3)),
-                    Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
-                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
-                ),
-                range(1, SeededFaker::get()->numberBetween(1, 3)),
-            ),
+            'items' => static function (?self $builder): array {
+                $currency = null !== $builder ? $builder['currency'] : self::sample('currency');
+                $taxRate = null !== $builder ? $builder['taxRate'] : self::sample('taxRate');
+
+                return array_map(
+                    static fn (): CheckoutItem => CheckoutItem::of(
+                        Uuid::uuid7()->toString(),
+                        Label::fromString(SeededFaker::get()->sentence(3)),
+                        Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000), $currency->value),
+                        Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+                        $taxRate,
+                    ),
+                    range(1, SeededFaker::get()->numberBetween(1, 3)),
+                );
+            },
+            'currency' => static fn (): Currency => Currency::EUR,
+            'taxRate' => static fn (): TaxRate => TaxRate::fromBasisPoints(2_000),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'openedAt' => static fn (): \DateTimeImmutable => $now,
@@ -153,9 +178,17 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             cartId: $this['cartId'],
             customerId: $this['customerId'],
             items: $this['items'],
+            currency: $this['currency'],
             shippingAddress: $this['shippingAddress'],
             billingAddress: $this['billingAddress'],
             openedAt: $this['openedAt'],
         );
+    }
+
+    private static function randomCountryCode(): string
+    {
+        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
+
+        return $countryCode;
     }
 }

@@ -21,7 +21,7 @@ final class ProductTest extends TestCase
         $label = Label::fromString('Saucer');
 
         // When
-        $product = Product::of($id, $label, Money::fromCents(1_750));
+        $product = Product::of($id, $label, Money::fromCents(1_750, 'EUR'));
 
         // Then
         self::assertSame($id, $product->id);
@@ -36,7 +36,7 @@ final class ProductTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        Product::of('', Label::fromString('Saucer'), Money::fromCents(1_750));
+        Product::of('', Label::fromString('Saucer'), Money::fromCents(1_750, 'EUR'));
     }
 
     #[Test]
@@ -44,8 +44,8 @@ final class ProductTest extends TestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
-        $b = Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83));
+        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83, 'EUR'));
+        $b = Product::of($id, Label::fromString('  Saucer  '), Money::fromCents(83, 'EUR'));
 
         // When
         $equals = $a->equals($b);
@@ -59,11 +59,11 @@ final class ProductTest extends TestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83));
+        $a = Product::of($id, Label::fromString('Saucer'), Money::fromCents(83, 'EUR'));
 
-        $differentId = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83));
-        $differentLabel = Product::of($id, Label::fromString('Plate'), Money::fromCents(83));
-        $differentPrice = Product::of($id, Label::fromString('Saucer'), Money::fromCents(90));
+        $differentId = Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83, 'EUR'));
+        $differentLabel = Product::of($id, Label::fromString('Plate'), Money::fromCents(83, 'EUR'));
+        $differentPrice = Product::of($id, Label::fromString('Saucer'), Money::fromCents(90, 'EUR'));
 
         // When
         $differsOnId = $a->equals($differentId);

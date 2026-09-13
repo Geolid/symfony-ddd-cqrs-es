@@ -26,7 +26,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
         $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
 
         // When
-        $this->dispatch(new PublishProduct($id, $label, $unitPriceInCents));
+        $this->dispatch(new PublishProduct($id, $label, $unitPriceInCents, 'EUR'));
 
         // Then
         $result = $this->service(ProductFinderInterface::class)->ofId($id);
@@ -54,6 +54,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
             Uuid::uuid7()->toString(),
             $label,
             ProductBuilder::sample('unitPrice')->cents,
+            'EUR',
         ));
     }
 }

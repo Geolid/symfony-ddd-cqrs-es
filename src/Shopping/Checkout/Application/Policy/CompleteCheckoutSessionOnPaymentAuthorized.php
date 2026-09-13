@@ -45,6 +45,8 @@ final readonly class CompleteCheckoutSessionOnPaymentAuthorized
             cartId: $checkoutSession->cartId,
             customerId: $checkoutSession->customerId,
             items: $items,
+            currency: $checkoutSession->currency,
+            taxRateBasisPoints: $checkoutSession->taxRateBasisPoints,
             shippingAddress: [
                 'recipientName' => $checkoutSession->shippingAddress->recipientName,
                 'address' => (array) $checkoutSession->shippingAddress->address,

@@ -10,8 +10,8 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
 #[Event('shopping.checkout.checkout_session.opened')]
@@ -44,7 +44,7 @@ final readonly class CheckoutSessionOpened
             'of',
         ))]
         public PostalAddress $billingAddress,
-        public Money $totalAmount,
+        public TaxedAmount $total,
         public \DateTimeImmutable $openedAt,
     ) {
     }

@@ -9,9 +9,12 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\CountryCode;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\Quantity;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
@@ -25,8 +28,10 @@ use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
+use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\TaxRate;
 
 final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInterface
 {
@@ -35,6 +40,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         private CartItemFinderInterface $cartItemFinder,
         private CustomerFinderInterface $customerFinder,
         private ListedProductFinderInterface $listedProductFinder,
+        private TaxRateResolverInterface $taxRateResolver,
         private CommandBusInterface $commandBus,
         private ClockInterface $clock,
     ) {
@@ -66,12 +72,15 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         }
 
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $items = $this->assembleItems($cartItems);
-        $totalAmountInCents = array_reduce(
+        $currency = Currency::EUR;
+        $taxRate = $this->taxRateResolver->resolve(CountryCode::from($customer->shippingAddress->address->countryCode));
+        $items = $this->assembleItems($cartItems, $currency, $taxRate);
+        $total = array_reduce(
             $items,
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->total()),
+            TaxedAmount::zero($currency),
+        );
+
         $shippingAddress = PostalAddressMapper::fromArray([
             'recipientName' => $customer->shippingAddress->recipientName,
             'address' => (array) $customer->shippingAddress->address,
@@ -87,6 +96,8 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             cartId: $cartId,
             customerId: $cart->customerId,
             lines: array_map(CheckoutItemMapper::toArray(...), $items),
+            currency: $currency->value,
+            taxRateBasisPoints: $taxRate->basisPoints,
             shippingAddress: PostalAddressMapper::toArray($shippingAddress),
             billingAddress: PostalAddressMapper::toArray($billingAddress),
             openedAt: $now,
@@ -94,7 +105,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
 
         return new OpenedCheckoutSession(
             checkoutSessionId: $checkoutSessionId,
-            totalAmountInCents: $totalAmountInCents,
+            total: $total,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
             expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES)),
@@ -108,7 +119,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
      *
      * @throws ProductNotListedException
      */
-    private function assembleItems(array $cartItems): array
+    private function assembleItems(array $cartItems, Currency $currency, TaxRate $taxRate): array
     {
         $listedProducts = iterator_to_array($this->listedProductFinder->byIds(
             ...array_map(static fn (CartItemResult $item): string => $item->productId, $cartItems),
@@ -121,8 +132,9 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             $items[] = CheckoutItem::of(
                 $cartItem->productId,
                 Label::fromString($listedProduct->label),
-                Money::fromCents($listedProduct->unitPriceInCents),
+                Money::fromCents($listedProduct->unitPriceInCents, $currency->value),
                 Quantity::of($cartItem->quantity),
+                $taxRate,
             );
         }
 

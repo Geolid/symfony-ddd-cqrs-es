@@ -63,7 +63,7 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'cart_id', 'customer_id', 'items', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
+        $qb->select('id', 'cart_id', 'customer_id', 'items', 'shipping_address', 'billing_address', 'total_excluding_tax_in_cents', 'total_tax_amount_in_cents', 'total_including_tax_in_cents', 'currency', 'tax_rate_basis_points', 'status', 'opened_at')
             ->from(DbalCheckoutSessionProjector::TABLE);
     }
 

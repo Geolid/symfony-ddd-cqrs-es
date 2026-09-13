@@ -19,7 +19,11 @@ final readonly class CheckoutSessionResult
         public array $items,
         public PostalAddressResult $shippingAddress,
         public PostalAddressResult $billingAddress,
-        public int $totalAmountInCents,
+        public int $totalExcludingTaxInCents,
+        public int $totalTaxAmountInCents,
+        public int $totalIncludingTaxInCents,
+        public string $currency,
+        public int $taxRateBasisPoints,
         public CheckoutSessionStatus $status,
         public \DateTimeImmutable $openedAt,
     ) {

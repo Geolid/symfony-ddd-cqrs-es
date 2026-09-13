@@ -11,6 +11,7 @@ final readonly class RepriceProduct implements CommandInterface
     public function __construct(
         public string $id,
         public int $unitPriceInCents,
+        public string $currency,
     ) {
     }
 }

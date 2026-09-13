@@ -6,8 +6,8 @@ namespace Shared\Tests\Application\Validation;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Application\Validation\ValidCurrency;
 use Shared\Application\Validation\ValidMoney;
-use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 
@@ -17,52 +17,88 @@ use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 final class ValidMoneyTest extends CompoundConstraintTestCase
 {
     #[Test]
-    #[DataProvider('provideAcceptedValues')]
-    public function itAccepts(int $amount): void
+    public function itAccepts(): void
     {
         // When
-        $this->validateValue($amount);
+        $this->validateValue(self::money());
 
         // Then
         $this->assertNoViolation();
     }
 
     /**
-     * @return iterable<string, array{int}>
-     */
-    public static function provideAcceptedValues(): iterable
-    {
-        yield 'amount' => [2_500];
-        yield 'zero' => [0];
-    }
-
-    /**
-     * @param list<Constraint> $rules
+     * @param array<string, mixed> $value
      */
     #[Test]
     #[DataProvider('provideRefusedValues')]
-    public function itRefuses(mixed $amount, array $rules): void
+    public function itRefuses(array $value): void
     {
         // When
-        $this->validateValue($amount);
+        $this->validateValue($value);
 
         // Then
-        $this->assertViolationsCount(\count($rules));
-        $this->assertViolationsRaisedByCompound($rules);
+        $this->assertViolationsCount(1);
+        $this->assertViolationsRaisedByCompound([$this->collection()]);
     }
 
     /**
-     * @return iterable<string, array{mixed, list<Constraint>}>
+     * @return iterable<string, array{array<string, mixed>}>
      */
     public static function provideRefusedValues(): iterable
     {
-        yield 'missing' => [null, [new Assert\NotNull()]];
-        yield 'not a whole number' => [19.99, [new Assert\Type('int')]];
-        yield 'negative' => [-1, [new Assert\PositiveOrZero()]];
+        yield 'missing cents' => [self::money(['cents' => null])];
+        yield 'not a whole number' => [self::money(['cents' => 19.99])];
+        yield 'negative' => [self::money(['cents' => -1])];
+        yield 'unknown currency' => [self::money(['currency' => 'XXX'])];
+    }
+
+    #[Test]
+    public function itRefusesWhenFieldMissing(): void
+    {
+        // Given
+        $money = self::money();
+        unset($money['currency']);
+
+        // When
+        $this->validateValue($money);
+
+        // Then
+        $this->assertViolationsCount(1);
+        $this->assertViolationsRaisedByCompound([$this->collection()]);
     }
 
     protected function createCompound(): ValidMoney
     {
         return new ValidMoney();
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     *
+     * @return array<string, mixed>
+     */
+    private static function money(array $overrides = []): array
+    {
+        return $overrides + [
+            'cents' => 2_500,
+            'currency' => 'EUR',
+        ];
+    }
+
+    private function collection(): Assert\Collection
+    {
+        return new Assert\Collection(
+            fields: [
+                'cents' => [
+                    new Assert\NotNull(),
+                    new Assert\Type('int'),
+                    new Assert\PositiveOrZero(),
+                ],
+                'currency' => [
+                    new ValidCurrency(),
+                ],
+            ],
+            allowMissingFields: false,
+        );
     }
 }

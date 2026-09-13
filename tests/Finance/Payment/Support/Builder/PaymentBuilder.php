@@ -40,7 +40,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
 
     public function withAmountInCents(int $amountInCents): self
     {
-        return $this->withAttributes(amount: Money::fromCents($amountInCents));
+        return $this->withAttributes(amount: Money::fromCents($amountInCents, 'EUR'));
     }
 
     public function withReference(string $reference): self
@@ -119,7 +119,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             ),
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
-            'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),
+            'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000), 'EUR'),
             'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
             'checkoutUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
             'requestedAt' => static fn (): \DateTimeImmutable => $now,

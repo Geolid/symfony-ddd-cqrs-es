@@ -28,9 +28,10 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\ErasureState;
-use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 
 #[Aggregate('sales.ordering.order')]
 final class Order implements AggregateRoot, AggregateRootMetadataAware
@@ -73,6 +74,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         string $checkoutSessionId,
         PostalAddress $shippingAddress,
         array $items,
+        Currency $currency,
         \DateTimeImmutable $confirmedAt,
     ): self {
         if ([] === $items) {
@@ -87,8 +89,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
         $total = array_reduce(
             $orderLines,
-            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
-            Money::fromCents(0),
+            static fn (TaxedAmount $carry, OrderLine $line): TaxedAmount => $carry->plus($line->taxedTotal()),
+            TaxedAmount::zero($currency),
         );
 
         $self = new self();
@@ -99,7 +101,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             checkoutSessionId: $checkoutSessionId,
             shippingAddress: $shippingAddress,
             lines: $orderLines,
-            totalAmount: $total,
+            total: $total,
             confirmedAt: $confirmedAt,
         ));
 

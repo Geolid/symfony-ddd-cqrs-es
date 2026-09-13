@@ -10,6 +10,8 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
 use Shared\Domain\ValueObject\Address;
+use Shared\Domain\ValueObject\CountryCode;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -17,6 +19,7 @@ use Shared\Domain\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -26,6 +29,7 @@ use Symfony\Component\Clock\Clock;
  *     checkoutSessionId: string,
  *     shippingAddress: PostalAddress,
  *     items: list<OrderItem>,
+ *     currency: Currency,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
@@ -65,6 +69,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
     public function withItems(array $items): self
     {
         return $this->withAttributes(items: $items);
+    }
+
+    public function withCurrency(string $currency): self
+    {
+        return $this->withAttributes(currency: Currency::from($currency));
     }
 
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
@@ -139,15 +148,22 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
             ),
-            'items' => static fn (): array => array_map(
-                static fn (): OrderItem => OrderItem::of(
-                    Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
-                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
-                ),
-                range(1, SeededFaker::get()->numberBetween(1, 3)),
-            ),
+            'items' => static function (?self $builder): array {
+                $currency = null !== $builder ? $builder['currency'] : self::sample('currency');
+
+                return array_map(static function () use ($currency): OrderItem {
+                    $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000), $currency->value));
+
+                    return OrderItem::of(
+                        $product,
+                        Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+                        Money::fromCents(SeededFaker::get()->numberBetween(50, 500), $currency->value),
+                    );
+                }, range(1, SeededFaker::get()->numberBetween(1, 3)));
+            },
+            'currency' => static fn (): Currency => Currency::EUR,
             'confirmedAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -167,7 +183,15 @@ final class OrderBuilder extends AbstractAggregateBuilder
             checkoutSessionId: $this['checkoutSessionId'],
             shippingAddress: $this['shippingAddress'],
             items: $this['items'],
+            currency: $this['currency'],
             confirmedAt: $this['confirmedAt'],
         );
+    }
+
+    private static function randomCountryCode(): string
+    {
+        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
+
+        return $countryCode;
     }
 }
