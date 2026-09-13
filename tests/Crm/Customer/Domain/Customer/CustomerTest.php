@@ -134,7 +134,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotRequestErasureWhenAlreadyRequested(): void
     {
         $this
-            ->given($this->registered(), $this->requested())
+            ->given($this->registered(), $this->erasureRequested())
             ->when(static fn (Customer $customer) => $customer->requestErasure(CustomerBuilder::sample('requestedAt')))
             ->then();
     }
@@ -143,7 +143,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itCancelsErasure(): void
     {
         $this
-            ->given($this->registered(), $this->requested())
+            ->given($this->registered(), $this->erasureRequested())
             ->when(fn (Customer $customer) => $customer->cancelErasure($this->cancelledAt))
             ->then(new CustomerErasureCancelled($this->id, $this->cancelledAt));
     }
@@ -161,7 +161,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itErases(): void
     {
         $this
-            ->given($this->registered(), $this->requested())
+            ->given($this->registered(), $this->erasureRequested())
             ->when(fn (Customer $customer) => $customer->erase($this->erasedAt))
             ->then(new CustomerErased($this->id, $this->erasedAt));
     }
@@ -179,7 +179,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotEraseWhenAlreadyErased(): void
     {
         $this
-            ->given($this->registered(), $this->requested(), $this->erased())
+            ->given($this->registered(), $this->erasureRequested(), $this->erased())
             ->when(static fn (Customer $customer) => $customer->erase(CustomerBuilder::sample('erasedAt')))
             ->then();
     }
@@ -200,7 +200,7 @@ final class CustomerTest extends AggregateRootTestCase
         );
     }
 
-    private function requested(): CustomerErasureRequested
+    private function erasureRequested(): CustomerErasureRequested
     {
         return new CustomerErasureRequested($this->id, $this->requestedAt);
     }

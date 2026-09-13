@@ -34,12 +34,8 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ErasureState::REQUESTED->value => [ErasureState::RETAINED, ErasureState::ERASED],
         ErasureState::ERASED->value => [],
     ];
-
     #[Id]
     public private(set) CustomerId $id;
-    public private(set) Name $firstName;
-    public private(set) Name $lastName;
-    public private(set) Email $email;
     public private(set) ?PostalAddress $shippingAddress = null;
     public private(set) ?PostalAddress $billingAddress = null;
     private ErasureState $erasureState;
@@ -134,9 +130,6 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(CustomerRegistered $event): void
     {
         $this->id = $event->id;
-        $this->firstName = $event->firstName;
-        $this->lastName = $event->lastName;
-        $this->email = $event->email;
         $this->erasureState = ErasureState::RETAINED;
     }
 

@@ -6,9 +6,9 @@ namespace Crm\Tests\Customer\Application\Command\DefineCustomerBillingAddress;
 
 use Crm\Customer\Application\Command\DefineCustomerBillingAddress\DefineCustomerBillingAddress;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Crm\Customer\Application\Finder\Customer\PostalAddressResult;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
 use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\PostalAddressResultMapper;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -31,7 +31,7 @@ final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationT
         $result = $this->service(CustomerFinderInterface::class)->ofIdOrNull($customer->id->toString());
         self::assertNotNull($result);
         self::assertNotNull($result->billingAddress);
-        self::assertSame($billingAddress, $this->toArray($result->billingAddress));
+        self::assertSame($billingAddress, PostalAddressResultMapper::toArray($result->billingAddress));
     }
 
     #[Test]
@@ -45,21 +45,5 @@ final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationT
             Uuid::uuid7()->toString(),
             PostalAddressMapper::toArray(CustomerBuilder::sample('billingAddress')),
         ));
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function toArray(PostalAddressResult $postalAddressResult): array
-    {
-        return [
-            'recipientName' => $postalAddressResult->recipientName,
-            'address' => [
-                'street' => $postalAddressResult->address->street,
-                'postalCode' => $postalAddressResult->address->postalCode,
-                'city' => $postalAddressResult->address->city,
-                'countryCode' => $postalAddressResult->address->countryCode,
-            ],
-        ];
     }
 }

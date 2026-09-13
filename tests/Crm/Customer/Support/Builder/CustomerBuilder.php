@@ -36,9 +36,24 @@ use Symfony\Component\Clock\Clock;
  */
 final class CustomerBuilder extends AbstractAggregateBuilder
 {
+    public function withFirstName(string $firstName): self
+    {
+        return $this->withAttributes(firstName: Name::fromString($firstName));
+    }
+
+    public function withLastName(string $lastName): self
+    {
+        return $this->withAttributes(lastName: Name::fromString($lastName));
+    }
+
     public function withEmail(string $email): self
     {
         return $this->withAttributes(email: Email::fromString($email));
+    }
+
+    public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
+    {
+        return $this->withAttributes(registeredAt: $registeredAt);
     }
 
     public function shippingAddressDefined(?PostalAddress $shippingAddress = null, ?\DateTimeImmutable $definedAt = null): self
