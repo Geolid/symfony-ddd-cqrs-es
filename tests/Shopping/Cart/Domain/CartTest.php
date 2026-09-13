@@ -1,0 +1,187 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shopping\Tests\Cart\Domain;
+
+use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
+use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Shopping\Cart\Domain\Cart;
+use Shopping\Cart\Domain\Event\CartProductAdded;
+use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
+use Shopping\Cart\Domain\Event\CartProductRemoved;
+use Shopping\Cart\Domain\Event\CartPurchased;
+use Shopping\Cart\Domain\Event\CartStarted;
+use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
+use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
+use Shopping\Cart\Domain\ValueObject\CartId;
+use Shopping\Cart\Domain\ValueObject\Quantity;
+use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Support\SeededFaker;
+
+final class CartTest extends AggregateRootTestCase
+{
+    private CartId $id;
+    private string $customerId;
+    private \DateTimeImmutable $startedAt;
+    private string $productId;
+    private Quantity $quantity;
+    private \DateTimeImmutable $addedAt;
+    private \DateTimeImmutable $removedAt;
+    private \DateTimeImmutable $changedAt;
+    private \DateTimeImmutable $purchasedAt;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->id = CartId::fromString(Uuid::uuid7()->toString());
+        $this->customerId = CartBuilder::sample('customerId');
+        $this->startedAt = CartBuilder::sample('startedAt');
+        $this->productId = Uuid::uuid7()->toString();
+        $this->quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5));
+        $this->addedAt = $this->startedAt->modify('+1 minute');
+        $this->removedAt = $this->startedAt->modify('+2 minute');
+        $this->changedAt = $this->startedAt->modify('+2 minute');
+        $this->purchasedAt = CartBuilder::sample('purchasedAt');
+    }
+
+    #[Test]
+    public function itStarts(): void
+    {
+        $this
+            ->given()
+            ->when(fn (): Cart => Cart::start($this->id, $this->customerId, $this->startedAt))
+            ->then($this->started());
+    }
+
+    #[Test]
+    public function itAddsProduct(): void
+    {
+        $this
+            ->given($this->started())
+            ->when(fn (Cart $cart) => $cart->addProduct($this->productId, $this->quantity, $this->addedAt))
+            ->then($this->productAdded());
+    }
+
+    #[Test]
+    public function itAddsProductAgainWhenAlreadyPresent(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded())
+            ->when(fn (Cart $cart) => $cart->addProduct($this->productId, $this->quantity, $this->addedAt))
+            ->then($this->productAdded());
+    }
+
+    #[Test]
+    public function itCannotAddProductWhenPurchased(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->purchased())
+            ->when(fn (Cart $cart) => $cart->addProduct($this->productId, $this->quantity, $this->addedAt))
+            ->expectsException(CartAlreadyPurchasedException::class);
+    }
+
+    #[Test]
+    public function itRemovesProduct(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded())
+            ->when(fn (Cart $cart) => $cart->removeProduct($this->productId, $this->removedAt))
+            ->then($this->productRemoved());
+    }
+
+    #[Test]
+    public function itCannotRemoveProductWhenNotFound(): void
+    {
+        $this
+            ->given($this->started())
+            ->when(fn (Cart $cart) => $cart->removeProduct($this->productId, $this->removedAt))
+            ->expectsException(CartProductNotFoundException::class);
+    }
+
+    #[Test]
+    public function itCannotRemoveProductWhenPurchased(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->purchased())
+            ->when(fn (Cart $cart) => $cart->removeProduct($this->productId, $this->removedAt))
+            ->expectsException(CartAlreadyPurchasedException::class);
+    }
+
+    #[Test]
+    public function itChangesQuantity(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded())
+            ->when(fn (Cart $cart) => $cart->changeQuantity($this->productId, $this->quantity, $this->changedAt))
+            ->then($this->productQuantityChanged());
+    }
+
+    #[Test]
+    public function itCannotChangeQuantityWhenNotFound(): void
+    {
+        $this
+            ->given($this->started())
+            ->when(fn (Cart $cart) => $cart->changeQuantity($this->productId, $this->quantity, $this->changedAt))
+            ->expectsException(CartProductNotFoundException::class);
+    }
+
+    #[Test]
+    public function itCannotChangeQuantityWhenPurchased(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->purchased())
+            ->when(fn (Cart $cart) => $cart->changeQuantity($this->productId, $this->quantity, $this->changedAt))
+            ->expectsException(CartAlreadyPurchasedException::class);
+    }
+
+    #[Test]
+    public function itPurchases(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded())
+            ->when(fn (Cart $cart) => $cart->purchase($this->purchasedAt))
+            ->then($this->purchased());
+    }
+
+    #[Test]
+    public function itDoesNotPurchaseWhenAlreadyPurchased(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->purchased())
+            ->when(static fn (Cart $cart) => $cart->purchase(CartBuilder::sample('purchasedAt')))
+            ->then();
+    }
+
+    protected function aggregateClass(): string
+    {
+        return Cart::class;
+    }
+
+    private function started(): CartStarted
+    {
+        return new CartStarted($this->id, $this->customerId, $this->startedAt);
+    }
+
+    private function productAdded(): CartProductAdded
+    {
+        return new CartProductAdded($this->id, $this->productId, $this->quantity, $this->addedAt);
+    }
+
+    private function productRemoved(): CartProductRemoved
+    {
+        return new CartProductRemoved($this->id, $this->productId, $this->removedAt);
+    }
+
+    private function productQuantityChanged(): CartProductQuantityChanged
+    {
+        return new CartProductQuantityChanged($this->id, $this->productId, $this->quantity, $this->changedAt);
+    }
+
+    private function purchased(): CartPurchased
+    {
+        return new CartPurchased($this->id, $this->purchasedAt);
+    }
+}

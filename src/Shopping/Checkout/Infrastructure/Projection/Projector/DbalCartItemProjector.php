@@ -12,48 +12,48 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shopping\Checkout\Domain\Cart\Event\CartProductAdded;
-use Shopping\Checkout\Domain\Cart\Event\CartProductQuantityChanged;
-use Shopping\Checkout\Domain\Cart\Event\CartProductRemoved;
+use Shopping\Cart\Application\IntegrationEvent\CartProductAdded\CartProductAddedIntegrationEvent;
+use Shopping\Cart\Application\IntegrationEvent\CartProductQuantityChanged\CartProductQuantityChangedIntegrationEvent;
+use Shopping\Cart\Application\IntegrationEvent\CartProductRemoved\CartProductRemovedIntegrationEvent;
 
 #[Projector('shopping.checkout.project_cart_items')]
 final readonly class DbalCartItemProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'shopping_checkout_cart_item';
 
-    #[Subscribe(CartProductAdded::class)]
-    public function onCartProductAdded(CartProductAdded $event): void
+    #[Subscribe(CartProductAddedIntegrationEvent::class)]
+    public function onCartProductAdded(CartProductAddedIntegrationEvent $event): void
     {
         try {
             $this->connection->insert(self::TABLE, [
-                'cart_id' => $event->id->toString(),
+                'cart_id' => $event->cartId,
                 'product_id' => $event->productId,
-                'quantity' => $event->quantity->value,
+                'quantity' => $event->quantity,
             ]);
         } catch (UniqueConstraintViolationException) {
             $this->connection->executeStatement(
                 \sprintf('UPDATE %s SET quantity = quantity + :delta WHERE cart_id = :cartId AND product_id = :productId', self::TABLE),
-                ['delta' => $event->quantity->value, 'cartId' => $event->id->toString(), 'productId' => $event->productId],
+                ['delta' => $event->quantity, 'cartId' => $event->cartId, 'productId' => $event->productId],
             );
         }
     }
 
-    #[Subscribe(CartProductRemoved::class)]
-    public function onCartProductRemoved(CartProductRemoved $event): void
+    #[Subscribe(CartProductRemovedIntegrationEvent::class)]
+    public function onCartProductRemoved(CartProductRemovedIntegrationEvent $event): void
     {
         $this->connection->delete(self::TABLE, [
-            'cart_id' => $event->id->toString(),
+            'cart_id' => $event->cartId,
             'product_id' => $event->productId,
         ]);
     }
 
-    #[Subscribe(CartProductQuantityChanged::class)]
-    public function onCartProductQuantityChanged(CartProductQuantityChanged $event): void
+    #[Subscribe(CartProductQuantityChangedIntegrationEvent::class)]
+    public function onCartProductQuantityChanged(CartProductQuantityChangedIntegrationEvent $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['quantity' => $event->quantity->value],
-            ['cart_id' => $event->id->toString(), 'product_id' => $event->productId],
+            ['quantity' => $event->quantity],
+            ['cart_id' => $event->cartId, 'product_id' => $event->productId],
         );
     }
 

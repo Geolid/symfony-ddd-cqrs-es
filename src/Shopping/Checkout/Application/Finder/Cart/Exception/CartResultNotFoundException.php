@@ -10,6 +10,6 @@ final class CartResultNotFoundException extends ResultNotFoundException
 {
     public static function forId(string $id): self
     {
-        return new self(\sprintf('Cart "%s" not found.', $id));
+        return new self(\sprintf('No cart found for id "%s".', $id));
     }
 }

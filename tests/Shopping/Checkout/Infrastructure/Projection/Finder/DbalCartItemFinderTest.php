@@ -7,10 +7,10 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shopping\Cart\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
-use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 
 /**
  * @extends AbstractIterableFinderTestCase<CartItemResult>

@@ -8,9 +8,9 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
+use Shopping\Cart\Application\IntegrationEvent\CartProductQuantityChanged\CartProductQuantityChangedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
-use Shopping\Checkout\Domain\Cart\Event\CartProductQuantityChanged;
 
 #[Policy('shopping.checkout.stale_checkout_session_on_cart_product_quantity_changed')]
 final readonly class StaleCheckoutSessionOnCartProductQuantityChanged
@@ -25,10 +25,10 @@ final readonly class StaleCheckoutSessionOnCartProductQuantityChanged
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(CartProductQuantityChanged::class)]
-    public function __invoke(CartProductQuantityChanged $event): void
+    #[Subscribe(CartProductQuantityChangedIntegrationEvent::class)]
+    public function __invoke(CartProductQuantityChangedIntegrationEvent $event): void
     {
-        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->id->toString());
+        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->cartId);
         if (null === $checkoutSession) {
             return;
         }

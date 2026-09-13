@@ -8,9 +8,9 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
+use Shopping\Cart\Application\IntegrationEvent\CartProductAdded\CartProductAddedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
-use Shopping\Checkout\Domain\Cart\Event\CartProductAdded;
 
 #[Policy('shopping.checkout.stale_checkout_session_on_cart_product_added')]
 final readonly class StaleCheckoutSessionOnCartProductAdded
@@ -25,10 +25,10 @@ final readonly class StaleCheckoutSessionOnCartProductAdded
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(CartProductAdded::class)]
-    public function __invoke(CartProductAdded $event): void
+    #[Subscribe(CartProductAddedIntegrationEvent::class)]
+    public function __invoke(CartProductAddedIntegrationEvent $event): void
     {
-        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->id->toString());
+        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->cartId);
         if (null === $checkoutSession) {
             return;
         }

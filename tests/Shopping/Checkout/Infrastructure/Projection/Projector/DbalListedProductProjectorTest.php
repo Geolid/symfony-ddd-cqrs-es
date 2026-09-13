@@ -7,8 +7,10 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalListedProductProjector;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @phpstan-type Row array{label: string, unit_price_in_cents: int|string}
@@ -38,16 +40,17 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         // Given
         $otherBuilder = ProductBuilder::new();
         $other = $otherBuilder->create();
-        $this->store($other);
-        $product = ProductBuilder::new()->repriced(2_000)->create();
+        $product = ProductBuilder::new()->create();
+        $this->store($other, $product);
 
         // When
+        $product->reprice(Money::fromCents(10_000), Clock::get()->now());
         $this->store($product);
 
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(2_000, (int) $row['unit_price_in_cents']);
+        self::assertSame(10_000, (int) $row['unit_price_in_cents']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

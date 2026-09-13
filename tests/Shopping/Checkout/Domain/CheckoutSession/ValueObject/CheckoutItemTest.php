@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\Quantity;
 
 final class CheckoutItemTest extends TestCase
 {

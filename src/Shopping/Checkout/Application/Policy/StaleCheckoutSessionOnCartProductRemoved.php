@@ -8,9 +8,9 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
+use Shopping\Cart\Application\IntegrationEvent\CartProductRemoved\CartProductRemovedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
-use Shopping\Checkout\Domain\Cart\Event\CartProductRemoved;
 
 #[Policy('shopping.checkout.stale_checkout_session_on_cart_product_removed')]
 final readonly class StaleCheckoutSessionOnCartProductRemoved
@@ -25,10 +25,10 @@ final readonly class StaleCheckoutSessionOnCartProductRemoved
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(CartProductRemoved::class)]
-    public function __invoke(CartProductRemoved $event): void
+    #[Subscribe(CartProductRemovedIntegrationEvent::class)]
+    public function __invoke(CartProductRemovedIntegrationEvent $event): void
     {
-        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->id->toString());
+        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->cartId);
         if (null === $checkoutSession) {
             return;
         }

@@ -11,6 +11,7 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shopping\Cart\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
@@ -20,9 +21,8 @@ use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundExcept
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
-use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;

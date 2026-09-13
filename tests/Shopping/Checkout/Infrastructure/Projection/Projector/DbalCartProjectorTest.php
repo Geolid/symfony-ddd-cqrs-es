@@ -6,13 +6,12 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
-use Shopping\Checkout\Application\CartStatus;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCartProjector;
-use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, status: string}
+ * @phpstan-type Row array{customer_id: string}
  */
 final class DbalCartProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,30 +30,9 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($cart->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['customerId'], $row['customer_id']);
-        self::assertSame(CartStatus::ACTIVE->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-    }
-
-    #[Test]
-    public function itProjectsOnCartPurchased(): void
-    {
-        // Given
-        $other = CartBuilder::new()->create();
-        $cart = CartBuilder::new()->purchased()->create();
-
-        // When
-        $this->store($other, $cart);
-
-        // Then
-        $row = $this->fetchRow($cart->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(CartStatus::PURCHASED->value, $row['status']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(CartStatus::ACTIVE->value, $otherRow['status']);
     }
 
     /**
@@ -66,7 +44,7 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT customer_id, status FROM %s WHERE id = :id', DbalCartProjector::TABLE),
+            \sprintf('SELECT customer_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
             ['id' => $id],
         );
     }
