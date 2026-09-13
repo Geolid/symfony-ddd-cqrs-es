@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Cart\Domain\ValueObject;
+namespace Shopping\Tests\Checkout\Domain\CheckoutSession\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shopping\Cart\Domain\ValueObject\Quantity;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\Quantity;
 
 final class QuantityTest extends TestCase
 {

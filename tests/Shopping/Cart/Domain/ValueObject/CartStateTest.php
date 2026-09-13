@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Cart\Domain\Cart\ValueObject;
+namespace Shopping\Tests\Cart\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

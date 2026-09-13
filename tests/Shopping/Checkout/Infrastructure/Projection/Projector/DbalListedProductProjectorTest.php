@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Cart\Infrastructure\Projection\Projector;
+namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Cart\Infrastructure\Projection\Projector\DbalListedProductProjector;
+use Shopping\Checkout\Infrastructure\Projection\Projector\DbalListedProductProjector;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
