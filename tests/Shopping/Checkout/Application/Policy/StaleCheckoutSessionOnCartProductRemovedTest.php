@@ -7,10 +7,9 @@ namespace Shopping\Tests\Checkout\Application\Policy;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
+use Shopping\Cart\Application\IntegrationEvent\CartProductRemoved\CartProductRemovedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Policy\StaleCheckoutSessionOnCartProductRemoved;
-use Shopping\Checkout\Domain\Cart\Event\CartProductRemoved;
-use Shopping\Checkout\Domain\Cart\ValueObject\CartId;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -29,10 +28,10 @@ final class StaleCheckoutSessionOnCartProductRemovedTest extends AbstractIntegra
         $commandBus->expects(self::once())->method('dispatch')->with(new StaleCheckoutSession($checkoutSession->id->toString()));
 
         // When
-        $this->trigger(StaleCheckoutSessionOnCartProductRemoved::class, new CartProductRemoved(
-            CartId::fromString($checkoutSessionBuilder['cartId']),
-            Uuid::uuid7()->toString(),
-            Clock::get()->now(),
+        $this->trigger(StaleCheckoutSessionOnCartProductRemoved::class, new CartProductRemovedIntegrationEvent(
+            cartId: $checkoutSessionBuilder['cartId'],
+            productId: Uuid::uuid7()->toString(),
+            removedAt: Clock::get()->now(),
         ));
     }
 
@@ -45,10 +44,10 @@ final class StaleCheckoutSessionOnCartProductRemovedTest extends AbstractIntegra
         $commandBus->expects(self::never())->method('dispatch');
 
         // When
-        $this->trigger(StaleCheckoutSessionOnCartProductRemoved::class, new CartProductRemoved(
-            CartId::fromString(Uuid::uuid7()->toString()),
-            Uuid::uuid7()->toString(),
-            Clock::get()->now(),
+        $this->trigger(StaleCheckoutSessionOnCartProductRemoved::class, new CartProductRemovedIntegrationEvent(
+            cartId: Uuid::uuid7()->toString(),
+            productId: Uuid::uuid7()->toString(),
+            removedAt: Clock::get()->now(),
         ));
     }
 }

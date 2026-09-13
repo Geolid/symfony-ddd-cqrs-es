@@ -8,13 +8,13 @@ use Shared\Application\Command\CommandHandler;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Shopping\Checkout\Domain\CheckoutSession\CheckoutSession;
 use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionAlreadyExistsException;
 use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionEmptyException;
 use Shopping\Checkout\Domain\CheckoutSession\Repository\CheckoutSessionRepositoryInterface;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\CheckoutSession\ValueObject\Quantity;
 
 #[CommandHandler]
 final readonly class OpenCheckoutSessionHandler

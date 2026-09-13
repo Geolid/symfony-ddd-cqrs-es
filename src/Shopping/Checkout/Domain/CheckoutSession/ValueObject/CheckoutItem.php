@@ -6,7 +6,6 @@ namespace Shopping\Checkout\Domain\CheckoutSession\ValueObject;
 
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
-use Shopping\Checkout\Domain\Cart\ValueObject\Quantity;
 use Webmozart\Assert\Assert;
 
 final readonly class CheckoutItem

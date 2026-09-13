@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
-use Shopping\Checkout\Application\Finder\Cart\CartResult;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
-use Shopping\Checkout\Domain\Cart\Cart;
-use Shopping\Tests\Checkout\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Support\TestCase\AbstractIntegrationTestCase;
 
-/**
- * @extends AbstractIterableFinderTestCase<CartResult>
- */
-final class DbalCartFinderTest extends AbstractIterableFinderTestCase
+final class DbalCartFinderTest extends AbstractIntegrationTestCase
 {
+    private CartFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(CartFinderInterface::class);
+    }
+
     #[Test]
     public function itGets(): void
     {
@@ -27,7 +30,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         $this->store($cart);
 
         // When
-        $result = $this->finder()->ofId($cart->id->toString());
+        $result = $this->finder->ofId($cart->id->toString());
 
         // Then
         self::assertSame($cart->id->toString(), $result->id);
@@ -35,50 +38,12 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itThrowsWhenIdNotFound(): void
+    public function itThrowsWhenNotFound(): void
     {
         // Then
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
-    }
-
-    #[Test]
-    public function itFiltersByProductId(): void
-    {
-        // Given
-        $other = CartBuilder::new()->productAdded()->create();
-        $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()->productAdded($productId)->create();
-        $this->store($other, $cart);
-
-        // When
-        $results = iterator_to_array($this->finder()->byProductId($productId));
-
-        // Then
-        self::assertCount(1, $results);
-        self::assertSame($cart->id->toString(), $results[0]->id);
-    }
-
-    protected function finder(): CartFinderInterface
-    {
-        return $this->service(CartFinderInterface::class);
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function seed(int $count): array
-    {
-        $carts = CartBuilder::new()->many($count)->create();
-        $this->store(...$carts);
-
-        return array_map(static fn (Cart $cart): string => $cart->id->toString(), $carts);
-    }
-
-    protected function idOf(object $result): string
-    {
-        return $result->id;
+        $this->finder->ofId('unknown');
     }
 }

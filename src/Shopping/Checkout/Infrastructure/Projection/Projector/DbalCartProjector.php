@@ -11,33 +11,20 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shopping\Checkout\Application\CartStatus;
-use Shopping\Checkout\Domain\Cart\Event\CartPurchased;
-use Shopping\Checkout\Domain\Cart\Event\CartStarted;
+use Shopping\Cart\Application\IntegrationEvent\CartStarted\CartStartedIntegrationEvent;
 
 #[Projector('shopping.checkout.project_carts')]
 final readonly class DbalCartProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'shopping_checkout_cart';
 
-    #[Subscribe(CartStarted::class)]
-    public function onCartStarted(CartStarted $event): void
+    #[Subscribe(CartStartedIntegrationEvent::class)]
+    public function onCartStarted(CartStartedIntegrationEvent $event): void
     {
         $this->connection->insert(self::TABLE, [
-            'id' => $event->id->toString(),
+            'id' => $event->cartId,
             'customer_id' => $event->customerId,
-            'status' => CartStatus::ACTIVE->value,
         ]);
-    }
-
-    #[Subscribe(CartPurchased::class)]
-    public function onCartPurchased(CartPurchased $event): void
-    {
-        $this->connection->update(
-            self::TABLE,
-            ['status' => CartStatus::PURCHASED->value],
-            ['id' => $event->id->toString()],
-        );
     }
 
     /**
@@ -48,7 +35,6 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
