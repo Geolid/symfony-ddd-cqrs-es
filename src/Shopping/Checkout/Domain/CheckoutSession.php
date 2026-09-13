@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession;
+namespace Shopping\Checkout\Domain;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -13,14 +13,14 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionCompleted;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionExpired;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionStaled;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionEmptyException;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionId;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutSessionState;
+use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
+use Shopping\Checkout\Domain\ValueObject\CheckoutSessionState;
 
 #[Aggregate('shopping.checkout.checkout_session')]
 final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware

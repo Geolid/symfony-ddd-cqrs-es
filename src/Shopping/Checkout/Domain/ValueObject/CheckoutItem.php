@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\ValueObject;
+namespace Shopping\Checkout\Domain\ValueObject;
 
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;

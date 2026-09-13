@@ -11,7 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
-use Shopping\Checkout\Domain\CheckoutSession\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 
 #[Projector('shopping.checkout.project_checkout_session_items')]
 final readonly class DbalCheckoutSessionItemProjector extends AbstractDbalProjector

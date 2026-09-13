@@ -10,8 +10,8 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\CompleteCheckoutSession\CompleteCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionNotFoundException;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

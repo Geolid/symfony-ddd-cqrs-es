@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
-use Shopping\Checkout\Domain\CheckoutSession\Exception\CheckoutSessionNotFoundException;
+use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

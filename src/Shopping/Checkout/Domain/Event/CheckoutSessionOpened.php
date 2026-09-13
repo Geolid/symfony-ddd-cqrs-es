@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\Event;
+namespace Shopping\Checkout\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
@@ -12,7 +12,7 @@ use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shopping\Checkout\Domain\CheckoutSession\ValueObject\CheckoutItem;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
 #[Event('shopping.checkout.checkout_session.opened')]
 final readonly class CheckoutSessionOpened

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\CheckoutSession\Event;
+namespace Shopping\Checkout\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 
