@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\SubdomainServiceLoader;
-use Fulfilment\Shipping\Application\Manifest\ShipmentManifester;
-use Fulfilment\Shipping\Application\Manifest\ShipmentManifesterInterface;
+use Fulfilment\Shipping\Application\Manifesting\ShipmentManifester;
+use Fulfilment\Shipping\Application\Manifesting\ShipmentManifesterInterface;
 use Fulfilment\Shipping\Application\Policy\RequestShipmentOnOrderConfirmed;
 use Fulfilment\Shipping\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThresholdHandler;
 use Fulfilment\Shipping\Application\Reconciliation\ShipmentReconciler;
