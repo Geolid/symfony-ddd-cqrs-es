@@ -12,6 +12,7 @@ use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderIn
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
 {
@@ -28,7 +29,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $checkoutSessionBuilder = CheckoutSessionBuilder::new();
+        $checkoutSessionBuilder = CheckoutSessionBuilder::new()->withOpenedAt(Clock::get()->now()->modify('-31 minutes'));
         $checkoutSession = $checkoutSessionBuilder->create();
         $this->store($checkoutSession);
 
@@ -46,6 +47,20 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $checkoutSession = CheckoutSessionBuilder::new()->expired()->create();
+        $this->store($checkoutSession);
+
+        // When
+        $this->dispatch(new ExpireCheckoutSession($checkoutSession->id->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function itIgnoresWhenTTLNotElapsed(): void
+    {
+        // Given
+        $checkoutSession = CheckoutSessionBuilder::new()->create();
         $this->store($checkoutSession);
 
         // When

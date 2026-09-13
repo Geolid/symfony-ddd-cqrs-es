@@ -18,6 +18,7 @@ use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionState;
@@ -26,8 +27,6 @@ use Shopping\Checkout\Domain\ValueObject\CheckoutSessionState;
 final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
-
-    public const int TTL_MINUTES = 30;
 
     /** @var array<string, list<CheckoutSessionState>> */
     private const array OPERATIONAL_TRANSITIONS = [
@@ -40,6 +39,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) CheckoutSessionId $id;
     private CheckoutSessionState $operationalState;
+    private \DateTimeImmutable $openedAt;
 
     /**
      * @param list<CheckoutItem> $items
@@ -77,6 +77,10 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     public function expire(\DateTimeImmutable $expiredAt): void
     {
         if (!$this->canTransitionOperationalTo(CheckoutSessionState::EXPIRED)) {
+            return;
+        }
+
+        if (!new CheckoutSessionExpiredSpecification($expiredAt)->isSatisfiedBy($this->openedAt)) {
             return;
         }
 
@@ -149,6 +153,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = CheckoutSessionId::fromString($event->id);
         $this->operationalState = CheckoutSessionState::OPEN;
+        $this->openedAt = $event->openedAt;
     }
 
     #[Apply]

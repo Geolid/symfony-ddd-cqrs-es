@@ -10,6 +10,7 @@ use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\Quantity;
@@ -141,7 +142,7 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             ),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'openedAt' => static fn (): \DateTimeImmutable => $now,
-            'expiredAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
+            'expiredAt' => static fn (): \DateTimeImmutable => $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES + 1)),
             'staledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
             'completedAt' => static fn (): \DateTimeImmutable => $now->modify('+5 minutes'),
         ];

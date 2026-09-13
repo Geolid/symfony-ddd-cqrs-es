@@ -104,6 +104,15 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itDoesNotExpireWhenTTLNotElapsed(): void
+    {
+        $this
+            ->given($this->opened())
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($this->openedAt->modify('+1 minute')))
+            ->then();
+    }
+
+    #[Test]
     public function itStalesWhenOpen(): void
     {
         $this
