@@ -20,7 +20,7 @@ use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
-use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 
 final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInterface
 {
@@ -86,7 +86,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             totalAmountInCents: $totalAmountInCents,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSession::TTL_MINUTES)),
+            expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES)),
         );
     }
 

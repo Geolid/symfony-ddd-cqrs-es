@@ -9,7 +9,7 @@ use Shared\Application\Query\QueryHandler;
 use Shared\Application\Query\Result\StreamResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
-use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 
 #[QueryHandler]
 final readonly class ListCheckoutSessionsPastReconciliationThresholdHandler
@@ -26,7 +26,7 @@ final readonly class ListCheckoutSessionsPastReconciliationThresholdHandler
     public function __invoke(ListCheckoutSessionsPastReconciliationThreshold $query): StreamResult
     {
         $cutoff = $this->clock->now()
-            ->sub(new \DateInterval(\sprintf('PT%dM', CheckoutSession::TTL_MINUTES)));
+            ->sub(new \DateInterval(\sprintf('PT%dM', CheckoutSessionExpiredSpecification::TTL_MINUTES)));
 
         return new StreamResult(
             $this->checkoutSessionFinder->stalledBefore($cutoff),
