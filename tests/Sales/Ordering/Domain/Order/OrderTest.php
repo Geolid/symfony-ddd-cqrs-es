@@ -7,7 +7,7 @@ namespace Sales\Tests\Ordering\Domain\Order;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Ordering\Domain\Order\Entity\Line;
+use Sales\Ordering\Domain\Order\Entity\OrderLine;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Ordering\Domain\Order\Event\OrderDelivered;
@@ -20,10 +20,9 @@ use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
-use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Ordering\Domain\Order\ValueObject\Product;
-use Sales\Ordering\Domain\Order\ValueObject\Quantity;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
+use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -36,8 +35,8 @@ final class OrderTest extends AggregateRootTestCase
     private readonly string $checkoutSessionId;
     private PostalAddress $shippingAddress;
 
-    /** @var list<array{product: Product, quantity: Quantity}> */
-    private array $lines;
+    /** @var list<OrderItem> */
+    private readonly array $items;
 
     private \DateTimeImmutable $confirmedAt;
     private \DateTimeImmutable $preparedAt;
@@ -56,7 +55,7 @@ final class OrderTest extends AggregateRootTestCase
         $this->customerId = OrderBuilder::sample('customerId');
         $this->checkoutSessionId = OrderBuilder::sample('checkoutSessionId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
-        $this->lines = OrderBuilder::sample('lines');
+        $this->items = OrderBuilder::sample('items');
         $this->confirmedAt = OrderBuilder::sample('confirmedAt');
         $this->preparedAt = OrderBuilder::sample('preparedAt');
         $this->cancelledAt = OrderBuilder::sample('cancelledAt');
@@ -71,7 +70,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, $this->lines, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, $this->items, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id,
                 $this->cartId,
@@ -333,14 +332,14 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     /**
-     * @return list<Line>
+     * @return list<OrderLine>
      */
     private function orderLines(): array
     {
         return array_map(
-            fn (array $line, int $position): Line => new Line(LineId::forOrder($this->id->toString(), $position), $line['product'], $line['quantity']),
-            $this->lines,
-            array_keys($this->lines),
+            fn (OrderItem $item, int $position): OrderLine => new OrderLine(OrderLineId::forOrder($this->id->toString(), $position), $item),
+            $this->items,
+            array_keys($this->items),
         );
     }
 
@@ -348,7 +347,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         return array_reduce(
             $this->orderLines(),
-            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
             Money::fromCents(0),
         );
     }

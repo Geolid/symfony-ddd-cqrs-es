@@ -7,6 +7,7 @@ namespace Sales\Tests\Ordering\Support\Builder;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
 use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\ValueObject\Address;
@@ -24,7 +25,7 @@ use Symfony\Component\Clock\Clock;
  *     customerId: string,
  *     checkoutSessionId: string,
  *     shippingAddress: PostalAddress,
- *     lines: list<array{product: Product, quantity: Quantity}>,
+ *     items: list<OrderItem>,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
@@ -59,11 +60,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<array{product: Product, quantity: Quantity}> $lines
+     * @param list<OrderItem> $items
      */
-    public function withLines(array $lines): self
+    public function withItems(array $items): self
     {
-        return $this->withAttributes(lines: $lines);
+        return $this->withAttributes(items: $items);
     }
 
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
@@ -140,11 +141,13 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => static fn (): array => array_map(static function (): array {
-                $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
-
-                return ['product' => $product, 'quantity' => Quantity::of(SeededFaker::get()->numberBetween(1, 5))];
-            }, range(1, SeededFaker::get()->numberBetween(1, 3))),
+            'items' => static fn (): array => array_map(
+                static fn (): OrderItem => OrderItem::of(
+                    Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
+                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+                ),
+                range(1, SeededFaker::get()->numberBetween(1, 3)),
+            ),
             'confirmedAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -163,7 +166,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
             customerId: $this['customerId'],
             checkoutSessionId: $this['checkoutSessionId'],
             shippingAddress: $this['shippingAddress'],
-            lines: $this['lines'],
+            items: $this['items'],
             confirmedAt: $this['confirmedAt'],
         );
     }

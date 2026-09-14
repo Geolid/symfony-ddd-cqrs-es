@@ -10,7 +10,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Sales\Ordering\Domain\Order\Entity\Line;
+use Sales\Ordering\Domain\Order\Entity\OrderLine;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Ordering\Domain\Order\Event\OrderDelivered;
@@ -22,11 +22,10 @@ use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
-use Sales\Ordering\Domain\Order\ValueObject\LineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
+use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
-use Sales\Ordering\Domain\Order\ValueObject\Product;
-use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -63,7 +62,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private ErasureState $erasureState;
 
     /**
-     * @param list<array{product: Product, quantity: Quantity}> $lines
+     * @param list<OrderItem> $items
      *
      * @throws OrderWithoutLineException
      */
@@ -73,22 +72,22 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         string $customerId,
         string $checkoutSessionId,
         PostalAddress $shippingAddress,
-        array $lines,
+        array $items,
         \DateTimeImmutable $confirmedAt,
     ): self {
-        if ([] === $lines) {
+        if ([] === $items) {
             throw OrderWithoutLineException::forId($id);
         }
 
         $orderLines = array_map(
-            static fn (array $line, int $position): Line => new Line(LineId::forOrder($id->toString(), $position), $line['product'], $line['quantity']),
-            $lines,
-            array_keys($lines),
+            static fn (OrderItem $item, int $position): OrderLine => new OrderLine(OrderLineId::forOrder($id->toString(), $position), $item),
+            $items,
+            array_keys($items),
         );
 
         $total = array_reduce(
             $orderLines,
-            static fn (Money $carry, Line $line): Money => $carry->plus($line->total()),
+            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
             Money::fromCents(0),
         );
 

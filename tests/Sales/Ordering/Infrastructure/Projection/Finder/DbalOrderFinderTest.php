@@ -11,7 +11,9 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
@@ -39,11 +41,11 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($builder['checkoutSessionId'], $result->checkoutSessionId);
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
-            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+            PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         $totalAmountInCents = array_reduce(
-            $builder['lines'],
-            static fn (Money $carry, array $line): Money => $carry->plus($line['product']->price->times($line['quantity']->value)),
+            $builder['items'],
+            static fn (Money $carry, OrderItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $result->totalAmountInCents);
