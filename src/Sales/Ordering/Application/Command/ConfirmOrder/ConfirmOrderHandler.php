@@ -11,6 +11,7 @@ use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Currency;
@@ -37,7 +38,7 @@ final readonly class ConfirmOrderHandler
             customerId: $command->customerId,
             checkoutSessionId: $command->checkoutSessionId,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
-            items: array_map(static fn (array $line): \Sales\Ordering\Domain\Order\ValueObject\OrderItem => OrderItemMapper::fromArray($line, $currency), $command->lines),
+            items: array_map(static fn (array $line): OrderItem => OrderItemMapper::fromArray($line, $currency), $command->lines),
             currency: $currency,
             confirmedAt: $this->clock->now(),
         );

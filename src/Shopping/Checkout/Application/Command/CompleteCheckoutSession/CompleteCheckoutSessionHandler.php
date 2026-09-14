@@ -12,6 +12,7 @@ use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
 use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
 
@@ -37,7 +38,7 @@ final readonly class CompleteCheckoutSessionHandler
         $checkoutSession->complete(
             cartId: $command->cartId,
             customerId: $command->customerId,
-            items: array_map(static fn (array $item): \Shopping\Checkout\Domain\ValueObject\CheckoutItem => CheckoutItemMapper::fromArray($item, $currency, $taxRate), $command->items),
+            items: array_map(static fn (array $item): CheckoutItem => CheckoutItemMapper::fromArray($item, $currency, $taxRate), $command->items),
             currency: $currency,
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),

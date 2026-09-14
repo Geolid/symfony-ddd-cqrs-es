@@ -81,8 +81,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($customer->shippingAddress);
         $taxRate = $this->taxRateResolver->resolve($customer->shippingAddress->address->countryCode);
-        $firstExcludingTax = $productBuilder['unitPrice']->times($quantity->value);
-        $secondExcludingTax = $secondProductBuilder['unitPrice']->times($secondQuantity->value);
+        $firstExcludingTax = $productBuilder['unitPrice']->times($quantity);
+        $secondExcludingTax = $secondProductBuilder['unitPrice']->times($secondQuantity);
         $expectedTotal = TaxedAmount::of($firstExcludingTax, $this->taxAmountOf($firstExcludingTax, $taxRate->basisPoints))
             ->plus(TaxedAmount::of($secondExcludingTax, $this->taxAmountOf($secondExcludingTax, $taxRate->basisPoints)));
         self::assertSame($expectedTotal->excludingTax->cents, $result->total->excludingTax->cents);
