@@ -255,7 +255,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         return array_reduce(
             $this->items,
-            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->total()),
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
             TaxedAmount::zero($this->currency),
         );
     }

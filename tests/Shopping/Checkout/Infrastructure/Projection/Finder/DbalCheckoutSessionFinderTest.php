@@ -94,7 +94,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         );
         $total = array_reduce(
             $builder['items'],
-            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->total()),
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
             TaxedAmount::zero($builder['currency']),
         );
         self::assertSame($total->excludingTax->cents, $result->totalExcludingTaxInCents);

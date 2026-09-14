@@ -44,7 +44,7 @@ final readonly class CheckoutSessionCompletedPublisher
             'productId' => $item->productId,
             'label' => $item->label->value,
             'unitPriceInCents' => $item->unitPrice->cents,
-            'taxAmountInCents' => $item->total()->taxAmount->cents,
+            'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
             'quantity' => $item->quantity->value,
         ];
     }

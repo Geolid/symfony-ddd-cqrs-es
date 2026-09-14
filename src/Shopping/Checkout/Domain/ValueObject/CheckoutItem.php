@@ -31,7 +31,7 @@ final readonly class CheckoutItem
         return new self($productId, $label, $unitPrice, $quantity, $taxRate);
     }
 
-    public function total(): TaxedAmount
+    public function taxedTotal(): TaxedAmount
     {
         $excludingTax = $this->unitPrice->times($this->quantity);
         $taxAmount = Money::fromCents(

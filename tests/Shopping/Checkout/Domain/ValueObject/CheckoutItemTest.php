@@ -90,13 +90,13 @@ final class CheckoutItemTest extends TestCase
 
     #[Test]
     #[DataProvider('provideTotals')]
-    public function itComputesTotal(int $unitPriceInCents, int $quantity, int $basisPoints, int $expectedExcludingTax, int $expectedTaxAmount, int $expectedIncludingTax): void
+    public function itComputesTaxedTotal(int $unitPriceInCents, int $quantity, int $basisPoints, int $expectedExcludingTax, int $expectedTaxAmount, int $expectedIncludingTax): void
     {
         // Given
         $item = CheckoutItem::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents($unitPriceInCents, 'EUR'), Quantity::of($quantity), TaxRate::fromBasisPoints($basisPoints));
 
         // When
-        $total = $item->total();
+        $total = $item->taxedTotal();
 
         // Then
         self::assertSame($expectedExcludingTax, $total->excludingTax->cents);
