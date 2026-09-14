@@ -25,7 +25,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
         $this->store($product);
 
         // When
-        $this->dispatch(new RepriceProduct($product->id->toString(), $newUnitPriceInCents));
+        $this->dispatch(new RepriceProduct($product->id->toString(), $newUnitPriceInCents, 'EUR'));
 
         // Then
         $result = $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
@@ -42,6 +42,7 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RepriceProduct(
             Uuid::uuid7()->toString(),
             ProductBuilder::sample('unitPrice')->cents,
+            'EUR',
         ));
     }
 }

@@ -12,8 +12,8 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 
 #[Event('sales.ordering.order.confirmed')]
 final readonly class OrderConfirmed
@@ -37,7 +37,7 @@ final readonly class OrderConfirmed
         ))]
         public PostalAddress $shippingAddress,
         public array $lines,
-        public Money $totalAmount,
+        public TaxedAmount $total,
         public \DateTimeImmutable $confirmedAt,
     ) {
     }

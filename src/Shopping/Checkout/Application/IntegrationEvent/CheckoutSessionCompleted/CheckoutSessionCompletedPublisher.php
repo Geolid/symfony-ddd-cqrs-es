@@ -11,6 +11,7 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
 #[Publisher('shopping.checkout.publish_checkout_session_completed')]
 final readonly class CheckoutSessionCompletedPublisher
@@ -26,10 +27,16 @@ final readonly class CheckoutSessionCompletedPublisher
             checkoutSessionId: $event->id,
             cartId: $event->cartId,
             customerId: $event->customerId,
-            items: array_map(CheckoutItemMapper::toArray(...), $event->items),
+            items: array_map(
+                static fn (CheckoutItem $item): array => [
+                    ...CheckoutItemMapper::toArray($item),
+                    'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
+                ],
+                $event->items,
+            ),
+            currency: $event->total->excludingTax->currency->value,
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             billingAddress: PostalAddressMapper::toArray($event->billingAddress),
-            totalAmountInCents: $event->totalAmount->cents,
             paymentId: $event->paymentId,
             completedAt: $event->completedAt,
         ));

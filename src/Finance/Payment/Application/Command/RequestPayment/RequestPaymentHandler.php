@@ -55,7 +55,7 @@ final readonly class RequestPaymentHandler
         $orderPayment = Payment::request(
             id: $id,
             checkoutSessionId: $command->checkoutSessionId,
-            amount: Money::fromCents($command->amountInCents),
+            amount: Money::fromCents($command->amountInCents, $command->currency),
             reference: PaymentReference::fromString($command->reference),
             checkoutUrl: $command->checkoutUrl,
             requestedAt: $this->clock->now(),

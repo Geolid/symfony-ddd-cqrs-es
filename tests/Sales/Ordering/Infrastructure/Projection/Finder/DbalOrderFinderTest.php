@@ -17,7 +17,7 @@ use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
@@ -48,12 +48,15 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
             PostalAddressMapper::toArray($builder['shippingAddress']),
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
-        $totalAmountInCents = array_reduce(
+        $total = array_reduce(
             $builder['items'],
-            static fn (Money $carry, OrderItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
-        self::assertSame($totalAmountInCents, $result->totalAmountInCents);
+            static fn (TaxedAmount $carry, OrderItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
+            TaxedAmount::zero($builder['currency']),
+        );
+        self::assertSame($total->excludingTax->cents, $result->totalExcludingTaxInCents);
+        self::assertSame($total->taxAmount->cents, $result->totalTaxAmountInCents);
+        self::assertSame($total->includingTax->cents, $result->totalIncludingTaxInCents);
+        self::assertSame($builder['currency']->value, $result->currency);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
         self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
         self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
@@ -112,9 +115,6 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         return $result->id;
     }
 
-    /**
-     * @return array{string, string}
-     */
     /**
      * @return array{string, string}
      */

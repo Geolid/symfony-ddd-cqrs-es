@@ -11,8 +11,9 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
@@ -51,6 +52,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         string $cartId,
         string $customerId,
         array $items,
+        Currency $currency,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
         \DateTimeImmutable $openedAt,
@@ -67,7 +69,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            totalAmount: self::sumItems($items),
+            total: self::totalOf($items, $currency),
             openedAt: $openedAt,
         ));
 
@@ -109,6 +111,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         string $cartId,
         string $customerId,
         array $items,
+        Currency $currency,
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
         string $paymentId,
@@ -125,7 +128,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             items: $items,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            totalAmount: self::sumItems($items),
+            total: self::totalOf($items, $currency),
             paymentId: $paymentId,
             completedAt: $completedAt,
         ));
@@ -139,12 +142,12 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @param list<CheckoutItem> $items
      */
-    private static function sumItems(array $items): Money
+    private static function totalOf(array $items, Currency $currency): TaxedAmount
     {
         return array_reduce(
             $items,
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
+            TaxedAmount::zero($currency),
         );
     }
 

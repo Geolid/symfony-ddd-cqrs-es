@@ -45,11 +45,11 @@ final class LockingPaymentRequesterTest extends TestCase
             ->willReturn($lock);
 
         $this->inner->expects($this->once())->method('requestFor')
-            ->with('checkout-session-id', 4_200, $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt)
+            ->with('checkout-session-id', 4_200, 'EUR', $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt)
             ->willReturn('https://checkout.globex.test/pay/GLBX-9F3K2M1P');
 
         // When
-        $checkoutUrl = $this->requester->requestFor('checkout-session-id', 4_200, $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt);
+        $checkoutUrl = $this->requester->requestFor('checkout-session-id', 4_200, 'EUR', $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt);
 
         // Then
         self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $checkoutUrl);
@@ -71,6 +71,6 @@ final class LockingPaymentRequesterTest extends TestCase
         $this->expectException(PaymentRequestInProgressException::class);
 
         // When
-        $this->requester->requestFor('checkout-session-id', 4_200, $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt);
+        $this->requester->requestFor('checkout-session-id', 4_200, 'EUR', $this->billingAddress, 'https://web.test/sales/orders', $this->expiresAt);
     }
 }

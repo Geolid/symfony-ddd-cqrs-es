@@ -24,8 +24,9 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\TaxedAmount;
 
 final class OrderTest extends AggregateRootTestCase
 {
@@ -37,6 +38,8 @@ final class OrderTest extends AggregateRootTestCase
 
     /** @var list<OrderItem> */
     private readonly array $items;
+
+    private Currency $currency;
 
     private \DateTimeImmutable $confirmedAt;
     private \DateTimeImmutable $preparedAt;
@@ -56,6 +59,7 @@ final class OrderTest extends AggregateRootTestCase
         $this->checkoutSessionId = OrderBuilder::sample('checkoutSessionId');
         $this->shippingAddress = OrderBuilder::sample('shippingAddress');
         $this->items = OrderBuilder::sample('items');
+        $this->currency = OrderBuilder::sample('currency');
         $this->confirmedAt = OrderBuilder::sample('confirmedAt');
         $this->preparedAt = OrderBuilder::sample('preparedAt');
         $this->cancelledAt = OrderBuilder::sample('cancelledAt');
@@ -70,7 +74,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, $this->items, $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, $this->items, $this->currency, $this->confirmedAt))
             ->then(new OrderConfirmed(
                 $this->id,
                 $this->cartId,
@@ -78,7 +82,7 @@ final class OrderTest extends AggregateRootTestCase
                 $this->checkoutSessionId,
                 $this->shippingAddress,
                 $this->orderLines(),
-                $this->totalAmount(),
+                $this->total(),
                 $this->confirmedAt,
             ));
     }
@@ -88,7 +92,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, [], $this->confirmedAt))
+            ->when(fn (): Order => Order::confirm($this->id, $this->cartId, $this->customerId, $this->checkoutSessionId, $this->shippingAddress, [], $this->currency, $this->confirmedAt))
             ->expectsException(OrderWithoutLineException::class);
     }
 
@@ -306,7 +310,7 @@ final class OrderTest extends AggregateRootTestCase
             $this->checkoutSessionId,
             $this->shippingAddress,
             $this->orderLines(),
-            $this->totalAmount(),
+            $this->total(),
             $this->confirmedAt,
         );
     }
@@ -343,12 +347,12 @@ final class OrderTest extends AggregateRootTestCase
         );
     }
 
-    private function totalAmount(): Money
+    private function total(): TaxedAmount
     {
         return array_reduce(
             $this->orderLines(),
-            static fn (Money $carry, OrderLine $line): Money => $carry->plus($line->total()),
-            Money::fromCents(0),
+            static fn (TaxedAmount $carry, OrderLine $line): TaxedAmount => $carry->plus($line->taxedTotal()),
+            TaxedAmount::zero($this->currency),
         );
     }
 }

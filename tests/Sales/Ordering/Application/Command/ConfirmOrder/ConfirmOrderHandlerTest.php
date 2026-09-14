@@ -15,7 +15,7 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
@@ -38,6 +38,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
         $quantity = SeededFaker::get()->numberBetween(1, 5);
+        $taxAmountInCents = SeededFaker::get()->numberBetween(50, 500);
         $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
 
         // When
@@ -50,8 +51,10 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
                 'productId' => Uuid::uuid7()->toString(),
                 'label' => SeededFaker::get()->sentence(3),
                 'unitPriceInCents' => $unitPriceInCents,
+                'taxAmountInCents' => $taxAmountInCents,
                 'quantity' => $quantity,
             ]],
+            currency: 'EUR',
             shippingAddress: $shippingAddress,
         ));
 
@@ -63,7 +66,10 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             $shippingAddress,
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
-        self::assertSame(Money::fromCents($unitPriceInCents * $quantity)->cents, $result->totalAmountInCents);
+        self::assertSame(Money::fromCents($unitPriceInCents * $quantity, 'EUR')->cents, $result->totalExcludingTaxInCents);
+        self::assertSame($taxAmountInCents, $result->totalTaxAmountInCents);
+        self::assertSame($unitPriceInCents * $quantity + $taxAmountInCents, $result->totalIncludingTaxInCents);
+        self::assertSame('EUR', $result->currency);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
@@ -80,6 +86,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             customerId: Uuid::uuid7()->toString(),
             checkoutSessionId: Uuid::uuid7()->toString(),
             lines: [],
+            currency: 'EUR',
             shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
         ));
     }

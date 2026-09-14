@@ -32,6 +32,7 @@ final readonly class ConfirmOrderOnCheckoutSessionCompleted
             customerId: $event->customerId,
             checkoutSessionId: $event->checkoutSessionId,
             lines: $event->items,
+            currency: $event->currency,
             shippingAddress: $event->shippingAddress,
         ));
     }

@@ -17,7 +17,7 @@ final class MoneyTest extends TestCase
     public function itCreates(int $cents): void
     {
         // When
-        $money = Money::fromCents($cents);
+        $money = Money::fromCents($cents, 'EUR');
 
         // Then
         self::assertSame($cents, $money->cents);
@@ -40,7 +40,7 @@ final class MoneyTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        Money::fromCents($value);
+        Money::fromCents($value, 'EUR');
     }
 
     /**
@@ -53,11 +53,21 @@ final class MoneyTest extends TestCase
     }
 
     #[Test]
+    public function itProtectsInvariantsWhenCurrencyIsInvalid(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Money::fromCents(1_500, 'XXX');
+    }
+
+    #[Test]
     public function itEquals(): void
     {
         // Given
-        $a = Money::fromCents(1_500);
-        $b = Money::fromCents(1_500);
+        $a = Money::fromCents(1_500, 'EUR');
+        $b = Money::fromCents(1_500, 'EUR');
 
         // When
         $equals = $a->equals($b);
@@ -70,31 +80,45 @@ final class MoneyTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = Money::fromCents(1_500);
-        $b = Money::fromCents(1_499);
+        $a = Money::fromCents(1_500, 'EUR');
+
+        $differentAmount = Money::fromCents(1_499, 'EUR');
+        $differentCurrency = Money::fromCents(1_500, 'GBP');
 
         // When
-        $equals = $a->equals($b);
+        $differsOnAmount = $a->equals($differentAmount);
+        $differsOnCurrency = $a->equals($differentCurrency);
 
         // Then
-        self::assertFalse($equals);
+        self::assertFalse($differsOnAmount);
+        self::assertFalse($differsOnCurrency);
     }
 
     #[Test]
     public function itAdds(): void
     {
         // When
-        $sum = Money::fromCents(1_750)->plus(Money::fromCents(249));
+        $sum = Money::fromCents(1_750, 'EUR')->plus(Money::fromCents(249, 'EUR'));
 
         // Then
         self::assertSame(1_999, $sum->cents);
     }
 
     #[Test]
+    public function itProtectsInvariantsWhenAddingDifferentCurrencies(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        Money::fromCents(1_750, 'EUR')->plus(Money::fromCents(249, 'GBP'));
+    }
+
+    #[Test]
     public function itMultipliesByQuantity(): void
     {
         // When
-        $product = Money::fromCents(83)->times(Quantity::of(3));
+        $product = Money::fromCents(83, 'EUR')->times(Quantity::of(3));
 
         // Then
         self::assertSame(249, $product->cents);

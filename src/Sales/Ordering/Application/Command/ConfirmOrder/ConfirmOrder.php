@@ -9,7 +9,7 @@ use Shared\Application\Command\CommandInterface;
 final readonly class ConfirmOrder implements CommandInterface
 {
     /**
-     * @param list<array{productId: string, label: string, unitPriceInCents: int, quantity: int}>                                 $lines
+     * @param list<array{productId: string, label: string, unitPriceInCents: int, taxAmountInCents: int, quantity: int}>          $lines
      * @param array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}} $shippingAddress
      */
     public function __construct(
@@ -18,6 +18,7 @@ final readonly class ConfirmOrder implements CommandInterface
         public string $customerId,
         public string $checkoutSessionId,
         public array $lines,
+        public string $currency,
         public array $shippingAddress,
     ) {
     }

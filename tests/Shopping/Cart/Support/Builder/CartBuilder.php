@@ -9,7 +9,7 @@ use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Cart;
 use Shopping\Cart\Domain\ValueObject\CartId;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 

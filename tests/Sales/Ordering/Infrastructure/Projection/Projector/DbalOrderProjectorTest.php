@@ -13,12 +13,12 @@ use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, checkout_session_id: string, shipping_address: string, total_amount_in_cents: int|string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
+ * @phpstan-type Row array{customer_id: string, checkout_session_id: string, shipping_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -42,12 +42,15 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
             json_decode($row['shipping_address'], true),
         );
-        $totalAmountInCents = array_reduce(
+        $total = array_reduce(
             $builder['items'],
-            static fn (Money $carry, OrderItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
-        self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);
+            static fn (TaxedAmount $carry, OrderItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
+            TaxedAmount::zero($builder['currency']),
+        );
+        self::assertSame($total->excludingTax->cents, (int) $row['total_excluding_tax_in_cents']);
+        self::assertSame($total->taxAmount->cents, (int) $row['total_tax_amount_in_cents']);
+        self::assertSame($total->includingTax->cents, (int) $row['total_including_tax_in_cents']);
+        self::assertSame($builder['currency']->value, $row['currency']);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);
@@ -221,7 +224,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, checkout_session_id, shipping_address, total_amount_in_cents, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
+                'SELECT customer_id, checkout_session_id, shipping_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

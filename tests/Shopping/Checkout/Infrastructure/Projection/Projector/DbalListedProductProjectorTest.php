@@ -44,7 +44,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         $this->store($other, $product);
 
         // When
-        $product->reprice(Money::fromCents(10_000), Clock::get()->now());
+        $product->reprice(Money::fromCents(10_000, 'EUR'), Clock::get()->now());
         $this->store($product);
 
         // Then

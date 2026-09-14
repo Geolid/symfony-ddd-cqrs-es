@@ -6,7 +6,6 @@ namespace Shopping\Tests\Checkout\Application\IntegrationEvent\CheckoutSessionCo
 
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
@@ -30,15 +29,19 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
         self::assertSame($builder['cartId'], $event->cartId);
         self::assertSame($builder['customerId'], $event->customerId);
-        self::assertSame(array_map(CheckoutItemMapper::toArray(...), $builder['items']), $event->items);
+        self::assertSame(
+            array_map(
+                static fn (CheckoutItem $item): array => [
+                    ...CheckoutItemMapper::toArray($item),
+                    'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
+                ],
+                $builder['items'],
+            ),
+            $event->items,
+        );
+        self::assertSame($builder['currency']->value, $event->currency);
         self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);
-        $totalAmountInCents = array_reduce(
-            $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
-        self::assertSame($totalAmountInCents, $event->totalAmountInCents);
         self::assertSame($builder['paymentId'], $event->paymentId);
         self::assertSame(
             $builder['completedAt']->format(\DateTimeInterface::ATOM),

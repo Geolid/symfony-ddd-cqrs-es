@@ -42,6 +42,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
             id: $payment->id->toString(),
             checkoutSessionId: $paymentFactory['checkoutSessionId'],
             amountInCents: $paymentFactory['amount']->cents,
+            currency: $paymentFactory['amount']->currency->value,
             reference: $paymentFactory['reference']->value,
             checkoutUrl: $paymentFactory['checkoutUrl'],
         ));
@@ -68,6 +69,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
             id: Uuid::uuid7()->toString(),
             checkoutSessionId: $checkoutSessionId,
             amountInCents: 4_200,
+            currency: 'EUR',
             reference: $reference,
             checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));
@@ -89,6 +91,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
             id: Uuid::uuid7()->toString(),
             checkoutSessionId: $checkoutSessionId,
             amountInCents: 4_200,
+            currency: 'EUR',
             reference: $reference,
             checkoutUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));

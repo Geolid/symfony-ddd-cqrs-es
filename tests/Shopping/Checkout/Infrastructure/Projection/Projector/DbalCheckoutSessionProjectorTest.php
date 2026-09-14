@@ -7,7 +7,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
@@ -17,7 +17,7 @@ use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{cart_id: string, customer_id: string, items: string, shipping_address: string, billing_address: string, total_amount_in_cents: int|string, status: string}
+ * @phpstan-type Row array{cart_id: string, customer_id: string, items: string, shipping_address: string, billing_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, tax_rate_basis_points: int|string, status: string}
  */
 final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 {
@@ -52,12 +52,16 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
             json_decode($row['billing_address'], true),
         );
-        $totalAmountInCents = array_reduce(
+        $total = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
-            Money::fromCents(0),
-        )->cents;
-        self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);
+            static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
+            TaxedAmount::zero($builder['currency']),
+        );
+        self::assertSame($total->excludingTax->cents, (int) $row['total_excluding_tax_in_cents']);
+        self::assertSame($total->taxAmount->cents, (int) $row['total_tax_amount_in_cents']);
+        self::assertSame($total->includingTax->cents, (int) $row['total_including_tax_in_cents']);
+        self::assertSame($builder['currency']->value, $row['currency']);
+        self::assertSame($builder['taxRate']->basisPoints, (int) $row['tax_rate_basis_points']);
         self::assertSame(CheckoutSessionStatus::OPEN->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -136,7 +140,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT cart_id, customer_id, items, shipping_address, billing_address, total_amount_in_cents, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
+            \sprintf('SELECT cart_id, customer_id, items, shipping_address, billing_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, tax_rate_basis_points, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
             ['id' => $id],
         );
     }

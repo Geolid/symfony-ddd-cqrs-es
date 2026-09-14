@@ -33,6 +33,8 @@ final class CompleteCheckoutSessionOnPaymentAuthorizedTest extends AbstractInteg
             cartId: $builder['cartId'],
             customerId: $builder['customerId'],
             items: array_map(CheckoutItemMapper::toArray(...), $builder['items']),
+            currency: $builder['currency']->value,
+            taxRateBasisPoints: $builder['taxRate']->basisPoints,
             shippingAddress: PostalAddressMapper::toArray($builder['shippingAddress']),
             billingAddress: PostalAddressMapper::toArray($builder['billingAddress']),
             paymentId: $paymentId,

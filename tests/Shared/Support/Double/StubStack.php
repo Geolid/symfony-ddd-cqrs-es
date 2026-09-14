@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\Double;
+namespace Shared\Tests\Support\Double;
 
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;

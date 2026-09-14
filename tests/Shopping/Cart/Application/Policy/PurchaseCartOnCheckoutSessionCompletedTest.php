@@ -34,9 +34,9 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
             cartId: $cartId,
             customerId: Uuid::uuid7()->toString(),
             items: [],
+            currency: 'EUR',
             shippingAddress: $address,
             billingAddress: $address,
-            totalAmountInCents: 1_000,
             paymentId: Uuid::uuid7()->toString(),
             completedAt: Clock::get()->now(),
         ));

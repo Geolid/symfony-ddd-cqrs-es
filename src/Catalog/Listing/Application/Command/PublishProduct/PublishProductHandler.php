@@ -45,7 +45,7 @@ final readonly class PublishProductHandler
         $product = Product::list(
             id: ProductId::fromString($command->id),
             label: $label,
-            unitPrice: Money::fromCents($command->unitPriceInCents),
+            unitPrice: Money::fromCents($command->unitPriceInCents, $command->currency),
             listedAt: $this->clock->now(),
         );
 

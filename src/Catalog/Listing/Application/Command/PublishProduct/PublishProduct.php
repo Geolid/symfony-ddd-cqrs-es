@@ -12,6 +12,7 @@ final readonly class PublishProduct implements CommandInterface
         public string $id,
         public string $label,
         public int $unitPriceInCents,
+        public string $currency,
     ) {
     }
 }

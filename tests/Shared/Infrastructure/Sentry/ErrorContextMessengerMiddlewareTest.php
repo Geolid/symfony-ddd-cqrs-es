@@ -12,9 +12,9 @@ use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
-use Support\Double\DummyMessage;
-use Support\Double\StubNextMiddleware;
-use Support\Double\StubStack;
+use Shared\Tests\Support\Double\DummyMessage;
+use Shared\Tests\Support\Double\StubNextMiddleware;
+use Shared\Tests\Support\Double\StubStack;
 use Symfony\Component\Messenger\Envelope;
 
 final class ErrorContextMessengerMiddlewareTest extends TestCase

@@ -18,6 +18,8 @@ final readonly class CompleteCheckoutSession implements CommandInterface
         public string $cartId,
         public string $customerId,
         public array $items,
+        public string $currency,
+        public int $taxRateBasisPoints,
         public array $shippingAddress,
         public array $billingAddress,
         public string $paymentId,
