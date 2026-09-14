@@ -29,7 +29,16 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
         self::assertSame($builder['cartId'], $event->cartId);
         self::assertSame($builder['customerId'], $event->customerId);
-        self::assertSame(array_map($this->toArray(...), $builder['items']), $event->items);
+        self::assertSame(
+            array_map(
+                static fn (CheckoutItem $item): array => [
+                    ...CheckoutItemMapper::toArray($item),
+                    'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
+                ],
+                $builder['items'],
+            ),
+            $event->items,
+        );
         self::assertSame($builder['currency']->value, $event->currency);
         self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);
@@ -38,16 +47,5 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
             $builder['completedAt']->format(\DateTimeInterface::ATOM),
             $event->completedAt->format(\DateTimeInterface::ATOM),
         );
-    }
-
-    /**
-     * @return array{productId: string, label: string, unitPriceInCents: int, quantity: int, taxAmountInCents: int}
-     */
-    private function toArray(CheckoutItem $item): array
-    {
-        return [
-            ...CheckoutItemMapper::toArray($item),
-            'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
-        ];
     }
 }
