@@ -117,7 +117,6 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seedTie(): array
     {
-        // OrderId is derived from checkoutSessionId, so the tied pair is picked by sorting on the derived id.
         $checkoutSessionIdByOrderId = [];
         foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
             $checkoutSessionIdByOrderId[OrderId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
@@ -131,5 +130,25 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         $this->store($second, $first);
 
         return [$firstId, $secondId];
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $checkoutSessionIdByOrderId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByOrderId[OrderId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByOrderId);
+        [$smallerId, $largerId] = array_keys($checkoutSessionIdByOrderId);
+
+        $now = Clock::get()->now();
+        $first = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$largerId])->withConfirmedAt($now)->create();
+        $second = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$smallerId])->withConfirmedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

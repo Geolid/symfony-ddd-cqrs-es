@@ -126,4 +126,20 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
 
         return [$firstId, $secondId];
     }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = ProductBuilder::new()->withId($largerId)->withListedAt($now)->create();
+        $second = ProductBuilder::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
+    }
 }

@@ -206,7 +206,6 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seedTie(): array
     {
-        // PaymentId is derived from checkoutSessionId, so the tied pair is picked by sorting on the derived id.
         $checkoutSessionIdByPaymentId = [];
         foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
             $checkoutSessionIdByPaymentId[PaymentId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
@@ -220,5 +219,25 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $this->store($second, $first);
 
         return [$firstId, $secondId];
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $checkoutSessionIdByPaymentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByPaymentId[PaymentId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByPaymentId);
+        [$smallerId, $largerId] = array_keys($checkoutSessionIdByPaymentId);
+
+        $now = Clock::get()->now();
+        $first = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$largerId])->withRequestedAt($now)->create();
+        $second = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$smallerId])->withRequestedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

@@ -120,4 +120,21 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
 
         return [$firstId, $secondId];
     }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $hasher = new FakeApiKeyHasher();
+        $first = ApiKeyCredentialBuilder::new()->withId($largerId)->withHasher($hasher)->withIssuedAt($now)->create();
+        $second = ApiKeyCredentialBuilder::new()->withId($smallerId)->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
+    }
 }

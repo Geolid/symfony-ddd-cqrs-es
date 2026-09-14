@@ -104,4 +104,20 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
 
         return [$firstId, $secondId];
     }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = CartBuilder::new()->withId($largerId)->withStartedAt($now)->create();
+        $second = CartBuilder::new()->withId($smallerId)->withStartedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
+    }
 }

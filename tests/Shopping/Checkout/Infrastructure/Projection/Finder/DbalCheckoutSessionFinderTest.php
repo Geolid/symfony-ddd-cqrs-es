@@ -175,4 +175,20 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 
         return [$firstId, $secondId];
     }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = CheckoutSessionBuilder::new()->withId($largerId)->withOpenedAt($now)->create();
+        $second = CheckoutSessionBuilder::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
+    }
 }

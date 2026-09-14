@@ -196,7 +196,6 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seedTie(): array
     {
-        // ShipmentId is derived from orderId, so the tied pair is picked by sorting on the derived id.
         $orderIdByShipmentId = [];
         foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $orderId) {
             $orderIdByShipmentId[ShipmentId::forOrder($orderId)->toString()] = $orderId;
@@ -210,5 +209,25 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         $this->store($second, $first);
 
         return [$firstId, $secondId];
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $orderIdByShipmentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $orderId) {
+            $orderIdByShipmentId[ShipmentId::forOrder($orderId)->toString()] = $orderId;
+        }
+        ksort($orderIdByShipmentId);
+        [$smallerId, $largerId] = array_keys($orderIdByShipmentId);
+
+        $now = Clock::get()->now();
+        $first = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$largerId])->withCreatedAt($now)->create();
+        $second = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$smallerId])->withCreatedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

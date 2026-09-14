@@ -130,4 +130,20 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         return [$firstId, $secondId];
     }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = IdentityBuilder::new()->withId($largerId)->withRegisteredAt($now)->create();
+        $second = IdentityBuilder::new()->withId($smallerId)->withRegisteredAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
+    }
 }
