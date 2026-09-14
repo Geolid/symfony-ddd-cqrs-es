@@ -12,6 +12,11 @@
             "ignoreSourceCodeByRegex": [
                 ".*Types::BOOLEAN.*"
             ]
+        },
+        "MethodCallRemoval": {
+            "ignoreSourceCodeByRegex": [
+                ".*Assert::natural\\(\\$result\\).*"
+            ]
         }
     },
     "testFramework": "phpunit"

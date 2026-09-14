@@ -24,8 +24,8 @@ final readonly class DbalPaginator implements PaginatorInterface
         private \Closure $query,
         private \Closure $hydrate,
         private \Closure $countTotal,
-        private int $page = 1,
-        private int $itemsPerPage = 20,
+        private int $page,
+        private int $itemsPerPage,
     ) {
         Assert::positiveInteger($page);
         Assert::positiveInteger($itemsPerPage);
