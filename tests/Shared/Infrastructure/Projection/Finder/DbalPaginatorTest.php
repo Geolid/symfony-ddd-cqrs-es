@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\Projection\Finder;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Result;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -86,62 +84,17 @@ final class DbalPaginatorTest extends TestCase
         yield 'no items' => [0, 5, 1, 0];
     }
 
-    #[Test]
-    public function itMemoizesTotalItems(): void
-    {
-        // Given
-        $result = $this->createMock(Result::class);
-        $result->expects(self::once())->method('fetchOne')->willReturn(5);
-
-        $connection = $this->createMock(Connection::class);
-        $connection->method('createQueryBuilder')->willReturn($this->queryBuilder());
-        $connection->expects(self::once())->method('executeQuery')->willReturn($result);
-
-        $paginator = new DbalPaginator(
-            $connection,
-            static fn (): QueryBuilder => $connection->createQueryBuilder(),
-            static fn (): object => new \stdClass(),
-        );
-
-        // When
-        $firstCount = $paginator->totalItems();
-        $secondCount = $paginator->totalItems();
-
-        // Then
-        self::assertSame(5, $firstCount);
-        self::assertSame(5, $secondCount);
-    }
-
     /**
      * @return DbalPaginator<\stdClass>
      */
     private function paginator(int $totalItems, int $page = 1, int $itemsPerPage = 20): DbalPaginator
     {
-        $result = $this->createStub(Result::class);
-        $result->method('fetchOne')->willReturn($totalItems);
-
-        $connection = $this->createStub(Connection::class);
-        $connection->method('executeQuery')->willReturn($result);
-
         return new DbalPaginator(
-            $connection,
-            fn (): QueryBuilder => $this->queryBuilder(),
+            static fn (): QueryBuilder => throw new \LogicException('Not exercised by this test.'),
             static fn (): object => new \stdClass(),
+            static fn (): int => $totalItems,
             $page,
             $itemsPerPage,
         );
-    }
-
-    private function queryBuilder(): QueryBuilder
-    {
-        $qb = $this->createStub(QueryBuilder::class);
-        $qb->method('getSQL')->willReturn('SELECT 1');
-        $qb->method('getParameters')->willReturn([]);
-        $qb->method('getParameterTypes')->willReturn([]);
-        $qb->method('resetOrderBy')->willReturnSelf();
-        $qb->method('setFirstResult')->willReturnSelf();
-        $qb->method('setMaxResults')->willReturnSelf();
-
-        return $qb;
     }
 }

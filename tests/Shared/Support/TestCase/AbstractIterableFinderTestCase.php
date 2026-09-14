@@ -55,6 +55,22 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     }
 
     #[Test]
+    public function itCachesCount(): void
+    {
+        // Given
+        $finder = $this->finder();
+        $this->seed(3);
+
+        // When
+        $firstCount = \count($finder);
+        $this->seed(1);
+        $secondCount = \count($finder);
+
+        // Then
+        self::assertSame($firstCount, $secondCount);
+    }
+
+    #[Test]
     public function itIndexes(): void
     {
         // Given
