@@ -8,6 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
@@ -26,26 +27,18 @@ final readonly class CheckoutSessionCompletedPublisher
             checkoutSessionId: $event->id,
             cartId: $event->cartId,
             customerId: $event->customerId,
-            items: array_map($this->toArray(...), $event->items),
+            items: array_map(
+                static fn (CheckoutItem $item): array => [
+                    ...CheckoutItemMapper::toArray($item),
+                    'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
+                ],
+                $event->items,
+            ),
             currency: $event->total->excludingTax->currency->value,
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             billingAddress: PostalAddressMapper::toArray($event->billingAddress),
             paymentId: $event->paymentId,
             completedAt: $event->completedAt,
         ));
-    }
-
-    /**
-     * @return array{productId: string, label: string, unitPriceInCents: int, taxAmountInCents: int, quantity: int}
-     */
-    private function toArray(CheckoutItem $item): array
-    {
-        return [
-            'productId' => $item->productId,
-            'label' => $item->label->value,
-            'unitPriceInCents' => $item->unitPrice->cents,
-            'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
-            'quantity' => $item->quantity->value,
-        ];
     }
 }

@@ -7,6 +7,7 @@ namespace Shopping\Tests\Checkout\Application\IntegrationEvent\CheckoutSessionCo
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -40,16 +41,13 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
     }
 
     /**
-     * @return array{productId: string, label: string, unitPriceInCents: int, taxAmountInCents: int, quantity: int}
+     * @return array{productId: string, label: string, unitPriceInCents: int, quantity: int, taxAmountInCents: int}
      */
     private function toArray(CheckoutItem $item): array
     {
         return [
-            'productId' => $item->productId,
-            'label' => $item->label->value,
-            'unitPriceInCents' => $item->unitPrice->cents,
+            ...CheckoutItemMapper::toArray($item),
             'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
-            'quantity' => $item->quantity->value,
         ];
     }
 }
