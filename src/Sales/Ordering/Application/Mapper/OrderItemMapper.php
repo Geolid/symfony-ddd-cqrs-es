@@ -6,9 +6,9 @@ namespace Sales\Ordering\Application\Mapper;
 
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
-use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 
 final readonly class OrderItemMapper
 {

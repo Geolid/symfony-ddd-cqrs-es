@@ -6,10 +6,10 @@ namespace Shopping\Tests\Cart\Application\Command\ChangeCartProductQuantity;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Application\Command\ChangeCartProductQuantity\ChangeCartProductQuantity;
 use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 

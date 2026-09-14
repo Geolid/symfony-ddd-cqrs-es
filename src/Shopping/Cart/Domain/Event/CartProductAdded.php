@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shopping\Cart\Domain\Event;
 
 use Patchlevel\EventSourcing\Attribute\Event;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\ValueObject\CartId;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 
 #[Event('shopping.cart.cart.product_added')]
 final readonly class CartProductAdded

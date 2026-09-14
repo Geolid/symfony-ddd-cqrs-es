@@ -54,7 +54,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         );
         $totalAmountInCents = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Domain\ValueObject;
+namespace Shared\Domain\ValueObject;
 
 use Webmozart\Assert\Assert;
 
@@ -16,6 +16,11 @@ final readonly class Quantity
     public static function of(int $value): self
     {
         return new self($value);
+    }
+
+    public function plus(self $other): self
+    {
+        return new self($this->value + $other->value);
     }
 
     public function equals(self $other): bool

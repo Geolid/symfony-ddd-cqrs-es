@@ -35,7 +35,7 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);
         $totalAmountInCents = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $event->totalAmountInCents);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Ordering\Domain\Order\ValueObject;
 
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 
 final readonly class OrderItem
 {
@@ -21,7 +22,7 @@ final readonly class OrderItem
 
     public function total(): Money
     {
-        return $this->product->price->times($this->quantity->value);
+        return $this->product->price->times($this->quantity);
     }
 
     public function equals(self $other): bool

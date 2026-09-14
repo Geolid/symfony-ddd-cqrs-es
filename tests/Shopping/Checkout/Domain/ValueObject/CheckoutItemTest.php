@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 final class CheckoutItemTest extends TestCase
 {
@@ -82,15 +82,15 @@ final class CheckoutItemTest extends TestCase
     }
 
     #[Test]
-    public function itComputesSubtotal(): void
+    public function itComputesTotal(): void
     {
         // Given
         $item = CheckoutItem::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83), Quantity::of(3));
 
         // When
-        $subtotal = $item->subtotal();
+        $total = $item->total();
 
         // Then
-        self::assertSame(249, $subtotal->cents);
+        self::assertSame(249, $total->cents);
     }
 }

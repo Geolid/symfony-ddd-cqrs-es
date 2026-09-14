@@ -91,7 +91,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         );
         $totalAmountInCents = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $result->totalAmountInCents);

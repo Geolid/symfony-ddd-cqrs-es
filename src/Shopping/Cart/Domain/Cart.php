@@ -11,6 +11,7 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Event\CartProductAdded;
 use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
 use Shopping\Cart\Domain\Event\CartProductRemoved;
@@ -20,7 +21,6 @@ use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
 use Shopping\Cart\Domain\ValueObject\CartState;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 
 #[Aggregate('shopping.cart.cart')]
 final class Cart implements AggregateRoot, AggregateRootMetadataAware

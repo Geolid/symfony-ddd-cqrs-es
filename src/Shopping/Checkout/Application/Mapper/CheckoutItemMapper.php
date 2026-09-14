@@ -6,8 +6,8 @@ namespace Shopping\Checkout\Application\Mapper;
 
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 final readonly class CheckoutItemMapper
 {

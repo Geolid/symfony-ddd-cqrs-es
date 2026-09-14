@@ -11,7 +11,7 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shopping\Cart\Domain\ValueObject\Quantity;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;

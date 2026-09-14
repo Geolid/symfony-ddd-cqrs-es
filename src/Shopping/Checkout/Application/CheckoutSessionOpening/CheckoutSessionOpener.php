@@ -11,6 +11,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
@@ -26,7 +27,6 @@ use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInterface
 {
@@ -69,7 +69,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         $items = $this->assembleItems($cartItems);
         $totalAmountInCents = array_reduce(
             $items,
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         $shippingAddress = PostalAddressMapper::fromArray([

@@ -32,8 +32,8 @@ final readonly class Money
         return new self($this->cents + $other->cents);
     }
 
-    public function times(int $multiplier): self
+    public function times(Quantity $quantity): self
     {
-        return new self($this->cents * $multiplier);
+        return new self($this->cents * $quantity->value);
     }
 }
