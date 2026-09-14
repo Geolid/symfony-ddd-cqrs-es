@@ -16,6 +16,7 @@ use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ProductNotListedException;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
@@ -163,6 +164,21 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(CustomerAddressesNotCompletedException::class);
+
+        // When
+        $this->service->openFor($cart->id->toString());
+    }
+
+    #[Test]
+    public function itFailsWhenProductNotListed(): void
+    {
+        // Given
+        $customer = CustomerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $this->store($cart, $customer);
+
+        // Then
+        $this->expectException(ProductNotListedException::class);
 
         // When
         $this->service->openFor($cart->id->toString());
