@@ -18,6 +18,6 @@ abstract class AbstractPaginatableDbalFinder extends AbstractIterableDbalFinder
      */
     public function paginate(int $page, int $itemsPerPage): PaginatorInterface
     {
-        return new DbalPaginator($this->connection, $this->query(...), $this->hydrate(...), $page, $itemsPerPage);
+        return new DbalPaginator($this->query(...), $this->hydrate(...), $this->count(...), $page, $itemsPerPage);
     }
 }

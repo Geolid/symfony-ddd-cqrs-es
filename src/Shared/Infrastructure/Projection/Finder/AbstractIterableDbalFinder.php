@@ -17,10 +17,11 @@ use Webmozart\Assert\Assert;
  */
 abstract class AbstractIterableDbalFinder extends AbstractDbalFinder implements \IteratorAggregate, \Countable
 {
-    use DbalCountTrait;
-
     /** @var array<string, SortDirection> */
     private array $sorts = [];
+
+    /** @var int<0, max>|null */
+    private ?int $cachedTotal = null;
 
     protected function __clone(): void
     {
@@ -41,7 +42,24 @@ abstract class AbstractIterableDbalFinder extends AbstractDbalFinder implements 
 
     public function count(): int
     {
-        return $this->countTotalItems($this->connection, $this->query(...));
+        if (null !== $this->cachedTotal) {
+            return $this->cachedTotal;
+        }
+
+        $qb = $this->query()
+            ->resetOrderBy()
+            ->setFirstResult(0)
+            ->setMaxResults(null);
+
+        $result = $this->connection->executeQuery(
+            \sprintf('SELECT COUNT(*) FROM (%s) AS total', $qb->getSQL()),
+            $qb->getParameters(),
+            $qb->getParameterTypes(),
+        )->fetchOne();
+
+        Assert::natural($result);
+
+        return $this->cachedTotal = $result;
     }
 
     /**
