@@ -18,6 +18,7 @@ use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\PostalAddressResultMapper;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -82,11 +83,11 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         );
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
-            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+            PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         self::assertSame(
             PostalAddressMapper::toArray($builder['billingAddress']),
-            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+            PostalAddressResultMapper::toArray($result->billingAddress),
         );
         $totalAmountInCents = array_reduce(
             $builder['items'],
