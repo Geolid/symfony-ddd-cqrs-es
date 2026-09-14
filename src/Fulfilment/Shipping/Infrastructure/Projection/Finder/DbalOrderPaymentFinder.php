@@ -8,7 +8,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentResult;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
-use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -29,11 +28,6 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
     {
         $qb->select('order_id', 'paid')
             ->from(DbalOrderPaymentProjector::TABLE);
-    }
-
-    protected function defaultSort(): array
-    {
-        return ['order_id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

@@ -13,12 +13,12 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<ShipmentResult>
+ * @extends AbstractIterableDbalFinder<ShipmentResult>
  */
-final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFinderInterface
+final class DbalShipmentFinder extends AbstractIterableDbalFinder implements ShipmentFinderInterface
 {
     public function ofId(string $id): ShipmentResult
     {

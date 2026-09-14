@@ -6,15 +6,15 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Checkout\Application\Finder\CheckoutSessionItem\CheckoutSessionItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSessionItem\CheckoutSessionItemResult;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionItemProjector;
 
 /**
- * @extends AbstractDbalFinder<CheckoutSessionItemResult>
+ * @extends AbstractIterableDbalFinder<CheckoutSessionItemResult>
  */
-final class DbalCheckoutSessionItemFinder extends AbstractDbalFinder implements CheckoutSessionItemFinderInterface
+final class DbalCheckoutSessionItemFinder extends AbstractIterableDbalFinder implements CheckoutSessionItemFinderInterface
 {
     public function byCheckoutSession(string $checkoutSessionId): static
     {

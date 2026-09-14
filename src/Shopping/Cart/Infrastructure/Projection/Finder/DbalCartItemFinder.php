@@ -6,15 +6,15 @@ namespace Shopping\Cart\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Cart\Application\Finder\CartItem\CartItemResult;
 use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartItemProjector;
 
 /**
- * @extends AbstractDbalFinder<CartItemResult>
+ * @extends AbstractIterableDbalFinder<CartItemResult>
  */
-final class DbalCartItemFinder extends AbstractDbalFinder implements CartItemFinderInterface
+final class DbalCartItemFinder extends AbstractIterableDbalFinder implements CartItemFinderInterface
 {
     public function byCart(string $cartId): static
     {

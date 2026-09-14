@@ -6,7 +6,7 @@ namespace Shopping\Cart\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Cart\Application\CartStatus;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
@@ -15,9 +15,9 @@ use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartItemProjector;
 use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartProjector;
 
 /**
- * @extends AbstractDbalFinder<CartResult>
+ * @extends AbstractIterableDbalFinder<CartResult>
  */
-final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInterface
+final class DbalCartFinder extends AbstractIterableDbalFinder implements CartFinderInterface
 {
     public function ofId(string $id): CartResult
     {

@@ -8,7 +8,6 @@ use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Application\Finder\Customer\CustomerResult;
 use Crm\Customer\Infrastructure\Projection\Projector\DbalCustomerProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -29,11 +28,6 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
     {
         $qb->select('id', 'first_name', 'last_name', 'email', 'registered_at', 'shipping_address', 'billing_address', 'erasure_status')
             ->from(DbalCustomerProjector::TABLE);
-    }
-
-    protected function defaultSort(): array
-    {
-        return ['registered_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

@@ -10,12 +10,12 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<OrderResult>
+ * @extends AbstractIterableDbalFinder<OrderResult>
  */
-final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
+final class DbalOrderFinder extends AbstractIterableDbalFinder implements OrderFinderInterface
 {
     public function ofId(string $id): OrderResult
     {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\CartResult;
@@ -30,11 +29,6 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
     {
         $qb->select('id', 'customer_id', 'started_at')
             ->from(DbalCartProjector::TABLE);
-    }
-
-    protected function defaultSort(): array
-    {
-        return ['started_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

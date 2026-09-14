@@ -15,17 +15,13 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
-use Shared\Tests\Support\PaginationTrait;
-use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
 
 /**
- * @extends AbstractIterableFinderTestCase<IdentityResult>
+ * @extends AbstractPaginatableFinderTestCase<IdentityResult>
  */
-final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
+final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 {
-    /** @use PaginationTrait<PaginatorInterface<IdentityResult>> */
-    use PaginationTrait;
-
     #[Test]
     public function itGetsById(): void
     {

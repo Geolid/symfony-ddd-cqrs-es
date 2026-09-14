@@ -12,12 +12,12 @@ use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPaymentProjector;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<PaymentResult>
+ * @extends AbstractIterableDbalFinder<PaymentResult>
  */
-final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinderInterface
+final class DbalPaymentFinder extends AbstractIterableDbalFinder implements PaymentFinderInterface
 {
     public function ofId(string $id): PaymentResult
     {

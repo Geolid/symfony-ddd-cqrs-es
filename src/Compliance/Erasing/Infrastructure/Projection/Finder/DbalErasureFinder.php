@@ -12,12 +12,12 @@ use Compliance\Erasing\Infrastructure\Projection\Projector\DbalErasureProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<ErasureResult>
+ * @extends AbstractIterableDbalFinder<ErasureResult>
  */
-final class DbalErasureFinder extends AbstractDbalFinder implements ErasureFinderInterface
+final class DbalErasureFinder extends AbstractIterableDbalFinder implements ErasureFinderInterface
 {
     public function ofId(string $id): ErasureResult
     {

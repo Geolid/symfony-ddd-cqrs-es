@@ -10,12 +10,12 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractPaginatableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<IdentityResult>
+ * @extends AbstractPaginatableDbalFinder<IdentityResult>
  */
-final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFinderInterface
+final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements IdentityFinderInterface
 {
     public function ofId(string $id): IdentityResult
     {

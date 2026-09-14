@@ -7,7 +7,7 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
@@ -15,9 +15,9 @@ use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessi
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 
 /**
- * @extends AbstractDbalFinder<CheckoutSessionResult>
+ * @extends AbstractIterableDbalFinder<CheckoutSessionResult>
  */
-final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements CheckoutSessionFinderInterface
+final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder implements CheckoutSessionFinderInterface
 {
     /**
      * @throws CheckoutSessionResultNotFoundException

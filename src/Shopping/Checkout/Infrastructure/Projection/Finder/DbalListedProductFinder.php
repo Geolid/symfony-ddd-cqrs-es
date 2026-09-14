@@ -7,15 +7,15 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalListedProductProjector;
 
 /**
- * @extends AbstractDbalFinder<ListedProductResult>
+ * @extends AbstractIterableDbalFinder<ListedProductResult>
  */
-final class DbalListedProductFinder extends AbstractDbalFinder implements ListedProductFinderInterface
+final class DbalListedProductFinder extends AbstractIterableDbalFinder implements ListedProductFinderInterface
 {
     public function byIds(string ...$productIds): static
     {

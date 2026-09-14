@@ -10,12 +10,12 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResul
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
 use Shared\Application\Finder\SortDirection;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<ApiKeyCredentialResult>
+ * @extends AbstractIterableDbalFinder<ApiKeyCredentialResult>
  */
-final class DbalApiKeyCredentialFinder extends AbstractDbalFinder implements ApiKeyCredentialFinderInterface
+final class DbalApiKeyCredentialFinder extends AbstractIterableDbalFinder implements ApiKeyCredentialFinderInterface
 {
     public function ofKeyId(string $keyId): ApiKeyCredentialResult
     {

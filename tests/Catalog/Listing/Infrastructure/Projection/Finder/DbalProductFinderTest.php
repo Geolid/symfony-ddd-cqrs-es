@@ -13,17 +13,13 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
-use Shared\Tests\Support\PaginationTrait;
-use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
 
 /**
- * @extends AbstractIterableFinderTestCase<ProductResult>
+ * @extends AbstractPaginatableFinderTestCase<ProductResult>
  */
-final class DbalProductFinderTest extends AbstractIterableFinderTestCase
+final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
 {
-    /** @use PaginationTrait<PaginatorInterface<ProductResult>> */
-    use PaginationTrait;
-
     #[Test]
     public function itGetsById(): void
     {

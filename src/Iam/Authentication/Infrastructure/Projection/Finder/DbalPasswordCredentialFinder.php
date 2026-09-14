@@ -9,7 +9,6 @@ use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordC
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialResult;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentialProjector;
-use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -39,11 +38,6 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
     {
         $qb->select('id', 'identity_id', 'login', 'password_hash', 'defined_at', 'password_changed_at', 'identity_authenticatable')
             ->from(DbalPasswordCredentialProjector::TABLE);
-    }
-
-    protected function defaultSort(): array
-    {
-        return ['defined_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string
