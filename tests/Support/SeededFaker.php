@@ -31,6 +31,7 @@ final class SeededFaker
         if (null === self::$generator) {
             self::$generator = Factory::create(self::locale());
             self::$generator->seed(self::seed());
+            self::$generator->addProvider(new CountryCodeFakerProvider(self::$generator));
         }
 
         return self::$generator;

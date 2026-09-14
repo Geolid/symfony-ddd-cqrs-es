@@ -10,7 +10,6 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
@@ -19,7 +18,6 @@ use Shared\Domain\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -148,7 +146,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'items' => static function (?self $builder): array {
                 $currency = null !== $builder ? $builder['currency'] : self::sample('currency');
@@ -186,12 +184,5 @@ final class OrderBuilder extends AbstractAggregateBuilder
             currency: $this['currency'],
             confirmedAt: $this['confirmedAt'],
         );
-    }
-
-    private static function randomCountryCode(): string
-    {
-        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
-
-        return $countryCode;
     }
 }

@@ -6,7 +6,6 @@ namespace Shopping\Tests\Checkout\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\CountryCode;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
@@ -20,7 +19,6 @@ use Shopping\Checkout\Domain\ValueObject\TaxRate;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
-use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Attributes = array{
@@ -157,11 +155,11 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             'taxRate' => static fn (): TaxRate => TaxRate::fromBasisPoints(2_000),
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'billingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
-                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), self::randomCountryCode()),
+                Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
             'paymentId' => static fn (): string => Uuid::uuid7()->toString(),
             'openedAt' => static fn (): \DateTimeImmutable => $now,
@@ -183,12 +181,5 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
             billingAddress: $this['billingAddress'],
             openedAt: $this['openedAt'],
         );
-    }
-
-    private static function randomCountryCode(): string
-    {
-        Assert::string($countryCode = SeededFaker::get()->randomElement(array_diff(CountryCode::values(), [CountryCode::ZZ->value])));
-
-        return $countryCode;
     }
 }
