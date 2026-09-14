@@ -6,6 +6,7 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
@@ -29,8 +30,12 @@ final class DbalListedProductFinder extends AbstractDbalFinder implements Listed
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('product_id', 'label', 'unit_price_in_cents')
-            ->from(DbalListedProductProjector::TABLE)
-            ->orderBy('product_id', 'ASC');
+            ->from(DbalListedProductProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['product_id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

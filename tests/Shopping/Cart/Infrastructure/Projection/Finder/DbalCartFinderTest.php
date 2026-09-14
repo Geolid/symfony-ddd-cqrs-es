@@ -22,9 +22,10 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     public function itGets(): void
     {
         // Given
+        $other = CartBuilder::new()->create();
         $builder = CartBuilder::new();
         $cart = $builder->create();
-        $this->store($cart);
+        $this->store($other, $cart);
 
         // When
         $result = $this->finder()->ofId($cart->id->toString());
@@ -32,6 +33,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($builder['startedAt']->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
     }
 
     #[Test]
@@ -77,7 +79,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Cart $cart): string => $cart->id->toString(), $carts);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

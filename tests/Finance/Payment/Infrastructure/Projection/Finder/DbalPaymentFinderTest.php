@@ -192,7 +192,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Payment $payment): string => $payment->id->toString(), $payments);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

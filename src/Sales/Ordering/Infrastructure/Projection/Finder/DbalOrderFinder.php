@@ -9,6 +9,7 @@ use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundExcepti
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -38,8 +39,12 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'customer_id', 'checkout_session_id', 'shipping_address', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
-            ->from(DbalOrderProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalOrderProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['confirmed_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

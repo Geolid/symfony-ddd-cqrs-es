@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Application\Finder;
 
-enum SortDirection: string
+enum SortDirection
 {
-    case Ascending = 'ASC';
-    case Descending = 'DESC';
+    case Ascending;
+    case Descending;
 }

@@ -73,7 +73,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
             expectedIds: $ids,
             pageSize: 2,
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
         );
     }
@@ -87,7 +87,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         // When
         $this->traverseEmptyPage(
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
             itemsPerPage: 20,
         );
@@ -109,7 +109,7 @@ final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Identity $identity): string => $identity->id->toString(), $identities);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

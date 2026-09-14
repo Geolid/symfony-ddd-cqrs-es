@@ -53,7 +53,7 @@ final class DbalListedProductFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Product $product): string => $product->id->toString(), $products);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->productId;
     }

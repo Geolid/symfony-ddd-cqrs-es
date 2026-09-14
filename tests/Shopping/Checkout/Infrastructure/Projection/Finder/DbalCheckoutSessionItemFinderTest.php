@@ -21,8 +21,9 @@ final class DbalCheckoutSessionItemFinderTest extends AbstractIterableFinderTest
         // Given
         $other = CheckoutSessionBuilder::new()->create();
 
-        $item = CheckoutSessionBuilder::sample('items')[0];
-        $checkoutSession = CheckoutSessionBuilder::new()->withItems([$item])->create();
+        $builder = CheckoutSessionBuilder::new();
+        $item = $builder['items'][0];
+        $checkoutSession = $builder->withItems([$item])->create();
 
         $this->store($other, $checkoutSession);
 
@@ -48,21 +49,25 @@ final class DbalCheckoutSessionItemFinderTest extends AbstractIterableFinderTest
      */
     protected function seed(int $count): array
     {
-        $productIds = [];
         $checkoutSessions = [];
+        $indexes = [];
         for ($i = 0; $i < $count; ++$i) {
-            $item = CheckoutSessionBuilder::sample('items')[0];
-            $productIds[] = $item->productId;
-            $checkoutSessions[] = CheckoutSessionBuilder::new()->withItems([$item])->create();
+            $builder = CheckoutSessionBuilder::new();
+            $checkoutSession = $builder->create();
+            $checkoutSessions[] = $checkoutSession;
+
+            foreach ($builder['items'] as $item) {
+                $indexes[] = \sprintf('%s:%s', $checkoutSession->id->toString(), $item->productId);
+            }
         }
 
         $this->store(...$checkoutSessions);
 
-        return $productIds;
+        return $indexes;
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
-        return $result->productId;
+        return \sprintf('%s:%s', $result->checkoutSessionId, $result->productId);
     }
 }

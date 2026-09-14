@@ -136,7 +136,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (CheckoutSession $checkoutSession): string => $checkoutSession->id->toString(), $checkoutSessions);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\Finder\CheckoutSessionItem\CheckoutSessionItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSessionItem\CheckoutSessionItemResult;
@@ -27,9 +28,12 @@ final class DbalCheckoutSessionItemFinder extends AbstractDbalFinder implements 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('checkout_session_id', 'product_id', 'label', 'unit_price_in_cents', 'quantity')
-            ->from(DbalCheckoutSessionItemProjector::TABLE)
-            ->orderBy('checkout_session_id', 'ASC')
-            ->addOrderBy('product_id', 'ASC');
+            ->from(DbalCheckoutSessionItemProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['checkout_session_id' => SortDirection::Ascending, 'product_id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

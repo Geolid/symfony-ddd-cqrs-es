@@ -25,7 +25,7 @@ final class AbandonPaymentOnCheckoutSessionStaledTest extends AbstractIntegratio
         $this->replace(CommandBusInterface::class, $commandBus);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
-        $payment = PaymentBuilder::new()->withId($paymentId->toString())->withCheckoutSessionId($checkoutSessionId)->create();
+        $payment = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment);
         $commandBus->expects(self::once())->method('dispatch')->with(new AbandonPayment($paymentId->toString()));
 

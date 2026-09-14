@@ -70,11 +70,6 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(billingAddress: $billingAddress);
     }
 
-    public function withPaymentId(string $paymentId): self
-    {
-        return $this->withAttributes(paymentId: $paymentId);
-    }
-
     public function withOpenedAt(\DateTimeImmutable $openedAt): self
     {
         return $this->withAttributes(openedAt: $openedAt);
@@ -98,9 +93,12 @@ final class CheckoutSessionBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function completed(?\DateTimeImmutable $completedAt = null): self
+    public function completed(?string $paymentId = null, ?\DateTimeImmutable $completedAt = null): self
     {
-        $builder = null !== $completedAt ? $this->withAttributes(completedAt: $completedAt) : $this;
+        $builder = $this->withAttributes(...array_filter(
+            ['paymentId' => $paymentId, 'completedAt' => $completedAt],
+            static fn (mixed $value): bool => null !== $value,
+        ));
 
         return $builder->withModifier(
             static fn (CheckoutSession $checkoutSession, self $builder) => $checkoutSession->complete(

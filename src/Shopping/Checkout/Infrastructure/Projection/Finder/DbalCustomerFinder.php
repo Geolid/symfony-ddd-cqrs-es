@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\Customer\CustomerResult;
@@ -27,8 +28,12 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'shipping_address', 'billing_address', 'erasure_status')
-            ->from(DbalCustomerProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalCustomerProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

@@ -38,11 +38,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class OrderBuilder extends AbstractAggregateBuilder
 {
-    public function withId(string $id): self
-    {
-        return $this->withAttributes(id: OrderId::fromString($id));
-    }
-
     public function withCartId(string $cartId): self
     {
         return $this->withAttributes(cartId: $cartId);
@@ -135,7 +130,9 @@ final class OrderBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
+            'id' => static fn (?self $builder): OrderId => OrderId::forCheckoutSession(
+                null !== $builder ? $builder['checkoutSessionId'] : self::sample('checkoutSessionId'),
+            ),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),

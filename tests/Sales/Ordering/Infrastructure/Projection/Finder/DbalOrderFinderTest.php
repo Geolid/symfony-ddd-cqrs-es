@@ -100,7 +100,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Order $order): string => $order->id->toString(), $orders);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

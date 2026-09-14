@@ -69,7 +69,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
             expectedIds: $ids,
             pageSize: 2,
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
         );
     }
@@ -83,7 +83,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         // When
         $this->traverseEmptyPage(
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
             itemsPerPage: 20,
         );
@@ -105,7 +105,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Product $product): string => $product->id->toString(), $products);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

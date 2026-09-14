@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\CartResult;
@@ -18,25 +19,22 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
 {
     public function ofId(string $id): CartResult
     {
-        $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, customer_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
-            ['id' => $id],
-        );
-
-        if (false === $row) {
-            throw CartResultNotFoundException::forId($id);
-        }
-
-        \assert(\is_string($row['id']) && \is_string($row['customer_id']));
-
-        return new CartResult($row['id'], $row['customer_id']);
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw CartResultNotFoundException::forId($id);
     }
 
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id')
-            ->from(DbalCartProjector::TABLE)
-            ->orderBy('id', 'ASC');
+        $qb->select('id', 'customer_id', 'started_at')
+            ->from(DbalCartProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['started_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

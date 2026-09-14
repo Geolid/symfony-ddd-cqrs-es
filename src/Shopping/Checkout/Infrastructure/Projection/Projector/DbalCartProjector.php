@@ -24,7 +24,8 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         $this->connection->insert(self::TABLE, [
             'id' => $event->cartId,
             'customer_id' => $event->customerId,
-        ]);
+            'started_at' => $event->startedAt,
+        ], ['started_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     /**
@@ -35,6 +36,7 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('started_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

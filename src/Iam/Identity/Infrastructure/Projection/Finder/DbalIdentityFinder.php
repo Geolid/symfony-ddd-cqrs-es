@@ -9,6 +9,7 @@ use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundExc
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -28,8 +29,12 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'status', 'reason', 'registered_at', 'suspended_at', 'reactivated_at', 'erasure_status')
-            ->from(DbalIdentityProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalIdentityProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['registered_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

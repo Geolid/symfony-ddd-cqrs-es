@@ -9,6 +9,7 @@ use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Infrastructure\Projection\Projector\DbalProductProjector;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
 /**
@@ -28,8 +29,12 @@ final class DbalProductFinder extends AbstractDbalFinder implements ProductFinde
     protected function buildBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'label', 'unit_price_in_cents', 'listed_at', 'repriced_at')
-            ->from(DbalProductProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalProductProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['listed_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

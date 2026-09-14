@@ -93,7 +93,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         return array_map(static fn (ApiKeyCredential $credential): string => $credential->id->toString(), $credentials);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

@@ -79,18 +79,17 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     abstract protected function buildBaseQuery(QueryBuilder $qb): void;
 
     /**
+     * Fallback sort applied to all queries.
+     * The combined columns must guarantee row uniqueness for deterministic pagination.
+     *
+     * @return non-empty-array<string, SortDirection>
+     */
+    abstract protected function defaultSort(): array;
+
+    /**
      * @return class-string<TResult>
      */
     abstract protected function resultClass(): string;
-
-    /**
-     * WIP — not yet implemented by any concrete Finder, see .claude/TODO.md.
-     *
-     * @return array<string, SortDirection> map of column => direction, in the order applied; the LAST
-     *                                      entry must be a genuinely unique column, used as the tiebreaker when no caller-supplied
-     *                                      sort covers it
-     */
-    abstract protected function defaultSort(): array;
 
     /**
      * @return TResult|null
@@ -114,8 +113,6 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     }
 
     /**
-     * WIP — not yet called by any concrete Finder, see .claude/TODO.md.
-     *
      * @param array<string, SortDirection> $sorts
      */
     protected function sortBy(array $sorts): static
@@ -135,20 +132,15 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
             $filter($qb);
         }
 
-        $qb->resetQueryPart('orderBy');
+        $qb->resetOrderBy();
 
         $default = $this->defaultSort();
-        Assert::notEmpty($default, \sprintf('%s::defaultSort() must return at least one column (last = tiebreaker).', static::class));
+        Assert::notEmpty($default, \sprintf('%s::defaultSort() must return at least one column.', static::class));
 
-        $tiebreaker = array_key_last($default);
-        $sorts = [] !== $this->sorts ? $this->sorts : $default;
+        $sorts = $this->sorts + $default;
 
         foreach ($sorts as $column => $direction) {
-            $qb->addOrderBy($column, $direction->value);
-        }
-
-        if (!isset($sorts[$tiebreaker])) {
-            $qb->addOrderBy($tiebreaker, $default[$tiebreaker]->value);
+            $qb->addOrderBy($column, $this->direction($direction));
         }
 
         return $qb;
@@ -162,5 +154,13 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     private function hydrate(array $row): object
     {
         return $this->hydrator->hydrate($this->resultClass(), $row);
+    }
+
+    private function direction(SortDirection $direction): string
+    {
+        return match ($direction) {
+            SortDirection::Ascending => 'ASC',
+            SortDirection::Descending => 'DESC',
+        };
     }
 }

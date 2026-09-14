@@ -182,7 +182,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Shipment $shipment): string => $shipment->id->toString(), $shipments);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }
