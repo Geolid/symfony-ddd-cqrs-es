@@ -25,7 +25,7 @@ final class DbalCustomerFinder extends AbstractDbalFinder implements CustomerFin
         )->one();
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'shipping_address', 'billing_address', 'erasure_status')
             ->from(DbalCustomerProjector::TABLE);

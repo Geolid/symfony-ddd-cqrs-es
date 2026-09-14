@@ -25,7 +25,7 @@ final class DbalCheckoutSessionItemFinder extends AbstractDbalFinder implements 
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('checkout_session_id', 'product_id', 'label', 'unit_price_in_cents', 'quantity')
             ->from(DbalCheckoutSessionItemProjector::TABLE);

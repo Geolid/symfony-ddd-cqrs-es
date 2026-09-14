@@ -26,7 +26,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
         )->one() ?? throw IdentityResultNotFoundException::forId($id);
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'status', 'reason', 'registered_at', 'suspended_at', 'reactivated_at', 'erasure_status')
             ->from(DbalIdentityProjector::TABLE);

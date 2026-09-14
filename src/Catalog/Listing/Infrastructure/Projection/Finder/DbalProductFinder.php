@@ -26,7 +26,7 @@ final class DbalProductFinder extends AbstractDbalFinder implements ProductFinde
         )->one() ?? throw ProductResultNotFoundException::forId($id);
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'label', 'unit_price_in_cents', 'listed_at', 'repriced_at')
             ->from(DbalProductProjector::TABLE);

@@ -45,7 +45,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'customer_id', 'started_at')
             ->from(DbalCartProjector::TABLE);

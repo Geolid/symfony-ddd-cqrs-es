@@ -76,7 +76,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
         }
     }
 
-    abstract protected function buildBaseQuery(QueryBuilder $qb): void;
+    abstract protected function configureBaseQuery(QueryBuilder $qb): void;
 
     /**
      * Fallback sort applied to all queries.
@@ -126,7 +126,7 @@ abstract class AbstractDbalFinder implements \IteratorAggregate, \Countable
     private function query(): QueryBuilder
     {
         $qb = $this->connection->createQueryBuilder();
-        $this->buildBaseQuery($qb);
+        $this->configureBaseQuery($qb);
 
         foreach ($this->filters as $filter) {
             $filter($qb);

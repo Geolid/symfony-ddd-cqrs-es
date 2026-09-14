@@ -61,7 +61,7 @@ final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements Chec
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'cart_id', 'customer_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
             ->from(DbalCheckoutSessionProjector::TABLE);

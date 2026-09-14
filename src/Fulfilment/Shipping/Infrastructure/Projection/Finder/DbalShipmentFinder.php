@@ -83,7 +83,7 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'order_id', 'customer_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'erasure_status')
             ->from(DbalShipmentProjector::TABLE);

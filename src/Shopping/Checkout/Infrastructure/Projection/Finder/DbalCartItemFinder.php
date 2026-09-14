@@ -25,7 +25,7 @@ final class DbalCartItemFinder extends AbstractDbalFinder implements CartItemFin
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('cart_id', 'product_id', 'quantity')
             ->from(DbalCartItemProjector::TABLE);

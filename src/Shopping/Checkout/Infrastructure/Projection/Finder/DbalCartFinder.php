@@ -26,7 +26,7 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
         )->one() ?? throw CartResultNotFoundException::forId($id);
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'customer_id', 'started_at')
             ->from(DbalCartProjector::TABLE);
