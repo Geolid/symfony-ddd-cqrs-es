@@ -57,6 +57,11 @@ abstract class AbstractIterableDbalFinder extends AbstractDbalFinder implements 
             $qb->getParameterTypes(),
         )->fetchOne();
 
+        /*
+         * A real `COUNT(*)` never returns negative; no caller can exercise this assertion's failure branch.
+         *
+         * @infection-ignore-all
+         */
         Assert::natural($result);
 
         return $this->cachedTotal = $result;
