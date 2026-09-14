@@ -9,11 +9,13 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Payment;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,6 +23,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGetsById(): void
     {
@@ -195,5 +199,26 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        // PaymentId is derived from checkoutSessionId, so the tied pair is picked by sorting on the derived id.
+        $checkoutSessionIdByPaymentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByPaymentId[PaymentId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByPaymentId);
+        [$firstId, $secondId] = array_keys($checkoutSessionIdByPaymentId);
+
+        $tiedAt = Clock::get()->now();
+        $second = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$secondId])->withRequestedAt($tiedAt)->create();
+        $first = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$firstId])->withRequestedAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }

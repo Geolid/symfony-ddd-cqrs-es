@@ -11,13 +11,18 @@ use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @extends AbstractIterableFinderTestCase<ApiKeyCredentialResult>
  */
 final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGetsByKeyId(): void
     {
@@ -96,5 +101,23 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        $ids = [Uuid::uuid7()->toString(), Uuid::uuid7()->toString()];
+        sort($ids);
+        [$firstId, $secondId] = $ids;
+
+        $hasher = new FakeApiKeyHasher();
+        $tiedAt = Clock::get()->now();
+        $second = ApiKeyCredentialBuilder::new()->withId($secondId)->withHasher($hasher)->withIssuedAt($tiedAt)->create();
+        $first = ApiKeyCredentialBuilder::new()->withId($firstId)->withHasher($hasher)->withIssuedAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }

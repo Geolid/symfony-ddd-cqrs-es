@@ -9,11 +9,13 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,6 +23,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGetsById(): void
     {
@@ -185,5 +189,26 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        // ShipmentId is derived from orderId, so the tied pair is picked by sorting on the derived id.
+        $orderIdByShipmentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $orderId) {
+            $orderIdByShipmentId[ShipmentId::forOrder($orderId)->toString()] = $orderId;
+        }
+        ksort($orderIdByShipmentId);
+        [$firstId, $secondId] = array_keys($orderIdByShipmentId);
+
+        $tiedAt = Clock::get()->now();
+        $second = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$secondId])->withCreatedAt($tiedAt)->create();
+        $first = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$firstId])->withCreatedAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }

@@ -11,6 +11,7 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
@@ -18,12 +19,16 @@ use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @extends AbstractIterableFinderTestCase<OrderResult>
  */
 final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGets(): void
     {
@@ -105,5 +110,26 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        // OrderId is derived from checkoutSessionId, so the tied pair is picked by sorting on the derived id.
+        $checkoutSessionIdByOrderId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByOrderId[OrderId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByOrderId);
+        [$firstId, $secondId] = array_keys($checkoutSessionIdByOrderId);
+
+        $tiedAt = Clock::get()->now();
+        $second = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$secondId])->withConfirmedAt($tiedAt)->create();
+        $first = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$firstId])->withConfirmedAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }

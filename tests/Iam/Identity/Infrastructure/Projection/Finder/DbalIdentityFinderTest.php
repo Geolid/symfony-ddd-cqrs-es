@@ -16,12 +16,16 @@ use Shared\Application\ErasureStatus;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @extends AbstractPaginatableFinderTestCase<IdentityResult>
  */
 final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGetsById(): void
     {
@@ -108,5 +112,22 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        $ids = [Uuid::uuid7()->toString(), Uuid::uuid7()->toString()];
+        sort($ids);
+        [$firstId, $secondId] = $ids;
+
+        $tiedAt = Clock::get()->now();
+        $second = IdentityBuilder::new()->withId($secondId)->withRegisteredAt($tiedAt)->create();
+        $first = IdentityBuilder::new()->withId($firstId)->withRegisteredAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }

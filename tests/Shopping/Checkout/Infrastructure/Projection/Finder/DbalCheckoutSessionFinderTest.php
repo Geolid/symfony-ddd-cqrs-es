@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionItemResult;
@@ -26,6 +27,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 {
+    use IdTiebreakerTrait;
+
     #[Test]
     public function itGets(): void
     {
@@ -154,5 +157,22 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedTie(): array
+    {
+        $ids = [Uuid::uuid7()->toString(), Uuid::uuid7()->toString()];
+        sort($ids);
+        [$firstId, $secondId] = $ids;
+
+        $tiedAt = Clock::get()->now();
+        $second = CheckoutSessionBuilder::new()->withId($secondId)->withOpenedAt($tiedAt)->create();
+        $first = CheckoutSessionBuilder::new()->withId($firstId)->withOpenedAt($tiedAt)->create();
+        $this->store($second, $first);
+
+        return [$firstId, $secondId];
     }
 }
