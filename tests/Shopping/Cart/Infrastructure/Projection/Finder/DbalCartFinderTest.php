@@ -7,7 +7,7 @@ namespace Shopping\Tests\Cart\Infrastructure\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
-use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
 use Shopping\Cart\Application\Finder\Cart\Exception\CartResultNotFoundException;
@@ -20,7 +20,7 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalCartFinderTest extends AbstractIterableFinderTestCase
 {
-    use IdTiebreakerTrait;
+    use RealColumnLeadsTrait;
 
     #[Test]
     public function itGets(): void
@@ -91,20 +91,6 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    protected function seedTie(): array
-    {
-        $ids = [Uuid::uuid7()->toString(), Uuid::uuid7()->toString()];
-        sort($ids);
-        [$firstId, $secondId] = $ids;
-
-        $tiedAt = Clock::get()->now();
-        $second = CartBuilder::new()->withId($secondId)->withStartedAt($tiedAt)->create();
-        $first = CartBuilder::new()->withId($firstId)->withStartedAt($tiedAt)->create();
-        $this->store($second, $first);
-
-        return [$firstId, $secondId];
-    }
-
     /**
      * @return array{string, string}
      */

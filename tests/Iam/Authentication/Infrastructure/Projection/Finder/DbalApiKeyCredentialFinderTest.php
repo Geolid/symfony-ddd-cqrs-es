@@ -13,7 +13,7 @@ use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
-use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,7 +21,7 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCase
 {
-    use IdTiebreakerTrait;
+    use RealColumnLeadsTrait;
 
     #[Test]
     public function itGetsByKeyId(): void
@@ -106,21 +106,6 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     /**
      * @return array{string, string}
      */
-    protected function seedTie(): array
-    {
-        $ids = [Uuid::uuid7()->toString(), Uuid::uuid7()->toString()];
-        sort($ids);
-        [$firstId, $secondId] = $ids;
-
-        $hasher = new FakeApiKeyHasher();
-        $tiedAt = Clock::get()->now();
-        $second = ApiKeyCredentialBuilder::new()->withId($secondId)->withHasher($hasher)->withIssuedAt($tiedAt)->create();
-        $first = ApiKeyCredentialBuilder::new()->withId($firstId)->withHasher($hasher)->withIssuedAt($tiedAt)->create();
-        $this->store($second, $first);
-
-        return [$firstId, $secondId];
-    }
-
     /**
      * @return array{string, string}
      */

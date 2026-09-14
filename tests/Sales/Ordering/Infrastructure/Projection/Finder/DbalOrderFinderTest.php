@@ -19,7 +19,7 @@ use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
-use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -27,7 +27,7 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 {
-    use IdTiebreakerTrait;
+    use RealColumnLeadsTrait;
 
     #[Test]
     public function itGets(): void
@@ -115,23 +115,6 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    protected function seedTie(): array
-    {
-        $checkoutSessionIdByOrderId = [];
-        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
-            $checkoutSessionIdByOrderId[OrderId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
-        }
-        ksort($checkoutSessionIdByOrderId);
-        [$firstId, $secondId] = array_keys($checkoutSessionIdByOrderId);
-
-        $tiedAt = Clock::get()->now();
-        $second = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$secondId])->withConfirmedAt($tiedAt)->create();
-        $first = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$firstId])->withConfirmedAt($tiedAt)->create();
-        $this->store($second, $first);
-
-        return [$firstId, $secondId];
-    }
-
     /**
      * @return array{string, string}
      */

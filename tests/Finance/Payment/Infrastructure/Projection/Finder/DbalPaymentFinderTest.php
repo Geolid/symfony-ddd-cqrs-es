@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
-use Shared\Tests\Support\TestCase\IdTiebreakerTrait;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -23,7 +23,7 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
 {
-    use IdTiebreakerTrait;
+    use RealColumnLeadsTrait;
 
     #[Test]
     public function itGetsById(): void
@@ -204,23 +204,6 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    protected function seedTie(): array
-    {
-        $checkoutSessionIdByPaymentId = [];
-        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
-            $checkoutSessionIdByPaymentId[PaymentId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
-        }
-        ksort($checkoutSessionIdByPaymentId);
-        [$firstId, $secondId] = array_keys($checkoutSessionIdByPaymentId);
-
-        $tiedAt = Clock::get()->now();
-        $second = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$secondId])->withRequestedAt($tiedAt)->create();
-        $first = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$firstId])->withRequestedAt($tiedAt)->create();
-        $this->store($second, $first);
-
-        return [$firstId, $secondId];
-    }
-
     /**
      * @return array{string, string}
      */
