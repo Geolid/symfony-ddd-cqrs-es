@@ -113,9 +113,6 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
     /**
      * @return array{string, string}
      */
-    /**
-     * @return array{string, string}
-     */
     protected function seedConflictingOrder(): array
     {
         $now = Clock::get()->now();

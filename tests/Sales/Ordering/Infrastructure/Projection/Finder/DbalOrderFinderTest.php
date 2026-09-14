@@ -118,9 +118,6 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    /**
-     * @return array{string, string}
-     */
     protected function seedConflictingOrder(): array
     {
         $checkoutSessionIdByOrderId = [];

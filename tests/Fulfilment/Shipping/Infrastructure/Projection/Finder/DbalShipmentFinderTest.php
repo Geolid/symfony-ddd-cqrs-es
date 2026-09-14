@@ -194,9 +194,6 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    /**
-     * @return array{string, string}
-     */
     protected function seedConflictingOrder(): array
     {
         $orderIdByShipmentId = [];

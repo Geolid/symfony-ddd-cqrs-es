@@ -204,9 +204,6 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     /**
      * @return array{string, string}
      */
-    /**
-     * @return array{string, string}
-     */
     protected function seedConflictingOrder(): array
     {
         $checkoutSessionIdByPaymentId = [];
